@@ -43,6 +43,8 @@ class DbModelTaskMessageLogAnalysis(models.Model):
     expected_completion_mins = fields.Float(string="Expected Completion Mins", readonly=True)
     expected_completion_hours = fields.Float(string="Expected Completion Hours", readonly=True)
     expected_completion_hours_min = fields.Float(string="Expected Completion Hours Min", readonly=True)
+    task_count = fields.Integer(string="Total Tasks", readonly=True)
+    on_hold_task_count = fields.Integer(string="On Hold Tasks", readonly=True)
 
     is_user_work_location = fields.Boolean(
         string="Is My Work Location",
@@ -171,6 +173,14 @@ class DbModelTaskMessageLogAnalysis(models.Model):
                 "onhold_hours", "total_worked_hours"
             ]
             render_fields = [f for f in all_possible_fields if f in visible_fields]
+        
+        # Always append task_count and on_hold_task_count at the end of render_fields
+        if not render_fields:
+            render_fields = [
+                "task_id", "user_id", "task_date", "user_role", "region", "city", 
+                "status_transition", "rtat_hours"
+            ]
+        render_fields.extend(['task_count', 'on_hold_task_count'])
 
         for field_name in render_fields:
             if field_name in self._fields:
@@ -181,6 +191,9 @@ class DbModelTaskMessageLogAnalysis(models.Model):
                 # Apply float_time widget for hour fields
                 if field_name.endswith("_hours"):
                     field_node.set("widget", "float_time")
+                # Apply sum to task_count and on_hold_task_count
+                if field_name in ['task_count', 'on_hold_task_count']:
+                    field_node.set("sum", "Total")
         
         # Add drilldown button at the end of the tree view
         etree.SubElement(node, "button", name="action_open_task_list", type="object", string="Drilldown", icon="fa-arrow-circle-right")
@@ -255,7 +268,9 @@ class DbModelTaskMessageLogAnalysis(models.Model):
                     COALESCE(CASE WHEN pt.total_worked_hours_min::text ~ ':' THEN (NULLIF(split_part(pt.total_worked_hours_min::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.total_worked_hours_min::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.total_worked_hours_min::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS total_worked_hours_min,
                     COALESCE(CASE WHEN pt.expected_completion_mins::text ~ ':' THEN (NULLIF(split_part(pt.expected_completion_mins::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.expected_completion_mins::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.expected_completion_mins::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS expected_completion_mins,
                     COALESCE(CASE WHEN pt.expected_completion_hours::text ~ ':' THEN (NULLIF(split_part(pt.expected_completion_hours::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.expected_completion_hours::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.expected_completion_hours::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS expected_completion_hours,
-                    COALESCE(CASE WHEN pt.expected_completion_hours_min::text ~ ':' THEN (NULLIF(split_part(pt.expected_completion_hours_min::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.expected_completion_hours_min::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.expected_completion_hours_min::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS expected_completion_hours_min
+                    COALESCE(CASE WHEN pt.expected_completion_hours_min::text ~ ':' THEN (NULLIF(split_part(pt.expected_completion_hours_min::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.expected_completion_hours_min::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.expected_completion_hours_min::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS expected_completion_hours_min,
+                    1 AS task_count,
+                    CASE WHEN ptml.new_value ILIKE '%%hold%%' OR ptml.new_value ILIKE '%%Hold%%' THEN 1 ELSE 0 END AS on_hold_task_count
                 FROM 
                     project_task_message_log ptml
                     INNER JOIN project_task pt

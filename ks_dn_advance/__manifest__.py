@@ -112,7 +112,7 @@ Best Odoo Dashboard Apps
 
     'depends': ['ks_dashboard_ninja', 'mail'],
 
-    # 'external_dependencies': {'python': ['mysql-connector']},
+    'external_dependencies': {'python': ['mysql-connector']},
 
     'data': ['security/ir.model.access.csv',
              'views/ks_dashboard_ninja_item_view_inherit.xml',

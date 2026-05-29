@@ -1492,3 +1492,18 @@ body.ks_body_class {
 .max-width-medium-130{
     max-width: 130px !important;
 }
+
+/* Force all amCharts 5 tooltips (including series and axis tooltips) to have white text for legibility */
+g[role="tooltip"] text,
+g[role="tooltip"] tspan,
+g[role="tooltip"] span,
+g[role="tooltip"] div,
+.am5-tooltip-container,
+.am5-tooltip-container *,
+.am5-tooltip-container [role="tooltip"],
+.am5-tooltip-container [role="tooltip"] *,
+div[role="tooltip"],
+div[role="tooltip"] * {
+    fill: #ffffff !important;
+    color: #ffffff !important;
+}

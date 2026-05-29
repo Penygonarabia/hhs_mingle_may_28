@@ -9,7 +9,7 @@
 .ks_dashboard_main_content {
     overflow: auto;
 //     height: calc(100vh - 175px);
-    //max-height:100%;
+//     max-height:100%;
     max-height:90%;
 }
 .ks_dashboard_ninja_header{
@@ -745,4 +745,244 @@ ul.nav li.dropdown:hover ul.dropdown-menu{ display: block; }
     position: absolute;
     left: 6px;
     content: "\f00c";
+}
+
+/* Print Styles for Landscape Layout and KPI Elements Visibility */
+@media print {
+    /* Set landscape page layout with reasonable margins */
+    @page {
+        size: landscape;
+        margin: 10mm;
+    }
+
+    /* Force the browser to print exact colors, background colors, and graphics */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    /* Ensure the dashboard containers don't clip content */
+    .ks_dashboard_main_content,
+    .ks_dashboard_ninja,
+    .o_content {
+        overflow: visible !important;
+        height: auto !important;
+        max-height: none !important;
+        width: 100% !important;
+    }
+
+    /* ─── CHART HEIGHT ADJUSTMENTS ─────────────────────────────────────────── */
+
+    .ks_chart_card_body {
+        height: 200px !important;
+        max-height: 200px !important;
+        min-height: 120px !important;
+        position: relative !important;
+        top: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        right: auto !important;
+        overflow: hidden !important;
+    }
+
+    .ks_dashboarditem_chart_container,
+    .ks_chart_container,
+    .grid-stack-item-content {
+        height: auto !important;
+        min-height: 250px !important;
+        max-height: 280px !important;
+        overflow: hidden !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    .ks_funnel_chart_body,
+    .ks_funnel_view,
+    #ks_funnel_chart {
+        height: 180px !important;
+        max-height: 180px !important;
+    }
+
+    .ks_radial_chart_body,
+    #ks_radial_chart {
+        height: 180px !important;
+        max-height: 180px !important;
+    }
+
+    .ks_map_card_body,
+    #ks_map_chart {
+        height: 200px !important;
+        max-height: 200px !important;
+    }
+
+    .ks_bullet_chart_body {
+        height: 160px !important;
+        max-height: 160px !important;
+    }
+
+    .ks_chart_card_body svg,
+    .ks_chart_card_body canvas,
+    .ks_funnel_chart_body svg,
+    .ks_radial_chart_body svg {
+        max-height: 100% !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .ks_list_card_body,
+    .ks_list_view_container {
+        height: 220px !important;
+        max-height: 220px !important;
+        overflow: hidden !important;
+    }
+
+    .grid-stack-item {
+        height: auto !important;
+        position: relative !important;
+    }
+
+    /* ─── END CHART HEIGHT ADJUSTMENTS ─────────────────────────────────────── */
+
+    /* ─── KPI TILE PRINT FIX ────────────────────────────────────────────────
+       Root causes of missing icons and values:
+       1) .ks_dashboard_icon_l5 is position:absolute — overflows/clips in print
+       2) Text colours set via inline style (often white) become invisible
+       3) grid-stack-item-content has overflow:hidden + fixed heights that clip
+    ─────────────────────────────────────────────────────────────────────────── */
+
+    /* Override the generic grid-stack-item-content rule specifically for KPI tiles */
+    .ks_dashboard_kpi.grid-stack-item-content,
+    .encapsulated-kpi-tile.grid-stack-item-content {
+        height: auto !important;
+        min-height: 120px !important;
+        max-height: none !important;
+        overflow: visible !important;
+        position: relative !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        padding: 10px !important;
+    }
+
+    /* Fix the absolutely-positioned icon: make it in-flow for print */
+    .ks_dashboard_kpi .ks_dashboard_icon_l5,
+    .encapsulated-kpi-tile .ks_dashboard_icon_l5,
+    .ks_dashboard_kpi .dashboard-item-icon,
+    .encapsulated-kpi-tile .dashboard-item-icon {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        z-index: auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 52px !important;
+        height: 52px !important;
+        border-radius: 50% !important;
+        background-color: rgba(255, 255, 255, 0.85) !important;
+        margin-bottom: 6px !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* FontAwesome icon span */
+    .ks_dashboard_kpi .ks_dashboard_icon_l5 span,
+    .encapsulated-kpi-tile .ks_dashboard_icon_l5 span,
+    .ks_dashboard_kpi .dashboard-item-icon span,
+    .encapsulated-kpi-tile .dashboard-item-icon span {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        font-size: 22px !important;
+        line-height: 1 !important;
+        font-family: "FontAwesome", "Font Awesome 5 Free", "Font Awesome 6 Free" !important;
+    }
+
+    /* Custom image icon */
+    .ks_dashboard_kpi .ks_dashboard_icon_l5 img,
+    .encapsulated-kpi-tile .ks_dashboard_icon_l5 img,
+    .ks_dashboard_kpi .dashboard-item-icon img,
+    .encapsulated-kpi-tile .dashboard-item-icon img {
+        display: block !important;
+        visibility: visible !important;
+        width: 28px !important;
+        height: 28px !important;
+    }
+
+    /* Count / value — override inline white colour */
+    .ks_dashboard_kpi .ks_dashboard_kpi_count_preview,
+    .encapsulated-kpi-tile .ks_dashboard_kpi_count_preview,
+    .ks_dashboard_kpi .dashboard-item-data,
+    .encapsulated-kpi-tile .dashboard-item-data {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: #000000 !important;
+        font-size: 1.4rem !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        line-height: 1.2 !important;
+    }
+
+    /* KPI name label */
+    .ks_dashboard_kpi .ks_dashboard_kpi_name_preview,
+    .encapsulated-kpi-tile .ks_dashboard_kpi_name_preview,
+    .ks_dashboard_kpi .dashboard-item-name,
+    .encapsulated-kpi-tile .dashboard-item-name {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: #000000 !important;
+        font-size: 0.75rem !important;
+        text-align: center !important;
+        word-break: break-word !important;
+    }
+
+    /* vs Prev / vs Target labels */
+    .ks_dashboard_kpi .var-prev,
+    .encapsulated-kpi-tile .var-prev,
+    .ks_dashboard_kpi .pre_deviation,
+    .encapsulated-kpi-tile .pre_deviation,
+    .ks_dashboard_kpi .target_deviation,
+    .encapsulated-kpi-tile .target_deviation {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: #000000 !important;
+        font-size: 0.7rem !important;
+        text-align: center !important;
+    }
+
+    /* flex-container row (count + vs-prev) */
+    .ks_dashboard_kpi .flex-container,
+    .encapsulated-kpi-tile .flex-container {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    /* Main body wrapper */
+    .ks_dashboard_kpi .ks_dashboard_item_main_body_l5,
+    .encapsulated-kpi-tile .ks_dashboard_item_main_body_l5 {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+
+    /* Hide UI-only elements */
+    .ks_dashboard_kpi .ks_dashboard_item_header_l6,
+    .encapsulated-kpi-tile .ks_dashboard_item_header_l6,
+    .ks_dashboard_kpi .select-btn,
+    .encapsulated-kpi-tile .select-btn,
+    .ks_dashboard_kpi .ks_img_display,
+    .encapsulated-kpi-tile .ks_img_display {
+        display: none !important;
+    }
+
+    /* ─── END KPI TILE PRINT FIX ──────────────────────────────────────────── */
 }

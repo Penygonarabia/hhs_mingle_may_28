@@ -77,7 +77,19 @@ export class ks_funnel_chart extends Component{
         var data=[];
         if (keyValueArray.length){
             for (let i=0 ; i<keyValueArray.length ; i++){
-                data.push({"stage":keyValueArray[i][0],"applicants":keyValueArray[i][1]})
+                let labelVal = keyValueArray[i][0];
+                if (typeof labelVal === "string") {
+                    let stripped = labelVal.replace(/^\[[^\]]+\]\s*/, "");
+                    if (stripped.trim() !== "") {
+                        labelVal = stripped;
+                    }
+                    labelVal = labelVal.replace(/\s*[-–—]\s*$/, "");
+                    labelVal = labelVal.replace(/^\s*[-–—]\s*/, "");
+                    labelVal = labelVal.trim();
+                    labelVal = labelVal.replace(/\[/g, "[[");
+                    labelVal = labelVal.replace(/\]/g, "]]");
+                }
+                data.push({"stage":labelVal,"applicants":keyValueArray[i][1]})
             }
             this.root = am5.Root.new(this.funnelRef.el);
             const theme = this.props.record.data.ks_chart_item_color
@@ -94,6 +106,9 @@ export class ks_funnel_chart extends Component{
                 break;
             case "moonrise":
                 this.root.setThemes([am5themes_Moonrise.new(this.root)]);
+                break;
+            case "custom-1":
+                this.root.setThemes([am5themes_Animated.new(this.root)]);
                 break;
             };
 

@@ -284,6 +284,23 @@ export class KsDashboardNinja extends Component {
             else{
                 self.ks_dashboard_data = result;
             }
+
+            // Restore the user's active date-filter from session storage.
+            // This ensures the date filter UI and all subsequent getContext() calls
+            // (drill-down / drill-up) use the selection the user chose rather than
+            // the board's stored default (e.g. 't_year').
+            let _savedFilter = getObjectFromSession('FilterDateData' + self.ks_dashboard_id);
+            if (_savedFilter && _savedFilter.filter_selection !== undefined) {
+                self.ks_dashboard_data.ks_date_filter_selection = _savedFilter.filter_selection;
+                if (_savedFilter.filter_selection === 'l_custom' && _savedFilter.date_range) {
+                    self.ks_dashboard_data.ks_dashboard_start_date = _savedFilter.date_range.start_date || false;
+                    self.ks_dashboard_data.ks_dashboard_end_date   = _savedFilter.date_range.end_date   || false;
+                } else {
+                    self.ks_dashboard_data.ks_dashboard_start_date = false;
+                    self.ks_dashboard_data.ks_dashboard_end_date   = false;
+                }
+            }
+
             self.ks_dashboard_item_length = self.ks_dashboard_data.ks_dashboard_items_ids.length
             self.ks_dashboard_data.ks_ai_explain_dash = self.props.action.params.explainWithAi ? true : false
             self.ks_dashboard_data['ks_dashboard_id'] = self.props.action.params.ks_dashboard_id
@@ -318,10 +335,25 @@ export class KsDashboardNinja extends Component {
     }
 
     getContext() {
+        // Always prefer the session-stored filter so that all RPC calls
+        // (including multi-level drill-up e.g. Level 3 → Level 1) use the
+        // filter the user actively selected, even if in-memory state has been
+        // overwritten by an intermediate fetch or re-render.
+        let _sessionFilter = getObjectFromSession('FilterDateData' + this.ks_dashboard_id);
+        let filterSelection, filterStartDate, filterEndDate;
+        if (_sessionFilter && _sessionFilter.filter_selection !== undefined) {
+            filterSelection  = _sessionFilter.filter_selection;
+            filterStartDate  = filterSelection === 'l_custom' ? (_sessionFilter.date_range?.start_date || false) : false;
+            filterEndDate    = filterSelection === 'l_custom' ? (_sessionFilter.date_range?.end_date   || false) : false;
+        } else {
+            filterSelection  = this.ks_dashboard_data?.ks_date_filter_selection ?? false;
+            filterStartDate  = filterSelection === 'l_custom' ? this.ks_dashboard_data.ks_dashboard_start_date : false;
+            filterEndDate    = filterSelection === 'l_custom' ? this.ks_dashboard_data.ks_dashboard_end_date   : false;
+        }
         let context = {
-            ksDateFilterSelection: this.ks_dashboard_data?.ks_date_filter_selection ?? false,
-            ksDateFilterStartDate: this.ks_dashboard_data?.ks_date_filter_selection === 'l_custom' ? this.ks_dashboard_data.ks_dashboard_start_date : false,
-            ksDateFilterEndDate: this.ks_dashboard_data?.ks_date_filter_selection === 'l_custom' ? this.ks_dashboard_data.ks_dashboard_end_date : false,
+            ksDateFilterSelection: filterSelection,
+            ksDateFilterStartDate: filterStartDate,
+            ksDateFilterEndDate:   filterEndDate,
         }
         var ctx_to_be_added = { ...session.user_context, ...{ allowed_company_ids: this.env.services.company.activeCompanyIds }}
         return Object.assign(context, ctx_to_be_added);
@@ -450,6 +482,15 @@ export class KsDashboardNinja extends Component {
         self.ks_dashboard_data.ks_date_filter_selection = selected_filter_id;
         self.ks_dashboard_data.ks_dashboard_start_date = ksDateFilterStartDate
         self.ks_dashboard_data.ks_dashboard_end_date = ksDateFilterEndDate
+        // Keep session storage in sync so getContext() always returns the correct
+        // filter even if ks_dashboard_data gets overwritten by an async fetch.
+        if (selected_filter_id !== 'l_custom') {
+            setObjectInSession('FilterDateData' + self.ks_dashboard_id,
+                { filter_selection: selected_filter_id, date_range: { start_date: false, end_date: false } });
+        } else {
+            setObjectInSession('FilterDateData' + self.ks_dashboard_id,
+                { filter_selection: 'l_custom', date_range: { start_date: ksDateFilterStartDate, end_date: ksDateFilterEndDate } });
+        }
         self.state.itemsToUpdateList = JSON.parse(JSON.stringify(this.ks_dashboard_data.ks_dashboard_items_ids))
     }
 
@@ -511,17 +552,114 @@ KsDashboardNinja.components = { KsHeader, KsItems };
 KsDashboardNinja.template = "ks_dashboard_ninja.KsDashboardNinjaHeader"
 registry.category("actions").add("ks_dashboard_ninja", KsDashboardNinja);
 
-const ks_dn_webclient ={
+const ks_dn_webclient = {
     async loadRouterState(...args) {
         var self = this;
-        const sup = await super.loadRouterState(...args);
-        const ks_reload_menu = async (id) =>  {
-            this.menuService.reload().then(() => {
-                self.menuService.selectMenu(id);
-            });
+        // Safely call super if it exists (Odoo version compatibility)
+        let sup;
+        try {
+            if (typeof super.loadRouterState === 'function') {
+                sup = await super.loadRouterState(...args);
+            }
+        } catch (e) {
+            // super.loadRouterState not available in this Odoo version
         }
-        this.actionService.ksDnReloadMenu = ks_reload_menu;
+
+        // Patch menuService's selectMenu to clear dashboard session filters when navigating menus
+        const menuSvc = this.menuService || (this.env && this.env.services && this.env.services.menu);
+        if (menuSvc && !menuSvc._selectMenuPatched) {
+            menuSvc._selectMenuPatched = true;
+            const originalSelectMenu = menuSvc.selectMenu.bind(menuSvc);
+            menuSvc.selectMenu = async (menu) => {
+                try {
+                    const keysToRemove = [];
+                    for (let i = 0; i < sessionStorage.length; i++) {
+                        let key = sessionStorage.key(i);
+                        if (key && (
+                            key.startsWith('FilterDateData') || 
+                            key.startsWith('Filter') || 
+                            key.startsWith('CFilter') || 
+                            key.startsWith('PFilter') || 
+                            key.startsWith('PFilterDataObj')
+                        )) {
+                            keysToRemove.push(key);
+                        }
+                    }
+                    keysToRemove.forEach(key => sessionStorage.removeItem(key));
+                } catch (e) {
+                    console.error("Failed to clear sessionStorage dashboard filters on menu selection", e);
+                }
+                return originalSelectMenu(menu);
+            };
+        }
+
+        const ks_reload_menu = async (id) =>  {
+            if (menuSvc) {
+                menuSvc.reload().then(() => {
+                    menuSvc.selectMenu(id);
+                });
+            }
+        }
+        const actionSvc = this.actionService || (this.env && this.env.services && this.env.services.action);
+        if (actionSvc) {
+            actionSvc.ksDnReloadMenu = ks_reload_menu;
+        }
         return sup;
     },
 };
 patch(WebClient.prototype, ks_dn_webclient)
+
+// Clear date and custom filters from sessionStorage on fresh page load/refresh
+try {
+    const keysToRemove = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+        let key = sessionStorage.key(i);
+        if (key && (
+            key.startsWith('FilterDateData') || 
+            key.startsWith('Filter') || 
+            key.startsWith('CFilter') || 
+            key.startsWith('PFilter') || 
+            key.startsWith('PFilterDataObj')
+        )) {
+            keysToRemove.push(key);
+        }
+    }
+    keysToRemove.forEach(key => sessionStorage.removeItem(key));
+} catch (e) {
+    console.error("Failed to clear sessionStorage dashboard filters on page load", e);
+}
+
+// Clear date and custom filters from sessionStorage on menu item clicks using capture phase
+window.addEventListener('click', function(ev) {
+    let target = ev.target;
+    if (target && target.closest) {
+        let isMenuOrAppClick = target.closest(
+            '.o_main_navbar, .o_navbar, .o_menu_brand, .o_menu_sections, ' +
+            '.dropdown-item, .o_menu_toggle, .o_app, .o_menuitem, ' +
+            '.o-dropdown--item, .o-dropdown--menu, ' +
+            '[data-menu-id], [data-menu-xmlid], [data-menu], ' +
+            '[data-action-id], [data-action-uuid], [data-action], ' +
+            '.o_nav_entry, [role="menuitem"], .o_home_menu, .o_apps'
+        );
+        if (isMenuOrAppClick) {
+            try {
+                const keysToRemove = [];
+                for (let i = 0; i < sessionStorage.length; i++) {
+                    let key = sessionStorage.key(i);
+                    if (key && (
+                        key.startsWith('FilterDateData') || 
+                        key.startsWith('Filter') || 
+                        key.startsWith('CFilter') || 
+                        key.startsWith('PFilter') || 
+                        key.startsWith('PFilterDataObj')
+                    )) {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(key => sessionStorage.removeItem(key));
+            } catch (e) {
+                console.error("Failed to clear sessionStorage dashboard filters on menu click", e);
+            }
+        }
+    }
+}, true); // useCapture = true

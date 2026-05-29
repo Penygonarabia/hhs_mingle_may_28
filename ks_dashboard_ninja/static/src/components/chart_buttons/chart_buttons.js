@@ -26,7 +26,7 @@ export class KsItemButton extends Component{
         this.ks_button_color = this._ks_get_rgba_format(this.item_data.ks_button_color)
         this.id = this.props.item_data.id
         this.rootRef = useRef('rootRef')
-        this.ksChartColorOptions = ["default", "dark", "moonrise", "material"]
+        this.ksChartColorOptions = ["default", "dark", "moonrise", "material", "custom-1"]
         this.chart_list = ['ks_bar_chart', 'ks_horizontalBar_chart', 'ks_line_chart', 'ks_area_chart', 'ks_pie_chart',
                             'ks_doughnut_chart', 'ks_polarArea_chart', 'ks_radialBar_chart', 'ks_scatter_chart', 'ks_funnel_chart',
                             'ks_bullet_chart', 'ks_flower_view', 'ks_radar_view']

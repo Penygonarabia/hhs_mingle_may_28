@@ -251,7 +251,7 @@ export class Ksdashboardgraph extends Component{
      var isDrill = item.isDrill ? item.isDrill : false;
      this.chart
      var chart_id = item.id;
-     this.ksColorOptions = ["default","dark","moonrise","material"]
+     this.ksColorOptions = ["default","dark","moonrise","material","custom-1"]
      var funnel_title = item.name;
      if (item.ks_info){
         var ks_description = item.ks_info.replace?.(/\\n/g, '\n').split?.('\n');
@@ -279,6 +279,27 @@ export class Ksdashboardgraph extends Component{
         var item_id = $(evt.target).parent().data().itemId;
         var chart_title = '#'+this.item.name
         var item_data = self.ks_dashboard_data.ks_item_data[item_id]
+
+        var selectedItemName = "";
+        if (row_data) {
+            if (Array.isArray(row_data) && row_data.length > 0) {
+                for (let val of row_data) {
+                    if (typeof val === "string" && val !== "") {
+                        selectedItemName = val;
+                        break;
+                    }
+                }
+            } else if (typeof row_data === "object") {
+                selectedItemName = row_data.name || row_data.display_name || "";
+            }
+        }
+        if (!selectedItemName && evt.target) {
+            selectedItemName = $(evt.target).closest("tr").find("td").first().text().trim();
+            if (!selectedItemName) {
+                selectedItemName = $(evt.target).text().trim();
+            }
+        }
+
         let isGroupedList = self.ks_dashboard_data.ks_item_data[item_id].ks_list_view_type === 'grouped'
         if (self.ks_dashboard_data.ks_item_data[item_id].max_sequnce && isGroupedList) {
 
@@ -291,7 +312,7 @@ export class Ksdashboardgraph extends Component{
                     model: 'ks_dashboard_ninja.item',
                     method: 'ks_fetch_drill_down_data',
                     args: [item_id, domain, sequence],
-                    kwargs : {},
+                    kwargs : {context: self.env.getContext()},
                 }).then((result) => {
                     if (result.ks_list_view_data) {
                         var chart_id_name = '#item'+'_' +'-1'
@@ -317,6 +338,9 @@ export class Ksdashboardgraph extends Component{
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(".ks_search_minus").addClass('d-none')
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(".ks_dashboard_item_drill_up").removeClass('d-none');
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(id_name).removeClass('d-none');
+                        if (selectedItemName) {
+                            $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(id_name).find("span").text(selectedItemName);
+                        }
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(".ks_pager").addClass('d-none');
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(".ks_dashboard_item_action_export").addClass('d-none');
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(".ks_dashboard_quick_edit_action_popup").removeClass('d-sm-block ');
@@ -346,6 +370,9 @@ export class Ksdashboardgraph extends Component{
                         $(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").find(".ks_list_view_heading").addClass("d-none")
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(chart_id_name).removeClass('d-none');
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(id_name).removeClass('d-none');
+                        if (selectedItemName) {
+                            $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(id_name).find("span").text(selectedItemName);
+                        }
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(".ks_dashboard_item_chart_info").removeClass('d-none')
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(".ks_dashboard_color_option").removeClass('d-none')
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(".ks_search_plus").addClass('d-none')
@@ -390,9 +417,23 @@ export class Ksdashboardgraph extends Component{
         var domains = JSON.parse(item_data["ks_chart_data"])['domains'];
         var sequnce = item_data.sequnce ? item_data.sequnce : 0;
         var chart_title = '#'+item.name
+
+        var activePoint;
         if (evt.target.dataItem){
-            var activePoint = evt.target.dataItem.dataContext;
+            activePoint = evt.target.dataItem.dataContext;
         }
+
+        var selectedItemName = "";
+        if (activePoint) {
+            if (activePoint.category) {
+                selectedItemName = activePoint.category;
+            } else if (activePoint.stage) {
+                selectedItemName = activePoint.stage;
+            } else if (activePoint.label) {
+                selectedItemName = activePoint.label;
+            }
+        }
+
         if (activePoint) {
             if (activePoint.category){
                 for (let i=0 ; i<labels.length ; i++){
@@ -415,7 +456,7 @@ export class Ksdashboardgraph extends Component{
                     model: 'ks_dashboard_ninja.item',
                     method: 'ks_fetch_drill_down_data',
                     args: [item_id, domain, sequnce],
-                    kwargs : {},
+                    kwargs : {context: self.env.getContext()},
                 }).then((result) => {
                     self.ks_dashboard_data.ks_item_data[item_id]['sequnce'] = result.sequence;
                     self.ks_dashboard_data.ks_item_data[item_id]['isDrill'] = true;
@@ -435,6 +476,9 @@ export class Ksdashboardgraph extends Component{
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(chart_id_name).removeClass('d-none');
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(".ks_dashboard_item_drill_up").removeClass('d-none');
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(id_name).removeClass('d-none');
+                        if (selectedItemName) {
+                            $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(id_name).find("span").text(selectedItemName);
+                        }
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(".ks_dashboard_item_chart_info").removeClass('d-none')
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(".ks_dashboard_color_option").removeClass('d-none')
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(".ks_dashboard_quick_edit_action_popup").removeClass('d-sm-block ');
@@ -469,6 +513,9 @@ export class Ksdashboardgraph extends Component{
 
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(".ks_dashboard_item_drill_up").removeClass('d-none');
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(id_name).removeClass('d-none');
+                        if (selectedItemName) {
+                            $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(id_name).find("span").text(selectedItemName);
+                        }
 
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(".ks_dashboard_item_chart_info").addClass('d-none')
                         $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]").children()[0]).find(".ks_dashboard_color_option").addClass('d-none')
@@ -496,6 +543,15 @@ export class Ksdashboardgraph extends Component{
                     for (var i = 0; i < action.views.length; i++) action.views[i][1].includes('tree') ? action.views[i][1] = action.views[i][1].replace('tree', 'list') : action.views[i][1];
                     action['domain'] = domain || [];
                     action['search_view_id'] = [action.search_view_id, 'search']
+                    if (item_data.ks_chart_relation_groupby_ttype === 'many2many') {
+                        if (action.context) {
+                            if (typeof action.context === 'object') {
+                                delete action.context.group_by;
+                            } else if (typeof action.context === 'string') {
+                                action.context = action.context.replace(/'group_by'\s*:\s*['"][^'"]+['"]/, "'group_by': false");
+                            }
+                        }
+                    }
                 } else {
                     var action = {
                         name: _t(item_data.name),
@@ -503,7 +559,7 @@ export class Ksdashboardgraph extends Component{
                         res_model: item_data.ks_model_name,
                         domain: domain || [],
                         context: {
-                            'group_by': groupBy ? groupBy:false ,
+                            'group_by': (item_data.ks_chart_relation_groupby_ttype === 'many2many') ? false : (groupBy ? groupBy : false),
                         },
                         views: [
                             [false, 'list'],
@@ -541,7 +597,7 @@ export class Ksdashboardgraph extends Component{
                         model: 'ks_dashboard_ninja.item',
                         method: 'ks_fetch_drill_down_data',
                         args: [item_id, domain, sequnce],
-                        kwargs:{}
+                        kwargs:{context: self.env.getContext()}
                     }).then((result) => {
                         self.ks_dashboard_data.ks_item_data[item_id]['ks_chart_data'] = result.ks_chart_data;
                         self.ks_dashboard_data.ks_item_data[item_id]['sequnce'] = result.sequence;
@@ -630,7 +686,7 @@ export class Ksdashboardgraph extends Component{
             args: [
                 [item_data.id], self.ks_dashboard_data.ks_dashboard_id, {}
             ],
-            kwargs:{},
+            kwargs:{context: self.env.getContext()},
         }).then((new_item_data) => {
             this.ks_dashboard_data.ks_item_data[id] = new_item_data[id];
             this.ks_dashboard_data.ks_item_data[id]['ks_dashboard_item_type'] = new_item_data[id].ks_dashboard_item_type

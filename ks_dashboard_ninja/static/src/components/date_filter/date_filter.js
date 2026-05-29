@@ -61,7 +61,12 @@ export class KsDateFilter extends Component{
             ks_current_filter : this.ksDateFilterSelection,
             is_show_date_fields : false
         })
-        this.state.ks_current_filter = this.ks_dashboard_data.ks_date_filter_selection
+        // Prefer session-stored selection so the UI restores correctly after
+        // drill-down / drill-up without resetting to the board default.
+        let _sessionFilter = getObjectFromSession('FilterDateData' + this.ks_dashboard_data.ks_dashboard_id);
+        this.state.ks_current_filter = (_sessionFilter && _sessionFilter.filter_selection !== undefined)
+            ? _sessionFilter.filter_selection
+            : this.ks_dashboard_data.ks_date_filter_selection;
 
         this.custom_date_filter_buttons = [ { name: "Apply", callback: this.onApplyClick.bind(this), classes: 'dash-default-btn bg-white me-2', shouldVisible: true },
                                             { name: "Clear", callback: this._onKsClearDateValues.bind(this), classes: 'dash-btn-red', shouldVisible: true } ]
@@ -75,7 +80,9 @@ export class KsDateFilter extends Component{
     _ksOnDateFilterMenuSelect(selected_filter_id) {
         this.env.services.ui.block();
 
-        eraseSessionItem('FilterDateData' + this.ks_dashboard_data.ks_dashboard_id);
+        // Do NOT erase the session key here — _onKsApplyDateFilter (called below)
+        // will overwrite it atomically, avoiding a brief window where getContext()
+        // could fall back to the stale board default.
         this.state.ks_current_filter = selected_filter_id
         if (this.state.ks_current_filter !== 'l_custom'){
             this._onKsApplyDateFilter(this.state.ks_current_filter, false, false)
@@ -92,9 +99,11 @@ export class KsDateFilter extends Component{
 
     _onKsApplyDateFilter(selected_filter_id, start_date, end_date) {
         let self = this;
-        if(!['l_none', 'l_custom'].includes(selected_filter_id))
+        // Save ALL non-custom selections (including 'l_none' = All Time) to session so
+        // the filter persists through drill-down / drill-up and across re-mounts.
+        if(selected_filter_id !== 'l_custom')
             setObjectInSession('FilterDateData' + this.ks_dashboard_data.ks_dashboard_id,
-                {'filter_selection': this.state.ks_current_filter, date_range: { start_date, end_date }}, 1);
+                {'filter_selection': this.state.ks_current_filter, date_range: { start_date: false, end_date: false }});
         self.ksDateFilterSelection = this.state.ks_current_filter;
          if (this.state.ks_current_filter !== "l_custom") {
             this.env.ks_update_date_filter_state(selected_filter_id, false, false);
@@ -108,7 +117,7 @@ export class KsDateFilter extends Component{
                         this.notification.add(_t("Invalid Date"), { type: "warning"});
                     }else{
                         setObjectInSession('FilterDateData' + this.ks_dashboard_data.ks_dashboard_id,
-                            {'filter_selection': this.state.ks_current_filter, date_range: { start_date, end_date }}, 1);
+                            {'filter_selection': this.state.ks_current_filter, date_range: { start_date, end_date }});
                         this.state.is_show_date_fields = false
                         this.env.ks_update_date_filter_state(selected_filter_id, start_date, end_date)
                         this.props.update_mode(this.ks_dashboard_data.ks_dashboard_manager ? "manager" : "user");
@@ -136,7 +145,9 @@ export class KsDateFilter extends Component{
     }
 
     _onKsClearDateValues() {
-        eraseSessionItem('FilterDateData' + this.ks_dashboard_data.ks_dashboard_id);
+        // Save 'l_none' to session so the cleared state persists through re-mounts.
+        setObjectInSession('FilterDateData' + this.ks_dashboard_data.ks_dashboard_id,
+            {'filter_selection': 'l_none', date_range: { start_date: false, end_date: false }});
         this.state.ks_current_filter = 'l_none'
         this.state.is_show_date_fields = false
         this.env.ks_update_date_filter_state('l_none', false, false)

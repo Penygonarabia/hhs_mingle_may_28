@@ -73,7 +73,19 @@ export class ks_bullet_chart extends Component{
                 for (let j=0 ;j<ks_data.length ; j++){
                     data2[`value${j+1}`] = ks_data[j].data[i]
                 }
-                data2["category"] = ks_labels[i]
+                let labelVal = ks_labels[i];
+                if (typeof labelVal === "string") {
+                    let stripped = labelVal.replace(/^\[[^\]]+\]\s*/, "");
+                    if (stripped.trim() !== "") {
+                        labelVal = stripped;
+                    }
+                    labelVal = labelVal.replace(/\s*[-–—]\s*$/, "");
+                    labelVal = labelVal.replace(/^\s*[-–—]\s*/, "");
+                    labelVal = labelVal.trim();
+                    labelVal = labelVal.replace(/\[/g, "[[");
+                    labelVal = labelVal.replace(/\]/g, "]]");
+                }
+                data2["category"] = labelVal;
                 data.push(data2)
             }
 
@@ -92,6 +104,9 @@ export class ks_bullet_chart extends Component{
                 break;
             case "moonrise":
                 this.root.setThemes([am5themes_Moonrise.new(this.root)]);
+                break;
+            case "custom-1":
+                this.root.setThemes([am5themes_Animated.new(this.root)]);
                 break;
             };
 
@@ -123,13 +138,18 @@ export class ks_bullet_chart extends Component{
               paddingRight: 10
             });
 
+            var bulletXAxisTooltip = am5.Tooltip.new(this.root, {
+                themeTags: ["axis"],
+                animationDuration: 200,
+                autoTextColor: false
+            });
+            bulletXAxisTooltip.label.setAll({
+                fill: am5.color(0xffffff),
+            });
             var xAxis = chart.xAxes.push(am5xy.CategoryAxis.new(this.root, {
                 categoryField: "category",
                 renderer: xRenderer,
-                tooltip: am5.Tooltip.new(this.root, {
-                themeTags: ["axis"],
-                animationDuration: 200
-                })
+                tooltip: bulletXAxisTooltip
             }));
 
             xRenderer.grid.template.setAll({
@@ -154,6 +174,13 @@ export class ks_bullet_chart extends Component{
             // Add series
 
             for (let k = 0;k<ks_data.length ; k++){
+                var bulletSeriesTooltip = am5.Tooltip.new(this.root, {
+                    labelText: `[#ffffff]${ks_data[k].label}: {valueY}[/]`,
+                    autoTextColor: false
+                });
+                bulletSeriesTooltip.label.setAll({
+                    fill: am5.color(0xffffff),
+                });
                 var series = chart.series.push(am5xy.ColumnSeries.new(this.root, {
                     name: `${ks_data[k].label}`,
                     xAxis: xAxis,
@@ -161,9 +188,7 @@ export class ks_bullet_chart extends Component{
                     valueYField:`value${k+1}`,
                     categoryXField: "category",
                     clustered: false,
-                    tooltip: am5.Tooltip.new(this.root, {
-                    labelText: `${ks_data[k].label}: {valueY}`
-                    })
+                    tooltip: bulletSeriesTooltip
                 }));
 
                 series.columns.template.setAll({

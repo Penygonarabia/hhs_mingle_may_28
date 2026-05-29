@@ -484,8 +484,8 @@ class KsDashboardNinjaItems(models.Model):
     ks_kpi_data = fields.Char(string="KPI Data", compute="ks_get_kpi_data", compute_sudo=False)
 
     ks_chart_item_color = fields.Selection(
-        [('default', 'Default'), ('dark', 'Dark'), ('material', 'Material'), ('moonrise', 'Moonrise')],
-        string="Chart Color Palette", default="default", help='Select the display preference. ')
+        [('default', 'Default'), ('dark', 'Dark'), ('material', 'Material'), ('moonrise', 'Moonrise'), ('custom-1', 'Custom-1')],
+        string="Chart Color Palette", default="custom-1", help='Select the display preference. ')
 
     # ------------------------ List View Fields ------------------------------
 
@@ -3440,9 +3440,9 @@ class KsDashboardNinjaItems(models.Model):
         for rec in self:
             if rec.ks_dashboard_item_type == "ks_bar_chart" or rec.ks_dashboard_item_type == "ks_horizontalBar_chart" \
                     or rec.ks_dashboard_item_type == "ks_line_chart" or rec.ks_dashboard_item_type == "ks_area_chart":
-                rec.ks_chart_item_color = "default"
+                rec.ks_chart_item_color = "custom-1"
             else:
-                rec.ks_chart_item_color = "moonrise"
+                rec.ks_chart_item_color = "custom-1"
             if rec.ks_dashboard_item_type == 'ks_kpi' or rec.ks_dashboard_item_type == 'ks_tile':
                 rec.ks_data_calculation_type = 'custom'
             if rec.ks_dashboard_item_type != "ks_bar_chart":
