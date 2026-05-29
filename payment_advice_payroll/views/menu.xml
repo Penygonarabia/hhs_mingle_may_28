@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<odoo>
+	   <menuitem id="menu_payroll_payment_advice_report_master" name="Payment Advice" parent="om_hr_payroll.menu_hr_payroll_root"
+               sequence="10"/>
+              
+              
+              <menuitem id="payment_advice_payroll.menu_payroll_payment_advice_master"
+              name="Bank III"
+               parent="employee_payroll_report.menu_payroll_report_xlsx"
+              action="action_view_hr_payroll_advice"
+            
+              sequence="60"/>
+              
+              
+<!--               <menuitem id="payment_advice_payroll.menu_payroll_payment_adv_mas"-->
+<!--              name="Saudi Arabian Investment Bank"-->
+<!--               parent="employee_payroll_report.menu_payroll_report_xlsx"-->
+<!--              action="action_view_payroll_advice_two"-->
+<!--            -->
+<!--              sequence="50"/>-->
+              
+              
+             <menuitem id="payment_advice_payroll.menu_payroll_payment_advice_mastr"
+              name="SABB Format"
+               parent="employee_payroll_report.menu_payroll_report_xlsx"
+              action="action_view_payroll_payment_advice"
+            
+              sequence="40"/>
+              
+              
+              
+              
+              
+
+</odoo>

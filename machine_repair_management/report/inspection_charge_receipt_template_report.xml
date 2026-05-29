@@ -1,0 +1,849 @@
+<?xml version="1.0" encoding ="utf-8" ?>
+<odoo>
+		 <record id="print_inspection_charge_receipt_template_document" model="ir.actions.report">
+             <field name="name">Inspection Charge Receipt</field>
+             <field name="model">project.task</field>
+             <field name="report_type">qweb-pdf</field>
+             <field name="report_name">machine_repair_management.inspection_charge_receipt_document_template</field>
+             <field name="report_file">machine_repair_management.inspection_charge_receipt_document_template</field>
+			 <field name="paperformat_id" ref="machine_repair_management.job_card_report_paperformat_id"/>
+             <field name="binding_type">report</field>
+        </record>
+
+    <template id="inspection_charge_receipt_document_template_internal_layout">
+        <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+          <t t-raw="0"/>
+        </div>
+    </template>
+    
+    
+    <template id="inspection_charge_receipt_document_template">
+        <t t-call="web.html_container">
+            <t t-foreach="jobs" t-as="doc">
+
+                <t t-call="machine_repair_management.inspection_charge_receipt_document_template_internal_layout">
+                    <!--				<div class="header">-->
+                    <!--						<div class="row mt32 mb32">-->
+                    <!--							<div class="col-4 text-left">-->
+                    <!--								<img src="machine_repair_management/static/src/img/HHS_Header_Left.png" alt="img" style="height: 115px; width: 190px; " />-->
+                    <!--							</div>-->
+                    <!--							<div class="col-4" style="margin-left:50px">-->
+                    <!--								<img src="machine_repair_management/static/src/img/HHS_Header_Middle.png" alt="img" style="height: 115px; width: 190px;" />-->
+                    <!--							</div>-->
+                    <!--							<div class="col-4 text-right " style="vertical-align:text-top;margin-left:50px">-->
+                    <!--								<img src="machine_repair_management/static/src/img/HHS_Header_Right.png" alt="img" style="height: 115px; width: 190px;" />-->
+                    <!--							</div>-->
+                    <!--						</div>-->
+                    <!--					</div>-->
+                    <div class="header" t-att-style="report_header_style">
+                        <div class="row mt32 mb32">
+                            <div class="col-4 text-left">
+                                <img src="machine_repair_management/static/src/img/HHS_Header_Left.png" alt="img"
+                                     style="height: 120px; width: 350px; "/>
+                            </div>
+                            <div class="col-4 text-center " style="vertical-align:text-top">
+                                <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)"
+                                     style="max-height: 100px; min-height:100px; min-width: 200px; max-width: 200px;"/>
+                            </div>
+                            <div class="col-4 text-right " style="vertical-align:text-top;text-align:right">
+                                <img src="machine_repair_management/static/src/img/HHS_Header_Right.png" alt="img"
+                                     style="height: 120px; width: 350px;"/>
+                            </div>
+                        </div>
+                        <h2>
+                            <center>Inspection Charge Receipt</center>
+                        </h2>
+                    </div>
+                    <div class="page" style="page-break-after: always;">
+
+                        <div class="row mt32 mb32">
+                            <div class="col-6">
+                                <table class="table table-bordered border-dark">
+                                    <colgroup>
+                                        <col width='30%'/>
+                                        <col width='40%'/>
+                                        <col width='30%'/>
+                                    </colgroup>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <strong>Receipt No :</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="receipt_no"
+                                                      t-esc="receipt_no"/>
+                                            </td>
+                                            <td style="text-align: right; ">
+                                                <strong>:رقم الإيصال</strong>
+                                            </td>
+
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Job Card No. :</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="name"
+                                                      t-esc="name"/>
+                                            </td>
+                                            <td style="text-align: right; ">
+                                                <strong>:رقم بطاقة العمل</strong>
+                                            </td>
+
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Customer Name :</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="doc['customer_name']"
+                                                      t-esc="doc['customer_name']"/>
+                                            </td>
+                                            
+                                           <!--  <td>
+                                                <span t-if="doc['partner_id']"
+                                                      t-esc="doc['partner_id']"/>
+                                            </td> -->
+                                            <td colspan="5" style="text-align: right;">
+                                                <strong>:اسم العميل</strong>
+                                            </td>
+
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Address :</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="doc['address']"
+                                                      t-esc="doc['address']"/>
+                                            </td>
+                                            <td colspan="5" style="text-align: right; ">
+                                                <strong>: عنوان العميل</strong>
+                                            </td>
+
+                                        </tr>
+                                        <!--									 <tr>-->
+                                        <!--                                        <td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Contact No.:</strong></td>-->
+                                        <!--                                        <td>-->
+                                        <!--                                            <span t-if="doc['contact_no']"-->
+                                        <!--                                                  t-esc="doc['contact_no']"/>-->
+                                        <!--                                        </td>-->
+                                        <!--										<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong>: رقم الاتصال</strong></td>-->
+
+                                        <!--                                    </tr>-->
+
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!--								<div class="col-2"/>-->
+                            <div class="col-6">
+                                <table class="table table-bordered border-dark">
+                                    <colgroup>
+                                        <col width='33%'/>
+                                        <col width='28%'/>
+                                        <col width='42%'/>
+                                    </colgroup>
+
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <strong>Date :</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="doc['date']"
+                                                      t-esc="doc['date']"
+                                                     />
+                                            </td>
+                                            <!-- <td>
+                                                <span t-if="doc['date']"
+                                                      t-esc="doc['date']"
+                                                      t-options='{"widget": "datetime","format": "dd-MM-yyyy H:M:S", "timezone": "UTC"}'/>
+                                            </td> -->
+                                            <td style="text-align: right;">
+                                                <strong>: التاريخ</strong>
+                                            </td>
+
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Technician Name :</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="doc['technician_name']"
+                                                      t-esc="doc['technician_name']"/>
+                                            </td>
+                                            <td style="text-align: right; ">
+                                                <strong>:اسم الفني</strong>
+                                            </td>
+
+                                        </tr>
+                                        <!--											<tr>-->
+                                        <!--												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>VAT Registration:</strong></td>-->
+                                        <!--												<td>-->
+                                        <!--													<span t-if="doc['company_vat']"-->
+                                        <!--														  t-esc="doc['company_vat']"/>-->
+                                        <!--												</td>-->
+                                        <!--												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong>: ضريبة القيمة المضافة </strong></td>-->
+
+                                        <!--											</tr>-->
+                                    </tbody>
+                                </table>
+
+                            </div>
+
+
+                        </div>
+
+                        <t t-set="currency" t-value="request.env.company.currency_id"/>
+
+                        <table class="table table-bordered border-dark">
+                            <colgroup>
+                                <col width='25%'/>
+                                <col width='25%'/>
+                                <col width='25%'/>
+                                <col width='25%'/>
+
+                            </colgroup>
+                            <thead>
+                                <th style="text-align:center;vertical-align:text-top">
+                                	<strong>فئة المنتج</strong>
+                                	<br/>
+                                    <strong>Product Category</strong>
+                                </th>
+                                <th style="text-align:center;vertical-align:text-top ">
+                               		 <strong>المنتج</strong>
+                                		<br/>
+                                    <strong>Product</strong>
+                                </th>
+                                <th style="text-align:center;vertical-align:text-top ">
+                                	<strong>الطراز</strong>
+                                	<br/>
+                                    <strong>Model</strong>
+                                </th>
+                                <th style="text-align:center;vertical-align:text-top ">
+                                	<strong>الرقم التسلسلي</strong>
+                                	<br/>
+                                    <strong>Serial Number</strong>
+                                </th>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <span t-if="doc['product_category']"
+                                              t-esc="doc['product_category']"/>
+                                    </td>
+                                    <td>
+                                        <span t-if="doc['product']"
+                                              t-esc="doc['product']"/>
+                                    </td>
+                                    <td>
+                                        <span t-if="doc['model']"
+                                              t-esc="doc['model']"/>
+                                    </td>
+                                    <td>
+                                        <span t-if="doc['serial_no']"
+                                              t-esc="doc['serial_no']"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div>
+                            <p>Dear Customer ,</p>
+                            <p style="margin-left:30px;">We have received the payment of  <span t-esc="currency.symbol"/>.
+                                <span t-esc="inspection_amount"  t-options="{'widget': 'float', 'precision': 2}"/>
+                                for the following:
+                            </p>
+                        </div>
+
+                        <table class="table table-bordered border-dark">
+                            <thead>
+                                <tr style="text-align:center">
+                                    <th width="2%" style="vertical-align:text-top">
+                                        <strong>قم</strong>
+                                        <br/>
+                                        <strong>No</strong>
+                                    </th>
+                                    <th width="8%" style="vertical-align:text-top">
+                                        <strong>الفئة</strong>
+                                        <br/>
+                                        <strong>Stock Group</strong>
+                                    </th>
+                                    <th width="10%" style="vertical-align:text-top">
+                                        <strong>رقم الصنف</strong>
+                                        <br/>
+                                        <strong>Stock Number</strong>
+                                    </th>
+                                    <th width="29%" style="vertical-align:text-top">
+                                        <strong>الوصف</strong>
+                                        <br/>
+                                        <strong>Description</strong>
+                                    </th>
+                                    <th width="5%" style="vertical-align:text-top">
+                                        <strong>الكمية</strong>
+                                        <br/>
+                                        <strong>Qty</strong>
+                                    </th>
+                                    <th width="6%" style="vertical-align:text-top">
+                                        <strong>سعر الوحدة</strong>
+                                        <br/>
+                                        <strong>Unit Price</strong>
+                                    </th>
+                                    <th width="6%" style="vertical-align:text-top">
+                                        <strong>خصم الوحدة</strong>
+                                        <br/>
+                                        <strong>Unit Discount</strong>
+                                    </th>
+                                    <th width="7%" style="vertical-align:text-top">
+                                        <strong>سعر الوحدة الصافي</strong>
+                                        <br/>
+                                        <strong>Net Unit Price</strong>
+                                    </th>
+                                    <th width="7%" style="vertical-align:text-top">
+                                        <strong>السعر الإجمالي</strong>
+                                        <br/>
+                                        <strong>Extended Price</strong>
+                                    </th>
+                                    <th width="6%" style="vertical-align:text-top">
+                                        <strong>نسبة الضريبة</strong>
+                                        <br/>
+                                        <strong>Vat %</strong>
+                                    </th>
+                                    <th width="7%" style="vertical-align:text-top">
+                                        <strong>قيمة الضريبة</strong>
+                                        <br/>
+                                        <strong>Vat Amount</strong>
+                                    </th>
+                                    <th width="7%" style="vertical-align:text-top">
+                                        <strong>الإجمالي</strong>
+                                        <br/>
+                                        <strong>Amount</strong>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="counter" t-value="1"/>
+                                <t t-foreach="product_lines" t-as="product">
+                                    <tr>
+                                        <td class="text-right">
+                                            <span t-esc="counter"/>
+                                        </td>
+                                        <td>
+                                            <span t-esc="product['stock_group']"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="product['stock_number']"/>
+                                        </td>
+                                        <td>
+                                            <span t-esc="product['description']"/>
+                                        </td>
+                                        <td class="text-right" style="text-align: right;">
+                                            <span t-esc="product['qty']"/>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <span t-esc="product['unit_price']"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                        <td>
+                                            <span t-esc="product['unit_discount']"/>
+                                        </td>
+                                        <td class="text-right" style="text-align: right;">
+                                            <span t-esc="product['net_unit_price']"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                        <td class="text-right" style="text-align: right;">
+                                            <span t-esc="product['extended_price']"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                        <td class="text-right" style="text-align: right;">
+                                            <span t-esc="product['vat_percent']"/>
+                                            %
+                                        </td>
+                                        <td class="text-right" style="text-align: right;">
+                                            <span t-esc="product['vat_amount']"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                        <td class="text-right" style="text-align: right;">
+                                            <span t-esc="product['total']"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                    </tr>
+
+                                    <t t-set="counter" t-value="counter+1"/>
+                                </t>
+                                <t t-foreach="totals" t-as="total">
+                                    <tr>
+                                        <td colspan="8" style="text-align:right">
+                                            <strong>Total</strong>
+                                        </td>
+                                        <td style="text-align:right">
+                                            <strong>
+                                                <span t-esc="total['total_extended_price']"
+                                                      t-options="{'widget': 'float', 'precision': 2}"/>
+                                            </strong>
+                                        </td>
+                                        <td/>
+                                        <td style="text-align:right">
+                                            <strong>
+                                                <span t-esc="total['total_vat_amt']"
+                                                      t-options="{'widget': 'float', 'precision': 2}"/>
+                                            </strong>
+                                        </td>
+                                        <td style="text-align:right">
+                                            <strong>
+                                                <span t-esc="total['grand_total']"
+                                                      t-options="{'widget': 'float', 'precision': 2}"/>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="11" style="text-align:right">
+                                            <strong>
+                                                <span t-esc="total['amount_words']"/>
+                                                Only
+                                            </strong>
+                                        </td>
+                                        <td/>
+                                    </tr>
+                                </t>
+                            </tbody>
+
+                        </table>
+                        <div class="row mt32 mb32">
+                            <div class="col-6 text-left" style="text-align:left">
+                                <p style="font-size:18px;">توقيع الفني</p>
+                                <P style="font-size:18px;">Technician Signature</P>
+                            </div>
+                            <div class="col-6 text-right" style="text-align:right">
+                                <p style="font-size:18px;">توقيع العميل</p>
+                                <P style="font-size:18px;">Customer Signature</P>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer">
+                        <div>
+                            <img src="machine_repair_management/static/src/img/Arabic_Text.png" alt="img"
+                                 style="height:60px; width: 100%"/>
+                        </div>
+                        <br/>
+                        <div>
+                            <img src="machine_repair_management/static/src/img/Footer_Address.png" alt="img"
+                                 style="height:80px; width: 100%;"/>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+    
+   <!--  this is also working <template id="inspection_charge_receipt_document_template">
+        <t t-call="web.external_layout">
+            <t t-call="web.html_container">
+                <t t-foreach="jobs" t-as="doc">
+                    <div class="page" style="page-break-after: always; font-family: Arial, sans-serif;">
+                        <h2 style="text-align: center;">Inspection Charge Receipt | إيصال رسوم التفتيش</h2>
+
+                        <div class="row" style="margin: 32px 0;">
+                            <div class="col-6">
+                                <table class="table table-sm table-bordered" style="width: 100%;">
+                                    <colgroup>
+                                        <col style="width: 30%;"/>
+                                        <col style="width: 50%;"/>
+                                        <col style="width: 20%;"/>
+                                    </colgroup>
+                                    <tbody>
+                                        <tr>
+                                            <td style="background-color: #464343; border: 1px solid #fff; color: #fff; padding: 5px;"><strong>Receipt No:</strong></td>
+                                            <td style="padding: 5px;"><span t-if="receipt_no" t-esc="receipt_no"/></td>
+                                            <td style="background-color: #464343; border: 1px solid #fff; color: #fff; text-align: right; padding: 5px;"><strong>رقم الإيصال:</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color: #464343; border: 1px solid #fff; color: #fff; padding: 5px;"><strong>Job Card No:</strong></td>
+                                            <td style="padding: 5px;"><span t-if="name" t-esc="name"/></td>
+                                            <td style="background-color: #464343; border: 1px solid #fff; color: #fff; text-align: right; padding: 5px;"><strong>رقم بطاقة العمل:</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color: #464343; border: 1px solid #fff; color: #fff; padding: 5px;"><strong>Customer Name:</strong></td>
+                                            <td style="padding: 5px;"><span t-if="doc['partner_id']" t-esc="doc['partner_id']"/></td>
+                                            <td style="background-color: #464343; border: 1px solid #fff; color: #fff; text-align: right; padding: 5px;"><strong>اسم العميل:</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color: #464343; border: 1px solid #fff; color: #fff; padding: 5px;"><strong>Address:</strong></td>
+                                            <td style="padding: 5px;"><span t-if="doc['address']" t-esc="doc['address']"/></td>
+                                            <td style="background-color: #464343; border: 1px solid #fff; color: #fff; text-align: right; padding: 5px;"><strong>عنوان العميل:</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-6">
+                                <table class="table table-sm table-bordered" style="width: 100%;">
+                                    <colgroup>
+                                        <col style="width: 33%;"/>
+                                        <col style="width: 47%;"/>
+                                        <col style="width: 20%;"/>
+                                    </colgroup>
+                                    <tbody>
+                                        <tr>
+                                            <td style="background-color: #464343; border: 1px solid #fff; color: #fff; padding: 5px;"><strong>Date:</strong></td>
+                                            <td style="padding: 5px;"><span t-if="doc['date']" t-esc="doc['date']" t-options='{"widget": "date", "format": "dd-MM-yyyy"}'/></td>
+                                            <td style="background-color: #464343; border: 1px solid #fff; color: #fff; text-align: right; padding: 5px;"><strong>التاريخ:</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="background-color: #464343; border: 1px solid #fff; color: #fff; padding: 5px;"><strong>Technician Name:</strong></td>
+                                            <td style="padding: 5px;"><span t-if="doc['technician_name']" t-esc="doc['technician_name']"/></td>
+                                            <td style="background-color: #464343; border: 1px solid #fff; color: #fff; text-align: right; padding: 5px;"><strong>اسم الفني:</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <t t-set="currency" t-value="request.env.company.currency_id"/>
+
+                        <table class="table table-sm table-bordered" style="width: 100%;">
+                            <colgroup>
+                                <col style="width: 25%;"/>
+                                <col style="width: 25%;"/>
+                                <col style="width: 25%;"/>
+                                <col style="width: 25%;"/>
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th style="background-color: #464343; border: 1px solid #fff; color: #fff; text-align: center; padding: 5px;"><strong>Product Category</strong></th>
+                                    <th style="background-color: #464343; border: 1px solid #fff; color: #fff; text-align: center; padding: 5px;"><strong>Product</strong></th>
+                                    <th style="background-color: #464343; border: 1px solid #fff; color: #fff; text-align: center; padding: 5px;"><strong>Model</strong></th>
+                                    <th style="background-color: #464343; border: 1px solid #fff; color: #fff; text-align: center; padding: 5px;"><strong>Serial Number</strong></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding: 5px;"><span t-if="doc['product_category']" t-esc="doc['product_category']"/></td>
+                                    <td style="padding: 5px;"><span t-if="doc['product']" t-esc="doc['product']"/></td>
+                                    <td style="padding: 5px;"><span t-if="doc['model']" t-esc="doc['model']"/></td>
+                                    <td style="padding: 5px;"><span t-if="doc['serial_no']" t-esc="doc['serial_no']"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div style="margin: 20px 0;">
+                            <p>Dear Customer,</p>
+                            <p style="margin-left: 30px;">We have received the payment of <span t-esc="currency.symbol"/> <span t-esc="inspection_amount" t-options="{'widget': 'float', 'precision': 2}"/> for the following:</p>
+                        </div>
+
+                        <table class="table table-sm table-bordered" style="width: 100%;">
+                            <thead>
+                                <tr style="background-color: #464343; color: white; text-align: center;">
+                                    <th style="width: 2%; padding: 5px;"><strong>قم</strong><br/><strong>No</strong></th>
+                                    <th style="width: 8%; padding: 5px;"><strong>الفئة</strong><br/><strong>Stock Group</strong></th>
+                                    <th style="width: 10%; padding: 5px;"><strong>رقم الصنف</strong><br/><strong>Stock Number</strong></th>
+                                    <th style="width: 29%; padding: 5px;"><strong>الوصف</strong><br/><strong>Description</strong></th>
+                                    <th style="width: 5%; padding: 5px;"><strong>الكمية</strong><br/><strong>Qty</strong></th>
+                                    <th style="width: 6%; padding: 5px;"><strong>سعر الوحدة</strong><br/><strong>Unit Price</strong></th>
+                                    <th style="width: 6%; padding: 5px;"><strong>خصم الوحدة</strong><br/><strong>Unit Discount</strong></th>
+                                    <th style="width: 7%; padding: 5px;"><strong>سعر الوحدة الصافي</strong><br/><strong>Net Unit Price</strong></th>
+                                    <th style="width: 7%; padding: 5px;"><strong>السعر الإجمالي</strong><br/><strong>Extended Price</strong></th>
+                                    <th style="width: 6%; padding: 5px;"><strong>نسبة الضريبة</strong><br/><strong>Vat %</strong></th>
+                                    <th style="width: 7%; padding: 5px;"><strong>قيمة الضريبة</strong><br/><strong>Vat Amount</strong></th>
+                                    <th style="width: 7%; padding: 5px;"><strong>الإجمالي</strong><br/><strong>Amount</strong></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="counter" t-value="1"/>
+                                <t t-foreach="product_lines" t-as="product">
+                                    <tr>
+                                        <td style="text-align: right; padding: 5px;"><span t-esc="counter"/></td>
+                                        <td style="padding: 5px;"><span t-esc="product['stock_group']"/></td>
+                                        <td style="text-align: right; padding: 5px;"><span t-esc="product['stock_number']"/></td>
+                                        <td style="padding: 5px;"><span t-esc="product['description']"/></td>
+                                        <td style="text-align: right; padding: 5px;"><span t-esc="product['qty']"/></td>
+                                        <td style="text-align: right; padding: 5px;"><span t-esc="product['unit_price']" t-options="{'widget': 'float', 'precision': 2}"/></td>
+                                        <td style="padding: 5px;"><span t-esc="product['unit_discount']"/></td>
+                                        <td style="text-align: right; padding: 5px;"><span t-esc="product['net_unit_price']" t-options="{'widget': 'float', 'precision': 2}"/></td>
+                                        <td style="text-align: right; padding: 5px;"><span t-esc="product['extended_price']" t-options="{'widget': 'float', 'precision': 2}"/></td>
+                                        <td style="text-align: right; padding: 5px;"><span t-esc="product['vat_percent']"/>%</td>
+                                        <td style="text-align: right; padding: 5px;"><span t-esc="product['vat_amount']" t-options="{'widget': 'float', 'precision': 2}"/></td>
+                                        <td style="text-align: right; padding: 5px;"><span t-esc="product['total']" t-options="{'widget': 'float', 'precision': 2}"/></td>
+                                    </tr>
+                                    <t t-set="counter" t-value="counter+1"/>
+                                </t>
+                                <t t-foreach="totals" t-as="total">
+                                    <tr>
+                                        <td colspan="8" style="text-align: right; padding: 5px;"><strong>Grand Total</strong></td>
+                                        <td style="text-align: right; padding: 5px;"><strong><span t-esc="total['total_extended_price']" t-options="{'widget': 'float', 'precision': 2}"/></strong></td>
+                                        <td style="padding: 5px;"></td>
+                                        <td style="text-align: right; padding: 5px;"><strong><span t-esc="total['total_vat_amt']" t-options="{'widget': 'float', 'precision': 2}"/></strong></td>
+                                        <td style="text-align: right; padding: 5px;"><strong><span t-esc="total['grand_total']" t-options="{'widget': 'float', 'precision': 2}"/></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="11" style="text-align: right; padding: 5px;"><strong><span t-esc="total['amount_words']"/> Only</strong></td>
+                                        <td style="padding: 5px;"></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <div class="row" style="margin: 32px 0;">
+                            <div class="col-6" style="text-align: left;">
+                                <p style="font-size: 18px;">توقيع الفني</p>
+                                <p style="font-size: 18px;">Technician Signature: ________</p>
+                            </div>
+                            <div class="col-6" style="text-align: right;">
+                                <p style="font-size: 18px;">توقيع العميل</p>
+                                <p style="font-size: 18px;">Customer Signature: ________</p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template> -->
+
+	<!-- <template id="inspection_charge_receipt_document_template">
+		    <t t-call="web.html_container">
+				<t t-foreach="jobs" t-as="doc">
+
+				<t t-call="machine_repair_management.inspection_charge_receipt_document_template_internal_layout">
+				<div class="header">
+						<div class="row mt32 mb32">
+							<div class="col-4 text-left">
+								<img src="machine_repair_management/static/src/img/HHS_Header_Left.png" alt="img" style="height: 115px; width: 190px; " />
+							</div>
+							<div class="col-4" style="margin-left:50px">
+								<img src="machine_repair_management/static/src/img/HHS_Header_Middle.png" alt="img" style="height: 115px; width: 190px;" />
+							</div>
+							<div class="col-4 text-right " style="vertical-align:text-top;margin-left:50px">
+								<img src="machine_repair_management/static/src/img/HHS_Header_Right.png" alt="img" style="height: 115px; width: 190px;" />
+							</div>
+						</div>
+					</div>
+		                <div class="page" style="page-break-after: always;">
+							<h2><center>Inspection Charge Receipt</center></h2>
+
+							<div class="row mt32 mb32">
+							<div class="col-6">
+							<table class="table table-sm table-bordered">
+								<colgroup>
+                                    <col width='30%'/>
+                                    <col width='50%'/>
+									<col width='20%'/>
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Receipt No :</strong></td>
+                                        <td>
+                                            <span t-if="receipt_no"
+                                                  t-esc="receipt_no"/>
+                                        </td>
+										<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong> : رقم الإيصال </strong></td>
+
+									</tr>
+									<tr>
+                                        <td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Job Card No. :</strong></td>
+                                        <td>
+                                            <span t-if="name"
+                                                  t-esc="name"/>
+                                        </td>
+										<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong>:رقم بطاقة العمل</strong></td>
+
+                                    </tr>
+									<tr>
+                                        <td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Customer Name :</strong></td>
+                                        <td>
+                                            <span t-if="doc['partner_id']"
+                                                  t-esc="doc['partner_id']"/>
+                                        </td>
+										<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right;"><strong>:اسم العميل</strong></td>
+
+                                    </tr>
+                                    <tr>
+                                        <td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Address :</strong></td>
+                                        <td>
+                                            <span t-if="doc['address']"
+                                                  t-esc="doc['address']"/>
+                                        </td>
+										<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong>: عنوان العميل </strong></td>
+
+                                    </tr>
+									 <tr>
+                                       <td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Contact No.:</strong></td>
+                                       <td>
+                                           <span t-if="doc['contact_no']"
+                                                 t-esc="doc['contact_no']"/>
+                                       </td>
+										<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong>: رقم الاتصال</strong></td>
+
+                                   </tr>
+
+                                </tbody>
+                            </table>
+							</div>
+								<div class="col-2"/>
+								<div class="col-6">
+									<table class="table table-sm table-bordered">
+										<colgroup>
+											<col width='33%'/>
+											<col width='47%'/>
+											<col width='20%'/>
+										</colgroup>
+
+										<tbody>
+											<tr>
+												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Date :</strong></td>
+												<td>
+													<span t-if="doc['date']"
+														  t-esc="doc['date']" t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
+												</td>
+												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; text-align: right;"><strong>: التاريخ</strong></td>
+
+											</tr>
+											<tr>
+												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Technician Name :</strong></td>
+												<td>
+													<span t-if="doc['technician_name']"
+														  t-esc="doc['technician_name']"/>
+												</td>
+												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong>: اسم الفني</strong></td>
+
+											</tr>
+											<tr>
+												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>VAT Registration:</strong></td>
+												<td>
+													<span t-if="doc['company_vat']"
+														  t-esc="doc['company_vat']"/>
+												</td>
+												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong>: ضريبة القيمة المضافة </strong></td>
+
+											</tr>
+										</tbody>
+                            </table>
+
+								</div>
+
+
+							</div>
+							
+						<t t-set="currency"  t-value="request.env.company.currency_id"/>
+
+							<table class="table table-sm table-bordered">
+										<colgroup>
+											<col width='25%'/>
+											<col width='25%'/>
+											<col width='25%'/>
+											<col width='25%'/>
+
+										</colgroup>
+										<thead>
+											<th style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; text-align:center; "><strong>Product Category</strong></th>
+											<th style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; text-align:center; "><strong>Product</strong></th>
+											<th style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; text-align:center; "><strong>Model</strong></th>
+											<th style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; text-align:center; "><strong>Serial Number</strong></th>
+										</thead>
+										<tbody>
+											<tr>
+												<td>
+													<span t-if="doc['product_category']"
+														  t-esc="doc['product_category']"/>
+												</td>
+												<td>
+													<span t-if="doc['product']"
+														  t-esc="doc['product']"/>
+												</td>
+												<td>
+													<span t-if="doc['model']"
+														  t-esc="doc['model']"/>
+												</td>
+												<td>
+													<span t-if="doc['serial_no']"
+														  t-esc="doc['serial_no']"/>
+												</td>
+											</tr>
+										</tbody>
+                            </table>
+
+						<div>
+							<p>Dear Customer , </p>
+							<p style="margin-left:30px;"> We have received the payment of <span t-esc="currency.symbol"/>.<span t-esc="inspection_amount"/> For the following: </p>
+						</div>
+
+		                    <table class="table table-sm table-bordered">
+								<thead>
+									<tr style="background-color:#464343;color:white;text-align:center">
+										<th width="2%" style="vertical-align:text-top"><strong>قم</strong><br/><strong>No</strong></th>
+										<th width="8%" style="vertical-align:text-top"><strong>الفئة</strong><br/><strong>Stock Group</strong></th>
+										<th width="10%" style="vertical-align:text-top"><strong>رقم الصنف</strong><br/><strong>Stock Number</strong></th>
+										<th width="29%" style="vertical-align:text-top"><strong>الوصف</strong><br/><strong>Description</strong></th>
+										<th width="5%" style="vertical-align:text-top"><strong>الكمية</strong><br/><strong>Qty</strong></th>
+										<th width="6%" style="vertical-align:text-top"><strong>سعر الوحدة</strong><br/><strong>Unit Price</strong></th>
+										<th width="6%" style="vertical-align:text-top"><strong>خصم الوحدة</strong><br/><strong>Unit Discount</strong></th>
+										<th width="7%" style="vertical-align:text-top"><strong>سعر الوحدة الصافي</strong><br/><strong>Net Unit Price</strong></th>
+										<th width="7%" style="vertical-align:text-top"><strong>السعر الإجمالي</strong><br/><strong>Extended Price</strong></th>
+										<th width="6%" style="vertical-align:text-top"><strong>نسبة الضريبة</strong><br/><strong>Vat %</strong></th>
+										<th width="7%" style="vertical-align:text-top"><strong>قيمة الضريبة</strong><br/><strong>Vat Amount</strong></th>
+										<th width="7%" style="vertical-align:text-top"><strong>الإجمالي</strong><br/><strong>Amount</strong></th>
+									</tr>
+								</thead>
+                        <tbody>
+                            <t t-set="counter" t-value="1"/>
+                            <t t-foreach="product_lines" t-as="product">
+                                <tr>
+                                    <td class="text-right"><span t-esc="counter"/></td>
+                                    <td><span t-esc="product['stock_group']"/></td>
+                                    <td class="text-right"><span t-esc="product['stock_number']"/></td>
+                                    <td><span t-esc="product['description']"/></td>
+                                    <td class="text-right" style="text-align: right;"><span t-esc="product['qty']"/></td>
+                                    <td  style="text-align: right;"><span t-esc="product['unit_price']" t-options="{'widget': 'float', 'precision': 2}"/></td>
+                                    <td><span t-esc="product['unit_discount']"/></td>
+                                    <td class="text-right" style="text-align: right;"><span t-esc="product['net_unit_price']" t-options="{'widget': 'float', 'precision': 2}"/></td>
+                                    <td class="text-right" style="text-align: right;"><span t-esc="product['extended_price']" t-options="{'widget': 'float', 'precision': 2}"/></td>
+                                    <td class="text-right" style="text-align: right;"><span t-esc="product['vat_percent']"/> %</td>
+                                    <td class="text-right" style="text-align: right;"><span t-esc="product['vat_amount']" t-options="{'widget': 'float', 'precision': 2}"/></td>
+                                    <td class="text-right" style="text-align: right;"><span t-esc="product['total']" t-options="{'widget': 'float', 'precision': 2}"/></td>
+                                </tr>
+
+                                <t t-set="counter" t-value="counter+1"/>
+                            </t>
+							 <t t-foreach="totals" t-as="total">
+								<tr>
+								<td colspan="8" style="text-align:right"><strong>Grand Total</strong></td>
+								<td style="text-align:right"><strong><span t-esc="total['total_extended_price']" t-options="{'widget': 'float', 'precision': 2}"/></strong></td>
+                                <td/>
+								<td style="text-align:right"><strong><span t-esc="total['total_vat_amt']" t-options="{'widget': 'float', 'precision': 2}"/></strong></td>
+                                <td style="text-align:right"><strong><span t-esc="total['grand_total']" t-options="{'widget': 'float', 'precision': 2}"/></strong></td>
+                            </tr>
+								 <tr>
+								<td colspan="11" style="text-align:right"><strong><span t-esc="total['amount_words']"/>  Only</strong></td>
+                                <td/>
+                            </tr>
+								 </t>
+                        </tbody>
+
+		                    </table>
+							<div class="row mt32 mb32">
+							<div class="col-6 text-left" style="text-align:left">
+								 <p style="font-size:18px;">توقيع الفني</p>
+								<P style="font-size:18px;">Technician Signature</P>
+							</div>
+							<div class="col-6 text-right" style="text-align:right">
+								 <p style="font-size:18px;">توقيع العميل</p>
+								<P style="font-size:18px;">Customer Signature</P>
+							</div>
+						</div>
+						</div>
+					<div class="footer">
+							<div>
+								<img src="machine_repair_management/static/src/img/Arabic_Text.png" alt="img" style="height:60px; width: 1060px;"/>
+							</div>
+						<br/>
+							<div>
+								<img src="machine_repair_management/static/src/img/Footer_Address.png" alt="img" style="height:60px; width: 1080px;"/>
+							</div>
+						</div>
+		            </t>
+		        </t>
+		    </t>
+		</template>
+			
+	 -->
+
+
+</odoo>

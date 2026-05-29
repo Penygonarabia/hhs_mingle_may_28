@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+
+	<template id="om_hr_payroll.payslip_details_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template> 
+        
+    <template id="report_payslip">
+		<t t-call="web.html_container">
+		<t t-call ="om_hr_payroll.payslip_details_internal_layout">
+		  <t t-foreach="docs" t-as="o">
+
+			 <t t-if="o and 'company_id' in o">
+                <t t-set="company" t-value="o.company_id"></t>
+            </t>
+            <t t-if="not o or not 'company_id' in o">
+                <t t-set="company" t-value="res_company"></t>
+            </t>
+			<div class="header">
+                <div class="row mt32 mb32">
+                    
+					<div class="col-3" style="font:12px lucida-console,sans-serif !important;">
+                        <span t-field="company.partner_id"/>
+                        <br/>
+                        <span  t-field="company.partner_id.street"/>
+                        <br/>
+                        <span  t-field="company.partner_id.street2"/>
+                        <br/>
+                        <span  t-field="company.partner_id.city"/>
+                        <br/>
+                        <span  t-field="company.partner_id.country_id"/>
+                        <br/>
+                        <span  t-field="company.partner_id.vat"/>
+                    </div>
+						
+						<!--<t t-if="o.company_id.logo">
+   								 <img class="image" t-att-src="'data:image/png;base64,%s' % o.company_id.logo" style="max-height: 145px; min-height: 145px; min-width: 220px; max-width: 220px;"/>                        
+                        <img t-att-src="'/web/image/company.logo/' + str(o.company_id.id)" style="max-height: 145px; min-height: 145px; min-width: 220px; max-width: 220px;"/>
+                    </t>-->
+<!--						   <span  t-field="o.company_id.logo" t-options='{"widget": "image"}' />
+-->
+<!--						<img t-if="company.logo" t-att-src="image_data_uri(company.logo)" alt="Logo" style="max-height: 90px;min-height:90px;"/>
+-->
+<!--						    <span t-field="o.company_id.logo" t-options='{"widget": "image"}' style="max-height: 90px;min-height:90px;"/>
+-->						<!--<img
+							  t-attf-src="data:image/*;base64,{{o.company_id.logo}}"
+							  t-att-alt="company.name"
+							  />-->
+
+<!--						<img t-if="o.company_id.logo" t-att-src="'data:image/png;base64,%s' % to_text(o.company_id.logo)" alt="logo" style="max-height: 90px;min-height:90px;"/>
+-->
+<!--					<img t-if="company.logo" t-att-src="'data:image/png;base64,%s' % to_text(res_company.logo)" style="max-height: 90px;min-height:90px;" />
+-->
+<!--						  <t t-esc="company.logo" t-options='{"widget": "image"}' />
+-->
+<!--						<img  t-att-src="image_data_uri(res_company.logo)"  alt="Logo" style="max-height: 50px;"/>
+-->                        <!--<img t-if="company.logo" t-att-src="'data:image/png;base64,%s' % to_text(company.logo)"
+                             style="max-height: 50px;"/>-->
+                  
+                     <div class="col-6">
+						   <h2 class="text-center">Pay Slip</h2>
+                 		<p class="text-center" t-field="o.name"/>
+<!--                         <h2 style="font-weight:bold;text-align:left;font-size:23px"><span t-field="o.company_id.name"/> </h2>-->
+                     </div>
+                   <div class="col-3 text-right " style="vertical-align:text-top">
+                       <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" style="max-height: 70px; min-height:70px; min-width: 200px; max-width: 200px;"/>
+                   </div>
+
+                </div>
+            </div>
+            
+<!--            <t t-foreach="docs" t-as="o">
+-->				
+<!--                <t t-call="web.external_layout" style="margin-top:0px;padding-top:0px;display:inline;">
+-->					
+                    <div class="page" >
+                    <!-- <h2 class="text-center">Pay Slip</h2>
+                 		<p class="text-center" t-field="o.name"/>-->
+
+<!--                     							<img t-attf-src="data:image/*;base64,{{o.company_id.logo}}"  alt="logo" style="max-height: 145px; min-height: 145px; min-width: 220px; max-width: 220px;"/>
+-->				
+
+                        <table class="table table-sm table-bordered">
+                            <tr>
+                                <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">
+                                    <strong>Name</strong>
+                                </td>
+                                <td style="font:14px lucida-console,sans-serif !important;">
+                                    <span t-field="o.employee_id"/>
+                                </td>
+                                <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">
+                                    <strong>Designation</strong>
+                                </td>
+                                <td style="font:14px lucida-console,sans-serif !important;">
+                                    <span t-field="o.employee_id.job_id"/>
+                                </td>
+                            </tr>
+                           
+                            <tr>
+                                <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">
+                                    <strong>Email</strong>
+                                </td>
+                                <td style="font:14px lucida-console,sans-serif !important;">
+                                    <span t-field="o.employee_id.work_email"/>
+                                </td>
+                                <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">
+                                    <strong>Identification No</strong>
+                                </td>
+                                <td style="font:14px lucida-console,sans-serif !important;">
+                                    <span t-field="o.employee_id.identification_id"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">
+                                    <strong>Reference</strong>
+                                </td>
+                                <td style="font:14px lucida-console,sans-serif !important;">
+                                    <span t-field="o.number"/>
+                                </td>
+                                <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">
+                                    <strong>Bank Account</strong>
+                                </td>
+                                <td style="font:14px lucida-console,sans-serif !important;">
+                                    <span t-field="o.employee_id.bank_account_id"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">
+                                    <strong>Date From</strong>
+                                </td>
+                                <td style="font:14px lucida-console,sans-serif !important;">
+                                    <span t-field="o.date_from"/>
+                                </td>
+                                <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">
+                                    <strong>Date To</strong>
+                                </td>
+                                <td style="font:14px lucida-console,sans-serif !important;">
+                                    <span t-field="o.date_to"/>
+                                </td>
+                            </tr>
+                              <tr>
+                                <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">
+                                    <strong>Payslip Type</strong>
+                                </td>
+                                <td colspan="12" style="font:14px lucida-console,sans-serif !important;">
+                                    <span t-field="o.payroll_type"/>
+                                </td>
+                            </tr>
+                             <tr>
+                                <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">
+                                    <strong>Address</strong>
+                                </td>
+                                <td colspan="12" style="font:14px lucida-console,sans-serif !important;">
+                                    <div t-field="o.employee_id.address_home_id"
+                                         t-options='{"widget": "contact", "fields": ["address", "name", "phone"],  "phone_icons": True}'/>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+<!--                                    <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Code</th>-->
+                                    <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Name</th>
+                                    <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Category</th>
+                                    <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Regular Amount</th>
+                                    <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Actual Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+<!--                                <tr t-foreach="o.line_ids.filtered(lambda line: line.appears_on_payslip)" t-as="line">-->
+                                <tr t-foreach="o.line_ids" t-as="line">
+                                    <t t-if="line.total != 0.00 and line.code != 'GOSI_COMP'">
+                                        <td style="font:14px lucida-console,sans-serif !important;">
+                                            <t t-if="line.code in ['GROSS','NET','TOTAL_DED']">
+                                                <b><span t-field="line.name"/></b>
+                                            </t>
+                                             <t t-if="line.code != 'GROSS' and line.code != 'NET' and line.code != 'TOTAL_DED' and line.code != 'GOSI_COMP'">
+                                                 <span t-field="line.name"/>
+                                            </t>
+                                        </td>
+                                        <td class="text-left" style="font:14px lucida-console,sans-serif !important;">
+
+                                            <t t-if="line.code in ['GROSS','NET','TOTAL_DED']">
+                                                <b><span t-field="line.category_id.name"/></b>
+                                            </t>
+                                             <t t-if="line.code != 'GROSS' and line.code != 'NET' and line.code != 'TOTAL_DED' and line.code != 'GOSI_COMP'">
+                                                 <span t-field="line.category_id.name"/>
+                                            </t>
+
+                                        </td>
+                                        <td class="text-right" style="font:14px lucida-console,sans-serif !important;">
+
+                                            <t t-if="line.code in ['GROSS','NET','TOTAL_DED']">
+                                                <b><span t-esc="line.amount"
+                                                  t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></b>
+                                            </t>
+                                             <t t-if="line.code != 'GROSS' and line.code != 'NET' and line.code != 'TOTAL_DED' and line.code != 'GOSI_COMP'">
+                                                 <span t-esc="line.amount"
+                                                  t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                            </t>
+                                        </td>
+                                        <td class="text-right" style="font:14px lucida-console,sans-serif !important;">
+                                            <!-- Initialize the gross_total -->
+                                            <t t-set="gross_total" t-value="0.0"/>
+                                            <t t-set="net_total" t-value="0.0"/>
+                                            <t t-set="total_deduction" t-value="0.0"/>
+
+                                            <!-- If the line.code is 'Gross', sum the amounts for ALW and BASIC categories -->
+                                            <t t-if="line.code == 'GROSS'">
+                                                <t t-foreach="o.line_ids" t-as="sum_line">
+                                                    <t t-if="sum_line.category_id.code in ['ALW', 'BASIC']">
+                                                        <t t-set="gross_total" t-value="gross_total + sum_line.total"/>
+                                                    </t>
+                                                </t>
+                                                <!-- Display the summed gross_total -->
+                                                <b><span t-esc="gross_total"
+                                                      t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></b>
+                                            </t>
+
+                                            <!-- If the line.code is 'Gross', sum the amounts for ALW and BASIC and DED categories -->
+                                            <t t-if="line.code == 'NET'">
+                                                <t t-foreach="o.line_ids" t-as="sum_line">
+                                                    <t t-if="sum_line.category_id.code in ['DED', 'ALW', 'BASIC' ]">
+                                                        <t t-set="net_total" t-value="net_total + sum_line.total"/>
+                                                    </t>
+                                                </t>
+                                                <!-- Display the summed net_total -->
+                                                <b> <span t-esc="net_total"
+                                                      t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></b>
+                                            </t>
+
+                                            <t t-if="line.code == 'TOTAL_DED'">
+                                                <t t-foreach="o.line_ids" t-as="sum_line">
+                                                    <t t-if="sum_line.category_id.code in ['DED']">
+                                                        <t t-set="total_deduction" t-value="total_deduction + sum_line.total"/>
+                                                    </t>
+                                                </t>
+                                                <!-- Display the summed net_total -->
+                                                <b> <span t-esc="total_deduction"
+                                                      t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></b>
+                                            </t>
+
+                                            <!-- If not Gross or Net, display the line.total -->
+                                            <t t-if="line.code != 'GROSS' and line.code != 'NET' and line.code != 'TOTAL_DED' and line.code != 'GOSI_COMP'">
+                                                <span t-esc="line.total"
+                                                      t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                            </t>
+                                        </td>
+                                    </t>
+                                </tr>
+
+                            </tbody>
+                        </table>
+
+<!--                        <table class="table table-sm table-bordered">-->
+<!--                            <thead>-->
+<!--                                <tr>-->
+<!--                                    <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Name</th>-->
+<!--                                    <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Number of Days</th>-->
+<!--                                    <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Number of Hours</th>-->
+<!--                                </tr>-->
+<!--                            </thead>-->
+<!--                            <tbody>-->
+<!--                                <tr t-foreach="o.worked_days_line_ids" t-as="line">-->
+<!--                                    <td style="font:14px lucida-console,sans-serif !important;">-->
+<!--                                        <span t-field="line.name"/>-->
+<!--                                    </td>-->
+<!--                                    <td class="text-right" style="font:14px lucida-console,sans-serif !important;">-->
+<!--                                        <span t-field="line.number_of_days"/>-->
+<!--                                    </td>-->
+<!--                                    <td class="text-right" style="font:14px lucida-console,sans-serif !important;">-->
+<!--                                        <span t-esc="line.number_of_hours"  />-->
+<!--                                    </td>-->
+<!--                                </tr>-->
+<!--                            </tbody>-->
+<!--                        </table>-->
+
+                        <t t-if="o.input_line_ids">
+                            <h4 class="text-left">Transaction Details</h4>
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Description</th>
+                                        <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Reference</th>
+                                        <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Date</th>
+                                        <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Units</th>
+                                        <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="o.input_line_ids" t-as="line">
+                                        <td style="font:14px lucida-console,sans-serif !important;">
+                                            <span t-field="line.name"/>
+                                        </td>
+                                        <td class="text-left" style="font:14px lucida-console,sans-serif !important;">
+                                            <span t-field="line.reference"/>
+                                        </td>
+                                        <td class="text-center" style="font:14px lucida-console,sans-serif !important;">
+                                            <span t-esc="line.date" t-options='{"widget": "date", "format": "dd/MM/yyyy"}'/>
+                                        </td>
+                                        <td class="text-left" style="font:14px lucida-console,sans-serif !important;">
+                                            <span t-esc="line.units"  />
+                                        </td>
+                                        <td class="text-right" style="font:14px lucida-console,sans-serif !important;">
+    <!--                                        <span t-esc="'{:.2f}'.format(line.amount or 0.00)" />-->
+                                            <span t-esc="line.amount" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}' />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                        <br/>
+
+                        <p class="text-right">
+                            <strong>Authorized signature</strong>
+                        </p>
+                    </div>
+                    <!--</t>-->
+                    <div class="footer o_background_footer">
+            <div class="text-center">
+              <ul class="list-inline">
+				<li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+				</ul>
+                   <div t-if="report_type == 'pdf'" class="text-muted">
+                          Page:
+                       <span class="page"/>
+                          of
+                      <span class="topage"/>
+                      </div>
+                  </div>
+                </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

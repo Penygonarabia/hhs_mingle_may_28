@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_move_form_inherited_users" model="ir.ui.view">
+        <field name="name">default_loaction_dept_form</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="sale_stock.res_users_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='property_warehouse_id']" position="after">
+                <field name="def_location_id"/>
+                <field name="def_department_id"/>
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="view_move_form_inherited_users_city" model="ir.ui.view">
+        <field name="name">default_workenter_tree</field>
+        <field name="model">res.city</field>
+        <field name="inherit_id" ref="base_address_extended.view_city_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='zipcode']" position="after">
+                <field name="def_work_center_id"
+                       groups='machine_repair_management.group_machine_repair_manager_work_center'/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

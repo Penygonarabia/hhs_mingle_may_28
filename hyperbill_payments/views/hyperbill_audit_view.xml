@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Tree View -->
+    <record id="view_hyperpay_audit_tree" model="ir.ui.view">
+        <field name="name">hyperpay.audit.tree</field>
+        <field name="model">hyperpay.audit</field>
+        <field name="arch" type="xml">
+            <tree string="Online Payment" create="false" delete="false" default_order = "received_datetime Desc">
+                <field name="name" readonly="1"/>
+                <field name="payment_for" readonly="1"/>
+                <field name="payment_receipt_number" readonly="1"/>
+                <field name="payment_reference" readonly="1"/>
+                <field name="payment_received" readonly="1"/>
+                <field name="received_datetime" readonly="1"/>
+                <field name="status" readonly="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_hyperpay_audit_form" model="ir.ui.view">
+        <field name="name">hyperpay.audit.form</field>
+        <field name="model">hyperpay.audit</field>
+        <field name="arch" type="xml">
+            <form string="Online Payment" create="false" delete="false">
+                <sheet>
+                    <group>
+                        <field name="jobcard_id" invisible="1" readonly="1"/>
+                        <field name="name" readonly="1"/>
+                        <field name="payment_for" readonly="1"/>
+                        <field name="payment_receipt_number" readonly="1"/>
+                        <field name="payment_reference" readonly="1"/>
+                        <field name="payment_received" readonly="1"/>
+                        <field name="received_datetime" readonly="1"/>
+                        <field name="status" readonly="1"/>
+                        <!-- <field name = "custom_319" readonly = "1" force_save = "1"  invisible = "not custom_319"/>
+                        <field name = "custom_317" readonly = "1" force_save = "1" invisible = "not custom_317"/>
+                        <field name = "region" readonly = "1" force_save = "1"/> -->
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="view_hyperpay_audit_kanban" model="ir.ui.view">
+        <field name="name">hyperpay.audit.kanban</field>
+        <field name="model">hyperpay.audit</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_example" create="false" delete="false" default_order = "received_datetime Desc">
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <strong>
+                                <field name="name"/>
+                            </strong>
+                            <div>
+                                <field name="payment_for"/>
+                            </div>
+                            <div>
+                                <field name="payment_reference"/>
+                            </div>
+                            <div>
+                                <field name="status"/>
+                            </div>
+                            <div>
+                                <field name="received_datetime" readonly="1" invisible = "1"/>
+                            </div>
+                            
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_hyperpay_audit" model="ir.actions.act_window">
+        <field name="name">Online Payment</field>
+        <field name="res_model">hyperpay.audit</field>
+        <field name="view_mode">tree,form,kanban</field>
+    </record>
+
+    <!-- Menu -->
+<!--    <menuitem id="menu_hyperpay_root" parent="machi" name="Hyperpay" sequence="10"/>-->
+    <menuitem id="menu_hyperpay_audit" name="Online Payment" parent="machine_repair_management.menu_machine_repair_support" action="action_hyperpay_audit" sequence="99"/>
+
+</odoo>

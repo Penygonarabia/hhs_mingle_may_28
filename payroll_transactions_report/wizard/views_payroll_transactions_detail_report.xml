@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_payroll_transaction_report_form" model="ir.ui.view">
+        <field name="name">payroll.transaction.report.wizard</field>
+        <field name="model">payroll.transaction.report</field>
+        <field name="arch" type="xml">
+            <form string="Employee Payroll Transaction Report">
+                <group>
+                	<group col="2">
+                		<field name = "group_by_transaction" />
+                	
+                	</group>
+                	<group>
+                        <div class="o_td_label" style="width:200px;">
+                            <label for="from_date" string="From Date"/>
+                        </div>
+                        <field name="from_date" nolabel="1"/>
+                        <field name="to_date" required="from_date == True"/>
+                        <!-- <field name = "group_by_transaction" /> -->
+                        <field invisible="1" name="company_id"/>
+                    </group>
+                    <group invisible="group_by_transaction" col="2">
+                        <div class="o_td_label" style="width:175px;">
+                            <label for="employee_ids" string="Employee name"/>
+                        </div>
+                        <field name="employee_ids" nolabel="1" options="{'no_create': True, 'no_create_edit':True}" widget="many2many_tags" readonly = "group_by_transaction"/>
+                        <field name="department_ids" options="{'no_create': True, 'no_create_edit':True}" widget="many2many_tags" readonly = "group_by_transaction"/>
+                        <field name="job_title_ids" options="{'no_create': True, 'no_create_edit':True}" widget="many2many_tags" readonly = "group_by_transaction"/>
+                        <field name="nationality_ids" options="{'no_create': True, 'no_create_edit':True}" widget="many2many_tags" readonly = "group_by_transaction"/>
+                        <field name="branch_location_ids" options="{'no_create': True, 'no_create_edit':True}" widget="many2many_tags" readonly = "group_by_transaction"/>
+                        <field name="sort_by" readonly = "group_by_transaction"/>
+                    </group>
+                    
+                </group>
+                <footer>
+                    <button class="oe_highlight" name="print_payroll_transaction_excel" string="Print Excel" type="object"/>
+                    <button class="oe_highlight" name="print_payroll_transaction_report" string="Print PDF" type="object" invisible = "1"/>
+                    <button class="btn-secondary" name="clear" special="cancel" string="Cancel"/>
+                </footer>
+            </form></field>
+    </record>
+    <record id="action_payroll_transaction_report" model="ir.actions.act_window">
+        <field name="name">Employee Payroll Transaction Report</field>
+        <field name="res_model">payroll.transaction.report</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_payroll_transaction_report_form"/>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="model_payroll_transaction_report"/>
+        <field name="binding_type">report</field>
+    </record>
+    <!--<menuitem id="menu_payroll_transaction_report" name="Payroll Transaction Report" action="action_payroll_transaction_report"  parent="hr.menu_hr_employee_payroll"
+              sequence="40"/>-->
+    <!--Newly Added Apr-25-2024 -->
+    <!-- <menuitem id="menu_payroll_transaction_report" name="Payroll Transaction Report" action="action_payroll_transaction_report"  parent="hrms_salary_al_dt.menu_hr_salary_allowance_detection"
+              sequence="40"/> -->
+    <menuitem action="action_payroll_transaction_report" id="menu_payroll_transaction_report" name="Employee Payroll Transaction Report" parent="employee_payroll_report.menu_payroll_report_xlsx" sequence="10"/>
+    <!--  <menuitem id="menu_action_employee_payroll_report" 
+              	name="Employee Payroll Report"
+              	action="action_employee_payroll_report"  
+              	parent="menu_payroll_report_xlsx" 
+              	sequence="10" />    -->
+    <record id="action_payroll_transactions_detail_pdf" model="ir.actions.report">
+        <field name="name">Employee Payroll Transaction Report</field>
+        <field name="model">payroll.transaction.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">payroll_transactions_report.report_payroll_transactions_pdf</field>
+        <field name="report_file">payroll_transactions_report.report_payroll_transactions_pdf</field>
+        <field name="binding_model_id" ref="model_payroll_transaction_report"/>
+        <field name="binding_type">report</field>
+    </record>
+    <!--	         <field name="paperformat_id" ref="payroll_transactions_report.custom_branch_paperformat_id" />-->
+</odoo>

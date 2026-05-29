@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="setu_stock_inventory_count_planner_form_view" model="ir.ui.view">
+            <field name="name">setu_stock_inventory_count_planner.form</field>
+            <field name="model">setu.stock.inventory.count.planner</field>
+            <field name="arch" type="xml">
+                <form string="Inventory Count Planner">
+                    <!--                    <div class="alert alert-info" role="alert">-->
+                    <!--                        <a style="cursor: pointer" class="alert-link o_form_uri" type="object" name="create_inventory_count">-->
+                    <!--                            Run the scheduler-->
+                    <!--                        </a>-->
+                    <!--                        manually to trigger the planner right now.-->
+                    <!--                    </div>-->
+                    <header>
+                        <button class="btn-primary" invisible="not active or not state" name="verify_inventory_count_planing" string="verify" type="object"/>
+                        <button class="btn-primary" invisible="not active or state" name="create_inventory_count" string="Run Manually" type="object"/>
+                        <button class="btn-primary" invisible="not active or state" name="reset_to_draft" string="Reset To Draft" type="object"/>
+                        <field name="state" statusbar_visible="draft,verified" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div>
+                            <h1>
+                                <field name="name" nolabel="1" readonly="not state" required="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="approver_id" options="{'no_create': True, 'no_create_edit':True}" readonly="not state" required="1"/>
+                                <field name="inventory_count_date" readonly="not state"/>
+                                <field name="use_barcode_scanner" widget="boolean_toggle"/>
+                                <field invisible="1" name="active"/>
+                                <separator colspan="4" string="Scheduler Configuration"/>
+                                <field name="planing_frequency" readonly="not state" required="1"/>
+                                <field name="previous_execution_date" readonly="not state"/>
+                                <field name="next_execution_date" readonly="not state"/>
+                            </group>
+                            <group>
+                                <field name="warehouse_id" options="{'no_create': True, 'no_create_edit':True}" readonly="not state" required="1"/>
+                                <field domain="[('usage', '=', 'internal')]" name="location_id" options="{'no_create': True, 'no_create_edit':True}" readonly="not state" required="1"/>
+                                <separator colspan="4" string="Product Configuration"/>
+                                <field name="type" widget="radio"/>
+                            </group>
+                        </group>
+                        <!--                        <notebook>-->
+                        <!--                            <page name="products" string="Products">-->
+                        <!--                                <field name="product_ids"-->
+                        <!--                                       attrs="{'readonly': [('state','!=','draft')]}"-->
+                        <!--                                       domain="[('type','=','product')]"-->
+                        <!--                                       options="{'no_create': True, 'no_create_edit':True, 'no_open': True}">-->
+                        <!--                                    <tree>-->
+                        <!--                                        <field name="default_code"/>-->
+                        <!--                                        <field name="name"/>-->
+                        <!--                                        <field name="barcode"/>-->
+                        <!--                                    </tree>-->
+                        <!--</field>-->
+                        <!--                            </page>-->
+                        <!--                        </notebook>-->
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form></field>
+        </record>
+        <record id="setu_stock_inventory_count_planner_tree_view" model="ir.ui.view">
+            <field name="name">setu_stock_inventory_count_planner.tree</field>
+            <field name="model">setu.stock.inventory.count.planner</field>
+            <field name="arch" type="xml">
+                <tree create="true" decoration-muted="state=='Cancel'" default_order="id desc" string="Inventory Count">
+                    <field name="name"/>
+                    <field name="location_id"/>
+                    <field name="warehouse_id"/>
+                    <field name="approver_id"/>
+                    <field name="inventory_count_date"/>
+                    <field name="state"/>
+                </tree></field>
+        </record>
+        <record id="setu_stock_inventory_count_planner_act_window" model="ir.actions.act_window">
+            <field name="name">Inventory Count Planner</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">setu.stock.inventory.count.planner</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    There is no Inventory Count Planner. Click create to add new Inventory Count Planner.
+                </p></field>
+        </record>
+        <menuitem id="main_configuration_menu" name="Configuration" parent="setu_inventory_count_management.setu_inventory_count_root" sequence="1000"/>
+        <menuitem action="setu_stock_inventory_count_planner_act_window" groups="setu_inventory_count_management.group_setu_inventory_count_manager" id="setu_stock_inventory_count_planner_menu" name="Inventory Count Planner" parent="setu_inventory_count_management.main_configuration_menu" sequence="2"/>
+    </data>
+</odoo>

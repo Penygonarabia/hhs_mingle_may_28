@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+		<record id="batch_payroll_transaction_form_view" model="ir.ui.view">
+			<field name = "name">payroll.transaction.batch.form.view</field>
+			<field name = "model">payroll.transaction.batch</field>
+			<field name = "arch" type = "xml">
+				 <form string="Payroll Batch Transaction" delete="0">
+				 	<sheet>
+				 		<header>
+			 				<button type="object" name="generate_payroll_batch" class="oe_highlight" string="Approve" invisible="state == 'approve'"         
+			 					confirm="Are you sure? After approve, you won't be able to change this."/>
+			 				<field name="state" widget="statusbar" statusbar_visible="draft,approve" readonly="1"/>
+				 		</header>
+					 	<group>	
+					 		<group>
+					 			<field name="name" readonly = "1"/>
+					 			<field name = "transaction_date" readonly ="state == 'approve'"/>
+					 		</group>
+					 		<group>	
+					 			<field name="batch_hr_transaction_id" options="{'no_create_edit': True, 'no_create': True, 'no_open': True}" force_save="1" required="1" readonly ="state == 'approve'"/>
+					 			<field name="batch_transaction_type_id" options="{'no_open': True}" force_save="1" readonly="1" />
+					 			<field name="batch_type" force_save="1" readonly="1" />
+					 			<field name="transact_code" force_save="1" readonly="1" />
+								<field name="batch_units" string="Units" force_save="1"/>
+					 		</group>
+					 	</group>
+					 	<notebook>
+					 		<page string="Payroll Transaction Batch" name="transaction_payroll_batch">
+					 			<field name="batch_payroll_transaction_ids" readonly ="state == 'approve'">
+					 				<tree editable="bottom">
+					 					<field name="employee_no" />
+					 					<field name="employee_id" options="{'no_create_edit': True, 'no_create': True}" domain="[('contract_warning','=',False)]"/>
+					 					<field name = "date_line"  force_save="1" required = "1"/>
+					 					<field name = "batch_hr_transaction_line_id" force_save="1"/>
+					 					
+					 					<field name="batch_transaction_type_line_id" optional="hide" force_save="1"/>
+					 					<field name="batch_line_type" optional="hide" force_save="1"/>
+<!--					 					<field name="batch_units" string="Units" force_save="1"/>-->
+					 					<field name="batch_days" force_save="1" column_invisible="parent.batch_units != 'days'" readonly = "parent.batch_units != 'days'"/>
+					 					<field name="batch_hours" force_save="1" column_invisible="parent.batch_units != 'hours'" readonly ="parent.batch_units != 'hours'"/>
+					 					<field name="batch_fixed_amount" column_invisible="parent.batch_units != 'amount'" force_save="1" readonly="parent.batch_units != 'amount'"/>
+					 					<field name="batch_amount" column_invisible="parent.batch_units == 'amount'" force_save="1" readonly="1"/>
+					 					<field name="line_reason" force_save="1" />
+					 					<field name="batch_calculate_based_on_allowance" force_save="1" readonly="1" column_invisible="1" />
+					 				</tree>
+					 			</field>
+					 		</page>
+					 	</notebook>
+					</sheet>	 	
+				 </form>
+			</field>
+		</record>
+		
+		<record id="payroll_transaction_batch_tree_view" model="ir.ui.view">
+			<field name="name">payroll.transaction.batch.tree.view</field>
+			<field name="model">payroll.transaction.batch</field>
+			<field name="arch" type="xml">
+				<tree string="Payroll Transaction Batch">
+					<field name="name"/>
+					<field name="transaction_date" />
+					<field name = "batch_transaction_type_id" />
+					<field name="state"/>
+				</tree>
+			</field>
+		</record>
+		
+		<record id="action_payroll_transaction_batch" model="ir.actions.act_window">
+			<field name="name">Payroll Transaction Batch</field>
+			<field name="res_model">payroll.transaction.batch</field>
+			<field name="view_mode">tree,form</field>	
+		</record>
+		
+		<menuitem id="menu_payroll_transaction_batch" name="Payroll Transaction Batch" action="action_payroll_transaction_batch" 
+				parent="om_hr_payroll.menu_hr_payroll_root" sequence="80"/>
+
+</odoo>

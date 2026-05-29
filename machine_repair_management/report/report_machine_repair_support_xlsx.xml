@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <data>
+
+
+       <record id="action_job_card_report_xlsx" model="ir.actions.report">
+	        <field name="name">Job Card Report</field>
+	        <field name="model">job.card.report</field>
+	        <field name="report_type">xlsx</field>
+	        <field name="report_name">machine_repair_management.report_job_card_xlsx</field>
+	        <field name="report_file">Job Card Report</field>
+	        <field name="binding_model_id" ref="model_job_card_report"/>
+	        <field name="binding_type">report</field>
+    </record>
+
+
+
+   </data>
+</odoo>

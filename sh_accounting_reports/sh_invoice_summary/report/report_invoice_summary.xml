@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="sh_invoice_summary_doc">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <br/>
+                    <br/>
+                    <div class="oe_structure" />
+                    <div class="row pt-4">
+                        <div class="col-12 mx-auto">
+                            <div class="text-center">
+                                <b>
+                                    <h4>Invoice Summary</h4>
+                                </b>
+                                <b>
+                                    <span t-esc="date_start" t-options="{'widget': 'date'}" />
+                                    To
+                                    <span t-esc="date_end" t-options="{'widget': 'date'}" />
+                                </b>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                    <t t-if="customer_move_dic">
+                        <t t-foreach="customer_move_dic.keys()" t-as="customer">
+                            <center>
+                                <b>
+                                    <span t-esc="customer" />
+                                </b>
+                            </center>
+
+                            <t t-set="total_amount_invoiced" t-value="0" />
+                            <t t-set="total_amount_paid" t-value="0" />
+                            <t t-set="total_amount_due" t-value="0" />
+                            <table class="table table-sm o_main_table table-bordered" style="table-layout: fixed; border: 1px solid black;" id="">
+                                <thead style="display: table-row-group;" class="thead-light">
+                                    <tr style="border: 1px solid black;">                                        
+                                        <th style="border: 1px solid black;">Invoice Number</th>
+                                        <th style="border: 1px solid black;">Invoice Date</th>
+                                        <th style="border: 1px solid black;">Amount Invoiced</th>
+                                        <th style="border: 1px solid black;">Amount Paid</th>
+                                        <th style="border: 1px solid black;">Amount Due</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="invoice_tbody">
+                                    <t t-foreach="customer_move_dic[customer]" t-as="move">
+                                        <t t-set="currency" t-value="request.env['res.currency'].sudo().browse(move.get('invoice_currency_id',False))" />
+                                        <tr>                                            
+                                            <td style="border: 1px solid black;">
+                                                <span t-esc="move.get('invoice_number','')" />
+                                            </td>
+                                            <td style="border: 1px solid black;">
+                                                <span t-esc="move.get('invoice_date','')" />
+                                            </td>
+                                            <td style="border: 1px solid black;">
+                                                <span t-esc="move.get('invoice_amount',0.0)" t-options='{"widget": "monetary", "display_currency": currency}' />
+                                            </td>
+                                            <td style="border: 1px solid black;">
+                                                <span t-esc="move.get('invoice_paid_amount',0.0)" t-options='{"widget": "monetary", "display_currency": currency}' />
+                                            </td>
+                                            <td style="border: 1px solid black;">
+                                                <span t-esc="move.get('due_amount',0.0)" t-options='{"widget": "monetary", "display_currency": currency}' />
+                                            </td>
+                                            <t t-set="total_amount_invoiced" t-value="total_amount_invoiced + move.get('invoice_amount',0)" />
+                                            <t t-set="total_amount_paid" t-value="total_amount_paid + move.get('invoice_paid_amount',0)" />
+                                            <t t-set="total_amount_due" t-value="total_amount_due + move.get('due_amount',0)" />
+                                        </tr>
+                                    </t>
+                                    <tr>                                        
+                                        <td style="border: 1px solid black;"></td>
+                                        <td style="border: 1px solid black;">
+                                            <b>Total</b>
+                                        </td>
+                                        <td style="border: 1px solid black;">
+                                            <span t-esc="'%.2f'%(total_amount_invoiced)" />
+                                        </td>
+                                        <td style="border: 1px solid black;">
+                                            <span t-esc="'%.2f'%(total_amount_paid)" />
+                                        </td>
+                                        <td style="border: 1px solid black;">
+                                            <span t-esc="'%.2f'%(total_amount_due)" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+    <record id="paperformat_invoice_summary" model="report.paperformat">
+        <field name="name">Invoice Summary</field>
+        <field name="default" eval="True" />
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">60</field>
+        <field name="margin_bottom">30</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False" />
+        <field name="header_spacing">55</field>
+        <field name="dpi">90</field>
+    </record>
+    <record id="sh_invoice_summary_action" model="ir.actions.report">
+        <field name="name">Invoice Summary</field>
+        <field name="model">report.sh_accounting_reports.sh_invoice_summary_doc</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sh_accounting_reports.sh_invoice_summary_doc</field>
+        <field name="print_report_name">'Invoice Summary'</field>
+        <field name="paperformat_id" ref="sh_accounting_reports.paperformat_invoice_summary" />
+    </record>
+</odoo>

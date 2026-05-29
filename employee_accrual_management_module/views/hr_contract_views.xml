@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="custom_hr_contract_view" model="ir.ui.view">
+            <field name="name">hr.contract.form</field>
+            <field name="model">hr.contract</field>
+            <field name="inherit_id" ref="hr_saudi.hr_contract_view_inherit_form1"/>
+            <field name="arch" type="xml">
+<!--                <xpath expr="//field[@name='total']" position="after">-->
+                <xpath expr="//group[@name='salary_and_advantages']" position="after">
+                    <label for="custom_allowance" style="font-weight: bold; margin-left:30px;font-size:16px">Allowance for Gratuity</label>
+                    <field name='custom_allowance' style="width:100px;margin-left:50px;"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
+<!--<odoo>-->
+<!--    <record id="view_hr_contract_form" model="ir.ui.view">-->
+<!--        <field name="name">hr.contract.form</field>-->
+<!--        <field name="model">hr.contract</field>-->
+<!--        <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <xpath expr="//page[@name='other']" position="after">-->
+<!--                &lt;!&ndash; Group for Accrual Leave Accounts &ndash;&gt;-->
+<!--                <page string="Employee Accrual Accounts" name="accounting_information">-->
+<!--                    <group string="Accrual Leave Accounts">-->
+<!--                        <field name="accrual_leave_debit_account_id"/>-->
+<!--                        <field name="accrual_leave_credit_account_id"/>-->
+<!--                    </group>-->
+
+<!--                    &lt;!&ndash; Group for Accrual Ticket Accounts &ndash;&gt;-->
+<!--                    <group string="Accrual Ticket Accounts">-->
+<!--                        <field name="accrual_ticket_debit_account_id"/>-->
+<!--                        <field name="accrual_ticket_credit_account_id"/>-->
+<!--                    </group>-->
+<!--                </page>-->
+<!--            </xpath>-->
+<!--        </field>-->
+<!--    </record>-->
+<!--</odoo>-->

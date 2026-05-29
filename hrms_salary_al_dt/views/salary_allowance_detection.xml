@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_salary_allowance_detection_form" model="ir.ui.view">
+            <field name="name">salary.allowance.detection.form</field>
+            <field name="model">salary.allowance.detection</field>
+            <field name="arch" type="xml">
+                <form string="Payroll Transactions">
+                    <header>
+                        <!--                        <button name="set_to_draft" string="Set To Draft" type="object" states="cancel" class="oe_highlight"/>-->
+                        <!--                        <button name="submit_to_manager" string="Submit" type="object" states="draft" class="oe_highlight"/>-->
+                        <!--                        <button name="approve_request" string="Approve" type="object" states="submit" class="oe_highlight" groups="hr.group_hr_manager,hr.group_hr_user"/>-->
+                        <!--                        <button name="approve_request_acc_dept" string="Approve" type="object" states="waiting_approval" class="oe_highlight" groups="account.group_account_manager,account.group_account_user"/>-->
+                        <button invisible="state not in ['draft']" name="action_request" string="Request For DM Approval" type="object"/>
+                        <button groups="hr_saudi.group_dm" help="First Phase Approval" invisible="state not in ['request']" name="action_progress" string="DM Approve" type="object"/>
+                        <button groups="hr_saudi.group_hrm" help="Second Phase Approval" invisible="state not in ['progress']" name="action_progress2" string="HR Manager Approve" type="object"/>
+                        <button groups="hr_saudi.group_finance_manager" help="Finance Manager Approval" invisible="state not in ['progress2']" name="action_approve" string="FM Approve" type="object"/>
+                        <button groups="hr_saudi.group_admin_approval" help="Admin &amp; Financial Director approval" invisible="is_progress3_clicked == True and state not in ['progress3']" name="action_progress3" string="Admin &amp; Financial Director approval" type="object"/>
+                        <button groups="hr.group_hr_manager" invisible="state not in ['request','guarantor_approve','progress','progress2']" name="action_draft" string="Back to Draft" type="object"/>
+                        <field invisible="1" name="is_progress3_clicked"/>
+                        <field name="state" statusbar_colors='{"draft":"red"}' statusbar_visible="draft,approve" widget="statusbar"/>
+                        <button invisible="slip_bool == True or state == 'cancel'" name="cancelled" string="Cancel" type="object"/>
+                        <button invisible="state not in ['action_progress2']" name="reject" string="Reject" type="object"/>
+                        <!--                        <field name="state" widget="statusbar" statusbar_visible="draft,submit,waiting_approval,approve,cancel,reject"/>-->
+                    </header>
+                    <sheet>
+                        <div class="oe_title oe_left">
+                            <h2>
+                                <field class="oe_inline" invisible="1" name="name" readonly="1"/>
+                            </h2>
+                        </div>
+                        <group>
+                            <group>
+                                <field domain="[('state','!=','exit')]" name="employee_id" options="{'no_create_edit': True, 'no_create': True}" readonly="state in ['approve', 'cancel', 'reject']"/>
+                                <field force_save="1" name="department" readonly="1"/>
+                                <field name="date" readonly="state in ['approve', 'cancel', 'reject']"/>
+                                <!--                                <field name="reference" attrs="{'readonly':[('state','in',['draft','submit','waiting_approval','approve','cancel','reject'])]}"/>-->
+                                <field force_save="1" name="reference" readonly="1"/>
+                                <field name="hr_transaction_id" readonly="state in ['approve', 'cancel', 'reject']"/>
+                                <field force_save="1" name="transaction_type_id" readonly="state in ['approve', 'cancel', 'reject']"/>
+                                <field force_save="1" name="type" readonly="1"/>
+                                <field force_save="1" name="reason" readonly="state in ['approve', 'cancel', 'reject']"/>
+                                <field force_save="1" invisible="1" name="slip_id"/>
+                                <field invisible="1" name="slip_bool"/>
+                                <field invisible="1" name="leave_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field force_save="1" name="employee_number" readonly="1"/>
+                                <field force_save="1" name="employee_contract_id" readonly="1"/>
+                                <field force_save="1" name="code" readonly="1"/>
+                                <field force_save="1" name="units" readonly="1"/>
+                                <field invisible="1" name="calculate_based_on_allowance" readonly="state in ['approve', 'cancel', 'reject']"/>
+                                <field force_save="1" invisible="units != 'days'" name="days" readonly="state in ['approve', 'cancel', 'reject']"/>
+                                <field force_save="1" invisible="units != 'hours'" name="hours" readonly="state in ['approve', 'cancel', 'reject']"/>
+                                <field invisible="units != 'amount'" name="fixed_amount" readonly="state in ['approve', 'cancel', 'reject']"/>
+                                <field force_save="1" invisible="units == 'amount'" name="amount" readonly="1"/>
+                                <field invisible="1" name="currency_id" readonly="state in ['approve', 'cancel', 'reject']"/>
+                                <field invisible="1" name="company_id" readonly="state in ['approve', 'cancel', 'reject']"/>
+                                <field force_save="1" invisible="1" name="basic" readonly="1"/>
+                                <field force_save="1" invisible="attendance_sheet_id == False" name="attendance_sheet_id" readonly="1"/>
+                                <field name="payroll_transaction_batch_id" force_save = "1" readonly="1" invisible ="payroll_transaction_batch_id == False"/>
+                                <field name="export" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Approval Notes">
+                                <group>
+                                    <group>
+                                        <field name="d_manager"/>
+                                        <field name="d_manager_note" nolabel="1" placeholder="Direct Manager Note" readonly="state != 'request'"/>
+                                        <div class="o_td_label" style="margin-left:-125px;">
+			                                <label for="hr_manage_id" string="HR Manager"/>
+                                        </div>
+                                        <field name="hr_manage_id" nolabel="1"/>
+                                        <field name="hr_manage_note" nolabel="1" placeholder="HR Manager Note" readonly="state != 'progress'"/>
+                                    </group>
+                                    <group>
+                                        <field name="account_manage_id"/>
+                                        <field name="account_manage_note" nolabel="1" placeholder="Admin Manager Note" readonly="state != 'progress2'"/>
+                                        <div class="o_td_label" style="margin-left:-160px;">
+			                                <label for="admin_manager_id" string="Admin &amp; Finance Manager"/>
+                                        </div>
+                                        <field name="admin_manager_id" nolabel="1"/>
+                                        <field name="admin_manager_note" nolabel="1" placeholder="Accounting Manager Note" readonly="state != 'progress3'"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form></field>
+        </record>
+        <record id="view_salary_allowance_detection_tree" model="ir.ui.view">
+            <field name="name">salary.allowance.detection.tree</field>
+            <field name="model">salary.allowance.detection</field>
+            <field name="arch" type="xml">
+                <tree string="Payroll Transactions">
+                    <field name="employee_number"/>
+                    <field name="employee_id"/>
+                    <field name="reference"/>
+                    <field name="date"/>
+                    <field name="transaction_type_id"/>
+                    <field name="hr_transaction_id"/>
+                    <field name="amount"/>
+                    <field name="state"/>
+                </tree></field>
+        </record>
+        <record id="view_salary_allowance_detection_filter" model="ir.ui.view">
+            <field name="name">salary.allowance.detection.select</field>
+            <field name="model">salary.allowance.detection</field>
+            <field name="arch" type="xml">
+                <search string="Search">
+                    <field filter_domain="['|',('name','ilike',self)]" invisible="1" name="name" string="Salary Allowance/Detection"/>
+                    <field name="employee_id"/>
+                    <field name="hr_transaction_id"/>
+                    <field name="employee_number"/>
+                    <field name="state"/>
+                    <field name="payroll_transaction_batch_id"/>
+
+                    <filter domain="[('employee_id.user_id.id','=',uid)]" name="my_requests_filter" string="My Requests"/>
+                    <filter domain="[('state', '=', 'draft')]" help="New Requests" name="to_report" string="To Submit"/>
+                    <!--                    <filter domain="[('state','in',('submit','waiting_approval'))]" string="To Approve" name="submitted" help="Submitted Requests"/>-->
+                    <filter domain="[('state', '=', 'approve')]" help="Approved Requests" name="approved" string="Approved"/>
+                    <separator/>
+                    <filter context="{'group_by':'employee_id'}" domain="[]" name="employee_id" string="Employee"/>
+                    <filter context="{'group_by':'state'}" domain="[]" name="State" string="State"/>
+                    <filter context="{'group_by':'date'}" domain="[]" name="date" string="Date"/>
+                </search></field>
+        </record>
+        <!--        <record id="action_my_salary_allowance_detection_detection" model="ir.actions.act_window">-->
+        <!--            <field name="name">Payroll Transactions</field>-->
+        <!--            <field name="type">ir.actions.act_window</field>-->
+        <!--            <field name="res_model">salary.allowance.detection</field>-->
+        <!--            <field name="view_mode">tree,form</field>-->
+        <!--            <field name="search_view_id" ref="view_salary_allowance_detection_filter"/>-->
+        <!--            <field name="context">{'search_default_my_requests_filter':1}</field>-->
+        <!--            <field name="domain">[('employee_id.user_id', '=', uid)]</field>-->
+        <!--            <field name="help" type="html">-->
+        <!--                <p class="oe_view_nocontent_create">-->
+        <!--                    Create Requests.-->
+        <!--                </p>-->
+        <!--</field>-->
+        <!--        </record>-->
+        <!--        <record id="action_my_salary_allowance_detection_request_approved" model="ir.actions.act_window">-->
+        <!--            <field name="name">Payroll Transactions</field>-->
+        <!--            <field name="type">ir.actions.act_window</field>-->
+        <!--            <field name="res_model">salary.allowance.detection</field>-->
+        <!--            <field name="view_mode">tree,form</field>-->
+        <!--            <field name="search_view_id" ref="view_salary_allowance_detection_filter"/>-->
+        <!--            <field name="context">{'search_default_approved':1}</field>-->
+        <!--            <field name="domain">[('employee_id.user_id', '=', uid)]</field>-->
+        <!--            <field name="help" type="html">-->
+        <!--                <p class="oe_view_nocontent_create">-->
+        <!--                    Create Requests.-->
+        <!--                </p>-->
+        <!--</field>-->
+        <!--        </record>-->
+        <record id="action_salary_allowance_detection_to_approve" model="ir.actions.act_window">
+            <field name="name">Payroll Transactions</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">salary.allowance.detection</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_salary_allowance_detection_filter"/>
+            <!--            <field name="context">{'search_default_submitted': 1}</field>-->
+            <field name="context">{'readonly_by_pass': True}</field>
+            <field name="domain"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Create Requests.
+                </p></field>
+        </record>
+        <!--        <menuitem name="Allowance &amp; Deduction" id="menu_hr_salary_allowance_detection"-->
+        <!--                  parent="hr.menu_hr_root" sequence="21"/>-->
+        <!--        <menuitem id="menu_my_salary_allowance_detection" action="action_my_salary_allowance_detection_detection"-->
+        <!--                  parent="menu_hr_salary_allowance_detection" name="Request Salary Allowance / Deduction" sequence="1" />-->
+        <!--        <menuitem id="menu_salary_allowance_detection" action="action_salary_allowance_detection_to_approve"-->
+        <!--                  parent="menu_hr_salary_allowance_detection" name="Salary Allowance / Deduction To Approve" sequence="3" groups="hr.group_hr_manager,hr.group_hr_user,account.group_account_manager"/>-->
+        <!--        <menuitem id="menu_my_salary_allowance_detection_approved" action="action_my_salary_allowance_detection_request_approved"-->
+        <!--                  parent="menu_hr_salary_allowance_detection" name="My Approved Salary Allowance / Deduction" sequence="2" />-->
+        <!--        <menuitem id="menu_my_salary_allowance_detection"-->
+        <!--        		  action="action_my_salary_allowance_detection_detection"-->
+        <!--                  parent="om_hr_payroll.menu_hr_payroll_root"-->
+        <!--                  name="Request  Payroll Transactions"-->
+        <!--                  sequence="50"-->
+        <!--                  />-->
+        <!--        <menuitem id="menu_salary_allowance_detection"-->
+        <!--        		  action="action_salary_allowance_detection_to_approve"-->
+        <!--                  parent="om_hr_payroll.menu_hr_payroll_root"-->
+        <!--                  name="Payroll Transactions"-->
+        <!--                  sequence="70"-->
+        <!--                  groups="hr.group_hr_manager,hr.group_hr_user,account.group_account_manager"-->
+        <!--                  />-->
+        <!--        <menuitem id="menu_my_salary_allowance_detection_approved"-->
+        <!--        		  action="action_my_salary_allowance_detection_request_approved"-->
+        <!--                  parent="om_hr_payroll.menu_hr_payroll_root"-->
+        <!--                  name="My Approved Payroll Transactions"-->
+        <!--                  sequence="60"-->
+        <!--                  />-->
+        <menuitem action="action_salary_allowance_detection_to_approve" id="menu_salary_allowance_detection" name="Payroll Transactions" parent="om_hr_payroll.menu_hr_payroll_root" sequence="70"/>
+    </data>
+</odoo>

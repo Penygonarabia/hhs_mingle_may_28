@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+	
+
+	 <record id="employee_birthday_wish_mail" model="mail.template">
+            <field name="name">Birthday Wish For an Employee</field>
+            <field name="email_from">{{ object.user_id.email }}</field>
+            <field name="email_to">{{ object.work_email }}</field>
+            <field name="subject">Happy Birthday - {{object.name}}</field>
+            <field name="body_html"><![CDATA[
+                    <p><b style="color:#0000FF">Happy Birthday Dear <t t-out="object.name"></t></b>,</p>
+                    
+                     <p style="color:#0000FF">
+                         Your dedication to creating a positive work environment is truly appreciated...
+                   
+                    </p>
+                    <div t-if="not ctx.get('birthday_image') and object.attachment_ids" 
+                     style="text-align: center; margin: 20px 0;">
+                    <img t-att-src="'/web/image/%s?access_token=%s' % (
+                             object.attachment_ids[0].id, 
+                             object.attachment_ids[0].access_token
+                         )" 
+                         alt="Happy Birthday" 
+                         style="max-width: 100%; border-radius: 8px;"/>
+                </div>
+                   
+                    <b style="color:#0000FF">Best Regards</b><br>
+                    <b style="color:#0000FF">Human Resource Dept</b><br>
+                     <b style="color:#0000FF">HH-Shaker</b>
+                ]]>
+            </field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="auto_delete" eval="True"/>
+        </record>
+	
+	<!-- <record id="employee_birthday_wish_mail" model="mail.template">
+		
+		<field name = "name">Birthday Wish For an Employee</field>
+		<field name = "model_id" ref = "birthday_wish.model_hr_employee" />
+		<field name = "email_from">{{object.user_id.email}}</field>
+		<field name = "email_to">{{object.work_email}}</field>
+		<field name = "subject">Birthday Wishes</field>
+		<field name = "body_html" type = "html">
+		
+			 <link href="https://fonts.googleapis.com/css?family=Dancing+Script"
+                      rel="stylesheet"/>
+                <div style="background-image: url(https://drive.google.com/uc?id=X9vd_Pge0vbaNRY-iOVFb024Ph3pYVGs); background-position: center top;background-color: transparent; width: 100% !important;height:1050px !important;">
+                    <div style="text-align: center;font-weight: normal;font-size: 20px; padding-top: 210px;">
+                        Today is your special day!
+                    </div>
+                    <div style="text-align: center;font-weight: normal;font-size: 30px; padding-top: 45px;">
+                        Happy Birthday
+                    </div>
+                    <div style="text-align: center;font-weight: normal;font-size: 25px; padding-top: 30px;">
+                        <span t-field="object.name"/>
+                    </div>
+                    <div align="center">
+                        <img src="https://drive.google.com/uc?id=1jkXTZ-f4REckimpNySPQ_hkywrzAV8Yj"
+                             alt="image" title="image"
+                             style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;"
+                             class="v-src-width v-src-max-width" width="250"
+                             border="0" align="middle"/>
+                    </div>
+                    <div style="text-align: center;font-weight: normal;font-size: 30px; padding-top: 20px;">
+                        <strong>From all of us at</strong>
+                        <br/>
+                        <t t-esc="object.user_id.company_id.name"/>
+                    </div>
+                    <div style="text-align: center;font-weight: normal;font-size: 20px; padding-top: 25px;">
+                        We hope your day is filled with good things,
+                        <br/>
+                        and that the year ahead is even better than the last!
+                    </div>
+                </div>
+            </field>
+			  <link href="https://fonts.googleapis.com/css?family=Dancing+Script"
+                      rel="stylesheet"/>
+                <div style="background-color: #ab669a;width: 100% !important;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;">
+                    
+                    <div style="text-align: center;font-weight: normal;font-size: 20px; margin: 10px">
+                        Today is your special day!
+                    </div>
+                    <div style="text-align: center;font-weight: normal;font-size: 30px; padding-top: 45px;">
+                        Happy Birthday
+                    </div>
+                    <div style="text-align: center;font-weight: normal;font-size: 25px; padding-top: 30px;">
+                        <span t-field="object.name"/>
+                    </div>
+                   
+                    
+                    <div>
+                        <h3 class="v-text-align v-font-size"
+                            style="margin: 0px; color: #ffffff; line-height: 140%; text-align: center; word-wrap: break-word; font-weight: normal; font-family: 'Dancing Script', cursive; font-size: 36px;">
+                            <strong>Happy</strong>
+                        </h3>
+                    </div>
+                    <div>
+                        <h3 class="v-text-align v-font-size"
+                            style="margin: 0px; color: #ffffff; line-height: 140%; text-align: center; word-wrap: break-word; font-weight: normal; font-family: 'Dancing Script', cursive; font-size: 36px;">
+                            <strong>Birthday</strong>
+                        </h3>
+                    </div>
+                    <div>
+                        <h3 class="v-text-align v-font-size"
+                            style="margin: 0px; color: #ffffff; line-height: 140%; text-align: center; word-wrap: break-word; font-weight: normal; font-family: 'Dancing Script', cursive; font-size: 20px;">
+                            <span t-field="object.name"/>
+                        </h3>
+                    </div>
+                     <div align="center">
+                     <img src="${object.env['ir.config_parameter'].sudo().get_param('http://localhost:8070')}/birthday_wish/static/src/img/happy-birthday-birth-day.gif" 
+                     alt="Happy Birthday GIF" 
+                     style="max-width: 100%; height: auto; border: 0;"/>
+                     <img class="img" t-attf-src="data:img/png;base64,{https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExeW14cnZkdTB3cWd6ZXo0cmxkaXppemE3bGZ5c3VxaGRlamM2ZHBhdCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VyB31XTqZNJhFRZNyl/giphy.gif}" 
+                     	
+                     	<img class="img" t-attf-src="data:image/jpeg;base64,${object.company_id.logo}"
+				         alt="Birthday Greetings" 
+				          width="120" style="display: block; border: none;" align="middle"/>
+				          
+				          	<img class="img" t-attf-src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExeW14cnZkdTB3cWd6ZXo0cmxkaXppemE3bGZ5c3VxaGRlamM2ZHBhdCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VyB31XTqZNJhFRZNyl/giphy.gif" 
+				         alt="Birthday Greetings" 
+				          width="120" style="display: block; border: none;" align="middle"/>
+                     <div align="center">
+                     	<img class="img" src="https://drive.google.com/uc?id=14vpSnhEpB1N28qonayiPbj_sgRpVQGBH" 
+				         alt="Birthday Greetings" 
+				         style="width: 20%; max-width: 20%; height:10%; max-height: 10%; border: none;" align="middle"/>
+                     
+                      <img class="img" src="https://drive.google.com/uc?id=1Rwmf4VEPVLwz3WUiEkkTj4QJz8gUd1Ts" 
+				         alt="Birthday Greetings" 
+				         style="width: 100%; max-width: 600px; border: none;" align="middle"/>
+		              
+            		</div>
+            		 <div style="text-align: center;font-weight: normal;font-size: 30px; padding-top: 20px;">
+                        <strong>From all of us at</strong>
+                        <br/>
+                        <t t-esc="object.user_id.company_id.name"/>
+                    </div>
+                    <div style="text-align: center;font-weight: normal;font-size: 20px; padding-top: 25px;">
+                        We hope your day is filled with good things,
+                        <br/>
+                        and that the year ahead is even better than the last!
+                    </div>
+                  
+                    <div>
+                        <h3 class="v-text-align v-font-size"
+                            style="margin: 0px; color: #ffffff; line-height: 140%; text-align: center; word-wrap: break-word; font-weight: normal; font-family: 'Dancing Script', cursive; font-size: 36px;">
+                            <strong>From all of us at</strong>
+                            <t t-esc="object.user_id.company_id.name"/>
+                        </h3>
+                    </div>
+                </div>
+		
+		</field>
+		
+		
+		
+	
+	</record> -->
+	
+
+
+</odoo>

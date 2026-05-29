@@ -1,0 +1,17 @@
+/* .o_form_label_required {
+    color: red;
+}
+
+.o_form_label_required::after {
+    content: " *";
+    color: red;
+} */
+
+.o_form_label_required::After {
+    content: "*";
+   font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    color: rgb(165, 43, 6);
+   margin-right: 4px;
+   font-size: 1.75em;
+ }

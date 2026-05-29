@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_analytic_policy_form" model="ir.ui.view">
+        <field name="name">account.account.analytic.policy.form</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_form"/>
+        <field name="arch" type="xml">
+            <field name="deprecated" position="after">
+                <field groups="analytic.group_analytic_accounting" name="analytic_account_policy"/></field></field>
+    </record>
+    <record id="view_account_analytic_policy_tree" model="ir.ui.view">
+        <field name="name">account.account.analytic.policy.tree</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_list"/>
+        <field name="arch" type="xml">
+            <field name="reconcile" position="after">
+                <field groups="analytic.group_analytic_accounting" name="analytic_account_policy" widget="boolean_toggle"/></field></field>
+    </record>
+   <!--  <record id="view_journal_entry_post_form_line_inherit" model="ir.ui.view">
+        <field name="name">account.move.form</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='line_ids']/tree/field[@name='account_id']" position="after">
+                <field invisible="1" name="analytic_cd"/>
+            </xpath>
+           <xpath expr="//field[@name='line_ids']/tree/field[@name='analytic_distribution']" position="replace">
+               <field domain="['|', ('company_id', '=', parent.company_id), ('company_id', '=', False)]" groups="analytic.group_analytic_accounting" invisible="display_type in ('line_section', 'line_note')" name="analytic_distribution" optional="hide" required="analytic_cd != False"/>
+           </xpath>
+        </field>
+    </record> -->
+</odoo>

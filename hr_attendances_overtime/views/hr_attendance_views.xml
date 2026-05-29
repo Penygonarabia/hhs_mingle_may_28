@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="processed_data_inherit_tree" model="ir.ui.view">
+            <field name="name">hr.attendance.tree</field>
+            <field name="model">hr.attendance</field>
+            <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree/field[@name='check_out']" position="after">
+                    <field invisible="0" name="process"/>
+                    <field column_invisible="1" name="att_date"/>
+                    <field column_invisible="1" name="year_1900_bool"/>
+                    <field column_invisible="1" name="year_1900_chekout_bool"/>
+                </xpath>
+                <xpath expr="//tree/field[@name='check_in']" position="attributes">
+                    <attribute name="invisible">year_1900_bool == True</attribute>
+                </xpath>
+                <xpath expr="//tree/field[@name='check_out']" position="attributes">
+                    <attribute name="invisible">year_1900_chekout_bool == True</attribute>
+                </xpath>
+                <xpath expr="//field[@name='employee_id']" position="before">
+                    <field name="employee_no"/>
+                </xpath>
+            </field>
+        </record>
+        <record id="processed_data_inherit_attendance_form" model="ir.ui.view">
+            <field name="name">hr.attendance.form</field>
+            <field name="model">hr.attendance</field>
+            <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/group" position="inside">
+                    <field invisible="1" name="year_1900_bool"/>
+                    <field invisible="1" name="year_1900_chekout_bool"/>
+                    <!--                    <field invisible="0" name="process"/>-->
+                </xpath>
+                <xpath expr="//field[@name='employee_id']" position="after">
+                    <field name="employee_no"/>
+                </xpath>
+                <xpath expr="//field[@name='check_out']" position="after">
+                    <field invisible="0" name="process"/>
+                </xpath>
+                <xpath expr="//field[@name='check_in']" position="attributes">
+                    <attribute name="invisible">year_1900_bool == True</attribute>
+                </xpath>
+                <xpath expr="//field[@name='check_out']" position="attributes">
+                    <attribute name="invisible">year_1900_chekout_bool == True</attribute>
+                </xpath>
+                <xpath expr="//field[@name='in_mode']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='out_mode']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+<!--                <xpath expr="//separator[@string='Check In']" position="attributes">-->
+<!--                    <attribute name="invisible">1</attribute>-->
+<!--                </xpath>-->
+
+            </field>
+        </record>
+        <record id="employee_no_inheritance_search_view" model="ir.ui.view">
+            <field name="name">hr.attendance.search.view</field>
+            <field name="model">hr.attendance</field>
+            <field name="inherit_id" ref="hr_attendance.hr_attendance_view_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='employee_id']" position="after">
+                    <field name="employee_no"/>
+                </xpath>
+            </field>
+        </record>
+        <record id="hr_attendance.hr_attendance_action" model="ir.actions.act_window">
+            <field name="name">Attendance</field>
+        </record>
+        <menuitem action="hr_attendance.hr_attendance_action" id="hr_attendance.menu_hr_attendance_view_attendances"
+                  name="Attendance" parent="hr_attendance.menu_hr_attendance_root"/>
+    </data>
+</odoo>

@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- advance salary rule -->
+
+        <record id="hr_payslip_rule_overtime_allowance" model="hr.salary.rule">
+            <field name="code">OVT</field>
+            <field name="name">Overtime</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.OVT.amount if inputs.OVT else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="20"/>
+        </record>
+
+         <record id="hr_rule_input_overtime_allowance" model="hr.rule.input">
+            <field name="code">OVT</field>
+            <field name="name">Overtime</field>
+            <field name="input_id" ref="hr_payslip_rule_overtime_allowance"/>
+         </record>
+
+
+
+        <record id="hr_payslip_rule_holiday_overtime_allowance" model="hr.salary.rule">
+            <field name="code">HOVT</field>
+            <field name="name">Holiday Overtime</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.HOVT.amount if inputs.HOVT else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="21"/>
+        </record>
+
+          <record id="hr_rule_input_holiday_overtime_allowance" model="hr.rule.input">
+            <field name="code">HOVT</field>
+            <field name="name">Holiday Overtime</field>
+            <field name="input_id" ref="hr_payslip_rule_holiday_overtime_allowance"/>
+          </record>
+
+        <record id="hr_payslip_rule_accrued_leave_allowance" model="hr.salary.rule">
+            <field name="code">ACL</field>
+            <field name="name">Accrued Leave</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.ACL.amount if inputs.ACL else 0.0</field>-->
+<!--            <field name="amount_python_compute">-->
+<!--result = (payslip.encash_amt + inputs.ACL.amount) if payslip.encash_leave and inputs.ACL else (payslip.encash_amt if payslip.encash_leave else (inputs.ACL.amount if inputs.ACL else 0.0))-->
+
+<!--            </field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="22"/>
+        </record>
+
+         <record id="hr_rule_input_accrued_leave_allowance" model="hr.rule.input">
+            <field name="code">ACL</field>
+            <field name="name">Accrued Leave</field>
+            <field name="input_id" ref="hr_payslip_rule_accrued_leave_allowance"/>
+        </record>
+
+        <record id="hr_payslip_rule_personal_leave_allowance" model="hr.salary.rule">
+            <field name="code">PL</field>
+            <field name="name">Personal Leave</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.PL.amount if inputs.PL else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="23"/>
+        </record>
+
+        <record id="hr_rule_input_personal_leave_allowance" model="hr.rule.input">
+            <field name="code">PL</field>
+            <field name="name">Personal Leave</field>
+            <field name="input_id" ref="hr_payslip_rule_personal_leave_allowance"/>
+        </record>
+
+        <record id="hr_payslip_rule_public_holiday_allowance" model="hr.salary.rule">
+            <field name="code">PH</field>
+            <field name="name">Public Holidays</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.PH.amount if inputs.PH else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="24"/>
+        </record>
+
+         <record id="hr_rule_input_public_holiday_allowance" model="hr.rule.input">
+            <field name="code">PH</field>
+            <field name="name">Public Holidays</field>
+            <field name="input_id" ref="hr_payslip_rule_public_holiday_allowance"/>
+        </record>
+
+        <record id="hr_payslip_rule_ticket_encashment_allowance" model="hr.salary.rule">
+            <field name="code">TENC</field>
+            <field name="name">Ticket Encashment</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.TENC.amount if inputs.TENC else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="25"/>
+        </record>
+
+
+        <record id="hr_rule_input_ticket_encashmment_allowance" model="hr.rule.input">
+            <field name="code">TENC</field>
+            <field name="name">Ticket Encashment</field>
+            <field name="input_id" ref="hr_payslip_rule_ticket_encashment_allowance"/>
+        </record>
+
+        <record id="hr_payslip_rule_bonus_allowance" model="hr.salary.rule">
+            <field name="code">BO</field>
+            <field name="name">Bonus</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.BO.amount if inputs.BO else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="26"/>
+        </record>
+
+         <record id="hr_rule_input_bonus_allowance" model="hr.rule.input">
+            <field name="code">BO</field>
+            <field name="name">Bonus</field>
+            <field name="input_id" ref="hr_payslip_rule_bonus_allowance"/>
+        </record>
+
+        <record id="hr_payslip_rule_commission_allowance" model="hr.salary.rule">
+            <field name="code">COMM</field>
+            <field name="name">Commission</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.COMM.amount if inputs.COMM else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="27"/>
+        </record>
+
+         <record id="hr_rule_input_commission_allowance" model="hr.rule.input">
+            <field name="code">COMM</field>
+            <field name="name">Commission</field>
+            <field name="input_id" ref="hr_payslip_rule_commission_allowance"/>
+        </record>
+
+        <record id="hr_payslip_rule_advance_allowance" model="hr.salary.rule">
+            <field name="code">ADALL</field>
+            <field name="name">Advance Transaction</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.ADALL.amount if inputs.ADALL else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="28"/>
+        </record>
+
+        <record id="hr_rule_input_advance_allowance" model="hr.rule.input">
+            <field name="code">ADALL</field>
+            <field name="name">Advance Transaction</field>
+            <field name="input_id" ref="hr_payslip_rule_advance_allowance"/>
+        </record>
+
+        <record id="hr_payslip_rule_loan_allowance" model="hr.salary.rule">
+            <field name="code">LALL</field>
+            <field name="name">Loan Transaction</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.LALL.amount if inputs.LALL else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="29"/>
+        </record>
+
+
+         <record id="hr_rule_input_loan_allowance" model="hr.rule.input">
+            <field name="code">LALL</field>
+            <field name="name">Loan Transaction</field>
+            <field name="input_id" ref="hr_payslip_rule_loan_allowance"/>
+        </record>
+
+        <record id="hr_payslip_rule_eosa_advance_allowance" model="hr.salary.rule">
+            <field name="code">EOSADV</field>
+            <field name="name">EOSA Advance</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.EOSADV.amount if inputs.EOSADV else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="30"/>
+        </record>
+
+         <record id="hr_rule_input_eosa_advance_allowance" model="hr.rule.input">
+            <field name="code">EOSADV</field>
+            <field name="name">EOSA Advance</field>
+            <field name="input_id" ref="hr_payslip_rule_eosa_advance_allowance"/>
+        </record>
+
+        <record id="hr_payslip_rule_eosa_allowance" model="hr.salary.rule">
+            <field name="code">EOSA</field>
+            <field name="name">EOSA</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.EOSA.amount if inputs.EOSA else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="31"/>
+        </record>
+
+         <record id="hr_rule_input_eosa_allowance" model="hr.rule.input">
+            <field name="code">EOSA</field>
+            <field name="name">EOSA</field>
+            <field name="input_id" ref="hr_payslip_rule_eosa_allowance"/>
+        </record>
+
+        <record id="hr_payslip_rule_other_additions_allowance" model="hr.salary.rule">
+            <field name="code">OAD</field>
+            <field name="name">Other Additions</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.OAD.amount if inputs.OAD else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="32"/>
+        </record>
+
+         <record id="hr_rule_input_other_additions_allowance" model="hr.rule.input">
+            <field name="code">OAD</field>
+            <field name="name">Other Additions</field>
+            <field name="input_id" ref="hr_payslip_rule_other_additions_allowance"/>
+        </record>
+
+
+
+
+
+        <record id="hr_payslip_rule_fines_deduction" model="hr.salary.rule">
+            <field name="code">FN</field>
+            <field name="name">Fines</field>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.FN and - (inputs.FN.amount) if inputs.FN else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="190"/>
+        </record>
+
+        <record id="hr_rule_input_fines_deduction" model="hr.rule.input">
+            <field name="code">FN</field>
+            <field name="name">Fines</field>
+            <field name="input_id" ref="hr_payslip_rule_fines_deduction"/>
+        </record>
+
+        <record id="hr_payslip_rule_absenteeism_deduction" model="hr.salary.rule">
+            <field name="code">ABS</field>
+            <field name="name">Absenteeism</field>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.ABS and - (inputs.ABS.amount) if inputs.ABS else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="191"/>
+        </record>
+
+         <record id="hr_rule_input_absenteeism_deduction" model="hr.rule.input">
+            <field name="code">ABS</field>
+            <field name="name">Absenteeism</field>
+            <field name="input_id" ref="hr_payslip_rule_absenteeism_deduction"/>
+        </record>
+
+        <record id="hr_payslip_rule_bills_other_deduction" model="hr.salary.rule">
+            <field name="code">BOD</field>
+            <field name="name">Bills &amp; Other Deductibles</field>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.BOD and - (inputs.BOD.amount) if inputs.BOD else 0.0</field>-->
+             <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="192"/>
+        </record>
+
+         <record id="hr_rule_input_bills_other_deduction" model="hr.rule.input">
+            <field name="code">BOD</field>
+            <field name="name">Bills &amp; Other Deductibles</field>
+            <field name="input_id" ref="hr_payslip_rule_bills_other_deduction"/>
+        </record>
+
+        <record id="hr_payslip_rule_advance_paid_deduction" model="hr.salary.rule">
+            <field name="code">ADVP</field>
+            <field name="name">Advance Paid</field>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.ADVP and - (inputs.ADVP.amount) if inputs.ADVP else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="193"/>
+        </record>
+
+          <record id="hr_rule_input_advance_paid_deduction" model="hr.rule.input">
+            <field name="code">ADVP</field>
+            <field name="name">Advance Paid</field>
+            <field name="input_id" ref="hr_payslip_rule_advance_paid_deduction"/>
+        </record>
+
+
+        <record id="hr_payslip_rule_loan_repayment_deduction" model="hr.salary.rule">
+            <field name="code">LORP</field>
+            <field name="name">Loan Repayment</field>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.LORP and - (inputs.LORP.amount) if inputs.LORP else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="194"/>
+        </record>
+
+         <record id="hr_rule_input_loan_repayment_deduction" model="hr.rule.input">
+            <field name="code">LORP</field>
+            <field name="name">Loan Repayment</field>
+            <field name="input_id" ref="hr_payslip_rule_loan_repayment_deduction"/>
+        </record>
+
+        <record id="hr_payslip_rule_severance_pay_deduction" model="hr.salary.rule">
+            <field name="code">SP</field>
+            <field name="name">Severance Pay</field>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.SP and - (inputs.SP.amount) if inputs.SP else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="195"/>
+        </record>
+
+         <record id="hr_rule_input_severance_pay_deduction" model="hr.rule.input">
+            <field name="code">SP</field>
+            <field name="name">Severance Pay</field>
+            <field name="input_id" ref="hr_payslip_rule_severance_pay_deduction"/>
+        </record>
+
+        <record id="hr_payslip_rule_other_deduction" model="hr.salary.rule">
+            <field name="code">ODD</field>
+            <field name="name">Other Deductions</field>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.ODD and - (inputs.ODD.amount) if inputs.ODD else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="196"/>
+        </record>
+
+
+         <record id="hr_rule_input_other_deduction" model="hr.rule.input">
+            <field name="code">ODD</field>
+            <field name="name">Other Deductions</field>
+            <field name="input_id" ref="hr_payslip_rule_other_deduction"/>
+        </record>
+
+        <record id="hr_payslip_rule_leave_deduction" model="hr.salary.rule">
+            <field name="code">LD</field>
+            <field name="name">Leave Deduction</field>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.LD and - (inputs.LD.amount) if inputs.LD else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="197"/>
+        </record>
+
+
+          <record id="hr_rule_input_leave_deduction" model="hr.rule.input">
+            <field name="code">LD</field>
+            <field name="name">Leave Deduction</field>
+            <field name="input_id" ref="hr_payslip_rule_leave_deduction"/>
+        </record>
+
+        <record id="hr_payslip_rule_ticket_class1_deduction" model="hr.salary.rule">
+            <field name="code">TCD1</field>
+            <field name="name">Tickets Class1 Deductionn</field>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.TCD1 and - (inputs.TCD1.amount) if inputs.TCD1 else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="198"/>
+        </record>
+
+         <record id="hr_rule_input_ticket_class1_deduction" model="hr.rule.input">
+            <field name="code">TCD1</field>
+            <field name="name">Tickets Class1 Deduction</field>
+            <field name="input_id" ref="hr_payslip_rule_ticket_class1_deduction"/>
+        </record>
+
+        <record id="hr_payslip_rule_ticket_class2_deduction" model="hr.salary.rule">
+            <field name="code">TCD2</field>
+            <field name="name">Tickets Class2 Deductionn</field>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="amount_select">code</field>
+<!--            <field name="amount_python_compute">result = inputs.TCD2 and - (inputs.TCD2.amount) if inputs.TCD2 else 0.0</field>-->
+            <field name="amount_python_compute">result = 0.00</field>
+            <field name="appears_on_payslip" eval="True"/>
+            <field name="sequence" eval="199"/>
+        </record>
+
+          <record id="hr_rule_input_ticket_class2_deduction" model="hr.rule.input">
+            <field name="code">TCD2</field>
+            <field name="name">Tickets Class2 Deduction</field>
+            <field name="input_id" ref="hr_payslip_rule_leave_deduction"/>
+        </record>
+    </data>
+</odoo>

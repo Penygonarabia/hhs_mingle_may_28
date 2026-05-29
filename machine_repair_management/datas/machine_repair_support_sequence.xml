@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+    
+        <!-- Sequence-->
+        <record id="seq_machine_repair_support" model="ir.sequence">
+            <field name="name">Machine Repair Support Ticket</field>
+            <field name="code">machine.repair.support</field>
+            <field name="prefix">RO - </field>
+            <field name="padding">4</field>
+            <field eval="1" name="number_next" />
+            <field eval="1" name="number_increment" />
+            <field eval="True" name="use_date_range" />
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_amc_machine_repair_support" model="ir.sequence">
+            <field name="name">Machine Repair Support Amc Ticket</field>
+            <field name="code">amc.machine.repair.support</field>
+            <field name="prefix">AMC-RO-</field>
+            <field name="padding">4</field>
+            <field eval="1" name="number_next" />
+            <field eval="1" name="number_increment" />
+            <field eval="True" name="use_date_range" />
+            <field name="company_id" eval="False"/>
+        </record>
+        
+         <record id="seq_job_card" model="ir.sequence">
+            <field name="name">Job Card</field>
+            <field name="code">jobcard.sequence</field>
+            <field name="prefix">JC - </field>
+            <field name="padding">4</field>
+            <field eval="1" name="number_next" />
+            <field eval="1" name="number_increment" />
+            <field eval="True" name="use_date_range" />
+            <field name="company_id" eval="False"/>
+        </record>
+        
+        <record id = "sequence_payment_receipt" model = "ir.sequence">
+        	<field name ="name">Payment Receipt</field>
+        	<field name ="code">payment.receipt</field>
+        	 <field name="prefix">PAR /</field> 
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        	
+        </record>
+        
+        <record id = "sequence_service_sale_order" model = "ir.sequence">
+        	<field name = "name">Service Sale Order</field>
+        	<field name = "code">service.sale.order</field>
+        	<field name = "prefix">S</field>
+        	<field name = "padding">4</field>
+        	<field name = "company_id" eval = "False"/>
+        </record>
+        
+          <record id = "sequence_subscription_contracts" model = "ir.sequence">
+        	<field name = "name">Subscription Contracts</field>
+        	<field name = "code">subscription.contracts</field>
+        	<field name = "prefix">CON</field>
+        	<field name = "padding">4</field>
+        	<field name = "company_id" eval = "False"/>
+
+        </record>
+        
+        <record id="seq_maintances_equipment_asset_tag_number" model="ir.sequence">
+            <field name="name">Asset Tag Number</field>
+            <field name="code">maintances.equipment.contract</field>
+            <field name="prefix"></field>
+            <field name="padding">4</field>
+            <field eval="1" name="number_next" />
+            <field eval="1" name="number_increment" />
+            <field eval="True" name="use_date_range" />
+            <field name="company_id" eval="False"/>
+        </record>
+        
+        <record id="action_recompute_times_server" model="ir.actions.server">
+			    <field name="name">Recompute Fields</field>
+			    <field name="model_id" ref="machine_repair_management.model_project_task"/>
+			    <field name="binding_model_id" ref="machine_repair_management.model_project_task"/>
+			    <field name="state">code</field>
+			    <field name="code">
+					
+			  if records:
+			    for rec in records:
+			        rec.write({
+			            'technician_started_date': rec.technician_started_date,
+			            'technician_reached_date': rec.technician_reached_date,
+			            'job_resume_date': rec.job_resume_date,
+			            'job_hold_date': rec.job_hold_date,
+			            'cstneedquote_date': rec.cstneedquote_date,
+			            'technician_second_visit_datetime': rec.technician_second_visit_datetime,
+			            'closed_datetime': rec.closed_datetime,
+			        })
+				</field>
+			    <field name="binding_view_types">tree,form</field>
+			</record>
+        
+    </data>
+</odoo>

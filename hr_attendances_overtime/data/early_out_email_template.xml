@@ -1,0 +1,38 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+<odoo>
+
+	<record id = "email_template_for_earlyout_employee" model ="mail.template">
+		<field name = "name">Email Template For Early Out Employee</field>
+		<field name = "model_id" ref="hr_attendances_overtime.model_hr_attendance_sheet" />
+		<!-- <field name ="email_from">{{object.user_id.login or ''}}</field> -->
+		<field name ="email_from">{{object.create_uid.email or ''}}</field>
+		<field name = "email_to">{{object.employee_id.work_email or ''}}</field>
+		<field name = "email_cc">{{object.employee_id.parent_id.work_email or ' '}}</field>
+		<field name = "subject">Early out Notification - {{object.employee_id.name}}  At {{ ctx.get('yesterday_str') }}</field>
+		<!--  <field name="subject">Absence Notification - {{ object.name }} on {{ (context_today() - relativedelta(days=1)).strftime('%d-%m-%Y') }}</field> -->
+		<field name ="body_html" type="html">
+			<div style = "margin : 0px; padding :0px;">
+				<p style="color:#0000FF"> Dear <strong t-out ="object.employee_id.name"/>
+				<br/> Our attendance records indicate that you were Early Out on
+					<strong t-out ="(datetime.datetime.now().date() - datetime.timedelta(days = 1)).strftime('%d-%m-%Y')"/> by
+					 <strong>{{ ctx.get('total_early_out') }}</strong> (HH:MM).
+					<br/>
+					If this is incorrect or if you have a valid reason for this late in, please inform your Direct manager or the HR team immediately with supporting details.
+					</p>
+				
+				<br/>
+				<br/>
+				
+              	<b style="color:#0000FF">Best Regards</b><br/>
+                <b style="color:#0000FF">Human Resource Dept</b><br/>
+                 <b style="color:#0000FF">HH-Shaker</b>
+              
+			</div>
+			
+		
+		
+		</field>
+	</record>
+	
+
+</odoo>

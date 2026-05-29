@@ -1,0 +1,38 @@
+<?xml version="1.0"  encoding="utf-8" ?>
+<odoo>
+
+	<record id = "action_get_attendance" model="ir.actions.server">
+			<field name ="name">Get Attendance</field>
+			<field name = "model_id" ref="hr_attendances_overtime.model_hr_attendance_sheet"/>
+			<field name = "binding_model_id" ref="hr_attendances_overtime.model_hr_attendance_sheet"/>
+			<field name = "state">code</field>
+			<field name = "code">actions = records.get_attendance()</field>
+			<field name = "binding_view_types">list,form</field>
+			<field name="sequence">1</field>
+	 </record>
+		
+	<record id = "compute_attendance_data_employee" model="ir.actions.server">
+		<field name="name">Compute Attendance Data</field>
+		<field name="model_id" ref="hr_attendances_overtime.model_hr_attendance_sheet"/>
+		<field name="binding_model_id" ref="hr_attendances_overtime.model_hr_attendance_sheet"/>
+		<!-- <field name="binding_model_id" eval="False"/> -->
+		<field name="state">code</field>
+		<field name="code">actions = records.compute_attendance_data()</field>
+		<field name="binding_view_types">list,form</field>
+		<field name="sequence">2</field>
+	</record>
+	
+		<record id="actions_execute_set_to_approve" model="ir.actions.server">
+		 	<field name="name">Approve</field>
+		 	<field name="model_id" ref="hr_attendances_overtime.model_hr_attendance_sheet"/>
+		 	<field name="binding_model_id" ref="hr_attendances_overtime.model_hr_attendance_sheet"/>
+		 	<field name="state">code</field>
+<!-- 		 	<field name="code">actions = records.execute_set_to_approve()</field>
+ -->		 	<field name="code">actions = records._execute_full_approve()</field>
+		 	<field name="binding_view_types">list</field>
+		 	<field name="sequence">3</field>
+		</record>
+	
+		
+
+</odoo>

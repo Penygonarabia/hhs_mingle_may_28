@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="Ksdashboardkpiview">
+        <t t-if="props.item.ks_model_id_2 == false and (props.item.ks_target_view == 'Number' || !props.item.ks_goal_enable)">
+            <t t-call="ks_kpi_template"/>
+        </t>
+        <t t-elif="props.item.ks_model_id_2 == false and (props.item.ks_target_view == 'Progress Bar' and  props.item.ks_goal_enable)">
+            <t t-call="ks_kpi_template_3"/>
+        </t>
+        <t t-else="">
+            <t t-call="ks_kpi_template_2"/>
+        </t>
+    </t>
+
+    <t t-name="ks_kpi_template">
+        <t t-if="env.inDialog">
+            <div class="explain-ai pt-3">
+                <div class="container">
+                    <div t-att-class="'ks_item_click grid-stack-item ks_tile_carousel '+ previewclass + reviewclass" t-att-id="state.item_info_kpi1.item.id" t-ref="ks_kpi">
+                        <div class="row ks_ai_explain_body">
+                            <t t-if="ks_ai_analysis">
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-sec ks_explain_ai">
+                                        <t t-call="ks_kpi_temp_1"/>
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-data h-100">
+                                        <div class="charts-content-box">
+                                             <t t-call="ks_item_explanation"/>
+                                        </div>
+                                        <div class="voice-button" t-on-click="props.ks_speak" title="Text to speech">
+                                            <div class="voice-cricle">
+                                                <img src="/ks_dashboard_ninja/static/images/voice-cricle.svg" height="24" width="24" alt="voice-img" loading="lazy"
+                                                class="img-fluid"/>
+                                            </div>
+                                            <div class="comp-gif d-none">
+                                                <img src="/ks_dashboard_ninja/static/images/Comp.gif" alt="loading gif" height="24" width="24"
+                                                     class="img-fluid"/>
+                                            </div>
+                                            <audio t-ref="aiAudioRef"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                             <t t-else="">
+                                 <t t-call="ks_kpi_temp_1"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </t>
+        <t t-else="">
+            <div t-att-class="'ks_item_click grid-stack-item ks_tile_carousel '+ previewclass + reviewclass" t-att-id="state.item_info_kpi1.item.id" t-ref="ks_kpi">
+                <t t-if="ks_ai_analysis">
+                    <div class="ks_ai_explain_body">
+                        <t t-call="ks_kpi_temp_1"/>
+                        <t t-call="ks_item_explanation"/>
+                    </div>
+                </t>
+                <t t-else="">
+                    <t t-call="ks_kpi_temp_1"/>
+                </t>
+            </div>
+        </t>
+    </t>
+
+    <t t-name="ks_kpi_template_3">
+        <t t-if="env.inDialog">
+            <div class="explain-ai pt-3">
+                <div class="container">
+                    <div t-att-class="'ks_item_click grid-stack-item ks_tile_carousel template-3-checking ' + reviewclass" t-att-id="state.item_info_kpi3.item.id" t-ref="ks_kpi">
+                        <div class="row ks_ai_explain_body">
+                            <t t-if="ks_ai_analysis">
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-sec ks_explain_ai">
+                                        <t t-call="ks_kpi_temp_3"/>
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-data h-100">
+                                        <div class="charts-content-box">
+                                             <t t-call="ks_item_explanation"/>
+                                        </div>
+                                        <div class="voice-button" t-on-click="props.ks_speak" title="Text to speech">
+                                            <div class="voice-cricle">
+                                                <img src="/ks_dashboard_ninja/static/images/voice-cricle.svg" height="24" width="24" alt="voice-img" loading="lazy"
+                                                class="img-fluid"/>
+                                            </div>
+                                            <div class="comp-gif d-none">
+                                                <img src="/ks_dashboard_ninja/static/images/Comp.gif" alt="loading gif" height="24" width="24"
+                                                     class="img-fluid"/>
+                                            </div>
+                                            <audio t-ref="aiAudioRef"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                             <t t-else="">
+                                 <t t-call="ks_kpi_temp_3"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </t>
+        <t t-else="">
+            <div t-att-class="'ks_item_click grid-stack-item ks_tile_carousel template-3-checking ' + reviewclass" t-att-id="state.item_info_kpi3.item.id" t-ref="ks_kpi">
+                <t t-if="ks_ai_analysis">
+                    <div class="ks_ai_explain_body">
+                        <t t-call="ks_kpi_temp_3"/>
+                         <t t-call="ks_item_explanation"/>
+                    </div>
+                </t>
+                <t t-else="">
+                    <t t-call="ks_kpi_temp_3"/>
+                </t>
+            </div>
+        </t>
+    </t>
+
+
+    <t t-name="ks_kpi_template_2">
+        <t t-if="env.inDialog">
+             <div class="explain-ai pt-3">
+                <div class="container">
+                    <div t-att-class="'ks_item_click grid-stack-item ks_tile_carousel'+ reviewclass" t-att-id="state.item_info_kpi2.item.id" t-ref="ks_kpi">
+                        <div class="row ks_ai_explain_body">
+                            <t t-if="ks_ai_analysis">
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-sec ks_explain_ai">
+                                        <t t-call="ks_kpi_temp_2"/>
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-data h-100">
+                                        <div class="charts-content-box">
+                                             <t t-call="ks_item_explanation"/>
+                                        </div>
+                                        <div class="voice-button" t-on-click="props.ks_speak" title="Text to speech">
+                                            <div class="voice-cricle">
+                                                <img src="/ks_dashboard_ninja/static/images/voice-cricle.svg" height="24" width="24" alt="voice-img" loading="lazy"
+                                                class="img-fluid"/>
+                                            </div>
+                                            <div class="comp-gif d-none">
+                                                <img src="/ks_dashboard_ninja/static/images/Comp.gif" alt="loading gif" height="24" width="24"
+                                                     class="img-fluid"/>
+                                            </div>
+                                            <audio t-ref="aiAudioRef"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                             <t t-else="">
+                               <t t-call="ks_kpi_temp_2"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+        <t t-else="">
+            <div t-att-class="'ks_item_click grid-stack-item  ks_tile_carousel '+ reviewclass" t-att-id="state.item_info_kpi2.item.id" t-ref="ks_kpi">
+               <t t-if="ks_ai_analysis">
+                    <div class="ks_ai_explain_body">
+                        <t t-call="ks_kpi_temp_2"/>
+                         <t t-call="ks_item_explanation"/>
+                    </div>
+               </t>
+                <t t-else="">
+                    <t t-call="ks_kpi_temp_2"/>
+                </t>
+            </div>
+        </t>
+    </t>
+
+    <t t-name="ks_kpi_temp_1">
+         <div t-att-class="ks_ai_analysis? classname + ' ks_ai_chart_body ks_ai_dashboard_item ks_explain_ai_view': classname"
+                 t-att-title="state.item_info_kpi1.item.ks_info" t-att-id="state.item_info_kpi1.item.id" t-on-click.stop="() => this.props.onItemClick(item.id)">
+                <div class="ks_dashboard_icon_l5 ks_dashboard_icon_color_picker dashboard-item-icon img-bg">
+                    <t t-if="state.item_info_kpi1.icon_select=='Custom'">
+                        <t t-if="state.item_info_kpi1.ks_icon_url">
+                            <img t-att-src="state.item_info_kpi1.ks_icon_url"/>
+                        </t>
+                    </t>
+                    <t t-elif="state.item_info_kpi1.icon_select=='Default'">
+                        <span t-att-style="'color:'+ state.item_info_kpi1.icon_color + ';'"
+                              t-att-class="'fa fa-' + state.item_info_kpi1.default_icon + ' fa-4x'"/>
+                    </t>
+                </div>
+                <div class="flex-container">
+                    <div class="ks_dashboard_item_main_body_l5 ks_kpi_main_body">
+                        <div class="ks_dashboard_kpi_count_preview" t-att-title="state.item_info_kpi1.count_1_tooltip">
+                            <t t-esc="state.item_info_kpi1.count_1"/>
+                        </div>
+                    </div>
+                    <t t-if="state.item_info_kpi1.ks_previous_period">
+                        <div class="var-prev" style="text-align: center;">
+                            <div style="color: rgba(0, 0, 0, 0.61);">
+                                <span>vs Prev</span>
+                            </div>
+                            <div>
+                                <span class="pre_deviation " style="font-size:medium;">
+                                    <t t-esc="state.item_info_kpi1.pre_deviation"/>
+                                    <i t-att-class="'fa fa-arrow-'+ pre_arrow"/>
+                                </span>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+
+                <div class="ks_dashboard_kpi_name_preview dashboard-item-name mb-3" t-att-title="state.item_info_kpi1.name">
+                    <t t-esc="state.item_info_kpi1.name"/>
+                </div>
+
+                <div class="d-flex ks_target_previous dashboard-item-compare">
+                    <t t-if="state.item_info_kpi1.ks_enable_goal">
+                        <div class="w-100 d-flex justify-content-between align-items-center px-2">
+                            <div style="color: rgba(0, 0, 0, 0.61); text-align:center;">
+                                <span>vs Target</span>
+                            </div>
+                            <div>
+                                <span class="target_deviation" style="font-size : medium;">
+                                    <t t-esc="state.item_info_kpi1.target_deviation"/>
+                                    <t t-if="state.item_info_kpi1.target_arrow">
+                                        <i t-att-class="'fa fa-arrow-'+ state.item_info_kpi1.target_arrow"/>
+                                    </t>
+                                </span>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+                <img src="ks_dashboard_ninja/static/images/selected.svg" class="ks_img_display d-none" width="30"/>
+                <div class="select-btn d-none">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M10.0001 18.3332C14.5834 18.3332 18.3334 14.5832 18.3334 9.99984C18.3334 5.4165 14.5834 1.6665 10.0001 1.6665C5.41675 1.6665 1.66675 5.4165 1.66675 9.99984C1.66675 14.5832 5.41675 18.3332 10.0001 18.3332Z"
+                            stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M6.45825 9.99993L8.81659 12.3583L13.5416 7.6416" stroke="" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <KsItemButton item_data="this.item" item_classes="'ks_dashboard_item_header_l6'" itemRootRef="this.ks_kpi"/>
+            </div>
+    </t>
+    <t t-name="ks_kpi_temp_2">
+         <div t-att-id="state.item_info_kpi2.id"
+                 t-att-class="ks_ai_analysis? classname + ' ks_ai_chart_body ks_ai_dashboard_item ks_explain_ai_view': classname"
+                t-att-title="state.item_info_kpi2.item.ks_info" t-on-click.stop="() => this.props.onItemClick(item.id)">
+                <div class="ks_dashboard_icon_l5 ks_dashboard_icon_color_picker dashboard-item-icon img-bg">
+                    <t t-if="state.item_info_kpi2.icon_select=='Custom'">
+                        <t t-if="state.item_info_kpi2.ks_icon_url">
+                            <img t-att-src="state.item_info_kpi2.ks_icon_url"/>
+                        </t>
+                    </t>
+                    <t t-elif="state.item_info_kpi2.icon_select=='Default'">
+                        <span t-att-style="'color:'+ state.item_info_kpi2.icon_color + ';'"
+                              t-att-class="'fa fa-' + state.item_info_kpi2.default_icon + ' fa-4x'"/>
+                    </t>
+                </div>
+                <div class="ks_dashboard_item_main_body_l5 ks_kpi_main_body">
+                    <div class="ks_dashboard_kpi_count_preview dashboard-item-data" t-att-title="state.item_info_kpi2.count_tooltip">
+                        <span>
+                            <t t-esc="state.item_info_kpi2.count"/>
+                            <t t-if="state.item_info_kpi2.target_view =='Progress Bar' and state.item_info_kpi2.target_enable">/
+                                <t t-esc="state.item_info_kpi2.target"/>
+                            </t>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="ks_dashboard_kpi_name_preview dashboard-item-name mb-3">
+                    <t t-esc="state.item_info_kpi2.name"/>
+                </div>
+
+                <t t-if="state.item_info_kpi2.ks_enable_goal and state.item_info_kpi2.target_enable">
+                    <div>
+                        <t t-if="state.item_info_kpi2.target_deviation and state.item_info_kpi2.target_view =='Number'">
+                            <div class="dashboard-item-compare">
+                                <div>
+                                    <span class="ks_kpi_target_grey">vs Target</span>
+                                </div>
+                                <div>
+                                    <span class="target_deviation">
+                                        <t t-esc="state.item_info_kpi2.target_deviation"/>
+                                        <t t-if="state.item_info_kpi2.pre_arrow">
+                                            <i t-att-class="'fa fa-arrow-'+ state.item_info_kpi2.pre_arrow"/>
+                                        </t>
+                                    </span>
+                                </div>
+                            </div>
+                        </t>
+                        <t t-if="state.item_info_kpi2.target_progress_deviation and state.item_info_kpi2.target_view =='Progress Bar'">
+                            <div class="text-center ks_progress dashboard-item-compare">
+                                <div class="w-100 text-start">
+                                    <progress id="ks_progressbar" value="0" max="100"/>
+                                </div>
+                                <div class="text-center">
+                                    <t t-esc="state.item_info_kpi2.target_progress_deviation"/>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+
+                <KsItemButton item_data="this.item" item_classes="'ks_dashboard_item_header_l6'" itemRootRef="this.ks_kpi" />
+            </div>
+    </t>
+    <t t-name="ks_kpi_temp_3">
+        <div t-att-id="state.item_info_kpi3.id"
+                 t-att-class="ks_ai_analysis? classname + ' ks_ai_chart_body ks_ai_dashboard_item ks_explain_ai_view': classname"
+                t-att-title="state.item_info_kpi3.item.ks_info" t-on-click.stop="() => this.props.onItemClick(item.id)">
+                <div class="ks_dashboard_icon_l5 ks_dashboard_icon_color_picker dashboard-item-icon img-bg">
+                    <t t-if="state.item_info_kpi3.icon_select=='Custom'">
+                        <t t-if="state.item_info_kpi3.ks_icon_url">
+                            <img t-att-src="state.item_info_kpi3.ks_icon_url"/>
+                        </t>
+                    </t>
+                    <t t-elif="state.item_info_kpi3.icon_select=='Default'">
+                        <span t-att-style="'color:'+ state.item_info_kpi3.icon_color + ';'"
+                              t-att-class="'fa fa-' + state.item_info_kpi3.default_icon + ' fa-4x'"/>
+                    </t>
+                </div>
+
+
+                <div class="flex-container">
+                    <div class="ks_dashboard_item_main_body_l5 ks_kpi_main_body dashboard-item-data">
+                        <div class="ks_dashboard_kpi_count_preview" t-att-title="count_1_tooltip">
+                            <span class="ks_count">
+                                <t t-esc="state.item_info_kpi3.count_1"/>
+                            </span>
+                            /
+                            <span>
+                                <t t-esc="state.item_info_kpi3.target"/>
+                            </span>
+                        </div>
+                    </div>
+                    <t t-if="item.ks_previous_period &amp;&amp; previous_period_data">
+                        <div class="text-center var-prev">
+                            <div>
+                                <span>vs Prev</span>
+                            </div>
+                                <div class="d-flex flex-column">
+                                <t t-esc="state.item_info_kpi3.previous_period_data"/>
+                                <span class="pre_deviation">
+                                    <t t-esc="state.item_info_kpi3.pre_deviation"/>
+                                    <i t-att-class="'fa fa-arrow-'+ state.item_info_kpi3.pre_arrow"/>
+                                </span>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+
+                <div class="ks_dashboard_kpi_name_preview dashboard-item-name mb-3">
+                    <t t-esc="state.item_info_kpi3.name"/>
+                </div>
+                <div class="text-center ks_progress dashboard-item-compare">
+                    <div class="w-100 text-start">
+                        <progress id="ks_progressbar" value="0" max="100"/>
+                    </div>
+                    <div class="text-center">
+                        <t t-esc="state.item_info_kpi3.target_progress_deviation"/>%
+                    </div>
+                </div>
+                <KsItemButton item_data="this.item" item_classes="'ks_dashboard_item_header_l6'" itemRootRef="this.ks_kpi"/>
+            </div>
+    </t>
+
+</templates>

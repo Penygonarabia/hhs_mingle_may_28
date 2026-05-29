@@ -1,0 +1,24 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+<odoo>
+ 
+	<record id = "views_sale_quotation_whatsapp_inherit" model ="ir.ui.view">
+	
+		<field name ="name">sale.order.inherit.form</field>
+		<field name ="model">sale.order</field>
+		<field name = "inherit_id" ref="sale.view_order_form"/>
+		<field name = "arch" type = "xml">
+			
+			<xpath expr="//button[@name ='action_confirm']" position = "after">
+				<button name = "send_whatsapp_message" string = "Send by Whatsapp"  icon="fa-whatsapp" 
+					type = "object" class = "oe_highlight" invisible = "whatsapp_button_click_bool == True or state !='draft'"/>
+				<field name = "whatsapp_button_click_bool" invisible = "1"/>
+			</xpath>
+			
+			<xpath expr ="//field[@name = 'payment_term_id']" position = "after">
+				<field name = "rejection_reason" invisible = "1"/>
+			</xpath>
+		
+		</field>
+	</record>
+ 
+</odoo>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_employee_custody_report_form" model="ir.ui.view">
+        <field name="name">employee.custody.report.wizard</field>
+        <field name="model">employee.custody.report</field>
+        <field name="arch" type="xml">
+            <form string="Employees Custody Report">
+                <group>
+                    <group>
+                        <div class="o_td_label" style="width:175px;">
+                            <label for="employee_ids" string="Employee name"/>
+                        </div>
+                        <field name="employee_ids" nolabel="1" options="{'no_create': True, 'no_create_edit':True}" widget="many2many_tags"/>
+                        <field name="department_ids" options="{'no_create': True, 'no_create_edit':True}" widget="many2many_tags"/>
+                        <field name="job_title_ids" options="{'no_create': True, 'no_create_edit':True}" widget="many2many_tags"/>
+                        <field name="nationality_ids" options="{'no_create': True, 'no_create_edit':True}" widget="many2many_tags"/>
+                        <field name="branch_location_ids" options="{'no_create': True, 'no_create_edit':True}" widget="many2many_tags"/>
+                        <field name="sort_by"/>
+                    </group>
+                    <group>
+                        <div class="o_td_label" style="width:200px;">
+                            <label for="from_request_date" string="From Request Date"/>
+                        </div>
+                        <field name="from_request_date" nolabel="1"/>
+                        <field name="to_request_date" required="from_request_date == True"/>
+                        <field name="from_return_date"/>
+                        <field name="to_return_date" required="from_return_date == True"/>
+                        <field name="asset_type_ids" options="{'no_create': True, 'no_create_edit':True}" widget="many2many_tags"/>
+                        <field name="approval_status"/>
+                        <field name="employee_status"/>
+                        <field invisible="1" name="company_id"/>
+                    </group>
+                </group>
+                <footer>
+                    <button class="oe_highlight" name="print_custody_report" string="Print Excel" type="object"/>
+                    <button class="oe_highlight" invisible="1" name="print_custody_pdf_report" string="Print PDF" type="object"/>
+                    <button class="btn-secondary" name="clear" special="cancel" string="Cancel"/>
+                </footer>
+            </form></field>
+    </record>
+    <record id="action_employee_custody_report" model="ir.actions.act_window">
+        <field name="name">Employees Custody Report</field>
+        <field name="res_model">employee.custody.report</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_employee_custody_report_form"/>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="model_employee_custody_report"/>
+        <field name="binding_type">report</field>
+    </record>
+    <!--<menuitem id="menu_action_employee_custody_report" name="Custody Report" action="action_employee_custody_report"  parent="menu_custody_report"
+              groups="hr.group_hr_manager" sequence="20"/>-->
+    <menuitem action="action_employee_custody_report" groups="hr.group_hr_manager" id="menu_action_employee_custody_report" name="Employees Custody Report" parent="om_hr_payroll.employee_reports_menu" sequence="30"/>
+    <record id="action_employee_custody_pdf" model="ir.actions.report">
+        <field name="name">Employees Custody Report</field>
+        <field name="model">employee.custody.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">hr_custody.report_employee_custody_pdf</field>
+        <field name="report_file">hr_custody.report_employee_custody_pdf</field>
+        <field name="binding_model_id" ref="model_employee_custody_report"/>
+        <field name="binding_type">report</field>
+    </record>
+    <!--	         <field name="paperformat_id" ref="employee_details_report.custom_branch_paperformat_id" />-->
+</odoo>

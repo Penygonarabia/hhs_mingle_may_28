@@ -1,0 +1,64 @@
+/* ================================
+   PM Service Tree View Styling
+   ================================ */
+
+/* Description column - main fix
+.o_list_view table tbody td.o_desc_column {
+  min-width: 350px !important;
+  max-width: 600px !important;
+  white-space: normal !important;
+  word-break: break-word;
+  vertical-align: top;
+}
+
+Header alignment for description
+.o_list_view table thead th.o_desc_column {
+  min-width: 350px !important;
+}
+
+Make rows expand properly
+.o_list_view table tbody tr {
+  height: auto !important;
+}
+
+Ensure text wraps inside all cells
+.o_list_view table td {
+  white-space: normal !important;
+}
+
+Optional: better spacing
+.o_list_view table td,
+.o_list_view table th {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+Optional: limit very long content with scroll
+.o_list_view table tbody td.o_desc_column {
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+Optional: improve readability
+.o_list_view table tbody td.o_desc_column div {
+  line-height: 1.4;
+} */
+.o_list_view th[data-name="description"] {
+  min-width: 900px !important;
+}
+/* .o_list_view th[data-name="parameter"] {
+  min-width: 250px !important;
+} */
+.o_list_view th[data-name="parameter_sortorder"],
+.o_list_view td[data-name="parameter_sortorder"] {
+  width: 150px !important;
+  max-width: 150px !important;
+  text-align: center;
+}
+
+/* Make textarea RTL */
+.desc_column textarea {
+    direction: rtl !important;
+    text-align: right !important;
+}
+

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <menuitem name="Services" id="main_machine_repair_support_main" 
+            web_icon="machine_repair_management,static/description/icon.png"
+            groups="machine_repair_management.group_machine_repair_user"  sequence="13"/>
+            
+        <!--  <menuitem name="Repair" id="main_machine_repair_support_main" 
+            web_icon="machine_repair_management,static/description/icon.png"
+            groups="machine_repair_management.group_machine_repair_user"  sequence="13"/>   -->  
+        <menuitem name="Service" id="menu_machine_repair_support" parent="main_machine_repair_support_main" sequence="1"/>
+ 		<!-- <menuitem name="Machine Repairs" id="menu_machine_repair_support" parent="main_machine_repair_support_main" sequence="1"/> -->
+        <menuitem name="Machines" id="menu_machine_product_main" parent="main_machine_repair_support_main" sequence="2"/>
+        <menuitem name="Machines" id="menu_machine_product_action" parent="menu_machine_product_main" sequence="2" action="action_product_machine"/>
+        <menuitem name="Machine Parts" id="menu_machine_part_product_action" parent="menu_machine_product_main" sequence="2" action="action_product_machine_parts"/>
+<!--        <menuitem name="Diagnosys" id="menu_diagnosys_action" parent="menu_machine_repair_support" sequence="10" action="action_view_task_diagnosis"/>-->
+       <!--  <menuitem name="Machine Diagnosys" id="menu_diagnosys_action" parent="menu_machine_repair_support" sequence="10" action="action_view_task_diagnosis"/> -->
+        <menuitem name="Job Card" id="menu_workorder_action" active="False"/>
+ 		 <!-- <menuitem name="Job Card" id="menu_workorder_action" parent="menu_machine_repair_support" sequence="12" action="action_view_task_workorder"/> -->
+ 		
+ 		<!-- <menuitem name="Machine WorkOrders" id="menu_workorder_action" parent="menu_machine_repair_support" sequence="12" action="action_view_task_workorder"/> -->
+            
+        <menuitem name="Configuration" id="menu_machine_repair_configuration" parent="main_machine_repair_support_main" sequence="100" groups="machine_repair_management.group_machine_repair_manager"/>
+        <!-- <menuitem name="Services" id="menu_item_nature_of_service" parent="menu_machine_repair_configuration" action="action_nature_of_service"/> -->
+      <menuitem name="Service Types" id="menu_item_nature_of_service" parent="menu_machine_repair_configuration" action="action_nature_of_service" sequence='9'/>
+        
+<!--        <menuitem name="Product Consume Part" id="menu_item_product_consume_part" parent="menu_machine_repair_configuration" action="action_product_consume_part"/-->
+    
+        <menuitem name="Service Request" id="menu_item_machine_repair_support" sequence="1" parent="menu_machine_repair_support" action="action_machine_repair_support"/>
+        <!-- <menuitem name="Machine Repair Tickets" id="menu_item_machine_repair_support" sequence="1" parent="menu_machine_repair_support" action="action_machine_repair_support"/> -->
+        <menuitem name="Reports" id="menu_machine_repair_report" parent="main_machine_repair_support_main" groups="machine_repair_management.group_machine_repair_manager"/>
+<!--        <menuitem name="Repair Estimation Lines" id="menu_item_repair_estimation_lines" parent="menu_machine_repair_configuration" action="action_repair_estimation_lines"/-->
+        <menuitem name="Services" id="menu_item_repair_type" parent="menu_machine_repair_configuration" action="action_repair_type" sequence='11'/>
+        <!-- <menuitem name="Service Types" id="menu_item_repair_type" parent="menu_machine_repair_configuration" action="action_repair_type"/> -->
+
+        <menuitem name="Service Teams" id="menu_item_machine_support_team" parent="menu_machine_repair_configuration" action="action_machine_support_team" sequence='14'/>
+   		<!-- <menuitem
+                name="Task Stages"
+                id="project.menu_project_config_project"
+                action="open_task_type_form"
+                sequence="10"
+            /> -->
+   		
+    </data>
+</odoo>

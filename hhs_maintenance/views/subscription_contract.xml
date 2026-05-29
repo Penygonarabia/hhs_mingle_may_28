@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="subscription_contracts_view_form_inherit_hhs_maintenance" model="ir.ui.view">
+        <field name="name">subscription.contracts.view.form</field>
+        <field name="model">subscription.contracts</field>
+        <field name="inherit_id" ref="machine_repair_management.subscription_contracts_view_form_inherit"/>
+	        <field name="arch" type="xml">
+	            <xpath expr="//group/field[@name='technician_id']" position="after">
+					<field name ="contracts_reference_id"/>
+	            </xpath>
+            </field>
+    </record>
+
+</odoo>

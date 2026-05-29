@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Top-level menu -->
+    <menuitem id="menu_post_service_root"
+              name="Post Service Checklist"
+              web_icon="hhs_post_service_checklist,static/description/icon.png"
+              sequence="96"/>
+
+    <!-- Sub-menu -->
+    <menuitem id="menu_post_service_templates"
+              name="Post Service Checklist"
+              parent="crm.crm_menu_config"
+              action="action_checklist_template"
+              sequence="908"/>
+
+</odoo>

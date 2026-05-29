@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_hr_end_services_benefits_settlement_form" model="ir.ui.view">
+            <field name="name">hr.benefit.settlement.form</field>
+            <field name="model">hr.benefit.settlement</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="request_id" readonly="1"/>
+                                <field name="employee_id" readonly="1"/>
+                                <field name="amount" readonly="1"/>
+                                <field invisible="total_payslip_deserved_amount == False" name="total_payslip_deserved_amount" readonly="1"/>
+                            </group>
+                            <group>
+                                <field domain="[('type','in',['cash','bank'])]" name="settlement_journal_id" options="{'no_create': True}" required="1"/>
+                                <field name="payment_date" required="1"/>
+                            </group>
+                            <group/>
+                            <group>
+                                <field domain="[('type','in',['general'])]" name="expense_journal_id" options="{'no_create': True}" required="1"/>
+                                <field name="expense_account_id" options="{'no_create': True}" required="1"/>
+                                <field name="expense_date" required="1"/>
+                            </group>
+                            <footer>
+                                <button class="btn-primary" name="settle_employee_reward" string="Register Payment" type="object"/>
+                                <button class="btn-default" special="cancel" string="Cancel"/>
+                            </footer>
+                        </group>
+                    </sheet>
+                </form></field>
+        </record>
+        <record id="action_hr_end_services_benefits_settlement_view" model="ir.actions.act_window">
+            <field name="name">Ending Service Rewards Settlement</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.benefit.settlement</field>
+            <field name="context">{ 'default_request_id': active_id,'request_id':active_id}</field>
+            <!--<field name="view_type">form</field>-->
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="print_machine_repair_document" model="ir.actions.report">
+            <field name="name">Print Machine Repair Pre-formatted Document</field>
+            <field name="model">machine.repair.support</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">machine_repair_management.machine_repair_document_preformatted_document_template</field>
+            <field name="report_file">machine_repair_management.machine_repair_document_preformatted_document_template</field>
+            <field name="binding_model_id" ref="model_machine_repair_support"/>
+            <field name="binding_type">report</field>
+        </record>
+         
+        <template id="machine_repair_document_preformatted_document_template">
+            <t t-call="web.html_container">
+                     <t t-foreach="docs" t-as="doc">
+               <t t-call="web.basic_layout">
+                <div class="page">
+                    <div class="text-left">
+                        <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y  %H:%M:%S')"/>                    </div>
+                    
+<!--                    <h4 style="margin-top:20px;"><b>Machine Repair Support Document</b></h4>-->
+                    <table class="table table-responsive"  >
+                              <tr style="border-bottom:hidden;">
+                           <td width="30px">
+
+                           </td><td width="30px"><span t-field="doc.name"/></td>
+                           <td width="30px">
+
+                           </td><td width="30px"><span t-field="doc.location_id.name"/></td>
+                           <td width="30px">
+
+                           </td><td width="30px"><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/></td>
+                       </tr>
+                       <tr style="border-bottom:hidden;">
+                           <td width="30px">
+
+                           </td><td width="30px"><span t-field="doc.partner_id.name"/></td>
+                           <td width="30px">
+
+                           </td>
+                           <td width="30px">
+                               <div t-field="doc.partner_id" t-options='{"widget": "contact", "fields": ["address", "phone"], "no_marker": True, "phone_icons": True}'/>
+                       </td>
+
+                       </tr>
+                        <tr style="border-bottom:hidden;">
+                            <td width="30px">
+                              </td>
+                           <td width="30px">
+                               <span t-esc="doc.call_request_appointment_date"/>
+                           </td>
+                           <td width="30px">
+                              </td>
+                           <td width="30px">
+                               <span t-field="doc.user_id.name"/>
+                           </td>
+                       </tr>
+                        <tr style="border-bottom:hidden;">
+<!--                           <td width="30px">-->
+<!--                           </td>-->
+                           <td width="30px"><span t-field="doc.product_category.name"/></td>
+                       </tr>
+                         <tr style="border-bottom:hidden;">
+                           <td width="30px">
+                           </td>
+                           <td width="30px"><span t-field="doc.problem"/></td>
+                       </tr>
+
+                    </table>
+
+<!--                    <table class="table table-responsive">-->
+<!--                       -->
+
+<!--                    </table>-->
+<!--                     <table class="table table-responsive">-->
+<!--                       <tr style="border-bottom:hidden;">-->
+<!--                           <td width="30px">-->
+<!--                           </td>-->
+<!--                           <td width="30px"><span t-field="doc.problem"/></td>-->
+<!--                       </tr>-->
+
+<!--                    </table>-->
+
+                </div>
+              </t>
+            </t></t>
+        </template>
+        
+    </data>
+</odoo>

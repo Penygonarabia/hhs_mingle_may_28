@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="report_loan_advance">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="hr_loan_advance.report_loan_template_header_footer">
+                        <div class="page">
+                            <center>
+                                <h2>
+                                    <span t-if="o.type == 'loan'">Loan Report</span>
+                                </h2>
+                            </center>
+                            <center>
+                                <h2>
+                                    <span t-if="o.type == 'advance'">Advance Report</span>
+                                </h2>
+                            </center>
+                            <!-- <![CDATA[&nbsp;]]> -->
+                            <table style="border:1px solid black;width:100%" t-if="o.type == 'loan'">
+                                <t t-set="number" t-value="0"/>
+                                <colgroup>
+                                    <col width='5%'/>
+                                    <col width='10%'/>
+                                    <col width='15%'/>
+                                    <col width='10%'/>
+                                    <col width='15%'/>
+                                    <col width='15%'/>
+                                    <col width='15%'/>
+                                    <col width='15%'/>
+                                </colgroup>
+                                <thead>
+                                    <tr style="background-color:#893b74 !important;border: 1px !important;border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000; color:#fff !important;">
+                                        <th class="text-center" style="border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000;">S.No</th>
+                                        <th style="border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000;">Emp ID</th>
+                                        <th style="border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000;">Employee</th>
+                                        <th style="border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000;">Nationality</th>
+                                        <th style="border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000;">Loan Ref</th>
+                                        <th class="text-right" style="border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000;">Loan Amount</th>
+                                        <th class="text-right" style="border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000;">Paid Amount</th>
+                                        <th class="text-right" style="border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000;">Balance Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="o.get_employee(data)" t-as="employee"
+                                        style="border-bottom:1px solid black;border-right: 1px solid black!important;">
+                                        <td class="text-center" style="border-right: 1px solid black!important;">
+                                            <t t-set="number" t-value="number+1"/>
+                                            <span t-esc="number"/>
+                                        </td>
+                                        <td style="border-right: 1px solid black!important;">
+                                            <span t-field="employee.name"/>
+                                        </td>
+                                        <td style="border-right: 1px solid black!important;">
+                                            <span t-field="employee.name"/>
+                                        </td>
+                                        <td style="border-right: 1px solid black!important;">
+                                            <span t-field="employee.country_id"/>
+                                        </td>
+                                        <td colspan="4">
+                                            <table style="width:100%">
+                                                <tbody>
+                                                    <tr t-foreach="o.get_loan_advance_value(employee,data)" t-as="loan"
+                                                        style="border-bottom:1px solid black;border-right: 1px solid black!important;">
+                                                        <td style="width:25%;border-right: 1px solid black!important;">
+                                                            <span t-field="loan.name"/>
+                                                        </td>
+                                                        <td style="width:25%;border-right: 1px solid black!important;" class="text-right">
+                                                            <span t-field="loan.loan_amount"/>
+                                                        </td>
+                                                        <td style="width:25%;border-right: 1px solid black!important;" class="text-right">
+                                                            <span t-field="loan.paid_amount"/>
+                                                        </td>
+                                                        <td style="width:25%;border-right: 1px solid black!important;" class="text-right">
+                                                            <span t-field="loan.balance_amount"/>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <br/>
+
+
+                            <table style="border:1px solid black;width:100%" t-if="o.type == 'advance'">
+                                <t t-set="number" t-value="0"/>
+                                <colgroup>
+                                    <col width='5%'/>
+                                    <col width='10%'/>
+                                    <col width='15%'/>
+                                    <col width='10%'/>
+                                    <col width='15%'/>
+                                    <col width='15%'/>
+                                    <col width='15%'/>
+                                    <col width='15%'/>
+                                </colgroup>
+                                <thead>
+                                    <tr style="background-color:#893b74 !important;border: 1px solid black!important; border-style: solid black!important; border-color: #000000; color:#fff !important;">
+                                        <th class="text-center" style="border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000;">S.No</th>
+                                        <th style="border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000;">Emp ID</th>
+                                        <th style="border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000;">Employee</th>
+                                        <th style="border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000;">Nationality</th>
+                                        <th style="border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000;">Advance Ref</th>
+                                        <th style="border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000;" class="text-right">Advance Amount</th>
+                                        <th style="border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000;" class="text-right">Paid Amount</th>
+                                        <th style="border-right: 1px solid black!important; border-style: solid black!important; border-color: #000000;" class="text-right">Balance Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="o.get_employee(data)" t-as="employee"
+                                        style="border-bottom:1px solid black">
+                                        <td class="text-center" style="border-right: 1px solid black!important;">
+                                            <t t-set="number" t-value="number+1"/>
+                                            <span t-esc="number"/>
+                                        </td>
+                                        <td style="border-right: 1px solid black!important;">
+                                            <span t-field="employee.name"/>
+                                        </td>
+                                        <td style="border-right: 1px solid black!important;">
+                                            <span t-field="employee.name"/>
+                                        </td>
+                                        <td style="border-right: 1px solid black!important;">
+                                            <span t-field="employee.country_id"/>
+                                        </td>
+                                        <td colspan="4">
+                                            <table style="width:100%">
+                                                <tbody>
+                                                    <tr t-foreach="o.get_loan_advance_value(employee,data)"
+                                                        t-as="advance" style="border-bottom:1px solid black">
+                                                        <td style="width:25%;border-right: 1px solid black!important;">
+                                                            <span t-field="advance.name"/>
+                                                        </td>
+                                                        <td style="width:25%;border-right: 1px solid black!important;" class="text-right">
+                                                            <span t-field="advance.advance_amount"/>
+                                                        </td>
+                                                        <td style="width:25%;border-right: 1px solid black!important;" class="text-right">
+                                                            <span t-field="advance.paid_amount"/>
+                                                        </td>
+                                                        <td style="width:25%;border-right: 1px solid black!important;" class="text-right">
+                                                            <span t-field="advance.balance_amount"/>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <br/>
+                        </div>
+                    </t>
+                </t>
+            </t>
+
+        </template>
+    </data>
+</odoo>
+
+

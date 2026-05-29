@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <record id="res_config_settings_view_form_gosi" model="ir.ui.view">
+            <field name="name">
+                res.config.settings.view.form.inherit.hr.payroll.gosi</field>
+            <field name="model">res.config.settings</field>
+            <field name="priority" eval="45"/>
+            <field name="inherit_id" ref="om_hr_payroll.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@id='om_hr_payroll_account']" position="after">
+                    <h2>Payroll GOSI Configuration</h2>
+                    <div class="row mt16 o_settings_container" id="hr_payroll_gosi_saudi_configuration">
+                        <div class="col-12 col-lg-6 o_setting_box" id="default_gosi" title="These gosi are set in any new employee.">
+                             <h5 style="font-weight:bold;">For Saudi Employees</h5>
+                                <div class="o_setting_right_pane">
+                                        <div class="text-muted">
+                                            Employee and Employer's Deduction from BASIC.
+                                        </div>
+                                        <div class="content-group">
+                                            <div class="row mt16">
+                                                <label string="Employee's Deduction" for="saudi_employee_deduction" class="col-lg-3 o_light_label"/>
+                                                <field name="saudi_employee_deduction"/>
+                                            </div>
+                                            <div class="row">
+                                                <label string="Employer's Deduction" for="saudi_employer_deduction" class="col-lg-3 o_light_label"/>
+                                                <field name="saudi_employer_deduction"/>
+                                            </div>
+                                        </div>
+                                </div>
+
+                        </div>
+                         <div class="col-12 col-lg-6 o_setting_box" id="default_non_employee_gosi" title="These gosi are set in any new employee.">
+                               <h5 style="font-weight:bold;">For Non-Saudi Employees</h5>
+                              <div class="o_setting_right_pane">
+                                        <div class="text-muted">
+                                            Employee and Employer's Deduction from BASIC.
+                                        </div>
+                                        <div class="content-group">
+                                            <div class="row mt16">
+                                                <label string="Employee's Deduction" for="non_saudi_employee_deduction" class="col-lg-3 o_light_label"/>
+                                                <field name="non_saudi_employee_deduction"/>
+                                            </div>
+                                            <div class="row">
+                                                <label string="Employer's Deduction" for="non_saudi_employer_deduction" class="col-lg-3 o_light_label"/>
+                                                <field name="non_saudi_employer_deduction"/>
+                                            </div>
+                                        </div>
+                                </div>
+                         </div>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
+</odoo>

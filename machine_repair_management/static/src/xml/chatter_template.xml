@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve" owl="1">
+
+    <!-- Always hide for everyone (global hide) -->
+    <t t-inherit="mail.Chatter" t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('o-mail-Chatter-sendMessage')]" position="attributes">
+            <attribute name="class" add="d-none" separator=" "/>
+        </xpath>
+        <xpath expr = "//button[hasclass('o-mail-Chatter-logNote')]" position = "attributes">
+        	 <attribute name="class" add="d-none" separator=" "/>
+        </xpath>
+        <xpath expr = "//button[hasclass('o-mail-Chatter-activity')]" position = "attributes">
+        	<attribute name="class" add="d-none" separator=" "/>
+        </xpath>
+    </t>
+
+    <!-- OR: hide only for specific model(s), e.g. only on job cards / your model -->
+    
+   <!--  <t t-inherit="mail.Chatter" t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('o-mail-Chatter-sendMessage')]" position="attributes">
+            <attribute name="t-if">props.threadModel !== 'project.task' &amp;&amp; props.threadModel !== 'machine.repair.support'</attribute>
+        </xpath>
+    </t> -->
+   
+
+    <!-- OR: hide based on user group (recommended if you want conditional visibility) -->
+    <!-- First add a computed field or use JS, but simplest is group-based via t-if -->
+    <!-- Example with group (you need to adjust the group xmlid) -->
+    <!--
+    <t t-inherit="mail.Chatter" t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('o-mail-Chatter-sendMessage')]" position="attributes">
+            <attribute name="t-if">!(env.services.user.groups.some(g => g === 'base.group_user'))</attribute>
+        </xpath>
+    </t>
+    -->
+
+</templates>

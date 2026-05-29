@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_amc_quotation" model="ir.actions.report">
+        <field name="name">NEW AMC Quotation (Custom)</field>
+        <field name="model">service.sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">amc_quotation.report_amc_quotation_document</field>
+        <field name="report_file">amc_quotation.report_amc_quotation_document</field>
+        <field name="binding_model_id" ref="machine_repair_management.model_service_sale_order"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

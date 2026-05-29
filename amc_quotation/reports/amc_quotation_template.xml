@@ -1,0 +1,1187 @@
+<odoo>
+    <data>
+        <!-- Commented out to prevent duplicate Print menu 
+        <record id="paperformat_amc_quotation_hhs" model="report.paperformat">
+            <field name="name">AMC Quotation Paper Format</field>
+            <field name="default" eval="True"/>
+            <field name="format">A4</field>
+            <field name="page_height">0</field>
+            <field name="page_width">0</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">40</field>
+            <field name="margin_bottom">20</field>
+            <field name="margin_left">5</field>
+            <field name="margin_right">5</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">35</field>
+            <field name="dpi">125</field>
+        </record>
+        <record id="sale_order_amc_quotation_report_details" model="ir.actions.report">
+            <field name="name">AMC Quotation</field>
+            <field name="model">service.sale.order</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">machine_repair_management.report_saleorder_amcquotation</field>
+            <field name="report_file">machine_repair_management.report_saleorder_amcquotation</field>
+            <field name="print_report_name">'AMC Quotation - %s' % (object.name)</field>
+            <field name="binding_model_id" ref="machine_repair_management.model_service_sale_order"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="machine_repair_management.paperformat_amc_quotation_hhs"/>
+
+        </record>
+        -->
+        <template id="service_amc_quotation_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id"
+                 t-att-data-oe-lang="o and o.env.context.get('lang')">
+                <t t-raw="0"/>
+            </div>
+        </template>
+        <template id="report_saleorder_amcquotation">
+            <t t-call="web.html_container">
+                <t t-call="machine_repair_management.service_amc_quotation_internal_layout">
+                    <div class="header" t-att-style="report_header_style">
+                        <div class="row mt32 mb32">
+                            <div class="row">
+                                <div class="col-5 text-left">
+                                    <strong>
+                                        <span style="color:#002060;">Hussein and Al Hassan G. Shaker Bros.</span>
+                                    </strong>
+                                    <br/>
+                                    <strong>
+                                        <span style="color:#002060;">For Modern Trading Co. Ltd.</span>
+                                    </strong>
+                                </div>
+                                <div class="col-2 text-center" style="margin:0; padding:0;">
+                                    <img src="sales_contract_and_recurring_invoices/static/src/img/HHS_Header_Middle.png"
+                                         style="max-height:100px; max-width:175px; margin:0; padding:0;"/>
+                                </div>
+                                <div class="col-5 text-right" dir="rtl">
+                                    <strong>
+                                        <span style="color:#002060;">شركة الإخوان حسين والحسن غازي شاكر</span>
+                                    </strong>
+                                    <br/>
+                                    <strong>
+                                        <span style="color:#002060;">للتجارة الحديثة المحدودة</span>
+                                    </strong>
+                                </div>
+                            </div>
+                            <!--                            <div class="col-4 text-left">-->
+                            <!--                                <img src="machine_repair_management/static/src/img/HHS_Header_Left.png" alt="img"-->
+                            <!--                                     style="height: 120px; width: 350px; "/>-->
+                            <!--                            </div>-->
+                            <!--                            <div class="col-4 text-center " style="vertical-align:text-top">-->
+                            <!--                                <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)"-->
+                            <!--                                     style="max-height: 100px; min-height:100px; min-width: 210px; max-width: 210px;"/>-->
+                            <!--                            </div>-->
+                            <!--                            <div class="col-4 text-right " style="vertical-align:text-top;text-align:right">-->
+                            <!--                                <img src="machine_repair_management/static/src/img/HHS_Header_Right.png" alt="img"-->
+                            <!--                                     style="height: 120px; width: 350px;"/>-->
+                            <!--                            </div>-->
+                        </div>
+                    </div>
+                    <div class="page">
+                        <div class="row">
+                            <div class="col-3">
+                                <strong>
+                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                        Date
+                                    </span>
+                                </strong>
+                                <br/>
+                            </div>
+                            <div class="col-6 text-center">
+                                <strong>
+                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                        <t t-esc="datetime.datetime.today().strftime('%d/%m/%Y')"/>
+                                    </span>
+                                </strong>
+                                <br/>
+                            </div>
+                            <div class="col-3 text-right" dir="rtl">
+                                <strong>
+                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                        التاريخ
+                                    </span>
+                                </strong>
+                                <br/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <strong>
+                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                        Reference No.
+                                    </span>
+                                </strong>
+                                <br/>
+                            </div>
+
+                            <div class="col-6 text-center">
+                                <strong>
+                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                        <t t-esc="quotation_no"/>
+                                    </span>
+                                </strong>
+                                <br/>
+                            </div>
+
+                            <div class="col-3 text-right" dir="rtl">
+                                <strong>
+                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                        الرقم المرجعي
+                                    </span>
+                                </strong>
+                                <br/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <strong>
+                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                        Customer Name
+                                    </span>
+                                </strong>
+                            </div>
+
+                            <div class="col-6 text-center">
+                                <strong>
+                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                        <t t-esc="customer_name"/>
+                                    </span>
+                                </strong>
+                            </div>
+
+                            <div class="col-3 text-right" dir="rtl">
+                                <strong>
+                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                        الاسم العميل
+                                    </span>
+                                </strong>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:200px">
+                            <div class="col-6 text-left">
+                                <span style="font-weight:600; font-size:40px; color:#002060;">Planned Service
+                                    Agreement
+                                </span>
+                            </div>
+
+                            <div class="col-6 text-right" dir="rtl">
+                                <span style="font-weight:600; font-size:40px; color:#002060;">اتفاقية خدمة مجدولة</span>
+                            </div>
+                        </div>
+
+                        <div class="row" style="margin-top:10px;">
+                            <div class="col-12 text-center" style="margin:0; padding:0;">
+                                <img src="sales_contract_and_recurring_invoices/static/src/img/image_cn.png"
+                                     style="border: none !important; box-shadow: none !important; background: transparent !important;"
+                                     border="none" height="auto" width="1250"
+                                />
+                            </div>
+                        </div>
+
+                        <div style="margin-top:250px;">
+                            <div class="col-12" style="margin-bottom:15px;">
+                                <strong>
+                                    <img src="sales_contract_and_recurring_invoices/static/src/img/phone.png"
+                                         height="38"/>
+                                    <span style="margin:20px; font-size:20px; color:#002060;">8002440247</span>
+                                </strong>
+                            </div>
+                            <div class="col-12" style="margin-bottom:20px;">
+                                <strong>
+                                    <img src="sales_contract_and_recurring_invoices/static/src/img/world.png"
+                                         height="38"/>
+                                    <span style="margin:20px; font-size:20px; color:#002060;">HH-SHAKER.COM.SA</span>
+                                </strong>
+                            </div>
+                            <div class="col-12">
+                                <strong>
+                                    <img src="sales_contract_and_recurring_invoices/static/src/img/facebook.png"
+                                         height="38"/>
+                                    <span style="margin:20px; font-size:20px; color:#002060;">HHSHAKERCO</span>
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer" style="margin:0; padding:0;">
+                        <div class="row" style="margin:0; padding:0;">
+                            <div class="col-12" style="margin:0; padding:0;">
+                                <img src="/sales_contract_and_recurring_invoices/static/src/img/ContractDocument_1stPage_Footer.png"
+                                     style="width:100%; height:auto; display:block; margin:0; padding:0;"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div>
+                            <strong>Date</strong>
+                            :
+                            <span t-esc="quotation_date"/>
+                        </div>
+                        <div>
+                            <strong>Company</strong>
+                            : CIELO
+                        </div>
+                        <div>
+                            <strong>Attn. To</strong>
+                            :
+                            <span t-esc="att_to"/>
+                        </div>
+                        <div>
+                            <strong>Contact No.</strong>
+                            :
+                            <span t-esc="contact_no"/>
+                        </div>
+                        <div>
+                            <strong>Address</strong>
+                            :
+                            <span t-esc="address"/>
+                        </div>
+                        <div>
+                            <strong>Subject</strong>
+                            : Non Comprehensive Annual Maintenance Contract Quotation
+                        </div>
+                    </div>
+                    <h2>
+                        <center>QUOTATION</center>
+                    </h2>
+                    <p>
+                        <strong>Thank you for asking us to quote for below mentioned service.</strong>
+                    </p>
+                    <p>
+                        <strong>We are pleased to submit our best offer for below mentioned work.</strong>
+                    </p>
+                    <!--                    <div class="mt-4 mb-4">-->
+                    <!--                        <table class="table table-bordered border-dark"-->
+                    <!--                               style="margin:0; border-collapse:collapse; width:100%;">-->
+                    <!--                            <tbody>-->
+                    <!--                                <tr>-->
+                    <!--                                    <td style="width:17%; white-space:nowrap;">-->
+                    <!--                                        <strong>Quotation No:</strong>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:16%; text-align:left; white-space:nowrap;">-->
+                    <!--                                        <span t-if="quotation_no" t-esc="quotation_no"/>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:17%; text-align:right; white-space:nowrap;">-->
+                    <!--                                        <strong>:رقم عرض سعر الخدمة</strong>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:17%; white-space:nowrap;">-->
+                    <!--                                        <strong>Customer Name:</strong>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:16%;">-->
+                    <!--                                        <span t-if="customer_name" t-esc="customer_name"/>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:17%; text-align:right; direction:rtl; white-space:nowrap;">-->
+                    <!--                                        <strong>اسم العميل:</strong>-->
+                    <!--                                    </td>-->
+                    <!--                                </tr>-->
+                    <!--                                <tr>-->
+                    <!--                                    <td style="width:17%; white-space:nowrap;">-->
+                    <!--                                        <strong>Quotation Date:</strong>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:16%; text-align:left; white-space:nowrap;">-->
+                    <!--                                        <span t-if="quotation_date" t-esc="quotation_date"/>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:17%; text-align:right; white-space:nowrap;">-->
+                    <!--                                        <strong>:تاريخ الاقتباس</strong>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:17%; white-space:nowrap;">-->
+                    <!--                                        <strong>Attn To:</strong>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:16%;">-->
+                    <!--                                        <span t-if="att_to" t-esc="att_to"/>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:17%; text-align:right; direction:rtl; white-space:nowrap;">-->
+                    <!--                                        <strong>رقم الانتباه:</strong>-->
+                    <!--                                    </td>-->
+                    <!--                                </tr>-->
+                    <!--                                <tr>-->
+                    <!--                                    <td style="width:17%; white-space:nowrap;">-->
+                    <!--                                        <strong>Quotation Expiry Date:</strong>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:16%; text-align:left; white-space:nowrap;">-->
+                    <!--                                        <span t-if="quotation_expiry_date" t-esc="quotation_expiry_date"/>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:17%; text-align:right; white-space:nowrap;">-->
+                    <!--                                        <strong>:تاريخ انتهاء صلاحية الاقتباس</strong>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:17%; white-space:nowrap;">-->
+                    <!--                                        <strong>Contact No:</strong>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:16%; text-align:left; white-space:nowrap;">-->
+                    <!--                                        <span t-if="contact_no" t-esc="contact_no"/>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:17%; text-align:right; white-space:nowrap;">-->
+                    <!--                                        <strong>:رقم الاتصال</strong>-->
+                    <!--                                    </td>-->
+                    <!--                                </tr>-->
+                    <!--                                <tr>-->
+                    <!--                                    <td style="width:17%; border:none; padding:0; height:0;"></td>-->
+                    <!--                                    <td style="width:16%; border:none; padding:0; height:0;"></td>-->
+                    <!--                                    <td style="width:17%; border:none; padding:0; height:0;"></td>-->
+                    <!--                                    <td style="width:17%; white-space:nowrap;">-->
+                    <!--                                        <strong>Address:</strong>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:16%;">-->
+                    <!--                                        <span t-if="address" t-esc="address"/>-->
+                    <!--                                    </td>-->
+                    <!--                                    <td style="width:17%; text-align:right; direction:rtl; white-space:nowrap;">-->
+                    <!--                                        <strong>عنوان:</strong>-->
+                    <!--                                    </td>-->
+                    <!--                                </tr>-->
+                    <!--                            </tbody>-->
+                    <!--                        </table>-->
+                    <!--                    </div>-->
+                    <!--                    <p>-->
+                    <!--                        <strong>Subject:</strong>-->
+                    <!--                        <span>Annual Maintenance Contract for</span>-->
+                    <!--                        <span>-->
+                    <!--                            <strong t-esc="customer_name"/>-->
+                    <!--                        </span>-->
+                    <!--                    </p>-->
+                    <!--                    <p>-->
+                    <!--                        Thank you for asking us to quote for below mentioned service.-->
+                    <!--                    </p>-->
+                    <!--                    <p>-->
+                    <!--                        We are pleased to submit our best offer for below mentioned work.-->
+                    <!--                    </p>-->
+                    <table class="table table-bordered" style="width:100%; border-collapse:collapse;">
+                        <thead style="background-color:#dddddd;">
+                            <tr>
+                                <th style="text-align:center;">S.No</th>
+                                <th style="text-align:center;">
+                                    <span>الوصف</span>
+                                    <br/>
+                                    Brand
+                                </th>
+                                <th style="text-align:center;">Unit Type</th>
+                                <th style="text-align:center;">
+                                    <span>الوصف</span>
+                                    <br/>
+                                    Description
+                                </th>
+                                <th style="text-align:center;">
+                                    <span>الكمية</span>
+                                    <br/>
+                                    Qty
+                                </th>
+                                <th style="text-align:center;">No. of Visits / Yr</th>
+                                <th style="text-align:center;">
+                                    <span>سعر</span>
+                                    <br/>
+                                    Price
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="quotations" t-as="quotation">
+                                <tr>
+                                    <td style="text-align:center;">
+                                        <span>1</span>
+                                        <span/>
+                                    </td>
+                                    <td style="text-align:left;">
+                                        <span t-if="quotation['brand']" t-esc="quotation['brand']"></span>
+                                    </td>
+                                    <td style="text-align:left;">
+                                        <span t-if="quotation['unit_type']" t-esc="quotation['unit_type']"/>
+                                    </td>
+                                    <td style="text-align:left;">
+                                        <span t-if="quotation['description']" t-esc="quotation['description']"/>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <span t-if="quotation['Qty']" t-esc="int(quotation['Qty'])"/>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <span t-if="quotation['no_of_visits']"
+                                              t-esc="quotation['no_of_visits']"/>
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <span t-esc="company_symbol"></span>
+                                        <span t-esc="quotation['total']"
+                                              t-options="{'widget': 'float', 'precision': 2}"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                        <tfoot>
+                            <!-- Subtotal Row -->
+                            <tr>
+                                <!-- Empty columns (S.No + Brand + Unit Type) -->
+                                <td colspan="3"></td>
+
+                                <!-- Label -->
+                                <td style="text-align:right;">
+                                    <strong>Sub Total</strong>
+                                </td>
+
+                                <!-- Total Qty -->
+                                <td style="text-align:right;">
+                                    <strong>
+                                        <span t-esc="total_qty"/>
+                                    </strong>
+                                </td>
+
+                                <!-- Empty Visits -->
+                                <td></td>
+
+                                <!-- Subtotal Amount -->
+                                <td style="text-align:right;">
+                                    <strong>
+                                        <span t-esc="company_symbol"/>
+                                        <span t-esc="sub_total" t-options="{'widget': 'float', 'precision': 2}"/>
+                                    </strong>
+                                </td>
+                            </tr>
+
+
+                            <!-- VAT Row -->
+                            <tr>
+                                <td colspan="6" style="text-align:right;">
+                                    <strong>VAT - 15%</strong>
+                                </td>
+                                <td style="text-align:right;">
+                                    <strong>
+                                        <span t-esc="company_symbol"/>
+                                        <span t-esc="total_vat" t-options="{'widget': 'float', 'precision': 2}"/>
+                                    </strong>
+                                </td>
+                            </tr>
+
+                            <!-- Grand Total Row -->
+                            <tr>
+                                <td colspan="6" style="text-align:right;">
+                                    <strong>Grand Total</strong>
+                                </td>
+                                <td style="text-align:right;">
+                                    <strong>
+                                        <span t-esc="company_symbol"/>
+                                        <span t-esc="grand_total" t-options="{'widget': 'float', 'precision': 2}"/>
+                                    </strong>
+                                </td>
+                            </tr>
+
+                        </tfoot>
+                    </table>
+
+                    <!-- Amount In Words -->
+                    <div class="mt-3">
+                        <table style="width:100%; border-collapse:collapse; border:1px solid #ccc;">
+                            <tr style="border:0;">
+                                <td style="width:25%; padding:3px;border:0;">
+                                    <strong>In Words:</strong>
+                                </td>
+                                <td style="width:75%; text-align:left; padding:3px;border:0;">
+                                    <span t-esc="docs[0].company_id.currency_id.amount_to_text(grand_total)"/>
+                                    Only
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Emergency Visits Section -->
+                    <!--                    <div class="mt-3" style="page-break-inside: avoid; break-inside: avoid;">-->
+                    <!--                        <table style="width:100%; border-collapse:collapse; border:1px solid #ccc; page-break-inside: avoid;">-->
+                    <!--                            <tr style="border:0;">-->
+                    <!--                                <td style="width:25%; padding:3px;border:0;">-->
+                    <!--                                    <strong>No. of Emergency Visits</strong>-->
+                    <!--                                </td>-->
+                    <!--                                <td style="width:25%; text-align:left; padding:3px;border:0;">-->
+                    <!--                                    <span t-if="emergency_visit" t-esc="emergency_visit"/>-->
+                    <!--                                </td>-->
+                    <!--                                <td style="width:50%;border:0;"/>-->
+                    <!--                            </tr>-->
+                    <!--                        </table>-->
+                    <!--                    </div>-->
+                    <!-- Scope of Work : -->
+                    <div class="mt-3" style="page-break-inside: avoid; break-inside: avoid;">
+                        <table style="width:100%; border-collapse:collapse; border:1px solid #ccc; page-break-inside: avoid;">
+                            <tr style="border:0;">
+                                <td style="width:25%; padding:3px;border:0;">
+                                    <strong>Scope of Work :</strong>
+                                </td>
+                            </tr>
+                            <tr style="border:0;">
+                                <td style="width:75%; text-align:left; padding:3px;border:0;">
+                                    <t t-if="scope_of_work">
+                                        <ul style="margin:0; padding-left:25px;">
+                                            <t t-foreach="scope_of_work" t-as="scope">
+                                                <li>
+                                                    <t t-esc="scope"/>
+                                                </li>
+                                            </t>
+                                        </ul>
+                                    </t>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Terms of Execution :  -->
+                    <div class="mt-3" style="page-break-inside: avoid; break-inside: avoid;">
+                        <table style="width:100%; border-collapse:collapse; border:1px solid #ccc; page-break-inside: avoid;">
+                            <tr style="border:0;">
+                                <td style="width:25%; padding:3px;border:0;">
+                                    <strong>Terms of Execution :</strong>
+                                </td>
+                            </tr>
+                            <tr style="border:0;">
+                                <td style="width:25%; text-align:left; padding:3px;border:0;">
+                                    <p t-raw="terms_of_execution"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Terms of Payment :  Advance  -->
+                    <div class="mt-3" style="page-break-inside: avoid; break-inside: avoid;">
+                        <table style="width:100%; border-collapse:collapse; border:1px solid #ccc; page-break-inside: avoid;">
+                            <tr style="border:0;">
+                                <td style="width:25%; padding:3px;border:0;">
+                                    <strong>Terms of Payment : Advance</strong>
+                                </td>
+                            </tr>
+                            <tr style="border:0;">
+                                <td style="width:75%; text-align:left; padding:3px;border:0;">
+                                    <t t-if="payment_advance">
+                                        <ul>
+                                            <t t-foreach="payment_advance" t-as="payadv">
+                                                <li>
+                                                    <t t-esc="payadv['name']"/>
+                                                </li>
+                                            </t>
+                                        </ul>
+                                    </t>
+
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Exclusions :   -->
+                    <div class="mt-3" style="page-break-inside: avoid; break-inside: avoid;">
+                        <table style="width:100%; border-collapse:collapse; border:1px solid #ccc; page-break-inside: avoid;">
+                            <tr style="border:0;">
+                                <td style="width:25%; padding:3px;border:0;">
+                                    <strong>Exclusions :</strong>
+                                </td>
+                            </tr>
+                            <tr style="border:0;">
+                                <td style="width:75%; text-align:left; padding:3px;border:0;">
+                                    <p t-raw="exclusions_text"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="mt-3" style="page-break-inside: avoid; break-inside: avoid;">
+                        <table style="width:100%; border-collapse:collapse; border:1px solid #ccc; page-break-inside: avoid;">
+                            <tr style="border:0;">
+                                <td style="width:25%; padding:3px;border:0;">
+                                    <strong>Notes :</strong>
+                                </td>
+                            </tr>
+                            <tr style="border:0;">
+                                <td style="width:75%; text-align:left; padding:3px;border:0;">
+                                    <p t-raw="others_text"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <!-- Regards :   -->
+                    <div class="mt-3" style="page-break-inside: avoid;">
+                        <table style="width:100%; border-collapse:collapse; border:1px solid #ccc; page-break-inside: avoid;">
+                            <tr style="border:0;">
+                                <td style="width:25%; padding:3px;border:0;">
+                                    <strong>Best Regards,</strong>
+                                </td>
+                            </tr>
+                            <tr style="border:0;">
+                                <td style="width:75%; text-align:left; padding:3px;border:0;">
+                                    <p style="margin:0;" t-esc="user_name"/>
+                                </td>
+                            </tr>
+                            <tr style="border:0;">
+                                <td style="width:75%; text-align:left; padding:3px;border:0;">
+                                    <p style="margin:0;" t-esc="signature"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <t t-foreach="scope_of_work" t-as="doc_scopes">
+                        <t t-if="doc_scopes">
+                            <t t-foreach="doc_scopes" t-as="unit_scope">
+                                <t t-if="unit_scope.get('grouped_data')">
+
+                                    <t t-foreach="unit_scope['grouped_data']" t-as="group_tuple">
+                                        <t t-log="group_tuple"/>
+
+                                        <div class="page" style="page-break-before: always;">
+
+                                            <table>
+                                                <tr>
+                                                    <td>
+                                                        <strong>Unit Type:</strong>
+                                                    </td>
+                                                    <td>
+                                                        <t t-esc="unit_scope.get('unit_type', '')"/>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <strong>Service Type:</strong>
+                                                    </td>
+                                                    <td>
+                                                        <t t-esc="group_tuple[0] if group_tuple else ''"/>
+                                                    </td>
+                                                </tr>
+                                            </table>
+
+                                            <t t-if="group_tuple and len(group_tuple) > 1">
+                                                <t t-foreach="group_tuple[1]" t-as="param_tuple">
+
+                                                    <t t-if="param_tuple and len(param_tuple) > 1">
+                                                        <h5>
+                                                            <t t-esc="param_tuple[0]"/>
+                                                        </h5>
+
+                                                        <ol>
+                                                            <t t-foreach="param_tuple[1]" t-as="desc_line">
+                                                                <li>
+                                                                    <t t-esc="desc_line"/>
+                                                                </li>
+                                                            </t>
+                                                        </ol>
+                                                    </t>
+
+                                                </t>
+                                            </t>
+
+                                        </div>
+
+                                    </t>
+                                </t>
+                            </t>
+                        </t>
+                    </t>
+
+
+                    <!--                    <div class="page" style="page-break-after: always;">-->
+
+                    <!--                        <div class="row mt32 mb32">-->
+                    <!--                            <div class="col-6">-->
+                    <!--                                <table class="table table-bordered border-dark"-->
+                    <!--                                       style="margin:0; border-collapse:collapse; width:100%;">-->
+                    <!--                                    <tbody>-->
+                    <!--                                        <tr>-->
+                    <!--                                            <td style="width:35%;">-->
+                    <!--                                                <strong>Quotation No:</strong>-->
+                    <!--                                            </td>-->
+                    <!--                                            <td style="width:35%; text-align:left;">-->
+                    <!--                                                <span t-if="quotation_no" t-esc="quotation_no"/>-->
+                    <!--                                            </td>-->
+                    <!--                                            <td style="width:30%; text-align:right;">-->
+                    <!--                                                <strong>:رقم عرض سعر الخدمة</strong>-->
+                    <!--                                            </td>-->
+                    <!--                                        </tr>-->
+
+                    <!--                                        <tr>-->
+                    <!--                                            <td style="width:35%;">-->
+                    <!--                                                <strong>Quotation Date:</strong>-->
+                    <!--                                            </td>-->
+                    <!--                                            <td style="style=width:35%; text-align:left;">-->
+                    <!--                                                <span t-if="quotation_date" t-esc="quotation_date"/>-->
+                    <!--                                            </td>-->
+                    <!--                                            <td style="width:30%;text-align:right;">-->
+                    <!--                                                <strong>:تاريخ الاقتباس</strong>-->
+                    <!--                                            </td>-->
+                    <!--                                        </tr>-->
+
+                    <!--                                        <tr>-->
+                    <!--                                            <td style="width:35%;">-->
+                    <!--                                                <strong>Quotation Expiry Date:</strong>-->
+                    <!--                                            </td>-->
+                    <!--                                            <td style="style=width:35%; text-align:left;">-->
+                    <!--                                                <span t-if="quotation_expiry_date" t-esc="quotation_expiry_date"/>-->
+                    <!--                                            </td>-->
+                    <!--                                            <td style="width:30%;text-align:right;">-->
+                    <!--                                                <strong>:</strong>-->
+                    <!--                                                <strong>تاريخ انتهاء صلاحية الاقتباس</strong>-->
+                    <!--                                            </td>-->
+                    <!--                                        </tr>-->
+                    <!--                                    </tbody>-->
+                    <!--                                </table>-->
+                    <!--                            </div>-->
+
+                    <!--                            <div class="col-6">-->
+                    <!--                                <table class="table table-bordered border-dark"-->
+                    <!--                                       style="margin:0; border-collapse:collapse; width:100%;">-->
+                    <!--                                    <tbody>-->
+                    <!--                                        <tr>-->
+                    <!--                                            <td style="width:33%;">-->
+                    <!--                                                <strong>Customer Name:</strong>-->
+                    <!--                                            </td>-->
+                    <!--                                            <td style="width:25%;">-->
+                    <!--                                                <span t-if="customer_name" t-esc="customer_name"/>-->
+                    <!--                                            </td>-->
+                    <!--                                            <td style="width:42%; text-align:right; direction:rtl;">-->
+                    <!--                                                <strong>اسم العميل:</strong>-->
+                    <!--                                            </td>-->
+                    <!--                                        </tr>-->
+
+                    <!--                                        <tr>-->
+                    <!--                                            <td style="width:33%;">-->
+                    <!--                                                <strong>Address:</strong>-->
+                    <!--                                            </td>-->
+                    <!--                                            <td style="width:25%;">-->
+                    <!--                                                <span t-if="address" t-esc="address"/>-->
+                    <!--                                            </td>-->
+                    <!--                                            <td style="width:42%; text-align:right; direction:rtl;">-->
+                    <!--                                                <strong>عنوان:</strong>-->
+                    <!--                                            </td>-->
+                    <!--                                        </tr>-->
+                    <!--                                    </tbody>-->
+                    <!--                                </table>-->
+                    <!--                            </div>-->
+                    <!--                        </div>-->
+
+                    <!--                        <table style="width:100%; border-collapse: collapse;" border="1">-->
+                    <!--                            <thead style="background-color: #dddddd;">-->
+                    <!--                                <tr>-->
+                    <!--                                    <th>Code</th>-->
+                    <!--                                    <th>-->
+                    <!--                                        Description-->
+                    <!--                                        <br/>-->
+                    <!--                                        <span>الوصف</span>-->
+                    <!--                                    </th>-->
+                    <!--                                    <th>No. of visits / Yr</th>-->
+                    <!--                                    <th>-->
+                    <!--                                        Qty-->
+                    <!--                                        <br/>-->
+                    <!--                                        <span>الكمية</span>-->
+                    <!--                                    </th>-->
+                    <!--                                    <th>-->
+                    <!--                                        Price-->
+                    <!--                                        <br/>-->
+                    <!--                                        <span>سعر</span>-->
+                    <!--                                    </th>-->
+                    <!--                                </tr>-->
+                    <!--                            </thead>-->
+                    <!--                            <tbody>-->
+                    <!--                                <t t-foreach="quotations" t-as="quotation">-->
+                    <!--                                    <tr>-->
+                    <!--                                        <td style="text-align:left;">-->
+                    <!--                                            <span t-if="quotation['code']" t-esc="quotation['code']"/>-->
+                    <!--                                        </td>-->
+                    <!--                                        <td style="text-align:left;">-->
+                    <!--                                            <span t-if="quotation['description']" t-esc="quotation['description']"/>-->
+                    <!--                                        </td>-->
+                    <!--                                        <td style="text-align:right;">-->
+                    <!--                                            <span t-if="quotation['no_of_visits']"-->
+                    <!--                                                  t-esc="quotation['no_of_visits']"/>-->
+                    <!--                                        </td>-->
+                    <!--                                        <td style="text-align:right;">-->
+                    <!--                                            <span t-if="quotation['Qty']" t-esc="quotation['Qty']"/>-->
+                    <!--                                        </td>-->
+                    <!--                                        <td style="text-align:right;">-->
+                    <!--                                            <span t-esc="company_symbol"></span>-->
+                    <!--                                            <span t-esc="quotation['total']"-->
+                    <!--                                                  t-options="{'widget': 'float', 'precision': 2}"/>-->
+                    <!--                                        </td>-->
+                    <!--                                    </tr>-->
+                    <!--                                </t>-->
+                    <!--                            </tbody>-->
+                    <!--                            &lt;!&ndash;                             <tfoot> &ndash;&gt;-->
+                    <!--                            &lt;!&ndash;                                <t t-foreach="quotations" t-as="quotation">&ndash;&gt;-->
+                    <!--                            <tr>-->
+                    <!--                                <td colspan="2"/>-->
+                    <!--                                <td style="text-align:right;">-->
+                    <!--                                    <strong>Total:</strong>-->
+                    <!--                                </td>-->
+                    <!--                                <td style="text-align:right;">-->
+                    <!--                                    <strong>-->
+                    <!--                                        <span t-esc="total_qty"/>-->
+                    <!--                                    </strong>-->
+                    <!--                                </td>-->
+                    <!--                                <td style="text-align:right;">-->
+                    <!--                                    <strong>-->
+                    <!--                                        <span t-esc="company_symbol"></span>-->
+                    <!--                                        <span t-esc="sub_total"-->
+                    <!--                                              t-options="{'widget': 'float', 'precision': 2}"/>-->
+                    <!--                                    </strong>-->
+                    <!--                                </td>-->
+                    <!--                            </tr>-->
+                    <!--                            <tr>-->
+                    <!--                                <td colspan="4" style="text-align:right;">-->
+                    <!--                                    <strong>VAT:</strong>-->
+                    <!--                                </td>-->
+                    <!--                                <td style="text-align:right;">-->
+                    <!--                                    <strong>-->
+                    <!--                                        <span t-esc="company_symbol"></span>-->
+                    <!--                                        <span t-esc="total_vat"-->
+                    <!--                                              t-options="{'widget': 'float', 'precision': 2}"/>-->
+                    <!--                                    </strong>-->
+                    <!--                                </td>-->
+                    <!--                            </tr>-->
+                    <!--                            <tr>-->
+                    <!--                                <td colspan="4" style="text-align:right;">-->
+                    <!--                                    <strong>Grand Total:</strong>-->
+                    <!--                                </td>-->
+                    <!--                                <td style="text-align:right;">-->
+                    <!--                                    <strong>-->
+                    <!--                                        <span t-esc="company_symbol"></span>-->
+                    <!--                                        <span t-esc="grand_total"-->
+                    <!--                                              t-options="{'widget': 'float', 'precision': 2}"/>-->
+                    <!--                                    </strong>-->
+                    <!--                                </td>-->
+                    <!--                            </tr>-->
+                    <!--                            &lt;!&ndash;                            <tr>&ndash;&gt;-->
+                    <!--                            &lt;!&ndash;                                <td colspan="4" style="text-align:right;">&ndash;&gt;-->
+                    <!--                            &lt;!&ndash;                                    <strong>Grand Total</strong>&ndash;&gt;-->
+                    <!--                            &lt;!&ndash;                                </td>&ndash;&gt;-->
+                    <!--                            &lt;!&ndash;                                <td style="font-weight: bold; text-align:right;">&ndash;&gt;-->
+                    <!--                            &lt;!&ndash;                                    <strong>&ndash;&gt;-->
+                    <!--                            &lt;!&ndash;                                        <span t-esc="company_symbol"></span>&ndash;&gt;-->
+                    <!--                            &lt;!&ndash;                                        <span t-esc="grand_total"&ndash;&gt;-->
+                    <!--                            &lt;!&ndash;                                              t-options="{'widget': 'float', 'precision': 2}"/>&ndash;&gt;-->
+                    <!--                            &lt;!&ndash;                                    </strong>&ndash;&gt;-->
+                    <!--                            &lt;!&ndash;                                </td>&ndash;&gt;-->
+                    <!--                            &lt;!&ndash;                            </tr>&ndash;&gt;-->
+                    <!--                            &lt;!&ndash;                                </t>&ndash;&gt;-->
+                    <!--                            &lt;!&ndash;                             </tfoot> &ndash;&gt;-->
+                    <!--                        </table>-->
+                    <!--                        <br/>-->
+                    <!--                        <table style="width:100%; border-collapse: collapse;">-->
+                    <!--                            <tr>-->
+                    <!--                                <td style="width:85%; padding:3px;">-->
+                    <!--                                    <strong>No. of Emergency Visits</strong>-->
+                    <!--                                </td>-->
+                    <!--                                <td style="width:15%; text-align:right !important; padding:3px;">-->
+                    <!--                                    <span t-if="emergency_visit" t-esc="emergency_visit"/>-->
+                    <!--                                </td>-->
+                    <!--                            </tr>-->
+                    <!--                        </table>-->
+
+
+                    <!--                    </div>-->
+                </t>
+
+            </t>
+
+            <div class="footer" style="border-top:1px solid #000; padding:5px 0;">
+                <div class="row">
+                    <div class="col-5 text-left">
+                        <strong>
+                            <span style="color:#002060;">Hussein and Al Hassan G. Shaker Bros.</span>
+                        </strong>
+                        <br/>
+                        <strong>
+                            <span style="color:#002060;">For Modern Trading Co. Ltd.</span>
+                        </strong>
+                    </div>
+                    <div class="col-2 text-center">
+                        Page
+                        <span class="page"/>
+                        of
+                        <span class="topage"/>
+                    </div>
+                    <div class="col-5 text-right" dir="rtl">
+                        <strong>
+                            <span style="color:#002060;">شركة الإخوان حسين والحسن غازي شاكر</span>
+                        </strong>
+                        <br/>
+                        <strong>
+                            <span style="color:#002060;">للتجارة الحديثة المحدودة</span>
+                        </strong>
+                    </div>
+                </div>
+            </div>
+            <!--            <div class="footer">-->
+            <!--                <img src="machine_repair_management/static/src/img/JobCard_Footer_img.png" style="width:100%;"/>-->
+            <!--            </div>-->
+
+            <!--                <div class="footer">-->
+            <!--                    <div>-->
+            <!--                        <img src="machine_repair_management/static/src/img/Arabic_Text.png" alt="img"-->
+            <!--                             style="height:60px; width: 100%;"/>-->
+            <!--                    </div>-->
+            <!--                    <br/>-->
+            <!--                    <div>-->
+            <!--                        <img src="machine_repair_management/static/src/img/Footer_Address.png" alt="img"-->
+            <!--                             style="height:80px; width: 100%;"/>-->
+            <!--                    </div>-->
+            <!--                </div>-->
+        </template>
+    </data>
+</odoo>
+
+
+        <!--<?xml version="1.0" encoding="utf-8"?>-->
+        <!--<odoo>-->
+        <!--    <template id="report_amc_quotation_document">-->
+        <!--        <t t-call="web.html_container">-->
+        <!--            <t t-foreach="docs" t-as="doc">-->
+        <!--                <style>-->
+        <!--                    .brand-header {-->
+        <!--                        width:100%; border-bottom: 3px solid #002b5c; margin-bottom: 30px;-->
+        <!--                    }-->
+        <!--                    table, tr, td, th {-->
+        <!--                        font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;-->
+        <!--                    }-->
+        <!--                    .arabic-text {-->
+        <!--                        font-family: 'Arial', sans-serif;-->
+        <!--                    }-->
+        <!--                </style>-->
+
+        <!--                &lt;!&ndash; PAGE 1: Intro, Metadata, Image, Pricing Table, Footer &ndash;&gt;-->
+        <!--                <div class="page" style="font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; color: #002b5c; font-size:14px; direction: ltr;">-->
+        <!--                    <meta charset="utf-8"/>-->
+        <!--                    <t t-set="doc_scopes" t-value="scopes_of_work[doc_index]" />-->
+        <!--                    <t t-set="doc_payments" t-value="payments[doc_index]" />\n                    <t t-set="ctexts" t-value="custom_texts[doc_index]" />-->
+        <!--                    <t t-set="uinfo" t-value="user_info[doc_index]" />-->
+
+        <!--                    &lt;!&ndash; Header for Page 1 &ndash;&gt;-->
+        <!--                    <table class="brand-header">-->
+        <!--                        <tr>-->
+        <!--                            <td style="width:40%; text-align:left; vertical-align:bottom; padding-bottom:5px;">-->
+        <!--                                <strong style="font-size:16px;">Hussein and Al Hassan G. Shaker Bros</strong><br/>-->
+        <!--                                <strong style="font-size:16px;">For Modern Trading Co. Ltd.</strong>-->
+        <!--                            </td>-->
+        <!--                            <td style="width:20%; text-align:center; vertical-align:bottom;">-->
+        <!--                                <img t-att-src="logo_b64" style="height: 50px; display: block; margin: 0 auto; margin-bottom: -15px; background:white; position:relative; z-index:10;"/>-->
+        <!--                            </td>-->
+        <!--                            <td style="width:40%; text-align:right; vertical-align:bottom; padding-bottom:5px;" dir="rtl">-->
+        <!--                                <strong class="arabic-text" style="font-size:18px;">شركة الاخوان حسين و حسن غازي شاكر</strong><br/>-->
+        <!--                                <strong class="arabic-text" style="font-size:18px;">للتجارة الحديثة المحدودة</strong>-->
+        <!--                            </td>-->
+        <!--                        </tr>-->
+        <!--                    </table>-->
+
+        <!--                    &lt;!&ndash; Metadata Section &ndash;&gt;-->
+        <!--                    <table style="width:100%; margin-bottom:20px; border-collapse:collapse;">-->
+        <!--                        <tr>-->
+        <!--                            <td style="width:25%; font-weight:bold;">Date</td>-->
+        <!--                            <td style="width:35%; color:#333;"><span t-field="doc.service_sale_quotation_date" t-options='{"widget": "date"}'/></td>-->
+        <!--                            <td style="width:40%; text-align:right; font-weight:bold; font-size:15px;" dir="rtl" class="arabic-text">التاريخ</td>-->
+        <!--                        </tr>-->
+        <!--                        <tr>-->
+        <!--                            <td style="font-weight:bold; padding-top:10px;">Reference No.</td>-->
+        <!--                            <td style="color:#333; padding-top:10px;"><span t-field="doc.name"/></td>-->
+        <!--                            <td style="text-align:right; font-weight:bold; padding-top:10px; font-size:15px;" dir="rtl" class="arabic-text">الرقم المرجعي</td>-->
+        <!--                        </tr>-->
+        <!--                        <tr>-->
+        <!--                            <td style="font-weight:bold; padding-top:10px;">Company Name</td>-->
+        <!--                            <td style="color:#333; padding-top:10px;"><span t-field="doc.partner_name" /></td>-->
+        <!--                            <td style="text-align:right; font-weight:bold; padding-top:10px; font-size:15px;" dir="rtl" class="arabic-text">الاسم الشركة</td>-->
+        <!--                        </tr>-->
+        <!--                        <tr>-->
+        <!--                            <td style="font-weight:bold; padding-top:10px;">Customer Name</td>-->
+        <!--                            <td style="color:#333; padding-top:10px;"><span t-field="doc.customer_name"/></td>-->
+        <!--                            <td style="text-align:right; font-weight:bold; padding-top:10px; font-size:15px;" dir="rtl" class="arabic-text">الاسم العميل</td>-->
+        <!--                        </tr>-->
+        <!--                    </table>-->
+
+        <!--                    &lt;!&ndash; Main Fleet Image &ndash;&gt;-->
+        <!--                    <div style="width: 100%; margin-bottom: 30px; text-align: center;">-->
+        <!--                        <img t-att-src="image_main_b64" style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 4px;"/>-->
+        <!--                    </div>-->
+
+        <!--                    <p style="font-size: 14px; color: #000; font-weight:bold;">We are pleased to submit our best offer for below mentioned work.</p>-->
+
+        <!--                    <style>-->
+        <!--                        .table-bordered { border-collapse: collapse; width: 100%; }-->
+        <!--                        .table-bordered th, .table-bordered td { border: 1px solid #000; padding: 5px; text-align: center; color:#000; font-size: 13px;}-->
+        <!--                        .table-bordered th { background-color: #0088cc; font-weight: bold; color:#fff; }-->
+        <!--                    </style>-->
+
+        <!--                    <table class="table-bordered" style="margin-bottom: 20px;">-->
+        <!--                        <thead>-->
+        <!--                            <tr>-->
+        <!--                                <th>S.No.</th>-->
+        <!--                                <th>Brand</th>-->
+        <!--                                <th>Unit Type</th>-->
+        <!--                                <th>Description</th>-->
+        <!--                                <th>Qty</th>-->
+        <!--                                <th>No. of<br/>Visit / Yr</th>-->
+        <!--                                <th>Total</th>-->
+        <!--                            </tr>-->
+        <!--                        </thead>-->
+        <!--                        <tbody>-->
+        <!--                            <t t-set="sl_no" t-value="1"/>-->
+        <!--                            <t t-foreach="doc.service_sale_order_line_ids.filtered(lambda l: l.product_id and l.product_id.detailed_type == 'service')" t-as="line">-->
+        <!--                                <tr>-->
+        <!--                                    <td><t t-esc="sl_no"/></td>-->
+        <!--                                    <td><t t-esc="line.product_id.brand if line.product_id else ''"/></td>-->
+        <!--                                    <td><t t-esc="line.product_id.name"/></td>-->
+        <!--                                    <td style="text-align: left;"><t t-esc="line.description or line.product_id.name"/></td>-->
+        <!--                                    <td><t t-esc="line.product_qty" t-options='{"widget": "float", "precision": 0}'/></td>-->
+        <!--                                    <td><t t-esc="line.no_of_visits_per_year" t-options='{"widget": "float", "precision": 0}'/></td>-->
+        <!--                                    <td>-->
+        <!--                                        SAR <t t-esc="line.total_selling_price" t-options='{"widget": "float", "precision": 0}'/>-->
+        <!--                                    </td>-->
+        <!--                                </tr>-->
+        <!--                                <t t-set="sl_no" t-value="sl_no + 1"/>-->
+        <!--                            </t>-->
+        <!--                            -->
+        <!--                            &lt;!&ndash; Subtotals fetched from main model doc  &ndash;&gt;-->
+        <!--                            <tr>-->
+        <!--                                <td colspan="6" style="text-align: left; font-weight:bold;">Sub Total</td>-->
+        <!--                                <td style="font-weight:bold;">SAR <t t-esc="doc.untaxed_amount" t-options='{"widget": "float", "precision": 0}'/></td>-->
+        <!--                            </tr>-->
+        <!--                            <tr>-->
+        <!--                                <td colspan="6" style="text-align: left; font-weight:bold;">VAT - 15%</td>-->
+        <!--                                <td style="font-weight:bold;">SAR <t t-esc="doc.vat_amount" t-options='{"widget": "float", "precision": 0}'/></td>-->
+        <!--                            </tr>-->
+        <!--                            <tr>-->
+        <!--                                <td colspan="6" style="text-align: left; font-weight:bold;">Total</td>-->
+        <!--                                <td style="font-weight:bold;">SAR <t t-esc="doc.grand_total_amount" t-options='{"widget": "float", "precision": 0}'/></td>-->
+        <!--                            </tr>-->
+        <!--                            <tr>-->
+        <!--                                <td colspan="7" style="text-align: left; font-weight:bold;">-->
+        <!--                                    In Words: <span t-esc="doc.company_id.currency_id.amount_to_text(doc.grand_total_amount)"/>-->
+        <!--                                </td>-->
+        <!--                            </tr>-->
+        <!--                        </tbody>-->
+        <!--                    </table>-->
+
+        <!--                    &lt;!&ndash; FOOTER FOR PAGE 1 ONLY &ndash;&gt;-->
+        <!--                    &lt;!&ndash; We use absolute positioning or large margin to push it to the bottom &ndash;&gt;-->
+        <!--                    <div style="margin-top: 50px; border-top: 2px solid #555; padding-top:20px; font-size:14px; color:#002b5c; font-weight:bold;">-->
+        <!--                        <table style="width:100%;">-->
+        <!--                            <tr>-->
+        <!--                                <td style="width:50%;">-->
+        <!--                                    <div style="margin-bottom:10px;">📞 8002440247</div>-->
+        <!--                                    <div style="margin-bottom:10px;">🌐 HH-SHAKER.COM.SA</div>-->
+        <!--                                    <div style="margin-bottom:10px;">🔵 HHSHAKERCO</div>-->
+        <!--                                </td>-->
+        <!--                                <td style="width:50%; text-align:right;">-->
+        <!--                                    &lt;!&ndash; A stylized blue angled footer image can go here if needed, replaced by text for now &ndash;&gt;-->
+        <!--                                </td>-->
+        <!--                            </tr>-->
+        <!--                        </table>-->
+        <!--                    </div>-->
+        <!--                </div>-->
+
+        <!--                &lt;!&ndash; PAGE 2: Terms and Execution Data &ndash;&gt;-->
+        <!--                <div class="page" style="page-break-before: always; font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; color: #000; font-size:13px; direction: ltr;">-->
+        <!--                    &lt;!&ndash; Header for Page 2 &ndash;&gt;-->
+        <!--                    <table class="brand-header">-->
+        <!--                        <tr>-->
+        <!--                            <td style="width:40%; text-align:left; vertical-align:bottom; padding-bottom:5px;">-->
+        <!--                                <strong style="font-size:16px;">Hussein and Al Hassan G. Shaker Bros</strong><br/>-->
+        <!--                                <strong style="font-size:16px;">For Modern Trading Co. Ltd.</strong>-->
+        <!--                            </td>-->
+        <!--                            <td style="width:20%; text-align:center; vertical-align:bottom;">-->
+        <!--                                <img t-att-src="logo_b64" style="height: 50px; display: block; margin: 0 auto; margin-bottom: -15px; background:white; position:relative; z-index:10;"/>-->
+        <!--                            </td>-->
+        <!--                            <td style="width:40%; text-align:right; vertical-align:bottom; padding-bottom:5px;" dir="rtl">-->
+        <!--                                <strong class="arabic-text" style="font-size:18px;">شركة الاخوان حسين و حسن غازي شاكر</strong><br/>-->
+        <!--                                <strong class="arabic-text" style="font-size:18px;">للتجارة الحديثة المحدودة</strong>-->
+        <!--                            </td>-->
+        <!--                        </tr>-->
+        <!--                    </table>-->
+
+        <!--                    <div style="line-height:1.6; font-size:14px; margin-top: 30px;">-->
+        <!--                        <p>-->
+        <!--                            <strong>Call out : </strong> -->
+        <!--                            <span style="color:red; font-weight:bold; margin-left:20px; margin-right:20px;">72</span> -->
+        <!--                            <span style="color:red; font-weight:bold;">Free Visits</span>-->
+        <!--                        </p>-->
+        <!--                        <p style="margin-top:20px;">-->
+        <!--                            <strong>Scope of Work :</strong><br/>-->
+        <!--                            Please refer to next page for details.-->
+        <!--                        </p>-->
+
+        <!--                        <p style="margin-top:20px;">-->
+        <!--                            <strong>Terms of Execution : </strong><br/>-->
+        <!--                            <span t-raw="(doc.terms_of_execution or '').replace('\n', '&lt;br/&gt;')"/>-->
+        <!--                        </p>-->
+
+        <!--                        <p style="margin-top:20px;">-->
+        <!--                            <strong>Terms of Payment : </strong><br/>-->
+        <!--                            <table style="width:70%;">-->
+        <!--                                <t t-foreach="doc_payments" t-as="pay">-->
+        <!--                                    <tr>-->
+        <!--                                        <td style="width:30%;"><t t-esc="pay['name']"/></td>-->
+        <!--                                        <td style="width:30%;"><t t-esc="pay['date']"/></td>-->
+        <!--                                        <td style="width:40%;">SAR <t t-esc="pay['amount']" t-options='{"widget": "float", "precision": 2}'/></td>-->
+        <!--                                    </tr>-->
+        <!--                                </t>-->
+        <!--                            </table>-->
+        <!--                        </p>-->
+
+        <!--                        <p style="margin-top:20px;">-->
+        <!--                            <strong>Exclusions : </strong><br/>-->
+        <!--                            <span t-raw="(doc.exclusions_text or '').replace('\n', '&lt;br/&gt;')"/>-->
+        <!--                        </p>-->
+
+        <!--                        <p style="margin-top:20px;">-->
+        <!--                            <span t-raw="(doc.others_text or '').replace('\n', '&lt;br/&gt;')"/>-->
+        <!--                        </p>-->
+
+        <!--                        <div style="margin-top:40px;">-->
+        <!--                            <strong>Best Regards,</strong><br/><br/><br/>-->
+        <!--                            <strong><t t-esc="uinfo['name']"/></strong><br/>-->
+        <!--                            <span t-esc="uinfo['job_title']"/><br/>-->
+        <!--                            P.O. Box 78 Jeddah 21411, KSA<br/>-->
+        <!--                            Tel: <t t-esc="uinfo['phone']"/><br/>-->
+        <!--                            Mobile: <t t-esc="uinfo['mobile']"/><br/>-->
+        <!--                            E-mail: <t t-esc="uinfo['email']"/><br/>-->
+        <!--                            <br/>-->
+        <!--                            <img t-att-src="logo_b64" style="height: 40px;"/><br/>-->
+        <!--                            HUSSEIN &amp; ALHASSAN G. SHAKER BROS.<br/>-->
+        <!--                            FOR MODERN TRADING CO. LTD.<br/>-->
+        <!--                            www.HH-Shaker.com.sa<br/>-->
+        <!--                        </div>-->
+        <!--                    </div>-->
+        <!--                </div>-->
+
+        <!--                &lt;!&ndash; SCOPE OF WORK DYNAMIC PAGES (PAGES 3+) &ndash;&gt;-->
+        <!--                &lt;!&ndash; We iterate over the custom grouped tuples returned from _get_report_values &ndash;&gt;-->
+        <!--                <t t-foreach="doc_scopes" t-as="unit_scope">-->
+        <!--                    <t t-foreach="unit_scope['grouped_data']" t-as="group_tuple">-->
+        <!--                        <div class="page" style="font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; color: #000; font-size:13px; page-break-before: always; direction: ltr;">-->
+        <!--                            -->
+        <!--                            &lt;!&ndash; Header for Dynamic Pages &ndash;&gt;-->
+        <!--                            <table class="brand-header">-->
+        <!--                                <tr>-->
+        <!--                                    <td style="width:40%; text-align:left; vertical-align:bottom; padding-bottom:5px;">-->
+        <!--                                        <strong style="font-size:16px;">Hussein and Al Hassan G. Shaker Bros</strong><br/>-->
+        <!--                                        <strong style="font-size:16px;">For Modern Trading Co. Ltd.</strong>-->
+        <!--                                    </td>-->
+        <!--                                    <td style="width:20%; text-align:center; vertical-align:bottom;">-->
+        <!--                                        <img t-att-src="logo_b64" style="height: 50px; display: block; margin: 0 auto; margin-bottom: -15px; background:white; position:relative; z-index:10;"/>-->
+        <!--                                    </td>-->
+        <!--                                    <td style="width:40%; text-align:right; vertical-align:bottom; padding-bottom:5px;" dir="rtl">-->
+        <!--                                        <strong class="arabic-text" style="font-size:18px;">شركة الاخوان حسين و حسن غازي شاكر</strong><br/>-->
+        <!--                                        <strong class="arabic-text" style="font-size:18px;">للتجارة الحديثة المحدودة</strong>-->
+        <!--                                    </td>-->
+        <!--                                </tr>-->
+        <!--                            </table>-->
+
+        <!--                            &lt;!&ndash; Identifying Unit Type and Minor/Major Visit dynamically &ndash;&gt;-->
+        <!--                            <table style="width:50%; margin-bottom:20px; font-size:14px; margin-top:20px;">-->
+        <!--                                <tr>-->
+        <!--                                    <td style="font-weight:bold; width:120px;">Unit Type:</td>-->
+        <!--                                    <td><span t-esc="unit_scope['unit_type']"/></td>-->
+        <!--                                </tr>-->
+        <!--                                <tr>-->
+        <!--                                    <td style="font-weight:bold;">Service Type:</td>-->
+        <!--                                    <td><span t-esc="group_tuple[0]"/></td>     &lt;!&ndash; Service Type Name (Major/Minor) &ndash;&gt;-->
+        <!--                                </tr>-->
+        <!--                            </table>-->
+
+        <!--                            <t t-foreach="group_tuple[1]" t-as="param_tuple">-->
+        <!--                                <h5 style="color:#0088cc; font-weight:bold; margin-top:20px;"><t t-esc="param_tuple[0]"/></h5> &lt;!&ndash; Services / Physical Inspection etc &ndash;&gt;-->
+        <!--                                <ol style="padding-left: 20px; margin-top:10px;">-->
+        <!--                                    <t t-foreach="param_tuple[1]" t-as="desc_line">-->
+        <!--                                        <li style="margin-bottom:5px;"><t t-esc="desc_line"/></li>-->
+        <!--                                    </t>-->
+        <!--                                </ol>-->
+        <!--                            </t>-->
+        <!--                        </div>-->
+        <!--                    </t>-->
+        <!--                </t>-->
+        <!--            </t>-->
+        <!--        </t>-->
+        <!--    </template>-->
+        <!--</odoo>-->

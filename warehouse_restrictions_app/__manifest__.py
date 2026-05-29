@@ -1,0 +1,25 @@
+# -*- coding: utf-8 -*-
+{
+    'name': 'Warehouse Restrictions App',
+    'author': 'Edge Technologies',
+    'version': '17.0.1.1',
+    'live_test_url':'https://youtu.be/WM2Y9NZy3U8',
+    "images":['static/description/main_screenshot.png'],
+    'summary': 'Warehouse user Restrictions user warehouse Restriction for user warehouse location restrict location on warehouse location Restrictions Warehouse Stock Restriction Warehouse Stock location Restriction inventory Restriction inventory location Restriction ',
+    'description': """Warehouse Restrictions App """,
+    "license" : "LGPL-3",
+    'depends': ['base','sale_management','stock','account'],
+    'data': [
+        'security/warehouse_restrictions_group.xml',
+        'security/warehouse_restrictions_rules.xml',
+        'views/warehouse_restrict_views.xml',
+    ],
+    'qweb' : [],
+    'demo': [],
+    'css': [],
+    'installable': True,
+    'auto_install': False,
+    'price':20,
+    'currency': "EUR",
+    'category': 'Warehouse',
+}

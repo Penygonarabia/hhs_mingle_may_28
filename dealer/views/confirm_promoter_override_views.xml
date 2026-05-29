@@ -1,0 +1,20 @@
+<odoo>
+<record id="view_confirm_promoter_override_form" model="ir.ui.view">
+    <field name="name">confirm.promoter.override.form</field>
+    <field name="model">confirm.promoter.override</field>
+    <field name="arch" type="xml">
+        <form string="Promoter Conflict Detected">
+            <group>
+                <label for="conflicting_assignment_id"/>
+                <field name="conflicting_assignment_id" readonly="1"/>
+                <label for="new_assignment_id"/>
+                <field name="new_assignment_id" readonly="1"/>
+            </group>
+            <footer>
+                <button name="confirm_override" type="object" class="btn btn-primary" string="Yes, Override"/>
+                <button string="Cancel" special="cancel" class="btn-secondary"/>
+            </footer>
+        </form>
+    </field>
+</record>
+</odoo>

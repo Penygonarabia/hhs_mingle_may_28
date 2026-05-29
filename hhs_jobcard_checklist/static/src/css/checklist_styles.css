@@ -1,0 +1,72 @@
+.hhs_checklist_answer .form-check {
+    padding: 0.5rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.hhs_checklist_answer .form-check:active {
+    background: #e9ecef;
+    transform: scale(0.95);
+}
+
+.hhs_checklist_answer input[type="radio"] {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    margin: 0 !important;
+    cursor: pointer !important;
+}
+
+.hhs_checklist_answer .form-check-label {
+    margin-left: 0.5rem;
+    font-weight: 500;
+    cursor: pointer !important;
+    user-select: none;
+}
+
+.hhs_checklist_answer .form-check:has(input:checked) {
+    background: #e7f1ff !important;
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+}
+
+.hhs_checklist_answer .form-check:has(input:checked) label {
+    color: #0d6efd !important;
+}
+
+.hhs_checklist_card {
+    margin-bottom: 2rem !important;
+    border-radius: 12px !important;
+}
+
+.hhs_photo_card {
+    margin-bottom: 1.5rem !important;
+    border-radius: 12px !important;
+}
+
+.hhs_photo_card img {
+    max-width: 100%;
+    border-radius: 8px;
+}
+
+.hhs_checklist_answer input[type="number"],
+.hhs_checklist_answer input[type="text"] {
+    border: 2px solid #555 !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    font-size: 1rem !important;
+    background: #fff !important;
+}
+
+.hhs_checklist_answer input[type="number"]:focus,
+.hhs_checklist_answer input[type="text"]:focus {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+    outline: none !important;
+}

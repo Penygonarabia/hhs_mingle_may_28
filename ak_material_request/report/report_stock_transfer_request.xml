@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="action_report_stock_transfer_request_xlsx" model="ir.actions.report">
+	        <field name="name">Stock_Transfer_Request_Report</field>
+	        <field name="model">stock.request.report</field>
+	        <field name="report_type">xlsx</field>
+	        <field name="report_name">ak_material_request.report_stock_transfer_request_xlsx</field>
+	        <field name="report_file">Stock_Transfer_Request_Report</field>
+	        <field name="binding_model_id" ref="model_stock_request_report"/>
+	        <field name="binding_type">report</field>
+	    </record>
+    
+ </odoo>   

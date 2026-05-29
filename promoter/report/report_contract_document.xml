@@ -1,0 +1,459 @@
+<odoo>
+    <template id="report_contract_document_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <main>
+                    <div class="page">
+                        <h2 class="text-center">Contract Document</h2>
+
+                        <table class="table table-bordered" style="width:100%; margin-top:20px;">
+                            <tbody>
+                                <tr>
+                                    <!-- <td width="50%" style="text-align:left; padding:10px;"><strong>Dealer:</strong> ABC Dealer Pvt. Ltd.</td> -->
+                                    <td width="50%" style="text-align:left; padding:10px;"><strong>Air Conditioning System Service Contract Agreement </strong></td>
+                                    <td width="50%" dir="rtl" style="text-align:right; font-family: DejaVu Sans, 'Noto Naskh Arabic', serif;">
+    <strong>اتفاقية عقد خدمة نظام تكييف الهواء</strong>
+</td>
+                                </tr>
+                                <tr>
+                                    <!-- <td width="50%" style="text-align:left; padding:10px;"><strong>Dealer:</strong> ABC Dealer Pvt. Ltd.</td> -->
+                                    <td width="50%" style="text-align:left; padding:10px;"><strong>Parties</strong></td>
+                                    <td width="50%" dir="rtl" style="text-align:right; font-family: DejaVu Sans, 'Noto Naskh Arabic', serif;">
+    <strong>الأطراف </strong>
+</td>
+                                </tr>
+                                <tr>
+                                    <!-- <td width="50%" style="text-align:left; padding:10px;"><strong>Dealer:</strong> ABC Dealer Pvt. Ltd.</td> -->
+                                    <td width="50%" style="text-align:left; padding:10px;"><strong>First Party:  </strong> Hussein and Al Hassan G. Shaker Bros. for Modern Trading Co. Ltd. (hereinafter referred to as the “First Party” and, in short form, as  
+
+HH Shaker ServicePro)  </td>
+                                    <td width="50%" dir="rtl" style="text-align:right; font-family: DejaVu Sans, 'Noto Naskh Arabic', serif;">
+    <strong></strong>الطرف الأول: شركة الاخوان حسين والحسن غازى شاكر للتجارة الحديثة المحدودة يُشار إليها فيما يلي باسم "الطرف الأول"، وباختصار، HH Shaker ServicePro
+</td>
+                                </tr>
+                                <tr>
+                                    <!-- <td width="50%" style="text-align:left; padding:10px;"><strong>Dealer:</strong> ABC Dealer Pvt. Ltd.</td> -->
+                                    <td width="50%" style="text-align:left; padding:10px;"><strong>Second Party:  </strong>  [Customer Name] (hereinafter referred to as the “Second Party”)   </td>
+                                    <td width="50%" dir="rtl" style="text-align:right; font-family: DejaVu Sans, 'Noto Naskh Arabic', serif;">
+    <strong></strong>الطرف الثاني: [اسم العميل] (يشار إليه فيما يلي باسم "الطرف الثاني") </td>
+                                </tr>
+                                <tr>
+                                <td width="50%" style="text-align:left; padding:10px;">Collectively referred to as the “Parties”. </td>
+                               <td width="50%" dir="rtl" style="text-align:right; font-family: DejaVu Sans, 'Noto Naskh Arabic', serif;"> يشار إليها مجتمعة باسم "الأطراف". </td>
+                                </tr>
+                              <tr>
+                                <td width="50%" style="text-align:left; padding:10px;">
+                                    <strong>1. Introduction</strong><br/>
+                                    Whereas the First Party possesses the technical expertise, specialized team, and necessary tools required for the maintenance of air conditioning systems, and whereas the Second Party owns facilities that require periodic inspection and maintenance.<br/>
+                                    The Parties hereby agree as follows:
+                                </td>
+                                <td width="50%" dir="rtl" style="text-align: right; font-family: 'DejaVu Sans', 'Noto Naskh Arabic', serif;">
+                                    <strong>1. مقدمة</strong><br/>
+                                    وحيث إن الطرف الأول يمتلك الخبرة الفنية والفريق المتخصص والأدوات اللازمة لصيانة أنظمة التكييف، وحيث إن الطرف الثاني يمتلك مرافق تتطلب صيانة دورية وأعمال إصلاح.<br/>
+                                    اتفق الطرفان بموجب هذا على ما يلي:
+                                </td>
+                            </tr>
+                               <tr>
+                                    <td width="50%" style="text-align:left; padding:10px;">
+                                        <strong>2. Contract Type and Service Coverage</strong><br/>                                    
+                                        <strong>2.1 Periodic Preventive Maintenance</strong><br/>
+                                        Three (3) scheduled visits per year.  <br/>
+                                        All works to be completed within 12 months from the contract start date.   <br/>
+                                        Detailed scope of preventive maintenance is listed in Annex A – Schedule of Preventive Tasks.    <br/>
+                                        Details of the site, equipment and its quantity are listed in Annex B    <br/>
+                                        <strong>2.2 Emergency Callout Service  </strong><br/>
+                                        Response within 24 working hours (maximum). <br/>
+                                        Covers repairs that can be completed within 3 working hours without any additional spare parts. <br/>
+                                        Includes 8 emergency visits annually. <br/>
+                                        Additional visits charged at SAR 250 per visit (including VAT).<br/>                                    
+                                    </td>								
+                                    <td width="50%" dir="rtl" style="text-align: right; font-family: 'DejaVu Sans', 'Noto Naskh Arabic', serif;">
+                                        <strong>2. نوع العقد وتغطية الخدمة </strong><br/>                                    
+                                        <strong>2.1 الصيانة الوقائية الدورية </strong><br/>
+                                        ثلاث (3) زيارات مجدولة في السنة.  <br/>
+                                        يتم الانتهاء من جميع الأعمال في غضون 12 شهرا من تاريخ بدء العقد.<br/>
+                                        ويرد النطاق التفصيلي للصيانة الوقائية في الملحق أ - جدول المهام الوقائية. <br/>
+                                        ترد تفاصيل الموقع والمعدات و الكميات في المرفق ب <br/>
+                                        <strong>2.2 خدمة شرح الطوارئ   </strong><br/>
+                                        الاستجابة في غضون 24 ساعة عمل (الحد الأقصى).<br/>
+                                        يغطي الإصلاحات التي يمكن إكمالها في غضون 3 ساعات عمل دون أي قطع غيار إضافية.  <br/>
+                                        يشمل 8 زيارات طارئة سنويا. <br/>
+                                        الزيارات الإضافية بقيمة 250 ريال سعودي لكل زيارة  
+
+                            (بما في ذلك ضريبة القيمة المضافة). <br/>                                    
+                                    </td>
+                            </tr>
+
+                            <tr>
+                            <td width="50%" style="text-align:left; padding:10px;">
+                                <strong>3. Parties’ Obligations</strong><br/>
+                                <strong>3.1 First Party’s Obligations</strong><br/>
+                                The First Party (HH Shaker ServicePro) agrees to:<br/>
+                                • Supervise technicians and ensure the quality of service.<br/>
+                                • Perform maintenance in accordance with required standards.<br/>
+                                • Adhere to agreed maintenance schedules.<br/>
+                                • Avoid causing any damage to the facilities or equipment of the Second Party.<br/><br/>
+
+                                <strong>3.2 Second Party’s Obligations</strong><br/>
+                                The Second Party (Customer) agrees to:<br/>
+                                • Provide site access and necessary resources (such as power, water, permits, and safe access).<br/>        
+                                • Pay all dues as per the agreed payment terms.<br/>
+                                • Cover any additional visits or services outside the contract scope.<br/>
+                                • Issue purchase orders (POs) for corrective maintenance works when required.<br/>
+                                • Ensure all air-conditioning units are in a safe and operable condition before the contract starts.<br/>
+                            </td>
+
+                            <td width="50%" dir="rtl" style="text-align:right; font-family:'DejaVu Sans','Noto Naskh Arabic',serif;">
+                                <strong>3. التزامات الأطراف</strong><br/>
+                                <strong>3.1 التزامات الطرف الأول</strong><br/>
+                                يتعهد الطرف الأول (HH Shaker ServicePro) بما يلي:<br/>
+                                • الإشراف على الفنيين والتأكد من جودة الخدمة.<br/>
+                                • إجراء الصيانة وفقًا للمعايير المطلوبة.<br/>
+                                • الالتزام بمواعيد الصيانة المتفق عليها.<br/>
+                                • تجنب إلحاق الضرر بمرافق أو معدات الطرف الثاني.<br/><br/>
+
+                                <strong>3.2 التزامات الطرف الثاني</strong><br/>
+                                يتعهد الطرف الثاني (العميل) بما يلي:<br/>
+                                • توفير الوصول والموارد اللازمة (مثل الكهرباء والمياه والتصاريح والوصول الآمن).<br/>
+                                • دفع المستحقات وفقًا للشروط المتفق عليها.<br/>
+                                • تغطية الزيارات أو الخدمات الإضافية خارج نطاق العقد.<br/>
+                                • إصدار أوامر الشراء (POs) للأعمال التصحيحية عند الحاجة.<br/>
+                                • التأكد من أن جميع وحدات التكييف في حالة آمنة وقابلة للتشغيل قبل بدء العقد.<br/>
+                            </td>
+                        </tr>
+
+                            <tr>
+                                    <td width="50%" style="text-align:left; padding:10px;">
+                                        <strong>4. Duration of Agreement </strong><br/> 
+                                        This Agreement shall commence on [start date] and end on [end date]. <br/>
+                                        Automatically renewable for one (1) year unless either Party gives written notice at least two (2) months before expiry. <br/>
+                                        Agreement value may be increased by 5–10% annually upon mutual approval.<br/>
+                                    </td>								
+                                    <td width="50%" dir="rtl" style="text-align: right; font-family: 'DejaVu Sans', 'Noto Naskh Arabic', serif;">
+                                        <strong>4. مدة الاتفاقية   </strong><br/>                                   
+                                        تبدأ هذه الاتفاقية في [تاريخ البدء] وتنتهي في [تاريخ الانتهاء].<br/>
+                                        قابلة للتجديد تلقائيا لمدة عام واحد (1) ما لم يقدم أي<br/>
+                                        من الطرفين إشعارا كتابيا قبل شهرين (2) على الأقل من انتهاء الصلاحية. <br/>
+                                        يمكن زيادة قيمة الاتفاقية بنسبة 5-10٪ سنويا بموافقة الطرفين.<br/>			                                  
+                                    </td>
+                            </tr>
+                              <tr>
+                                <td width="50%" style="text-align:left; padding:10px;">
+                                    <strong>5. Payment Terms  </strong><br/> 
+                                    Annual contract value: SAR [amount] (excluding VAT). <br/>
+                                    Payment shall be made quarterly in advance (every 3 months).  <br/>
+                                    First Payment – [date] – [amount]<br/>
+                                    Second Payment – [date] – [amount] <br/>
+                                    Third Payment – [date] – [amount]  <br/>
+                                    Fourth Payment – [date] – [amount]  <br/>
+                                    Late payments may result in suspension of services until dues are cleared.<br/>
+                                </td>								
+                                <td width="50%" dir="rtl" style="text-align: right; font-family: 'DejaVu Sans', 'Noto Naskh Arabic', serif;">
+                                    <strong>5. شروط الدفع   </strong><br/>                                   
+                                    قيمة العقد السنوي: [مبلغ] ريال سعودي (غير شامل ضريبة القيمة المضافة). <br/>
+                                    يتم الدفع كل ثلاثة أشهر مقدما (كل 3 أشهر). <br/>
+                                    الدفعة الأولى – [التاريخ] – [المبلغ] <br/>
+                                    الدفعة الثانية – [التاريخ] – [المبلغ] <br/>		
+                                    الدفعة الرابعة – [التاريخ] – [المبلغ] <br/>			                                  
+                                    قد يؤدي التأخر في المدفوعات إلى تعليق الخدمات حتى يتم تسوية المستحقات.  <br/>			                                  
+                                </td>
+                        </tr>
+                           <tr>
+                                <td width="50%" style="text-align:left; padding:10px;">
+                                    <strong>6. General Terms &amp; Conditions </strong><br/> 
+                                    <strong>1.Service Hours:</strong> 8:30 AM – 5:30 PM, Saturday to Thursday (excluding Fridays and public holidays). Work outside these hours will be charged separately.  <br/>
+                                    <strong>2.Safety &amp; Site Access:</strong> The Second Party must provide safe access and comply with security/safety standards.<br/>
+                                    <strong>3.Repairs &amp; Spare Parts:</strong> Only First Party technicians are authorized for covered units. If serviced by third party, First Party holds no liability. <br/>
+                                    As we are the exclusive agent for Midea Air conditioners, it is recommended that spare parts be purchased from the First Party.<br/>
+                                    <strong>4.Limitation of Liability:</strong> <br/>
+                                    First Party shall not be responsible for delays or damages caused by force majeure (e.g., natural disasters, strikes, fires, unavailability of parts).<br/>
+                                    Liability does not cover units not included in this contract.<br/>
+                                    If force majeure prevents execution for four (4) months or more, either Party may terminate the agreement by written notice. <br/>
+                                    <strong>5.Insurance:</strong> The Second Party shall insure its property and equipment against any risk of damage, fire, or accident. The First Party’s liability is limited to workmanship only.  <br/>
+                                    <strong>6.Confidentiality:</strong> All contract documents remain the property of the First Party and must not be shared without written approval.<br/>
+                                </td>								
+                                <td width="50%" dir="rtl" style="text-align: right; font-family: 'DejaVu Sans', 'Noto Naskh Arabic', serif;">
+                                    <strong>6. الشروط والأحكام العامة   </strong><br/>                                   
+                                    1.ساعات الخدمة: 8:30 صباحا - 5:30 مساء ، من السبت إلى الخميس (باستثناء أيام الجمعة والعطلات الرسمية). سيتم فرض رسوم على العمل خارج هذه الساعات بشكل منفصل. <br/>
+                                    2.السلامة والوصول إلى الموقع: يجب على الطرف الثاني توفير الوصول الآمن والامتثال لمعايير الأمن / السلامة.<br/>
+                                    3.الإصلاحات وقطع الغيار: فنيي الطرف الأول فقط مصرح لهم بالوحدات المغطاة  بالعقد. إذا تمت الخدمة من قبل الطرف ثالث، فإن الطرف الأول لا يتحمل أي مسؤولية.  <br/>
+                                    بصفتنا الوكيل الحصري لمكيفات ميديا ، يوصى بشراء قطع الغيار من الطرف الأول.  <br/>			                                  
+                                    4.حدود المسؤولية:  <br/>			                                  
+                                    لا يتحمل الطرف الأول المسؤولية عن التأخير أو الأضرار الناجمة عن القوة القاهرة (على سبيل المثال ، الكوارث الطبيعية والإضرابات والحرائق وعدم توفر الأجزاء).<br/>			                                  
+                                    لا تغطي المسؤولية الوحدات غير المدرجة في هذا العقد.<br/>			                                  
+                                    إذا حالت القوة القاهرة دون التنفيذ لمدة أربعة (4) أشهر أو أكثر، يجوز لأي من الطرفين إنهاء الاتفاقية عن طريق إشعار كتابي. <br/>			                                  
+                                    5.التأمين: يلتزم الطرف الثاني بتأمين ممتلكاته ومعداته ضد أي خطر تلف أو حريق أو حوادث. تقتصر مسؤولية الطرف الأول على الصنعة فقط. <br/>			                                  
+                                    6.السرية: تظل جميع مستندات العقد ملكا للطرف الأول ويجب عدم مشاركتها دون موافقة خطية.  <br/>			                                  
+                                </td>
+                        </tr>
+                    <tr>
+                        <td width="50%" style="text-align:left; padding:10px;">
+                            <strong>7. Dispute Resolution  </strong><br/> 
+                            In case of dispute, the Parties shall first attempt amicable resolution through negotiation. Failing this, disputes shall be referred to the competent judicial authorities in the Kingdom of Saudi Arabia under applicable laws.<br/>			
+                        </td>								
+                        <td width="50%" dir="rtl" style="text-align: right; font-family: 'DejaVu Sans', 'Noto Naskh Arabic', serif;">
+                            <strong>7. تسوية المنازعات    </strong><br/>                                   
+                            في حالة وجود نزاع، يجب على الطرفين أولا محاولة الحل الودي عن طريق التفاوض. وفي حال عدم ذلك، تحال المنازعات إلى الجهات القضائية المختصة في المملكة العربية السعودية بموجب القوانين المعمول بها. <br/>			                                  
+                        </td>
+                    </tr>
+                
+                    <tr>
+                        <td width="50%" style="text-align:left; padding:10px;">
+                            <strong>8.  Agreement Acceptance  </strong><br/> 
+                            By signing below, both Parties acknowledge and agree to the terms and conditions of this Service Contract Agreement <br/>			
+                        </td>								
+                        <td width="50%" dir="rtl" style="text-align: right; font-family: 'DejaVu Sans', 'Noto Naskh Arabic', serif;">
+                            <strong>8.قبول الاتفاقية    </strong><br/>                                   
+                            من خلال التوقيع أدناه، يقر الطرفان ويوافقان على شروط وأحكام اتفاقية عقد الخدمة هذه  <br/>			                                  
+                        </td>
+                    </tr>
+                        </tbody>
+                    </table>
+
+                    <table style="width:100%; border:1px dotted #000; border-collapse:collapse; font-size:12px; text-align:left;">
+                            <tr>
+                                <td style="border:1px dotted #000; padding:6px; width:35%;">
+                                    On behalf of Hussein and Al Hassan G. Shaker for Modern Trading Co. Ltd. (First Party)
+                                </td>
+                                <td style="border:1px dotted #000; padding:6px; width:30%;"></td>
+                                <td width="50%" dir="rtl" style="text-align:right; border:1px dotted #000; padding:6px; width:35%; font-family:'DejaVu Sans','Noto Naskh Arabic',serif;">
+                                    نيابة عن شركة الإخوان حسين والحسن غازي شاكر للتجارة الحديثة المحدودة (الطرف الأول)
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="border:1px dotted #000; padding:6px;">Name</td>
+                                <td style="border:1px dotted #000; padding:6px;"></td>
+                                <td width="50%" dir="rtl" style="text-align:right; border:1px dotted #000; padding:6px;">الاسم</td>
+                            </tr>
+
+                            <tr>
+                                <td style="border:1px dotted #000; padding:6px;">Signature</td>
+                                <td style="border:1px dotted #000; padding:6px;"></td>
+                                <td width="50%" dir="rtl" style="text-align:right; border:1px dotted #000; padding:6px;">التوقيع</td>
+                            </tr>
+
+                            <tr>
+                                <td style="border:1px dotted #000; padding:6px;">Date</td>
+                                <td style="border:1px dotted #000; padding:6px;"></td>
+                                <td width="50%" dir="rtl" style="text-align:right; border:1px dotted #000; padding:6px;">التاريخ</td>
+                            </tr>
+
+                            <tr>
+                                <td style="border:1px dotted #000; padding:6px;">Stamp</td>
+                                <td style="border:1px dotted #000; padding:6px;"></td>
+                                <td width="50%" dir="rtl" style="text-align:right; border:1px dotted #000; padding:6px;">الختم</td>
+                            </tr>
+
+                            <tr>
+                                <td style="border:1px dotted #000; padding:6px;">Contact Person</td>
+                                <td style="border:1px dotted #000; padding:6px;"></td>
+                                <td width="50%" dir="rtl" style="text-align:right; border:1px dotted #000; padding:6px;">الشخص المسؤول</td>
+                            </tr>
+
+                            <tr>
+                                <td style="border:1px dotted #000; padding:6px;">Mobile No.</td>
+                                <td style="border:1px dotted #000; padding:6px;"></td>
+                                <td width="50%" dir="rtl" style="text-align:right; border:1px dotted #000; padding:6px;">رقم الجوال</td>
+                            </tr>
+
+                            <!-- Last row with centered number -->
+                            <tr>
+                                <td style="border:1px dotted #000; padding:6px;">Unified Number</td>
+                                <td style="border:1px dotted #000; padding:6px; text-align:center; font-weight:bold; color:#003399; font-size:14px;">
+                                    800 244 0247
+                                </td>
+                                <td width="50%" dir="rtl" style="text-align:right; border:1px dotted #000; padding:6px; font-family:'DejaVu Sans','Noto Naskh Arabic',serif;">
+                                    الرقم الموحد
+                                </td>
+                            </tr>
+                        </table>
+                        <br/>
+                        <table style="width:100%; border:1px dotted #000; border-collapse:collapse; font-size:12px; text-align:left;">
+                            <tr>
+                                <td style="border:1px dotted #000; padding:6px; width:35%;">
+                                    On behalf of <strong>Customer</strong> (Second Party)
+                                </td>
+                                <td style="border:1px dotted #000; padding:6px; width:30%;"></td>
+                                <td width="50%" dir="rtl" style="text-align:right; border:1px dotted #000; padding:6px; width:35%; font-family:'DejaVu Sans','Noto Naskh Arabic',serif;">
+                                    نيابة عن <strong>العميل</strong> (الطرف الثاني)
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="border:1px dotted #000; padding:6px;">Name</td>
+                                <td style="border:1px dotted #000; padding:6px;"></td>
+                                <td width="50%" dir="rtl" style="text-align:right; border:1px dotted #000; padding:6px;">الاسم</td>
+                            </tr>
+
+                            <tr>
+                                <td style="border:1px dotted #000; padding:6px;">Signature</td>
+                                <td style="border:1px dotted #000; padding:6px;"></td>
+                                <td width="50%" dir="rtl" style="text-align:right; border:1px dotted #000; padding:6px;">التوقيع</td>
+                            </tr>
+
+                            <tr>
+                                <td style="border:1px dotted #000; padding:6px;">Date</td>
+                                <td style="border:1px dotted #000; padding:6px;"></td>
+                                <td width="50%" dir="rtl" style="text-align:right; border:1px dotted #000; padding:6px;">التاريخ</td>
+                            </tr>
+
+                            <tr>
+                                <td style="border:1px dotted #000; padding:6px;">Stamp</td>
+                                <td style="border:1px dotted #000; padding:6px;"></td>
+                                <td width="50%" dir="rtl" style="text-align:right; border:1px dotted #000; padding:6px;">الختم</td>
+                            </tr>
+
+                            <tr>
+                                <td style="border:1px dotted #000; padding:6px;">Contact Person</td>
+                                <td style="border:1px dotted #000; padding:6px;"></td>
+                                <td width="50%" dir="rtl" style="text-align:right; border:1px dotted #000; padding:6px;">الشخص المسؤول</td>
+                            </tr>
+
+                            <tr>
+                                <td style="border:1px dotted #000; padding:6px;">Mobile No.</td>
+                                <td style="border:1px dotted #000; padding:6px;"></td>
+                                <td width="50%" dir="rtl" style="text-align:right; border:1px dotted #000; padding:6px;">رقم الجوال</td>
+                            </tr>
+
+                            <tr>
+                                <td style="border:1px dotted #000; padding:6px;">Other Information</td>
+                                <td style="border:1px dotted #000; padding:6px;"></td>
+                                <td width="50%" dir="rtl" style="text-align:right; border:1px dotted #000; padding:6px;">معلومات إضافية</td>
+                            </tr>
+                        </table>
+                        <br/>
+                        <br/>
+
+                        <table style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:13px;">
+                            <tr>
+                                <!-- English Column -->
+                                <td style="width:50%; vertical-align:top; border:1px solid #000; padding:10px;">
+                                    <strong>Annex A – Scope of Preventive Maintenance</strong>
+                                    <ul style="margin-top:8px; margin-bottom:8px; padding-left:20px;">
+                                        <li>Clean condenser coils and air filters.</li>
+                                        <li>Inspect and clean evaporator coils (if required).</li>
+                                        <li>Check fan motors, pulleys, and belts.</li>
+                                        <li>Grease bearings (if required).</li>
+                                        <li>Inspect for leaks, unusual noise, or vibration.</li>
+                                        <li>Inspect electrical connections and contactors.</li>
+                                        <li>Clean drain pans.</li>
+                                        <li>Record operating parameters and submit report.</li>
+                                    </ul>
+                                </td>
+
+                                <!-- Arabic Column -->
+                                <td width="50%" dir="rtl" style="width:50%; vertical-align:top; text-align:right; border:1px solid #000; padding:10px; font-family:'DejaVu Sans','Noto Naskh Arabic',serif;">
+                                    <strong>الملحق أ - نطاق الصيانة الوقائية</strong>
+                                    <ul style="margin-top:8px; margin-bottom:8px; padding-right:20px;">
+                                        <li>تنظيف ملفات المكثف وفلاتر الهواء.</li>
+                                        <li>فحص وتنظيف ملفات المبخر (إذا لزم الأمر).</li>
+                                        <li>تحقق من ماتور المروحة والبكرات والأحزمة.</li>
+                                        <li>تشحيم المحامل (إذا لزم الأمر).</li>
+                                        <li>الفحص والتأكد من عدم وجود أي تسريبات أو الضوضاء أو الاهتزازات العادية.</li>
+                                        <li>فحص التوصيلات الكهربائية والموصلات.</li>
+                                        <li>تنظيف أحواض التصريف.</li>
+                                        <li>تسجيل معلومات التشغيل وتقديم التقرير الزيارة.</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        </table>
+                        <br/>
+                        <br/>
+                        <table style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:13px;">
+                            <!-- Header Row -->
+                           <tr>
+                            <td colspan="3" style="border:1px solid #000; padding:8px; background-color:#ffffff; text-align:center; font-weight:bold; font-size:13px;">
+                                <span style="float:left;">Annex B – Site Details</span>
+                                <span dir="rtl" style="float:right; font-family:'DejaVu Sans','Noto Naskh Arabic',serif;">الملحق ب - تفاصيل الموقع</span>
+                            </td>
+                        </tr>
+
+                        <!-- Column Headers -->
+                        <tr style="background-color:#1F4E78; color:#fff; text-align:center;">
+                            <th style="border:1px solid #000; padding:6px;">Site Address / عنوان الموقع</th>
+                            <th style="border:1px solid #000; padding:6px;">Equipment Type / نوع المعدات</th>
+                            <th style="border:1px solid #000; padding:6px;">Quantity / كمية</th>
+                        </tr>
+
+                            <!-- Data Rows -->
+                            <tr>
+                                <td style="border:1px solid #000; padding:8px; height:25px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                            </tr>
+                            <tr>
+                                <td style="border:1px solid #000; padding:8px; height:25px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                            </tr>
+                            <tr>
+                                <td style="border:1px solid #000; padding:8px; height:25px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                            </tr>
+                            <tr>
+                                <td style="border:1px solid #000; padding:8px; height:25px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                            </tr>
+                            <tr>
+                                <td style="border:1px solid #000; padding:8px; height:25px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                            </tr>
+                            <tr>
+                                <td style="border:1px solid #000; padding:8px; height:25px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                            </tr>
+                            <tr>
+                                <td style="border:1px solid #000; padding:8px; height:25px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                            </tr>
+                            <tr>
+                                <td style="border:1px solid #000; padding:8px; height:25px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                            </tr>
+                            <tr>
+                                <td style="border:1px solid #000; padding:8px; height:25px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                            </tr>
+                            <tr>
+                                <td style="border:1px solid #000; padding:8px; height:25px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                                <td style="border:1px solid #000; padding:8px;"></td>
+                            </tr>
+                        </table>
+
+
+
+                        <h4 style="margin-top:25px;">Terms &amp; Conditions</h4>
+                        <ul>
+                            <li>Promoter must report to showroom by 10:00 AM.</li>
+                            <li>Weekly off on Sunday only.</li>
+                            <li>Uniform must be worn during duty hours.</li>
+                            <li>In case of absence, prior approval is mandatory.</li>
+                        </ul>
+
+                        <br/><br/>
+                        <p style="text-align:right;">Signature of Promoter</p>
+                        <p style="text-align:right;">_______________________</p>
+                    </div>
+                </main>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_contract_document" model="ir.actions.report">
+        <field name="name">Contract Document</field>
+        <field name="model">promoter.showroom</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">promoter.report_contract_document_template</field>
+        <field name="report_file">promoter.report_contract_document_template</field>
+        <field name="print_report_name">'Contract Document'</field>
+    </record>
+</odoo>

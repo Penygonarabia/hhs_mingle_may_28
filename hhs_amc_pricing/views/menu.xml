@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Top-level menu -->
+    <menuitem id="menu_amc_pricing_root"
+              name="AMC Pricing"
+              web_icon="hhs_amc_pricing,static/description/icon.png"
+              sequence="90"/>
+
+    <!-- Sub-menu -->
+    <!-- <menuitem id="menu_amc_pricing_main"
+              name="Price Calculation"
+              parent="crm.crm_menu_config"
+              sequence="906"/> -->
+
+    <!-- Action menu item -->
+    <menuitem id="menu_amc_pricing_action"
+              name="Pricing Calculation"
+              parent="crm.crm_menu_config"
+              action="action_amc_pricing"
+              sequence="906"/>
+
+</odoo>

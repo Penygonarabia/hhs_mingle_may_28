@@ -1,0 +1,1637 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* hr_saudi
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-27 05:17+0000\n"
+"PO-Revision-Date: 2024-07-27 05:17+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_accounting
+msgid "Accounting Employee"
+msgstr ""
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__account_manage_id
+msgid "Accounting Manager"
+msgstr "مدير المحاسبة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__account_manage_note
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "Accounting Manager Note"
+msgstr "مذكرة مدير المحاسبة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__message_needaction
+msgid "Action Needed"
+msgstr "الإجراءات اللازمة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__is_progress3_clicked
+msgid "Action Progress3 Clicked"
+msgstr "تم النقر على تقدم العمل3"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__active
+msgid "Active"
+msgstr "نشط"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__departure_description
+msgid "Additional Information"
+msgstr "معلومات إضافية"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__additional_note
+msgid "Additional Note"
+msgstr "ملاحظة إضافية "
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__address_home_id
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_branch_view_form
+msgid "Address"
+msgstr "العنوان"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_branch_view_form
+msgid "Address Details"
+msgstr ""
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__country_address
+msgid "Address in the home country"
+msgstr "العنوان في الوطن"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__admin_manager_id
+msgid "Admin & Finance Manager"
+msgstr ""
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__admin_manager_note
+msgid "Admin & Finance Manager Note"
+msgstr "مدير الشؤون الادارية والمالية"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "Admin & Financial Director approval"
+msgstr "موافقة المدير الإداري والمالي"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_admin_approval
+msgid "Admin Approval"
+msgstr "موافقة المشرف"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "Admin Manager Note"
+msgstr "ملاحظة مدير المشرف"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_department__is_main_department
+msgid "Administration"
+msgstr "إدارة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__age
+msgid "Age"
+msgstr "عمر"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract_salary_information__amount
+msgid "Amount"
+msgstr "كمية"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee_promotion__promotion_type__design
+msgid "Appoint"
+msgstr "تعيين"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "Approval Notes"
+msgstr "ملاحظات الموافقة"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee_transaction__state__approve
+msgid "Approved"
+msgstr "موافقة"
+
+#. module: hr_saudi
+#: code:addons/hr_saudi/models/hr_employee_transaction.py:0
+#, python-format
+msgid "Approved Records cannot be deleted"
+msgstr "لا يمكن حذف السجلات المعتمدة"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_form_view_inherit3
+msgid "Arabic Details"
+msgstr "التفاصيل العربية"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__arabic_name
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__arabic_name
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_form_view_inherit3
+msgid "Arabic Name"
+msgstr "الاسم العربي"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_branch_view_form
+msgid "Arabic Name(Office)"
+msgstr "الاسم العربي (المكتب)"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_finance_assistant_manager
+msgid "Assistant Manager"
+msgstr "مساعد مدير"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__message_attachment_count
+msgid "Attachment Count"
+msgstr "عدد المرفقات"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_payslip__attendance_ids
+msgid "Attendances"
+msgstr "الحضور"
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_payslip__attendance_ids
+msgid "Attendances represented by payslip."
+msgstr "الحضور ممثلة بإيصال الدفع."
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__certificate__bachelor
+msgid "Bachelor"
+msgstr "البكالوريوس"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "Back to Draft"
+msgstr "العودة إلى المسودة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__barcode
+msgid "Badge ID"
+msgstr "معرّف الشارة "
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__bank_account_id
+msgid "Bank Account Number"
+msgstr "رقم الحساب البنكي"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__bank_ids
+msgid "Banks"
+msgstr "البنوك"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__place_of_birth
+msgid "Birthplace"
+msgstr "مكان الولادة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__branch_id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__current_branch_id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__new_branch_id
+msgid "Branch Office"
+msgstr "مكتب فرعي"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_ceo
+msgid "CEO"
+msgstr "الرئيس التنفيذي"
+
+#. module: hr_saudi
+#: code:addons/hr_saudi/models/hr_configuration.py:0
+#, python-format
+msgid "Cannot create more than ONE record, modify the existing instead!"
+msgstr "لا يمكن إنشاء أكثر من سجل واحد، قم بتعديل السجل الموجود بدلاً من ذلك!"
+
+#. module: hr_saudi
+#: code:addons/hr_saudi/models/hr_configuration.py:0
+#, python-format
+msgid "Cannot delete, please check sysadmin"
+msgstr "لا يمكن الحذف، يرجى التحقق من مسؤول النظام"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract_salary_information__category_id
+msgid "Category"
+msgstr "فئة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__certificate
+msgid "Certificate Level"
+msgstr "مستوى الشهادة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__city
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_branch_view_form
+msgid "City"
+msgstr "مدينة"
+
+#. module: hr_saudi
+#: model_terms:ir.actions.act_window,help:hr_saudi.action_hr_department_tree_view
+msgid "Click here to add new departments"
+msgstr "انقر هنا لإضافة أقسام جديدة"
+
+#. module: hr_saudi
+#: model_terms:ir.actions.act_window,help:hr_saudi.action_hr_configuration
+msgid "Click to add the configuration"
+msgstr "انقر لإضافة التكوين"
+
+#. module: hr_saudi
+#: model_terms:ir.actions.act_window,help:hr_saudi.action_hr_grade
+msgid "Click to define a new Grade."
+msgstr "انقر لتحديد تقدير جديد."
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__code
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract_salary_information__code
+msgid "Code"
+msgstr "شفرة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__color
+msgid "Color Index"
+msgstr "معرف اللون"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__company_id
+msgid "Company"
+msgstr "الشركة "
+
+#. module: hr_saudi
+#: model:ir.model,name:hr_saudi.model_hr_branch
+msgid "Company Branch"
+msgstr "فرع شركة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__vehicle
+msgid "Company Vehicle"
+msgstr "مركبة الشركة "
+
+#. module: hr_saudi
+#: model:ir.actions.act_window,name:hr_saudi.action_hr_configuration
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_configuration
+msgid "Configuration"
+msgstr "إعدادات"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_tree_hr_configuration
+msgid "Configurations"
+msgstr "التكوينات"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract_salary_information__contract_id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__contract_ids
+msgid "Contract"
+msgstr "عقد"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_payslip__contract_start_date
+msgid "Contract Date"
+msgstr "تاريخ العقد"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__duration
+msgid "Contract Duration"
+msgstr "مدة العقد"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__document
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_contract_view_inherit_form1
+msgid "Contract File"
+msgstr "ملف العقد"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__nature
+msgid "Contract Nature"
+msgstr "طبيعة العقد"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_configuration__auto_contract_no
+msgid "Contract Number Auto-creation"
+msgstr "الإنشاء التلقائي لرقم العقد"
+
+#. module: hr_saudi
+#: model:ir.actions.act_window,name:hr_saudi.action_hr_contract_type
+msgid "Contract Type"
+msgstr "نوع العقد"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__contract_warning
+msgid "Contract Warning"
+msgstr "تحذير العقد "
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "Contracts"
+msgstr "انكماش"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__contract_ids
+msgid "Contracts List"
+msgstr "قائمة العقود"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__country_id
+msgid "Country"
+msgstr "دولة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__country_of_birth
+msgid "Country of Birth"
+msgstr "بلد الميلاد"
+
+#. module: hr_saudi
+#: model_terms:ir.actions.act_window,help:hr_saudi.action_hr_contract_type
+msgid "Create a new contract type"
+msgstr "إنشاء نوع عقد جديد"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__auto_contract_no
+msgid "Create contract no automatically"
+msgstr "إنشاء رقم العقد تلقائيا"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__auto_employee_no
+msgid "Create emp no automatically"
+msgstr "إنشاء رقم الموظف تلقائيا"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__create_uid
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_configuration__create_uid
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract_salary_information__create_uid
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__create_uid
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__create_uid
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_grade__create_uid
+msgid "Created by"
+msgstr "انشأ من قبل"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__create_date
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_configuration__create_date
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract_salary_information__create_date
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__create_date
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__create_date
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_grade__create_date
+msgid "Created on"
+msgstr "تم إنشاؤها على"
+
+#. module: hr_saudi
+#: model:ir.ui.menu,name:hr_saudi.menu_hr_general_configuration
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_configuration
+msgid "Creation Configuration"
+msgstr "تكوين الخلق"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__branch_id
+msgid "Current Branch"
+msgstr "الفرع الحالي"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__current_job_id
+msgid "Current Job"
+msgstr "العمل الحالي"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__department_id
+msgid "Current Section"
+msgstr "القسم الحالي"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__contract_id
+msgid "Current contract"
+msgstr "العقد الحالي"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "DM Approve"
+msgstr "موافقة نائب المدير"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_tree_hr_employee_transaction
+msgid "Date"
+msgstr "تاريخ"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__birthday
+msgid "Date of Birth"
+msgstr "تاريخ الميلاد"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__department_id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__current_department_id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__new_department_id
+msgid "Department"
+msgstr "القسم"
+
+#. module: hr_saudi
+#: model:ir.actions.act_window,name:hr_saudi.action_hr_department_tree_view
+#: model:ir.ui.menu,name:hr_saudi.menu_hr_department_tree_view
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_tree_hr_department_tree_view
+msgid "Department Hierarchy"
+msgstr "التسلسل الهرمي للقسم"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_department__dept_code
+msgid "Department code"
+msgstr "كود قسم"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_department_inherit
+msgid "Departments"
+msgstr "الأقسام"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_rdm
+msgid "Departments Manager"
+msgstr "مدير الأقسام"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__departure_date
+msgid "Departure Date"
+msgstr "تاريخ المغادرة "
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__departure_reason
+msgid "Departure Reason"
+msgstr "سبب المغادرة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_department__description
+msgid "Description"
+msgstr "وصف"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__d_manager
+#: model:res.groups,name:hr_saudi.group_dm
+msgid "Direct Manager"
+msgstr "المدير المباشر"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__d_manager_note
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "Direct Manager Note"
+msgstr "ملاحظة المدير المباشر"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_finance_director
+msgid "Director"
+msgstr "مخرج"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__disability
+msgid "Disabilities"
+msgstr "الإعاقات"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__display_name
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_configuration__display_name
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract_salary_information__display_name
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__display_name
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__display_name
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_grade__display_name
+msgid "Display Name"
+msgstr "اسم العرض"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__marital__divorced
+msgid "Divorced"
+msgstr "مطلّق"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__certificate__doctor
+msgid "Doctor"
+msgstr "دكتور "
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee_promotion__state__draft
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee_transaction__state__draft
+msgid "Draft"
+msgstr "مسودة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__driving_license
+msgid "Driving License"
+msgstr "رخصة القيادة "
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_contract_view_inherit_form1
+msgid "Duration"
+msgstr "مدة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__emergency_contact
+msgid "Emergency Contact"
+msgstr "جهة الاتصال في حالة الطوارئ"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__emergency_phone
+msgid "Emergency Phone"
+msgstr "هاتف الطوارئ"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__employee_id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__employee_id
+msgid "Employee"
+msgstr "موظف"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_saudi_hr_employee_filter
+msgid "Employee  No"
+msgstr "رقم الموظف"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__employee_no
+msgid "Employee NO"
+msgstr "رقم الموظف"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__name
+msgid "Employee Name"
+msgstr "اسم الموظف"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__employee_no
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__employee_no
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__employee_no
+msgid "Employee No"
+msgstr "رقم الموظف"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_configuration__auto_employee_no
+msgid "Employee Number Auto-creation"
+msgstr "الإنشاء التلقائي لرقم الموظف"
+
+#. module: hr_saudi
+#: model:ir.model,name:hr_saudi.model_hr_employee_transaction
+msgid "Employee Transaction"
+msgstr "معاملة الموظف"
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee__bank_account_id
+msgid "Employee bank salary account"
+msgstr "الحساب البنكي لراتب الموظف"
+
+#. module: hr_saudi
+#: model:ir.ui.menu,name:hr_saudi.menu_hr_employee_transaction_root
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_search_hr_employee_transaction
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_tree_hr_employee_transaction
+msgid "Employees Transfer"
+msgstr "نقل الموظفين"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_form_view_inherit3
+msgid "Employment"
+msgstr "توظيف"
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee__address_home_id
+msgid ""
+"Enter here the private address of the employee, not the one linked to your "
+"company."
+msgstr "قم بإدخال العنوان الخاص بالموظف هنا، لا العنوان المرتبط بشركتك. "
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "FM Approve"
+msgstr "وزير المالية يوافق"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "FROM"
+msgstr "من"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__last_name
+msgid "Family Name"
+msgstr "اسم العائلة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__middle_name
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_form_view_inherit3
+msgid "Father Name"
+msgstr "اسم الاب"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__fax
+msgid "Fax"
+msgstr "فاكس"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__gender__female
+msgid "Female"
+msgstr "أنثى"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__study_field
+msgid "Field of Study"
+msgstr "مجال الدراسة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__document_filename
+msgid "File Name"
+msgstr "اسم الملف"
+
+#. module: hr_saudi
+#: model:ir.module.category,name:hr_saudi.category_finance
+msgid "Finance"
+msgstr "تمويل"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "Finance Manager Approval"
+msgstr "موافقة المدير المالي"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__departure_reason__fired
+msgid "Fired"
+msgstr "مطرود"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__first_contract_date
+msgid "First Contract Date"
+msgstr "تاريخ أول عقد"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "First Phase Approval"
+msgstr "موافقة المرحلة الأولى"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__fixed_allowance
+msgid "Fixed Allowance"
+msgstr "بدل ثابت"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_contract__nature__fixed
+msgid "Fixed Term"
+msgstr "مدة محددة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__message_follower_ids
+msgid "Followers"
+msgstr "متابعون"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "المتابعون (الشركاء)"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__food_allowance
+msgid "Food Allowance"
+msgstr "بدل الغذاء"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__fuel_allowance
+msgid "Fuel Allowance"
+msgstr "بدل الوقود"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__gender
+msgid "Gender"
+msgstr "الجنس"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__grade_id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__current_grade_id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__new_grade_id
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_grade_view_form
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_grade_view_tree
+msgid "Grade"
+msgstr "درجة"
+
+#. module: hr_saudi
+#: model:ir.model,name:hr_saudi.model_hr_grade
+msgid "Grade Description"
+msgstr "وصف الدرجة"
+
+#. module: hr_saudi
+#: model:ir.actions.act_window,name:hr_saudi.action_hr_grade
+#: model:ir.ui.menu,name:hr_saudi.menu_hr_grade
+msgid "Grades"
+msgstr "درجات"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__certificate__graduate
+msgid "Graduate"
+msgstr "خريج"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__third_name
+msgid "Grand-Father Name"
+msgstr "اسم جده"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_form_view_inherit3
+msgid "Grand-father Name"
+msgstr "اسم جده"
+
+#. module: hr_saudi
+#: model:ir.model,name:hr_saudi.model_hr_configuration
+#: model:res.groups,name:hr_saudi.group_hr_configuration
+msgid "HR Configuration"
+msgstr "تكوين الموارد البشرية"
+
+#. module: hr_saudi
+#: model:ir.model,name:hr_saudi.model_hr_contract
+msgid "HR Contract"
+msgstr "عقد الموارد البشرية"
+
+#. module: hr_saudi
+#: model:ir.model,name:hr_saudi.model_hr_department
+msgid "HR Department"
+msgstr "قسم الموارد البشرية"
+
+#. module: hr_saudi
+#: model:ir.model,name:hr_saudi.model_hr_employee
+#: model:res.groups,name:hr_saudi.group_hr
+msgid "HR Employee"
+msgstr "موظف الموارد البشرية"
+
+#. module: hr_saudi
+#: model:ir.model,name:hr_saudi.model_hr_employee_promotion
+msgid "HR Employee Promotion"
+msgstr "ترقية موظفي الموارد البشرية"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__hr_manage_id
+#: model:res.groups,name:hr_saudi.group_hrm
+msgid "HR Manager"
+msgstr "مدير الموارد البشرية"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "HR Manager Approve"
+msgstr "موافقة مدير الموارد البشرية"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__hr_manage_note
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "HR Manager Note"
+msgstr "مذكرة مدير الموارد البشرية"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__has_message
+msgid "Has Message"
+msgstr "لديه رسالة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__vehicle_distance
+msgid "Home-Work Dist."
+msgstr "المسافة بين المنزل والعمل"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__km_home_work
+msgid "Home-Work Distance"
+msgstr "المسافة بين المنزل والعمل "
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_payslip__total_hours
+msgid "Hours"
+msgstr "ساعات"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__house_allowance
+msgid "House Allowance"
+msgstr "بدل سكن"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_configuration__id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract_salary_information__id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_grade__id
+msgid "ID"
+msgstr "هوية"
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee__barcode
+msgid "ID used for employee identification."
+msgstr "المعرف المستخدم للتعرف على الموظف. "
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__identification_no
+msgid "Identification No"
+msgstr "رقم الهوية"
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee_promotion__message_needaction
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee_promotion__message_unread
+msgid "If checked, new messages require your attention."
+msgstr "إذا تم تحديدها، فإن الرسائل الجديدة تتطلب انتباهك."
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee_promotion__message_has_error
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee_promotion__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "إذا تم تحديده، فإن بعض الرسائل تحتوي على خطأ في التسليم."
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee__active
+msgid ""
+"If the active field is set to False, it will allow you to hide the resource "
+"record without removing it."
+msgstr ""
+"إذا تم تغيير وضع الحقل الفعال إلى خطأ، سيسمح لك بإخفاء سجل المورد دون "
+"إزالته."
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee__vehicle_distance
+msgid "In kilometers"
+msgstr "من حيث الكيلومترات"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_contract__nature__indef
+msgid "Indefinite"
+msgstr "غير محدد"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__iqama_no
+msgid "Iqama No"
+msgstr "رقم الاقامة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__iqama_professional
+msgid "Iqama profession"
+msgstr "مهنة الإقامة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__message_is_follower
+msgid "Is Follower"
+msgstr "هو تابع"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__is_saudi
+msgid "Is Saudi"
+msgstr "سعودي"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__manager
+msgid "Is a Manager"
+msgstr ""
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__current_job_id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__new_job_id
+msgid "Job"
+msgstr "هو مدير"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__job_id
+msgid "Job Position"
+msgstr "المنصب الوظيفي"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__join_date
+msgid "Join Date"
+msgstr "تاريخ الانضمام"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__lang_ids
+msgid "Lang"
+msgstr "لغة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch____last_update
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_configuration____last_update
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract_salary_information____last_update
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion____last_update
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction____last_update
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_grade____last_update
+msgid "Last Modified on"
+msgstr "تاريخ آخر تعديل"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_form_view_inherit3
+msgid "Last Name"
+msgstr "اسم العائلة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__write_uid
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_configuration__write_uid
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract_salary_information__write_uid
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__write_uid
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__write_uid
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_grade__write_uid
+msgid "Last Updated by"
+msgstr "آخر تحديث بواسطة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__write_date
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_configuration__write_date
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract_salary_information__write_date
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__write_date
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__write_date
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_grade__write_date
+msgid "Last Updated on"
+msgstr "آخر تحديث بتاريخ"
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee__contract_id
+msgid "Latest contract of the employee"
+msgstr "آخر عقد للموظف"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__marital__cohabitant
+msgid "Legal Cohabitant"
+msgstr "مقيم قانوني "
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__message_main_attachment_id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__message_main_attachment_id
+msgid "Main Attachment"
+msgstr "المرفق الرئيسي"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_department__main_department_id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__main_department_id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__current_main_department_id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__new_main_department_id
+msgid "Main Department"
+msgstr "القسم الرئيسي"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__gender__male
+msgid "Male"
+msgstr "ذكر"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_finance_manager
+msgid "Manager"
+msgstr "مدير"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee_promotion__promotion_type__assign
+msgid "Mandated"
+msgstr "تكليف"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__marital
+msgid "Marital Status"
+msgstr "الحالة الاجتماعية"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__marital__married
+msgid "Married"
+msgstr "متزوج"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__certificate__master
+msgid "Master"
+msgstr "الرئيسي"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_contract_view_inherit_form1
+msgid "Medical Allowance"
+msgstr "بدل الطبي"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__medic_exam
+msgid "Medical Examination Date"
+msgstr "تاريخ الفحص الطبي"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__message_has_error
+msgid "Message Delivery error"
+msgstr "خطأ في تسليم الرسالة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__message_ids
+msgid "Messages"
+msgstr "رسائل"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__mobile
+msgid "Mobile"
+msgstr "متحرك"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__mobile_allowance
+msgid "Mobile Allowance"
+msgstr "بدل المحمول"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__religion__muslim
+msgid "Muslim"
+msgstr "مسلم"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract_salary_information__name
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__name
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_grade__name
+msgid "Name"
+msgstr "اسم"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__country_id
+msgid "Nationality"
+msgstr "جنسية"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__new_branch_id
+msgid "New Branch"
+msgstr "فرع جديد"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__job_id
+msgid "New Job"
+msgstr "عمل جديد"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__new_department_id
+msgid "New Section"
+msgstr "قسم جديد"
+
+#. module: hr_saudi
+#: code:addons/hr_saudi/models/hr_contract.py:0
+#, python-format
+msgid "No default payslip struct is updated with selected structure."
+msgstr "لا يتم تحديث بنية كشوف الدفع الافتراضية بالبنية المحددة."
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__religion__non-muslim
+msgid "Non-muslim"
+msgstr "غير مسلم"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_saudi_hr_employee_filter
+msgid "Non-saudi"
+msgstr "غير سعودي"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_employee
+msgid "Normal Employee"
+msgstr "موظف عادي"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__normal_leave
+msgid "Normal Leave Stock"
+msgstr "مخزون الإجازة العادي"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__notes
+msgid "Notes"
+msgstr "الملاحظات"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__message_needaction_counter
+msgid "Number of Actions"
+msgstr "عدد الإجراءات"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__message_has_error_counter
+msgid "Number of errors"
+msgstr "عدد الأخطاء"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__children
+msgid "Number of family members"
+msgstr "عدد أفراد الأسرة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee_promotion__message_needaction_counter
+msgid "Number of messages which requires an action"
+msgstr "عدد الرسائل التي تتطلب اتخاذ إجراء"
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee_promotion__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "عدد الرسائل التي بها خطأ في التسليم"
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee_promotion__message_unread_counter
+msgid "Number of unread messages"
+msgstr "عدد الرسائل غير المقروءة"
+
+#. module: hr_saudi
+#: code:addons/hr_saudi/models/hr_configuration.py:0
+#, python-format
+msgid "Numbering setting"
+msgstr "إعداد الترقيم"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_branch_view_form
+msgid "Office"
+msgstr "مكتب"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__name
+msgid "Office Name"
+msgstr "اسم المكتب"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_branch_view_tree
+msgid "Office tree"
+msgstr "شجرة المكتب"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_finance_officer
+msgid "Officer"
+msgstr "ضابط"
+
+#. module: hr_saudi
+#: model:ir.actions.act_window,name:hr_saudi.action_hr_branch
+#: model:ir.ui.menu,name:hr_saudi.menu_hr_branch
+msgid "Offices"
+msgstr "ضابط"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__certificate__other
+msgid "Other"
+msgstr "غير ذلك"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__housing_allowance
+msgid "Other  Allowance"
+msgstr "بدلات أخرى"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_contract_view_inherit_form1
+msgid "Other Allowance"
+msgstr "بدلات أخرى"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_branch_view_form
+msgid "P.O. Box"
+msgstr ""
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__po_box_no
+msgid "P.O.Box"
+msgstr "صندوق البريد"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__pin
+msgid "PIN"
+msgstr "رمز"
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee__pin
+msgid "PIN used to Check In/Out in Kiosk Mode (if enabled in Configuration)."
+msgstr "رقم فهرس النشر الذي يُستخدم لتسجيل الدخول/الخروج في وضع الكشك (إذا تم تمكينه في التكوين)."
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee__user_partner_id
+msgid "Partner-related data of the user"
+msgstr "بيانات المستخدم المتعلقة بالشريك "
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__passeport_expiry_date
+msgid "Passport exipry  Date"
+msgstr "تاريخ انتهاء جواز السفر"
+
+#. module: hr_saudi
+#: model:ir.model,name:hr_saudi.model_hr_payslip
+msgid "Pay Slip"
+msgstr "قسيمة المرتب"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__country_mobile_phone
+msgid "Phone number in the home country"
+msgstr "رقم الهاتف المستخدم في البلد الأم"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__private_email
+msgid "Private Email"
+msgstr "بريد الكتروني خاص"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__phone
+msgid "Private Phone"
+msgstr "هاتف خاص"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__name
+msgid "Promotion ID"
+msgstr "هوية الترقية الوظيفية"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__promotion_type
+msgid "Promotion Type"
+msgstr "نوع الترقية الوظيفية"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__ramadan_working_hours
+msgid "Ramadan Working Hours"
+msgstr "مواعيد العمل في شهر رمضان"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_tree_hr_employee_transaction
+msgid "Reference"
+msgstr "مرجع"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee_promotion__state__refused
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee_transaction__state__refused
+msgid "Refused"
+msgstr "رفض"
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee__user_id
+msgid "Related user name for the resource to manage its access."
+msgstr "اسم المستخدم المرتبط بالمورد لإدارة وصوله."
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__religion
+msgid "Religion"
+msgstr "دِين"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "Request For DM Approval"
+msgstr "طلب الموافقة على نائب المدير"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__residence_expiration_date
+msgid "Residence expiration date"
+msgstr "تاريخ انتهاء الإقامة"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__departure_reason__resigned
+msgid "Resigned"
+msgstr "استقال"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__departure_reason__retired
+msgid "Retired"
+msgstr "متقاعد"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__sinid
+msgid "SIN No"
+msgstr "رقم SIN"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "خطأ في تسليم الرسالة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__ssnid
+msgid "SSN No"
+msgstr "رقم SSN"
+
+#. module: hr_saudi
+#: model:ir.model,name:hr_saudi.model_hr_contract_salary_information
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__salary_information_ids
+msgid "Salary Information"
+msgstr "معلومات الراتب"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_contract_view_inherit_form1
+msgid "Salary and Advantages"
+msgstr "الراتب والمزايا"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_saudi_hr_employee_filter
+msgid "Saudi"
+msgstr "المملكة العربية السعودية"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__study_school
+msgid "School"
+msgstr "مدرسة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__school_allowance
+msgid "School Allowance"
+msgstr "بدل المدرسة"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "Second Phase Approval"
+msgstr "الموافقة على المرحلة الثانية"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_finance_senior_manager
+msgid "Senior Manager"
+msgstr "مدير مرشد"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_finance_senior_officer
+msgid "Senior Officer"
+msgstr "الضابط الأعلى رتبة"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__marital__single
+msgid "Single"
+msgstr "أعزب"
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee__sinid
+msgid "Social Insurance Number"
+msgstr "رقم التأمين الاجتماعي"
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee__ssnid
+msgid "Social Security Number"
+msgstr "رقم الضمان الاجتماعي"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__is_special_gosi
+msgid "Special GOSI"
+msgstr "التأمينات الاجتماعية الخاصة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__spouse_birthdate
+msgid "Spouse Birthdate"
+msgstr "تاريخ ميلاد الزوج/الزوجة "
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__spouse_complete_name
+msgid "Spouse Complete Name"
+msgstr "اسم الزوج/الزوجة بالكامل "
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__start_date
+msgid "Start Date"
+msgstr "تاريخ البدء"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__state
+msgid "State"
+msgstr "حالة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__state
+msgid "Status"
+msgstr "حالة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee_transaction__state
+msgid ""
+"Status : User in 1.Draft(default) state Requesting to 2.DM Approval and "
+"processed by 3.HRM and Finalized by 4.FM"
+msgstr ""
+"الحالة: مستخدم في حالة 1.مسودة (افتراضية) يطلب موافقة 2.نائب المدير و"
+"تم معالجتها بواسطة 3. مدير الموارد البشرية وتم الانتهاء منها بواسطة 4. المدير المالي"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__street
+msgid "Street"
+msgstr "شارع"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_branch_view_form
+msgid "Street..."
+msgstr "شارع..."
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__street2
+msgid "Street2"
+msgstr "شارع 2"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_finance_supervisor
+msgid "Supervisor"
+msgstr "مشرف"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_sys_manager
+msgid "Sysadmin"
+msgstr "مدير النظام"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.view_form_hr_employee_transaction
+msgid "TO"
+msgstr "إلى"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__spouse_fiscal_status
+msgid "Tax status for spouse"
+msgstr "الوضع الضريبي للزوج"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_finance_team_leader
+msgid "Team Leader"
+msgstr "رئيس الفريق"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__phone
+msgid "Tel"
+msgstr "هاتف"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__is_address_home_a_company
+msgid "The employee address has a company linked"
+msgstr "هناك شركة مرتبطة بعنوان الموظف هذا "
+
+#. module: hr_saudi
+#: code:addons/hr_saudi/models/hr_employee_transaction.py:0
+#, python-format
+msgid "The user is not an employee."
+msgstr "المستخدم ليس موظفا"
+
+#. module: hr_saudi
+#: code:addons/hr_saudi/models/hr_contract.py:0
+#, python-format
+msgid ""
+"There is an issue in computing salary information lines.Wage cannot be 0.0 "
+"or less than that."
+msgstr ""
+"توجد مشكلة في حساب معلومات الراتب، لا يمكن أن تكون خطوط الأجور 0.0 "
+"أو أقل من ذلك."
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__ticket_allowance
+msgid "Ticket Allowance"
+msgstr "بدل التذاكر"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__ticket_depends
+msgid "Ticket Depends"
+msgstr "التذكرة تعتمد"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__total
+msgid "Total"
+msgstr "المجموع"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_tr
+msgid "Training Employee"
+msgstr "موظف التدريب"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_trm
+msgid "Training Manager"
+msgstr "مدير التدريب"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_transaction__date
+msgid "Transaction Date"
+msgstr "تاريخ الصفقة"
+
+#. module: hr_saudi
+#: model:ir.actions.act_window,name:hr_saudi.action_hr_employee_transaction
+#: model:ir.ui.menu,name:hr_saudi.menu_hr_employee_transaction
+msgid "Transfer"
+msgstr "تحويل"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__transport_allowance
+msgid "Transport Allowance"
+msgstr "بدل النقل"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__message_unread
+msgid "Unread Messages"
+msgstr "رسائل غير مقروءة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__message_unread_counter
+msgid "Unread Messages Counter"
+msgstr "عداد الرسائل غير المقروءة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__user_id
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__user_id
+#: model:res.groups,name:hr_saudi.group_finance_user
+msgid "User"
+msgstr "المستخدم"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__user_partner_id
+msgid "User's partner"
+msgstr "شريك المستخدم"
+
+#. module: hr_saudi
+#: model:res.groups,name:hr_saudi.group_normal_employee
+msgid "Users Restriction"
+msgstr ""
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__visa_expire
+msgid "Visa Expire Date"
+msgstr "تاريخ انتهاء التأشيرة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__visa_no
+msgid "Visa No"
+msgstr "رقم التأشيرة"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee_transaction__state__progress3
+msgid "Waiting for Admin & Financial Director approval"
+msgstr "في انتظار موافقة المدير الإداري والمالي"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee_transaction__state__request
+msgid "Waiting for Direct Manager approval"
+msgstr "في انتظار موافقة المدير العام"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee_transaction__state__progress2
+msgid "Waiting for Finance Manager approval"
+msgstr "في انتظار موافقة المدير المالي"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee_transaction__state__progress
+msgid "Waiting for HR Manager approval"
+msgstr "في انتظار موافقة مدير الموارد البشرية"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee_promotion__website_message_ids
+msgid "Website Messages"
+msgstr "رسائل الموقع"
+
+#. module: hr_saudi
+#: model:ir.model.fields,help:hr_saudi.field_hr_employee_promotion__website_message_ids
+msgid "Website communication history"
+msgstr "تاريخ اتصالات الموقع"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__marital__widower
+msgid "Widower"
+msgstr "أرمل"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__spouse_fiscal_status__high_pension
+msgid "With High Pensions"
+msgstr "مع معاشات عالية"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__spouse_fiscal_status__high_income
+msgid "With High income"
+msgstr ""
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__spouse_fiscal_status__low_income
+msgid "With Low Income"
+msgstr "ذات الدخل المرتفع"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__spouse_fiscal_status__low_pension
+msgid "With Low Pensions"
+msgstr "مع معاشات تقاعدية منخفضة"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee__spouse_fiscal_status__without_income
+msgid "Without Income"
+msgstr "بدون دخل"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__work_location
+msgid "Work Location"
+msgstr "مكان العمل"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__mobile_phone
+msgid "Work Mobile"
+msgstr "الهاتف المحمول للعمل"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_contract__work_allowance
+msgid "Work Nature Allowance"
+msgstr "بدل طبيعة العمل"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__permit_no
+msgid "Work Permit No"
+msgstr "رقم تصريح العمل"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_contract_view_inherit_form1
+msgid "Working Hours"
+msgstr "ساعات العمل"
+
+#. module: hr_saudi
+#: model_terms:ir.ui.view,arch_db:hr_saudi.hr_branch_view_form
+msgid "ZIP"
+msgstr "خطة تحسين المنطقة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_branch__zip
+msgid "Zip"
+msgstr "خطة تحسين المنطقة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__iqama_expiry_date
+msgid "iqama exipry  Date"
+msgstr "تاريخ انتهاء الإقامة"
+
+#. module: hr_saudi
+#: model:ir.model.fields,field_description:hr_saudi.field_hr_employee__passeport_issue_place
+msgid "passport issue place"
+msgstr "مكان إصدار جواز السفر"
+
+#. module: hr_saudi
+#: model:ir.model.fields.selection,name:hr_saudi.selection__hr_employee_promotion__state__done
+msgid "Approval"
+msgstr "الموافقة"

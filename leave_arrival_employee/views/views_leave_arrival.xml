@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+	
+	<record id="leave_arrival_employee_view_list" model="ir.ui.view">
+		<field name="name">employee.arrival.tree.view</field>
+		<field name="model">employee.arrival</field>
+		<field name="arch" type="xml">
+		
+			<tree string="Employee Arrival" editable="bottom" create="0">
+				
+				<field name="serial_no" force_save = "1"/>
+				<field name="employee_number" force_save="1"/>
+				<field name="employee_id" force_save="1"/>
+				<field name="leave_date" force_save = "1"/>
+				<field name="expected_return_date" force_save="1"/>
+				<field name="arrived_bool" force_save="1"/>
+				<field name="actual_return_date"  force_save="1"
+					 required="arrived_bool == True" readonly="arrived_bool == False"/>
+				<!-- <field name="update_employee_bool" invisible="0"/> -->
+				<field name="leave_id"  invisible="1"/>
+				<button name="confirm_leave_arrival" string="Confirm" 
+					class="oe_highlight" type="object" 
+					invisible="actual_return_date == False"
+					/>
+			</tree>
+		
+		</field>
+	
+	</record>
+	
+	
+	<record id="leave_arrival_employee_form_view" model="ir.ui.view">
+		<field name="name">employee.arrival.form.view</field>
+		<field name="model">employee.arrival</field>
+		<field name="arch" type="xml">
+		
+			<form string="Employee Arrival" >
+				
+				<field name="serial_no" force_save = "1" />
+				<field name="employee_id" force_save="1"/>
+				<field name="employee_number" force_save="1"/>
+				<field name="leave_date" force_save = "1"/>
+				<field name="expected_return_date" force_save="1"/>
+				<field name="arrived_bool" force_save="1"/>
+				<field name="actual_return_date"  force_save="1"
+					  required="arrived_bool == True" readonly="arrived_bool == False"/>
+			<!-- 	<field name="update_employee_bool" invisible="0"/> -->
+				<field name="leave_id"  invisible="0"/>
+			</form>
+		
+		</field>
+	
+	</record>
+	
+	
+	
+	<record id="action_leave_arrival_form" model="ir.actions.act_window">
+		<field name="name">Arrival</field>
+		<field name="res_model">employee.arrival</field>
+		<field name="view_mode">tree,form</field>
+		   <field name="view_id" ref="leave_arrival_employee_view_list"/>
+	</record>
+	
+	
+		<menuitem id="menu_action_leave_arrival" name="Arrival"
+   					action="action_leave_arrival_form"
+   					parent="hr_holidays.menu_hr_holidays_approvals"
+   					sequence = "24"/>
+	
+
+</odoo>

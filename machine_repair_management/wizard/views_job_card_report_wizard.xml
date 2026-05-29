@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_job_card_report_form" model="ir.ui.view">
+		 <field name="name">job.card.report.wizard</field>
+		 <field name="model">job.card.report</field>
+		 <field name="arch" type="xml">
+		 	<form string="Job Card Report">
+					<group>
+						<group>
+							<field name="from_date"/>
+							<field name="to_date" />
+							<field name="job_card_ids" nolabel="0" widget="many2many_tags" options="{'no_create': True, 'no_create_edit':True}" />
+							<field name="product_category_ids" widget="many2many_tags" options="{'no_create': True, 'no_create_edit':True}" 
+									domain = "[('parent_id','=',False)]" />
+						</group>
+					<group>
+						<field name ="work_center_group_id" options = "{'no_create_edit':True,'no_create':True}" />
+						<field name="company_id" invisible="1"/>
+						<field name="region_id" invisible ="1"/>
+						<field name = "job_state_ids" widget = "many2many_tags" options = "{'no_create_edit':True,'no_edit':True,'no_create':True}"/>
+						<!-- <field name="status" /> -->
+					</group>
+				</group>	
+				  <footer>
+						 <button name="print_job_card_report_xlsx" string="Print Excel" type="object" class="oe_highlight"/>
+						 <button name="print_pdf_report" invisible="1" string="Print PDF" type="object" class="oe_highlight"/>
+						<button name="clear" string="Cancel" class="btn-secondary" special="cancel"/>
+				</footer>
+
+			 </form>
+
+		 </field>
+	</record>
+
+
+    <record id="action_job_card_report" model="ir.actions.act_window">
+		<field name="name">Job Card Report</field>
+		<field name="res_model">job.card.report</field>
+		<field name="view_mode">form</field>
+         <field name="view_id" ref="view_job_card_report_form"/>
+		<field name="target">new</field>
+		 <field name="binding_model_id" ref="model_job_card_report"/>
+        <field name="binding_type">report</field>
+	</record>
+
+	<menuitem id="menu_services_report" name="Reports"  parent="machine_repair_management.main_machine_repair_support_main"
+              sequence="10"/>
+
+	<menuitem action="action_job_card_report" name="Job Card" id="menu_job_card_report" sequence="10"
+                  parent="menu_services_report" />
+
+</odoo>

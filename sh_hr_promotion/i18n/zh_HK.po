@@ -1,0 +1,376 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sh_hr_promotion
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-04-28 10:01+0000\n"
+"PO-Revision-Date: 2021-04-28 10:01+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: sh_hr_promotion
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_employee_promotion_report
+msgid "<strong>Promotion Date: </strong>"
+msgstr "<strong>促銷日期： </strong>"
+
+#. module: sh_hr_promotion
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_employee_promotion_report
+msgid "<strong>Promotion Descriptions</strong>"
+msgstr "<strong>促銷描述</strong>"
+
+#. module: sh_hr_promotion
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_employee_promotion_report
+msgid "<strong>Promotion Details</strong>"
+msgstr "<strong>促銷細節</strong>"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__message_needaction
+msgid "Action Needed"
+msgstr "需要行動"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__activity_ids
+msgid "Activities"
+msgstr "活動"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "活動異常裝飾"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__activity_state
+msgid "Activity State"
+msgstr "活動狀態"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "活動類型圖標"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__message_attachment_count
+msgid "Attachment Count"
+msgstr "附件計數"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__company_id
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_promotion_types__company_id
+msgid "Company"
+msgstr "公司"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__sh_contracts
+msgid "Contract"
+msgstr "合同"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__create_uid
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_promotion_types__create_uid
+msgid "Created by"
+msgstr "由...製作"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__create_date
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_promotion_types__create_date
+msgid "Created on"
+msgstr "創建於"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__sh_description
+msgid "Description"
+msgstr "描述"
+
+#. module: sh_hr_promotion
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_hr_promotion_form_view
+msgid "Descritpion"
+msgstr "解釋"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_hr_employee__display_name
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__display_name
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_promotion_types__display_name
+msgid "Display Name"
+msgstr "顯示名稱"
+
+#. module: sh_hr_promotion
+#: model:ir.model,name:sh_hr_promotion.model_hr_employee
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_employee_promotion_report
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_hr_promotion_search_views
+msgid "Employee"
+msgstr "員工"
+
+#. module: sh_hr_promotion
+#: model:ir.actions.act_window,name:sh_hr_promotion.sh_hr_promotion_request_view_actions
+#: model:ir.actions.act_window,name:sh_hr_promotion.sh_hr_promotion_request_view_actions_2
+#: model:ir.ui.menu,name:sh_hr_promotion.sh_hr_promotion_menu
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_employee_promotions_form_inherit
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_hr_promotion_form_view
+msgid "Employee Promotion"
+msgstr "員工促銷"
+
+#. module: sh_hr_promotion
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_employee_promotions_form_inherit
+msgid "Employee Promotions"
+msgstr "員工促銷活動"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__employee_id
+msgid "Employee Reference"
+msgstr "員工參考"
+
+#. module: sh_hr_promotion
+#: model:ir.actions.report,name:sh_hr_promotion.action_report_employee_promotion_receipt
+msgid "Employee Report"
+msgstr "員工報告"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__message_follower_ids
+msgid "Followers"
+msgstr "追隨者"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__message_channel_ids
+msgid "Followers (Channels)"
+msgstr "追隨者（頻道）"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "追隨者（合作夥伴）"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,help:sh_hr_promotion.field_sh_hr_promotion__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr "字體令人敬畏的圖標e.g. FA-TASKS."
+
+#. module: sh_hr_promotion
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_hr_promotion_search_views
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_promotion_type_search_view
+msgid "Group by..."
+msgstr "通過...分組..."
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_hr_employee__id
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__id
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_promotion_types__id
+msgid "ID"
+msgstr "ID"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__activity_exception_icon
+msgid "Icon"
+msgstr "圖標"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,help:sh_hr_promotion.field_sh_hr_promotion__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "圖標表示異常活動。"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,help:sh_hr_promotion.field_sh_hr_promotion__message_needaction
+#: model:ir.model.fields,help:sh_hr_promotion.field_sh_hr_promotion__message_unread
+msgid "If checked, new messages require your attention."
+msgstr "如果檢查，新消息需要您的注意。"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,help:sh_hr_promotion.field_sh_hr_promotion__message_has_error
+#: model:ir.model.fields,help:sh_hr_promotion.field_sh_hr_promotion__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "如果檢查，則某些消息具有交付錯誤。"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__message_is_follower
+msgid "Is Follower"
+msgstr "是追隨者"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_hr_employee____last_update
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion____last_update
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_promotion_types____last_update
+msgid "Last Modified on"
+msgstr "最後修改了"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__write_uid
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_promotion_types__write_uid
+msgid "Last Updated by"
+msgstr "最後更新"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__write_date
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_promotion_types__write_date
+msgid "Last Updated on"
+msgstr "上次更新了"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__message_main_attachment_id
+msgid "Main Attachment"
+msgstr "主要依戀"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__message_has_error
+msgid "Message Delivery error"
+msgstr "消息傳遞錯誤"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__message_ids
+msgid "Messages"
+msgstr "消息"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__sh_new_designation
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_employee_promotion_report
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_hr_promotion_search_views
+msgid "New Designation"
+msgstr "新名稱"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__sh_new_salary
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_employee_promotion_report
+msgid "New Salary"
+msgstr "新工資"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "下一項活動截止日期"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__activity_summary
+msgid "Next Activity Summary"
+msgstr "下一項活動摘要"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__activity_type_id
+msgid "Next Activity Type"
+msgstr "下一個活動類型"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__message_needaction_counter
+msgid "Number of Actions"
+msgstr "行動數量"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__message_has_error_counter
+msgid "Number of errors"
+msgstr "錯誤數量"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,help:sh_hr_promotion.field_sh_hr_promotion__message_needaction_counter
+msgid "Number of messages which requires an action"
+msgstr "需要動作的消息數"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,help:sh_hr_promotion.field_sh_hr_promotion__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "交貨錯誤的消息數"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,help:sh_hr_promotion.field_sh_hr_promotion__message_unread_counter
+msgid "Number of unread messages"
+msgstr "未讀消息的數量"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__sh_previous_designation
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_employee_promotion_report
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_hr_promotion_search_views
+msgid "Previous Designation"
+msgstr "以前的指定"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__sh_previous_salary
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_employee_promotion_report
+msgid "Previous Salary"
+msgstr "以前的薪水"
+
+#. module: sh_hr_promotion
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_hr_promotion_search_views
+msgid "Promotion"
+msgstr "晉升"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__sh_promotion_date
+msgid "Promotion Date"
+msgstr "促銷日期"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_hr_employee__employee_promotion_ids
+msgid "Promotion Line"
+msgstr "促銷系列"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__sh_promotion_type_id
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_hr_promotion_search_views
+msgid "Promotion Type"
+msgstr "促銷類型"
+
+#. module: sh_hr_promotion
+#: model:ir.actions.act_window,name:sh_hr_promotion.sh_promotion_type_view_actions
+#: model:ir.model,name:sh_hr_promotion.model_sh_promotion_types
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_promotion_types__name
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_promotion_type_form_view
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_promotion_type_search_view
+#: model_terms:ir.ui.view,arch_db:sh_hr_promotion.sh_promotion_type_tree_view
+msgid "Promotion Types"
+msgstr "促銷類型"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_hr_employee__pr_count
+msgid "Promotions Count"
+msgstr "促銷數量"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__name
+msgid "Reference"
+msgstr "參考"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__activity_user_id
+msgid "Responsible User"
+msgstr "負責任的用戶"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "短信交付錯誤"
+
+#. module: sh_hr_promotion
+#: model:ir.model,name:sh_hr_promotion.model_sh_hr_promotion
+msgid "Sh Hr Promotion"
+msgstr "SH HR推廣"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,help:sh_hr_promotion.field_sh_hr_promotion__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"基於活動的現狀\n"
+"逾期：截止日期已通過\n"
+"今天：活動日期是今天\n"
+"計劃：未來的活動。"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,help:sh_hr_promotion.field_sh_hr_promotion__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "記錄上的異常活動類型。"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__message_unread
+msgid "Unread Messages"
+msgstr "未讀消息"
+
+#. module: sh_hr_promotion
+#: model:ir.model.fields,field_description:sh_hr_promotion.field_sh_hr_promotion__message_unread_counter
+msgid "Unread Messages Counter"
+msgstr "未讀消息計數器"

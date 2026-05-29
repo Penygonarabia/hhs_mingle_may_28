@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data noupdate="1">
+	    
+	    <!-- Group used for the notification_type field of res.users -->
+	    <record id="group_mail_notification_type_inbox" model="res.groups">
+	        <field name="name">Receive notifications in Cielo</field>
+	        <field name="category_id" ref="base.module_category_hidden"/>
+	    </record>
+	
+	</data>
+</odoo>

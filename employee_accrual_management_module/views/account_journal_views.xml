@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_journal_form_inherit" model="ir.ui.view">
+        <field name="name">account.journal.form.inherit.accrual.accounts</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.view_account_journal_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='restrict_mode_hash_table']" position="after">
+                <field name="show_accrual_leave_accounts" groups="account.group_account_manager"/>
+                <field name="show_accrual_ticket_accounts" groups="account.group_account_manager"/>
+                <field name="custom_is_gratuity_journal" groups="account.group_account_manager"/>
+            </xpath>
+            <!-- Inserting the fields inside the form, under Accrual Accounts group -->
+            <xpath expr="//notebook/page[@name='bank_account']/group/group[2]" position="before">
+                <group invisible="not show_accrual_leave_accounts" string="Accrual Leave Accounts" groups="account.group_account_manager">
+                    <!-- Show/hide leave accounts based on the boolean flag -->
+                    <!--                    <field name="show_accrual_leave_accounts"/>-->
+                    <div class="o_td_label" style="width:225px;">
+                        <label for="accrual_leave_debit_account_id" string="Accrual Leave Debit Account" groups="account.group_account_manager"/>
+                    </div>
+                    <field invisible="not show_accrual_leave_accounts" name="accrual_leave_debit_account_id" nolabel="1" groups="account.group_account_manager"/>
+                    <field invisible="not show_accrual_leave_accounts" name="accrual_leave_credit_account_id"  groups="account.group_account_manager"/>
+                </group>
+                <group invisible="not show_accrual_ticket_accounts" string="Accrual Ticket Accounts"  groups="account.group_account_manager">
+                    <!-- Show/hide ticket accounts based on the boolean flag -->
+                    <div class="o_td_label" style="width:225px;">
+                        <label for="accrual_ticket_debit_account_id" string="Accrual Ticket Debit Account" groups="account.group_account_manager"/>
+                    </div>
+                    <field invisible="not show_accrual_ticket_accounts" name="accrual_ticket_debit_account_id" nolabel="1" groups="account.group_account_manager"/>
+                    <field invisible="not show_accrual_ticket_accounts" name="accrual_ticket_credit_account_id" groups="account.group_account_manager"/>
+                </group>
+                <group invisible="not custom_is_gratuity_journal" string="EOS Accrual Accounts" groups="account.group_account_manager">
+                    <!-- Show/hide ticket accounts based on the boolean flag -->
+                    <div class="o_td_label" style="width:225px;">
+                        <label for="default_debit_account_id" string="Default Debit Account" invisible="not custom_is_gratuity_journal" groups="account.group_account_manager"/>
+                    </div>
+                    <field invisible="not custom_is_gratuity_journal" name="default_debit_account_id" nolabel="1" groups="account.group_account_manager"/>
+                    <field invisible="not custom_is_gratuity_journal" name="default_credit_account_id" groups="account.group_account_manager"/>
+                </group>
+            </xpath>
+</field>
+    </record>
+</odoo>

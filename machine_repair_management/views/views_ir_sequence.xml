@@ -1,0 +1,20 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+<odoo>
+
+    <record id="views_location_base_add" model="ir.ui.view">
+        <field name="name">ir.sequence.views</field>
+        <field name="model">ir.sequence</field>
+        <field name='inherit_id' ref="base.sequence_view"/>
+        <field name='arch' type="xml">
+            <xpath expr="//field[@name='use_date_range']" position="after">
+                <field name="use_location_wise"/>
+            </xpath>
+            <xpath expr="//field[@name='date_range_ids']/tree/field[@name='date_to']" position="after">
+                <field name="work_center_id" column_invisible="not parent.use_location_wise"/>
+                <field name="location_id" column_invisible="not parent.use_location_wise" invisible="1" nolabel="1"/>
+                <field name="location_code" column_invisible="not parent.use_date_range"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

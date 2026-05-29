@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_productsubsdesc_custom_form" model="ir.ui.view">
+        <field name="name">productsubsdesc.form</field>
+        <field name="model">t.productsubsdesc</field>
+        <field name="arch" type="xml">
+            <form string="Custom Language">
+                <sheet>
+                    <group>
+                        <field name="lang_flag"/>
+                        <field name="ps_desc"/>
+                        <field name="ps_grp" />
+                        <field name="ps_lang"/>
+                        <field name="ps_pcode"/>
+                        <field name="ps_psub"/>
+                        <field name="user_lmd"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_productsubsdesc_custom_tree" model="ir.ui.view">
+        <field name="name">productsubsdesc.custom.tree</field>
+        <field name="model">t.productsubsdesc</field>
+        <field name="arch" type="xml">
+            <tree string="Custom Language List">
+                        <field name="lang_flag"/>
+                        <field name="ps_desc"/>
+                        <field name="ps_grp" />
+                        <field name="ps_lang"/>
+                        <field name="ps_pcode"/>
+                        <field name="ps_psub"/>
+                        <field name="user_lmd"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom_main" name="Languages" sequence="10"/> -->
+
+    <record id="action_productsubsdesc_custom" model="ir.actions.act_window">
+        <field name="name">productsubsdesc Custom Languages</field>
+        <field name="res_model">t.productsubsdesc</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom" name="Regular" action="action_res_lang_custom"  sequence="10"/> -->
+
+</odoo>

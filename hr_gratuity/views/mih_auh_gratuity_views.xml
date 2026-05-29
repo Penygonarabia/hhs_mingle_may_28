@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_auh_gratuity_custom_form" model="ir.ui.view">
+            <field name="name">mih.auh.gratuity.sheet.form</field>
+            <field name="model">mih.auh.gratuity.sheet</field>
+            <field name="arch" type="xml">
+                <form create="false" edit="false" string="Gratuity">
+                    <header>
+                        <field name="state" statusbar_visible="draft,lock" widget="statusbar"/>
+                        <!--                        <button name="action_create_journal_entry" type="object" string="Create Journal Entry" class="btn-primary" invisible='1'/>-->
+                        <button class="btn-primary" invisible="state not in ['draft']" name="action_lock" string="Lock" type="object"/>
+                        <button class="btn-primary" invisible="1 or state not in ['lock']" name="action_unlock" string="Unlock" type="object"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button class="oe_stat_button" icon="fa-pencil-square" name="show_custom_journal_entries" string="Journal Entries" type="object"/>
+                        </div>
+                        <group>
+                            <group string="Employee Details">
+                                <field name="custom_employee_id" readonly="state == 'lock'"/>
+                                <field name="custom_type" readonly="state == 'lock'"/>
+                                <field name="custom_contract_id" readonly="state == 'lock'"/>
+                                <field name="custom_date_of_join" readonly="state == 'lock'"/>
+                                <field name="custom_late_working_day" readonly="state == 'lock'"/>
+                                <field name="currency_id"/>
+                            </group>
+                            <group string="Eligible Details">
+                                <field name="no_of_days"/>
+                                <field name="custom_lop" readonly="state == 'lock'"/>
+                                <field name="custom_eligible_days"/>
+                                <field name="eligible_days_f_five_years"/>
+                                <field name="eligible_days_a_five_years"/>
+                                <field name="service_period"/>
+                                <field invisible="1" name="years"/>
+                                <field invisible="1" name="months"/>
+                                <field invisible="1" name="days"/>
+                            </group>
+                            <group string="Esob Details">
+                                <field name="esob_days"/>
+                                <field name="esob_a_days"/>
+                                <field name="custom_esob_days_sum"/>
+                                <field name="custom_esob_amounts"/>
+                                <field force_save="1" name="current_month_amt"/>
+                                <field force_save="1" invisible="1" name="total_esob_amount"/>
+                                <field force_save="1" invisible="1" name="current_last_amt"/>
+                            </group>
+                            <group string="Basic Salary Details">
+                                <field name="custom_basic_salary" readonly="state == 'lock'"/>
+                                <field name="custom_allowance" readonly="state == 'lock'"/>
+                                <field name="custom_net_salary"/>
+                                <field name="custom_per_day_salary"/>
+                            </group>
+                            <group string="Other Details">
+                                <field name="created_by"/>
+                                <field name="created_date"/>
+                                <field name="custom_move_id"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Internal Note">
+                                <group>
+                                    <field name="internal_note" nolabel="1"/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form></field>
+        </record>
+        <record id="view_auh_gratuity_custom_tree" model="ir.ui.view">
+            <field name="name">mih.auh.gratuity.sheet.tree</field>
+            <field name="model">mih.auh.gratuity.sheet</field>
+            <field name="arch" type="xml">
+                <tree create="false" edit="false">
+                    <field invisible="1" name="state"/>
+                    <field name="custom_employee_id" readonly="state == 'lock'"/>
+                    <field name="custom_type" readonly="state == 'lock'"/>
+                    <field name="custom_contract_id" readonly="state == 'lock'"/>
+                    <field name="custom_date_of_join" readonly="state == 'lock'"/>
+                    <field name="custom_late_working_day" readonly="state == 'lock'"/>
+                    <field name="no_of_days"/>
+                    <field name="custom_eligible_days"/>
+                    <field name="eligible_days_f_five_years"/>
+                    <field name="eligible_days_a_five_years"/>
+                    <field name="esob_days"/>
+                    <field name="esob_a_days"/>
+                    <field name="custom_esob_days_sum"/>
+                    <field name="custom_net_salary"/>
+                    <field name="custom_per_day_salary"/>
+                    <field name="custom_esob_amounts"/>
+                </tree></field>
+        </record>
+        <record id="view_auh_gratuity_custom_search" model="ir.ui.view">
+            <field name="name">mih.auh.gratuity.sheet.search</field>
+            <field name="model">mih.auh.gratuity.sheet</field>
+            <field name="arch" type="xml">
+                <search string="Employee">
+                    <field name="custom_employee_id"/>
+                    <group expand="0" string="Group By">
+                        <filter context="{'group_by': 'custom_employee_id'}" name="group_by_custom_employee_id" string="Employee"/>
+                    </group>
+                </search></field>
+        </record>
+        <!--        <record model="ir.actions.server" id="action_unlock">-->
+        <!--           <field name="name">Un Lock</field>-->
+        <!--           <field name="model_id" ref="hr_gratuity.model_mih_auh_gratuity_sheet"/>-->
+        <!--           <field name="binding_model_id" ref="hr_gratuity.model_mih_auh_gratuity_sheet"/>-->
+        <!--           <field name="binding_view_types">list</field>-->
+        <!--           <field name="state">code</field>-->
+        <!--           <field name="code">-->
+        <!--               if records:-->
+        <!--                    res = records.filtered(lambda mo: mo.state in {'draft', 'lock'}).action_unlock()-->
+        <!--                    if res is not True:-->
+        <!--                        action = res-->
+        <!--</field>-->
+        <!--        </record>-->
+        <record id="action_auh_gratuity_custom" model="ir.actions.act_window">
+            <field name="name">Gratuity Sheet</field>
+            <field name="res_model">mih.auh.gratuity.sheet</field>
+            <field name="view_mode">tree,form,search</field>
+        </record>
+        <menuitem id="mih_auh_gratuity_sheet_custom" name="Gratuity" parent="om_hr_payroll.menu_hr_payroll_root" sequence="99"/>
+        <menuitem action="hr_gratuity.action_auh_gratuity_custom" id="mih_auh_gratuity_sheet_sub_menu_custom" name="Gratuity Sheet" parent="mih_auh_gratuity_sheet_custom" sequence="2"/>
+    </data>
+</odoo>

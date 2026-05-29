@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record id="view_stock_adjustment_reason_form" model="ir.ui.view">
+            <field name="name">stock.adjustment.reason.form</field>
+            <field name="model">stock.adjustment.reason</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <!--                        <button string="Create" type="object" name="create" icon="fa-plus"/>-->
+                        <!--                        <button string="Edit" type="object" name="edit" icon="fa-pencil"/>-->
+                        <!--                        <button string="Delete" type="object" name="unlink" icon="fa-trash"/>-->
+                        <!--                        <button string="Print" type="object" name="print" icon="fa-print"/>-->
+                    </header>
+                    <sheet>
+                        <!-- Define your form fields here -->
+                        <group>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form></field>
+        </record>
+        <!-- Tree View -->
+        <record id="view_stock_adjustment_reason_tree" model="ir.ui.view">
+            <field name="name">stock.adjustment.reason.tree</field>
+            <field name="model">stock.adjustment.reason</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <!-- Define additional fields to display in the tree view -->
+                </tree></field>
+        </record>
+        <!-- Action -->
+        <record id="action_stock_adjustment_reason" model="ir.actions.act_window">
+            <field name="name">Stock Adjustment Reasons</field>
+            <field name="res_model">stock.adjustment.reason</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <!--         <menuitem id="menu_stock_config_settings" name="Configuration" parent="menu_stock_root"-->
+        <!--        sequence="100" groups="group_stock_manager"/>-->
+        <!--       <menuitem id="menu_warehouse_config" name="Warehouse Management" parent="menu_stock_config_settings" groups="stock.group_stock_manager" sequence="1"/>-->
+        <menuitem action="action_stock_adjustment_reason" id="stock_action_stock_adjustment_reason_id" name="Stock Adjustment Reason" parent="stock.menu_stock_config_settings" sequence="100"/>
+        <!--        &lt;!&ndash; Menu Item &ndash;&gt;-->
+        <!--        <record id="menu_stock_adjustment_reason" model="ir.ui.menu">-->
+        <!--            <field name="name">Stock Adjustment Reasons</field>-->
+        <!--            <field name="action" ref="sync.action_stock_adjustment_reason"/>-->
+        <!--            <field name="parent_id" ref="stock.menu_root"/>-->
+        <!--            <field name="sequence" type="int">10</field>-->
+        <!--        </record>-->
+        <record id="view_inventory_adjustment_inherit" model="ir.ui.view">
+            <field name="name">stock.move.form.inherit</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='company_id']" position="after">
+                    <field invisible="1" name="inventory_adjustment"/>
+                </xpath></field>
+        </record>
+        <record id="stock_valuation_layer_inherit_picking" model="ir.ui.view">
+            <field name="name">stock.valuation.layer.picking</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock_account.stock_valuation_layer_picking"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_view_stock_valuation_layers']" position="replace">
+                    <button class="oe_stat_button" groups="stock.group_stock_manager" icon="fa-dollar" invisible="state not in ['done']" name="action_view_stock_valuation_layers" string="Valuation" type="object"/>
+                    <!--                    <attribute name="groups">stock.group_stock_manager</attribute>
+-->
+                </xpath>
+                <xpath expr="//button[@name='action_view_stock_valuation_layers']" position="before">
+                    <button class="oe_stat_button" icon="fa-pencil-square-o" invisible="state not in ['done']" name="action_view_journal_entries" type="object">
+                        <field name="journal_pick_count" string="Journal Entry Count" widget="statinfo"/>
+                    </button>
+                </xpath></field>
+        </record>
+    </data>
+</odoo>

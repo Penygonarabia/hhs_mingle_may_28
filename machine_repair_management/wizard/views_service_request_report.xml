@@ -1,0 +1,39 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+<odoo>
+    <record id="view_service_request_excel_wizard_form" model="ir.ui.view">
+        <field name="name">service.request.excel.wizard.form</field>
+        <field name="model">service.request.excel.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Service Request Report">
+                <sheet>
+                    <group>
+                        <field name="from_date"/>
+                        <field name="to_date"/>
+                        <field name="work_center_group_id" options="{'no_create_edit':True,'no_create':True}"/>
+                        <!-- <field name="job_card_ids" nolabel="0" widget="many2many_tags" options="{'no_create': True, 'no_create_edit':True}" /> -->
+                        <field name="product_category_id" options="{'no_create': True, 'no_create_edit': True}"
+                               domain="[('parent_id','=',False)]"/>
+                    </group>
+                    <footer>
+                        <button string="Generate Excel" type="object" name="generate_excel_report" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_service_request_excel_wizard" model="ir.actions.act_window">
+        <field name="name">Service Request Report</field>
+        <field name="res_model">service.request.excel.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_service_request_excel_wizard_form"/>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem action="action_service_request_excel_wizard"
+              name="Service Request"
+              id="menu_service_request_excel_report"
+              sequence="1"
+              parent="machine_repair_management.menu_services_report"/>
+</odoo>

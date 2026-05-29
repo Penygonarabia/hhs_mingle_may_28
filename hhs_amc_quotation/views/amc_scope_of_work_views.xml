@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="amc_scope_of_work_tree_view" model="ir.ui.view">
+        <field name="name">amc.scope.of.work.tree.view</field>
+        <field name="model">amc.scope.of.work</field>
+        <field name="arch" type="xml">
+            <tree>
+
+        		<field name="amc_soc_description"/>
+                 <field name="amc_auto_populate"/>
+                 <field name="amc_sortorder"/>
+
+
+            </tree>
+        </field>
+    </record>
+
+    <record id="amc_scope_of_work_form_view" model="ir.ui.view">
+        <field name="name">amc.scope.of.work.form.view</field>
+        <field name="model">amc.scope.of.work</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group col="2">
+                       <field name="amc_soc_work" invisible = "1"/>
+<!--                        <field name="amc_soc_name"/>-->
+                        <field name="amc_soc_description" required = "1"/>
+                        <field name="amc_auto_populate"/>
+                        <field name="amc_sortorder"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_scope_of_work" model="ir.actions.act_window">
+        <field name="name">Scope of Work</field>
+        <field name="res_model">amc.scope.of.work</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="crm_menu_scope_of_work"
+              name="Scope of Work"
+              parent="crm.crm_menu_config"
+              action="action_scope_of_work"
+              sequence="905"/>
+
+
+    <!-- Contracts menu -->
+    <!--    <menuitem id="crm_contract_type_menu_action"-->
+    <!--              name="Contract Types"-->
+    <!--              parent="crm.crm_menu_config"-->
+    <!--              action="action_crm_contract_type"-->
+    <!--              sequence="900"-->
+    <!--              />-->
+
+</odoo>

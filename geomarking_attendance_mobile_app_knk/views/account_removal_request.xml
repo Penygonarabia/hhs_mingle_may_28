@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="account_removal_request_form_view" model="ir.ui.view">
+        <field name="name">account.removal.request.form.view</field>
+        <field name="model">account.removal.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="approve_request" class="oe_highlight" type="object" string="Approve"/>
+                    <button name="reject_request" class="oe_highlight" type="object" string="Reject"/>
+                    <field name="state" widget="statusbar" class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <h1>
+                                <field name="name" />
+                            </h1>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="reason_id" />
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="employee_id" />
+                            <field name="request_approval_date" />
+                            <field name="request_reject_date"/>
+                        </group>
+                        <group>
+                            <field name="empl_id" />
+                            <field name="request_submission_date" />
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description"/>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="account_removal_request_tree_view" model="ir.ui.view">
+        <field name="name">account.removal.request.tree.view</field>
+        <field name="model">account.removal.request</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" />
+                <field name="employee_id" />
+                <field name="reason_id" />
+                <field name="request_approval_date" />
+                <field name="request_submission_date" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_account_removal_request" model="ir.actions.act_window">
+    	<field name="name">Account Removal Request</field>
+    	<field name="res_model">account.removal.request</field>
+    	<field name="view_mode">tree,form</field>
+    </record>
+</odoo>

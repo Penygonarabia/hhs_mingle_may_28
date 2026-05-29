@@ -1,0 +1,59 @@
+<odoo>
+    <!-- QWeb Report Template -->
+    <template id="report_contract_document_template">
+        <t t-call="web.external_layout">
+            <div class="page">
+                <h2 class="text-center">Contract Document / وثيقة العقد</h2>
+                <table class="table table-sm table-bordered" style="width:100%; margin-top:20px;">
+                    <thead>
+                        <tr>
+                            <th style="width:50%; text-align:left;">English</th>
+                            <th style="width:50%; text-align:right;">Arabic</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Showroom Name: <t t-esc="doc.name"/></td>
+                            <td>اسم المعرض: <t t-esc="doc.name"/></td>
+                        </tr>
+                        <tr>
+                            <td>Dealer: <t t-esc="doc.dealer_id.name"/></td>
+                            <td>الوكيل: <t t-esc="doc.dealer_id.name"/></td>
+                        </tr>
+                        <tr>
+                            <td>Region: <t t-esc="doc.region_id.name"/></td>
+                            <td>المنطقة: <t t-esc="doc.region_id.name"/></td>
+                        </tr>
+                        <tr>
+                            <td>City: <t t-esc="doc.city.name"/></td>
+                            <td>المدينة: <t t-esc="doc.city.name"/></td>
+                        </tr>
+                        <tr>
+                            <td>Address: <t t-esc="doc.address"/></td>
+                            <td>العنوان: <t t-esc="doc.address"/></td>
+                        </tr>
+                        <tr>
+                            <td>Contact No: <t t-esc="doc.contact_no"/></td>
+                            <td>رقم الاتصال: <t t-esc="doc.contact_no"/></td>
+                        </tr>
+                        <tr>
+                            <td>Email: <t t-esc="doc.email"/></td>
+                            <td>البريد الإلكتروني: <t t-esc="doc.email"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <!-- QWeb Report Action -->
+    <report
+        id="action_print_contract_document"
+        model="promoter.showroom"
+        string=""
+        report_type="qweb-pdf"
+        name="promoter.print_contract_document_template"
+        file="promoter.print_contract_document_template"
+        print_report_name="'Print_Contract_Document_' + object.name"
+    />
+</odoo>

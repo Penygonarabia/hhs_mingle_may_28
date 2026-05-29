@@ -1,0 +1,76 @@
+<odoo>
+
+<!-- Pivot View -->
+<record id="view_fsm_loyalty_audit_pivot" model="ir.ui.view">
+    <field name="name">fsm.loyalty.audit.pivot</field>
+    <field name="model">fsm.loyalty.audit</field>
+    <field name="arch" type="xml">
+        <pivot string="Loyalty Analysis">
+
+            <!-- Measures -->
+            <field name="loyalty_points" type="measure"/>
+            <!-- <field name="amount_paid" type="measure"/> -->
+
+            <!-- Rows -->
+            <field name="dealer_id" type="row"/>
+            <field name="salesman_id" type="row"/>
+
+            <!-- Columns (Static Columns for Sales, CreditNote, Redemption) -->
+            <field name="type" type="col"/>
+            <field name="date_time" interval="month" type="col"/>
+
+        </pivot>
+    </field>
+</record>
+
+
+    <!-- Pivot View -->
+    <record id="view_fsm_loyalty_audit_pivot_mob" model="ir.ui.view">
+        <field name="name">fsm.loyalty.audit.pivot</field>
+        <field name="model">fsm.loyalty.audit</field>
+        <field name="arch" type="xml">
+            <pivot string="Loyalty Analysis">
+                <!-- Measures -->
+                <field name="loyalty_points" type="measure"/>
+                <!-- <field name="amount_paid" type="measure"/> -->
+
+                <!-- Rows -->
+                <field name="type" type="row"/>              
+                <field name="type_order" type="sort"  invisible="1"/>
+            </pivot>
+        </field>
+    </record>
+
+
+    <!-- Action -->
+    <record id="action_fsm_loyalty_audit_pivot" model="ir.actions.act_window">
+        <field name="name">Loyalty Point Analysis</field>
+        <field name="res_model">fsm.loyalty.audit</field>
+        <field name="view_mode">pivot,tree</field>
+        <field name="view_id" ref="view_fsm_loyalty_audit_pivot"/>
+    </record>
+
+
+    <!-- Menu -->
+    <menuitem id="menu_fsm_loyalty_analysis"
+              name="Loyalty Point Analysis"
+              parent="menu_dealer_root"
+              action="action_fsm_loyalty_audit_pivot"
+              groups="dealer.group_dealer_backoffice_user"
+              sequence="50"/>
+
+<record id="fsm_loyalty_audit_dealer_rule_only_own" model="ir.rule">
+    <field name="name">FSM Loyalty Audit - Dealer Own Records Only</field>
+    <field name="model_id" ref="model_fsm_loyalty_audit"/>
+    <field name="groups" eval="[(4, ref('dealer.group_dealer_user'))]"/>
+    <field name="domain_force">[('salesman_id', '=', user.id)]</field>
+</record>
+
+<record id="action_fsm_loyalty_audit_pivot_mob" model="ir.actions.act_window">
+    <field name="name">Loyalty Points Summary</field>
+    <field name="res_model">fsm.loyalty.audit</field>
+    <field name="view_mode">pivot,tree</field>
+    <field name="view_id" ref="view_fsm_loyalty_audit_pivot_mob"/>
+</record>
+
+</odoo>

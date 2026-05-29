@@ -1,0 +1,1257 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* hr_attendances_overtime
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-31 06:54+0000\n"
+"PO-Revision-Date: 2024-07-31 06:54+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid ""
+"<span class=\"oe_inline\">\n"
+"                                    -\n"
+"                                </span>"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "ABSENCE"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__absent
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_attendance_sheet_line__status__absence
+msgid "Absence"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Absence Amount"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__absent_bool
+msgid "Absence Boolean"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Absence Payroll Insert"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_policies__absent_id
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_policies_form_view
+msgid "Absence Rule"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.actions.act_window,name:hr_attendances_overtime.action_absence_rules1
+#: model:ir.ui.menu,name:hr_attendances_overtime.absence_rules
+msgid "Absence Rules"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.absence_rules_form_view
+msgid "Absence Times"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__absence_transaction_id
+msgid "Absence Transaction Entry"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence_line__absent_payroll_transaction_id
+msgid "Absent Payroll Transaction"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:hr.salary.rule,name:hr_attendances_overtime.hr_salary_rule_absent
+msgid "Absent Rule"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__message_needaction
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__message_needaction
+msgid "Action Needed"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__activity_ids
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__activity_ids
+msgid "Activities"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__activity_exception_decoration
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__activity_state
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__activity_state
+msgid "Activity State"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__activity_type_icon
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__activity_type_icon
+msgid "Activity Type Icon"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__asignin
+msgid "Actual Signin"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__asignout
+msgid "Actual Signout"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_batches_wizard_form
+msgid "Add Employee"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late_line__amount
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.late_in_rules_form_view
+msgid "Amount"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: code:addons/hr_attendances_overtime/wizard/attendance_batches_wizard.py:0
+#, python-format
+msgid ""
+"Another Batch already exists with in this Date range from %s -  to %s !!!"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.change_attendance_data_wizard_view
+msgid "Apply"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_overtime_line__apply_after
+msgid "Apply after"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.actions.server,name:hr_attendances_overtime.actions_execute_set_to_approve
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Approve"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_attendance_sheet__state__approved
+msgid "Approved"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__message_attachment_count
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__message_attachment_count
+msgid "Attachment Count"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model,name:hr_attendances_overtime.model_hr_attendance
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line__attendance_id
+msgid "Attendance"
+msgstr "الحضور"
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__attendance_sheet_batch_id
+msgid "Attendance Batch Id"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late__attendance_line_ids
+msgid "Attendance Line"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.ui.menu,name:hr_attendances_overtime.attendance_policies
+#: model:ir.ui.menu,name:hr_attendances_overtime.attendance_policies_child
+msgid "Attendance Policies"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.actions.act_window,name:hr_attendances_overtime.action_attendance_policies
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__attendance_policy
+msgid "Attendance Policy"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.ui.menu,name:hr_attendances_overtime.overtime_rules
+msgid "Attendance Rules"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model,name:hr_attendances_overtime.model_hr_attendance_sheet
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__attendance_sheet_ids
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_employee__attendance_sheet_id
+msgid "Attendance Sheet"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.actions.act_window,name:hr_attendances_overtime.action_attendance_batch_wizard
+#: model:ir.model,name:hr_attendances_overtime.model_attendance_sheet_batch
+#: model:ir.ui.menu,name:hr_attendances_overtime.menu_attendance_batch_sheet
+#: model:ir.ui.menu,name:hr_attendances_overtime.menu_attendance_batch_sheet_name
+msgid "Attendance Sheet Batch"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model,name:hr_attendances_overtime.model_attendance_sheet_batch_line
+msgid "Attendance Sheet Batch Line"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.actions.server,name:hr_attendances_overtime.attendance_sheet_batch_scheduler_ir_actions_server
+#: model:ir.cron,cron_name:hr_attendances_overtime.attendance_sheet_batch_scheduler
+#: model:ir.cron,name:hr_attendances_overtime.attendance_sheet_batch_scheduler
+msgid "Attendance Sheet Batch online"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line__attendance_sheet_id
+msgid "Attendance Sheet Id"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model,name:hr_attendances_overtime.model_hr_attendance_sheet_line
+msgid "Attendance Sheet Line"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.actions.act_window,name:hr_attendances_overtime.action_attendance_sheets1
+msgid "Attendance Sheets"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Attendances"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.ui.menu,name:hr_attendances_overtime.hr_attendance_sheets
+msgid "Attendances Sheets"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Calculated Attendance Data"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.change_attendance_data_wizard_view
+msgid "Cancel"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.actions.server,name:hr_attendances_overtime.compute_attendance_data_employee
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Compute Attendance Data"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__attendance_sheet_batch__state__confirm
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_attendance_sheet__state__confirm
+msgid "Confirm"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line__contract_end_date
+msgid "Contract End Date"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line__contract_start_date
+msgid "Contract Start Date"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Create Payslip"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__create_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line__create_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence__create_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence_line__create_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff__create_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff_line__create_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late__create_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late_line__create_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_policies__create_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__create_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__create_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendances_overtime__create_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_change_attendance__create_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_overtime_line__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__create_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line__create_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence__create_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence_line__create_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff__create_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff_line__create_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late__create_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late_line__create_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_policies__create_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__create_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__create_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendances_overtime__create_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_change_attendance__create_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_overtime_line__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:hr.salary.rule.category,name:hr_attendances_overtime.CD
+msgid "Credit"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "DIFFRENCE TIME"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_batches_wizard_form
+msgid "Data Inserted into Attendance Sheet"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__date
+msgid "Date"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line__period_from
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.hr_attendance_sheets_tree_view
+msgid "Date From"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line__period_to
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.hr_attendance_sheets_tree_view
+msgid "Date To"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__date_from
+msgid "Date from"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__date_to
+msgid "Date to"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__day
+msgid "Day"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__day_check
+msgid "Day Check"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model,name:hr_attendances_overtime.model_hr_employee
+msgid "Description"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff__diff_line_ids
+msgid "Diff Line"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__difftime
+msgid "Diff Time"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Difference Amount"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_policies__diff_rule_id
+msgid "Difference Rule"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.ui.menu,name:hr_attendances_overtime.difference_rules
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_policies_form_view
+msgid "Difference Time Rules"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__display_name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line__display_name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence__display_name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence_line__display_name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff__display_name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff_line__display_name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late__display_name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late_line__display_name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_policies__display_name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__display_name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__display_name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendances_overtime__display_name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_change_attendance__display_name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_overtime_line__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__attendance_sheet_batch__state__draft
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_attendance_sheet__state__draft
+msgid "Draft"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line__employee_id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__employee_id
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_batches_wizard_form
+msgid "Employee"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.actions.act_window,name:hr_attendances_overtime.action_view_hr_payslip_form_inherit
+msgid "Employee Payslips"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__attendance_batch_line_ids
+msgid "Employee attendance"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,help:hr_attendances_overtime.field_attendance_sheet_batch_line__contract_end_date
+msgid "End date of the contract (if it's a fixed-term contract)."
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line__exit_employee
+msgid "Exit Employee"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__export_bool
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_attendance_sheet__state__export
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Export"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_attendance_absence_line__time__1
+msgid "First Time"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_attendance_late_line__amount_type__fixed
+msgid "Fixed"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__message_follower_ids
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__message_follower_ids
+msgid "Followers"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__message_partner_ids
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__message_partner_ids
+msgid "Followers (Partners)"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,help:hr_attendances_overtime.field_attendance_sheet_batch__activity_type_icon
+#: model:ir.model.fields,help:hr_attendances_overtime.field_hr_attendance_sheet__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Get Attendance"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model,name:hr_attendances_overtime.model_hr_contract
+msgid "HR Contract"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__has_message
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__has_message
+msgid "Has Message"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model,name:hr_attendances_overtime.model_hr_attendance_diff
+msgid "Hr Attendance Diffrules"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model,name:hr_attendances_overtime.model_hr_attendance_late
+msgid "Hr Attendance Late"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model,name:hr_attendances_overtime.model_hr_attendance_late_line
+msgid "Hr Attendance Late Line"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model,name:hr_attendances_overtime.model_hr_attendances_overtime
+msgid "Hr Attendance Overtime"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model,name:hr_attendances_overtime.model_hr_overtime_line
+msgid "Hr Attendance Overtime Line"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model,name:hr_attendances_overtime.model_hr_attendance_absence
+msgid "Hr Attendance absence"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model,name:hr_attendances_overtime.model_hr_attendance_absence_line
+msgid "Hr Attendance absence line"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model,name:hr_attendances_overtime.model_hr_attendance_diff_line
+msgid "Hr Attendance diff line"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line__id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence__id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence_line__id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff__id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff_line__id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late__id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late_line__id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_policies__id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendances_overtime__id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_change_attendance__id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_overtime_line__id
+msgid "ID"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__activity_exception_icon
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__activity_exception_icon
+msgid "Icon"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,help:hr_attendances_overtime.field_attendance_sheet_batch__activity_exception_icon
+#: model:ir.model.fields,help:hr_attendances_overtime.field_hr_attendance_sheet__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,help:hr_attendances_overtime.field_attendance_sheet_batch__message_needaction
+#: model:ir.model.fields,help:hr_attendances_overtime.field_attendance_sheet_batch__message_unread
+#: model:ir.model.fields,help:hr_attendances_overtime.field_hr_attendance_sheet__message_needaction
+#: model:ir.model.fields,help:hr_attendances_overtime.field_hr_attendance_sheet__message_unread
+msgid "If checked, new messages require your attention."
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,help:hr_attendances_overtime.field_attendance_sheet_batch__message_has_error
+#: model:ir.model.fields,help:hr_attendances_overtime.field_attendance_sheet_batch__message_has_sms_error
+#: model:ir.model.fields,help:hr_attendances_overtime.field_hr_attendance_sheet__message_has_error
+#: model:ir.model.fields,help:hr_attendances_overtime.field_hr_attendance_sheet__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__attendance_sheet_batch__state__in_progress
+msgid "In Progress"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__message_is_follower
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__message_is_follower
+msgid "Is Follower"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "LATE IN"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch____last_update
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line____last_update
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence____last_update
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence_line____last_update
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff____last_update
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff_line____last_update
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late____last_update
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late_line____last_update
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_policies____last_update
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet____last_update
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line____last_update
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendances_overtime____last_update
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_change_attendance____last_update
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_overtime_line____last_update
+msgid "Last Modified on"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__write_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line__write_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence__write_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence_line__write_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff__write_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff_line__write_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late__write_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late_line__write_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_policies__write_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__write_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__write_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendances_overtime__write_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_change_attendance__write_uid
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_overtime_line__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__write_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line__write_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence__write_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence_line__write_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff__write_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff_line__write_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late__write_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late_line__write_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_policies__write_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__write_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__write_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendances_overtime__write_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_change_attendance__write_date
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_overtime_line__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__latein
+msgid "Late In"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:hr.salary.rule,name:hr_attendances_overtime.hr_salary_rule_latein
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_policies_form_view
+msgid "Late In Rule"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.ui.menu,name:hr_attendances_overtime.late_in_rules
+msgid "Late In Rules"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_policies__late_id
+msgid "Late Rule"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__latein
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_change_attendance__latein
+msgid "Late in"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Late in Amount"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.late_in_rules_form_view
+msgid "Late in Periods"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.actions.act_window,name:hr_attendances_overtime.action_latein_rules1
+msgid "Late in rules"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,help:hr_attendances_overtime.field_attendance_sheet_batch_line__employee_contract_id
+msgid "Latest contract of the employee"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_attendance_sheet_line__status__leave
+msgid "Leave"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__message_main_attachment_id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__message_main_attachment_id
+msgid "Main Attachment"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__message_has_error
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__message_has_error
+msgid "Message Delivery error"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__message_ids
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__message_ids
+msgid "Messages"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__my_activity_date_deadline
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence__name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence_line__name_id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff__name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff_line__name_id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late__name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late_line__name_id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_policies__name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendances_overtime__name
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_overtime_line__name
+msgid "Name"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line__new_employee
+msgid "New Employee"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__activity_calendar_event_id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__activity_date_deadline
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__activity_summary
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__activity_summary
+msgid "Next Activity Summary"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__activity_type_id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__activity_type_id
+msgid "Next Activity Type"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_attendance__process__no
+msgid "No"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__no_absence
+msgid "No Of Absence"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__no_difftime
+msgid "No Of Diff Times"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__no_latein
+msgid "No Of Lates"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__no_overtime
+msgid "No Of Overtime"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__note
+msgid "Note"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__message_needaction_counter
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__message_needaction_counter
+msgid "Number of Actions"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__message_has_error_counter
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__message_has_error_counter
+msgid "Number of errors"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,help:hr_attendances_overtime.field_attendance_sheet_batch__message_needaction_counter
+#: model:ir.model.fields,help:hr_attendances_overtime.field_hr_attendance_sheet__message_needaction_counter
+msgid "Number of messages which requires an action"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,help:hr_attendances_overtime.field_attendance_sheet_batch__message_has_error_counter
+#: model:ir.model.fields,help:hr_attendances_overtime.field_hr_attendance_sheet__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,help:hr_attendances_overtime.field_attendance_sheet_batch__message_unread_counter
+#: model:ir.model.fields,help:hr_attendances_overtime.field_hr_attendance_sheet__message_unread_counter
+msgid "Number of unread messages"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "OVER TIME"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Open"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.ui.menu,name:hr_attendances_overtime.overtime_rules_child
+msgid "OverTime Rules"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_change_attendance__overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_overtime_line__overtime_id
+msgid "Overtime"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Overtime Amount"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__overtime_bool
+msgid "Overtime Boolean"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Overtime Payroll Insert"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_overtime_line__payroll_transaction_id
+msgid "Overtime Payroll Transaction"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:hr.salary.rule,name:hr_attendances_overtime.hr_salary_rule_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_policies__overtime_id
+msgid "Overtime Rule"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.actions.act_window,name:hr_attendances_overtime.action_overtime_rules1
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_policies_form_view
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.overtime_rules_form_view
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.overtime_rules_tree_view
+msgid "Overtime Rules"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__overtime_transaction_id
+msgid "Overtime Transaction Entry"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendances_overtime__overtime_line_ids
+msgid "OvertimeLine"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model,name:hr_attendances_overtime.model_hr_payslip
+msgid "Pay Slip"
+msgstr "قسيمة المرتب"
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Period"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__date_from
+msgid "Period From"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: code:addons/hr_attendances_overtime/wizard/attendance_batches_wizard.py:0
+#, python-format
+msgid "Period From must be less than Period To."
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__date_to
+msgid "Period To"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__psignin
+msgid "Planned Signin"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__psignout
+msgid "Planned Signout"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: code:addons/hr_attendances_overtime/models/hr_attendance_sheet.py:0
+#, python-format
+msgid ""
+"Please Confirm Attendance sheet with Manager before approve button clicked"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_contract__attend_police_id
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.hr_contract_view_form_inherit1
+msgid "Policy"
+msgstr "سياسة"
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance__process
+msgid "Process"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence_line__rate
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff_line__rate
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late_line__rate
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_overtime_line__rate
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_attendance_late_line__amount_type__rate
+msgid "Rate"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.change_attendance_data_wizard_view
+msgid "Reason For Change"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_change_attendance__reason
+msgid "Reason for Changing"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: code:addons/hr_attendances_overtime/models/hr_overtime.py:0
+#, python-format
+msgid "Record already exists with %s !!!"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: code:addons/hr_attendances_overtime/models/hr_attendance_sheet.py:0
+#: code:addons/hr_attendances_overtime/models/hr_overtime.py:0
+#, python-format
+msgid "Record already exists with name %s !!!"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: code:addons/hr_attendances_overtime/models/hr_overtime.py:0
+#: code:addons/hr_attendances_overtime/models/hr_overtime.py:0
+#, python-format
+msgid "Record already exists!!!"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__activity_user_id
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__activity_user_id
+msgid "Responsible User"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch_line__employee_contract_id
+msgid "Running Contract"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__message_has_sms_error
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_attendance_absence_line__time__2
+msgid "Second Time"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Set to Draft"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: code:addons/hr_attendances_overtime/models/hr_attendance_sheet.py:0
+#, python-format
+msgid "Start date must be less than end date."
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,help:hr_attendances_overtime.field_attendance_sheet_batch_line__contract_start_date
+msgid "Start date of the contract."
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__state
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__state
+msgid "State"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__status
+msgid "Status"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__holiday_status
+msgid "Status Reason"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,help:hr_attendances_overtime.field_attendance_sheet_batch__activity_state
+#: model:ir.model.fields,help:hr_attendances_overtime.field_hr_attendance_sheet__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_sheet_form_view
+msgid "Submit To Manager"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_attendance_absence_line__time__3
+msgid "Third Time"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence_line__time
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_diff_line__time
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late_line__time
+msgid "Time"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.actions.act_window,name:hr_attendances_overtime.action_diff_rules1
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__time_different
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_change_attendance__difftime
+msgid "Time Different"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:hr.salary.rule,name:hr_attendances_overtime.hr_salary_rule_timedifferent
+msgid "Time-Different Rule"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.diff_rules_form_view
+msgid "Times Different"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__total_absence
+msgid "Total Absence Hours"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__total_attendance
+msgid "Total Attendance"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__total_difftime
+msgid "Total Diff Times Hours"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__total_latein
+msgid "Total Late in"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__total_overtime
+msgid "Total Overtime"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_late_line__amount_type
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_overtime_line__policie_type
+msgid "Type"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,help:hr_attendances_overtime.field_attendance_sheet_batch__activity_exception_decoration
+#: model:ir.model.fields,help:hr_attendances_overtime.field_hr_attendance_sheet__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__message_unread
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__message_unread
+msgid "Unread Messages"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__message_unread_counter
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__message_unread_counter
+msgid "Unread Messages Counter"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_batches_wizard_form
+msgid "Update"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__attendance_sheet_batch__state__validate
+msgid "Validated"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_attendance_sheet_batch__website_message_ids
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__website_message_ids
+msgid "Website Messages"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,help:hr_attendances_overtime.field_attendance_sheet_batch__website_message_ids
+#: model:ir.model.fields,help:hr_attendances_overtime.field_hr_attendance_sheet__website_message_ids
+msgid "Website communication history"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_attendance_sheet_line__status__weekend
+msgid "Week End"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_attendance_sheet_line__status__weekday
+msgid "WeekDay"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_overtime_line__policie_type__week_end
+msgid "Weekend"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_overtime_line__policie_type__working_days
+msgid "Working days"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields.selection,name:hr_attendances_overtime.selection__hr_attendance__process__yes
+msgid "Yes"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: code:addons/hr_attendances_overtime/models/hr_attendance_sheet.py:0
+#, python-format
+msgid "You can not approve your own Sheet !!!"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: code:addons/hr_attendances_overtime/models/hr_attendance_sheet.py:0
+#, python-format
+msgid "You can't delete record which is approved."
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_absence__absence_line_ids
+msgid "absence line"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__d_asignin
+msgid "actual sign in for date"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__d_asignout
+msgid "actual signout for time"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.actions.act_window,name:hr_attendances_overtime.action_change_attendance_data_wizard_view
+#: model:ir.model,name:hr_attendances_overtime.model_hr_change_attendance
+msgid "change attendance data"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model_terms:ir.ui.view,arch_db:hr_attendances_overtime.attendance_policies_tree
+msgid "description"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model,name:hr_attendances_overtime.model_hr_attendance_policies
+msgid "hr.attendance.policies"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet_line__name_id
+msgid "name"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__request_date_from
+msgid "request_date_from"
+msgstr ""
+
+#. module: hr_attendances_overtime
+#: model:ir.model.fields,field_description:hr_attendances_overtime.field_hr_attendance_sheet__request_date_to
+msgid "request_date_to"
+msgstr ""

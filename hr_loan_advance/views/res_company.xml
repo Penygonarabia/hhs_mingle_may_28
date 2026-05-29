@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data>
+
+        <record id="ps_loan_view_company_form_fig" model="ir.ui.view">
+            <field name="name">ps_loan_view_company_form_fig</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//notebook/page/group" position="inside">
+                    <group string="Loan and Advance">
+                        <field name="loan_journal_id"/>
+                        <field name="advance_journal_id"/>
+                    </group>
+                    <!-- Add your fields or attributes here -->
+                </xpath>
+
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

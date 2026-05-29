@@ -1,0 +1,82 @@
+<!--
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+		<record id="view_hr_employee_form_inherited" model="ir.ui.view">
+			<field name="name">Hr Employee Form view inherited</field>
+    		<field name="model">hr.employee</field>
+    		<field name="inherit_id" ref="hr.view_employee_form"/>
+    		<field name="arch" type="xml">
+    			
+    			&lt;!&ndash; <form position="attributes">
+                    <attribute name="attrs">{'readonly':[('exit_date','=',True)]}</attribute>
+                    <attribute name="delete">false</attribute>
+                    
+                </form> &ndash;&gt;
+    		
+				<xpath expr="//header" position="inside">
+					<field name="state" widget="statusbar" statusbar_visible="draft,reject"  colspan="2"/>
+				</xpath>
+				
+				
+				 <xpath expr="//group[@name='identification_group']" position="after">
+				&lt;!&ndash;  <xpath expr="//page[@name='personal_information']//group" position="inside"> &ndash;&gt;
+                    <group string="Exit Date and EOS">
+                        <field name="exit_date"  readonly="1" />
+                      &lt;!&ndash;   <field name="allocation_used_display" invisible="1"/> &ndash;&gt;
+                    </group>
+                </xpath>
+                
+                &lt;!&ndash; <xpath expr="//form" position ="attributes" >
+                	<attribute name="edit">0</attribute>
+                </xpath>
+                 &ndash;&gt;
+    		</field>
+		</record>
+		
+&lt;!&ndash;		<record id="hr.hr_employee_action_from_user" model="ir.actions.act_window">&ndash;&gt;
+&lt;!&ndash;			<field name="context">{'readonly': True}</field>&ndash;&gt;
+&lt;!&ndash;		</record>&ndash;&gt;
+
+&lt;!&ndash;		<record id="employee_number_exit_inherit" model="ir.ui.view">&ndash;&gt;
+&lt;!&ndash;			<field name="name">hr.contract.history.list.view</field>&ndash;&gt;
+&lt;!&ndash;			<field name="model">hr.contract.history</field>&ndash;&gt;
+&lt;!&ndash;			<field name="inherit_id" ref="hr_contract.hr_contract_history_view_list" />&ndash;&gt;
+&lt;!&ndash;			<field name="arch" type="xml">&ndash;&gt;
+
+&lt;!&ndash;				<xpath expr="//field[@name='employee_id']" position="before">&ndash;&gt;
+&lt;!&ndash;					<field name="employee_no"/>&ndash;&gt;
+&lt;!&ndash;				</xpath>&ndash;&gt;
+
+&lt;!&ndash;			</field>&ndash;&gt;
+&lt;!&ndash;		</record>&ndash;&gt;
+
+&lt;!&ndash;		<record id="hr_contract_history_search_view_inherit" model="ir.ui.view">&ndash;&gt;
+&lt;!&ndash;			<field name="name">hr.contract.history.search.inherit</field>&ndash;&gt;
+&lt;!&ndash;			<field name="model">hr.contract.history</field>&ndash;&gt;
+&lt;!&ndash;			<field name="inherit_id" ref="hr_contract.hr_contract_history_view_search"/>&ndash;&gt;
+&lt;!&ndash;			<field name="arch" type="xml">&ndash;&gt;
+&lt;!&ndash;				<xpath expr="//field[@name='employee_id']" position="after">&ndash;&gt;
+&lt;!&ndash;					<field name="employee_no"/>&ndash;&gt;
+&lt;!&ndash;				</xpath>&ndash;&gt;
+&lt;!&ndash;			</field>&ndash;&gt;
+&lt;!&ndash;		</record>&ndash;&gt;
+&lt;!&ndash;		<record id="employee_number_exit_form_inherit" model="ir.ui.view">&ndash;&gt;
+&lt;!&ndash;			<field name="name">hr.contract.history.form.view</field>&ndash;&gt;
+&lt;!&ndash;			<field name="model">hr.contract.history</field>&ndash;&gt;
+&lt;!&ndash;			<field name="inherit_id" ref="hr_contract.hr_contract_history_view_form" />&ndash;&gt;
+&lt;!&ndash;			<field name="arch" type="xml">&ndash;&gt;
+&lt;!&ndash;			&ndash;&gt;
+&lt;!&ndash;				<xpath expr="//field[@name='contract_id']" position="after">&ndash;&gt;
+&lt;!&ndash;					<field name="employee_number"/>&ndash;&gt;
+&lt;!&ndash;				</xpath>&ndash;&gt;
+&lt;!&ndash;				&ndash;&gt;
+&lt;!&ndash;			</field>&ndash;&gt;
+&lt;!&ndash;		&ndash;&gt;
+&lt;!&ndash;		&ndash;&gt;
+&lt;!&ndash;		</record>&ndash;&gt;
+
+		
+	</data>
+</odoo>
+-->

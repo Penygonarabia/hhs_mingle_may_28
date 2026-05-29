@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_brand_form" model="ir.ui.view">
+        <field name="name">hhs_maintenance.brand.form</field>
+        <field name="model">brand</field>
+        <field name="arch" type="xml">
+            <form string="Brand">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name = "amc_product_category_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_brand_tree" model="ir.ui.view">
+        <field name="name">hhs_maintenance.brand.tree</field>
+        <field name="model">brand</field>
+        <field name="arch" type="xml">
+            <tree string="Brands">
+                <field name="name" width="100%"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_brand" model="ir.actions.act_window">
+        <field name="name">Brands</field>
+        <field name="res_model">brand</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Equipment Model Code Master -->
+    <record id="view_equipment_model_code_form" model="ir.ui.view">
+        <field name="name">hhs_maintenance.equipment.model.code.form</field>
+        <field name="model">equipment.model.code</field>
+        <field name="arch" type="xml">
+            <form string="Equipment Model">
+                <sheet>
+                    <group>
+                        <field name="brand_id"/>
+                        <field name="model_code"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_equipment_model_code_tree" model="ir.ui.view">
+        <field name="name">hhs_maintenance.equipment.model.code.tree</field>
+        <field name="model">equipment.model.code</field>
+        <field name="arch" type="xml">
+            <tree string="Equipment Model">
+                <field name="brand_id"/>
+                <field name="model_code"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_equipment_model_code" model="ir.actions.act_window">
+        <field name="name">Equipment Model</field>
+        <field name="res_model">equipment.model.code</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Inherit Maintenance Equipment Form -->
+    <!--<record id="view_maintenance_equipment_form_inherit_brand_model" model="ir.ui.view">-->
+    <!--    <field name="name">maintenance.equipment.form.brand.model</field>-->
+    <!--    <field name="model">maintenance.equipment</field>-->
+    <!--    <field name="inherit_id" ref="maintenance.view_maintenance_equipment_form"/>-->
+    <!--    <field name="arch" type="xml">-->
+    <!--        <xpath expr="//field[@name='brand']" position="replace">-->
+    <!--            <field name="brand_id" options="{'no_create': True}"/>-->
+    <!--        </xpath>-->
+    <!--        <xpath expr="//field[@name='model']" position="replace">-->
+    <!--            <field name="model_id" options="{'no_create': True}"/>-->
+    <!--        </xpath>-->
+    <!--    </field>-->
+    <!--</record>-->
+
+    <!-- Menus under Configuration -->
+
+    <menuitem id="menu_hhs_maintenance_brand" name="Brands" sequence="40"
+              parent="maintenance.menu_maintenance_configuration" action="action_brand"/>
+    <menuitem id="menu_hhs_maintenance_equipment_model_code" name="Equipment Model" sequence="50"
+              parent="maintenance.menu_maintenance_configuration" action="action_equipment_model_code"/>
+</odoo>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<odoo>
+    <record id="view_crm_contract_type_form_inherit" model="ir.ui.view">
+        <field name="name">crm.contract.type.form.inherit.sr_warranty</field>
+        <field name="model">crm.contract.type</field>
+        <field name="inherit_id" ref="sales_contract_and_recurring_invoices.view_crm_contract_type_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='contract_category']" position="after">
+                <field name="sr_warranty_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_crm_contract_type_tree_inherit" model="ir.ui.view">
+        <field name="name">crm.contract.type.tree.inherit.sr_warranty</field>
+        <field name="model">crm.contract.type</field>
+        <field name="inherit_id" ref="sales_contract_and_recurring_invoices.view_crm_contract_type_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='contract_category']" position="after">
+                <field name="sr_warranty_id"/>
+            </xpath>
+        </field>
+    </record>
+
+
+</odoo>

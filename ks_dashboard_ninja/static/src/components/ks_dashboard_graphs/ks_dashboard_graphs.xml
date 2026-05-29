@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="Ks_chart_list_container">
+        <t t-if="item.ks_dashboard_item_type == 'ks_list_view'">
+            <t t-call="ks_dashboard_ninja.Ksdashboardlistview"/>
+        </t>
+        <t t-else="">
+            <t t-call="Ks_gridstack_container"/>
+        </t>
+    </t>
+
+    <t t-name="Ks_gridstack_container">
+
+
+
+        <div class="grid-stack-item ks_tile_carousel ks_chart_container ks_dashboarditem_id" t-att-id="chart_id" t-ref="ks_gridstack_container">
+            <div class="grid-stack-item-content ks_dashboarditem_chart_container ks_border_radius ks_dashboard_item_hover dashboard-container d-flex flex-fill flex-column border-0"
+                 t-att-title="ks_info" t-att-id="chart_id">
+
+                <t t-if="!env.isExplainDashboardWithAi">
+                    <div class="dashboard-header position-relative py-3 mb-1 px-3 d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center w-50">
+                            <h4 class="ks_chart_heading text-capitalize text-start" t-att-title="ks_chart_title">
+                                <t t-esc="ks_chart_title"/>
+                            </h4>
+                            <!--                    <div >-->
+                                <t t-if="ks_breadcrumb.length >= 1">
+                                    <nav class="ks_breadcrumb">
+                                        <ul>
+                                            <li class="d-none" t-att-id="'item'+'_'+'-1'">
+                                                   <span t-att-data-sequence = '-1' t-att-data-item-id="chart_id" t-on-click="ksOnDrillUp">
+                                                       <t t-esc="ks_chart_title"/>
+                                                   </span>
+                                            </li>
+                                            <t t-foreach="ks_breadcrumb" t-as="chart_breadcrumb" t-key="chart_breadcrumb_index">
+                                                    <li class="d-none" t-att-id="chart_breadcrumb['name'] + '_' + chart_breadcrumb_index">
+                                                    <span t-att-data-sequence="chart_breadcrumb_index" t-att-data-item-id="chart_id" t-on-click="ksOnDrillUp">
+                                                       <t t-esc="chart_breadcrumb['name']"/>
+                                                    </span>
+                                                </li>
+                                            </t>
+                                        </ul>
+                                    </nav>
+                                </t>
+                        </div>
+                        <img src="/ks_dashboard_ninja/static/images/selected.svg" class="ks_img_display d-none" width="30"/>
+                        <div class="select-btn d-none">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10.0001 18.3332C14.5834 18.3332 18.3334 14.5832 18.3334 9.99984C18.3334 5.4165 14.5834 1.6665 10.0001 1.6665C5.41675 1.6665 1.66675 5.4165 1.66675 9.99984C1.66675 14.5832 5.41675 18.3332 10.0001 18.3332Z"
+                                stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M6.45825 9.99993L8.81659 12.3583L13.5416 7.6416" stroke="" stroke-width="1.5"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+
+                        <KsItemButton item_data="this.item" itemRootRef="this.ks_gridstack_container"/>
+                    </div>
+                </t>
+
+                <t t-if="ks_ai_analysis">
+                    <div class="explain-ai pt-3">
+                        <div class="container">
+                            <div class="row ks_ai_explain_body">
+                                 <div class="col-xl-6 col-12">
+                                     <div class="charts-sec">
+                                          <h4 class="ks_chart_heading text-capitalize text-start" t-att-title="ks_chart_title">
+                                              <t t-esc="ks_chart_title"/>
+                                          </h4>
+                                        <div class="card-body ks_chart_card_body charts-sec"/>
+                                     </div>
+                                 </div>
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-data h-100">
+                                        <div class="charts-content-box">
+                                                <p><t t-esc="ks_ai_analysis_1"/></p>
+                                                <p><t t-esc="ks_ai_analysis_2"/></p>
+                                        </div>
+                                        <div class="voice-button" t-on-click="props.ks_speak" title="Text to speech">
+                                            <div class="voice-cricle">
+                                                <img src="/ks_dashboard_ninja/static/images/voice-cricle.svg" height="24" width="24" alt="voice-img" loading="lazy"
+                                                class="img-fluid"/>
+                                            </div>
+                                            <div class="comp-gif d-none">
+                                                <img src="/ks_dashboard_ninja/static/images/Comp.gif" alt="loading gif" height="24" width="24" loading="lazy"
+                                                     class="img-fluid"/>
+                                            </div>
+                                            <audio t-ref="aiAudioRef"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="mt-1 card-body ks_chart_card_body"/>
+                </t>
+            </div>
+        </div>
+
+    </t>
+</templates>

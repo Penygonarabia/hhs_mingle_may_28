@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_termination_details_report_form" model="ir.ui.view">
+		 <field name="name">termination.details.report.wizard</field>
+		 <field name="model">termination.details.report</field>
+		 <field name="arch" type="xml">
+		 	<form string="Termination Details Report">
+				<group>
+					<group>
+						<field name="from_date"/>
+						<field name="employee_ids" widget="many2many_tags" domain="['|', ('active','=', False),  ('active', '=', True)]"/>
+					</group>
+					<group>
+						<field name="to_date"/>
+
+						<field name="company_id" invisible="1"/>
+					</group>
+				</group>
+				  <footer>
+						 <button name="print_termination_details_excel" string="Print Excel" type="object" class="oe_highlight"/>
+						 <button name="print_termination_details_report" string="Print PDF" type="object" class="oe_highlight"/>
+						<button name="clear" string="Cancel" class="btn-secondary" special="cancel"/>
+				</footer>
+
+			 </form>
+
+		 </field>
+	</record>
+
+
+    <record id="action_termination_details_report" model="ir.actions.act_window">
+		<field name="name">Termination Details</field>
+		<field name="res_model">termination.details.report</field>
+		<field name="view_mode">form</field>
+         <field name="view_id" ref="view_termination_details_report_form"/>
+		<field name="target">new</field>
+		 <field name="binding_model_id" ref="model_termination_details_report"/>
+        <field name="binding_type">report</field>
+	</record>
+
+<!--	<menuitem id="menu_termination_report" name=" Report"   parent="hr.menu_hr_employee_payroll"-->
+<!--              sequence="40"/>-->
+    
+    <!--Newly Added Apr-25-2024 -->          
+   <!-- <menuitem id="menu_payroll_transaction_report" name="Payroll Transaction Report" action="action_payroll_transaction_report"  parent="hrms_salary_al_dt.menu_hr_salary_allowance_detection"
+              sequence="40"/> --> 
+     <menuitem id="menu_termination_details_report"
+     		   name="Termination Details Report"
+     		   action="action_termination_details_report"
+     		   parent="hr_exit_process.menu_open_exit"
+               sequence="40"/>
+
+	<record id="action_termination_details_report_pdf" model="ir.actions.report">
+        <field name="name">Termination Details Report</field>
+        <field name="model">termination.details.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">termination_details_report.report_termination_details_pdf</field>
+        <field name="report_file">termination_details_report.report_termination_details_pdf</field>
+        <field name="binding_model_id" ref="model_termination_details_report"/>
+        <field name="binding_type">report</field>
+    </record>
+<!--	         <field name="paperformat_id" ref="payroll_transactions_report.custom_branch_paperformat_id" />-->
+
+
+
+</odoo>

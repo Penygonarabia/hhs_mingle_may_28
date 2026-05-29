@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree View -->
+    <record id="view_loyalty_audit_view_tree" model="ir.ui.view">
+        <field name="name">loyalty.audit.view.tree</field>
+        <field name="model">loyalty.audit.view</field>
+        <field name="arch" type="xml">
+            <tree string="Loyalty Audit View" create="0" edit="0" delete="0" export_xlsx="1">
+                <field name="work_center_group_name"/>
+                <!--                <field name="work_center_group_id"/>-->
+                <!--                <field name="region_id"/>-->
+                <field name="city"/>
+                <!--                <field name="salesman_code"/>-->
+                <!--                <field name="salesman_id"/>-->
+                <!--                <field name="partner_id"/>-->
+                <field name="salesman_name"/>
+                <field name="customer_code"/>
+                <field name="customer_name"/>
+                <field name="mobile"/>
+                <field name="tier_name"/>
+                <field name="transaction_type"/>
+                <field name="warehouse"/>
+                <field name="transaction_no"/>
+                <field name="transaction_date"/>
+                <field name="regular_points"/>
+                <field name="bonus_points"/>
+                <field name="total_points"/>
+                <field name="redemption_points"/>
+                <field name="expired_points"/>
+                <field name="reason_name"/>
+                <field name="adjustment_type"/>
+                <field name="status"/>
+                <field name="remarks"/>
+                <field name="created_by" optional="hide"/>
+                <field name="created_date" optional="hide"/>
+                <field name="modified_by" optional="hide"/>
+                <field name="modified_date" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Pivot View -->
+    <record id="view_loyalty_audit_view_pivot" model="ir.ui.view">
+        <field name="name">loyalty.audit.view.pivot</field>
+        <field name="model">loyalty.audit.view</field>
+        <field name="arch" type="xml">
+            <pivot string="Loyalty Audit View" disable_linking="True">
+                <field name="customer_name" type="row"/>
+                <field name="transaction_date" interval="month" type="col"/>
+                <field name="regular_points" type="measure"/>
+                <field name="bonus_points" type="measure"/>
+                <field name="total_points" type="measure"/>
+                <field name="redemption_points" type="measure"/>
+                <field name="expired_points" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_loyalty_audit_view_search" model="ir.ui.view">
+        <field name="name">loyalty.audit.view.search</field>
+        <field name="model">loyalty.audit.view</field>
+        <field name="arch" type="xml">
+            <search string="Search Loyalty Audit">
+                <field name="customer_name"/>
+                <field name="customer_code"/>
+                <field name="transaction_no"/>
+                <field name="mobile"/>
+                <field name="region_id"/>
+                <field name="salesman_id"/>
+
+                <filter string="Today" name="today"
+                        domain="[('transaction_date', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0))), ('transaction_date', '&lt;=', datetime.datetime.combine(context_today(), datetime.time(23,59,59)))]"/>
+                <filter string="This Week" name="this_week"
+                        domain="[('transaction_date', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d')), ('transaction_date', '&lt;=', (context_today() + datetime.timedelta(days=6-context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                <filter string="This Month" name="this_month"
+                        domain="[('transaction_date', '&gt;=', context_today().strftime('%Y-%m-01'))]"/>
+                <filter string="Last Month" name="last_month"
+                        domain="[('transaction_date', '&gt;=', (context_today() - relativedelta(months=1)).strftime('%Y-%m-01')), ('transaction_date', '&lt;', context_today().strftime('%Y-%m-01'))]"/>
+
+                <separator/>
+                <filter string="Draft" name="draft" domain="[('status', '=', 'draft')]"/>
+                <filter string="Approved" name="approved" domain="[('status', '=', 'approved')]"/>
+                <filter string="Cancelled" name="cancelled" domain="[('status', '=', 'cancel')]"/>
+
+                <group expand="0" string="Group By">
+                    <filter string="Region" name="group_by_region" context="{'group_by': 'work_center_group_name'}"/>
+                    <filter string="Salesman" name="group_by_salesman" context="{'group_by': 'salesman_name'}"/>
+                    <filter string="Customer" name="group_by_customer" context="{'group_by': 'customer_name'}"/>
+                    <filter string="Tier" name="group_by_tier" context="{'group_by': 'tier_name'}"/>
+                    <!--                    <filter string="Warehouse" name="group_by_warehouse" context="{'group_by': 'warehouse'}"/>-->
+                    <filter string="Transaction Type" name="group_by_transaction_type"
+                            context="{'group_by': 'transaction_type'}"/>
+                    <filter string="Status" name="group_by_status" context="{'group_by': 'status'}"/>
+                    <filter string="Transaction Date" name="group_by_transaction_date"
+                            context="{'group_by': 'transaction_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action Window -->
+    <record id="action_loyalty_audit_view" model="ir.actions.act_window">
+        <field name="name">Loyalty Audit View</field>
+        <field name="res_model">loyalty.audit.view</field>
+        <field name="view_mode">tree,pivot</field>
+        <field name="search_view_id" ref="view_loyalty_audit_view_search"/>
+        <field name="context">{'search_default_group_by_transaction_date': 1}</field>
+    </record>
+
+    <!-- Menu Item -->
+    <menuitem
+            id="menu_loyalty_audit_view"
+            name="Loyalty Audit View"
+            parent="menu_loyalty_points_enters"
+            action="action_loyalty_audit_view"
+            sequence="30"
+            groups="hhs_loyalty_management.group_loyalty_program_user"/>
+
+</odoo>

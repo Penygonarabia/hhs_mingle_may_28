@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<odoo>
+    <menuitem name="Reporting" id="reporting_master"   parent="om_hr_payroll.menu_hr_payroll_root" sequence="16"></menuitem>
+<!-- 	|<menuitem name="Employwise Report" id="Struc_and_config_master" sequence="1" parent="reporting_master"></menuitem>
+ -->  <menuitem id="gosi_payroll_report1" name="Report Employwise"    parent="reporting_master" sequence="1" action="action_gosi_payroll_report" />
+<!--       <menuitem id="department_payroll_report" name="Report Department"    parent="reporting_master" sequence="2" action="action_department_payroll_report" />
+ -->           
+           
+</odoo>
+      	

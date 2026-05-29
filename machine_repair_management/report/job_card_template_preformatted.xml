@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding ="utf-8" ?>
+<odoo>
+
+
+	 <record id="print_job_card_preformatted_document" model="ir.actions.report">
+	            <field name="name">Print Job Card Pre-formatted Document</field>
+	            <field name="model">project.task</field>
+	            <field name="report_type">qweb-pdf</field>
+	            <field name="report_name">machine_repair_management.job_card_preformatted_document_template</field>
+	            <field name="report_file">machine_repair_management.job_card_preformatted_document_template</field>
+	            <field name="binding_type">report</field>
+	        </record>
+	
+	    <template id="job_card_print_internal_layout">
+	        <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+	          <t t-raw="0"/>
+	        </div>
+	    </template>
+	
+		<template id="job_card_preformatted_document_template">
+			    <t t-call="web.html_container">
+					<t t-foreach="jobs" t-as="doc">
+	
+					<t t-call="machine_repair_management.job_card_print_internal_layout">
+			                <div class="page" style="page-break-after: always;">
+			                    <!-- Current timestamp -->
+			                    <div class="text-left">
+			                        <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M:%S')"/>
+			                    </div>
+			                    
+			                    
+			                    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;margin-left:100px;">
+			                       
+			                        <tr >
+		 								<td width="30px">
+		                           		</td>
+			                            <td style="width: 30%; padding-bottom: 20px;">
+			                                <span t-esc="doc['name']"/>
+			                            </td>
+			                            <td width="30px">
+		
+		                           		</td>
+			                            <td style="width: 30%; padding-bottom: 20px;">
+			                                <span t-esc="doc['location']"/>
+			                            </td>
+			                            <td width="30px">
+		
+		                           		</td>
+			                            <td style="width: 30%; padding-bottom: 20px;">
+			                                <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+			                            </td>
+			                        </tr>
+			                        
+			                        
+			                        <tr>
+				                        <td width="30px">
+			
+			                           		</td>
+			                            <td style="width: 30%;padding-bottom: 20px;">
+			                                <span t-esc="doc['partner_id']"/>
+			                            </td>
+			                             <td width="30px">
+		
+		                           		</td>
+			                            <td style="width: 30%;padding-bottom: 20px;">
+			                                <span t-esc="doc['address']"/>
+			                            </td>
+			                        </tr>
+	
+	
+			                        <tr>
+		                     			<td width="30px">
+	
+		                         		</td>
+			                            <td style="width: 30%;padding-bottom: 20px;">
+			                                <span t-esc="doc['service_created_date']"/>
+			                            </td>
+	
+			                        </tr>
+			                         <tr>
+	
+		                       			 <td width="30px">
+		                           		</td>
+			                            <td style="width: 30%;padding-bottom: 20px;">
+			                                <span t-esc="doc['product_category']"/>
+			                            </td>
+			                        </tr>
+	
+			                        <tr>
+	
+		                       			 <td width="30px">
+	
+		                           		</td>
+			                            <td style="width: 30%;padding-bottom: 20px;">
+			                                <span t-esc="doc['client_comments']"/>
+			                            </td>
+	
+			                        </tr>
+			                        
+			                       
+			                    </table>
+			                </div>
+			            </t>
+			        </t>
+			    </t>
+			</template>
+				
+		
+		
+
+		<!--  <record id="print_job_card_preformatted_document" model="ir.actions.report">
+            <field name="name">Print Job Card Pre-formatted Document</field>
+            <field name="model">project.task</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">machine_repair_management.job_card_preformatted_document_template</field>
+            <field name="report_file">machine_repair_management.job_card_preformatted_document_template</field>
+            <field name="binding_type">report</field>
+        </record>
+        
+        
+        
+   
+        
+       <template id="machine_repair_management.job_card_print_internal_layout">
+		    <t t-raw="0"/>
+		</template>
+		
+		
+		<template id="job_card_preformatted_document_template">
+		    <t t-call="web.html_container">
+		        <t t-call="machine_repair_management.job_card_print_internal_layout">
+		            <t t-foreach="jobs" t-as="doc">
+		                <div class="page" style="page-break-after: always;">
+		                    Current timestamp
+		                    <div class="text-left">
+		                        <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M:%S')"/>                    
+		                    </div>
+		                    
+		                    
+		                    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;margin-left:100px;">
+		                       
+		                        <tr >
+	 								<td width="30px">
+	
+	                           		</td>
+		                            <td style="width: 30%; padding-bottom: 20px;">
+		                                <span t-esc="doc['name']"/>
+		                            </td>
+		                            <td width="30px">
+	
+	                           		</td>
+		                            <td style="width: 30%; padding-bottom: 20px;">
+		                                <span t-esc="doc['location']"/>
+		                            </td>
+		                            <td width="30px">
+	
+	                           		</td>
+		                            <td style="width: 30%; padding-bottom: 20px;">
+		                                <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+		                            </td>
+		                        </tr>
+		                        
+		                        
+		                        <tr>
+			                        <td width="30px">
+		
+		                           		</td>
+		                            <td style="width: 30%;padding-bottom: 20px;">
+		                                <span t-esc="doc['partner_id']"/>
+		                            </td>
+		                             <td width="30px">
+	
+	                           		</td>
+		                            <td style="width: 30%;padding-bottom: 20px;">
+		                                <span t-esc="doc['address']"/>
+		                            </td>
+		                        </tr>
+		                        
+		                       
+		                        <tr>
+	                     			<td width="30px">
+	
+	                         		</td>
+		                            <td style="width: 30%;padding-bottom: 20px;">
+		                                <span t-esc="doc['service_created_date']"/>
+		                            </td>
+			                           
+		                        </tr>
+		                         <tr>
+		                         
+	                       			 <td width="30px">
+	                           		</td>
+		                            <td style="width: 30%;padding-bottom: 20px;">
+		                                <span t-esc="doc['product_category']"/>
+		                            </td>
+		                        </tr>
+		                        
+		                        <tr>
+		                         
+	                       			 <td width="30px">
+	
+	                           		</td>
+		                            <td style="width: 30%;padding-bottom: 20px;">
+		                                <span t-esc="doc['client_comments']"/>
+		                            </td>
+		                           
+		                        </tr>
+		                        
+		                       
+		                    </table>
+		                </div>
+		            </t>
+		        </t>
+		    </t>
+		</template>
+			 -->
+	
+
+
+</odoo>

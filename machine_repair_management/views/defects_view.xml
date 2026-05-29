@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="search_defects_form_view" model="ir.ui.view">
+        <field name="name">defects.search.view</field>
+        <field name="model">defects</field>
+        <field name="arch" type="xml">
+            <search string="Defects">
+                <field name="def_desc" string="Name"/>
+                <field name="def_code" string="Code"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_defects_tree" model="ir.ui.view">
+        <field name="name">defects.tree</field>
+        <field name="model">defects</field>
+        <field name="arch" type="xml">
+            <tree string="Defects">
+                <field name="defects_product_catgeory_id"/>
+                <field name='def_servicetypeid'/>
+                <field name="def_code"/>
+                <field name="def_desc"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View Definition -->
+    <record id="view_defects_form" model="ir.ui.view">
+        <field name="name">defects.form</field>
+        <field name="model">defects</field>
+        <field name="arch" type="xml">
+            <form string="Defects">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="defects_product_catgeory_id" domain="[('parent_id','=',False)]" required="1"/>
+                            <field name='def_servicetypeid'/>
+                            <field name="def_code"/>
+                            <field name="def_desc"/>
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                </sheet>
+                <!-- <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="message_ids"/>
+                </div> -->
+            </form>
+        </field>
+    </record>
+
+    <!-- Action Definition to Show Views -->
+    <record id="action_defects" model="ir.actions.act_window">
+        <field name="name">Defects</field>
+        <field name="res_model">defects</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem name="Defects" id="menu_item_defects" parent="machine_repair_management.menu_machine_repair_configuration"
+              action="machine_repair_management.action_defects" sequence='7'/>
+
+</odoo>

@@ -1,0 +1,48 @@
+<?xml version ="1.0" encoding = "utf-8" ?>
+<odoo>
+
+    <record id="views_service_request_capacity_tree" model="ir.ui.view">
+        <field name="name">service.capacity.tree.view</field>
+        <field name="model">service.capacity</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="svc_code"/>
+                <field name="svc_name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="views_service_request_capacity_form" model="ir.ui.view">
+        <field name="name">service.capacity.form.view</field>
+        <field name="model">service.capacity</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="svc_code"/>
+                        <field name="svc_name"/>
+
+                        <!-- <group>
+                        </group>
+                        <group>
+                        </group>
+                 -->
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_service_request_capacity" model="ir.actions.act_window">
+        <field name="name">Service Capacity</field>
+        <field name="res_model">service.capacity</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_service_request_capacity" action="action_service_request_capacity"
+              parent="machine_repair_management.menu_machine_repair_configuration"
+              sequence="27"
+    />
+
+
+</odoo>

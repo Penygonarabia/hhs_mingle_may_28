@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- overtime rules -->
+    <record id="overtime_rules_form_view" model="ir.ui.view">
+        <field name="name">overtime.rules.form.view</field>
+        <field name="model">hr.attendances.overtime</field>
+        <field name="arch" type="xml">
+            <form string="Overtime Rules">
+                <sheet>
+                    <group>
+                        <field name="name" required="1"/>
+                    </group>
+<!--                    <group>-->
+                        <field name="overtime_line_ids" nolabel="1">
+                            <tree editable="bottom">
+                                <field name="name"/>
+                                <field name="policie_type"/>
+                                <field name="apply_after" widget="float_time"/>
+                                <field domain="[('code','in',['OVT','HOVT'])]" force_save="1" name="payroll_transaction_id" options="{'no_create_edit':True,'no_edit':True}"/>
+                                <field name="rate" required="1"/>
+                            </tree></field>
+<!--                    </group>-->
+                </sheet>
+            </form></field>
+    </record>
+    <record id="overtime_rules_tree_view" model="ir.ui.view">
+        <field name="name">overtime.rules.tree.view1</field>
+        <field name="model">hr.attendances.overtime</field>
+        <field name="arch" type="xml">
+            <tree string="Overtime Rules">
+                <field name="name"/>
+            </tree></field>
+    </record>
+    <record id="action_overtime_rules1" model="ir.actions.act_window">
+        <field name="name">Overtime Rules</field>
+        <field name="res_model">hr.attendances.overtime</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="overtime_rules_tree_view"/>
+    </record>
+    <!-- for late in rules -->
+    <record id="late_in_rules_form_view" model="ir.ui.view">
+        <field name="name">late.in.rules.form.view</field>
+        <field name="model">hr.attendance.late</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group col="2">
+                        <field name="name" required="1"/>
+                    </group>
+<!--                    <group name="attendance_line" string="Late in Periods">-->
+                        <field name="attendance_line_ids" nolabel="1">
+                            <tree editable="bottom">
+                                <field name="num_of_times"/>
+                                <field domain="[('transaction_type_id.code','=','ABS')]" force_save="1" name="latein_transaction_id" options="{'no_create_edit':True,'no_edit':True}"/>
+                                <field name="time" widget="float_time"/>
+                                <field name="amount_type"/>
+                                <field name="rate" readonly="amount_type == 'fixed'"/>
+                                <field name="amount" readonly="amount_type == 'rate'" string="Amount" widget="float_time"/>
+                            </tree></field>
+<!--                    </group>-->
+                </sheet>
+            </form></field>
+    </record>
+    <record id="latein_time_tree_view" model="ir.ui.view">
+        <field name="name">latein.time.tree.view</field>
+        <field name="model">hr.attendance.late</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+            </tree></field>
+    </record>
+    <record id="action_latein_rules1" model="ir.actions.act_window">
+        <field name="name">Late in rules</field>
+        <field name="res_model">hr.attendance.late</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <record id="absence_rules_form_view" model="ir.ui.view">
+        <field name="name">absence.rules.form.view</field>
+        <field name="model">hr.attendance.absence</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group col="2">
+                        <field name="name"/>
+                    </group>
+<!--                    <group name="absence_line" string="Absence Times">-->
+                        <field name="absence_line_ids" nolabel="1">
+                            <tree editable="bottom">
+                                <field name="time"/>
+                                <field domain="[('transaction_type_id.code','=','ABS')]" force_save="1" name="absent_payroll_transaction_id" options="{'no_create_edit':True,'no_edit':True}"/>
+                                <field name="rate"/>
+                            </tree></field>
+<!--                    </group>-->
+                </sheet>
+            </form></field>
+    </record>
+    <record id="absence_time_tree_view" model="ir.ui.view">
+        <field name="name">absence.time.tree.view</field>
+        <field name="model">hr.attendance.absence</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+            </tree></field>
+    </record>
+    <record id="action_absence_rules1" model="ir.actions.act_window">
+        <field name="name">Absence Rules</field>
+        <field name="res_model">hr.attendance.absence</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <record id="early_out_tree_view" model="ir.ui.view">
+        <field name="name">hr.attendance.earlyout.tree.view</field>
+        <field name="model">hr.attendance.earlyout</field>
+        <field name="arch" type="xml">
+            <tree string="Early Checkout Rules">
+                <field name="name"/>
+            </tree></field>
+    </record>
+    <record id="early_out_form_view" model="ir.ui.view">
+        <field name="name">hr.attendance.earlyout.form.view</field>
+        <field name="model">hr.attendance.earlyout</field>
+        <field name="arch" type="xml">
+            <form string="Early out Rules">
+                <sheet>
+                    <group col="2">
+                        <field name="name"/>
+                    </group>
+<!--                    <group name="early_out_lines" string="Early Out Lines">-->
+                        <field name="early_checkout_line_ids" nolabel="1">
+                            <tree editable="bottom">
+                                <field name="early_time"/>
+                                <field domain="[('transaction_type_id.code','=','ABS')]" force_save="1" name="earlyout_transaction_id" options="{'no_create_edit':True,'no_edit':True}"/>
+                                <field name="time" widget="float_time"/>
+                                <field name="early_rate"/>
+                            </tree></field>
+<!--                    </group>-->
+                </sheet>
+            </form></field>
+    </record>
+    <record id="action_early_out_view" model="ir.actions.act_window">
+        <field name="name">Early Out Rules</field>
+        <field name="res_model">hr.attendance.earlyout</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <record id="diff_rules_form_view" model="ir.ui.view">
+        <field name="name">diff.rules.form.view</field>
+        <field name="model">hr.attendance.diff</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group col="2">
+                        <field name="name"/>
+                    </group>
+<!--                    <group name="time_line" string="Times Different">-->
+                        <field name="diff_line_ids" nolabel="1">
+                            <tree editable="top">
+                                <field name="time"/>
+                                <field name="rate"/>
+                            </tree></field>
+<!--                    </group>-->
+                </sheet>
+            </form></field>
+    </record>
+    <record id="diff_time_tree_view" model="ir.ui.view">
+        <field name="name">diff.time.tree.view</field>
+        <field name="model">hr.attendance.diff</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+            </tree></field>
+    </record>
+    <record id="action_diff_rules1" model="ir.actions.act_window">
+        <field name="name">Time Different</field>
+        <field name="res_model">hr.attendance.diff</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem id="overtime_rules" name="Attendance Rules" parent="hr_attendance.menu_hr_attendance_root" sequence="35"/>
+    <menuitem action="action_overtime_rules1" id="overtime_rules_child" name="OverTime Rules" parent="overtime_rules"/>
+    <menuitem action="action_latein_rules1" id="late_in_rules" name="Late In Rules" parent="overtime_rules"/>
+    <menuitem action="action_absence_rules1" id="absence_rules" name="Absence Rules" parent="overtime_rules"/>
+    <menuitem action="action_diff_rules1" id="difference_rules" name="Difference Time Rules" parent="overtime_rules"/>
+    <menuitem action="action_early_out_view" id="early_out_rules_id" name="Early Out Rules" parent="overtime_rules"/>
+</odoo>

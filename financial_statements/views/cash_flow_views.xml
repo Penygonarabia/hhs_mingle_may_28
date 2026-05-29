@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_cash_flow_form" model="ir.ui.view">
+        <field name="name">cash.flow.form</field>
+        <field name="model">cash.flow</field>
+        <field name="arch" type="xml">
+            <form string="Cash Flow Statement">
+<!--                <header>-->
+<!--                    <button name="action_print" string="Print" type="object" class="oe_highlight"/>-->
+<!--                    <button name="%(action_cash_flow)d" string="Cancel" class="oe_link"/>-->
+<!--                </header>-->
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                        <field name="company_id"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Operating Activities">
+                            <group>
+                                <field name="profit_before_tax"/>
+                                <field name="depreciation"/>
+                                <field name="bank_charges"/>
+                                <field name="operating_cash_flow" readonly="1"/>
+
+                                <field name="change_receivables"/>
+                                <field name="change_payables"/>
+                                <field name="cash_from_operations" readonly="1"/>
+
+                                <field name="income_tax_paid"/>
+                                <field name="net_operating_cash" readonly="1"/>
+                            </group>
+                        </page>
+
+                        <page string="Investing Activities">
+                            <group>
+                                <field name="purchase_fixed_assets"/>
+                                <field name="net_investing_cash" readonly="1"/>
+                            </group>
+                        </page>
+
+                        <page string="Financing Activities">
+                            <group>
+                                <field name="issue_shares"/>
+                                <field name="net_financing_cash" readonly="1"/>
+                            </group>
+                        </page>
+
+                        <page string="Net Change">
+                            <group>
+                                <field name="cash_beginning"/>
+                                <field name="net_cash_change" readonly="1"/>
+                                <field name="cash_ending" readonly="1"/>
+                            </group>
+                        </page>
+
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_cash_flow_tree" model="ir.ui.view">
+        <field name="name">cash.flow.tree</field>
+        <field name="model">cash.flow</field>
+        <field name="arch" type="xml">
+            <tree string="Cash Flow Statements">
+                <field name="name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="company_id"/>
+                <field name="net_cash_change"/>
+                <field name="cash_ending"/>
+            </tree>
+        </field>
+    </record>
+
+<!--    <record id="action_cash_flow" model="ir.actions.act_window">-->
+<!--        <field name="name">Cash Flow Statements</field>-->
+<!--        <field name="res_model">cash.flow</field>-->
+<!--        <field name="view_mode">tree,form</field>-->
+<!--    </record>-->
+
+<!--    <menuitem id="menu_cash_flow" name="Cash Flow" parent="menu_financial_statements" action="action_cash_flow"/>-->
+</odoo>

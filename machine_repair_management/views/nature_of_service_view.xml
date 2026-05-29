@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="nature_of_service_form_view">
+            <field name="name">Nature Of Service form</field>
+            <field name="model">service.nature</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group colspan="2">
+                                <field name="code" required="1"/>
+                            </group>
+                            <group colspan="2">
+                                <field name="name" required="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="nature_of_service_tree_view">
+            <field name="name">Nature Of Service tree</field>
+            <field name="model">service.nature</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="code"/>
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_nature_of_service" model="ir.actions.act_window">
+            <field name="name">Service Types</field>
+            <field name="res_model">service.nature</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+    </data>
+</odoo>

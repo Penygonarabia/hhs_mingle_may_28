@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="hr.menu_hr_root" name="Human Resources"/>
+    <!--<menuitem
+            id="hr.menu_human_resources_configuration"
+            name="Definitions"
+            parent="hr.menu_hr_root"
+            groups="hr.group_hr_user"
+            sequence="100"
+            />-->
+    <!-- Time OFF -->
+    <menuitem id="menu_leave_time_off_head" name="Leave" parent="hr.menu_hr_root" sequence="5"/>
+    <menuitem active="False" id="hr_holidays.menu_hr_holidays_root"/>
+    <menuitem id="hr_holidays.menu_hr_holidays_my_leaves" name="My Leave" parent="om_hr_payroll.menu_leave_time_off_head" sequence="10"/>
+    <record id="hr_holidays.hr_leave_action_my" model="ir.actions.act_window">
+        <field name="name">My Leave</field>
+    </record>
+    <!--    <menuitem-->
+    <!--        id="hr_holidays.hr_leave_menu_new_request"-->
+    <!--        parent="menu_hr_holidays_my_leaves"-->
+    <!--        action="hr_leave_action_new_request"-->
+    <!--        sequence="1"/>-->
+    <menuitem action="hr_holidays.hr_leave_action_my" id="hr_holidays.hr_leave_menu_my" name="My Leave" parent="hr_holidays.menu_hr_holidays_my_leaves" sequence="2"/>
+    <!--  <menuitem
+        id="hr_holidays.menu_open_allocation"
+        name="My Allocations"
+        parent="menu_hr_holidays_my_leaves"
+        action="hr_leave_allocation_action_my"
+        sequence="3"/>
+-->
+    <!--<menuitem
+        id="hr_holidays.menu_hr_holidays_dashboard"
+        name="Overview"
+        parent="om_hr_payroll.menu_leave_time_off_head"
+        sequence="20"
+        action="hr_holidays.action_hr_holidays_dashboard"/>-->
+    <menuitem groups="hr_holidays.group_hr_holidays_responsible" id="hr_holidays.menu_hr_holidays_approvals" name="Entries" parent="om_hr_payroll.menu_leave_time_off_head" sequence="30"/>
+    <menuitem action="hr_holidays.hr_leave_action_action_approve_department" id="hr_holidays.menu_open_department_leave_approve" name="Leave of Absence" parent="hr_holidays.menu_hr_holidays_approvals" sequence="1"/>
+    <record id="hr_holidays.hr_leave_action_action_approve_department" model="ir.actions.act_window">
+        <field name="name">Leave of Absence</field>
+    </record>
+    <record id="hr_holidays.open_view_holiday_status" model="ir.actions.act_window">
+        <field name="name">Leave Types</field>
+    </record>
+    <record id="hr_holidays.action_hr_available_holidays_report" model="ir.actions.act_window">
+        <field name="name">Leave Analysis</field>
+    </record>
+   <!-- <record id="hr_holidays_view_employee_form_leave_inherit" model="ir.ui.view">
+       <field name="name">hr.employee.leave.form.inherit</field>
+       <field name="model">hr.employee</field>
+       <field name="inherit_id" ref="hr.view_employee_form"/>
+       <field name="arch" type="xml">
+           <xpath expr="//button[@name='action_time_off_dashboard' and @icon='fa-calendar']" position="replace">
+               <button class="oe_stat_button" context="{'search_default_employee_id': id}" groups="base.group_user" help="Remaining leaves" icon="fa-calendar" invisible="not show_leaves" name="action_time_off_dashboard" type="object">
+                   <div class="o_field_widget o_stat_info">
+                       <span class="o_stat_value">
+                           <field name="allocation_remaining_display"/>
+                           /
+                           <field name="allocation_display"/>
+                           Days
+                       </span>
+                       <span class="o_stat_text">
+                           Leave
+                       </span>
+                   </div>
+               </button>
+           </xpath></field>
+   </record> -->
+    <record id="hr_holidays_edit_holiday_status_form_inherit" model="ir.ui.view">
+        <field name="name">hr.leave.type.form.inherit</field>
+        <field name="model">hr.leave.type</field>
+        <field name="inherit_id" ref="hr_holidays.edit_holiday_status_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_see_group_leaves']" position="replace">
+                <button class="oe_stat_button" icon="fa-calendar" invisible="not id" name="action_see_group_leaves" type="object">
+                    <div class="o_stat_info">
+                        <field name="group_days_leave"/>
+                        <span class="o_stat_text">
+                            Leave
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+<!--            <xpath expr="//group[@id='time_off_requests']/h2" position="replace">-->
+<!--                <h2>-->
+<!--                    Leave Requests-->
+<!--                </h2>-->
+<!--            </xpath>-->
+        </field>
+    </record>
+   <!--  <record id="hr_leave_allocation_view_form_inherit" model="ir.ui.view">
+        <field name="name">hr.leave.allocation.view.form.inherit</field>
+        <field name="model">hr.leave.allocation</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_form_manager"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="placeholder">
+                    e.g. Leave type (From validity start to validity end / no limit)</attribute>
+            </xpath></field>
+    </record> -->
+    <record id="view_hr_holidays_filter_custom" model="ir.ui.view">
+        <field name="name">hr.holidays.filter.custom</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.view_hr_holidays_filter"/>
+        <field name="arch" type="xml">
+            <!-- Modify the "Approved Time Off" filter -->
+            <xpath expr="//search/filter[@name='validated']" position="attributes">
+                <attribute name="string">
+                    Approved Leave</attribute>
+            </xpath>
+            <!-- Modify the "My Time Off" filter -->
+            <xpath expr="//search/filter[@name='my_leaves']" position="attributes">
+                <attribute name="string">
+                    My Leave</attribute>
+            </xpath>
+            <xpath expr="//search/filter[@name='active_time_off']" position="attributes">
+                <attribute name="string">
+                    Active Leave</attribute>
+            </xpath>
+            <xpath expr="//search/filter[@name='archive']" position="attributes">
+                <attribute name="string">
+                    Archived Leave</attribute>
+            </xpath></field>
+    </record>
+    <record id="view_hr_leave_allocation_filter_inherit" model="ir.ui.view">
+        <field name="name">hr.holidays.filter_allocations</field>
+        <field name="model">hr.leave.allocation</field>
+        <field name="inherit_id" ref="hr_holidays.view_hr_leave_allocation_filter"/>
+        <field name="arch" type="xml">
+            <!-- Modify the "Time Off Type" group by -->
+            <xpath expr="//search/group/filter[@name='group_type']" position="attributes">
+                <attribute name="string">
+                    Leave Type</attribute>
+            </xpath></field>
+    </record>
+    <record id="res_config_settings_view_form_inherit" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.hr.timesheet</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="hr_timesheet.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='section_leaves']" position="replace">
+                <div groups="base.group_no_one" name="section_leaves">
+                    <h2>
+                        Leave
+                    </h2>
+                    <div class="row mt16 o_settings_container" name="timesheet_control">
+                        <div class="col-12 col-lg-6 o_setting_box" id="timesheet_off_validation_setting">
+                            <div class="o_setting_left_pane">
+                                <field name="module_project_timesheet_holidays"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="module_project_timesheet_holidays"/>
+                                <span class="fa fa-lg fa-building-o" groups="base.group_multi_company" title="Values set here are company-specific."/>
+                                <div class="text-muted">
+                                    Generate timesheets upon leave validation
+                                </div>
+                                <div class="content-group">
+                                    <div id="module_project_timesheet_holidays"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath></field>
+    </record>
+    
+    <menuitem
+        id="hr_holidays_menu_manager_approve_allocations"
+        name="Allocations"
+        action="hr_holidays.hr_leave_allocation_action_approve_department"
+        parent="hr_holidays.menu_hr_holidays_approvals"
+        sequence="2"/>
+    <!-- <menuitem
+        id="hr_holidays.hr_holidays_menu_manager_approve_allocations"
+        name="Allocations"
+        parent="menu_hr_holidays_approvals"
+        action="hr_leave_allocation_action_approve_department"
+        sequence="2"/> -->
+    <menuitem groups="hr_holidays.group_hr_holidays_user" id="hr_holidays.menu_hr_holidays_report" name="Reports" parent="om_hr_payroll.menu_leave_time_off_head" sequence="40"/>
+    <!--<menuitem
+        id="hr_holidays.menu_hr_available_holidays_report_tree"
+        name="by Employee"
+        parent="menu_hr_holidays_report"
+        action="action_hr_available_holidays_report"
+        sequence="1"/>
+
+    <menuitem
+        id="hr_holidays.menu_hr_holidays_summary_all"
+        name="by Type"
+        parent="menu_hr_holidays_report"
+        action="act_hr_employee_holiday_request"
+        sequence="3"/> -->
+    <menuitem groups="hr_holidays.group_hr_holidays_manager" id="hr_holidays.menu_hr_holidays_configuration" name="Configuration" parent="om_hr_payroll.menu_leave_time_off_head" sequence="50"/>
+    <!--<menuitem
+        id="hr_holidays_status_menu_configuration"
+        action="open_view_holiday_status"
+        name="Time Off Types"
+        parent="menu_hr_holidays_configuration"
+        groups="hr_holidays.group_hr_holidays_manager"
+        sequence="1"/>
+
+    <menuitem
+        id="hr_holidays_accrual_menu_configuration"
+        action="open_view_accrual_plans"
+        name="Accrual Plans"
+        parent="menu_hr_holidays_configuration"
+        groups="hr_holidays.group_hr_holidays_manager"
+        sequence="2"/>
+
+    <menuitem   
+        id="hr_holidays.hr_holidays_public_time_off_menu_configuration"
+        action="open_view_public_holiday"
+        name="Public Holidays"
+        parent="menu_hr_holidays_configuration"
+        groups="hr_holidays.group_hr_holidays_manager"
+        sequence="3"/>   -->
+    <menuitem id="prime_data_base_employee" name="Prime Database" parent="hr.menu_hr_employee_payroll" sequence="10"/>
+    <!-- Already exist this menu hr_saudi-->
+    <menuitem id="hr_contract.hr_menu_contract_history" name="Salary" parent="om_hr_payroll.prime_data_base_employee" sequence="40"/>
+    <menuitem action="hr.open_view_employee_list_my" groups="base.group_user" id="hr.menu_hr_employee_user" name="Employee Record" parent="om_hr_payroll.prime_data_base_employee" sequence="10"/>
+    <menuitem action="employee_documents_expiry.action_view_document_types_list" id="employee_documents_expiry.menu_employee_documents" name="Documents Record" parent="om_hr_payroll.prime_data_base_employee" sequence="20"/>
+    <!--<menuitem id="hr_recruitment.remenu_hr_department" 
+   			 name="Departments"
+             parent="om_hr_payroll.prime_data_base_employee" 
+             action="hr_recruitment.action_hr_department"
+             sequence="100"
+             />-->
+    <!--<menuitem id="hr_saudi.menu_hr_employee_transaction"
+                  action="hr_saudi.action_hr_employee_transaction"
+                  parent="om_hr_payroll.prime_data_base_employee"
+                  sequence="40"
+                  name="Transfer Request"/>    -->
+    <!-- Employee Reports-->
+
+    <menuitem
+        id="hr_org_chart.menu_hr_employee_org_chart"
+        name="Org Chart"
+        action="hr_org_chart.action_hr_employee_org_chart"
+        groups="hr.group_hr_user"
+        parent="om_hr_payroll.prime_data_base_employee"
+        sequence="110"
+    />
+
+        <!--        parent="hr.menu_hr_employee_payroll"-->
+
+
+    <menuitem
+            id="hr_contract.hr_menu_contract"
+            name="Salary"
+            action="hr_contract.action_hr_contract"
+            parent="om_hr_payroll.prime_data_base_employee"
+            sequence="120"
+            groups="hr_contract.group_hr_contract_manager"/>
+
+
+    <menuitem id="employee_reports_menu" name="Reports" parent="hr.menu_hr_employee_payroll" sequence="20"/>
+    <menuitem id="hr_attendance.menu_hr_attendance_root" name="Attendance" parent="hr.menu_hr_root" sequence="8"/>
+    <menuitem id="hr_recruitment.menu_hr_recruitment_root" name="Recruitment" parent="hr.menu_hr_root" sequence="9"/>
+    <menuitem id="hr_timesheet.timesheet_menu_root" name="Timesheets" parent="hr.menu_hr_root" sequence="10"/>
+    <!-- Payroll -->
+    <!--<menuitem name="Payroll" 
+  			id="menu_Payroll_head"
+            sequence="6"
+            parent="hr.menu_hr_root"/> -->
+</odoo>

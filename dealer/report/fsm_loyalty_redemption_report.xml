@@ -1,0 +1,96 @@
+<odoo>
+    <!-- QWeb Template -->
+    <template id="report_fsm_loyalty_redemption_document">
+        <t t-call="web.external_layout">
+            <t t-foreach="docs" t-as="doc">
+                <div class="page">
+                    
+                    <main> <!-- Ensure there's a <main> tag -->
+                        <h2 style="text-align:center;">
+                            Loyalty Redemption Receipt
+                        </h2>
+
+                        <br/>
+
+                        <table class="table table-sm">
+                            <tr>
+                                <td width="30%"><strong>Reference</strong></td>
+                                <td width="70%">
+                                    <span t-esc="doc.transaction_reference"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td><strong>Dealer</strong></td>
+                                <td>
+                                    <span t-esc="doc.dealer_id.name"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td><strong>Salesman</strong></td>
+                                <td>
+                                    <span t-esc="doc.salesman_id.name"/>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td><strong>Date</strong></td>
+                                <td>
+                                    <span t-esc="doc.date_time and doc.date_time.strftime('%d-%m-%Y %H:%M') or ''"/>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <br/>
+
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Points Redeemed</th>
+                                    <th class="text-right" style="text-align: right;">Amount Paid</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-center">
+                                        <span t-esc="doc.points_redeemed"/>
+                                    </td>
+                                    <td class="text-right" style="text-align: right;">
+                                        <span t-esc="'{:.2f}'.format(doc.amount_paid or 0)"/> SR
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <br/><br/><br/>
+
+                        <div style="margin-top:60px;">
+                            <div style="float:left; width:45%; text-align:center;">
+                                ___________________________<br/>
+                                <strong>Dealer Signature</strong>
+                            </div>
+
+                            <div style="float:right; width:45%; text-align:center;">
+                                ___________________________<br/>
+                                <strong>Authorized Signature</strong>
+                            </div>
+                        </div>
+
+                    </main> <!-- End of main tag -->
+
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Report Action -->
+    <record id="action_fsm_loyalty_redemption_report" model="ir.actions.report">
+        <field name="name">Loyalty Redemption Receipt</field>
+        <field name="model">fsm.loyalty.redemption</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dealer.report_fsm_loyalty_redemption_document</field>
+        <field name="report_file">dealer.report_fsm_loyalty_redemption_document</field>
+        <field name="print_report_name">'Loyalty-Redemption-%s' % (object.transaction_reference)</field>
+    </record>
+</odoo>

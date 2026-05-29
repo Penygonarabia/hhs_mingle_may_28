@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree View -->
+    <record id="view_process_tier_tree" model="ir.ui.view">
+        <field name="name">process.tier.tree</field>
+        <field name="model">process.tier</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="process_customer_id"/>
+                <field name="process_datetime"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_process_tier_form" model="ir.ui.view">
+        <field name="name">process.tier.form</field>
+        <field name="model">process.tier</field>
+        <field name="arch" type="xml">
+            <form string="Process Tier" delete="0">
+                <header>
+                    <button name="action_run_tier_process"
+                            string="Run Tier Process"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state == 'processed'"/>
+                    <!--                    <button name="send_tier_whatsapp_notification"-->
+                    <!--                            string="Notification"-->
+                    <!--                            type="object"-->
+                    <!--                            class="btn-primary"/>-->
+
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="draft,processed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="select_all_customers" readonly="state == 'processed'"/>
+                        <field name="process_customer_id"
+                               options="{'no_create': True,'no_create_edit': True,'no_open': True}"
+                               domain="[('activate_loyalty_feature', '=', True)]" readonly="state == 'processed'"/>
+                    </group>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_process_tier" model="ir.actions.act_window">
+        <field name="name">Process Tier</field>
+        <field name="res_model">process.tier</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Parent Menu -->
+    <menuitem
+            id="menu_loyalty_points_process"
+            name="Process"
+            parent="menu_loyalty_points_root"
+            sequence="2"
+            groups="hhs_loyalty_management.group_loyalty_program_user"/>
+
+    <!-- Child Menu -->
+    <menuitem
+            id="menu_pocess_tier"
+            name="Process Tier"
+            parent="menu_loyalty_points_process"
+            action="action_process_tier"
+            sequence="28"/>
+
+</odoo>

@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_form_promoter_showroom_sales" model="ir.ui.view">
+        <field name="name">promoter.showroom.sales.form</field>
+        <field name="model">promoter.showroom.sales</field>
+        <field name="arch" type="xml">
+            <form >
+                <sheet>
+                    <group class="deskvw">
+                        <field name="dealer_id"/>
+                        <field name="showroom" domain="[('dealer_id', '=', dealer_id),('promoter_required','=',True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="assignment_id"
+                               domain="[('dealer_id', '=', dealer_id), ('showroom_id', '=', showroom)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                    </group>
+                    <group  class="deskvw">
+                        <field name="date_time"/>
+                        <field name="product_category_id" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="group_id" domain="[('parent_id','=',product_category_id),('allowed_group_is_promoter','=',True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="subgroup_id" domain="[('parent_id','=',group_id),('allowed_group_is_promoter','=',True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="product_id" domain="[('product_sub_grouping_id', 'child_of', subgroup_id), ('use_for_promoter', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="size_id"/>
+                        <field name="is_sales_return"/>
+                        <field name="qty"/>                        
+                        <field name="notes" colspan="2"/>
+                        <field name="attachment_ids" widget="many2many_binary"/>
+                        <field name="user_id" invisible="1" force_save="1"/>
+                        <field name="promoter_mobile_user_bool" invisible="1"/>
+                        <field name="promoter_access_bool" invisible="1"/> 
+                        <field name="current_latitude" invisible="1"/>
+                        <field name="current_longitude" invisible="1"/>                       
+                    </group>
+                    <group class="mobvw">
+                        <field name="date_time"/>
+                        <field name="product_category_id" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="group_id" domain="[('parent_id','=',product_category_id),('allowed_group_is_promoter','=',True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="subgroup_id" domain="[('parent_id','=',group_id),('allowed_group_is_promoter','=',True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="product_id" domain="[('product_sub_grouping_id', 'child_of', subgroup_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="size_id" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="is_sales_return"/>
+                        <field name="qty"/>
+
+                        <div style="font-size:15px;font-weight:bold;color: #070808ff;">Notes</div>
+                        <div class="col-12" width="100%">
+                            <field name="notes" class="o_field_text w-100" style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
+                        </div>
+                        <div style="font-size:15px;font-weight:bold;color: #070808ff;">Attachments</div>
+                        <div  width="70%" height="400px">
+                           <field name="attachment_ids" widget="many2many_binary"/>
+                       </div>
+                        <field name="user_id" invisible="1" force_save="1"/>
+                        <field name="promoter_mobile_user_bool" invisible="1"/>
+                        <field name="promoter_access_bool" invisible="1"/>
+                        <field name="current_latitude" invisible="1"/>
+                        <field name="current_longitude" invisible="1"/> 
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- =========================
+         TREE VIEW
+    ========================== -->
+    <!-- 🌿 Tree View -->
+    <record id="view_tree_promoter_showroom_sales" model="ir.ui.view">
+        <field name="name">promoter.showroom.sales.tree</field>
+        <field name="model">promoter.showroom.sales</field>
+        <field name="arch" type="xml">
+            <tree string="Showroom Sales" js_class="promoter_showroom_sales_list_controller">
+                <field name="dealer_id"/>
+                <field name="showroom"/>
+                <field name="user_id"/>
+                <field name="date_time"/>
+                <field name="product_category_id"/>
+                <field name="group_id"/>
+                <field name="subgroup_id"/>
+                <field name="product_id"/>
+                <field name="size_id"/>
+                <field name="qty"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- 🔍 Search View -->
+    <record id="view_search_promoter_showroom_sales" model="ir.ui.view">
+        <field name="name">promoter.showroom.sales.search</field>
+        <field name="model">promoter.showroom.sales</field>
+        <field name="arch" type="xml">
+            <search string="Search Showroom Sales">
+                <field name="dealer_id" string="Dealer"/>
+                <field name="showroom" string="Showroom"/>
+                <field name="user_id" string="Promoter"/>
+                <field name="product_category_id" string="Category"/>
+                <field name="group_id" string="Group"/>
+                <field name="subgroup_id" string="Sub Group"/>
+                <separator/>
+                <filter string="Has Notes" name="has_notes" domain="[('notes','!=',False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_dealer" string="Dealer" context="{'group_by': 'dealer_id'}"/>
+                    <filter name="group_showroom" string="Showroom" context="{'group_by': 'showroom'}"/>
+                    <filter name="group_promoter" string="Promoter" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_category" string="Category" context="{'group_by': 'product_category_id'}"/>
+                    <filter name="group_group" string="Group" context="{'group_by': 'group_id'}"/>
+                    <filter name="group_subgroup" string="Sub Group" context="{'group_by': 'subgroup_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+<!-- Kanban View -->
+<record id="view_kanban_promoter_showroom_sales_mobile" model="ir.ui.view">
+    <field name="name">promoter.showroom.sales.kanban.edited</field>
+    <field name="model">promoter.showroom.sales</field>
+    <field name="arch" type="xml">
+        <kanban class="o_kanban_small_column">
+            <!-- Declare all fields used in the template -->
+            <field name="dealer_id"/>
+            <field name="date_time"/>
+            <field name="product_category_id"/>
+            <field name="group_id"/>
+            <field name="subgroup_id"/>
+            <field name="product_id"/>
+            <field name="size_id"/>
+            <field name="qty"/>
+            <field name="notes"/>
+
+            <templates>
+                <t t-name="kanban-box">
+                    <!-- Add 'oe_kanban_global_click' to make the card clickable -->
+                    <div class="o_kanban_card oe_kanban_global_click">
+                        <!-- Dealer Badge -->
+                        <!-- <t t-if="record.dealer_id">
+                            <span class="badge badge-info">
+                                <t t-esc="record.dealer_id.value"/>
+                            </span>
+                        </t> -->
+
+                        <div style="display:flex; justify-content:space-between; font-weight:bold; margin-top:2px;">
+                            <div t-if="record.date_time">
+                                <t t-esc="record.date_time.value"/>
+                            </div>
+                            <div t-if="record.qty" style="text-align:right;">
+                                Qty: <t t-esc="record.qty.value"/>
+                            </div>
+                        </div>
+
+                        <!-- Date & Time -->
+                        <!-- <div t-if="record.date_time" style="font-weight:bold; margin-top: 2px;">
+                            <t t-esc="record.date_time.value"/>
+                        </div> -->
+
+                        <!-- Product Details -->
+                        <div style="display:flex; flex-wrap: wrap; margin-top: 2px;">
+                            <t t-if="record.product_category_id"><t t-esc="record.product_category_id.value"/></t>
+                            <t t-if="record.group_id"> - <t t-esc="record.group_id.value"/></t>
+                            <t t-if="record.subgroup_id"> - <t t-esc="record.subgroup_id.value"/></t>
+                            <t t-if="record.product_id"> - <t t-esc="record.product_id.value"/></t>
+                            <t t-if="record.size_id"> - <t t-esc="record.size_id.value"/></t>
+                        </div>
+
+                        <!-- Quantity -->
+                        <!-- <div style="font-weight:bold; text-align:right; margin-top: 2px;" t-if="record.qty">
+                            Qty: <t t-esc="record.qty.value"/>
+                        </div> -->
+
+                        <!-- Notes Icon -->
+                        <!-- <t t-if="record.notes and record.notes.raw_value">
+                            <span class="fa fa-sticky-note" title="Has notes" style="margin-top:2px; color:orange;"/>
+                        </t> -->
+                    </div>
+                </t>
+            </templates>
+        </kanban>
+    </field>
+</record>
+       <record id="view_promoter_showroom_sales_form_inherit" model="ir.ui.view">
+            <field name="name">promoter.showroom.sales.form.noduplicate</field>
+            <field name="model">promoter.showroom.sales</field>
+            <field name="inherit_id" ref="promoter.view_form_promoter_showroom_sales"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form" position="attributes">
+                    <attribute name="duplicate">0</attribute>
+                </xpath>
+            </field>
+        </record>
+
+    <!-- =========================
+         ACTIONS
+    ========================== -->
+    <!-- Back-office: Review Sales -->
+    <record id="action_promoter_showroom_sales" model="ir.actions.act_window">
+        <field name="name">Review Shop Sales</field>
+        <field name="res_model">promoter.showroom.sales</field>
+        <field name="view_mode">tree,kanban,form,pivot</field>
+        <field name="search_view_id" ref="view_search_promoter_showroom_sales"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first showroom sales entry.</p>
+        </field>
+    </record>
+
+    <!-- Mobile: Update Sales -->
+    <record id="action_promoter_sales_mobile" model="ir.actions.act_window">
+        <field name="name">Update Sales</field>
+        <field name="res_model">promoter.showroom.sales</field>
+        <field name="view_mode">form,kanban</field>
+        <field name="view_id" ref="view_kanban_promoter_showroom_sales_mobile"/>
+        <field name="domain"> [('user_id', '=', uid)]</field>
+    </record>
+
+    <!-- =========================
+         MENU ITEMS
+    ========================== -->
+    <!-- Back-office -->
+    <menuitem id="menu_promoter_showroom_sales"
+              name="Review Shop Sales"
+              parent="menu_promoter_root"
+              action="action_promoter_showroom_sales"
+              groups="promoter.group_promoter_backoffice_user"
+              sequence="20"/>
+
+    <!-- Mobile -->
+    <menuitem id="menu_promoter_sales_mobile"
+              name="Update Sales"
+              parent="menu_promoter_root"
+              action="action_promoter_sales_mobile"
+              groups="promoter.group_promoter_user"
+              sequence="60"/>
+
+    <!-- =========================
+         RECORD RULES
+    ========================== -->
+    <!-- Mobile users: only own records -->
+    <record id="promoter_showroom_sales_rule_user" model="ir.rule">
+        <field name="name">Promoter Sales: only own records</field>
+        <field name="model_id" ref="model_promoter_showroom_sales"/>
+        <field name="groups" eval="[(4, ref('promoter.group_promoter_user'))]"/>
+        <!-- <field name="domain_force"> [('user_id', '=', user.id),
+         ('dealer_id', '=', user.dealer_id.id),
+         ('showroom','=',user.showroom_id.id)
+        ]</field> -->
+    </record>
+
+    <!-- Back-office users: all records -->
+    <record id="promoter_showroom_sales_rule_backoffice" model="ir.rule">
+        <field name="name">Promoter Sales: all records</field>
+        <field name="model_id" ref="model_promoter_showroom_sales"/>
+        <field name="groups" eval="[(4, ref('promoter.group_promoter_backoffice_user'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+</odoo>

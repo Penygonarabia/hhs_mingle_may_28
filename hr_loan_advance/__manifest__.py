@@ -1,0 +1,40 @@
+# -*- coding: utf-8 -*-
+{
+    "name": "HR Loan Advance",
+    "version": "17.0.0.0",
+    "author": "Mani,Pioneer Solution",
+    "summary": "HR Loan and Advance Management",
+    "website": "www.ps-sa.net",
+    'license': 'LGPL-3',
+    "category": "Human Resources",
+    'depends': ['base', 'hr', 'account', 'hr_contract', 'om_hr_payroll', 'om_hr_payroll_account', 'hr_saudi'],
+    'data': [
+        # ~ "data/template.xml",
+        "data/mail_template.xml",
+        "views/res_company.xml",
+        "views/res_config_view.xml",
+        "views/hr_view.xml",
+        "views/hr_employee_advance_type.xml",
+        "views/hr_employee_advance.xml",
+        "views/hr_employee_loan_type.xml",
+        "views/hr_employee_loan.xml",
+        "data/sequence.xml",
+        "data/data.xml",
+        "security/hr_security.xml",
+        "security/ir.model.access.csv",
+        #"views/workflow.xml",
+        "report/report.xml",
+        "report/report_hr_loan.xml",
+        "report/report_hr_advance.xml",
+        "report/report_loan_advance.xml",
+        "report/report_loan_header_footer_template.xml",
+        "wizard/report_wizard_view.xml",
+        "security/hr_security_menuitem.xml",
+
+    ],
+
+    "installable": True,
+    'application': True,
+    "auto_install": False,
+}
+# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

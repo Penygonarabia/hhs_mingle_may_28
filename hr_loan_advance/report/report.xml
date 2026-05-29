@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <report
+                id="report_hr_loan"
+                string="Loan Report"
+                model="hr.employee.loan.ps"
+                report_type="qweb-pdf"
+                file="hr_loan_advance.report_hr_loan"
+                name="hr_loan_advance.report_hr_loan_document"
+        />
+
+        <report
+                id="report_hr_advance"
+                string="Advance Report"
+                model="hr.employee.advance.ps"
+                report_type="qweb-pdf"
+                file="hr_loan_advance.report_hr_advance"
+                name="hr_loan_advance.report_hr_advance_document"
+        />
+
+        <report
+                id="report_hr_loan_advance"
+                string="Loan Advance Report"
+                model="report.loan.advance"
+                report_type="qweb-pdf"
+                file="hr_loan_advance.report_loan_advance"
+                name="hr_loan_advance.report_loan_advance"
+        />
+
+
+    </data>
+</odoo>

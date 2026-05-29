@@ -1,0 +1,17 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_employee_group_hr,hr_employee_hr,hr.model_hr_employee,group_hr,1,1,1,0
+access_hr_employee_hr_group_hrm,hr_employee_hr,hr.model_hr_employee,group_hrm,1,1,1,1
+access_hr_department_user_group_hr,hr.department.user,hr.model_hr_department,group_hr,1,1,1,1
+access_hr_department_employee_group_employee,hr.department.employee,hr.model_hr_department,group_employee,1,0,0,0
+access_hr_branch_hr_group_hr,access_hr_grade_hr,model_hr_branch,group_hr,1,1,1,1
+access_hr_branch_config_group_hrm,access_hr_branch_config,model_hr_branch,group_hr,1,1,1,1
+access_hr_branch_employee_group_employee,access_hr_branch_employee,model_hr_branch,group_employee,1,0,0,0
+hr_contract_hr_employee_group_employee,hr_contract_hr_employee,hr_contract.model_hr_contract,hr_saudi.group_employee,1,0,0,0
+hr_contract_group_hrm,hr_contract_hr_hrm,hr_contract.model_hr_contract,hr_saudi.group_hrm,1,1,1,1
+access_hr_configuration_group_hr,access_hr_configuration,model_hr_configuration,group_hr_configuration,1,1,1,1
+access_employee_transaction_employee_group_employee,access_employee_transaction_employee,model_hr_employee_transaction,hr_saudi.group_employee,1,1,1,1
+access_employee_transaction_group_hrm,access_employee_transaction_hrm,model_hr_employee_transaction,hr_saudi.group_hrm,1,1,1,1
+access_hr_grade_group_hr,access_hr_grade_hr,model_hr_grade,group_hr,1,1,1,1
+access_hr_grade_config_group_hr,access_hr_grade_config,model_hr_grade,group_hr,1,1,1,1
+access_hr_grade_employee_group,access_hr_grade_employee,model_hr_grade,group_employee,1,0,0,0
+access_hr_employee_hr_group_employee,hr_employee_hr,hr.model_hr_employee,hr_saudi.group_employee,1,1,1,0

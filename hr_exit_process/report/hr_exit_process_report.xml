@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+         <!-- QWeb Reports -->
+        <report
+            id="hr_exit_process_report"
+            model="hr.exit"
+            menu="True"
+            report_type="qweb-pdf"
+            string="Print Employee Exit Report"
+            name="hr_exit_process.hr_exit_process_id"
+            file="hr_exit_process.hr_exit_process_id"
+           />
+        <template id="hr_exit_process.exit_process_template_internal_layout">
+            <div class="article" t-att-data-oe-model="doc and doc._name" t-att-data-oe-id="doc and doc.id" t-att-data-oe-lang="doc and doc.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template>
+        
+        <template id="hr_exit_process_report_document">
+             <t t-call="web.html_container">
+                 <t t-call ="hr_exit_process.exit_process_template_internal_layout">
+                    <t t-foreach="docs" t-as="doc">
+                    <t t-if="doc and 'company_id' in doc">
+                <t t-set="company" t-value="doc.company_id"></t>
+            </t>
+            <t t-if="not doc or not 'company_id' in doc">
+                <t t-set="company" t-value="res_company"></t>
+            </t>
+			<div class="header">
+                <div class="row mt32 mb32">
+
+					<div class="col-3" style="font:12px lucida-console,sans-serif !important;">
+                        <span t-esc="company.partner_id.name"/>
+                        <br/>
+                        <span  t-esc="company.partner_id.street"/>
+                        <br/>
+                        <span  t-esc="company.partner_id.street2"/>
+                        <br/>
+                        <span  t-esc="company.partner_id.city"/>
+                        <br/>
+                        <span  t-esc="company.partner_id.country_id.name"/>
+                        <br/>
+                        <span  t-esc="company.partner_id.vat"/>
+                    </div>
+                    <div class="col-6">
+                            <div class="text-center">
+                                 <h3>
+                                     <span t-field="doc.employee_id.name"/> -<strong>Exit</strong>- <span t-field="doc.state"/>
+                                 </h3>
+                             </div>
+                    </div>
+                    <div class="col-3 text-right " style="vertical-align:text-top">
+                        <img t-if="doc.company_id.logo" t-att-src="image_data_uri(doc.company_id.logo)" style="max-height: 100px; min-height:100px; min-width: 150px; max-width: 150px;" />
+                    </div>
+
+                </div>
+            </div>
+<!--                    <t t-call="web.basic_layout">-->
+                         <div class="page">
+
+                             <div class="col-12">
+                             <h3>General Information</h3>
+                            <table style="border-top: 2px solid black;" class="table table-sm table-bordered">
+                                <colgroup width='100%'>
+                                    <col width='25%'/>
+                                    <col width='25%'/>
+                                    <col width='25%'/>
+                                    <col width='25%'/>
+                                </colgroup>
+                                <tbody>
+                               <tr style="border: 2px solid black;">
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Request Date</strong> </td><td> <span t-field="doc.request_date"/></td>
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Department</strong></td><td> <span t-field="doc.department_id.name"/></td>
+                               </tr>
+                               <tr style="border: 2px solid black;">
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Department Manager</strong> </td><td> <span t-field="doc.manager_id.name"/></td>
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Job Title</strong></td><td> <span t-field="doc.job_id.name"/></td>
+                               </tr>
+                               <tr style="border: 2px solid black;">
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Contract</strong> </td><td> <span t-field="doc.contract_id.name"/></td>
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Last Day of Work</strong></td><td> <span t-field="doc.last_work_date"/></td>
+                               </tr>
+                               <tr style="border: 2px solid black;">
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Interview</strong></td><td> <span t-field="doc.survey"/></td>
+                                   <td></td><td></td>
+                               </tr>
+                                </tbody>
+                            </table>
+                            <h3>Dates</h3>
+
+                            <table style="border-top: 2px solid black;" class="table table-sm table-bordered">
+                               <colgroup width='100%'>
+                                    <col width='25%'/>
+                                    <col width='25%'/>
+                                    <col width='25%'/>
+                                    <col width='25%'/>
+                                </colgroup>
+                                <tbody>
+                                <tr style="border: 2px solid black;">
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Confirm Date(Employee)</strong> </td><td> <span t-field="doc.confirm_date"/></td>
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Confirm By</strong></td><td> <span t-field="doc.confirm_by_id.name"/></td>
+                               </tr>
+                               <tr style="border: 2px solid black;">
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Approved Date(Department)</strong> </td><td> <span t-field="doc.dept_approved_date"/></td>
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Approved By Department Manager</strong></td><td> <span t-field="doc.dept_manager_by_id.name"/></td>
+                               </tr>
+                               <tr style="border: 2px solid black;">
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Approved Date(HR Manager)</strong> </td><td> <span t-field="doc.validate_date"/></td>
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Approved By HR Manager </strong></td><td> <span t-field="doc.hr_manager_by_id.name"/></td>
+                               </tr>
+                               <tr style="border: 2px solid black;">
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Approved Date(General Manager)</strong> </td><td> <span t-field="doc.general_validate_date"/></td>
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Approved By General Manager </strong></td><td> <span t-field="doc.gen_man_by_id.name"/></td>
+                               </tr>
+                                </tbody>
+                            </table>
+                            <h3>Checklist</h3>
+                            <table style="border-top: 2px solid black;" class="table table-sm table-bordered">
+                               <colgroup width='100%'>
+                                    <col width='25%'/>
+                                    <col width='25%'/>
+                                    <col width='25%'/>
+                                    <col width='25%'/>
+                                </colgroup>
+                                <tr style="border: 2px solid black;">
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Checklist</strong></td>
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Responsible User</strong></td>
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>Remarks</strong></td>
+                                   <td style="background-color:#893b74 !important;border-style: solid !important; border: 2px solid black; color:#fff !important;"><strong>State</strong></td>
+                               </tr>
+                               <t t-foreach="doc.checklist_ids" t-as="check">
+                                   <tr style="border:2px solid black;">
+                                       <td style="border:2px solid black;"><span t-field="check.checklist_id.name"/></td>
+                                       <td style="border:2px solid black;"><span t-field="check.responsible_user_id.name"/></td>
+                                       <td style="border:2px solid black;"><span t-field="check.notes"/></td>
+                                       <td style="border:2px solid black;"><span t-field="check.state"/></td>
+                                   </tr>
+                               </t>
+                            </table>
+                             </div>
+                            <div>
+                                 <strong>Notes :</strong><br/><span t-field="doc.notes"/>
+                            </div>
+                            <div>
+                                 <strong>Reason for Leaving :</strong><br/><span t-field="doc.reason_for_leaving"/>
+                            </div>
+                        </div>
+                                        <div class="footer o_background_footer">
+                    <div class="text-center">
+                        <ul class="list-inline">
+                            <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                        </ul>
+                        <div t-if="report_type == 'pdf'" class="text-muted">
+                                  Page:
+                               <span class="page"/>
+                                  of
+                              <span class="topage"/>
+                        </div>
+                    </div>
+                </div>
+
+<!--                    </t>-->
+               </t>
+        </t>
+               </t>
+        </template>
+        <template id="hr_exit_process_id">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="hr_exit_process.hr_exit_process_report_document"
+                       t-lang="user.partner_id.lang"/>
+                </t>
+            </t>
+        </template>
+    </data>
+</openerp>

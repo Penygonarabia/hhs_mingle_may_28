@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="account_removal_request_sequence" model="ir.sequence">
+            <field name="name">Account Removal Request Sequence</field>
+            <field name="code">account.removal.request</field>
+            <field name="prefix">ARR</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False" />
+        </record>
+        <record id="attendance_request_sequence" model="ir.sequence">
+            <field name="name">Employee Request Sequence</field>
+            <field name="code">attendance.request</field>
+            <field name="prefix">AR</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False" />
+        </record>
+    </data>
+</odoo>

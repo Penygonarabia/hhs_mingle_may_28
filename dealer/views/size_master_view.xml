@@ -1,0 +1,46 @@
+<odoo>
+    <record id="view_product_size_form" model="ir.ui.view">
+        <field name="name">product.size.form</field>
+        <field name="model">product.size</field>
+        <field name="arch" type="xml">
+            <form string="Product Size">
+                <sheet>
+                    <group>                        
+                        <field name="code"/>
+                        <field name="capacity"/>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_product_size_tree" model="ir.ui.view">
+        <field name="name">product.size.tree</field>
+        <field name="model">product.size</field>
+        <field name="arch" type="xml">
+            <tree string="Product Sizes">
+                <field name="code"/>
+                <field name="capacity"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_product_size" model="ir.actions.act_window">
+        <field name="name">Capacity</field>
+        <field name="res_model">product.size</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p>Create and manage size master data.</p>
+        </field>
+    </record>
+
+    <!-- Size Master under Configuration -->
+    <!-- <menuitem id="menu_product_size" name="Capacity"
+              parent="menu_dealer_configuration"
+              action="action_product_size" sequence="40"/> -->
+</odoo>

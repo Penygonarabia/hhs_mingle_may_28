@@ -1,0 +1,6 @@
+<odoo>
+    <record id="group_hide_additional_fields" model="res.groups">
+        <field name="name">Hide Additional Fields</field>
+        <field name="category_id" ref="base.module_category_sales"/>
+    </record>
+</odoo>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <data>
+        <report 
+            id = "action_report_payroll_bank_two"
+            string="Print Payroll Payment -- PDF"
+            model="payroll.advice.two" 
+            report_type="qweb-pdf"
+            file="Payroll Bank two" 
+            name="payment_advice_payroll.report_payroll_payment_pdf"
+        />
+        
+        
+         <report 
+            id="action_report_payroll_bank_two_xlsx"
+            string="Print Payroll Payment Excel"
+            model="payroll.advice.two" 
+            report_type="xlsx"
+            file="Payroll Bank Two" 
+            name="payment_advice_payroll.report_payroll_payment_xlsx"
+        />
+        
+        
+         <report 
+            id="action_report_payroll_payment_bank_one_pdf"
+            string="Print Payroll Payment -- PDF"
+            model="payroll.payment.advice" 
+            report_type="qweb-pdf"
+            file="Payroll Payment Format Bank one" 
+            name="payment_advice_payroll.report_payroll_payment_format_one"
+        />
+        
+        
+         <report 
+            id="action_report_payroll_payment_bank_xlsx"
+            string="Print Payroll Payment Excel"
+            model="payroll.payment.advice" 
+            report_type="xlsx"
+            file="Payroll Payment Bank One" 
+            name="payment_advice_payroll.report_payroll_payment_format"
+        />
+        
+        
+        
+         <report 
+            id="action_report_payroll_bank1"
+            string="Print Payroll Payment -- PDF"
+            model="hr.payroll.advice" 
+            report_type="qweb-pdf"
+            file="payroll_payment_advice.report_payroll_payment" 
+            name="payment_advice_payroll.report_payroll_payment"
+        />
+        
+        
+         <report 
+            id="action_report_payroll2"
+            string="Print Payroll Payment Excel"
+            model="hr.payroll.advice" 
+            report_type="xlsx"
+            file="Payroll Payment Advice" 
+            name="payment_advice_payroll.report_payroll_payment_advice"
+        />
+        
+        
+        
+   </data>
+</odoo>

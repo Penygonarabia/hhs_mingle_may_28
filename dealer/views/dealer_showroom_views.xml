@@ -1,0 +1,199 @@
+<odoo>
+
+    <!-- dealer Showroom Form View -->
+    <record id="view_form_dealer_showroom" model="ir.ui.view">
+        <field name="name">dsales.showroom.form</field>
+        <field name="model">dsales.showroom</field>
+        <field name="arch" type="xml">
+            <form string="Dealer Showroom">
+    <sheet>
+        <!-- General Info -->
+        <group string="General Info">
+            <field name="dealer_showroom_code"/>
+            <field name="name"/>
+            <field name="dealer_id"
+                domain="[('dealersalesman_required', '=', True)]"
+                options="{'no_create_edit': True, 'no_open': True, 'no_create': True, 'no_edit': True}"/>
+            <field name="address"/>
+            <field name="city"
+                options="{'no_create_edit': True, 'no_open': True, 'no_create': True, 'no_edit': True}"/>
+            <field name="district"
+                domain="[('city_id','=',city)]"
+                readonly="0" force_save="1"
+                options="{'no_create_edit': True, 'no_open': True, 'no_create': True, 'no_edit': True}"/>
+            <field name="region_id"
+                readonly="1" force_save="1"
+                options="{'no_create_edit': True, 'no_open': True, 'no_create': True, 'no_edit': True}"/>
+            <field name="contact_no"/>
+            <field name="email"/>
+        </group>
+
+        <!-- Location -->
+        <group string="Google Map" col="2">
+            <group col="2">
+                <field name="google_maps_url" nolabel="0" class="o_inline"/>
+                <button name="update_google_map" string="Update"
+                        type="object" class="oe_highlight o_inline" nolabel="1"/>
+            </group>            
+        </group>
+
+        <group>
+            <group col="2">
+                <field name="latitude" readonly="0"/>
+                <field name="longitude" readonly="0"/>
+            </group>
+        </group>
+
+        <!-- dealer Assignment -->
+        <group string="Dealer Salesman Information" col="2">
+            <!-- Left side -->
+            <group>
+                <field name="sale_dealer_required"/>
+                <field name="sale_dealer_id" options="{'no_create_edit': True, 'no_open': True, 'no_create': True, 'no_edit': True}"/>
+                <field name="from_date"/>
+                <field name="to_date"/>
+                <field name="shift1_from"/>
+                <field name="shift1_to"/>
+                <field name="shift2_from"/>
+                <field name="shift2_to"/>
+            </group>
+
+            <!-- Right side -->
+            <group>
+                <field name="sale_dealer_id" invisible="1"/> <!-- keep relation available -->
+                <!-- Related fields from dealer_id -->
+                <field name="work_email" readonly="1" invisible="not sale_dealer_id"/>
+                <field name="mobile" readonly="1" invisible="not sale_dealer_id"/>
+                <!-- <field name="gender" readonly="1" invisible="not dealer_id"/> -->
+            </group>
+        </group>
+
+        <!-- <group string="dealer Information">
+            <field name="sale_dealer_required"/>
+            <field name="dealer_id"/>
+            <field name="from_date"/>
+            <field name="to_date"/>
+            <field name="shift1_from"/>
+            <field name="shift1_to"/>
+            <field name="shift2_from"/>
+            <field name="shift2_to"/>
+            </group> -->
+    </sheet>
+
+    <div class="oe_chatter">
+        <field name="message_follower_ids" widget="mail_followers"/>
+        <field name="activity_ids" widget="mail_activity"/>
+        <field name="message_ids" widget="mail_thread"/>
+    </div>
+</form>
+
+        </field>
+    </record>
+
+    <record id="view_dealer_showroom_tree" model="ir.ui.view">
+        <field name="name">dsales.showroom.tree</field>
+        <field name="model">dsales.showroom</field>
+        <field name="arch" type="xml">
+            <tree string="Dealer Showrooms">                
+                  <!-- <field name="address" width="120"/> --> 
+                        <field name="dealer_id" />  
+                        <field name="dealer_showroom_code"/>
+                        <field name="name" width="120"/>                     
+                        <field name="region_id"/>                       
+                        <field name="city"/>
+                        <field name="district"/>                       
+                        <field name="contact_no"/>
+                        <field name="email"/>
+                        <field name="latitude"/>
+                        <field name="longitude" width="120"/>
+                        <field name="sale_dealer_required" width="120"/>
+                        <field name="sale_dealer_id" width="120"/>
+                        <field name="from_date"/>
+                        <field name="to_date"/>
+                        <field name="shift1_from"/>
+                        <field name="shift1_to"/>
+                        <field name="shift2_from"/>
+                        <field name="shift2_to"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_dealer_showroom_search" model="ir.ui.view">
+        <field name="name">dsales.showroom.search</field>
+        <field name="model">dsales.showroom</field>
+        <field name="arch" type="xml">
+            <search string="Showrooms">
+                <!-- Search by dealer -->
+                <field name="dealer_id" string="Dealer" />
+                <!-- Search by showroom dealer_showroom_code -->
+                <field name="dealer_showroom_code" string="Showroom dealer_showroom_code"/>
+                <!-- Search by showroom name -->
+                <field name="name" string="Showroom Name"/>
+                <!-- Search by region -->
+                <field name="region_id" string="Region"/>
+                <!-- Search by city -->
+                <field name="city" string="City"/>
+                <!-- Search by district -->
+                <field name="district" string="District"/>                
+                <!-- Optional: add filters if needed -->
+                <!-- <filter name="active_showrooms" string="Active Showrooms" domain="[('active','=',True)]"/> -->
+            </search>
+        </field>
+    </record>
+
+
+    <!-- Action: dealer Showroom -->
+    <record id="action_dealer_showroom" model="ir.actions.act_window">
+        <field name="name">Dealer Showrooms</field>
+        <field name="res_model">dsales.showroom</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_dealer_showroom_tree"/>
+        <field name="search_view_id" ref="view_dealer_showroom_search"/>
+    </record>
+
+    <!-- <record id="action_sales_full" model="ir.actions.act_window">
+        <field name="name">Sales Records</field>
+        <field name="res_model">dsales.showroom.sales</field>
+        <field name="view_mode">tree,form,kanban</field>
+        <field name="groups_id" eval="[(6,0,[ref('dealer.group_dealer_module_user'),
+                                            ref('dealer.group_dealer_backoffice_user'),
+                                            ref('dealer.group_dealer_user')])]"/>
+    </record>
+
+    <record id="action_sales_readonly" model="ir.actions.act_window">
+        <field name="name">Sales Records (Read Only)</field>
+        <field name="res_model">dsales.showroom.sales</field>
+        <field name="view_mode">form,kanban</field>
+        <field name="groups_id" eval="[(6,0,[ref('dealer.group_dealer_sales_readonly')])]"/>
+    </record>-->
+
+   
+    <record id="action_dealer_dealer" model="ir.actions.act_window">
+        <field name="name">Dealers</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('dealersalesman_required', '=', True)]</field>
+    </record> 
+
+    <!-- Root Menu: dealer -->
+    <menuitem id="menu_dealer_root" name="Floor Salesman" sequence="10" groups="dealer.group_dealer_module_user"/>
+
+    <!-- Submenu: Configuration under dealer -->
+    <menuitem id="menu_dealer_configuration" name="Configuration"
+              parent="menu_dealer_root" sequence="150"
+              groups="dealer.group_dealer_backoffice_user"/>
+
+    <!-- Submenu: Showrooms -->
+    <menuitem id="menu_dealer_showroom" name="Dealer Showrooms"
+              parent="menu_dealer_configuration"
+              action="action_dealer_showroom" 
+              groups="dealer.group_dealer_backoffice_user"
+              sequence="20"/>
+
+    <!-- Submenu: Dealers -->
+    <menuitem id="menu_dealer_dealer" name="Dealers"
+              parent="menu_dealer_configuration"
+              action="action_dealer_dealer"
+              groups="dealer.group_dealer_backoffice_user"
+              sequence="10"/>
+</odoo>

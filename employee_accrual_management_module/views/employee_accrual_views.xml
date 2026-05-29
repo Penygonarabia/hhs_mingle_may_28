@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_employee_accrual_form" model="ir.ui.view">
+        <field name="name">employee.accrual.form</field>
+        <field name="model">employee.accrual</field>
+        <field name="arch" type="xml">
+            <form string="Employee Accrual">
+                <header>
+                    <button invisible="status != 'draft'" name="action_generate_monthly_accrual" string="Generate Monthly Accrual" type="object"/>
+                    <button invisible="status != 'draft'" name="action_confirm_accrual" string="Confirm" type="object"/>
+                    <button invisible="status != 'confirmed'" name="action_approve_accrual" string="Approve" type="object"/>
+                    <button invisible="status != 'confirmed'" name="action_reject_accrual" string="Reject" type="object"/>
+                    <field name="status" statusbar_visible="draft,confirmed,approved,rejected" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="date_from" readonly="status in ['confirmed', 'approved', 'rejected']" required="1"/>
+                        </group>
+                        <!--                        <field name="date"/>-->
+                        <group>
+                            <field name="accrual_type" readonly="status in ['confirmed', 'approved', 'rejected']"/>
+                            <field name="date_to" readonly="status in ['confirmed', 'approved', 'rejected']" required="1"/>
+                            <field force_save="1" invisible="accrual_type != 'annual_leave'"  name="accrual_calculation" readonly="status in ['draft', 'confirmed', 'approved', 'rejected']"/>
+                            <field force_save="1" invisible="1" name="accrual_calculation_id" readonly="status in ['draft', 'confirmed', 'approved', 'rejected']"/>
+                        </group>
+                        <!--                        <field name="status"/>-->
+                    </group>
+                    <!--                    <field name="accrual_line_ids"/>-->
+                    <notebook>
+                        <page  invisible="accrual_type == 'gratuity'" string="Employee Accrual Sheet">
+                            <!--                        <page string="Employee Accrual Sheet" attrs="{'invisible': [('accrual_type', '=', ['annual_leave', 'annual_tickets'])]}">-->
+                            <field name="accrual_line_ids" readonly="status in ['draft', 'confirmed', 'approved', 'rejected']">
+                                <tree string="Employee Accrual Lines">
+                                    <field name="employee_id"/>
+                                    <field name="contract_id"/>
+                                    <field name="accrual_type"/>
+                                    <field column_invisible="parent.accrual_type == 'annual_tickets'" name="entitlement_days"/>
+                                    <field column_invisible="parent.accrual_type == 'annual_tickets'" name="entitlement_amount"/>
+                                    <field column_invisible="parent.accrual_type == 'annual_tickets'" name="accrual_days"/>
+                                    <field column_invisible="parent.accrual_type == 'annual_tickets'" name="accrual_amount"/>
+                                    <!--                                    <field name="ticket_entitlement" attrs="{'column_invisible':[('accrual_type','=', 'annual_leave')]}"/>-->
+                                    <!--                                    <field name="ticket_accrual" attrs="{'column_invisible':[('accrual_type','=', 'annual_leave')]}"/>-->
+                                    <field column_invisible="parent.accrual_type == 'annual_leave'" name="ticket_entitlement"/>
+                                    <field column_invisible="parent.accrual_type == 'annual_leave'" name="ticket_entitlement_amount"/>
+                                    <field column_invisible="parent.accrual_type == 'annual_leave'" name="ticket_accrual"/>
+                                    <field column_invisible="parent.accrual_type == 'annual_leave'" name="ticket_accrual_amount"/>
+                                    <field name="analytical_code"/>
+                                    <field name="status"/>
+                                    <field name="account_move_id"/>
+                                    <field column_invisible="parent.accrual_type == 'annual_tickets'" invisible="1" name="accrual_calculation"/>
+                                </tree></field>
+                        </page>
+                        <page invisible="accrual_type in ['annual_leave', 'annual_tickets']" string="EOS Accruals">
+                            <field name="gratuity_line_ids" readonly="status in ['draft', 'confirmed', 'approved', 'rejected']">
+                                <tree create="false" delete="false" edit="false">
+                                    <field invisible="1" name="state"/>
+                                    <field name="custom_employee_id"/>
+                                    <field name="custom_type"/>
+                                    <field name="custom_contract_id"/>
+                                    <field name="custom_date_of_join"/>
+                                    <field name="custom_late_working_day"/>
+                                    <field name="no_of_days"/>
+                                    <field name="custom_eligible_days"/>
+                                    <field name="eligible_days_f_five_years"/>
+                                    <field name="eligible_days_a_five_years"/>
+                                    <field name="esob_days"/>
+                                    <field name="esob_a_days"/>
+                                    <field name="custom_esob_days_sum"/>
+                                    <field name="custom_net_salary"/>
+                                    <field name="custom_per_day_salary"/>
+                                    <field name="custom_esob_amounts"/>
+                                    <field name="custom_move_id"/>
+                                </tree></field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form></field>
+    </record>
+    <record id="view_employee_accrual_tree" model="ir.ui.view">
+        <field name="name">employee.accrual.tree</field>
+        <field name="model">employee.accrual</field>
+        <field name="arch" type="xml">
+            <tree string="Employee Accruals">
+                <field name="name"/>
+                <!--                <field name="date"/>-->
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="accrual_type"/>
+                <field name="status"/>
+            </tree></field>
+    </record>
+    <!--    <record id="view_employee_accrual_line_tree" model="ir.ui.view">-->
+    <!--        <field name="name">employee.accrual.line.tree</field>-->
+    <!--        <field name="model">employee.accrual.line</field>-->
+    <!--        <field name="arch" type="xml">-->
+    <!-- -->
+    <!--</field>-->
+    <!--    </record>-->
+    <record id="employee_accrual_action" model="ir.actions.act_window">
+        <field name="name">Employee Accruals</field>
+        <field name="res_model">employee.accrual</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <record id="view_auh_gratuity_custom_form_line" model="ir.ui.view">
+        <field name="name">mih.auh.gratuity.line.form</field>
+        <field name="model">mih.auh.gratuity.line</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false" string="EOS Accruals">
+                <header>
+                    <field name="state" statusbar_visible="draft,lock" widget="statusbar"/>
+                    <!--                        <button name="action_create_journal_entry" type="object" string="Create Journal Entry" class="btn-primary" invisible='1'/>-->
+                    <button class="btn-primary" invisible="state not in ['draft']" name="action_lock" string="Lock" type="object"/>
+                    <button class="btn-primary" invisible="1 or state not in ['lock']" name="action_unlock" string="Unlock" type="object"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-pencil-square" name="show_custom_journal_entries" string="Journal Entries" type="object"/>
+                    </div>
+                    <group>
+                        <group string="Employee Details">
+                            <field name="custom_employee_id" readonly="state"/>
+                            <field name="custom_type" readonly="state"/>
+                            <field name="custom_contract_id" readonly="state"/>
+                            <field name="custom_date_of_join" readonly="state"/>
+                            <field name="custom_late_working_day" readonly="state"/>
+                            <field name="currency_id"/>
+                        </group>
+                        <group string="Eligible Details">
+                            <field name="no_of_days"/>
+                            <field name="custom_lop" readonly="state"/>
+                            <field name="custom_eligible_days"/>
+                            <field name="eligible_days_f_five_years"/>
+                            <field name="eligible_days_a_five_years"/>
+                            <field name="service_period"/>
+                            <field name="first_5_years" invisible="1"/>
+                            <field name="after_5_years" invisible="1"/>
+                            <field invisible="1" name="years"/>
+                            <field invisible="1" name="months"/>
+                            <field invisible="1" name="days"/>
+
+                        </group>
+                        <group string="Esob Details">
+                            <field name="esob_days"/>
+                            <field name="esob_a_days"/>
+                            <field name="custom_esob_days_sum"/>
+                            <field name="custom_esob_amounts"/>
+                            <field force_save="1" name="current_month_amt"/>
+                            <field force_save="1" invisible="1" name="total_esob_amount"/>
+                            <field force_save="1" invisible="1" name="current_last_amt"/>
+                        </group>
+                        <group string="Basic Salary Details">
+                            <field name="custom_basic_salary" readonly="state"/>
+                            <field name="custom_allowance" readonly="state"/>
+                            <field name="custom_net_salary"/>
+                            <field name="custom_per_day_salary"/>
+                        </group>
+                        <group string="Other Details">
+                            <field name="created_by"/>
+                            <field name="created_date"/>
+                            <field name="custom_move_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Internal Note">
+                            <group>
+                                <field name="internal_note" nolabel="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form></field>
+    </record>
+    <!--    <menuitem id="menu_employee_accrual" name="Employee Accruals" parent="hr.menu_hr_root" action="employee_accrual_action"/>-->
+    <!--        <menuitem id="menu_employee_accrual" name="Employee Accruals"-->
+    <!--   					action="employee_accrual_action"-->
+    <!--   					parent="hr_holidays.menu_hr_holidays_approvals"-->
+    <!--   					sequence = "50"-->
+    <!--   					/>-->
+    <menuitem id="employee_accruals_sheet_custom" name="Accruals" parent="om_hr_payroll.menu_hr_payroll_root" sequence="100"/>
+    <menuitem action="employee_accrual_action" id="menu_employee_accrual" name="Employee Accruals" parent="employee_accruals_sheet_custom" sequence="5"/>
+    <!--        <menuitem -->
+    <!--            id="mih_auh_gratuity_sheet_sub_menu_custom"-->
+    <!--            name="Gratuity Sheet"-->
+    <!--            action="hr_gratuity.action_auh_gratuity_custom"-->
+    <!--            parent="mih_auh_gratuity_sheet_custom"-->
+    <!--            sequence='2'-->
+    <!--            />-->
+</odoo>

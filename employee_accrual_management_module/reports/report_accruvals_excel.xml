@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <data>
+         <report
+            id="action_report_employee_xls"
+            string="Employee Accruals Excel"
+            model="employee.accrual"
+            report_type="xlsx"
+            file="Employee Accruals"
+            name="employee_accrual.report_employee_accruals_xlsx"
+        />
+   </data>
+</odoo>

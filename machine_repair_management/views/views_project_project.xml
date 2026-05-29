@@ -1,0 +1,30 @@
+<!-- <?xml version = "1.0" encoding = "utf-8" ?>
+<odoo>
+
+	<record id ="project_project_form_view_inherit" model= "ir.ui.view">
+		<field name ="name">project.project.inherit.form</field>
+		<field name ="model">project.project</field>
+		<field name ="inherit_id" ref="project_team_assignment.project_view_inherit" />
+		<field name ="arch" type ="xml">
+		
+			<xpath expr ="//button[@name='action_team_member_assign']" position = "after">
+				<group>
+					<field name ="service_team_ids" widget = "many2many_tags"/>
+					<field name ="service_team_bool" invisible="1"/>
+				</group>
+				
+			</xpath>
+			
+			<xpath expr="//field[@name='team_member_ids']/tree/field[@name='user_id']"  position ="after">
+				
+				<field name ="location_id"/>
+				<field name ="team_leader_id" />
+			
+			</xpath>
+		
+		</field>
+	</record>
+	
+	
+
+</odoo> -->

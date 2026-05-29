@@ -1,0 +1,307 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* entitlement
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-29 09:08+0000\n"
+"PO-Revision-Date: 2024-07-29 09:08+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: entitlement
+#: model_terms:ir.ui.view,arch_db:entitlement.hr_employee_entitlement_view_form_inherit
+msgid ""
+"<span class=\"oe_inline\">\n"
+"                                                days/\n"
+"                                            </span>"
+msgstr ""
+
+#. module: entitlement
+#: model_terms:ir.ui.view,arch_db:entitlement.hr_employee_entitlement_view_form_inherit
+msgid ""
+"<span class=\"oe_inline\">\n"
+"                                            days/\n"
+"                                        </span>"
+msgstr ""
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__accrued_leave
+#: model:ir.model.fields,field_description:entitlement.field_hr_leave_type__transact_code_accrd_leave
+msgid "Accrued Leave"
+msgstr "الإجازة المتراكمة"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_leave_type__transact_code_accrd_ticket
+msgid "Accrued Ticket"
+msgstr "تذكرة مستحقة"
+
+#. module: entitlement
+#: model:ir.model.fields.selection,name:entitlement.selection__update_accrued_leave__type_of_adjustment__adjustment
+msgid "Adjustment"
+msgstr "تعديل"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__adjustments
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__adjustments_ticket
+msgid "Adjustments"
+msgstr "التعديلات"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_leave_type__transact_code_adv_payment
+msgid "Advance Payment"
+msgstr "دفعه مقدمه"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__air_ticket_entitle_days
+msgid "Air Ticket Entitlement"
+msgstr "استحقاق تذكرة الطيران"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__air_ticket_unit_price
+msgid "Air Ticket Unit Price"
+msgstr "سعر وحدة تذكرة الطيران"
+
+#. module: entitlement
+#: model_terms:ir.ui.view,arch_db:entitlement.hr_employee_entitlement_view_form_inherit
+msgid "Air ticket Entitlement"
+msgstr "استحقاق تذكرة الطيران"
+
+#. module: entitlement
+#: model:ir.model.fields.selection,name:entitlement.selection__update_accrued_leave__type_of_adjustment__b/f_wd
+msgid "B/F-wd"
+msgstr "التوازن إلى الأمام"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__bfwd_previous_year
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__bfwd_previous_year_ticket
+msgid "B/Fwd - Previous Years"
+msgstr "الرصيد الآجل - السنوات السابقة"
+
+#. module: entitlement
+#: model_terms:ir.ui.view,arch_db:entitlement.hr_employee_entitlement_view_form_inherit
+msgid "B/Fwd-Previous Year"
+msgstr "الرصيد الآجل - السنوات السابقة"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__balance
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__balance_ticket
+msgid "Balance"
+msgstr "توازن"
+
+#. module: entitlement
+#: model_terms:ir.ui.view,arch_db:entitlement.hr_employee_entitlement_view_form_inherit
+msgid "Contract"
+msgstr "عقد"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_update_accrued_leave__create_uid
+msgid "Created by"
+msgstr "انشأ من قبل"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_update_accrued_leave__create_date
+msgid "Created on"
+msgstr "تم إنشاؤها على"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__air_tkt_days
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__leave_days
+#: model:ir.model.fields.selection,name:entitlement.selection__hr_employee__air_ticket_entitle_period__days
+#: model:ir.model.fields.selection,name:entitlement.selection__hr_employee__leave_entitle_period__days
+msgid "Days"
+msgstr "أيام"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_update_accrued_leave__display_name
+msgid "Display Name"
+msgstr "اسم العرض"
+
+#. module: entitlement
+#: model:ir.model.fields.selection,name:entitlement.selection__hr_employee__status__done
+msgid "Done"
+msgstr "منتهي"
+
+#. module: entitlement
+#: model:ir.model,name:entitlement.model_hr_employee
+#: model:ir.model.fields,field_description:entitlement.field_update_accrued_leave__employee_id
+msgid "Employee"
+msgstr "الموظف"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__entitlement_ticket
+msgid "Entitlement"
+msgstr "الاستحقاق"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_update_accrued_leave__id
+msgid "ID"
+msgstr "هوية"
+
+#. module: entitlement
+#: model:ir.model.fields.selection,name:entitlement.selection__hr_employee__status__in_progress
+msgid "In Progress"
+msgstr "في تَقَدم"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__last_leave_date
+msgid "Last Leave Date"
+msgstr "تاريخ الإجازة الأخيرة"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_update_accrued_leave____last_update
+msgid "Last Modified on"
+msgstr "تاريخ آخر تعديل"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__last_return_date
+msgid "Last Return Date"
+msgstr "تاريخ العودة الأخير"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_update_accrued_leave__write_uid
+msgid "Last Updated by"
+msgstr "آخر تحديث بواسطة"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_update_accrued_leave__write_date
+msgid "Last Updated on"
+msgstr "آخر تحديث بتاريخ"
+
+#. module: entitlement
+#: model:ir.model.fields.selection,name:entitlement.selection__update_accrued_leave__leave_ticket__leave
+msgid "Leave"
+msgstr "يترك"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__leave_entitle_days
+msgid "Leave Entitlement"
+msgstr "استحقاق الإجازة"
+
+#. module: entitlement
+#: model_terms:ir.ui.view,arch_db:entitlement.hr_employee_entitlement_view_form_inherit
+msgid "Leave Accruals"
+msgstr "ترك المستحقات"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__leave_entitle_days
+msgid "Leave Entitlement"
+msgstr "استحقاق الإجازة"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_update_accrued_leave__leave_ticket
+msgid "Leave/Ticket"
+msgstr "إجازة/تذكرة"
+
+#. module: entitlement
+#: model:ir.model.fields.selection,name:entitlement.selection__hr_employee__air_ticket_entitle_period__months
+#: model:ir.model.fields.selection,name:entitlement.selection__hr_employee__leave_entitle_period__months
+msgid "Months"
+msgstr "شهور"
+
+#. module: entitlement
+#: model:ir.model.fields.selection,name:entitlement.selection__hr_employee__status__new
+msgid "New"
+msgstr "جديد"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_update_accrued_leave__no_of_tickets
+msgid "No.of Days/Tickets"
+msgstr "عدد الأيام/التذاكر"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__air_ticket_entitle_period
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__leave_entitle_period
+msgid "Period"
+msgstr "فترة"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_leave_type__prepare_payslip
+msgid "Prepare payslip"
+msgstr "إعداد قسيمة الدفع"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__status
+msgid "Status"
+msgstr "حالة"
+
+#. module: entitlement
+#: model:ir.model.fields.selection,name:entitlement.selection__update_accrued_leave__leave_ticket__ticket
+msgid "Ticket"
+msgstr "تذكرة"
+
+#. module: entitlement
+#: model_terms:ir.ui.view,arch_db:entitlement.hr_employee_entitlement_view_form_inherit
+msgid "Ticket Accruals"
+msgstr "مستحقات التذاكر"
+
+#. module: entitlement
+#: model:ir.model,name:entitlement.model_hr_leave_type
+msgid "Time Off Type"
+msgstr "نوع الإجازة "
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__total_paid_leave
+msgid "Total Paid Leave"
+msgstr "إجمالي الإجازة مدفوعة الأجر"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__total_unpaid_leave
+msgid "Total Unpaid Leave"
+msgstr "إجمالي الإجازة غير مدفوعة الأجر"
+
+#. module: entitlement
+#: model_terms:ir.ui.view,arch_db:entitlement.hr_leave_type_entitlement_view_form_inherit
+msgid "Transaction Code"
+msgstr "رمز العملية"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_update_accrued_leave__type_of_adjustment
+msgid "Type Of Adjustment"
+msgstr "نوع التعديل"
+
+#. module: entitlement
+#: model_terms:ir.ui.view,arch_db:entitlement.update_accrued_leave_form_view
+msgid "Type of Adjustment"
+msgstr "نوع التعديل"
+
+#. module: entitlement
+#: model_terms:ir.ui.view,arch_db:entitlement.update_accrued_leave_form_view
+#: model_terms:ir.ui.view,arch_db:entitlement.update_accrued_leave_tree_view
+msgid "Update Accrued Leave"
+msgstr "تحديث الإجازة المتراكمة"
+
+#. module: entitlement
+#: model:ir.actions.act_window,name:entitlement.action_update_accrued_leave_form
+#: model:ir.ui.menu,name:entitlement.menu_update_accrued_leave
+msgid "Update Accrued Leave Days / Tickets"
+msgstr "تحديث أيام الإجازة المتراكمة / التذاكر"
+
+#. module: entitlement
+#: model:ir.model,name:entitlement.model_update_accrued_leave
+msgid "Update Accrued Leave Days/Tickets"
+msgstr "تحديث أيام/تذاكر الإجازة المتراكمة"
+
+#. module: entitlement
+#: model:ir.model.fields.selection,name:entitlement.selection__update_accrued_leave__type_of_adjustment__utilised
+msgid "Utilised"
+msgstr "مستعمل"
+
+#. module: entitlement
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__utilised_this_year
+#: model:ir.model.fields,field_description:entitlement.field_hr_employee__utilised_this_year_ticket
+msgid "Utilised This Year"
+msgstr "المستخدمة هذا العام"
+
+#. module: entitlement
+#: model:ir.model.fields.selection,name:entitlement.selection__hr_employee__air_ticket_entitle_period__years
+#: model:ir.model.fields.selection,name:entitlement.selection__hr_employee__leave_entitle_period__years
+msgid "Years"
+msgstr "سنين"

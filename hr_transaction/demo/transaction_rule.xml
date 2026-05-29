@@ -1,0 +1,309 @@
+<?xml version="1.0"?>
+<odoo>
+    <data noupdate="1">
+        <!--  Demo Leads -->
+        <record id="transaction_rule_record_1" model="hr.transaction.rule">
+
+            <field name="code">HR001</field>
+            <field name="name">Overtime</field>
+            <field name="rule_type">Allowance</field>
+            <field name="unit_type">Hours</field>
+
+
+        </record>
+        <record id="transaction_rule_record_2" model="hr.transaction.rule">
+
+             <field name="code">HR002</field>
+            <field name="name">Holiday Overtime</field>
+            <field name="rule_type">Allowance</field>
+            <field name="unit_type">Hours</field>
+
+
+        </record>
+        <record id="transaction_rule_record_3" model="hr.transaction.rule">
+
+             <field name="code">HR003</field>
+            <field name="name">Accrued Leave</field>
+            <field name="rule_type">Allowance</field>
+            <field name="unit_type">Days</field>
+
+
+        </record>
+        <record id="transaction_rule_record_4" model="hr.transaction.rule">
+
+             <field name="code">HR004</field>
+            <field name="name">Personal Leave</field>
+            <field name="rule_type">Allowance</field>
+            <field name="unit_type">Days</field>
+
+
+        </record>
+        <record id="transaction_rule_record_5" model="hr.transaction.rule">
+
+             <field name="code">HR005</field>
+            <field name="name">Public Holidays</field>
+            <field name="rule_type">Allowance</field>
+            <field name="unit_type">Days</field>
+
+
+        </record>
+        <record id="transaction_rule_record_6" model="hr.transaction.rule">
+
+             <field name="code">HR006</field>
+            <field name="name">Ticket Encashment</field>
+            <field name="rule_type">Allowance</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_7" model="hr.transaction.rule">
+
+             <field name="code">HR007</field>
+            <field name="name">Bonus</field>
+            <field name="rule_type">Allowance</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_8" model="hr.transaction.rule">
+
+             <field name="code">HR008</field>
+            <field name="name">Commission</field>
+            <field name="rule_type">Allowance</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_9" model="hr.transaction.rule">
+
+             <field name="code">HR009</field>
+            <field name="name">Advance</field>
+            <field name="rule_type">Allowance</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_10" model="hr.transaction.rule">
+
+             <field name="code">HR010</field>
+            <field name="name">Loan</field>
+            <field name="rule_type">Allowance</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_11" model="hr.transaction.rule">
+
+             <field name="code">HR011</field>
+            <field name="name">EOSA Advance</field>
+            <field name="rule_type">Allowance</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_12" model="hr.transaction.rule">
+
+             <field name="code">HR012</field>
+            <field name="name">EOSA</field>
+            <field name="rule_type">Allowance</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_13" model="hr.transaction.rule">
+
+             <field name="code">HR013</field>
+            <field name="name">Other Additions</field>
+            <field name="rule_type">Allowance</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_14" model="hr.transaction.rule">
+
+             <field name="code">HR014</field>
+            <field name="name">Fines</field>
+            <field name="rule_type">Deduction</field>
+            <field name="unit_type">Days</field>
+
+
+        </record>
+        <record id="transaction_rule_record_15" model="hr.transaction.rule">
+
+             <field name="code">HR015</field>
+            <field name="name">Absenteeism</field>
+            <field name="rule_type">Deduction</field>
+            <field name="unit_type">Days</field>
+
+
+        </record>
+        <record id="transaction_rule_record_16" model="hr.transaction.rule">
+
+             <field name="code">HR016</field>
+            <field name="name">Bills &amp;nbsp; Other Deductibles</field>
+            <field name="rule_type">Deduction</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_17" model="hr.transaction.rule">
+
+             <field name="code">HR017</field>
+            <field name="name">Advance Paid</field>
+            <field name="rule_type">Deduction</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_18" model="hr.transaction.rule">
+
+             <field name="code">HR018</field>
+            <field name="name">Loan Repayment</field>
+            <field name="rule_type">Deduction</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_19" model="hr.transaction.rule">
+
+             <field name="code">HR019</field>
+            <field name="name">Severance Pay</field>
+            <field name="rule_type">Deduction</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_20" model="hr.transaction.rule">
+
+             <field name="code">HR020</field>
+            <field name="name">Other Deductions</field>
+            <field name="rule_type">Deduction</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_21" model="hr.transaction.rule">
+
+             <field name="code">HR021</field>
+            <field name="name">Chargeout</field>
+            <field name="rule_type">Charge out</field>
+            <field name="unit_type">Not Applicable</field>
+
+
+        </record>
+        <record id="transaction_rule_record_22" model="hr.transaction.rule">
+
+             <field name="code">HR022</field>
+            <field name="name">Loan Adjustment</field>
+            <field name="rule_type">Not Applicable</field>
+            <field name="unit_type">Not Applicable</field>
+
+
+        </record>
+        <record id="transaction_rule_record_23" model="hr.transaction.rule">
+
+             <field name="code">HR023</field>
+            <field name="name">Loan Repayment Adjustment</field>
+            <field name="rule_type">Amount</field>
+            <field name="unit_type">Hours</field>
+
+
+        </record>
+        <record id="transaction_rule_record_24" model="hr.transaction.rule">
+
+             <field name="code">HR024</field>
+            <field name="name">Accrual</field>
+            <field name="rule_type">Accrual(Reserve)</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_25" model="hr.transaction.rule">
+
+             <field name="code">HR025</field>
+            <field name="name">EOSA Accrual</field>
+            <field name="rule_type">Accrual(Reserve)</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_26" model="hr.transaction.rule">
+
+             <field name="code">HR026</field>
+            <field name="name">Leave Accrual</field>
+            <field name="rule_type">Accrual(Reserve)</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_27" model="hr.transaction.rule">
+
+             <field name="code">HR027</field>
+            <field name="name">Travel Costs Accrual</field>
+            <field name="rule_type">Allowance</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_28" model="hr.transaction.rule">
+
+             <field name="code">HR028</field>
+            <field name="name">Medical Costs Accrual</field>
+            <field name="rule_type">Accrual(Reserve)</field>
+            <field name="unit_type">Amount</field>
+
+
+        </record>
+        <record id="transaction_rule_record_29" model="hr.transaction.rule">
+
+             <field name="code">HR029</field>
+            <field name="name">Additional Leave</field>
+            <field name="rule_type">Accrual(Reserve)</field>
+            <field name="unit_type">Days</field>
+
+
+        </record>
+        <record id="transaction_rule_record_30" model="hr.transaction.rule">
+
+             <field name="code">HR030</field>
+            <field name="name">Additional Tickets C1</field>
+            <field name="rule_type">Accrual(Reserve)</field>
+            <field name="unit_type">Days</field>
+
+
+        </record><record id="transaction_rule_record_31" model="hr.transaction.rule">
+
+             <field name="code">HR031</field>
+            <field name="name">Additional Tickets C2</field>
+            <field name="rule_type">Accrual(Reserve)</field>
+            <field name="unit_type">Days</field>
+
+
+        </record><record id="transaction_rule_record_32" model="hr.transaction.rule">
+
+             <field name="code">HR032</field>
+            <field name="name">Leave Deduction</field>
+            <field name="rule_type">Deduction</field>
+            <field name="unit_type">Days</field>
+
+
+        </record><record id="transaction_rule_record_33" model="hr.transaction.rule">
+
+             <field name="code">HR033</field>
+            <field name="name">Tickets Class1 Deduction</field>
+            <field name="rule_type">Deduction</field>
+            <field name="unit_type">Days</field>
+
+
+        </record>
+        <record id="transaction_rule_record_34" model="hr.transaction.rule">
+
+             <field name="code">HR034</field>
+            <field name="name">Tickets Class2 Deduction</field>
+            <field name="rule_type">Accrual(Reserve)</field>
+            <field name="unit_type">Deduction</field>
+
+
+        </record>
+    </data>
+</odoo>

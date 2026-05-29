@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Define all actions first -->
+    <record id="action_balance_sheet" model="ir.actions.act_window">
+        <field name="name">Balance Sheets</field>
+        <field name="res_model">balance.sheet</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_profit_loss" model="ir.actions.act_window">
+        <field name="name">Profit and Loss Statements</field>
+        <field name="res_model">profit.loss</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_cash_flow" model="ir.actions.act_window">
+        <field name="name">Cash Flow Statements</field>
+        <field name="res_model">cash.flow</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

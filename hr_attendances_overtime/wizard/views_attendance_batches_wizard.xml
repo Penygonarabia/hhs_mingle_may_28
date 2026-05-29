@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="views_attendance_batches_wizard_tree" model="ir.ui.view">
+        <field name="name">attendance.sheet.batch.tree</field>
+        <field name="model">attendance.sheet.batch</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field decoration-success="state in ['confirm','validate']" name="state" widget="badge"/>
+            </tree></field>
+    </record>
+    <record id="attendance_batches_wizard_form" model="ir.ui.view">
+        <field name="name">attendance.sheet.batch.form</field>
+        <field name="model">attendance.sheet.batch</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <!-- <button name="get_employee_data" string="Add Employee" class="oe_highlight" type="object" />
+			 				<button name="write_attendance_sheet" string="Data Inserted into Attendance Sheet"  class="oe_highlight" type="object"/>
+			 				<button name="update_attendance" string="Update" class="oe_highlight" type="object" /> -->
+                    <button class="oe_highlight" invisible="state not in ['draft']" name="get_employee_data" string="Add Employee" type="object"/>
+                    <button class="oe_highlight" invisible="state not in ['in_progress']" name="write_attendance_sheet" string="Data Inserted into Attendance Sheet" type="object"/>
+                    <button class="oe_highlight" invisible="state not in ['confirm']" name="update_attendance" string="Update" type="object"/>
+                    <field name="state" state="draft,in_progress,confirm,validate" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name" readonly="state not in ['draft']"/>
+                    </group>
+                    <group>
+                        <field name="date_from" readonly="state not in ['draft']"/>
+                        <field name="date_to" readonly="state not in ['draft']"/>
+                    </group>
+                    <group>
+                        <field invisible="1" name="day_check"/>
+                    </group>
+                    <notebook>
+                        <page id="attendance_employee" string="Employee">
+                            <!-- <field name="attendance_batch_line_ids" > -->
+                            <field name="attendance_batch_line_ids" readonly="state not in ['draft']">
+                                <tree editable="bottom">
+                                    <field force_save="1" name="employee_no"/>
+                                    <field force_save="1" name="employee_id"/>
+                                    <field force_save="1" name="period_from"/>
+                                    <field force_save="1" name="period_to"/>
+                                    <field force_save="1" name="employee_contract_id"/>
+                                    <field force_save="1" name="contract_start_date"/>
+                                    <field force_save="1" name="contract_end_date"/>
+                                    <field force_save="1" column_invisible="1" name="attendance_sheet_id"/>
+                                    <field column_invisible="1" name="new_employee"/>
+                                    <field column_invisible="1" name="exit_employee"/>
+                                    <field column_invisible="1" name="process_bool"/>
+                                </tree></field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form></field>
+    </record>
+    <record id="action_attendance_batch_wizard" model="ir.actions.act_window">
+        <field name="name">Attendance Batch</field>
+        <field name="res_model">attendance.sheet.batch</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('create_uid.company_id', 'in', allowed_company_ids)]</field>
+    </record>
+    <!-- <menuitem id="menu_attendance_batch_sheet" name="Attendance Sheet Batch" parent="hr_attendance.menu_hr_attendance_root" /> -->
+    <menuitem action="action_attendance_batch_wizard" id="menu_attendance_batch_sheet_name" name="Attendance Batch" parent="hr_attendance.menu_hr_attendance_root" sequence="20"/>
+</odoo>

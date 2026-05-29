@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_balance_sheet_form" model="ir.ui.view">
+        <field name="name">balance.sheet.form</field>
+        <field name="model">balance.sheet</field>
+        <field name="arch" type="xml">
+            <form string="Balance Sheet">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" string="Reference"/>
+                            <field name="company_id" string="Company"/>
+                        </group>
+                        <group>
+                            <field name="date_from" string="From Date"/>
+                            <field name="date_to" string="To Date"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Assets">
+                            <group>
+                                <h2><b>Non-Current Assets</b></h2>
+                                <group>
+                                    <field name="fixed_assets" string="Fixed Assets"/>
+                                    <field name="total_non_current_assets" string="Total Non-Current Assets" readonly="1"/>
+                                </group>
+
+                                <h2><b>Current Assets</b></h2>
+                                <group>
+                                    <field name="trade_receivables" string="Trade Receivables"/>
+                                    <field name="advance_to_shareholder" string="Advance to Shareholder"/>
+                                    <field name="cash_equivalents" string="Cash and Cash Equivalents"/>
+                                    <field name="total_current_assets" string="Total Current Assets" readonly="1"/>
+                                </group>
+
+                                <h2><b>Total Assets</b></h2>
+                                <group>
+                                    <field name="total_assets" string="Total Assets" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Equity and Liabilities">
+                            <group>
+                                <h2><b>Equity</b></h2>
+                                <group>
+                                    <field name="issued_capital" string="Issued Capital"/>
+                                    <field name="accumulated_profit" string="Accumulated Profit"/>
+                                    <field name="total_equity" string="Total Equity" readonly="1"/>
+                                </group>
+
+                                <h2><b>Current Liabilities</b></h2>
+                                <group>
+                                    <field name="accrued_charges" string="Accrued Charges"/>
+                                    <field name="provision_taxation" string="Provision for Taxation"/>
+                                    <field name="total_current_liabilities" string="Total Current Liabilities" readonly="1"/>
+                                </group>
+
+                                <h2><b>Total Equity and Liabilities</b></h2>
+                                <group>
+                                    <field name="total_equity_liabilities" string="Total Equity and Liabilities" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Notes">
+                            <field name="notes" string="Additional Notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_balance_sheet_tree" model="ir.ui.view">
+        <field name="name">balance.sheet.tree</field>
+        <field name="model">balance.sheet</field>
+        <field name="arch" type="xml">
+            <tree string="Balance Sheets">
+                <field name="name" string="Reference"/>
+                <field name="date_from" string="From Date"/>
+                <field name="date_to" string="To Date"/>
+                <field name="company_id" string="Company"/>
+                <field name="total_assets" string="Total Assets"/>
+                <field name="total_equity_liabilities" string="Total Equity and Liabilities"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

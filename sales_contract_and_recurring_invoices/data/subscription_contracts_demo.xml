@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- 1. Sample Customer Partner -->
+        <record id="res_partner_shaker_demo" model="res.partner">
+            <field name="name">HH Shaker Modern Trading Co. Ltd.</field>
+            <field name="street">Prince Sultan Road</field>
+            <field name="street2">Al Rawdah District</field>
+            <field name="city">Jeddah</field>
+            <field name="zip">23431</field>
+            <field name="country_id" ref="base.sa"/>
+            <field name="phone">+966 12 606 0000</field>
+            <field name="email">info@shaker.com.sa</field>
+            <field name="vat">300012345600003</field>
+        </record>
+
+        <!-- 2. Sample Product Categories (Brands) -->
+        <record id="product_category_lg" model="product.category">
+            <field name="name">LG Brand</field>
+            <field name="parent_id" ref="product.product_category_all"/>
+        </record>
+
+        <record id="product_category_carrier" model="product.category">
+            <field name="name">Carrier Brand</field>
+            <field name="parent_id" ref="product.product_category_all"/>
+        </record>
+
+        <!-- 3. Sample CRM Contract Types -->
+        <record id="contract_type_full" model="crm.contract.type">
+            <field name="code">FULL-AMC</field>
+            <field name="name">Full Comprehensive AMC</field>
+            <field name="contract_category">full</field>
+        </record>
+
+        <!-- 4. Sample Equipment Products -->
+        <record id="product_vrf_ac" model="product.product">
+            <field name="name">VRF Air Conditioning System</field>
+            <field name="categ_id" ref="product_category_lg"/>
+            <field name="detailed_type">service</field>
+            <field name="list_price">15000.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <record id="product_package_ac" model="product.product">
+            <field name="name">Package AC Unit</field>
+            <field name="categ_id" ref="product_category_carrier"/>
+            <field name="detailed_type">service</field>
+            <field name="list_price">8000.00</field>
+            <field name="uom_id" ref="uom.product_uom_unit"/>
+            <field name="uom_po_id" ref="uom.product_uom_unit"/>
+        </record>
+
+        <!-- 5. Sample Subscription Contract -->
+        <record id="subscription_contract_sample_1" model="subscription.contracts">
+            <field name="name">CON/2026/0001</field>
+            <field name="reference">HH Shaker Office Building VRF &amp; Package AC AMC</field>
+            <field name="partner_id" ref="res_partner_shaker_demo"/>
+            <field name="recurring_period">1</field>
+            <field name="recurring_period_interval">Years</field>
+            <field name="invoice_interval_duration">quarterly</field>
+            <field name="date_start" eval="datetime.date.today().strftime('%Y-%m-%d')"/>
+            <field name="date_end" eval="(datetime.date.today() + datetime.timedelta(days=364)).strftime('%Y-%m-%d')"/>
+            <field name="next_invoice_date" eval="(datetime.date.today() + datetime.timedelta(days=90)).strftime('%Y-%m-%d')"/>
+            <field name="company_id" ref="base.main_company"/>
+            <field name="currency_id" ref="base.SAR"/>
+            <field name="contract_type">maintenance</field>
+            
+            <!-- Second Party Representative details -->
+            <field name="customer_name">Hassan Shaker</field>
+            <field name="id_party">1023456789</field>
+            <field name="job_position">General Manager</field>
+            <field name="mobile_no">+966 50 123 4567</field>
+            <field name="email">hassan@shaker.com.sa</field>
+            
+            <!-- Contact details -->
+            <field name="contact_person">Ahmed Ali</field>
+            <field name="contact_persons">Ahmed Ali</field>
+            <field name="contact_persons_mobile">+966 55 987 6543</field>
+            <field name="additional_info">Preventive maintenance tasks are scheduled on weekends to avoid disruption to office operations.</field>
+            <field name="site_address">Building 45, Prince Sultan Road, Al Rawdah District, Jeddah</field>
+            
+            <!-- First Party Representative / Coordinator details -->
+            <field name="service_coordinator_person">Eng. Saravanan Kumar</field>
+            <field name="service_coordinator_mobile">+966 56 111 2222</field>
+            
+            <field name="state">New</field>
+            
+            <!-- Terms and conditions -->
+            <field name="note"><![CDATA[
+                <p>1. Service will be rendered according to Annex A.</p>
+                <p>2. Payment terms are quarterly in advance.</p>
+                <p>3. Spare parts are covered under the Full Comprehensive AMC terms.</p>
+            ]]></field>
+
+            <!-- Inline Contract Lines -->
+            <field name="contract_line_ids" eval="[
+                (0, 0, {
+                    'product_id': ref('product_vrf_ac'),
+                    'brand_category_id': ref('product_category_lg'),
+                    'contract_type_id': ref('contract_type_full'),
+                    'qty_ordered': 10,
+                    'no_of_visits_per_year': 4,
+                    'no_of_emergency_visit': 2,
+                    'days_required_for_rpm': 2.0,
+                    'total_price': 120000.00,
+                    'spare_parts_selling_price': 0.0,
+                    'total_selling_price': 120000.00,
+                    'vat': 15.0,
+                    'vat_amt': 18000.00,
+                    'sub_total': 138000.00,
+                }),
+                (0, 0, {
+                    'product_id': ref('product_package_ac'),
+                    'brand_category_id': ref('product_category_carrier'),
+                    'contract_type_id': ref('contract_type_full'),
+                    'qty_ordered': 5,
+                    'no_of_visits_per_year': 3,
+                    'no_of_emergency_visit': 1,
+                    'days_required_for_rpm': 1.5,
+                    'total_price': 40000.00,
+                    'spare_parts_selling_price': 0.0,
+                    'total_selling_price': 40000.00,
+                    'vat': 15.0,
+                    'vat_amt': 6000.00,
+                    'sub_total': 46000.00,
+                })
+            ]"/>
+        </record>
+    </data>
+</odoo>

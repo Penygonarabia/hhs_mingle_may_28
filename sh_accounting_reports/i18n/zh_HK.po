@@ -1,0 +1,1260 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sh_accounting_reports
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-07-13 05:56+0000\n"
+"PO-Revision-Date: 2022-07-13 05:56+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_cus_invoice_analysis_action
+msgid "'Customer/vendor Invoices Analysis'"
+msgstr "客戶/供應商發票分析'"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_invoice_by_category_action
+msgid "'Invoice By Product Category'"
+msgstr "產品類別的發票"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_invoice_summary_action
+msgid "'Invoice Summary'"
+msgstr "發票摘要'"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_action_invoice_details_report
+msgid "'Invoices Details Report'"
+msgstr "發票詳細信息報告'"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_invoice_product_indent_action
+msgid "'Invoices Product Indent'"
+msgstr "發票產品縮進'"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_invoices_product_profit_action
+msgid "'Invoices Product Profit'"
+msgstr "發票產品利潤'"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_invoice_report_salesperson_report
+msgid "'Sales Report By Saleperson'"
+msgstr "Saleperson的銷售報告"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_tci_top_customers_report_action
+msgid "'Top Customers'"
+msgstr "頂級客戶的"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_top_invoicing_product_report_action
+msgid "'Top Invoicing Products'"
+msgstr "頂級發票產品"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "<b>Total</b>"
+msgstr "<b>總計</b>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid ""
+"<br/>\n"
+"                                <strong>Compare To Date :</strong>"
+msgstr ""
+"<br/>\n"
+"                                <strong>比較日期：</strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid ""
+"<br/>\n"
+"                                <strong>To Date :</strong>"
+msgstr ""
+"<br/>\n"
+"                                <strong>迄今為止：</strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid ""
+"<br/>\n"
+"                        <strong>To Date :</strong>"
+msgstr ""
+"<br/>\n"
+"                        <strong>迄今為止：</strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "<span>Sale Person : </span>"
+msgstr "<span>銷售人員：</span>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+msgid "<strong>Compare Customer</strong>"
+msgstr "<strong>比較客戶</strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid "<strong>Compare From Date :</strong>"
+msgstr "<strong>比較日期：</strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid "<strong>Compare Product</strong>"
+msgstr "<strong>比較產品</strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+msgid "<strong>Customer</strong>"
+msgstr "<strong>客戶</strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid "<strong>From Date :</strong>"
+msgstr "<strong>從日期開始：</strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid "<strong>Product</strong>"
+msgstr "<strong>產品</strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid "<strong>Qty Sold</strong>"
+msgstr "<strong>數量出售</strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+msgid "<strong>Sales Amount</strong>"
+msgstr "<strong>銷售額</strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_indent_product_indent_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+msgid "<strong>Total</strong>"
+msgstr "<strong>總計</strong>"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__report_by__move
+msgid "Account Move"
+msgstr "帳戶移動"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "Amount Due"
+msgstr "應付金額"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "Amount Invoiced"
+msgstr "發票的金額"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_doc
+msgid "Amount Paid"
+msgstr "支付的金額"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+msgid "Balance"
+msgstr "平衡"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tci_top_customer_wizard__type__basic
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tip_top_invoicing_product_wizard__type__basic
+msgid "Basic"
+msgstr "基本的"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_details_report_wizard__sh_state__cancel
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_report_salesperson_wizard__state__cancel
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_summary_wizard__sh_status__cancel
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_customer_invoices_analysis_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_wizard_form
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_product_indent_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_report_salesperson_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_report_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customer_wizard_form
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tip_top_invoicing_product_wizard_form_view
+msgid "Cancel"
+msgstr "取消"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_indent_wizard__sh_status__cancel
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__sh_status__cancel
+msgid "Cancelled"
+msgstr "取消"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__sh_category_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__sh_category_ids
+msgid "Categories"
+msgstr "類別"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_customer_invoices_analysis_xls_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_xls_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_product_indent_xls_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_xls_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_xls_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_invoices_detail_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_invoices_report_by_sale_person_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_sh_top_customers_invoice
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_top_invoicing_products
+msgid "Close"
+msgstr "關"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__company_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__company_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__company_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__company_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__company_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__company_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__company_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__company_ids
+msgid "Companies"
+msgstr "公司"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__company_ids
+msgid "Company"
+msgstr "公司"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tci_top_customer_wizard__type__compare
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tip_top_invoicing_product_wizard__type__compare
+msgid "Compare"
+msgstr "相比"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__date_compare_from
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__date_compare_from
+msgid "Compare From Date"
+msgstr "比較日期"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__date_compare_to
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__date_compare_to
+msgid "Compare To Date"
+msgstr "比較迄今為止"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+msgid "Cost"
+msgstr "成本"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls__create_uid
+msgid "Created by"
+msgstr "由...製作"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls__create_date
+msgid "Created on"
+msgstr "創建於"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__currency_id
+msgid "Currency"
+msgstr "貨幣"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "Customer"
+msgstr "顧客"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_category_wizard__sh_move_type__out_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_details_report_wizard__sh_move_type__out_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_indent_wizard__sh_move_type__out_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__sh_move_type__out_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_report_salesperson_wizard__sh_move_type__out_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_summary_wizard__sh_move_type__out_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__sh_move_type__out_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tci_top_customer_wizard__sh_move_type__out_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tip_top_invoicing_product_wizard__sh_move_type__out_refund
+msgid "Customer Credit Note"
+msgstr "客戶信用筆記"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_category_wizard__sh_move_type__out_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_details_report_wizard__sh_move_type__out_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_indent_wizard__sh_move_type__out_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__sh_move_type__out_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_report_salesperson_wizard__sh_move_type__out_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_summary_wizard__sh_move_type__out_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__sh_move_type__out_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tci_top_customer_wizard__sh_move_type__out_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tip_top_invoicing_product_wizard__sh_move_type__out_invoice
+msgid "Customer Invoice"
+msgstr "客戶發票"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,name:sh_accounting_reports.sh_cus_invoice_analysis_action
+msgid "Customer Invoices Analysis"
+msgstr "客戶發票分析"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__report_by_customer__customer_product
+msgid "Customer With Product"
+msgstr "產品的客戶"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_cus_invoice_analy_doc
+msgid "Customer/Vendor  Invoices Analysis report abstract model"
+msgstr "客戶/供應商發票分析報告摘要模型"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_customer_invoices_analysis_wizard
+msgid "Customer/Vendor Invoice Analysis"
+msgstr "客戶/供應商發票分析"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_cust_invoices_analysis_xls
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_customer_invoice_analysis
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_customer_invoices_analysis_report_menuitem
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_customer_invoices_analysis_xls_view
+msgid "Customer/Vendor Invoices Analysis"
+msgstr "客戶/供應商發票分析"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__sh_partner_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__sh_partner_ids
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__report_by_customer__customer_report
+msgid "Customers"
+msgstr "顧客"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__sh_partner_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__sh_partner_ids
+msgid "Customers/Vendors"
+msgstr "客戶/供應商"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+msgid "Date"
+msgstr "日期"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+msgid "Disc.(%)"
+msgstr "光盤（％）"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+msgid "Disc:"
+msgstr "光盤："
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+msgid "Discount"
+msgstr "折扣"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_cus_invoice_analy_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_indent_product_indent_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_by_category_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_details_report_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_summary_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoices_product_profit_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_salesperson_report_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_tci_top_customers_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_top_invoicing_product_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls__display_name
+msgid "Display Name"
+msgstr "顯示名稱"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls__excel_file
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls__excel_file
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls__excel_file
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls__excel_file
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls__excel_file
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls__excel_file
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls__excel_file
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products__excel_file
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls__excel_file
+msgid "Download report Excel"
+msgstr "下載報告Excel"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_details_report_wizard__sh_state__draft
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_indent_wizard__sh_status__draft
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_report_salesperson_wizard__state__draft
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_summary_wizard__sh_status__draft
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__sh_status__draft
+msgid "Draft"
+msgstr "草稿"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__sh_end_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__end_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__sh_end_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__sh_end_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__date_end
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__sh_end_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__sh_end_date
+msgid "End Date"
+msgstr "結束日期"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls__file_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls__file_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls__file_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls__file_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls__file_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls__file_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls__file_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products__file_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls__file_name
+msgid "Excel File"
+msgstr "Excel文件"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tip_top_invoicing_product_wizard_form_view
+msgid "Filter"
+msgstr "篩選"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__date_from
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__date_from
+msgid "From Date"
+msgstr "從日期"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_cus_invoice_analy_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_indent_product_indent_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_by_category_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_details_report_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_summary_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoices_product_profit_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_salesperson_report_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_tci_top_customers_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_top_invoicing_product_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls__id
+msgid "ID"
+msgstr "ID"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_category_wizard
+msgid "Invoice By Category Wizard"
+msgstr "按類別嚮導的發票"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoice_by_category
+#: model:ir.actions.report,name:sh_accounting_reports.sh_invoice_by_category_action
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_invoice_by_category_report_menuitem
+msgid "Invoice By Product Category"
+msgstr "按產品類別發票"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "Invoice Date"
+msgstr "發票日期"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_wizard_form
+msgid "Invoice Details"
+msgstr "發票明細"
+
+#. module: sh_accounting_reports
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_custom_invoice_details_report_menu
+msgid "Invoice Details Report"
+msgstr "發票詳細信息報告"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_invoices_detail_view
+msgid "Invoice Details Xlsx"
+msgstr "發票詳細信息xlsx"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "Invoice Number"
+msgstr "發票號碼"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_product_indent_wizard
+msgid "Invoice Product Indent Wizard"
+msgstr "發票產品縮進嚮導"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_product_indent_xls
+msgid "Invoice Product Indent Xls Report"
+msgstr "發票產品縮進XLS報告"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_invoice_report_salesperson_xls
+msgid "Invoice Salesperson XLS"
+msgstr "發票銷售員XLS"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoice_summary
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoice_summary_xls
+#: model:ir.actions.report,name:sh_accounting_reports.sh_invoice_summary_action
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_invoice_summary_report_menuitem
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_report_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_xls_view
+msgid "Invoice Summary"
+msgstr "發票摘要"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_summary_wizard
+msgid "Invoice Summary Wizard"
+msgstr "發票摘要嚮導"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_summary_xls
+msgid "Invoice Summary Xls Report"
+msgstr "發票摘要XLS報告"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_invoice_summary_doc
+msgid "Invoice Summary report abstract model"
+msgstr "發票摘要報告摘要模型"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__sh_move_type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__sh_move_type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__sh_move_type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__sh_move_type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__sh_move_type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__sh_move_type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__sh_move_type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__sh_move_type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__sh_move_type
+msgid "Invoice Type"
+msgstr "發票類型"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_category_xls
+msgid "Invoice by Category Xls Report"
+msgstr "按類別XLS報告發票"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_invoice_by_category_doc
+msgid "Invoice by category report abstract model"
+msgstr "按類別報告的發票摘要模型"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_invoice_details_report_doc
+msgid "Invoice details abstract model"
+msgstr "發票詳細信息抽像模型"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_indent_product_indent_doc
+msgid "Invoice product indent report abstract model"
+msgstr "發票產品縮進報告摘要模型"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+msgid "Invoices Amount"
+msgstr "發票金額"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoices_analysis_wizard
+msgid "Invoices Analysis Wizard"
+msgstr "發票分析嚮導"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_analysis_xls
+msgid "Invoices Analysis Xls Report"
+msgstr "發票分析XLS報告"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoice_by_category_xls
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_xls_view
+msgid "Invoices By Product Category"
+msgstr "按產品類別按發票"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoices_detail_xls
+msgid "Invoices Detail XLS"
+msgstr "發票詳細信息XLS"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+msgid "Invoices Details"
+msgstr "發票詳細信息"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.sh_invoice_details_report_action
+#: model:ir.actions.report,name:sh_accounting_reports.sh_action_invoice_details_report
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_invoice_details_report_menuitem
+msgid "Invoices Details Report"
+msgstr "發票詳細信息報告"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoice_product_indent
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoice_product_indent_xls
+#: model:ir.actions.report,name:sh_accounting_reports.sh_invoice_product_indent_action
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_invoice_product_indent_report_menuitem
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_indent_product_indent_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_product_indent_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_product_indent_xls_view
+msgid "Invoices Product Indent"
+msgstr "發票產品縮進"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoices_product_profit
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoices_product_profit_xls
+#: model:ir.actions.report,name:sh_accounting_reports.sh_invoices_product_profit_action
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_invoices_product_profit_report_menuitem
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_xls_view
+msgid "Invoices Product Profit"
+msgstr "發票產品利潤"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_product_profit_wizard
+msgid "Invoices Product Profit Wizard"
+msgstr "發票產品利潤嚮導"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_product_profit_xls
+msgid "Invoices Product Profit Xls Report"
+msgstr "發票產品利潤XLS報告"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_invoices_product_profit_doc
+msgid "Invoices Product Profit report abstract model"
+msgstr "發票產品利潤報告摘要模型"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_invoices_report_by_sale_person_view
+msgid "Invoices Report By Sale Person"
+msgstr "銷售人員的發票報告"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoices_report_by_sale_person_excel_form
+msgid "Invoices Report By Sale Person Excel"
+msgstr "銷售人員的發票報告Excel"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.sh_invoice_report_salesperson_action
+#: model:ir.actions.report,name:sh_accounting_reports.sh_invoice_report_salesperson_report
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_invoice_report_salesperson_menuitem
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_report_salesperson_wizard_form_view
+msgid "Invoices Report By Saleperson"
+msgstr "Saleperson的發票報告"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_cus_invoice_analy_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_indent_product_indent_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_by_category_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_details_report_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_summary_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoices_product_profit_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_salesperson_report_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_tci_top_customers_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_top_invoicing_product_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls____last_update
+msgid "Last Modified on"
+msgstr "最後修改"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls__write_uid
+msgid "Last Updated by"
+msgstr "最後更新"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls__write_date
+msgid "Last Updated on"
+msgstr "最後更新"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+msgid "Lost Customers"
+msgstr "丟失的客戶"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid "Lost Products"
+msgstr "丟失的產品"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+msgid "Margin(%)"
+msgstr "利潤（％）"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+msgid "Name"
+msgstr "姓名"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+msgid "New Customers"
+msgstr "新客戶"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid "New Products"
+msgstr "新產品"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__no_of_top_item
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__no_of_top_item
+msgid "No of Items"
+msgstr "沒有物品"
+
+#. module: sh_accounting_reports
+#: code:addons/sh_accounting_reports/sh_top_invoice_product/wizard/top_invoicing_wizard.py:0
+#, python-format
+msgid "No of items must be positive. or not zero"
+msgstr "任何物品都必須是積極的。或不是零"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+msgid "Number"
+msgstr "數字"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+msgid "Payments"
+msgstr "付款"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_details_report_wizard__sh_state__posted
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_indent_wizard__sh_status__posted
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_report_salesperson_wizard__state__posted
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_summary_wizard__sh_status__posted
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__sh_status__posted
+msgid "Posted"
+msgstr "發表"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+msgid "Price"
+msgstr "價格"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+msgid "Price Unit"
+msgstr "價格單位"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_customer_invoices_analysis_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_wizard_form
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_product_indent_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_report_salesperson_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_report_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customer_wizard_form
+msgid "Print"
+msgstr "打印"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_customer_invoices_analysis_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_product_indent_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_report_salesperson_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_report_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_wizard
+msgid "Print In XLS"
+msgstr "用XLS打印"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tip_top_invoicing_product_wizard_form_view
+msgid "Print Report"
+msgstr "打印報告"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_wizard_form
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customer_wizard_form
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tip_top_invoicing_product_wizard_form_view
+msgid "Print Xls"
+msgstr "打印XLS"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product__product_id
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_indent_product_indent_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+msgid "Product"
+msgstr "產品"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__sh_product_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__sh_product_ids
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__report_by__product
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+msgid "Products"
+msgstr "產品"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__report_by_customer__product
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__report_by_vendor__product
+msgid "Products Only"
+msgstr "僅產品"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+msgid "Profit"
+msgstr "利潤"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+msgid "Qty"
+msgstr "數量"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product__qty
+msgid "Qty Sold"
+msgstr "數量出售"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_indent_product_indent_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+msgid "Quantity"
+msgstr "數量"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__report_by_customer
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__report_by_vendor
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__report_by
+msgid "Report Print By"
+msgstr "報告打印by"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__type
+msgid "Report Type"
+msgstr "報告類型"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoices_detail_xls
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_xls_top_customers_invoice
+msgid "Reports Excel"
+msgstr "報告表現出色"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+msgid "Sale Price"
+msgstr "銷售價格"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__user_ids
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+msgid "Salesperson"
+msgstr "銷售員"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__sh_start_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__start_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__sh_start_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__sh_start_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__date_start
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__sh_start_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__sh_start_date
+msgid "Start Date"
+msgstr "開始日期"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__sh_state
+msgid "State"
+msgstr "狀態"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__sh_status
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__state
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__sh_status
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__sh_status
+msgid "Status"
+msgstr "地位"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+msgid "Subtotal"
+msgstr "小計"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+msgid "Tax"
+msgstr "稅"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+msgid "Taxes"
+msgstr "稅"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_indent_product_indent_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "To"
+msgstr "至"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__date_to
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__date_to
+msgid "To Date"
+msgstr "迄今為止"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_top_customers_invoice_xls
+msgid "Top Customer/Vendor XLS"
+msgstr "頂級客戶/供應商XLS"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_sh_top_customers_invoice
+msgid "Top Customer/vendor Xlsx"
+msgstr "頂級客戶/供應商XLSX"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_tci_top_customer_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customer_wizard_form
+msgid "Top Customers"
+msgstr "頂級客戶"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.sh_tci_top_customer_wizard_action
+#: model:ir.actions.report,name:sh_accounting_reports.sh_tci_top_customers_report_action
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_tci_top_customer_wizard_menuitem
+msgid "Top Customers/Vendors"
+msgstr "頂級客戶/供應商"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+msgid "Top Customers/vendors"
+msgstr "頂級客戶/供應商"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.sh_tip_top_invoicing_product_model_tree_action
+#: model:ir.actions.act_window,name:sh_accounting_reports.sh_tip_top_invoicing_product_wizard_action
+#: model:ir.actions.report,name:sh_accounting_reports.sh_top_invoicing_product_report_action
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_tip_top_invoicing_product
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_tip_view_top_invoicing_products
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tip_top_invoicing_product_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid "Top Invoicing Products"
+msgstr "頂級發票產品"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_top_invoicing_products
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_top_invoicing_products
+msgid "Top Invoicing Products Xlsx"
+msgstr "頂部發票產品xlsx"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_tip_invoicing_products
+msgid "Top Invoicing XLS"
+msgstr "頂部發票XLS"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_tip_top_invoicing_product_wizard
+msgid "Top invoicing product Transient model to just filter products"
+msgstr "最高發票產品瞬態模型僅過濾產品"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_tip_top_invoicing_product
+msgid ""
+"Top invoicing product persistence model to  used in snippet or any other "
+"places"
+msgstr ""
+"最高的發票產品持久性模型用於摘要或任何其他"
+"地方"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "Total"
+msgstr "全部的"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__product_uom_qty
+msgid "Total Qty. Sold"
+msgstr "總數。賣"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__amount_total
+msgid "Total Sales Amount"
+msgstr "總銷售額"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+msgid "Total:"
+msgstr "全部的："
+
+#. module: sh_accounting_reports
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_tip_top_invoicing_product_menuitem_update
+msgid "Update Top invoicing Products"
+msgstr "更新頂級發票產品"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__report_by_vendor__vendor_report
+msgid "Vendor"
+msgstr "小販"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_category_wizard__sh_move_type__in_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_details_report_wizard__sh_move_type__in_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_indent_wizard__sh_move_type__in_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__sh_move_type__in_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_report_salesperson_wizard__sh_move_type__in_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_summary_wizard__sh_move_type__in_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__sh_move_type__in_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tci_top_customer_wizard__sh_move_type__in_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tip_top_invoicing_product_wizard__sh_move_type__in_invoice
+msgid "Vendor Bill"
+msgstr "供應商法案"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_category_wizard__sh_move_type__in_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_details_report_wizard__sh_move_type__in_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_indent_wizard__sh_move_type__in_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__sh_move_type__in_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_report_salesperson_wizard__sh_move_type__in_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_summary_wizard__sh_move_type__in_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__sh_move_type__in_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tci_top_customer_wizard__sh_move_type__in_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tip_top_invoicing_product_wizard__sh_move_type__in_refund
+msgid "Vendor Credit Note"
+msgstr "供應商信用筆記"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__report_by_vendor__vendor_product
+msgid "Vendor with Products"
+msgstr "產品的供應商"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_invoices_detail_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_sh_top_customers_invoice
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_top_invoicing_products
+msgid "Xls Report"
+msgstr "XLS報告"
+
+#. module: sh_accounting_reports
+#: code:addons/sh_accounting_reports/sh_top_customers_invoice/wizard/top_customer_invoice_wizard.py:0
+#: code:addons/sh_accounting_reports/sh_top_invoice_product/wizard/top_invoicing_wizard.py:0
+#, python-format
+msgid "compare from date must be less than compare to date."
+msgstr "比較日期必須比迄今為止比較。"
+
+#. module: sh_accounting_reports
+#: code:addons/sh_accounting_reports/sh_top_customers_invoice/wizard/top_customer_invoice_wizard.py:0
+#: code:addons/sh_accounting_reports/sh_top_invoice_product/wizard/top_invoicing_wizard.py:0
+#, python-format
+msgid "from date must be less than to date."
+msgstr "從日期起必須小於迄今為止。"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_salesperson_report_doc
+msgid "invoice person report abstract model"
+msgstr "發票人報告抽像模型"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_customer_invoices_analysis_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_product_indent_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_report_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_wizard
+msgid "or"
+msgstr "或者"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_details_report_wizard
+msgid "sh invoice details report wizard model"
+msgstr "SH發票詳細信息報告嚮導模型"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_report_salesperson_wizard
+msgid "sh invoice report salesperson wizard model"
+msgstr "SH發票報告銷售人員嚮導模型"
+
+#. module: sh_accounting_reports
+#: code:addons/sh_accounting_reports/sh_customer_invoice_analysis/wizard/customer_invoice_analysis_wizard.py:0
+#: code:addons/sh_accounting_reports/sh_invoice_by_category/wizard/invoice_by_category_wizard.py:0
+#: code:addons/sh_accounting_reports/sh_invoice_details_report/wizard/invoice_details_report_wizard.py:0
+#: code:addons/sh_accounting_reports/sh_invoice_product_profit/wizard/invoices_product_profit_wizard.py:0
+#: code:addons/sh_accounting_reports/sh_invoice_report_salesperson/wizard/report_invoice_salesperson_wizard.py:0
+#: code:addons/sh_accounting_reports/sh_invoice_summary/wizard/invoice_summary_wizard.py:0
+#: code:addons/sh_accounting_reports/sh_product_invoice_indent/wizard/invoice_product_indent_wizard.py:0
+#, python-format
+msgid "start date must be less than end date."
+msgstr "開始日期必須小於結束日期。"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_tci_top_customers_doc
+msgid "top customer/Vendor  abstract model"
+msgstr "頂級客戶/供應商摘要模型"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_top_invoicing_product_doc
+msgid "top invoicing product report abstract model"
+msgstr "頂級發票產品報告摘要模型"

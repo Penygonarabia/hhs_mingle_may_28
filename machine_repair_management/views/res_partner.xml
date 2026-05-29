@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_partner_form_inherit_view" model="ir.ui.view">
+            <field name="name">View Partner Form Inherit View</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <data>
+                    <xpath expr="//field[@name='street2']" position="after">
+                        <field name="customer_city_id" class="o_address_city" required="1" placeholder="Customer City"/>
+                    </xpath>
+                    <xpath expr="//field[@name='city']" position="attributes">
+                        <attribute name="invisible">1</attribute>
+                    </xpath>
+                    <xpath expr="//div[@name='button_box']" position="inside">
+                        <button class="oe_stat_button" icon="fa-ticket" invisible="request_count == 0"
+                                name="open_repair_request" type="object">
+                            <field name="request_count" string="Repair Request" widget="statinfo"/>
+                            <field name="supplier_invoice_count" widget="statinfo" invisible="1"/>
+                            <!--                            <field name="hide_peppol_fields"/>-->
+                            <!--                            <field name="is_coa_installed"/>-->
+                        </button>
+                    </xpath>
+                    <xpath expr="//field[@name='vat']" position="before">
+                        <field name="additional_identification_scheme"/>
+                    </xpath>
+                    <xpath expr="//field[@name='vat']" position="after">
+                        <field name="additional_identification_number"
+                               invisible="additional_identification_scheme == 'TIN'"/>
+                        <field name="blocked_customer"/>
+                        <field name="blocked_reason" invisible="not blocked_customer"/>
+                    </xpath>
+                    <xpath expr="//field[@name='vat']" position="attributes">
+                        <attribute name="invisible">additional_identification_scheme != 'TIN'</attribute>
+                    </xpath>
+                    <xpath expr="//div[hasclass('o_address_format')]" position="inside">
+                        <field name="building_number" placeholder="Building Number"/>
+                        <field name="plot_identification" placeholder="Plot Identification"/>
+                    </xpath>
+                    <xpath expr="//field[@name='vat']" position="attributes">
+                        <attribute name="required">additional_identification_number == 'TIN'</attribute>
+                    </xpath>
+                </data>
+            </field>
+        </record>
+    </data>
+</odoo>

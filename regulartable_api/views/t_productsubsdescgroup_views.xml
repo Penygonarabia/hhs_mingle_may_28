@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_productsubsdescgroup_custom_form" model="ir.ui.view">
+        <field name="name">Productsubsdescgroup.form</field>
+        <field name="model">t.productsubsdescgroup</field>
+        <field name="arch" type="xml">
+            <form string="Custom Language">
+                <sheet>
+                    <group>
+                        <field name="lang_flag"/>
+                        <field name="psg_desc"/>
+                        <field name="psg_grp"/>
+                        <field name="psg_lang"/>
+                        <field name="psg_pcode"/>
+                        <field name="psg_psub"/>
+                        <field name="user_lmd"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_productsubsdescgroup_custom_tree" model="ir.ui.view">
+        <field name="name">Productsubsdescgroup.custom.tree</field>
+        <field name="model">t.productsubsdescgroup</field>
+        <field name="arch" type="xml">
+            <tree string="Custom Language List">                
+                        <field name="lang_flag"/>
+                        <field name="psg_desc"/>
+                        <field name="psg_grp"/>
+                        <field name="psg_lang"/>
+                        <field name="psg_pcode"/>
+                        <field name="psg_psub"/>
+                        <field name="user_lmd"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom_main" name="Languages" sequence="10"/> -->
+
+    <record id="action_productsubsdescgroup_custom" model="ir.actions.act_window">
+        <field name="name">Productsubsdescgroup Custom Languages</field>
+        <field name="res_model">t.productsubsdescgroup</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom" name="Regular" action="action_res_lang_custom"  sequence="10"/> -->
+
+</odoo>

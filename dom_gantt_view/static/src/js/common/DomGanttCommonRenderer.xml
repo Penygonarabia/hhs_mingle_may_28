@@ -1,0 +1,18 @@
+<!-- dom_gantt_common_renderer.xml -->
+<t t-name="dom_gantt_view.DomGanttCommonRenderer" owl="1">
+    <div class="o_gantt_container">
+        <!-- Sidebar with job cards -->
+        <div class="o_gantt_sidebar">
+            <MyComponent t-key="'my_component'" />
+        </div>
+
+        <!-- Main gantt area -->
+        <div class="o_gantt_main">
+            <t t-foreach="props.slots" t-as="slot" t-key="slot.id">
+                <div class="gantt-cell" t-att-data-date="slot.date" t-att-data-resource-id="slot.resource_id" t-on-dragover="onDragOver" t-on-drop="onDrop">
+                    <t t-esc="slot.label" />
+                </div>
+            </t>
+        </div>
+    </div>
+</t>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_employee_service_tree" model="ir.ui.view">
+            <field name="name">employee.self.service.tree</field>
+            <field name="model">employee.self.service</field>
+            <field name="arch" type="xml">
+                <tree string="Letters">
+                    <field name="seq_name"/>
+                    <field name="document_type"/>
+                    <field name="employee"/>
+                    <!--                    <field name="emp_manager"/>-->
+                    <!--                    <field name="employee_id"/>-->
+                    <field name="date"/>
+                    <field name="state"/>
+                </tree></field>
+        </record>
+        <record id="view_employee_service_form" model="ir.ui.view">
+            <field name="name">employee.self.service.form</field>
+            <field name="model">employee.self.service</field>
+            <field name="arch" type="xml">
+                <form string="Letters">
+                    <header>
+                        <!--                        <button name="confirm_send_mail" string="Send by Email" type="object" class="oe_highlight" states="confirm"/>-->
+                        <button class="btn-primary" invisible="state not in ['new']" name="send_approve" string="Send For Approval" type="object"/>
+                        <button class="btn-primary" groups="hr.group_hr_user" invisible="state not in ['first']" name="dept_approve" string="Approve" type="object"/>
+                        <button class="btn-primary" groups="hr.group_hr_user" invisible="state not in ['second']" name="second_approve" string="Approve" type="object"/>
+                        <button class="btn-primary" groups="hr.group_hr_user" invisible="state not in ['third']" name="third_approve" string="Approve" type="object"/>
+                        <!-- <button name="hr_approve" string="HR Approval" type="object" states="reconfirm" class="btn-primary" groups="hr.group_hr_manager"/> -->
+                        <button class="btn-primary" invisible="state not in ['new','first','second','third']" name="print_preview" string="Preview Document" type="object"/>
+                        <button groups="hr.group_hr_manager" invisible="state not in ['complete']" name="send_email" string="Send Email" type="object"/>
+                        <button class="oe_highlight" invisible="state not in 'complete'" name="print_event" string="Print Certificates" type="object"/>
+                        <field name="state" statusbar_visible="new,complete" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="seq_name" readonly="0"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group name="main">
+                                <!--                            <field name="employee_id"/>-->
+                                <field name="document_type" readonly="state in ('first', 'second', 'third', 'complete')"/>
+                                <field invisible="1" name="old_document_type_id"/>
+                                <field name="employee" readonly="state in ('first', 'second', 'third', 'complete')"/>
+                                <field name="reason" required="1"/>
+                                <field invisible="1" name="employee_end_date"/>
+                                <!--attrs="{'invisible' : [('subject', '!=', 'Experience letter')], 'required' :[('subject','=','Experience letter')]}"-->
+                            </group>
+                            <group>
+                                <field name="subject" readonly="state in ('first', 'second', 'third', 'complete')"/>
+                                <!--                            <field name="creator_manager" required="0" attrs="{'readonly': [('state','in',('first','second','third','complete'))]}"/>-->
+                                <field invisible="1" name="sign_man"/>
+                                <field invisible="1" name="old_employee_id"/>
+                                <field name="date" readonly="state in ('first', 'second', 'third', 'complete')"/>
+                                <!-- <field name="file" filename="file_name" required="1"/>
+                            <field name="file_name" invisible="1"/>-->
+                            </group>
+                            <field name="template" readonly="state in ('first', 'second', 'third', 'complete')"/>
+                            <field invisible="1" name="template_value"/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form></field>
+        </record>
+        <record id="search_view_template" model="ir.ui.view">
+            <field name="name">template</field>
+            <field name="model">employee.self.service</field>
+            <field name="arch" type="xml">
+                <search string="Template">
+                    <field name="state" string="State"/>
+                    <field name="document_type"/>
+                    <field name="employee"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter context="{'group_by':'state'}" domain="[]" name="status" string="Status"/>
+                        <filter context="{'group_by':'document_type'}" domain="[]" name="document" string="Document Type"/>
+                        <filter context="{'group_by':'employee'}" domain="[]" name="employee" string="Employee"/>
+                    </group>
+                </search></field>
+        </record>
+        <record id="action_employee_service" model="ir.actions.act_window">
+            <field name="name">Letters</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">employee.self.service</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="search_view_template"/>
+            <field eval="False" name="view_id"/>
+            <field name="domain">[]</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to create a new Employee self service.
+                </p>
+                <p>
+                    Use this menu to browse employee service. T
+                </p></field>
+        </record>
+        <!--
+    <record id="setting_tree" model="ir.ui.view">
+		<field name="name">Setting</field>
+		<field name="model">employee.self.service</field>
+		<field name="arch" type = "xml">
+			<tree string="Setting">
+				<field name="image_stamp"/>
+                <field name="sign_man"/>
+			</tree>
+		</field>
+	</record>-->
+        <record id="email_template_letters" model="mail.template">
+            <field name="name">Letters: Send by email</field>
+            <field name="model_id" ref="ag_employee_self_service.model_employee_self_service"/>
+            <field name="email_from">{{(object.employee.user_id.email_formatted)}}</field>
+            <!--		<field name="partner_to">{{object.employee.work_email}}</field>-->
+            <field name="email_to">{{(object.employee.work_email)}}</field>
+            <field name="subject">{{object.document_type.template_name}}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                    </p>
+                </div></field>
+<!--            <field name="report_template" ref="print_pack_certificates"/>-->
+<!--            <field name="report_name">{{(object.document_type.template_name or '').replace('/','_')}}</field>-->
+            <field name="lang">{{object.employee.lang}}</field>
+            <field eval="True" name="auto_delete"/>
+        </record>
+        <!-- <record id="hr_employee_form_inherit_custom_smg" model="ir.ui.view">
+            <field name="name">hr.employee.form.inherit.custom.smg</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='mobile_phone']" position="before">
+                    <field name="name_arabic" invisible="1"/>
+                </xpath></field>
+        </record> -->
+        <!--        <menuitem name="Letters" id="menu_service" sequence="80"-->
+        <!--                  web_icon="ag_employee_self_service,static/description/letters.png" />-->
+        <menuitem id="menu_service" name="Letters" parent="hr.menu_hr_root" sequence="15"/>
+        <menuitem action="action_employee_service" id="menu_service_main" name="Document Request" parent="ag_employee_self_service.menu_service" sequence="1"/>
+        <menuitem groups="hr.group_hr_manager" id="menu_service_config" name="Configuration" parent="ag_employee_self_service.menu_service" sequence="2"/>
+        <menuitem action="ag_employee_self_service.template_action" groups="hr.group_hr_manager" id="menu_service_template" name="Templates" parent="ag_employee_self_service.menu_service_config" sequence="1"/>
+    </data>
+</odoo>

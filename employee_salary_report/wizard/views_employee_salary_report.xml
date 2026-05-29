@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_employee_salary_report_form" model="ir.ui.view">
+        <field name="name">employee.salary.report.wizard</field>
+        <field name="model">employee.salary.report</field>
+        <field name="arch" type="xml">
+            <form string="Employee Salary Report">
+                <group>
+                    <group>
+                        <div class="o_td_label" style="width:175px;">
+                            <label for="employee_ids" string="Employee name"/>
+                        </div>
+                        <field name="employee_ids" nolabel="1" options="{'no_create': True, 'no_create_edit':True}" widget="many2many_tags"/>
+                        <field name="department_ids" options="{'no_create': True, 'no_create_edit':True}" widget="many2many_tags"/>
+                        <field name="job_title_ids" options="{'no_create': True, 'no_create_edit':True}" widget="many2many_tags"/>
+                        <field name="nationality_ids" options="{'no_create': True, 'no_create_edit':True}" widget="many2many_tags"/>
+                        <field name="branch_location_ids" options="{'no_create': True, 'no_create_edit':True}" widget="many2many_tags"/>
+                        <field name="sort_by"/>
+                    </group>
+                    <group>
+                        <div class="o_td_label" style="width:250px;">
+                            <label for="from_joining_date" string="From Joining Date"/>
+                        </div>
+                        <field name="from_joining_date" nolabel="1"/>
+                        <field name="to_joining_date" required="from_joining_date == True"/>
+                        <field name="from_termination_date"/>
+                        <field name="to_termination_date" required="from_termination_date == True"/>
+                        <field name="from_contract_expiry_date"/>
+                        <field name="to_contract_expiry_date" required="from_contract_expiry_date == True"/>
+                        <field name="employee_status"/>
+                        <field invisible="1" name="company_id"/>
+                    </group>
+                </group>
+                <footer>
+                    <button class="oe_highlight" name="print_salary_report" string="Print Excel" type="object"/>
+                    <button class="btn-secondary" name="clear" special="cancel" string="Cancel"/>
+                </footer>
+            </form></field>
+    </record>
+    <record id="action_employee_salary_report" model="ir.actions.act_window">
+        <field name="name">Employee Salary Report</field>
+        <field name="res_model">employee.salary.report</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_employee_salary_report_form"/>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="model_employee_salary_report"/>
+        <field name="binding_type">report</field>
+    </record>
+    <!--	<menuitem id="menu_action_employee_salary_report" name="Employee Salary Report" action="action_employee_salary_report"  parent="payroll_report.menu_payroll_report" sequence="201" />
+-->
+    <menuitem action="action_employee_salary_report" id="menu_action_employee_salary_report" name="Employee Salary Report" parent="om_hr_payroll.employee_reports_menu" sequence="20"/>
+</odoo>

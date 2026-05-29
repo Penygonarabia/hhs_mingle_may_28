@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <record id="approval_line_form" model="ir.ui.view">
+        <field name="name">approval.approval.line.form</field>
+        <field name="model">approval.approval.line</field>
+        <field name="arch" type="xml">
+            <form string="Approval Line">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="group_approve"/>
+                            <field name="level"/>
+                        </group>
+                    </group>
+                    <field name="group_ids" invisible="group_approve != 'group'"/>
+                    <field name="user_ids" invisible="group_approve != 'user'"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

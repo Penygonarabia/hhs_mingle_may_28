@@ -1,0 +1,637 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data noupdate="1">
+        <!-- sale mail template -->
+        <record id="request_approval_email_template" model="mail.template">
+            <field name="name">Request: Approval</field>
+            <field name="model_id" ref="bi_all_in_one_dynamic_approval.model_sale_order"/>
+            <field name="subject">{{object.name}} Request for Approval</field>
+            <field name="email_from">"{{ object.env.user.company_id.name }}" &lt;{{ (object.env.user.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{object.partner_id.email}}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                    <tr>
+                        <td valign="top">
+                            <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                                Dear <t t-out="object.partner_id.name"/>,<br/>
+                            <br/>
+                                Thank you for your intrest!
+                            <br/>
+                            <br/>
+                            Congrats! Your order <strong><t t-out="object.name"/></strong> is generated successfully.
+                            <br/>
+                            Order Passing for approval.
+                            <br/>
+                            <br/>
+                                Thank you,
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </field>
+        </record>
+
+        <record id="submit_for_approval_email_template" model="mail.template">
+            <field name="name">Submit For Approval</field>
+            <field name="model_id" ref="bi_all_in_one_dynamic_approval.model_sale_order"/>
+            <field name="subject">Submit for Approval</field>
+            <field name="email_from">"{{ object.env.user.company_id.name }}" &lt;{{ (object.env.user.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{ object._get_user_emails() }}</field>
+            <field name="body_html" type="html">
+                <table border="0" cellpadding="0" cellspacing="0" width="400" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                    <tr>
+                        <div style="font-size: 18px;"> Submit for Approval: <strong><t t-out="object.name"/></strong></div>
+                    </tr>
+                    <tr>
+                        <td valign="top">
+                            <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                                Dear Approvals,<br/>
+                            <br/>
+                                This is to inform you that the order is submitted for Approval.
+                            <br/>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Sale Person</strong></td>
+                        <td><t t-out="object.user_id.name"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Amount</strong></td>
+                        <td><t t-out="object.amount_total"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Approval Level</strong></td>
+                        <td><t t-out="object.sale_approval_id.name"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Minimum Amount</strong></td>
+                        <td><t t-out="object.sale_approval_id.minimum_amount"/></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">Order approval information as below.</td>
+                    </tr>
+                </table>
+                <table border="1" class="table table-bordered" style="width: 100%; border: 2px solid black;margin-top:15px;">
+                    <tr>
+                        <th>Level</th>
+                        <th>Approver</th>
+                        <th>Approved Date</th>
+                        <th>Approved By</th>
+                        <th>Status</th>
+                    </tr>
+                <t t-foreach="object.sale_approved_ids" t-as="line">
+                    <tr>
+                        <td><t t-out = "line.approval_level"/></td>
+                        <td>
+                            <t t-if="line.user_ids">
+                                <t t-esc="', '.join(map(lambda x: (x.name), line.user_ids))"/>
+                            </t>
+                            <t t-elif="line.group_ids">
+                                <t t-esc="', '.join(map(lambda x: (x.name), line.group_ids))"/>
+                            </t>
+                            <t t-else="">False</t>
+                        </td>
+                        <td>
+                            <t t-if="line.approved_date">
+                                <t t-esc="line.approved_date"/>
+                            </t>
+                            <t t-else="">False</t>
+                        </td>
+                        <td>
+                            <t t-if="line.approved_id">
+                                <t t-esc="line.approved_id.name"/>
+                            </t>
+                            <t t-else="">False</t>
+                        </td>
+                        <td><t t-out="line.state"/></td>
+                    </tr>
+                </t>
+                </table>
+            </field>
+        </record>
+
+        <record id="approved_sale_order_email_template" model="mail.template">
+            <field name="name">Approved: Order Mail</field>
+            <field name="model_id" ref="bi_all_in_one_dynamic_approval.model_sale_order"/>
+            <field name="subject">{{object.name}} is Confirmed</field>
+            <field name="email_from">"{{ object.env.user.company_id.name }}" &lt;{{ (object.env.user.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{object.partner_id.email}}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                    <tr>
+                        <td valign="top">
+                            <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                                Dear <t t-out="object.partner_id.name"/>,<br/>
+                            <br/>
+                            Congrats! Your order <strong><t t-out="object.name"/></strong> is confirmed successfully.
+                            <br/>
+                            <br/>
+                                Thank you,
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </field>
+        </record>
+
+        <record id="reject_approval_email_template" model="mail.template">
+            <field name="name">Reject: Approval</field>
+            <field name="model_id" ref="bi_all_in_one_dynamic_approval.model_sale_order"/>
+            <field name="subject">{{object.name}} is Rejected</field>
+            <field name="email_from">"{{ object.env.user.company_id.name }}" &lt;{{ (object.env.user.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{object.partner_id.email}}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                    <tr>
+                        <td valign="top">
+                            <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                                Dear <t t-out="object.partner_id.name"/>,<br/>
+                            <br/>
+                            Opps! Your order <strong><t t-out="object.name"/></strong> was rejected Please try again or contact to admin.
+                            <br/>
+                            <br/>
+                                Thank you,
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </field>
+        </record>
+
+        <!-- invoice mail template -->
+        <record id="request_approval_email_template_invoice" model="mail.template">
+            <field name="name">Request: Approval</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="subject">{{object.name}} Request for Approval</field>
+            <field name="email_from">"{{ object.env.user.company_id.name }}" &lt;{{ (object.env.user.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{object.partner_id.email}}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                    <tr>
+                        <td valign="top">
+                            <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                                Dear <t t-out="object.partner_id.name"/>,<br/>
+                            <br/>
+                                Thank you for your intrest!
+                            <br/>
+                            <br/>
+                            Congrats! Your <strong><t t-out="object.name"/></strong> is generated successfully.
+                            <br/>
+                            Passing for approval.
+                            <br/>
+                            <br/>
+                                Thank you,
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </field>
+        </record>
+
+        <record id="submit_for_approval_email_template_invoice" model="mail.template">
+            <field name="name">Submit For Approval</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="subject">Submit for Approval</field>
+            <field name="email_from">"{{ object.env.user.company_id.name }}" &lt;{{ (object.env.user.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{ object._get_user_emails() }}</field>
+            <field name="body_html" type="html">
+                <table border="0" cellpadding="0" cellspacing="0" width="500" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                    <tr>
+                        <div style="font-size: 18px;"> Submit for Approval: <strong><t t-out="object.name"/></strong></div>
+                    </tr>
+                    <tr>
+                        <td valign="top">
+                            <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                                Dear Approvals,<br/>
+                            <br/>
+                                This is to inform you that the <strong><t t-out="object.name"/></strong> is submitted for Approval.
+                            <br/>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dear&#160;:-&#160;<t t-out="object.user_id.name"/></strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Approval Level&#160;:-&#160;<t t-out="object.invoice_approval_id.name"/></strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Amount&#160;:-&#160;<t t-out="object.amount_total"/></strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Minimum Amount&#160;:-&#160;<t t-out="object.invoice_approval_id.minimum_amount"/></strong></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><strong><t t-out="object.name"/></strong> approval information as below.</td>
+                    </tr>
+                </table>
+                <table border="1" class="table table-bordered" style="width: 100%; border: 2px solid black;margin-top:15px;">
+                    <tr>
+                        <th>Level</th>
+                        <th>Approver</th>
+                        <th>Approved Date</th>
+                        <th>Approved By</th>
+                        <th>Status</th>
+                    </tr>
+                <t t-foreach="object.invoice_approved_ids" t-as="line">
+                    <tr>
+                        <td><t t-out = "line.approval_level"/></td>
+                        <td>
+                            <t t-if="line.user_ids">
+                                <t t-esc="', '.join(map(lambda x: (x.name), line.user_ids))"/>
+                            </t>
+                            <t t-elif="line.group_ids">
+                                <t t-esc="', '.join(map(lambda x: (x.name), line.group_ids))"/>
+                            </t>
+                            <t t-else="">False</t>
+                        </td>
+                        <td>
+                            <t t-if="line.approved_date">
+                                <t t-esc="line.approved_date"/>
+                            </t>
+                            <t t-else="">False</t>
+                        </td>
+                        <td>
+                            <t t-if="line.approved_id">
+                                <t t-esc="line.approved_id.name"/>
+                            </t>
+                            <t t-else="">False</t>
+                        </td>
+                        <td><t t-out="line.state"/></td>
+                    </tr>
+                </t>
+                </table>
+            </field>
+        </record>
+
+        <record id="approved_sale_order_email_template_invoice" model="mail.template">
+            <field name="name">Approved: Mail</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="subject">{{object.name}} is Confirmed</field>
+            <field name="email_from">"{{ object.env.user.company_id.name }}" &lt;{{ (object.env.user.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{object.partner_id.email}}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                    <tr>
+                        <td valign="top">
+                            <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                                Dear <t t-out="object.partner_id.name"/>,<br/>
+                            <br/>
+                            Congrats! Your  <strong><t t-out="object.name"/></strong> is confirmed successfully.
+                            <br/>
+                            <br/>
+                                Thank you,
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </field>
+        </record>
+
+        <record id="reject_approval_email_template_invoice" model="mail.template">
+            <field name="name">Reject: Approval</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="subject">{{object.name}} is Rejected</field>
+            <field name="email_from">"{{ object.env.user.company_id.name }}" &lt;{{ (object.env.user.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{object.partner_id.email}}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                    <tr>
+                        <td valign="top">
+                            <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                                Dear <t t-out="object.partner_id.name"/>,<br/>
+                            <br/>
+                            Opps! Your  <strong><t t-out="object.name"/></strong> was rejected Please try again or contact to admin.
+                            <br/>
+                            <br/>
+                                Thank you,
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </field>
+        </record>
+
+        <!-- Payment mail template -->
+        <record id="request_approval_email_template_payment" model="mail.template">
+            <field name="name">Request: Approval</field>
+            <field name="model_id" ref="bi_all_in_one_dynamic_approval.model_account_payment"/>
+            <field name="subject">Request for Approval</field>
+            <field name="email_from">"{{ object.env.user.company_id.name }}" &lt;{{ (object.env.user.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{object.partner_id.email}}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                    <tr>
+                        <td valign="top">
+                            <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                                Dear <t t-out="object.partner_id.name"/>,<br/>
+                            <br/>
+                                Thank you for your intrest!
+                            <br/>
+                            <br/>
+                            Congrats! Your Payment is generated successfully.
+                            <br/>
+                            Order Passing for approval.
+                            <br/>
+                            <br/>
+                                Thank you,
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </field>
+        </record>
+
+        <record id="submit_for_approval_email_template_payment" model="mail.template">
+            <field name="name">Submit For Approval</field>
+            <field name="model_id" ref="bi_all_in_one_dynamic_approval.model_account_payment"/>
+            <field name="subject">Submit for Approval</field>
+            <field name="email_from">"{{ object.env.user.company_id.name }}" &lt;{{ (object.env.user.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{ object._get_user_emails() }}</field>
+            <field name="body_html" type="html">
+                <table border="0" cellpadding="0" cellspacing="0" width="400" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                    <tr>
+                        <div style="font-size: 18px;"> Submit for Approval</div>
+                    </tr>
+                    <tr>
+                        <td valign="top">
+                            <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                                Dear Approvals,<br/>
+                            <br/>
+                                This is to inform you that the payment is submitted for Approval.
+                            <br/>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Amount</strong></td>
+                        <td><t t-out="object.amount"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Approval Level</strong></td>
+                        <td><t t-out="object.payment_approval_id.name"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Minimum Amount</strong></td>
+                        <td><t t-out="object.payment_approval_id.minimum_amount"/></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">Payment approval information as below.</td>
+                    </tr>
+                </table>
+                <table border="1" class="table table-bordered" style="width: 100%; border: 2px solid black;margin-top:15px;">
+                    <tr>
+                        <th>Level</th>
+                        <th>Approver</th>
+                        <th>Approved Date</th>
+                        <th>Approved By</th>
+                        <th>Status</th>
+                    </tr>
+                <t t-foreach="object.payment_approved_ids" t-as="line">
+                    <tr>
+                        <td><t t-out = "line.approval_level"/></td>
+                        <td>
+                            <t t-if="line.user_ids">
+                                <t t-esc="', '.join(map(lambda x: (x.name), line.user_ids))"/>
+                            </t>
+                            <t t-elif="line.group_ids">
+                                <t t-esc="', '.join(map(lambda x: (x.name), line.group_ids))"/>
+                            </t>
+                            <t t-else="">False</t>
+                        </td>
+                        <td>
+                            <t t-if="line.approved_date">
+                                <t t-esc="line.approved_date"/>
+                            </t>
+                            <t t-else="">False</t>
+                        </td>
+                        <td>
+                            <t t-if="line.approved_id">
+                                <t t-esc="line.approved_id.name"/>
+                            </t>
+                            <t t-else="">False</t>
+                        </td>
+                        <td><t t-out="line.state"/></td>
+                    </tr>
+                </t>
+                </table>
+            </field>
+        </record>
+
+        <record id="approved_account_payment_email_template" model="mail.template">
+            <field name="name">Approved: Payment Mail</field>
+            <field name="model_id" ref="bi_all_in_one_dynamic_approval.model_account_payment"/>
+            <field name="subject">{{object.name}} is Confirmed</field>
+            <field name="email_from">"{{ object.env.user.company_id.name }}" &lt;{{ (object.env.user.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{object.partner_id.email}}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                    <tr>
+                        <td valign="top">
+                            <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                                Dear <t t-out="object.partner_id.name"/>,<br/>
+                            <br/>
+                            Congrats! Your Payment <strong><t t-out="object.name"/></strong> is confirmed successfully.
+                            <br/>
+                            <br/>
+                                Thank you,
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </field>
+        </record>
+
+        <record id="reject_approval_email_template_payment" model="mail.template">
+            <field name="name">Reject: Payment Approval</field>
+            <field name="model_id" ref="bi_all_in_one_dynamic_approval.model_account_payment"/>
+            <field name="subject">Payment approval request is Rejected</field>
+            <field name="email_from">"{{ object.env.user.company_id.name }}" &lt;{{ (object.env.user.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{object.partner_id.email}}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                    <tr>
+                        <td valign="top">
+                            <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                                Dear <t t-out="object.partner_id.name"/>,<br/>
+                            <br/>
+                            Opps! Your Payment was rejected Please try again or contact to admin. 
+                            <br/>
+                            <br/>
+                                Thank you,
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </field>
+        </record>
+
+        <!-- Purchase mail template -->
+        <record id="request_approval_email_template_purchase" model="mail.template">
+            <field name="name">Request: Approval</field>
+            <field name="model_id" ref="bi_all_in_one_dynamic_approval.model_purchase_order"/>
+            <field name="subject">{{object.name}} Request for Approval</field>
+            <field name="email_from">"{{ object.env.user.company_id.name }}" &lt;{{ (object.env.user.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{object.partner_id.email}}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                    <tr>
+                        <td valign="top">
+                            <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                                Dear <t t-out="object.partner_id.name"/>,<br/>
+                            <br/>
+                                Thank you for your intrest!
+                            <br/>
+                            <br/>
+                            Congrats! Your Order <strong><t t-out="object.name"/></strong> is generated successfully.
+                            <br/>
+                            Order Passing for approval.
+                            <br/>
+                            <br/>
+                                Thank you,
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </field>
+        </record>
+
+        <record id="submit_for_approval_email_template_purchase" model="mail.template">
+            <field name="name">Submit For Approval</field>
+            <field name="model_id" ref="bi_all_in_one_dynamic_approval.model_purchase_order"/>
+            <field name="subject">Submit for Approval</field>
+            <field name="email_from">"{{ object.env.user.company_id.name }}" &lt;{{ (object.env.user.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{ object._get_user_emails() }}</field>
+            <field name="body_html" type="html">
+                <table border="0" cellpadding="0" cellspacing="0" width="400" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                    <tr>
+                        <div style="font-size: 18px;"> Submit for Approval: <strong><t t-out="object.name"/></strong></div>
+                    </tr>
+                    <tr>
+                        <td valign="top">
+                            <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                                Dear Approvals,<br/>
+                            <br/>
+                                This is to inform you that the order is submitted for Approval.
+                            <br/>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Amount</strong></td>
+                        <td><t t-out="object.amount_total"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Approval Level</strong></td>
+                        <td><t t-out="object.purchase_approval_id.name"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Minimum Amount</strong></td>
+                        <td><t t-out="object.purchase_approval_id.minimum_amount"/></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">Order approval information as below.</td>
+                    </tr>
+                </table>
+                <table border="1" class="table table-bordered" style="width: 100%; border: 2px solid black;margin-top:15px;">
+                    <tr>
+                        <th>Level</th>
+                        <th>Approver</th>
+                        <th>Approved Date</th>
+                        <th>Approved By</th>
+                        <th>Status</th>
+                    </tr>
+                <t t-foreach="object.purchase_approved_ids" t-as="line">
+                    <tr>
+                        <td><t t-out = "line.approval_level"/></td>
+                        <td>
+                            <t t-if="line.user_ids">
+                                <t t-esc="', '.join(map(lambda x: (x.name), line.user_ids))"/>
+                            </t>
+                            <t t-elif="line.group_ids">
+                                <t t-esc="', '.join(map(lambda x: (x.name), line.group_ids))"/>
+                            </t>
+                            <t t-else="">False</t>
+                        </td>
+                        <td>
+                            <t t-if="line.approved_date">
+                                <t t-esc="line.approved_date"/>
+                            </t>
+                            <t t-else="">False</t>
+                        </td>
+                        <td>
+                            <t t-if="line.approved_id">
+                                <t t-esc="line.approved_id.name"/>
+                            </t>
+                            <t t-else="">False</t>
+                        </td>
+                        <td><t t-out="line.state"/></td>
+                    </tr>
+                </t>
+                </table>
+            </field>
+        </record>
+
+        <record id="approved_purchase_order_email_template" model="mail.template">
+            <field name="name">Approved: Payment Mail</field>
+            <field name="model_id" ref="bi_all_in_one_dynamic_approval.model_purchase_order"/>
+            <field name="subject">{{object.name}} is Confirmed</field>
+            <field name="email_from">"{{ object.env.user.company_id.name }}" &lt;{{ (object.env.user.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{object.partner_id.email}}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                    <tr>
+                        <td valign="top">
+                            <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                                Dear <t t-out="object.partner_id.name"/>,<br/>
+                            <br/>
+                            Congrats! Your Order <strong><t t-out="object.name"/></strong> is confirmed successfully.
+                            <br/>
+                            <br/>
+                                Thank you,
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </field>
+        </record>
+
+        <record id="reject_approval_email_template_purchase" model="mail.template">
+            <field name="name">Reject: Payment Approval</field>
+            <field name="model_id" ref="bi_all_in_one_dynamic_approval.model_purchase_order"/>
+            <field name="subject">{{object.name}} is Rejected</field>
+            <field name="email_from">"{{ object.env.user.company_id.name }}" &lt;{{ (object.env.user.company_id.email or user.email) }}&gt;</field>
+            <field name="email_to">{{object.partner_id.email}}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="body_html" type="html">
+                <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                    <tr>
+                        <td valign="top">
+                            <div style="font-size: 13px; margin: 0px; padding: 0px;">
+                                Dear <t t-out="object.partner_id.name"/>,<br/>
+                            <br/>
+                            Opps! Your Order <strong><t t-out="object.name"/></strong> was rejected Please try again or contact to admin.
+                            <br/>
+                            <br/>
+                                Thank you,
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </field>
+        </record>
+    </data>
+    
+</odoo>

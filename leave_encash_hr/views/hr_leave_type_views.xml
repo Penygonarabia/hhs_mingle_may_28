@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_hr_leave_type_inherit_form" model="ir.ui.view">
+            <field name="name">hr.leave.type.form</field>
+            <field name="model">hr.leave.type</field>
+            <field name="inherit_id" ref="hr_holidays.edit_holiday_status_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group/group[@name='leave_validation']" position="inside">
+                    <field name="is_leave_encash"/>
+                    <field invisible="is_leave_encash == False" name="maximum_allowed_days"/>
+                </xpath></field>
+        </record>
+        <record id="view_hr_leave_allocation_view_form_inherit" model="ir.ui.view">
+            <field name="name">hr.leave.allocation.form</field>
+            <field name="model">hr.leave.allocation</field>
+            <field name="inherit_id" ref="hr_holidays.hr_leave_allocation_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='holiday_status_id']" position="attributes">
+                    <attribute name="readonly">state in ('cancel', 'refuse', 'validate1', 'validate')</attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

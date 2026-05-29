@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	
+	<template id="report_leave_encaash_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+    </template>
+    
+    <template id="report_leave_encash_report_pdf">
+    	<t t-call="web.html_container">
+        <t t-call="leave_encash_hr.report_leave_encaash_internal_layout">
+        <t t-if="o and 'company_id' in o">
+                <t t-set="company" t-value="o.company_id"></t>
+            </t>
+            <t t-if="not o or not 'company_id' in o">
+                <t t-set="company" t-value="res_company"></t>
+            </t>
+            <div class="header">
+                <div class="row mt32 mb32">
+                    <div class="col-4 text-left">
+<!--                        <img t-if="company.logo" t-att-src="'data:image/png;base64,%s' % to_text(company.logo)" style="max-height: 70px; min-height:70px; min-width: 200px; max-width: 200px;" />-->
+                    </div>
+                    <div class="col-4 text-left">
+                    	 <h2  style="font-weight:bold;text-align:center;">Leave En-cash Report</h2>
+
+                    </div>
+                    <div class="col-4 text-right"  style="font:12px lucida-console,sans-serif !important;">
+                        <span t-field="company.partner_id" />
+                        <br/>
+                        <span t-field="company.partner_id.street" />
+                        <br/>
+                        <span t-field="company.partner_id.street2" />
+                        <br/>
+                        <span t-field="company.partner_id.city" />
+                        <br/>
+                        <span t-field="company.partner_id.country_id" />
+                        <br/>
+                        <span t-field="company.partner_id.vat" />
+                        <br/>
+                    </div>
+                </div>
+            </div>
+            
+            
+            <div class="page">
+            	<t t-if="form_data['start_date']">
+	            	<tr> Start Date :
+	            	
+	            	 	<span t-esc ="form_data['start_date']"/>
+	            	</tr>
+	            	<tr> End Date :
+	            	 	<span t-esc ="form_data['end_date']"/>
+	            	</tr>
+            	</t>
+            	 <table class="table table-sm table-bordered">
+	                <thead>
+	                    <tr>
+	                        <th style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>SNo</strong></th>
+	                        <th style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Employee No</strong></th>
+	                        <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Employee Name</strong></th>
+	                        <!-- <th class="text-right" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Nationality</strong></th> -->
+	                        <th class="text-right" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Department</strong></th>
+	                        <th class="text-right" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Job Position</strong></th>
+	                        
+	                        <!-- <th style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Location</strong></th> -->
+	                        <th style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Contract</strong></th>
+	                        <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Reference</strong></th>
+	                        <th class="text-right" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Total Allowed Leave</strong></th>
+	                        <th class="text-right" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Leave Type</strong></th>
+	                       	<th class="text-right" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Applied Leave</strong></th>
+	                       
+	                        <th class="text-right" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Applied Date</strong></th>
+	                    
+	                       <th class="text-right" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Amount</strong></th>
+	                        <th class="text-right" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Status</strong></th>
+	                        <!-- <th class="text-right" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Payslip</strong></th> -->
+	                    
+	                    </tr>
+	                </thead>
+                <tbody>
+                    <tr t-foreach="leave_encash" t-as="leave">
+                    	<td>
+                    	<span t-esc="leave_index+1"/>
+                    	</td>
+                        
+                        <td class="text-right">
+                            <span t-esc = "leave['emp_no']"/>
+                        </td>
+                        <td>
+                            <span t-esc="leave['emp_name']"/>
+                        </td>
+                        <!-- <td >
+                            <span t-esc="leave['country_name']"/>
+                        </td> -->
+                        <td>
+                            <span t-esc="leave['department']"/>
+                        </td>
+                        <td>
+                            <span t-esc = "leave['job_position']"/>
+                        </td>
+                        <!-- <td >
+                            <span t-esc="leave['work_location']"/>
+                        </td> -->
+                        <td>
+                            <span t-esc="leave['contract']"/>
+                        </td>
+                         <td>
+                            <span t-esc="leave['reference']"/>
+                        </td>
+                         <td class="text-right">
+                            <span t-esc="leave['total_leave_carry']"/>
+                        </td>
+                        <td>
+                            <span t-esc = "leave['leave_type']"/>
+                        </td>
+                       
+                        <td class="text-right">
+                            <span t-esc = "leave['applied_leave_encash']"/>
+                        </td>
+                        <td>
+                            <span t-esc = "leave['applied_date']"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-esc="leave['amount']"/>
+                        </td>
+                        <td>
+                            <span t-esc = "leave['status']"/>
+                        </td>
+                       
+                        
+                    </tr>
+                </tbody>
+            </table>
+            </div>
+           
+           
+          <div class="footer o_background_footer">
+                    <div class="text-center">
+                        <ul class="list-inline">
+                                <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                        </ul>
+                        <div t-if="report_type == 'pdf'" class="text-muted">
+                            Page:
+                            <span class="page"/>
+                            of
+                            <span class="topage"/>
+                        </div>
+                    </div>
+                </div> 
+
+		</t>
+		</t>
+	</template>
+    
+    
+</odoo>

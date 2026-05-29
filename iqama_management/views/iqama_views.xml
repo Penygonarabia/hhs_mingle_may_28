@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!-- Security access rules -->
+<!--        <record id="model_iqama_management" model="ir.model.access">-->
+<!--            <field name="name">iqama.management.access</field>-->
+<!--            <field name="model_id" ref="model_iqama_management"/>-->
+<!--            <field name="group_id" ref="base.group_user"/>-->
+<!--            <field name="perm_read" eval="1"/>-->
+<!--            <field name="perm_write" eval="1"/>-->
+<!--            <field name="perm_create" eval="1"/>-->
+<!--            <field name="perm_unlink" eval="1"/>-->
+<!--        </record>-->
+
+        <!-- Iqama Form View -->
+        <record id="view_iqama_form" model="ir.ui.view">
+            <field name="name">iqama.form</field>
+            <field name="model">iqama.management</field>
+            <field name="arch" type="xml">
+                <form string="Iqama Form">
+                    <sheet>
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Iqama Tree View -->
+        <record id="view_iqama_tree" model="ir.ui.view">
+            <field name="name">iqama.tree</field>
+            <field name="model">iqama.management</field>
+            <field name="arch" type="xml">
+                <tree string="Iqama List">
+                    <field name="code"/>
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Iqama Action -->
+        <record id="action_iqama" model="ir.actions.act_window">
+            <field name="name">Iqama Profession</field>
+            <field name="res_model">iqama.management</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_iqama_tree"/>
+        </record>
+        <menuitem id="menu_iqama"
+                  name="Iqama Profession"
+                  parent="hr.menu_human_resources_configuration"
+                  sequence="24"
+                  action="action_iqama"
+                  />
+
+        <!-- Iqama Menu -->
+<!--        <menuitem id="menu_iqama_root" name="Iqama Management"/>-->
+<!--        <menuitem id="menu_iqama" name="Iqama" parent="menu_iqama_root" action="action_iqama"/>-->
+
+
+
+    </data>
+</odoo>

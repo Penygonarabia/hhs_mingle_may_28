@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+
+        <!--
+            HR Configuration
+        -->
+        <record id="view_form_hr_configuration" model="ir.ui.view">
+            <field name="name">hr.configuration.form</field>
+            <field name="model">hr.configuration</field>
+            <field name="arch" type="xml">
+                <form string="Configuration">
+                    <sheet>
+                        <group string="Creation Configuration">
+                            <field name="auto_employee_no" required="1"/>
+                            <field name="auto_contract_no" required="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_tree_hr_configuration" model="ir.ui.view">
+            <field name="name">hr.configuration.tree</field>
+            <field name="model">hr.configuration</field>
+            <field name="arch" type="xml">
+                <tree string="Configurations">
+                    <field name="auto_employee_no"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_hr_configuration" model="ir.actions.act_window">
+            <field name="name">Configuration</field>
+            <field name="res_model">hr.configuration</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+              	<p class="oe_view_nocontent_create">Click to add the configuration</p>
+            </field>
+        </record>
+        <menuitem id="menu_hr_general_configuration"
+                  action="action_hr_configuration"
+                  parent="hr.menu_human_resources_configuration"
+                  sequence="1"
+                  name="Creation Configuration"/>
+        <menuitem
+                id="hr.menu_view_hr_job"
+                action="hr.action_hr_job"
+                parent="hr.menu_human_resources_configuration"
+                sequence="2"/>
+
+        <menuitem
+                id="hr.menu_hr_work_location_tree"
+                action="hr.hr_work_location_action"
+                parent="hr.menu_human_resources_configuration"
+                sequence="5"
+               />
+        <menuitem
+                id="hr.menu_human_resources_configuration_employee"
+                name="Employee" sequence="5" active="False"/>
+        <menuitem
+                id="hr_holidays.hr_holidays_status_menu_configuration"
+                action="hr_holidays.open_view_holiday_status"
+                parent="hr.menu_human_resources_configuration"
+                sequence="18"/>
+        <menuitem
+                id="hr_holidays.hr_holidays_accrual_menu_configuration"
+                action="hr_holidays.open_view_accrual_plans"
+                parent="hr.menu_human_resources_configuration"
+                sequence="19"/>
+        <menuitem
+                id="hr.menu_hr_departure_reason_tree"
+                action="hr.hr_departure_reason_action"
+                name="Departure Reasons"
+                parent="hr.menu_human_resources_configuration"
+                sequence="20"
+                />
+        <menuitem
+                id="hr_holidays.hr_holidays_public_time_off_menu_configuration"
+                action="hr_holidays.open_view_public_holiday"
+                parent="hr.menu_human_resources_configuration"
+                sequence="21"/>
+
+
+
+    </data>
+</odoo>

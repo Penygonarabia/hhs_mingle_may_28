@@ -1,0 +1,35 @@
+<!-- <odoo>
+    <record id="view_res_district_tree" model="ir.ui.view">
+        <field name="name">res.state.district.tree</field>
+        <field name="model">res.state.district</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_res_district_form" model="ir.ui.view">
+        <field name="name">res.state.district.form</field>
+        <field name="model">res.state.district</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_res_district" model="ir.actions.act_window">
+        <field name="name">Districts</field>
+        <field name="res_model">res.state.district</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- <menuitem id="menu_res_district" name="Districts"
+              parent="menu_promoter_configuration"
+              action="action_res_district" sequence="50"/> -->
+</odoo> -->

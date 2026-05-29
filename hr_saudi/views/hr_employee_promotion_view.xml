@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="hr_employee_promotion_view_form" model="ir.ui.view">
+            <field name="name">hr.employee.promotion.form</field>
+            <field name="model">hr.employee.promotion</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form string="Employee Promotion">
+                    <header>
+                        <button name="button_hrm" string="Send to HR Manager" type="object" invisible="state in ['draft','done','refused']"  icon="fa-paper-plane" class="oe_inline oe_stat_button" confirm="Are you sure?"/>
+                        <button name="button_accept" string="Accept request" type="object" groups="hr_saudi.group_hrm" invisible="state != 'draft'"  icon="fa-play" class="oe_inline oe_stat_button"/>
+                        <button name="button_refuse" string="Refuse request" type="object" groups="hr_saudi.group_hrm" invisible="state != 'draft'" icon="fa-times" class="oe_inline oe_stat_button"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" class="oe_inline" />
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="employee_id"/>
+                                <field name="employee_no" readonly="1"/>
+                                <field name="promotion_type"/>
+                                <field name="start_date" required="1"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group string="From">
+                                <field name="current_job_id" readonly="1"/>
+                                <field name="department_id" readonly="1"/>
+                                <field name="branch_id" readonly="1"/>
+                            </group>
+                            <group string="To">
+                                <field name="job_id"/>
+                                <field name="new_department_id" readonly="1"/>
+                                <field name="branch_id"/>
+                            </group>
+                        </group>
+                        <group string="Contracts">
+                            <field name="contract_ids" nolabel="1" required="1"
+                                   readonly="employee_id == False"
+                                   context="{'default_employee_id': employee_id}"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="hr_employee_promotion_view_tree" model="ir.ui.view">
+            <field name="name">hr.employee.promotion.tree</field>
+            <field name="model">hr.employee.promotion</field>
+            <field name="arch" type="xml">
+                <tree string="Employees Promotion">
+                    <field name="name"/>
+                    <field name="employee_id"/>
+                    <field name="start_date"/>
+                    <field name="current_job_id"/>
+                    <field name="job_id"/>
+                    <field name="promotion_type"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="hr_employee_promotion_view_search" model="ir.ui.view">
+            <field name="name">hr.employee.promotion.search</field>
+            <field name="model">hr.employee.promotion</field>
+            <field name="arch" type="xml">
+                <search string="Employees Promotion">
+                    <field name="name"/>
+                    <field name="start_date"/>
+                    <field name="employee_id"/>
+                    <field name="promotion_type"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_hr_employee_promotion" model="ir.actions.act_window">
+            <field name="name">Employee Promotion</field>
+            <field name="res_model">hr.employee.promotion</field>
+            <field name="context">{'readonly_by_pass': True}</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_hr_employee_promotion_root"
+                  parent="menu_hr_employee_service_root"
+                  sequence="5"
+                  groups="hr_saudi.group_promotion,hr_saudi.group_hrm"
+                  name="Employees Promotion"/>
+        <menuitem id="menu_hr_employee_promotion"
+                  action="action_hr_employee_promotion"
+                  parent="menu_hr_employee_promotion_root"
+                  sequence="1"
+                  name="Employees Promotion request"/>
+    </data>
+</odoo>

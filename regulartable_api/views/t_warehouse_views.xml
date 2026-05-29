@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_t_warehouse_custom_form" model="ir.ui.view">
+        <field name="name">Warehouse.form</field>
+        <field name="model">t.warehouse</field>
+        <field name="arch" type="xml">
+            <form string="t_warehouse Custom Language">
+                <sheet>
+                    <group>
+                        <field name="lang_flag"/>
+                        <field name="lang_flag2"/>
+                        <field name="old_code"/>
+                        <field name="user_id"/>
+                        <field name="user_lmd"/>
+                        <field name="user_lmt"/>
+                        <field name="wh_acconline"/>
+                        <field name="wh_address"/>
+                        <field name="wh_address2"/>
+                        <field name="wh_allordqty"/>
+                        <field name="wh_applysdisc"/>
+                        <field name="wh_autofj"/>
+                        <field name="wh_batchno"/>
+                        <field name="wh_bpdefault"/>
+                        <field name="wh_bpname"/>
+                        <field name="wh_budgetfri"/>
+                        <field name="wh_budgetmon"/>
+                        <field name="wh_budgetsat"/>
+                        <field name="wh_budgetsun"/>
+                        <field name="wh_budgetthu"/>
+                        <field name="wh_budgettue"/>
+                        <field name="wh_budgetwed"/>
+                        <field name="wh_cc"/>
+                        <field name="wh_city"/>
+                        <field name="wh_cntno"/>
+                        <field name="wh_code"/>
+                        <field name="wh_companyname"/>
+                        <field name="wh_companyname2"/>
+                        <field name="wh_conrcvnextno"/>
+                        <field name="wh_conrcvprefix"/>
+                        <field name="wh_costabovealwd"/>
+                        <field name="wh_crno"/>
+                        <field name="wh_cstno"/>
+                        <field name="wh_cstwh"/>
+                        <field name="wh_desc"/>
+                        <field name="wh_desc2"/>
+                        <field name="wh_email"/>
+                        <field name="wh_emailserver"/>
+                        <field name="wh_excludegenorder"/>
+                        <field name="wh_exposstype"/>
+                        <field name="wh_expsyncdate"/>
+                        <field name="wh_fjno"/>
+                        <field name="wh_fjpfix"/>
+                        <field name="wh_group"/>
+                        <field name="wh_gsprncfgfpath"/>
+                        <field name="wh_iedir"/>
+                        <field name="wh_inactive"/>
+                        <field name="wh_installationgrp"/>
+                        <field name="wh_installationpartnumber"/>
+                        <field name="wh_installationstock"/>
+                        <field name="wh_invreqautocrnote"/>
+                        <field name="wh_libarcode"/>
+                        <field name="wh_licstno"/>
+                        <field name="wh_lidate"/>
+                        <field name="wh_mainwh"/>
+                        <field name="wh_maxadddisc"/>
+                        <field name="wh_mgremail"/>
+                        <field name="wh_mpass"/>
+                        <field name="wh_oldonline"/>
+                        <field name="wh_online"/>
+                        <field name="wh_onlinecstdelinext"/>
+                        <field name="wh_onlinecstdeliprefix"/>
+                        <field name="wh_onlinecstinvnext"/>
+                        <field name="wh_onlinecstinvprefix"/>
+                        <field name="wh_onlinecstordnext"/>
+                        <field name="wh_onlinecstordprefix"/>
+                        <field name="wh_onlinewhouse"/>
+                        <field name="wh_opentransferscreen"/>
+                        <field name="wh_pdfversion"/>
+                        <field name="wh_penystdate"/>
+                        <field name="wh_period"/>
+                        <field name="wh_pmessage"/>
+                        <field name="wh_pmessage2"/>
+                        <field name="wh_postavgcostvar"/>
+                        <field name="wh_preprint"/>
+                        <field name="wh_printpm"/>
+                        <field name="wh_qtsamediscp"/>
+                        <field name="wh_rctbatchnext"/>
+                        <field name="wh_rctbatchprefix"/>
+                        <field name="wh_region"/>
+                        <field name="wh_remote"/>
+                        <field name="wh_shp01"/>
+                        <field name="wh_shp02"/>
+                        <field name="wh_shp03"/>
+                        <field name="wh_shp04"/>
+                        <field name="wh_shp05"/>
+                        <field name="wh_shp06"/>
+                        <field name="wh_shp07"/>
+                        <field name="wh_shp08"/>
+                        <field name="wh_shp09"/>
+                        <field name="wh_shp10"/>
+                        <field name="wh_shp11"/>
+                        <field name="wh_shp12"/>
+                        <field name="wh_shp13"/>
+                        <field name="wh_shp14"/>
+                        <field name="wh_shp15"/>
+                        <field name="wh_shp16"/>
+                        <field name="wh_shp17"/>
+                        <field name="wh_shp18"/>
+                        <field name="wh_shp19"/>
+                        <field name="wh_shp20"/>
+                        <field name="wh_shp21"/>
+                        <field name="wh_shp22"/>
+                        <field name="wh_shp23"/>
+                        <field name="wh_shp24"/>
+                        <field name="wh_syncdate"/>
+                        <field name="wh_tel"/>
+                        <field name="wh_transportgrp"/>
+                        <field name="wh_transportpartnumber"/>
+                        <field name="wh_transportstock"/>
+                        <field name="wh_trn_autoreceive"/>
+                        <field name="wh_trnpicklistrequired"/>
+                        <field name="wh_vatregno"/>
+                        <field name="wh_xmlpdffbkpath"/>
+                        <field name="wh_xmlpdffsavetodb"/>
+                        <field name="wh_year"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_t_warehouse_custom_tree" model="ir.ui.view">
+        <field name="name">Warehouse.custom.tree</field>
+        <field name="model">t.warehouse</field>
+        <field name="arch" type="xml">
+            <tree string="t_warehouse Custom Language List">                
+                        <field name="lang_flag"/>
+                        <field name="lang_flag2"/>
+                        <field name="old_code"/>
+                        <field name="user_id"/>
+                        <field name="user_lmd"/>
+                        <field name="user_lmt"/>
+                        <field name="wh_acconline"/>
+                        <field name="wh_address"/>
+                        <field name="wh_address2"/>
+                        <field name="wh_allordqty"/>
+                        <field name="wh_applysdisc"/>
+                        <field name="wh_autofj"/>
+                        <field name="wh_batchno"/>
+                        <field name="wh_bpdefault"/>
+                        <field name="wh_bpname"/>
+                        <field name="wh_budgetfri"/>
+                        <field name="wh_budgetmon"/>
+                        <field name="wh_budgetsat"/>
+                        <field name="wh_budgetsun"/>
+                        <field name="wh_budgetthu"/>
+                        <field name="wh_budgettue"/>
+                        <field name="wh_budgetwed"/>
+                        <field name="wh_cc"/>
+                        <field name="wh_city"/>
+                        <field name="wh_cntno"/>
+                        <field name="wh_code"/>
+                        <field name="wh_companyname"/>
+                        <field name="wh_companyname2"/>
+                        <field name="wh_conrcvnextno"/>
+                        <field name="wh_conrcvprefix"/>
+                        <field name="wh_costabovealwd"/>
+                        <field name="wh_crno"/>
+                        <field name="wh_cstno"/>
+                        <field name="wh_cstwh"/>
+                        <field name="wh_desc"/>
+                        <field name="wh_desc2"/>
+                        <field name="wh_email"/>
+                        <field name="wh_emailserver"/>
+                        <field name="wh_excludegenorder"/>
+                        <field name="wh_exposstype"/>
+                        <field name="wh_expsyncdate"/>
+                        <field name="wh_fjno"/>
+                        <field name="wh_fjpfix"/>
+                        <field name="wh_group"/>
+                        <field name="wh_gsprncfgfpath"/>
+                        <field name="wh_iedir"/>
+                        <field name="wh_inactive"/>
+                        <field name="wh_installationgrp"/>
+                        <field name="wh_installationpartnumber"/>
+                        <field name="wh_installationstock"/>
+                        <field name="wh_invreqautocrnote"/>
+                        <field name="wh_libarcode"/>
+                        <field name="wh_licstno"/>
+                        <field name="wh_lidate"/>
+                        <field name="wh_mainwh"/>
+                        <field name="wh_maxadddisc"/>
+                        <field name="wh_mgremail"/>
+                        <field name="wh_mpass"/>
+                        <field name="wh_oldonline"/>
+                        <field name="wh_online"/>
+                        <field name="wh_onlinecstdelinext"/>
+                        <field name="wh_onlinecstdeliprefix"/>
+                        <field name="wh_onlinecstinvnext"/>
+                        <field name="wh_onlinecstinvprefix"/>
+                        <field name="wh_onlinecstordnext"/>
+                        <field name="wh_onlinecstordprefix"/>
+                        <field name="wh_onlinewhouse"/>
+                        <field name="wh_opentransferscreen"/>
+                        <field name="wh_pdfversion"/>
+                        <field name="wh_penystdate"/>
+                        <field name="wh_period"/>
+                        <field name="wh_pmessage"/>
+                        <field name="wh_pmessage2"/>
+                        <field name="wh_postavgcostvar"/>
+                        <field name="wh_preprint"/>
+                        <field name="wh_printpm"/>
+                        <field name="wh_qtsamediscp"/>
+                        <field name="wh_rctbatchnext"/>
+                        <field name="wh_rctbatchprefix"/>
+                        <field name="wh_region"/>
+                        <field name="wh_remote"/>
+                        <field name="wh_shp01"/>
+                        <field name="wh_shp02"/>
+                        <field name="wh_shp03"/>
+                        <field name="wh_shp04"/>
+                        <field name="wh_shp05"/>
+                        <field name="wh_shp06"/>
+                        <field name="wh_shp07"/>
+                        <field name="wh_shp08"/>
+                        <field name="wh_shp09"/>
+                        <field name="wh_shp10"/>
+                        <field name="wh_shp11"/>
+                        <field name="wh_shp12"/>
+                        <field name="wh_shp13"/>
+                        <field name="wh_shp14"/>
+                        <field name="wh_shp15"/>
+                        <field name="wh_shp16"/>
+                        <field name="wh_shp17"/>
+                        <field name="wh_shp18"/>
+                        <field name="wh_shp19"/>
+                        <field name="wh_shp20"/>
+                        <field name="wh_shp21"/>
+                        <field name="wh_shp22"/>
+                        <field name="wh_shp23"/>
+                        <field name="wh_shp24"/>
+                        <field name="wh_syncdate"/>
+                        <field name="wh_tel"/>
+                        <field name="wh_transportgrp"/>
+                        <field name="wh_transportpartnumber"/>
+                        <field name="wh_transportstock"/>
+                        <field name="wh_trn_autoreceive"/>
+                        <field name="wh_trnpicklistrequired"/>
+                        <field name="wh_vatregno"/>
+                        <field name="wh_xmlpdffbkpath"/>
+                        <field name="wh_xmlpdffsavetodb"/>
+                        <field name="wh_year"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom_main" name="Languages" sequence="10"/> -->
+
+    <record id="action_t_warehouse_custom" model="ir.actions.act_window">
+        <field name="name">warehouse Custom Languages</field>
+        <field name="res_model">t.warehouse</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom" name="Regular" action="action_res_lang_custom"  sequence="10"/> -->
+
+</odoo>

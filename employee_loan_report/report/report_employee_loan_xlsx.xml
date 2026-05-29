@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <data>
+
+
+<!--         <report-->
+<!--            id="action_report_employee_loan_report_xlsx"-->
+<!--            string="Employee_Loan_Report"-->
+<!--            model="employee.loan.report"-->
+<!--            report_type="xlsx"-->
+<!--            file="Employee Loan Report"-->
+<!--            name="employee_loan_report.report_employee_loan_xlsx"-->
+<!--        />-->
+       <record id="action_report_employee_loan_report_xlsx" model="ir.actions.report">
+	        <field name="name">Employee Loan Report</field>
+	        <field name="model">employee.loan.report</field>
+	        <field name="report_type">xlsx</field>
+	        <field name="report_name">employee_loan_report.report_employee_loan_xlsx</field>
+	        <field name="report_file">Employee Loan Report</field>
+	        <field name="binding_model_id" ref="model_employee_loan_report"/>
+	        <field name="binding_type">report</field>
+    </record>
+
+
+
+   </data>
+</odoo>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="custom_hr_contract_view" model="ir.ui.view">
+            <field name="name">hr.contract.form</field>
+            <field name="model">hr.contract</field>
+            <field name="inherit_id" ref="hr_saudi.hr_contract_view_inherit_form1"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='housing_allowance']" position="after">
+                    <field name='custom_allowance'/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

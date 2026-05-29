@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- ============================================================
+             BACKUP LOG - LIST VIEW
+             ============================================================ -->
+        <record id="view_auto_db_backup_log_list" model="ir.ui.view">
+            <field name="name">auto.db.backup.log.list</field>
+            <field name="model">auto.db.backup.log</field>
+            <field name="arch" type="xml">
+                <tree string="Backup History" create="false" edit="false"
+                      decoration-success="status == 'success'"
+                      decoration-danger="status == 'failed'">
+                    <field name="backup_datetime"/>
+                    <field name="db_name"/>
+                    <field name="filepath"/>
+                    <field name="file_size"/>
+                    <field name="duration" string="Duration (s)"/>
+                    <field name="status" widget="badge"
+                           decoration-success="status == 'success'"
+                           decoration-danger="status == 'failed'"/>
+                    <field name="error_message" optional="hide"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- BACKUP LOG - FORM VIEW -->
+        <record id="view_auto_db_backup_log_form" model="ir.ui.view">
+            <field name="name">auto.db.backup.log.form</field>
+            <field name="model">auto.db.backup.log</field>
+            <field name="arch" type="xml">
+                <form string="Backup Log Entry" create="false" edit="false">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="backup_datetime"/>
+                                <field name="db_name"/>
+                                <field name="config_id"/>
+                            </group>
+                            <group>
+                                <field name="status"/>
+                                <field name="file_size"/>
+                                <field name="duration"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="filepath"/>
+                        </group>
+                        <group string="Error Details" invisible="status != 'failed'">
+                            <field name="error_message" nolabel="1"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- BACKUP LOG - SEARCH VIEW -->
+        <record id="view_auto_db_backup_log_search" model="ir.ui.view">
+            <field name="name">auto.db.backup.log.search</field>
+            <field name="model">auto.db.backup.log</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="db_name"/>
+                    <filter string="Success" name="filter_success" domain="[('status', '=', 'success')]"/>
+                    <filter string="Failed" name="filter_failed" domain="[('status', '=', 'failed')]"/>
+                    <filter string="Today" name="filter_today" domain="[('backup_datetime', '&gt;=', (context_today()).strftime('%Y-%m-%d'))]"/>
+                    <filter string="Last 7 Days" name="filter_week" domain="[('backup_datetime', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Status" name="group_status" context="{'group_by':'status'}"/>
+                        <filter string="Database" name="group_db" context="{'group_by':'db_name'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- ACTION -->
+        <record id="action_auto_db_backup_log" model="ir.actions.act_window">
+            <field name="name">Backup History</field>
+            <field name="res_model">auto.db.backup.log</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No backup logs yet.</p>
+                <p>Logs will appear here after the first backup is executed.</p>
+            </field>
+        </record>
+    </data>
+</odoo>

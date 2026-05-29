@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem id="menu_promoter_root" name="Promoter"/>
+
+    <menuitem id="menu_promoter_shop_status_root"
+              name="Review Shop Status"
+              parent="menu_promoter_root"
+              action="action_promoter_shop_status"
+              sequence="30"/>
+
+    <!-- =====================
+         ACTION & MENU
+    ====================== -->
+    <record id="action_promoter_status_mobile" model="ir.actions.act_window">
+        <field name="name">Update Shop Status</field>
+        <field name="res_model">promoter.shop.status</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="view_id" ref="view_promoter_shop_status_kanban_mob"/>        
+        <field name="domain">[('user_id', '=', uid)]</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem id="menu_promoter_status_mobile"
+              name="Update Shop Status"
+              parent="menu_promoter_root"
+              action="action_promoter_status_mobile"
+              groups="promoter.group_promoter_user"
+              sequence="70"/>
+
+
+    <!-- =====================
+         RECORD RULES
+    ====================== -->
+    <!-- Mobile Users only see their own records -->
+    <record id="promoter_shop_status_rule_user" model="ir.rule">
+      <field name="name">Promoter Shop Status - Restrict to Own Records</field>
+      <field name="model_id" ref="promoter.model_promoter_shop_status"/>
+      <field name="groups" eval="[(4, ref('promoter.group_promoter_user'))]"/>
+    </record>
+
+    <!-- Back Office Users see everything -->
+    <record id="promoter_shop_status_rule_backoffice" model="ir.rule">
+      <field name="name">Promoter Shop Status - Full Access Back Office</field>
+      <field name="model_id" ref="promoter.model_promoter_shop_status"/>
+      <field name="groups" eval="[(4, ref('promoter.group_promoter_backoffice_user'))]"/>
+      <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+    
+</odoo>

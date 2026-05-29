@@ -1,0 +1,48 @@
+<odoo>
+
+    <!-- Tree View -->
+    <record id="view_crm_contract_type_tree" model="ir.ui.view">
+        <field name="name">crm.contract.type.tree</field>
+        <field name="model">crm.contract.type</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="contract_category"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_crm_contract_type_form" model="ir.ui.view">
+        <field name="name">crm.contract.type.form</field>
+        <field name="model">crm.contract.type</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="code"/>
+                        <field name="name"/>
+                        <field name="contract_category"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_crm_contract_type" model="ir.actions.act_window">
+        <field name="name">Contract Types</field>
+        <field name="res_model">crm.contract.type</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+     <!-- Contracts menu -->
+    <menuitem id="crm_contract_type_menu_action"
+              name="Contract Types"
+              parent="crm.crm_menu_config"
+              action="action_crm_contract_type"
+              sequence="900"
+              />
+
+</odoo>

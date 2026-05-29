@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<odoo>
+      	
+      	<record id="view_gosi_payroll_form" model="ir.ui.view">
+      		<field name="name">gosi.payroll.form.view</field>
+      		<field name="model">gosi.payroll</field>
+      		<field name="arch" type="xml">
+      			<form string="Payroll Checklist Report">
+      				<group>
+     					
+       			   		<!-- <group>	
+ 							<field name="employ_ids" widget="many2many_tags" attrs="{'invisible':[('group_wise','in',('department','jobtitle','nationality','location'))]}"/>
+      					</group> -->
+      					
+      					<group>
+	      					<field name="employ_ids" widget="many2many_tags" />
+	      				
+	      					<field name="department_ids" widget="many2many_tags"/>
+	      					<field name="job_ids" widget="many2many_tags"/>
+	    				
+	    					<field name="nationality_ids" widget="many2many_tags"/>
+	      				
+	      					<field name="branch_ids" widget="many2many_tags"/>
+						</group>
+      					
+      					<group>
+	      					<field name="from_date">From Date</field>
+	      					<field name="to_date">To Date</field>
+	      					<field name="company_id"/>
+      					</group>
+      					<group>
+      						<field name="group_wise"/>
+      				
+	      					<!-- <field name="department_ids" widget="many2many_tags" attrs="{'invisible':[('group_wise','!=','department')]}"/>
+	        				<field name="job_ids" widget="many2many_tags" attrs="{'invisible':[('group_wise','!=','jobtitle')]}"/>
+	       					<field name="nationality_ids" widget="many2many_tags" attrs="{'invisible':[('group_wise','!=','nationality')]}"/>
+	       					<field name="branch_ids" widget="many2many_tags" attrs="{'invisible':[('group_wise','!=','location')]}"/> -->
+       					</group>
+       					<group>
+       						<field name="structure_id" string="Structure"/>
+       					</group>
+                             
+    				</group>
+      				<footer>
+       					<button name="print_excel" string="Print Excel" class="oe_highlight" type="object"/>
+      					<button string="Cancel" class="btn btn-default" special="cancel"/>
+      				</footer>
+      			</form>
+      		</field>
+		</record>      		
+      	
+     <record id="action_gosi_payroll_report" model="ir.actions.act_window">
+            <field name="name">Payroll Checklist report</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">gosi.payroll</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_gosi_payroll_form"/>
+            <field name="target">new</field>
+      
+      </record>
+<!--       <menuitem id="menu_payroll_report" parent="om_hr_payroll.menu_hr_payroll_root"-->
+<!--                  name="Reports" sequence="200"/>-->
+      
+      <menuitem
+            id="gosi_payroll_report1"
+            name="Payroll Checklist Report"   
+            parent="employee_payroll_report.menu_payroll_report_xlsx"
+            sequence="50"
+            action="action_gosi_payroll_report"
+           />
+      
+      
+</odoo>

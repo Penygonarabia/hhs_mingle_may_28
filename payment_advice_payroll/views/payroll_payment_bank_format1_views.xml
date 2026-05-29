@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<odoo>
+	<record id="view_payroll_payment_advice_tree" model="ir.ui.view">
+		<field name="name">payroll.payment.advice.tree.view</field>
+		<field name="model">payroll.payment.advice</field>
+		<field name="arch" type="xml">
+			<tree string="Payroll Payment Advice Tree">
+				<field name="name" string = "Period Name" readonly="1" force_save='1'/>
+			     <field name="from_date"/>
+			</tree>
+		</field>
+	</record>
+
+	<record id="view_payroll_payment_advice_form" model="ir.ui.view">
+		<field name="name">payroll.payment.advice.form.view</field>
+		<field name="model">payroll.payment.advice</field>
+		<field name="arch" type="xml">
+			<form string="Payroll Payment Advice Form">
+				<sheet>
+				<group>
+		        <group col = "2">				          
+                       <field name="name" string = "Period Name" readonly="1" force_save='1'/>
+			   </group>		
+					<group col = "2">
+			    		<field name="from_date"/>
+					</group>
+				</group>	
+			   <group>	
+					<notebook>
+					    <page string = "Payment Information" class="oe_highlight">
+ 					      <field name = "payroll_line_ids" readonly="1" force_save='1'>
+					           <tree editable = "bottom">
+					              <field name = "employee_number" width="100px"/>
+					              <field name = "employee_id"  width="150px"/>
+					               <field name="bank_account_id"  width="225px"/>
+					               <field name = "net_salary"  width="150px"/>	
+					                <field name = "actual_amount"  width="150px"/>
+      					        </tree>
+					         </field>
+					    </page>
+					</notebook>
+				</group>
+			</sheet>	
+			</form>
+		</field>
+		</record>
+
+	<record id="action_view_payroll_payment_advice"  model="ir.actions.act_window">
+		<field name="name">SABB BANK</field>
+		<field name="type">ir.actions.act_window</field>
+		<field name="res_model">payroll.payment.advice</field>
+		<field name="view_mode">tree,form</field>
+		<field name="context">{}</field>
+		<field name="domain">[]</field>
+	</record>
+         <!--    <menuitem id="menu_payroll_payment_advice_reportOne"
+              name="Payroll Payment Advice Bank format1"
+               parent="om_hr_payroll.menu_hr_payroll_root"
+              action="action_view_payroll_payment_advice"
+              sequence="11"/> -->
+              
+              
+            <!--    <menuitem id="menu_payroll_payment_advice_mas"
+               parent="om_hr_payroll.menu_hr_payroll_root"
+           		name="Payment Advice"
+            	
+              sequence="10"/>
+              
+              
+              <menuitem id="menu_payroll_payment_advice"
+              name="SABB Format"
+               parent="menu_payroll_payment_advice_mas"
+              action="action_view_payroll_payment_advice"
+            
+              sequence="4"/>
+               -->
+
+</odoo>

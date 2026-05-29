@@ -1,0 +1,573 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="ksdashboardtile">
+        <t t-if="props.item.ks_layout == 'layout1'" t-call="ks_dashboard_item_layout1"/>
+        <t t-elif="props.item.ks_layout == 'layout2'" t-call="ks_dashboard_item_layout2"/>
+        <t t-elif="props.item.ks_layout == 'layout3'" t-call="ks_dashboard_item_layout3"/>
+        <t t-elif="props.item.ks_layout == 'layout4'" t-call="ks_dashboard_item_layout4"/>
+        <t t-elif="props.item.ks_layout == 'layout5'" t-call="ks_dashboard_item_layout5"/>
+        <t t-elif="props.item.ks_layout == 'layout6'" t-call="ks_dashboard_item_layout6"/>
+        <t t-else="" t-call="ks_dashboard_item_layout_default"/>
+    </t>
+
+    <t t-name="ks_dashboard_item_layout1">
+
+        <t t-if="env.inDialog">
+            <div class="explain-ai pt-3">
+                <div class="container">
+                    <div t-att-class="'ks_item_click ' + ks_container_class" t-att-id="item.id" t-ref="ks_tile">
+                        <div class="row ks_ai_explain_body">
+
+                            <t t-if="ks_ai_analysis">
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-sec ks_explain_ai">
+                                        <t t-call="ks_tile_layout_1"/>
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-data h-100">
+                                        <div class="charts-content-box">
+                                            <t t-call="ks_item_explanation"/>
+                                        </div>
+                                        <div class="voice-button" t-on-click="props.ks_speak" title="Text to speech">
+                                            <div class="voice-cricle">
+                                                <img src="/ks_dashboard_ninja/static/images/voice-cricle.svg" height="24" width="24" alt="voice-img" loading="lazy"
+                                                class="img-fluid"/>
+                                            </div>
+                                            <div class="comp-gif d-none">
+                                                <img src="/ks_dashboard_ninja/static/images/Comp.gif" alt="loading gif" height="24" width="24"
+                                                     class="img-fluid"/>
+                                            </div>
+                                            <audio t-ref="aiAudioRef"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                             <t t-else="">
+                                <t t-call="ks_tile_layout_1"/>
+                            </t>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </t>
+        <t t-else="">
+            <div t-att-class="'ks_item_click ' + ks_container_class" t-att-id="item.id" t-ref="ks_tile">
+                <t t-if="ks_ai_analysis">
+                    <div class="ks_ai_explain_body">
+                        <t t-call="ks_tile_layout_1"/>
+                        <t t-call="ks_item_explanation"/>
+                    </div>
+                </t>
+                <t t-else="">
+                    <t t-call="ks_tile_layout_1"/>
+                </t>
+            </div>
+        </t>
+    </t>
+
+
+    <t t-name="ks_tile_layout_1">
+        <div t-att-class="'ks_dashboarditem_id custom-layout-1 ks_tile_carousel ks_explain_ai_view encapsulated-tile-container ks_dashboard_item ks_dashboard_item_hover ' + ks_inner_container_class"
+             t-att-style="style_main_body"
+             t-att-title="item.ks_info"
+             t-att-id="item.id" t-on-click.stop="() => this.props.onItemClick(item.id)">
+
+            <KsItemButton item_data="this.item" itemRootRef="ks_tile"/>
+            <div class="ks_dashboard_item_main_body encapsulated-tile-1">
+                <div class="ks_dashboard_icon">
+                    <t t-if="item.ks_icon_select=='Custom'">
+                        <t t-if="ks_icon_url">
+                            <img t-att-src="ks_icon_url"/>
+                        </t>
+                    </t>
+                    <t t-elif="item.ks_icon_select=='Default'">
+                        <span t-att-style="'color:'+ ks_rgba_default_icon_color + ';'"
+                              t-att-class="'fa fa-' + item.ks_default_icon + ' fa-4x'"/>
+                    </t>
+                </div>
+                <div class="ks_dashboard_item_info">
+                    <div class="ks_dashboard_item_domain_count" t-att-title="count">
+                        <t t-esc="state.data_count"/>
+                    </div>
+                    <div class="ks_dashboard_item_name" t-att-title="item.name">
+                        <t t-esc="item.name"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="ks_dashboard_item_layout2">
+        <t t-if="env.inDialog">
+            <div class="explain-ai pt-3">
+                <div class="container">
+                    <div t-att-id="item.id" t-att-class="'ks_item_click ' + ks_container_class" t-ref="ks_tile">
+                        <div class="row ks_ai_explain_body">
+                            <t t-if="ks_ai_analysis">
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-sec ks_explain_ai">
+                                        <t t-call="ks_tile_layout_2"/>
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-data h-100">
+                                        <div class="charts-content-box">
+                                            <t t-call="ks_item_explanation"/>
+                                        </div>
+                                        <div class="voice-button" t-on-click="props.ks_speak" title="Text to speech">
+                                            <div class="voice-cricle">
+                                                <img src="/ks_dashboard_ninja/static/images/voice-cricle.svg" height="24" width="24"
+                                                     alt="voice-img" loading="lazy" class="img-fluid"/>
+                                            </div>
+                                            <div class="comp-gif d-none">
+                                                <img src="/ks_dashboard_ninja/static/images/Comp.gif" alt="loading gif" height="24" width="24"
+                                                     class="img-fluid"/>
+                                            </div>
+                                            <audio t-ref="aiAudioRef"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                             <t t-else="">
+                                <t t-call="ks_tile_layout_2"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+        <t t-else="">
+            <div t-att-class="'ks_item_click ' + ks_container_class" t-att-id="item.id" t-ref="ks_tile">
+                <t t-if="ks_ai_analysis">
+                    <div class="ks_ai_explain_body">
+                        <t t-call="ks_tile_layout_2"/>
+                        <t t-call="ks_item_explanation"/>
+                    </div>
+                </t>
+                <t t-else="">
+                    <t t-call="ks_tile_layout_2"/>
+                </t>
+
+            </div>
+        </t>
+    </t>
+
+    <t t-name="ks_tile_layout_2">
+        <div t-att-class="'ks_dashboarditem_id ks_tile_carousel encap-layout-2-box ks_explain_ai_view ks_dashboard_item_l2 ks_dashboard_item_hover ' + ks_inner_container_class"
+             t-att-style="style_main_body"
+             t-att-title="item.ks_info" t-att-id="item.id" t-on-click.stop="() => this.props.onItemClick(item.id)">
+                <div class="ks_dashboard_item_main_body_l2 ">
+                    <div class="ks_dashboard_item_domain_count_l2 layout-2-count" t-att-title="count">
+                        <t t-esc="state.data_count"/>
+                    </div>
+                    <div class="ks_dashboard_item_name_l2 layout-2-name" t-att-title="item.name">
+                        <t t-esc="item.name"/>
+                    </div>
+                </div>
+
+                <div class="ks_dashboard_icon_l2 layout-2-icon" t-att-style="style_image_body_l2">
+                    <t t-if="item.ks_icon_select=='Custom'">
+                        <t t-if="ks_icon_url">
+                            <img t-att-src="ks_icon_url"/>
+                        </t>
+                    </t>
+                    <t t-elif="item.ks_icon_select=='Default'">
+                        <span t-att-style="'color:'+ ks_rgba_default_icon_color + ';'"
+                              t-att-class="'fa fa-' + item.ks_default_icon"/>
+                    </t>
+                </div>
+
+            <KsItemButton item_data="this.item" item_classes="'ks_dashboard_item_header_l6'" itemRootRef="ks_tile"/>
+            </div>
+    </t>
+
+
+    <t t-name="ks_dashboard_item_layout3">
+        <t t-if="env.inDialog">
+            <div class="explain-ai pt-3">
+                <div class="container">
+                    <div t-att-id="item.id" t-att-class="'ks_item_click ' + ks_container_class" t-ref="ks_tile">
+                        <div class="row ks_ai_explain_body">
+                            <t t-if="ks_ai_analysis">
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-sec ks_explain_ai">
+                                        <t t-call="ks_tile_layout_3"/>
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-data h-100">
+                                        <div class="charts-content-box">
+                                            <t t-call="ks_item_explanation"/>
+                                        </div>
+                                        <div class="voice-button" t-on-click="props.ks_speak" title="Text to speech">
+                                            <div class="voice-cricle">
+                                                <img src="/ks_dashboard_ninja/static/images/voice-cricle.svg" height="24" width="24" alt="voice-img" loading="lazy"
+                                                class="img-fluid"/>
+                                            </div>
+                                            <div class="comp-gif d-none">
+                                                <img src="/ks_dashboard_ninja/static/images/Comp.gif" alt="loading gif" height="24" width="24"
+                                                     class="img-fluid"/>
+                                            </div>
+                                            <audio t-ref="aiAudioRef"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                             <t t-else="">
+                                <t t-call="ks_tile_layout_3"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+        <t t-else="">
+           <div t-att-id="item.id" t-att-class="'ks_item_click ' + ks_container_class" t-ref="ks_tile">
+                <t t-if="ks_ai_analysis">
+                    <div class="ks_ai_explain_body">
+                        <t t-call="ks_tile_layout_3"/>
+                        <t t-call="ks_item_explanation"/>
+                    </div>
+                </t>
+                <t t-else="">
+                    <t t-call="ks_tile_layout_3"/>
+                </t>
+           </div>
+        </t>
+    </t>
+
+
+    <t t-name="ks_tile_layout_3">
+        <div t-att-class="'ks_dashboarditem_id ks_tile_carouse custom-layout-3 encapsulated-tile-container ks_explain_ai_view ks_dashboard_item ks_dashboard_item_hover '+ ks_inner_container_class"
+             t-att-style="'background-color: ' + ks_rgba_background_color + ';'"
+             t-att-title="item.ks_info" t-att-id="item.id" t-on-click.stop="() => this.props.onItemClick(item.id)">
+
+            <KsItemButton item_data="this.item" itemRootRef="ks_tile"/>
+            <div class="ks_dashboard_item_main_body minimum-180 encapsulated-main-body">
+                    <div class="ks_dashboard_icon_l3">
+                        <t t-if="item.ks_icon_select=='Custom'">
+                            <t t-if="ks_icon_url">
+                                <img t-att-src="ks_icon_url"/>
+                            </t>
+                        </t>
+                        <t t-elif="item.ks_icon_select=='Default'">
+                            <span t-att-style="'color:'+ ks_rgba_default_icon_color + ';'"
+                                  t-att-class="'fa fa-' + item.ks_default_icon + ' fa-4x'"/>
+                        </t>
+                    </div>
+                    <div class="ks_dashboard_item_info ks_dashboard_item_info_l3" t-att-style="'color:'+ ks_rgba_font_color + ' !important;'">
+                        <div class="ks_dashboard_item_domain_count_l3" t-att-title="count" t-att-style="'color:'+ ks_rgba_font_color + ';'">
+                            <t t-esc="state.data_count"/>
+                        </div>
+                        <div class="ks_dashboard_item_name_l3" t-att-title="item.name">
+                            <t t-esc="item.name"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </t>
+
+    <t t-name="ks_dashboard_item_layout4">
+        <t t-if="env.inDialog">
+            <div class="explain-ai pt-3">
+                <div class="container">
+                    <div t-att-id="item.id" t-att-class="'ks_item_click ' + ks_container_class" t-ref="ks_tile">
+                        <div class="row ks_ai_explain_body">
+                            <t t-if="ks_ai_analysis">
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-sec ks_explain_ai">
+                                        <t t-call="ks_tile_layout_4"/>
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-data h-100">
+                                        <div class="charts-content-box">
+                                            <t t-call="ks_item_explanation"/>
+                                        </div>
+                                        <div class="voice-button" t-on-click="props.ks_speak" title="Text to speech">
+                                            <div class="voice-cricle">
+                                                <img src="/ks_dashboard_ninja/static/images/voice-cricle.svg" height="24" width="24" alt="voice-img" loading="lazy"
+                                                class="img-fluid"/>
+                                            </div>
+                                            <div class="comp-gif d-none">
+                                                <img src="/ks_dashboard_ninja/static/images/Comp.gif" alt="loading gif" height="24" width="24"
+                                                     class="img-fluid"/>
+                                            </div>
+                                            <audio t-ref="aiAudioRef"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                             <t t-else="">
+                                <t t-call="ks_tile_layout_4"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+        <t t-else="">
+
+            <div t-att-id="item.id" t-att-class="'ks_item_click ' + ks_container_class" t-ref="ks_tile">
+                 <t t-if="ks_ai_analysis">
+                    <div class="ks_ai_explain_body">
+                        <t t-call="ks_tile_layout_4"/>
+                        <t t-call="ks_item_explanation"/>
+                    </div>
+                </t>
+                <t t-else="">
+                    <t t-call="ks_tile_layout_4"/>
+                </t>
+            </div>
+        </t>
+    </t>
+
+    <t t-name="ks_tile_layout_4">
+        <div t-att-class="'ks_dashboarditem_id custom-layout-4 ks_tile_carousel encapsulated-tile-container ks_explain_ai_view ks_dashboard_item_l2 ks_dashboard_item_hover '+ ks_inner_container_class"
+             t-att-style="'background-color: ' + ks_rgba_background_color + ';'"
+             t-att-title="item.ks_info" t-att-id="item.id" t-on-click.stop="() => this.props.onItemClick(item.id)">
+            <div class="d-flex justify-content-between flex-column w-100">
+
+
+            <div class="ks_dashboard_icon_l4 layout-4-icon bg-white" t-att-style="style_image_body_l4">
+                <t t-if="item.ks_icon_select=='Custom'">
+                    <t t-if="ks_icon_url">
+                        <img t-att-src="ks_icon_url"/>
+                    </t>
+                </t>
+                <t t-elif="item.ks_icon_select=='Default'">
+                    <span t-att-style="'color:'+ ks_rgba_default_icon_color + ';'"
+                          t-att-class="'fa fa-' + item.ks_default_icon + ' fa-4x'"/>
+                </t>
+            </div>
+
+            <div class="ks_dashboard_item_main_body_l2 layout-4-count ks_bg_white">
+                <div class="ks_dashboard_item_domain_count_l2 ms-0" t-att-title="count" t-att-style="'color: ' + ks_rgba_font_color + ';'">
+                    <t t-esc="state.data_count"/>
+                </div>
+            </div>
+
+            <div class="ks_dashboard_item_name_l2 layout-4-name ms-0" t-att-title="item.name" t-att-style="'color: ' + ks_rgba_font_color + ';'">
+                <t t-esc="item.name"/>
+            </div>
+                </div>
+
+            <KsItemButton item_data="this.item" item_classes="'ks_dashboard_item_header_l6'" itemRootRef="ks_tile"/>
+            </div>
+
+    </t>
+
+    <t t-name="ks_dashboard_item_layout5">
+        <t t-if="env.inDialog">
+            <div class="explain-ai pt-3">
+                <div class="container">
+                    <div t-att-id="item.id" t-att-class="'ks_item_click ' + ks_container_class" t-ref="ks_tile">
+                        <div class="row ks_ai_explain_body">
+                            <t t-if="ks_ai_analysis">
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-sec ks_explain_ai">
+                                        <t t-call="ks_tile_layout_5"/>
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-data h-100">
+                                        <div class="charts-content-box">
+                                            <t t-call="ks_item_explanation"/>
+                                        </div>
+                                        <div class="voice-button" t-on-click="props.ks_speak" title="Text to speech">
+                                            <div class="voice-cricle">
+                                                <img src="/ks_dashboard_ninja/static/images/voice-cricle.svg" height="24" width="24" alt="voice-img" loading="lazy"
+                                                class="img-fluid"/>
+                                            </div>
+                                            <div class="comp-gif d-none">
+                                                <img src="/ks_dashboard_ninja/static/images/Comp.gif" alt="loading gif" height="24" width="24"
+                                                     class="img-fluid"/>
+                                            </div>
+                                            <audio t-ref="aiAudioRef"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                             <t t-else="">
+                                <t t-call="ks_tile_layout_5"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+        <t t-else="">
+            <div t-att-id="item.id" t-att-class="'ks_item_click ' + ks_container_class" t-ref="ks_tile">
+                <t t-if="ks_ai_analysis">
+                    <div class="ks_ai_explain_body">
+                        <t t-call="ks_tile_layout_5"/>
+                        <t t-call="ks_item_explanation"/>
+                    </div>
+                </t>
+                <t t-else="">
+                    <t t-call="ks_tile_layout_5"/>
+                </t>
+            </div>
+        </t>
+    </t>
+
+
+
+    <t t-name="ks_tile_layout_5">
+        <div t-att-class="'ks_dashboarditem_id custom-layout-5 ks_tile_carousel encapsulated-tile-container ks_explain_ai_view ks_dashboard_item_l5 ks_dashboard_item_hover '+ ks_inner_container_class"
+             t-att-style="style_main_body"
+             t-att-title="item.ks_info" t-att-id="item.id" t-on-click.stop="() => this.props.onItemClick(item.id)">
+            <!--  main-body-lay-out-5-->
+                <div class="ks_dashboard_icon_l5 dashboard-item-icon img-bg">
+                    <t t-if="item.ks_icon_select=='Custom'">
+                        <t t-if="ks_icon_url">
+                            <img t-att-src="ks_icon_url"/>
+                        </t>
+                    </t>
+                    <t t-elif="item.ks_icon_select=='Default'">
+                        <span t-att-style="'color:'+ ks_rgba_default_icon_color + ';'"
+                              t-att-class="'fa fa-' + item.ks_default_icon + ' fa-4x'"/>
+                    </t>
+                </div>
+                <div class="ks_dashboard_item_main_body_l5 dashboard-item-data">
+                    <div class="ks_dashboard_item_domain_count_l5" t-att-title="count">
+                        <t t-esc="state.data_count"/>
+                    </div>
+                </div>
+
+                <div class="ks_dashboard_item_name_l5 dashboard-item-name" t-att-title="item.name">
+                    <t t-esc="item.name"/>
+                </div>
+
+            <KsItemButton item_data="this.item" item_classes="'ks_dashboard_item_header_l2'" itemRootRef="ks_tile"/>
+        </div>
+
+    </t>
+
+    <t t-name="ks_dashboard_item_layout6">
+        <t t-if="env.inDialog">
+            <div class="explain-ai pt-3">
+                <div class="container">
+                    <div t-att-id="item.id" t-att-class="'ks_item_click ' + ks_container_class" t-ref="ks_tile">
+                        <div class="row ks_ai_explain_body">
+                            <t t-if="ks_ai_analysis">
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-sec ks_explain_ai">
+                                        <t t-call="ks_tile_layout_6"/>
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-12">
+                                    <div class="charts-data h-100">
+                                        <div class="charts-content-box">
+                                            <t t-call="ks_item_explanation"/>
+                                        </div>
+                                        <div class="voice-button" t-on-click="props.ks_speak" title="Text to speech">
+                                            <div class="voice-cricle">
+                                                <img src="/ks_dashboard_ninja/static/images/voice-cricle.svg" height="24" width="24" alt="voice-img" loading="lazy"
+                                                class="img-fluid"/>
+                                            </div>
+                                            <div class="comp-gif d-none">
+                                                <img src="/ks_dashboard_ninja/static/images/Comp.gif" alt="loading gif" height="24" width="24"
+                                                     class="img-fluid"/>
+                                            </div>
+                                            <audio t-ref="aiAudioRef"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+
+                             <t t-else="">
+                                <t t-call="ks_tile_layout_6"/>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+        <t t-else="">
+            <div t-att-id="item.id" t-att-class="'ks_item_click ' + ks_container_class" t-ref="ks_tile">
+                 <t t-if="ks_ai_analysis">
+                    <div class="ks_ai_explain_body">
+                        <t t-call="ks_tile_layout_6"/>
+                        <t t-call="ks_item_explanation"/>
+                    </div>
+                </t>
+                <t t-else="">
+                    <t t-call="ks_tile_layout_6"/>
+                </t>
+            </div>
+        </t>
+    </t>
+
+    <t t-name="ks_tile_layout_6">
+        <div t-att-class="'ks_dashboarditem_id ks_tile_carousel  layout-6-box encapsulated-tile-container  ks_explain_ai_view ks_dashboard_item_l2 ks_dashboard_item_hover '+ ks_inner_container_class"
+             t-att-style="style_main_body"
+             t-att-title="item.ks_info" t-att-id="item.id" t-on-click.stop="() => this.props.onItemClick(item.id)">
+
+            <div class="d-flex flex-column w-100">
+                <div class="ks_dashboard_item_main_body_l2 layout-6-container">
+                    <div class="ks_dashboard_icon_l2">
+                        <t t-if="item.ks_icon_select=='Custom'">
+                            <t t-if="ks_icon_url">
+                                <img t-att-src="ks_icon_url"/>
+                            </t>
+                        </t>
+                        <t t-elif="item.ks_icon_select=='Default'">
+                            <span t-att-style="'color:'+ ks_rgba_default_icon_color + ';'"
+                                  t-att-class="'fa fa-' + item.ks_default_icon + ' fa-4x'"/>
+                        </t>
+                    </div>
+                    <div class="ks_dashboard_item_domain_count_l2 layout-6-name ml-0" t-att-title="count">
+                        <t t-esc="state.data_count"/>
+                    </div>
+                </div>
+
+                <div class="ks_dashboard_item_name_l2 layout-6-tile-name" t-att-title="item.name">
+                    <span class="ellipsis-content w-100"><t t-esc="item.name"/></span>
+                </div>
+            </div>
+
+            <KsItemButton item_data="this.item" item_classes="'ks_dashboard_item_header_l6'" itemRootRef="ks_tile"/>
+
+        </div>
+    </t>
+
+    <t t-name="ks_dashboard_item_layout_default">
+        <div t-att-id="item.id" t-att-class="'ks_item_click ' + ks_container_class">
+            <div class="ks_dashboard_item ks_tile_carousel ks_explain_ai_view ks_dashboard_item_hover"
+                 t-att-style="style_main_body">
+                <t t-if="item.ksIsDashboardManager and props.hideButtons and !props.on_dialog">
+                    <div class="ks_dashboard_item_header ks_dashboard_item_header_hover">
+                        <button type="button" title="Customize Item" class="ks_dashboard_item_customize">
+                            <i class="fa fa-pencil"/>
+                        </button>
+                        <button type="button" title="Remove Item" class="ks_dashboard_item_delete">
+                            <i class="fa fa-times"/>
+                        </button>
+                    </div>
+                </t>
+                <p>Layout Coming Soon</p>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="ks_item_explanation">
+            <p><t t-esc="ks_ai_analysis_1"/></p>
+            <p><t t-esc="ks_ai_analysis_2"/></p>
+        <div class="voice-button" t-on-click="props.ks_speak" title="Text to speech">
+            <div class="voice-cricle">
+                <img src="/ks_dashboard_ninja/static/images/voice-cricle.svg" height="24" width="24" alt="voice-img" loading="lazy"
+                class="img-fluid"/>
+            </div>
+            <div class="comp-gif d-none">
+                <img src="/ks_dashboard_ninja/static/images/Comp.gif" alt="loading gif" height="24" width="24"
+                     class="img-fluid"/>
+            </div>
+            <audio t-ref="aiAudioRef"/>
+        </div>
+    </t>
+
+</templates>

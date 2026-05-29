@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_project_task_form_inherit_preventive" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.preventive</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="machine_repair_management.view_project_task_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='job_card_service_report']" position="after">
+                <button name="action_print_preventive_job_card" 
+                        string="Print Preventive Job Card" 
+                        type="object" 
+                        class="oe_highlight"
+                        groups="not machine_repair_management.group_parts_user"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

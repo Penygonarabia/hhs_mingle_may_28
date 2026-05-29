@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <data>
+      
+
+         <report 
+            id="action_report_employee_salary_report_xlsx"
+            string="Employee_Salary_Report"
+            model="employee.salary.report" 
+            report_type="xlsx"
+            file="Employee Salary Report" 
+            name="payroll_employee_report.report_employee_salary_xlsx"
+        />
+        
+        
+        
+   </data>
+</odoo>

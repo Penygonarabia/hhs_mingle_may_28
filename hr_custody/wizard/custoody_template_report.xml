@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <template id="employee_custody_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template>
+
+        <template id="report_employee_custody_pdf">
+            <t t-call="web.html_container">
+                <t t-call="hr_custody.employee_custody_internal_layout" style="margin-top:0px;padding-top:0px;display:inline;">
+                    <div class="header" t-att-style="report_header_style">
+                        <div class="row mt32 mb32">
+                            <div class="col-3 text-left" style="font:12px lucida-console,sans-serif !important;">
+                                <span t-field="res_company.partner_id"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.street"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.street2"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.city"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.country_id"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.vat"/>
+                                <br/>
+                            </div>
+                            <div class="col-6">
+                                <h2><center>Custody Report</center></h2>
+
+                            </div>
+                            <div class="col-3 text-right " style="vertical-align:text-top">
+               				    <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" style="max-height: 100px; min-height:100px; min-width: 150px; max-width: 150px;" />
+            			    </div>
+                        </div>
+                    </div>
+                    <div class="page">
+                        <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr style="background-color:#464343;color:white;text-align:center">
+                                <th width="2%" style="vertical-align:text-top">S.No</th>
+                                <th width="15%" style="vertical-align:text-top">Emp.Name</th>
+                                <th width="8%" style="vertical-align:text-top">Reference</th>
+                                <th width="10%" style="vertical-align:text-top">Request Date</th>
+                                <th width="18%" style="vertical-align:text-top">Asset Type</th>
+                                <th width="18%" style="vertical-align:text-top">Asset</th>
+                                <th width="10%" style="vertical-align:text-top">Return Date</th>
+                                <th width="18%" style="vertical-align:text-top">Reason</th>
+                                <th width="10%" style="vertical-align:text-top">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="counter" t-value="1"/>
+                            <t t-foreach="selection" t-as="employee">
+                                <tr>
+                                    <td class="text-right"><span t-esc="counter"/></td>
+                                    <td><span t-esc="employee['emp_name']"/></td>
+                                    <td><span t-esc="employee['code']"/></td>
+                                    <td><span t-esc="employee['request_date']"/></td>
+                                    <td><span t-esc="employee['asset_types']"/></td>
+                                    <td><span t-esc="employee['property']"/></td>
+                                    <td><span t-esc="employee['return_date']"/></td>
+                                    <td><span t-esc="employee['reason']"/></td>
+                                    <td><span t-esc="employee['Status']"/></td>
+                                </tr>
+                                <t t-set="counter" t-value="counter+1"/>
+                            </t>
+                        </tbody>
+                    </table>
+                    </div>
+                    <div class="footer o_background_footer">
+                        <div class="text-center">
+                            <ul class="list-inline">
+                                <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                            </ul>
+                            <div t-if="report_type == 'pdf'" class="text-muted">
+                                Page:
+                                <span class="page"/>
+                                of
+                                <span class="topage"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+</odoo>

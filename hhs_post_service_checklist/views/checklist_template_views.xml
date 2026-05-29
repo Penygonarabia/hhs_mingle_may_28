@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ====== TEMPLATE TREE VIEW ====== -->
+    <record id="view_checklist_template_tree" model="ir.ui.view">
+        <field name="name">post.service.checklist.template.tree</field>
+        <field name="model">post.service.checklist.template</field>
+        <field name="arch" type="xml">
+            <tree string="Post Service Checklist Templates"
+                  decoration-info="active == True">
+                <field name="category_id"/>
+                <field name="service_unit_type_id" context="{'display_default_code': False}"/>
+                <!-- <field name="product_subgroup"/> -->
+                <field name="active" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ====== TEMPLATE FORM VIEW ====== -->
+    <record id="view_checklist_template_form" model="ir.ui.view">
+        <field name="name">post.service.checklist.template.form</field>
+        <field name="model">post.service.checklist.template</field>
+        <field name="arch" type="xml">
+            <form string="Post Service Checklist Template">
+                <header>
+                    <button name="action_copy_checklist"
+                            string="Copy To Another Group"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-copy"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="display_name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Product Info">
+                            <field name="category_id"/>
+                            <field name="service_unit_type_id"/>
+                        </group>
+                        <group string="Settings">
+                            <field name="active"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Checklist Items" name="checklist_items">
+                            <field name="line_ids">
+                                <tree string="Checklist Items" editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="section"/>
+                                    <field name="name"/>
+                                    <field name="field_type"/>
+                                    <field name="remark"/>
+                                    <button name="action_setup_options"
+                                            string="Options"
+                                            type="object"
+                                            icon="fa-list"
+                                            class="btn-link"
+                                            invisible="field_type != 'multiple'"/>
+                                    <field name="sequence" string="Sort Order"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Photos (Before / After)" name="photos">
+                            <field name="photo_ids">
+                                <tree string="Photos" editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="section"/>
+                                    <field name="caption"/>
+                                    <field name="sequence" string="Sort Order"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ====== SEARCH VIEW ====== -->
+    <record id="view_checklist_template_search" model="ir.ui.view">
+        <field name="name">post.service.checklist.template.search</field>
+        <field name="model">post.service.checklist.template</field>
+        <field name="arch" type="xml">
+            <search string="Post Service Checklist Templates">
+                <field name="category_id"/>
+                <field name="service_unit_type_id"/>
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Category" name="group_category" context="{'group_by': 'category_id'}"/>
+                    <filter string="Service Unit Type" name="group_service_unit" context="{'group_by': 'service_unit_type_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ====== ACTION ====== -->
+    <record id="action_checklist_template" model="ir.actions.act_window">
+        <field name="name">Post Service Checklist Templates</field>
+        <field name="res_model">post.service.checklist.template</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_checklist_template_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Post Service Checklist Template
+            </p>
+            <p>
+                Define checklist items for each Product Category and Product Group.
+                Use "Copy To Another Group" to duplicate templates.
+            </p>
+        </field>
+    </record>
+
+    <!-- ====== OPTIONS TREE VIEW (popup) ====== -->
+    <record id="view_checklist_option_tree" model="ir.ui.view">
+        <field name="name">post.service.checklist.option.tree</field>
+        <field name="model">post.service.checklist.option</field>
+        <field name="arch" type="xml">
+            <tree string="Options" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="is_default"/>
+                <field name="sequence" string="Sort Order"/>
+                <field name="line_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ====== COPY WIZARD FORM ====== -->
+    <record id="view_checklist_copy_wizard_form" model="ir.ui.view">
+        <field name="name">post.service.checklist.copy.wizard.form</field>
+        <field name="model">post.service.checklist.copy.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Copy Checklist">
+                <group>
+                    <field name="source_template_id"/>
+                    <field name="category_id"/>
+                    <field name="target_service_unit_type_id"/>
+                </group>
+                <footer>
+                    <button name="action_copy"
+                            string="Copy"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,1260 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sh_accounting_reports
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-07-13 05:56+0000\n"
+"PO-Revision-Date: 2022-07-13 05:56+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_cus_invoice_analysis_action
+msgid "'Customer/vendor Invoices Analysis'"
+msgstr "Analyse des factures client / fournisseur"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_invoice_by_category_action
+msgid "'Invoice By Product Category'"
+msgstr "Facture par catégorie de produits '"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_invoice_summary_action
+msgid "'Invoice Summary'"
+msgstr "Résumé de la facture'"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_action_invoice_details_report
+msgid "'Invoices Details Report'"
+msgstr "Rapport des détails des factures '"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_invoice_product_indent_action
+msgid "'Invoices Product Indent'"
+msgstr "Facture le produit du produit '"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_invoices_product_profit_action
+msgid "'Invoices Product Profit'"
+msgstr "Facture Profit Profit '"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_invoice_report_salesperson_report
+msgid "'Sales Report By Saleperson'"
+msgstr "Rapport de vente par Saleperson '"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_tci_top_customers_report_action
+msgid "'Top Customers'"
+msgstr "Meilleurs clients"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,print_report_name:sh_accounting_reports.sh_top_invoicing_product_report_action
+msgid "'Top Invoicing Products'"
+msgstr "Top de produits de facturation '"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "<b>Total</b>"
+msgstr "<b> Total </b>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid ""
+"<br/>\n"
+"                                <strong>Compare To Date :</strong>"
+msgstr ""
+"<br/>\n"
+"                                <strong> Comparez à ce jour: </strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid ""
+"<br/>\n"
+"                                <strong>To Date :</strong>"
+msgstr ""
+"<br/>\n"
+"                                <strong> à ce jour: </strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid ""
+"<br/>\n"
+"                        <strong>To Date :</strong>"
+msgstr ""
+"<br/>\n"
+"                        <strong> à ce jour: </strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "<span>Sale Person : </span>"
+msgstr "<span> Personne de vente: </pan>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+msgid "<strong>Compare Customer</strong>"
+msgstr "<strong> comparer le client </strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid "<strong>Compare From Date :</strong>"
+msgstr "<strong> Comparez de la date: </strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid "<strong>Compare Product</strong>"
+msgstr "<strong> comparer le produit </strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+msgid "<strong>Customer</strong>"
+msgstr "<strong> Client </strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid "<strong>From Date :</strong>"
+msgstr "<strong> à partir de la date: </strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid "<strong>Product</strong>"
+msgstr "<strong> produit </strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid "<strong>Qty Sold</strong>"
+msgstr "<strong> Qté vendu </strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+msgid "<strong>Sales Amount</strong>"
+msgstr "<strong> Montant de vente </strong>"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_indent_product_indent_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+msgid "<strong>Total</strong>"
+msgstr "<strong> total </strong>"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__report_by__move
+msgid "Account Move"
+msgstr "Déplacement du compte"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "Amount Due"
+msgstr "Montant dû"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "Amount Invoiced"
+msgstr "Montant facturé"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_doc
+msgid "Amount Paid"
+msgstr "Le montant payé"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+msgid "Balance"
+msgstr "Solde"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tci_top_customer_wizard__type__basic
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tip_top_invoicing_product_wizard__type__basic
+msgid "Basic"
+msgstr "De base"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_details_report_wizard__sh_state__cancel
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_report_salesperson_wizard__state__cancel
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_summary_wizard__sh_status__cancel
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_customer_invoices_analysis_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_wizard_form
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_product_indent_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_report_salesperson_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_report_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customer_wizard_form
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tip_top_invoicing_product_wizard_form_view
+msgid "Cancel"
+msgstr "Annuler"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_indent_wizard__sh_status__cancel
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__sh_status__cancel
+msgid "Cancelled"
+msgstr "Annulé"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__sh_category_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__sh_category_ids
+msgid "Categories"
+msgstr "Catégories"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_customer_invoices_analysis_xls_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_xls_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_product_indent_xls_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_xls_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_xls_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_invoices_detail_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_invoices_report_by_sale_person_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_sh_top_customers_invoice
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_top_invoicing_products
+msgid "Close"
+msgstr "proche"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__company_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__company_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__company_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__company_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__company_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__company_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__company_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__company_ids
+msgid "Companies"
+msgstr "Entreprises"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__company_ids
+msgid "Company"
+msgstr "Compagnie"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tci_top_customer_wizard__type__compare
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tip_top_invoicing_product_wizard__type__compare
+msgid "Compare"
+msgstr "Comparer"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__date_compare_from
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__date_compare_from
+msgid "Compare From Date"
+msgstr "Comparez de la date"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__date_compare_to
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__date_compare_to
+msgid "Compare To Date"
+msgstr "Comparer à ce jour"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+msgid "Cost"
+msgstr "Coût"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__create_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls__create_uid
+msgid "Created by"
+msgstr "Créé par"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__create_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls__create_date
+msgid "Created on"
+msgstr "Créé sur"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__currency_id
+msgid "Currency"
+msgstr "Devise"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "Customer"
+msgstr "Client"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_category_wizard__sh_move_type__out_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_details_report_wizard__sh_move_type__out_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_indent_wizard__sh_move_type__out_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__sh_move_type__out_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_report_salesperson_wizard__sh_move_type__out_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_summary_wizard__sh_move_type__out_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__sh_move_type__out_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tci_top_customer_wizard__sh_move_type__out_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tip_top_invoicing_product_wizard__sh_move_type__out_refund
+msgid "Customer Credit Note"
+msgstr "Note de crédit client"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_category_wizard__sh_move_type__out_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_details_report_wizard__sh_move_type__out_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_indent_wizard__sh_move_type__out_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__sh_move_type__out_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_report_salesperson_wizard__sh_move_type__out_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_summary_wizard__sh_move_type__out_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__sh_move_type__out_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tci_top_customer_wizard__sh_move_type__out_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tip_top_invoicing_product_wizard__sh_move_type__out_invoice
+msgid "Customer Invoice"
+msgstr "Facture client"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.report,name:sh_accounting_reports.sh_cus_invoice_analysis_action
+msgid "Customer Invoices Analysis"
+msgstr "Analyse des factures des clients"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__report_by_customer__customer_product
+msgid "Customer With Product"
+msgstr "Client avec produit"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_cus_invoice_analy_doc
+msgid "Customer/Vendor  Invoices Analysis report abstract model"
+msgstr "Rapport d'analyse des factures client / fournisseur"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_customer_invoices_analysis_wizard
+msgid "Customer/Vendor Invoice Analysis"
+msgstr "Analyse des factures client / fournisseur"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_cust_invoices_analysis_xls
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_customer_invoice_analysis
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_customer_invoices_analysis_report_menuitem
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_customer_invoices_analysis_xls_view
+msgid "Customer/Vendor Invoices Analysis"
+msgstr "Analyse des factures des clients / fournisseurs"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__sh_partner_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__sh_partner_ids
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__report_by_customer__customer_report
+msgid "Customers"
+msgstr "Clients"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__sh_partner_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__sh_partner_ids
+msgid "Customers/Vendors"
+msgstr "Clients / vendeurs"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+msgid "Date"
+msgstr "Date"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+msgid "Disc.(%)"
+msgstr "Disque.(%)"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+msgid "Disc:"
+msgstr "Disque:"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+msgid "Discount"
+msgstr "Remise"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_cus_invoice_analy_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_indent_product_indent_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_by_category_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_details_report_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_summary_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoices_product_profit_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_salesperson_report_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_tci_top_customers_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_top_invoicing_product_doc__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__display_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls__display_name
+msgid "Display Name"
+msgstr "Afficher un nom"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls__excel_file
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls__excel_file
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls__excel_file
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls__excel_file
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls__excel_file
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls__excel_file
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls__excel_file
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products__excel_file
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls__excel_file
+msgid "Download report Excel"
+msgstr "Télécharger le rapport Excel"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_details_report_wizard__sh_state__draft
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_indent_wizard__sh_status__draft
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_report_salesperson_wizard__state__draft
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_summary_wizard__sh_status__draft
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__sh_status__draft
+msgid "Draft"
+msgstr "Brouillon"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__sh_end_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__end_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__sh_end_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__sh_end_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__date_end
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__sh_end_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__sh_end_date
+msgid "End Date"
+msgstr "Date de fin"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls__file_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls__file_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls__file_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls__file_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls__file_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls__file_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls__file_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products__file_name
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls__file_name
+msgid "Excel File"
+msgstr "Fichier Excel"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tip_top_invoicing_product_wizard_form_view
+msgid "Filter"
+msgstr "Filtre"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__date_from
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__date_from
+msgid "From Date"
+msgstr "Partir de la date"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_cus_invoice_analy_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_indent_product_indent_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_by_category_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_details_report_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_summary_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoices_product_profit_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_salesperson_report_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_tci_top_customers_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_top_invoicing_product_doc__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__id
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls__id
+msgid "ID"
+msgstr "IDENTIFIANT"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_category_wizard
+msgid "Invoice By Category Wizard"
+msgstr "Facture par assistant de catégorie"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoice_by_category
+#: model:ir.actions.report,name:sh_accounting_reports.sh_invoice_by_category_action
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_invoice_by_category_report_menuitem
+msgid "Invoice By Product Category"
+msgstr "Facture par catégorie de produit"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "Invoice Date"
+msgstr "Date de facture"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_wizard_form
+msgid "Invoice Details"
+msgstr "Détails de la facture"
+
+#. module: sh_accounting_reports
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_custom_invoice_details_report_menu
+msgid "Invoice Details Report"
+msgstr "Rapport des détails de la facture"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_invoices_detail_view
+msgid "Invoice Details Xlsx"
+msgstr "Détails de la facture xlsx"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "Invoice Number"
+msgstr "Numéro de facture"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_product_indent_wizard
+msgid "Invoice Product Indent Wizard"
+msgstr "Assistant à lieux de produit de la facture"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_product_indent_xls
+msgid "Invoice Product Indent Xls Report"
+msgstr "Rapport XLS de lieux de produit de facture xls"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_invoice_report_salesperson_xls
+msgid "Invoice Salesperson XLS"
+msgstr "Vendeur de factures xls"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoice_summary
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoice_summary_xls
+#: model:ir.actions.report,name:sh_accounting_reports.sh_invoice_summary_action
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_invoice_summary_report_menuitem
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_report_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_xls_view
+msgid "Invoice Summary"
+msgstr "Résumé de la facture"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_summary_wizard
+msgid "Invoice Summary Wizard"
+msgstr "Assistant résumé de la facture"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_summary_xls
+msgid "Invoice Summary Xls Report"
+msgstr "Rapport de résumé de la facture xls"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_invoice_summary_doc
+msgid "Invoice Summary report abstract model"
+msgstr "Rapport de résumé des factures Modèle abstrait"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__sh_move_type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__sh_move_type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__sh_move_type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__sh_move_type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__sh_move_type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__sh_move_type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__sh_move_type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__sh_move_type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__sh_move_type
+msgid "Invoice Type"
+msgstr "Type de facture"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_category_xls
+msgid "Invoice by Category Xls Report"
+msgstr "Rapport de la facture par catégorie XLS"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_invoice_by_category_doc
+msgid "Invoice by category report abstract model"
+msgstr "Facture par catégorie rapport Résumé Modèle"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_invoice_details_report_doc
+msgid "Invoice details abstract model"
+msgstr "Détails de facture Modèle abstrait"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_indent_product_indent_doc
+msgid "Invoice product indent report abstract model"
+msgstr "Modèle abstrait de rapport sur le produit du produit de la facture"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+msgid "Invoices Amount"
+msgstr "Montant des factures"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoices_analysis_wizard
+msgid "Invoices Analysis Wizard"
+msgstr "Assistant d'analyse des factures"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_analysis_xls
+msgid "Invoices Analysis Xls Report"
+msgstr "Rapport d'analyse des factures xls"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoice_by_category_xls
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_xls_view
+msgid "Invoices By Product Category"
+msgstr "Factures par catégorie de produit"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoices_detail_xls
+msgid "Invoices Detail XLS"
+msgstr "Détails de factures xls"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+msgid "Invoices Details"
+msgstr "Détails des factures"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.sh_invoice_details_report_action
+#: model:ir.actions.report,name:sh_accounting_reports.sh_action_invoice_details_report
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_invoice_details_report_menuitem
+msgid "Invoices Details Report"
+msgstr "Rapport des détails des factures"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoice_product_indent
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoice_product_indent_xls
+#: model:ir.actions.report,name:sh_accounting_reports.sh_invoice_product_indent_action
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_invoice_product_indent_report_menuitem
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_indent_product_indent_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_product_indent_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_product_indent_xls_view
+msgid "Invoices Product Indent"
+msgstr "Facture Product Tente"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoices_product_profit
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoices_product_profit_xls
+#: model:ir.actions.report,name:sh_accounting_reports.sh_invoices_product_profit_action
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_invoices_product_profit_report_menuitem
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_xls_view
+msgid "Invoices Product Profit"
+msgstr "Facture Profit du produit"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_product_profit_wizard
+msgid "Invoices Product Profit Wizard"
+msgstr "Factures Profit Profit Assistant"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_product_profit_xls
+msgid "Invoices Product Profit Xls Report"
+msgstr "Rapport sur le produit du produit des factures xls"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_invoices_product_profit_doc
+msgid "Invoices Product Profit report abstract model"
+msgstr "Factures du produit de profit du modèle"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_invoices_report_by_sale_person_view
+msgid "Invoices Report By Sale Person"
+msgstr "Rapport des factures par personne personne"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoices_report_by_sale_person_excel_form
+msgid "Invoices Report By Sale Person Excel"
+msgstr "Rapport des factures par personne personne Excel"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.sh_invoice_report_salesperson_action
+#: model:ir.actions.report,name:sh_accounting_reports.sh_invoice_report_salesperson_report
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_invoice_report_salesperson_menuitem
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_report_salesperson_wizard_form_view
+msgid "Invoices Report By Saleperson"
+msgstr "Rapport des factures par Saleperson"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_cus_invoice_analy_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_indent_product_indent_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_by_category_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_details_report_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoice_summary_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_invoices_product_profit_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_salesperson_report_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_tci_top_customers_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_report_sh_accounting_reports_sh_top_invoicing_product_doc____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard____last_update
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls____last_update
+msgid "Last Modified on"
+msgstr "Dernier modification sur"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__write_uid
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls__write_uid
+msgid "Last Updated by"
+msgstr "Dernière mise à jour par"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_invoice_report_salesperson_xls__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_analysis_xls__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_xls__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_xls__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_xls__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_xls__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_detail_xls__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_invoicing_products__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__write_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_top_customers_invoice_xls__write_date
+msgid "Last Updated on"
+msgstr "Dernière mise à jour le"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+msgid "Lost Customers"
+msgstr "Clients perdus"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid "Lost Products"
+msgstr "Produits perdus"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+msgid "Margin(%)"
+msgstr "Marge(%)"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+msgid "Name"
+msgstr "Nom"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+msgid "New Customers"
+msgstr "nouveaux clients"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid "New Products"
+msgstr "Nouveaux produits"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__no_of_top_item
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__no_of_top_item
+msgid "No of Items"
+msgstr "Non d'articles"
+
+#. module: sh_accounting_reports
+#: code:addons/sh_accounting_reports/sh_top_invoice_product/wizard/top_invoicing_wizard.py:0
+#, python-format
+msgid "No of items must be positive. or not zero"
+msgstr "Aucun article ne doit être positif. ou pas zéro"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+msgid "Number"
+msgstr "Numéro"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+msgid "Payments"
+msgstr "Paiements"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_details_report_wizard__sh_state__posted
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_indent_wizard__sh_status__posted
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_report_salesperson_wizard__state__posted
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_summary_wizard__sh_status__posted
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__sh_status__posted
+msgid "Posted"
+msgstr "Affiché"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+msgid "Price"
+msgstr "Prix"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+msgid "Price Unit"
+msgstr "Prix ​​à l'unité"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_customer_invoices_analysis_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_wizard_form
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_product_indent_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_report_salesperson_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_report_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customer_wizard_form
+msgid "Print"
+msgstr "Imprimer"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_customer_invoices_analysis_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_product_indent_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_report_salesperson_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_report_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_wizard
+msgid "Print In XLS"
+msgstr "Imprimer en xls"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tip_top_invoicing_product_wizard_form_view
+msgid "Print Report"
+msgstr "Rapport d'impression"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_wizard_form
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customer_wizard_form
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tip_top_invoicing_product_wizard_form_view
+msgid "Print Xls"
+msgstr "Imprimer XLS"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product__product_id
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_indent_product_indent_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+msgid "Product"
+msgstr "Produit"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__sh_product_ids
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__sh_product_ids
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__report_by__product
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+msgid "Products"
+msgstr "Des produits"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__report_by_customer__product
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__report_by_vendor__product
+msgid "Products Only"
+msgstr "Produits uniquement"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+msgid "Profit"
+msgstr "Profit"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+msgid "Qty"
+msgstr "Qté"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product__qty
+msgid "Qty Sold"
+msgstr "Qté vendu"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_indent_product_indent_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+msgid "Quantity"
+msgstr "Quantité"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__report_by_customer
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__report_by_vendor
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__report_by
+msgid "Report Print By"
+msgstr "Signaler l'impression par"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__type
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__type
+msgid "Report Type"
+msgstr "Type de rapport"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_invoices_detail_xls
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_xls_top_customers_invoice
+msgid "Reports Excel"
+msgstr "Rapports Excel"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+msgid "Sale Price"
+msgstr "Prix ​​de vente"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__user_ids
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+msgid "Salesperson"
+msgstr "Vendeur"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_category_wizard__sh_start_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__start_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__sh_start_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_profit_wizard__sh_start_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__date_start
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__sh_start_date
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__sh_start_date
+msgid "Start Date"
+msgstr "Date de début"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_details_report_wizard__sh_state
+msgid "State"
+msgstr "État"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_product_indent_wizard__sh_status
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_report_salesperson_wizard__state
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoice_summary_wizard__sh_status
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_invoices_analysis_wizard__sh_status
+msgid "Status"
+msgstr "Statut"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+msgid "Subtotal"
+msgstr "Total"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+msgid "Tax"
+msgstr "Impôt"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+msgid "Taxes"
+msgstr "Taxes"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_cus_invoice_analy_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_indent_product_indent_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "To"
+msgstr "À"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__date_to
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__date_to
+msgid "To Date"
+msgstr "À ce jour"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_top_customers_invoice_xls
+msgid "Top Customer/Vendor XLS"
+msgstr "Top client / fournisseur XLS"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_sh_top_customers_invoice
+msgid "Top Customer/vendor Xlsx"
+msgstr "Top client / fournisseur xlsx"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_tci_top_customer_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customer_wizard_form
+msgid "Top Customers"
+msgstr "Meilleurs clients"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.sh_tci_top_customer_wizard_action
+#: model:ir.actions.report,name:sh_accounting_reports.sh_tci_top_customers_report_action
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_tci_top_customer_wizard_menuitem
+msgid "Top Customers/Vendors"
+msgstr "Meilleurs clients / vendeurs"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tci_top_customers_doc
+msgid "Top Customers/vendors"
+msgstr "Meilleurs clients / vendeurs"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.sh_tip_top_invoicing_product_model_tree_action
+#: model:ir.actions.act_window,name:sh_accounting_reports.sh_tip_top_invoicing_product_wizard_action
+#: model:ir.actions.report,name:sh_accounting_reports.sh_top_invoicing_product_report_action
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_tip_top_invoicing_product
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_tip_view_top_invoicing_products
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_tip_top_invoicing_product_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_top_invoicing_product_doc
+msgid "Top Invoicing Products"
+msgstr "Top Produits de facturation"
+
+#. module: sh_accounting_reports
+#: model:ir.actions.act_window,name:sh_accounting_reports.action_top_invoicing_products
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_top_invoicing_products
+msgid "Top Invoicing Products Xlsx"
+msgstr "Top Produits de facturation xlsx"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_tip_invoicing_products
+msgid "Top Invoicing XLS"
+msgstr "Top facturation xls"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_tip_top_invoicing_product_wizard
+msgid "Top invoicing product Transient model to just filter products"
+msgstr "Modèle transitoire de produits de facturation supérieure pour filtrer simplement les produits"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_tip_top_invoicing_product
+msgid ""
+"Top invoicing product persistence model to  used in snippet or any other "
+"places"
+msgstr ""
+"Modèle de persistance du produit de facturation supérieure à utiliser dans l'extrait ou tout autre"
+"des endroits"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_salesperson_report_doc
+msgid "Total"
+msgstr "Total"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tip_top_invoicing_product_wizard__product_uom_qty
+msgid "Total Qty. Sold"
+msgstr "Quantité totale. Vendu"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields,field_description:sh_accounting_reports.field_sh_tci_top_customer_wizard__amount_total
+msgid "Total Sales Amount"
+msgstr "Montant total des ventes"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_details_report_doc
+msgid "Total:"
+msgstr "Total:"
+
+#. module: sh_accounting_reports
+#: model:ir.ui.menu,name:sh_accounting_reports.sh_tip_top_invoicing_product_menuitem_update
+msgid "Update Top invoicing Products"
+msgstr "Mettre à jour les meilleurs produits de facturation"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__report_by_vendor__vendor_report
+msgid "Vendor"
+msgstr "Vendeur"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_category_wizard__sh_move_type__in_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_details_report_wizard__sh_move_type__in_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_indent_wizard__sh_move_type__in_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__sh_move_type__in_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_report_salesperson_wizard__sh_move_type__in_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_summary_wizard__sh_move_type__in_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__sh_move_type__in_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tci_top_customer_wizard__sh_move_type__in_invoice
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tip_top_invoicing_product_wizard__sh_move_type__in_invoice
+msgid "Vendor Bill"
+msgstr "Projet de loi sur le vendeur"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_category_wizard__sh_move_type__in_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_details_report_wizard__sh_move_type__in_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_indent_wizard__sh_move_type__in_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__sh_move_type__in_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_report_salesperson_wizard__sh_move_type__in_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_summary_wizard__sh_move_type__in_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoices_analysis_wizard__sh_move_type__in_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tci_top_customer_wizard__sh_move_type__in_refund
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_tip_top_invoicing_product_wizard__sh_move_type__in_refund
+msgid "Vendor Credit Note"
+msgstr "Note de crédit du fournisseur"
+
+#. module: sh_accounting_reports
+#: model:ir.model.fields.selection,name:sh_accounting_reports.selection__sh_invoice_product_profit_wizard__report_by_vendor__vendor_product
+msgid "Vendor with Products"
+msgstr "Vendeur avec des produits"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_invoices_detail_view
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_sh_top_customers_invoice
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.xls_top_invoicing_products
+msgid "Xls Report"
+msgstr "Rapport XLS"
+
+#. module: sh_accounting_reports
+#: code:addons/sh_accounting_reports/sh_top_customers_invoice/wizard/top_customer_invoice_wizard.py:0
+#: code:addons/sh_accounting_reports/sh_top_invoice_product/wizard/top_invoicing_wizard.py:0
+#, python-format
+msgid "compare from date must be less than compare to date."
+msgstr "Comparer à partir de la date doit être inférieure à ce que la date."
+
+#. module: sh_accounting_reports
+#: code:addons/sh_accounting_reports/sh_top_customers_invoice/wizard/top_customer_invoice_wizard.py:0
+#: code:addons/sh_accounting_reports/sh_top_invoice_product/wizard/top_invoicing_wizard.py:0
+#, python-format
+msgid "from date must be less than to date."
+msgstr "La date doit être inférieure à ce jour."
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_salesperson_report_doc
+msgid "invoice person report abstract model"
+msgstr "Modèle abstrait de la personne facturée"
+
+#. module: sh_accounting_reports
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_customer_invoices_analysis_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_by_category_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_product_indent_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoice_summary_report_wizard
+#: model_terms:ir.ui.view,arch_db:sh_accounting_reports.sh_invoices_product_profit_wizard
+msgid "or"
+msgstr "ou"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_details_report_wizard
+msgid "sh invoice details report wizard model"
+msgstr "shot Détails de la facture Modèle de l'assistant"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_sh_invoice_report_salesperson_wizard
+msgid "sh invoice report salesperson wizard model"
+msgstr "SH RAPOICE RAPPORT Modèle d'assistant vendeur"
+
+#. module: sh_accounting_reports
+#: code:addons/sh_accounting_reports/sh_customer_invoice_analysis/wizard/customer_invoice_analysis_wizard.py:0
+#: code:addons/sh_accounting_reports/sh_invoice_by_category/wizard/invoice_by_category_wizard.py:0
+#: code:addons/sh_accounting_reports/sh_invoice_details_report/wizard/invoice_details_report_wizard.py:0
+#: code:addons/sh_accounting_reports/sh_invoice_product_profit/wizard/invoices_product_profit_wizard.py:0
+#: code:addons/sh_accounting_reports/sh_invoice_report_salesperson/wizard/report_invoice_salesperson_wizard.py:0
+#: code:addons/sh_accounting_reports/sh_invoice_summary/wizard/invoice_summary_wizard.py:0
+#: code:addons/sh_accounting_reports/sh_product_invoice_indent/wizard/invoice_product_indent_wizard.py:0
+#, python-format
+msgid "start date must be less than end date."
+msgstr "La date de début doit être inférieure à la date de fin."
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_tci_top_customers_doc
+msgid "top customer/Vendor  abstract model"
+msgstr "Modèle abstrait des clients / fournisseurs supérieurs"
+
+#. module: sh_accounting_reports
+#: model:ir.model,name:sh_accounting_reports.model_report_sh_accounting_reports_sh_top_invoicing_product_doc
+msgid "top invoicing product report abstract model"
+msgstr "Rapport de produit de facturation Top Modèle abstrait"

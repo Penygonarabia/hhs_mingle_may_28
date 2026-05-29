@@ -1,0 +1,32 @@
+<odoo>
+    <!-- Inherit Partner Form -->
+    <record id="view_partner_form_inherit_dealer" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.dealer</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='x_whatsapp_opt_in']" position="after">
+                <field name="is_dealer"/>
+                <field name="ref" position="move"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Update Contacts Action: remove default filters -->
+    <record id="base.action_partner_form" model="ir.actions.act_window">
+        <field name="domain">[]</field>
+    </record> 
+
+    <!-- Default sort order in list view  -->
+     <record id="view_res_partner_tree_inherit_order" model="ir.ui.view">
+        <field name="name">res.partner.tree.inherit.order</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="default_order">id desc</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

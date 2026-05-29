@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="report_inventory_count_session_inprogress" model="ir.actions.report">
+            <field name="name">Inventory Count Report</field>
+            <field name="model">setu.inventory.count.session</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">setu_inventory_count_management.report_inventory_session_progress</field>
+            <field name="report_file">setu_inventory_count_management.report_inventory_session_progress</field>
+            <field name="binding_model_id" eval="False"/>
+	    </record>
+    	
+    	<template id="report_inventory_count_inprogress_session">
+                    <t t-call="web.html_container">
+                        <t t-foreach="docs" t-as="doc">
+                           <h2 style="text-align:center;">Inventory Count</h2>
+                            <hr></hr>
+                            <div style="font-size:20px;">
+                                <div style="float:left;">
+                                    <t>Name : <t t-esc ="doc.name"/></t><br></br>
+                                    <t>Inventory Count : <span t-field ="doc.inventory_count_id"/></t><br></br>
+                                    <t>Users : <span t-field ="doc.user_ids"/></t><br></br>
+                                    <t>Location : <span t-field ="doc.location_id"/></t><br></br>
+                                    <t>Warehouse : <span t-field ="doc.warehouse_id"/></t><br></br>
+                                </div>
+
+                                <div style="float:right;">
+                                    <t>Total Products : <span t-field ="doc.total_products"/></t><br></br>
+                                    <t>Total Scanned Products : <span t-field ="doc.total_scanned_products"/></t><br></br>
+                                    <t>To be scanned : <span t-field ="doc.to_be_scanned"/></t><br></br>
+                                    <t>Type : <span t-field ="doc.type"/></t><br></br>
+                                </div>
+                            </div>
+
+                            <br></br><br></br><br></br><br></br><br></br><br></br><hr></hr><br></br>
+
+                           <div>
+                            <table width="100%" class="table table-sm table-bordered" style="font-size:18px;border:1px solid black;border-collapse: collapse;">
+                                <t t-set="theoretical_qty_total" t-value="0.0"></t>
+                                <t t-set="counted_qty_total" t-value="0.0"></t>
+                                <thead>
+                                    <tr style="text-align:left;border:1px solid black;">
+                                        <th style="border:1px solid black;border-collapse: collapse;text-align:center;padding:5px;">S.No</th>
+                                        <th style="border:1px solid black;border-collapse: collapse;text-align:center;padding:5px;">Product</th>
+                                        <th style="border:1px solid black;border-collapse: collapse;text-align:center;padding:5px;">Barcode</th>
+                                        <th style="border:1px solid black;border-collapse: collapse;text-align:center;padding:5px;">UOM</th>
+                                        <th style="border:1px solid black;border-collapse: collapse;text-align:center;padding:5px;">Location</th>
+                                        <t t-if="doc.theoretical_quantity == true">
+                                        <th style="border:1px solid black;border-collapse: collapse;text-align:center;padding:5px;">Theoretical Quantity</th>
+                                        </t>
+                                        <th style="border:1px solid black;border-collapse: collapse;text-align:center;padding:5px;">Counted Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="doc.session_line_ids" t-as="line">
+                                     <tr width="20%" class="text-left" style="border:1px solid black;">
+                                     <td style="border:1px solid black;border-collapse: collapse;text-align:right;padding:5px;">
+                                          <strong><t t-esc="line_index+1"/></strong>
+                                     </td>
+                                          <td width="40%" style="border:1px solid black;border-collapse: collapse;padding:5px;">
+                                            <span t-esc="line.product_id.display_name" />
+                                        </td>
+                                        <td width="20%" style="border:1px solid black;border-collapse: collapse;text-align:right;padding:5px;">
+                                            <span t-esc="line.barcode" />
+                                        </td>
+                                         <td width="20%" style="border:1px solid black;border-collapse: collapse;padding:5px;">
+                                            <span t-esc="line.uom_id.display_name" />
+                                        </td>
+                                           <td width="20%" style="border:1px solid black;border-collapse: collapse;padding:5px;">
+                                            <span t-esc="line.location_id.display_name" />
+                                        </td>
+                                         <t t-if="doc.theoretical_quantity == true">
+                                         <td width="20%" style="border:1px solid black;border-collapse: collapse;text-align:right;padding:5px;">
+
+                                            <span t-esc="line.theoretical_qty" t-options='{"widget": "float", "decimal_precision": "2"}'/>
+                                            <t t-set="theoretical_qty_total" t-value="theoretical_qty_total+line.theoretical_qty"></t>
+                                       </td>
+                                       </t>
+                                          <td style="border:1px solid black;border-collapse: collapse;padding:5px;text-align:right;">
+                                            <span t-esc="line.scanned_qty or ' '"/>
+                                              <t t-set="counted_qty_total" t-value="counted_qty_total+line.scanned_qty"></t>
+                                          </td>
+                                     </tr>
+                                    </t>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <t t-if="doc.theoretical_quantity == true">
+                                            <td style="border:1px solid black;border-collapse: collapse;padding:5px;"><b>Total</b></td>
+                                            <td style="border:1px solid black;border-collapse: collapse; text-align:right;padding:5px;">
+                                                <b><span t-esc="theoretical_qty_total" t-options='{"widget": "float", "decimal_precision": "2"}' /></b>
+                                            </td>
+                                            <td style="border:1px solid black;border-collapse: collapse; text-align:right;padding:5px;">
+                                                <b><span t-esc="counted_qty_total" t-options='{"widget": "float", "decimal_precision": "2"}' /></b>
+                                            </td>
+                                        </t>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                       </t>
+                    </t>
+                </template>
+    	<template id="report_inventory_session_progress">
+		    <t t-call="web.html_container">
+		        <t t-foreach="docs" t-as="doc">
+		        	<t t-call ="setu_inventory_count_management.report_inventory_count_inprogress_session"/>
+		        </t>
+		        
+		</t>
+		</template>        
+		    	
+	 </data>
+ </odoo>

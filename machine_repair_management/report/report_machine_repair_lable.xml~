@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        
+        <template id="external_layout_header_machine_req">
+            
+          
+            <div class="row zero_min_height">
+                <div class="col-12">
+                    <div style="border-bottom: 1px solid black;"/>
+                </div>
+            </div>
+                <div class="header din">
+                    <div>
+                        <h3 class="mt0 text-right" t-field="company.report_header"/>
+                    </div>
+                    <br/>
+                    <img t-if="company.logo" t-att-src="'data:image/png;base64,%s' % to_text(company.logo)" style="max-height: 45px;"/>
+                    <div class='col-12' style="border-bottom: 1px solid black;"/>
+                    
+                    <div>
+                        <div>
+                           
+                            <strong t-field="company.partner_id.name" />
+                        </div>
+                        <span t-field="company.partner_id"
+                            t-options='{"widget": "contact", "fields": ["address", "name"],"no_marker": true}' style="border-bottom: 1px solid black; display:inline-block;"/>
+                    </div>
+               </div>
+               
+               <t t-raw="0" />
+                      
+                
+                
+                       
+        </template>
+        
+        <template id="external_layout_footer_machine_req">
+            <div class="footer" style="font-size: 10px;">
+                <div class="text-center" style="border-top: 1px solid black;">
+                    <ul class="list-inline mb4">
+                        <li t-if="company.phone">Phone: <span t-field="company.phone"/></li>
+        
+<!--                        <li t-if="company.fax and company.phone">&amp;bull;</li>-->
+<!--                        <li t-if="company.fax">Fax: <span t-field="company.fax"/></li>-->
+        
+                        <li t-if="company.email">&amp;bull;</li>
+                        <li t-if="company.email">Email: <span t-field="company.email"/></li>
+        
+                        <li t-if="company.website">&amp;bull;</li>
+                        <li t-if="company.website">Website: <span t-field="company.website"/></li>
+                    </ul>
+        
+                    <t t-if="financial_infos">
+                        <span t-raw="company.report_footer"/>
+                    </t>
+        
+                    <ul class="list-inline">
+                        <li>Page:</li>
+                        <li><span class="page"/></li>
+                        <li>/</li>
+                        <li><span class="topage"/></li>
+                    </ul>
+                </div>
+            </div>      
+        </template>
+        
+        <template id="external_layout_machine_req">
+            <!-- Multicompany -->
+            <t t-if="o and 'company_id' in o">
+                <t t-set="company" t-value="o.company_id"></t>
+            </t>
+            <t t-if="not o or not 'company_id' in o">
+                <t t-set="company" t-value="res_company"></t>
+            </t>
+        
+            <t t-call="machine_repair_management.external_layout_header_machine_req" />
+            <div class="article">
+              <t t-raw="0" />
+            </div>
+            <t t-call="machine_repair_management.external_layout_footer_machine_req" />
+        </template>
+        
+        <template id="report_machine_repair_req_lable">
+        	<t t-call="web.html_container">
+            <t t-call="machine_repair_management.external_layout_machine_req">
+                <div class="page">
+                    <t t-foreach="docs" t-as="doc_id">
+                        <div class="oe_structure"/>
+                        <div class="row">
+                            <div class="col-12" style="font-size: 12px;">
+                                <br/><br/><br/>
+                                <center><strong><span t-esc="doc_id.product_id.name"/></strong></center>
+                                <strong>Client: </strong><span t-esc="doc_id.partner_id.name"/><br/>
+                                <t t-if="not doc_id.website_year"><strong>Year: </strong><span t-esc="doc_id.year"/><br/></t>
+                                <t t-if="doc_id.website_year"><strong>Year: </strong><span t-esc="doc_id.website_year"/><br/></t>
+                                <strong>Brand: </strong><span t-esc="doc_id.website_brand"/><br/>
+                                <strong>Model: </strong><span t-esc="doc_id.website_model"/><br/>
+                                <strong>Date: </strong><span t-esc="doc_id.request_date"/><br/>
+                                <strong>Description: </strong><span t-esc="doc_id.description"/><br/>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </t>
+            </t>
+        </template>
+        
+        <record id="paperformat_repair_request_lable" model="report.paperformat">
+           <field name="name">Machine Repair Request Lable</field>
+           <field name="default" eval="True"/>
+           <field name="format">custom</field>
+           <field name="page_height">120</field>
+           <field name="page_width">90</field>
+           <field name="orientation">Portrait</field>
+           <field name="margin_top">30</field>
+           <field name="margin_bottom">15</field>
+           <field name="margin_left">0</field>
+           <field name="margin_right">0</field>
+           <field name="header_line" eval="False" />
+           <field name="header_spacing">30</field>
+           <field name="dpi">130</field>
+        </record>
+        
+        <report 
+            id="repair_request_lable_report"
+            model="machine.repair.support"
+            string="Print Lable"
+            report_type="qweb-pdf"
+            name="machine_repair_management.report_machine_repair_req_lable"
+            file="machine_repair_management.report_machine_repair_req_lable" 
+        />
+        <record id="repair_request_lable_report" model="ir.actions.report">
+            <field name="paperformat_id" ref="machine_repair_management.paperformat_repair_request_lable"/>
+        </record>
+    </data>
+</openerp>

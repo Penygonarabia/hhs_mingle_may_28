@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sh_invoice_report_salesperson_wizard_form_view" model="ir.ui.view">
+        <field name="name">sh.invoice.report.salesperson.wizard.form.view</field>
+        <field name="model">sh.invoice.report.salesperson.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Invoices Report By Saleperson">
+                <group>
+                    <group>
+                        <field name="date_start" />
+                        <field name="date_end" />
+                        <field name="sh_move_type" widget="radio"/>
+                    </group>
+                    <group>
+                        <field name="state" widget="radio"/>                       
+                        <field name="company_ids" widget="many2many_tags" options="{'no_create': True}" groups="base.group_multi_company" />
+                    </group>
+                </group>
+                <group>
+                    <field name="user_ids" colspan="4" nolabel="1" groups="account.group_account_manager">
+                        <tree>
+                            <field name="name" />
+                        </tree>
+                    </field>
+                </group>
+                <footer>
+                    <button name="print_report" string="Print" class="oe_highlight" type="object" />
+                    <button name="print_xls_report" string="Print In XLS" class="oe_highlight" type="object" />
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="sh_invoice_report_salesperson_action" model="ir.actions.act_window">
+        <field name="name">Invoices Report By Saleperson</field>
+        <field name="res_model">sh.invoice.report.salesperson.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <menuitem id="sh_invoice_report_salesperson_menuitem" action="sh_invoice_report_salesperson_action" parent="account.menu_finance_reports"/>
+</odoo>

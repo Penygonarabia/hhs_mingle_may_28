@@ -1,0 +1,116 @@
+<odoo>
+    <!-- Form View -->
+    <record id="view_form_promoter_assignment" model="ir.ui.view">
+        <field name="name">promoter.assignment.form</field>
+        <field name="model">promoter.assignment</field>
+        <field name="arch" type="xml">
+            <form string="Promoter Assignment">
+                <sheet>
+                    <group>
+                        <field name="dealer_id"
+                               modifiers='{"readonly": [["active", "=", false]]}'
+                               options="{'no_create_edit': true, 'no_open': true, 'no_create': true, 'no_edit': true}"/>
+                        <field name="showroom_id"
+                               domain="[('dealer_id', '=', dealer_id), ('promoter_required', '=', True)]"
+                               modifiers='{"readonly": [["active", "=", false]]}'
+                               options="{'no_create_edit': true, 'no_open': true, 'no_create': true, 'no_edit': true}"/>
+                        <field name="available_promoter_ids" invisible="1"/>
+                        <field name="promoter_id" 
+                               domain="[( 'id', 'in', available_promoter_ids )]"
+                               modifiers='{"readonly": [["active", "=", false]]}'/>
+                        <field name="category_id"
+                               modifiers='{"readonly": [["active", "=", false]]}'/>
+                        <field name="from_date" modifiers='{"readonly": [["active", "=", false]]}'/>
+                        <field name="to_date" modifiers='{"readonly": [["active", "=", false]]}'/>
+                        <field name="promoter_conflict" invisible="1"/>
+                    </group>
+
+                    <group string="Shift 1">
+                        <field name="shift1_from" style="width: 100px;" modifiers='{"readonly": [["active", "=", false]]}'/>
+                        <field name="shift1_to" style="width: 100px;" modifiers='{"readonly": [["active", "=", false]]}'/>
+                    </group>
+
+                    <group string="Shift 2">
+                        <field name="shift2_from" style="width: 100px;" modifiers='{"readonly": [["active", "=", false]]}'/>
+                        <field name="shift2_to" style="width: 100px;" modifiers='{"readonly": [["active", "=", false]]}'/>
+                    </group>
+
+                    <group>
+                        <field name="active" readonly="1"/>
+                    </group>
+                </sheet>
+
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree View -->
+    <record id="view_tree_promoter_assignment" model="ir.ui.view">
+        <field name="name">promoter.assignment.tree</field>
+        <field name="model">promoter.assignment</field>
+        <field name="arch" type="xml">
+            <tree string="Promoter Assignments">
+                <field name="dealer_id"/>
+                <field name="showroom_id"/>
+                <field name="category_id"/>
+                <field name="promoter_id"/>
+                <field name="from_date"/>
+                <field name="to_date"/>
+                <field name="shift1_from"/>
+                <field name="shift1_to"/>
+                <field name="shift2_from"/>
+                <field name="shift2_to"/>
+                <field name="active" readonly="1"/>
+            </tree>
+        </field>
+    </record>
+
+<record id="view_search_promoter_assignment" model="ir.ui.view">
+    <field name="name">promoter.assignment.search</field>
+    <field name="model">promoter.assignment</field>
+    <field name="arch" type="xml">
+        <search string="Promoter Assignments">
+            <field name="dealer_id"/>
+            <field name="showroom_id"/>
+            <field name="promoter_id"/>
+            <field name="from_date"/>
+            
+            <separator/>
+            
+            <filter name="active_assignments" string="Active Assignments" domain="[('active','=',True)]"/>
+            
+            <group expand="0" string="Group By">
+                <filter name="group_dealer" string="Dealer" context="{'group_by': 'dealer_id'}"/>
+                <filter name="group_showroom" string="Showroom" context="{'group_by': 'showroom_id'}"/>
+                <filter name="group_promoter" string="Promoter" context="{'group_by': 'promoter_id'}"/>
+            </group>
+        </search>
+    </field>
+</record>
+
+    <!-- Action -->
+    <record id="action_promoter_assignment" model="ir.actions.act_window">
+        <field name="name">Assign Promoters</field>
+        <field name="res_model">promoter.assignment</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'active_test': False}</field>
+        <field name="view_id" ref="view_tree_promoter_assignment"/>
+        <field name="search_view_id" ref="view_search_promoter_assignment"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first promoter assignment.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_promoter_assignment_action"
+              name="Assign Promoters"
+              parent="menu_promoter_configuration"
+              action="action_promoter_assignment" sequence="30"/>
+</odoo>

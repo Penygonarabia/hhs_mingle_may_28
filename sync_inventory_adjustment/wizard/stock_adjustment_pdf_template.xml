@@ -1,0 +1,890 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="report_inventory_adjustment_template_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template>
+        <template id="report_inventory_adjustment_template">
+            <t t-call="web.html_container">
+                <t t-foreach="location_data.items()" t-as="location">
+                    <t t-call="sync_inventory_adjustment.report_inventory_adjustment_template_internal_layout" style="margin-top:0px;padding-top:0px;display:inline;">
+                    <div class="header" t-att-style="report_header_style">
+                        <div class="o_boxed_header">
+                            <table width="100%">
+                                <tr>
+                                    <div>
+                                        <h1 style="font-weight:bold;text-align:center;font-size:24px"><span t-esc="res_company.name"/></h1>
+                                        <img class="img" src="/sync_inventory_adjustment/static/img/Oasis-Logo.jpg"
+                                            style="max-height: 90px; min-height:90px;float:right" alt="Logo"/>
+                                    </div>
+                                    <div class="col-6">
+                                        <h3 style="font-weight:bold;font-size:22px">Stock Adjustment Report</h3>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <strong><b>Start Date : </b><span t-esc="form_data['start_date']"/></strong>
+                                        </div>
+                                        <div class="col-3">
+                                            <strong><b>End Date : </b><span t-esc="form_data['end_date']"/></strong>
+                                        </div>
+                                    </div>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="page">
+                        <h3 style="font-size:16px"><b>Location :&#160; </b><t t-esc="location[0]"/></h3>
+                    <table class="table table-sm table-bordered" style="table-layout: fixed;">
+                        <thead>
+                            <tr style="background-color:#464343;color:white;text-align:center; font-size:16px">
+                                <th style="vertical-align: text-top;" width="5%" ><strong> S.No </strong></th>
+                                <th style="vertical-align: text-top;" width="15%"><strong> Reference </strong></th>
+                                <th style="vertical-align: text-top;" width="12%" ><strong> Adjustment <br/> Date </strong></th>
+<!--                                <th style="vertical-align: text-top;" width="10%"><strong> Code </strong></th>-->
+                                <th style="vertical-align: text-top;" width="25%" class="text-center"><strong> Product </strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Computer <br/> Qty </strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Counted <br/> Qty </strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong> Adjusted <br/> Qty </strong></th>
+                                <th style="vertical-align: text-top;" width="8%" class="text-center"><strong> Unit <br/> Cost </strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong> Subtotal </strong></th>
+                                <th style="vertical-align: text-top;" width="20%" class="text-center"><strong> Comments </strong></th>
+                                <th style="vertical-align: text-top;" width="13%" class="text-center"><strong> Created by </strong></th>
+                            </tr>
+                        </thead>
+                            <tbody>
+                                <t t-foreach="location[1]" t-as="line">
+                                    <tr style="font-size:14px">
+                                        <td style="text-align:right;"><t t-esc="line['serial_number']"/></td>
+                                        <td style="text-align:left;"><t t-esc="line['name']"/></td>
+                                        <td style="text-align:center;"><t t-esc="line['date']" t-options='{"widget": "date","format": "yyyy-MM-dd"}'/></td>
+<!--                                        <td style="text-align:left;"><t t-esc="line['code']"/></td>-->
+                                        <td style="text-align:left;"><t t-esc="line['product']"/></td>
+                                        <td style="text-align:right;"><t t-esc="line['theoretical_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['product_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['adjusted_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['cost']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['sub_total']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td><t t-esc="line['remarks']"/></td>
+                                        <td style="text-align:left;"><t t-esc="line['created_by']"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="footer o_background_footer">
+                        <div class="text-center">
+                            <ul class="list-inline">
+                                    <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                                </ul>
+                            <div t-if="report_type == 'pdf'" class="text-muted">
+                                Page:
+                                <span class="page"/>
+                                of
+                                <span class="topage"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                </t>
+            </t>
+        </template>
+
+                                <!--  location  filter template-->
+        <template id="report_inventory_location_template_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template>
+        <template id="report_inventory_location_template">
+            <t t-call="web.html_container">
+                    <t t-call="sync_inventory_adjustment.report_inventory_location_template_internal_layout" style="margin-top:0px;padding-top:0px;display:inline;">
+                    <div class="header" t-att-style="report_header_style">
+                        <div class="o_boxed_header">
+                            <table width="100%">
+                                <tr>
+                                    <div>
+                                        <h1 style="font-weight:bold;text-align:center;font-size:24px"><span t-esc="res_company.name"/></h1>
+                                        <img class="img" src="/sync_inventory_adjustment/static/img/Oasis-Logo.jpg"
+                                            style="max-height: 90px; min-height:90px;float:right" alt="Logo"/>
+                                    </div>
+                                    <div class="col-6">
+                                        <h3 style="font-weight:bold;font-size:22px">Inventory Adjustments Report</h3>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <strong><b>Start Date : </b><span t-esc="form_data['start_date']"/></strong>
+                                        </div>
+                                        <div class="col-3">
+                                            <strong><b>End Date : </b><span t-esc="form_data['end_date']"/></strong>
+                                        </div>
+                                    </div>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="page">
+<!--                        <t t-foreach="location_data" t-as="loc">-->
+<!--                            <h3 style="font-size:16px">Location :&#160; <t t-esc="loc['location_name']"/></h3>-->
+<!--                        </t>-->
+                        <t t-set="previous_location_name" t-value="''"/>
+                        <t t-foreach="location_data" t-as="line">
+                           <t t-if="line['location_name'] != previous_location_name">
+                               <h3 style="font-size:16px"><b>Location :&#160; </b><t t-esc="line['location_name']"/></h3>
+                                <t t-set="previous_location_name" t-value="line['location_name']"/>
+                            </t>
+                        </t>
+                    <table class="table table-sm table-bordered" style="table-layout: fixed;">
+                        <thead>
+                            <tr style="background-color:#464343;color:white;text-align:center; font-size:16px">
+                                <th style="vertical-align: text-top;" width="5%" ><strong>S.No</strong></th>
+                                <th style="vertical-align: text-top;" width="15%"><strong>Reference</strong></th>
+                                <th style="vertical-align: text-top;" width="12%" ><strong>Adjustment <br/> Date</strong></th>
+<!--                                <th style="vertical-align: text-top;" width="10%"><strong>Code</strong></th>-->
+                                <th style="vertical-align: text-top;" width="25%" class="text-center"><strong>Product</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Computer <br/>Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Counted<br/> Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Adjusted<br/> Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="8%" class="text-center"><strong>Unit <br/> Cost</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Subtotal</strong></th>
+                                <th style="vertical-align: text-top;" width="20%" class="text-center"><strong> Comments </strong></th>
+                                <th style="vertical-align: text-top;" width="13%" class="text-center"><strong>Created by</strong></th>
+                            </tr>
+                        </thead>
+                            <tbody>
+                                <t t-foreach="location_data" t-as="line">
+                                    <tr style="font-size:14px">
+                                        <td style="text-align:right;"><t t-esc="line_index+1"/></td>
+                                        <td style="text-align:left;"><t t-esc="line['name']"/></td>
+                                        <td style="text-align:center;"><t t-esc="line['date']" t-options='{"widget": "date","format": "yyyy-MM-dd"}'/></td>
+<!--                                        <td style="text-align:left;"><t t-esc="line['code']"/></td>-->
+                                        <td style="text-align:left;"><t t-esc="line['product']"/></td>
+                                        <td style="text-align:right;"><t t-esc="line['theoretical_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['product_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['adjusted_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['cost']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['sub_total']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td><t t-esc="line['remarks']"/></td>
+                                        <td style="text-align:left;"><t t-esc="line['created_by']"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="footer o_background_footer">
+                        <div class="text-center">
+                            <ul class="list-inline">
+                                    <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                                </ul>
+                            <div t-if="report_type == 'pdf'" class="text-muted">
+                                Page:
+                                <span class="page"/>
+                                of
+                                <span class="topage"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                </t>
+        </template>
+
+
+                                        <!--  location  and Product filter template-->
+        <template id="report_inventory_location_product_template_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template>
+        <template id="report_inventory_location_product_template">
+            <t t-call="web.html_container">
+                    <t t-call="sync_inventory_adjustment.report_inventory_location_product_template_internal_layout" style="margin-top:0px;padding-top:0px;display:inline;">
+                    <div class="header" t-att-style="report_header_style">
+                        <div class="o_boxed_header">
+                            <table width="100%">
+                                <tr>
+                                    <div>
+                                        <h1 style="font-weight:bold;text-align:center;font-size:24px"><span t-esc="res_company.name"/></h1>
+                                        <img class="img" src="/sync_inventory_adjustment/static/img/Oasis-Logo.jpg"
+                                            style="max-height: 90px; min-height:90px;float:right" alt="Logo"/>
+                                    </div>
+                                    <div class="col-6">
+                                        <h3 style="font-weight:bold;font-size:22px">Inventory Adjustments Report</h3>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <strong><b>Start Date : </b><span t-esc="form_data['start_date']"/></strong>
+                                        </div>
+                                        <div class="col-3">
+                                            <strong><b>End Date : </b><span t-esc="form_data['end_date']"/></strong>
+                                        </div>
+                                    </div>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="page">
+<!--                        <t t-foreach="location_data" t-as="loc">-->
+<!--                            <h3 style="font-size:16px">Location :&#160; <t t-esc="loc['location_name']"/></h3>-->
+<!--                        </t>-->
+                        <t t-set="previous_location_name" t-value="''"/>
+                        <t t-foreach="location_data" t-as="line">
+                           <t t-if="line['location_name'] != previous_location_name">
+                               <h3 style="font-size:16px"><b>Location :&#160; </b><t t-esc="line['location_name']"/></h3>
+                                <t t-set="previous_location_name" t-value="line['location_name']"/>
+                            </t>
+                        </t>
+                    <table class="table table-sm table-bordered" style="table-layout: fixed;">
+                        <thead>
+                            <tr style="background-color:#464343;color:white;text-align:center; font-size:16px">
+                                <th style="vertical-align: text-top;" width="5%" ><strong>S.No</strong></th>
+                                <th style="vertical-align: text-top;" width="15%"><strong>Reference</strong></th>
+                                <th style="vertical-align: text-top;" width="12%" ><strong>Adjustment <br/> Date</strong></th>
+<!--                                <th style="vertical-align: text-top;" width="10%"><strong>Code</strong></th>-->
+                                <th style="vertical-align: text-top;" width="25%" class="text-center"><strong>Product</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Computer <br/>Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Counted<br/> Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Adjusted<br/> Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="8%" class="text-center"><strong>Unit <br/> Cost</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Subtotal</strong></th>
+                                <th style="vertical-align: text-top;" width="20%" class="text-center"><strong> Comments </strong></th>
+                                <th style="vertical-align: text-top;" width="13%" class="text-center"><strong>Created by</strong></th>
+                            </tr>
+                        </thead>
+                            <tbody>
+                                <t t-foreach="location_data" t-as="line">
+                                    <tr style="font-size:14px">
+                                        <td style="text-align:right;"><t t-esc="line_index+1"/></td>
+                                        <td style="text-align:left;"><t t-esc="line['name']"/></td>
+                                        <td style="text-align:center;"><t t-esc="line['date']" t-options='{"widget": "date","format": "yyyy-MM-dd"}'/></td>
+<!--                                        <td style="text-align:left;"><t t-esc="line['code']"/></td>-->
+                                        <td style="text-align:left;"><t t-esc="line['product']"/></td>
+                                        <td style="text-align:right;"><t t-esc="line['theoretical_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['product_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['adjusted_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['cost']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['sub_total']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td><t t-esc="line['remarks']"/></td>
+                                        <td style="text-align:left;"><t t-esc="line['created_by']"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="footer o_background_footer">
+                        <div class="text-center">
+                            <ul class="list-inline">
+                                    <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                                </ul>
+                            <div t-if="report_type == 'pdf'" class="text-muted">
+                                Page:
+                                <span class="page"/>
+                                of
+                                <span class="topage"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                </t>
+        </template>
+
+
+        <!-- Categories Wise filter -->
+
+        <template id="report_inventory_category_template_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template>
+        <template id="report_inventory_category_template">
+            <t t-call="web.html_container">
+                    <t t-call="sync_inventory_adjustment.report_inventory_category_template_internal_layout" style="margin-top:0px;padding-top:0px;display:inline;">
+                    <div class="header" t-att-style="report_header_style">
+                        <div class="o_boxed_header">
+                            <table width="100%">
+                                <tr>
+                                    <div>
+                                        <h1 style="font-weight:bold;text-align:center;font-size:24px"><span t-esc="res_company.name"/></h1>
+                                        <img class="img" src="/sync_inventory_adjustment/static/img/Oasis-Logo.jpg"
+                                            style="max-height: 90px; min-height:90px;float:right" alt="Logo"/>
+                                    </div>
+                                    <div class="col-6">
+                                        <h3 style="font-weight:bold;font-size:22px">Inventory Adjustments Report</h3>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <strong><b>Start Date : </b><span t-esc="form_data['start_date']"/></strong>
+                                        </div>
+                                        <div class="col-3">
+                                            <strong><b>End Date : </b><span t-esc="form_data['end_date']"/></strong>
+                                        </div>
+                                    </div>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="page">
+<!--                        <t t-foreach="location_data" t-as="loc">-->
+<!--                            <h3 style="font-size:16px">Location :&#160; <t t-esc="loc['location_name']"/></h3>-->
+<!--                        </t>-->
+<!--                        <t t-set="previous_location_name" t-value="''"/>-->
+<!--                        <t t-foreach="location_data" t-as="line">-->
+<!--                           <t t-if="line['location_name'] != previous_location_name">-->
+<!--                               <h3 style="font-size:16px">Location :&#160; <t t-esc="line['location_name']"/></h3>-->
+<!--                                <t t-set="previous_location_name" t-value="line['location_name']"/>-->
+<!--                            </t>-->
+<!--                        </t>-->
+                    <table class="table table-sm table-bordered" style="table-layout: fixed;">
+                        <thead>
+                            <tr style="background-color:#464343;color:white;text-align:center; font-size:16px">
+                                <th style="vertical-align: text-top;" width="5%" ><strong>S.No</strong></th>
+                                <th style="vertical-align: text-top;" width="15%"><strong>Reference</strong></th>
+                                <th style="vertical-align: text-top;" width="12%" ><strong>Adjustment <br/> Date</strong></th>
+<!--                                <th style="vertical-align: text-top;" width="10%"><strong>Code</strong></th>-->
+                                <th style="vertical-align: text-top;" width="25%" class="text-center"><strong>Product</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Computer <br/>Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Counted<br/> Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Adjusted<br/> Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="8%" class="text-center"><strong>Unit <br/> Cost</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Subtotal</strong></th>
+                                <th style="vertical-align: text-top;" width="20%" class="text-center"><strong> Comments </strong></th>
+                                <th style="vertical-align: text-top;" width="13%" class="text-center"><strong>Created by</strong></th>
+                            </tr>
+                        </thead>
+                            <tbody>
+                                <t t-foreach="parent_categories" t-as="line">
+                                    <tr style="font-size:14px">
+                                        <td style="text-align:right;"><t t-esc="line_index+1"/></td>
+                                        <td style="text-align:left;"><t t-esc="line['name']"/></td>
+                                        <td style="text-align:center;"><t t-esc="line['date']" t-options='{"widget": "date","format": "yyyy-MM-dd"}'/></td>
+<!--                                        <td style="text-align:left;"><t t-esc="line['code']"/></td>-->
+                                        <td style="text-align:left;"><t t-esc="line['product']"/></td>
+                                        <td style="text-align:right;"><t t-esc="line['theoretical_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['product_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['adjusted_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['cost']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['sub_total']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td><t t-esc="line['remarks']"/></td>
+                                        <td style="text-align:left;"><t t-esc="line['created_by']"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="footer o_background_footer">
+                        <div class="text-center">
+                            <ul class="list-inline">
+                                    <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                                </ul>
+                            <div t-if="report_type == 'pdf'" class="text-muted">
+                                Page:
+                                <span class="page"/>
+                                of
+                                <span class="topage"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                </t>
+        </template>
+
+
+         <!-- Location and Categories Wise filter -->
+
+        <template id="action_report_location_category_template_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template>
+        <template id="report_inventory_location_category_template">
+            <t t-call="web.html_container">
+                    <t t-call="sync_inventory_adjustment.action_report_location_category_template_internal_layout" style="margin-top:0px;padding-top:0px;display:inline;">
+                    <div class="header" t-att-style="report_header_style">
+                        <div class="o_boxed_header">
+                            <table width="100%">
+                                <tr>
+                                    <div>
+                                        <h1 style="font-weight:bold;text-align:center;font-size:24px"><span t-esc="res_company.name"/></h1>
+                                        <img class="img" src="/sync_inventory_adjustment/static/img/Oasis-Logo.jpg"
+                                            style="max-height: 90px; min-height:90px;float:right" alt="Logo"/>
+                                    </div>
+                                    <div class="col-6">
+                                        <h3 style="font-weight:bold;font-size:22px">Inventory Adjustments Report</h3>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <strong><b>Start Date : </b><span t-esc="form_data['start_date']"/></strong>
+                                        </div>
+                                        <div class="col-3">
+                                            <strong><b>End Date : </b><span t-esc="form_data['end_date']"/></strong>
+                                        </div>
+                                    </div>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="page">
+                        <t t-set="previous_location_category" t-value="''"/>
+                            <t t-foreach="parent_categories" t-as="line">
+                            <t t-if="line['location_name'] != previous_location_category">
+                                <h3 style="font-size:16px">
+                                    <t t-esc="line['location_name']"/> - <t t-esc="line['category_name']"/>
+                                </h3>
+                                <t t-set="previous_location_category" t-value="line['location_name']"/>
+                            </t>
+                        </t>
+                    <table class="table table-sm table-bordered" style="table-layout: fixed;">
+                        <thead>
+                            <tr style="background-color:#464343;color:white;text-align:center; font-size:16px">
+                                <th style="vertical-align: text-top;" width="5%" ><strong>S.No</strong></th>
+                                <th style="vertical-align: text-top;" width="15%"><strong>Reference</strong></th>
+                                <th style="vertical-align: text-top;" width="12%" ><strong>Adjustment <br/> Date</strong></th>
+<!--                                <th style="vertical-align: text-top;" width="10%"><strong>Code</strong></th>-->
+                                <th style="vertical-align: text-top;" width="25%" class="text-center"><strong>Product</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Computer <br/>Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Counted<br/> Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Adjusted<br/> Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="8%" class="text-center"><strong>Unit <br/> Cost</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Subtotal</strong></th>
+                                <th style="vertical-align: text-top;" width="20%" class="text-center"><strong> Comments </strong></th>
+                                <th style="vertical-align: text-top;" width="13%" class="text-center"><strong>Created by</strong></th>
+                            </tr>
+                        </thead>
+                            <tbody>
+                                <t t-foreach="parent_categories" t-as="line">
+                                    <tr style="font-size:14px">
+                                        <td style="text-align:right;"><t t-esc="line_index+1"/></td>
+                                        <td style="text-align:left;"><t t-esc="line['name']"/></td>
+                                        <td style="text-align:center;"><t t-esc="line['date']" t-options='{"widget": "date","format": "yyyy-MM-dd"}'/></td>
+<!--                                        <td style="text-align:left;"><t t-esc="line['code']"/></td>-->
+                                        <td style="text-align:left;"><t t-esc="line['product']"/></td>
+                                        <td style="text-align:right;"><t t-esc="line['theoretical_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['product_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['adjusted_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['cost']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['sub_total']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td><t t-esc="line['remarks']"/></td>
+                                        <td style="text-align:left;"><t t-esc="line['created_by']"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="footer o_background_footer">
+                        <div class="text-center">
+                            <ul class="list-inline">
+                                    <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                                </ul>
+                            <div t-if="report_type == 'pdf'" class="text-muted">
+                                Page:
+                                <span class="page"/>
+                                of
+                                <span class="topage"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                </t>
+        </template>
+
+
+         <!-- product Wise filter -->
+
+        <template id="report_inventory_product_template_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template>
+        <template id="report_inventory_product_template">
+            <t t-call="web.html_container">
+                    <t t-call="sync_inventory_adjustment.report_inventory_product_template_internal_layout" style="margin-top:0px;padding-top:0px;display:inline;">
+                    <div class="header" t-att-style="report_header_style">
+                        <div class="o_boxed_header">
+                            <table width="100%">
+                                <tr>
+                                    <div>
+                                        <h1 style="font-weight:bold;text-align:center;font-size:24px"><span t-esc="res_company.name"/></h1>
+                                        <img class="img" src="/sync_inventory_adjustment/static/img/Oasis-Logo.jpg"
+                                            style="max-height: 90px; min-height:90px;float:right" alt="Logo"/>
+                                    </div>
+                                    <div class="col-6">
+                                        <h3 style="font-weight:bold;font-size:22px">Inventory Adjustments Report</h3>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <strong><b>Start Date : </b><span t-esc="form_data['start_date']"/></strong>
+                                        </div>
+                                        <div class="col-3">
+                                            <strong><b>End Date : </b><span t-esc="form_data['end_date']"/></strong>
+                                        </div>
+                                    </div>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="page">
+                        <table class="table table-sm table-bordered" style="table-layout: fixed;">
+                            <thead>
+                                <tr style="background-color:#464343;color:white;text-align:center; font-size:16px">
+                                    <th style="vertical-align: text-top;" width="5%" ><strong>S.No</strong></th>
+                                    <th style="vertical-align: text-top;" width="15%"><strong>Reference</strong></th>
+                                    <th style="vertical-align: text-top;" width="12%" ><strong>Adjustment <br/> Date</strong></th>
+        <!--                                <th style="vertical-align: text-top;" width="10%"><strong>Code</strong></th>-->
+                                    <th style="vertical-align: text-top;" width="25%" class="text-center"><strong>Product</strong></th>
+                                    <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Computer <br/>Qty</strong></th>
+                                    <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Counted<br/> Qty</strong></th>
+                                    <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Adjusted<br/> Qty</strong></th>
+                                    <th style="vertical-align: text-top;" width="8%" class="text-center"><strong>Unit <br/> Cost</strong></th>
+                                    <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Subtotal</strong></th>
+                                    <th style="vertical-align: text-top;" width="20%" class="text-center"><strong> Comments </strong></th>
+                                    <th style="vertical-align: text-top;" width="13%" class="text-center"><strong>Created by</strong></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="product_list" t-as="line">
+                                    <tr style="font-size:14px">
+                                        <td style="text-align:right;"><t t-esc="line_index+1"/></td>
+                                        <td style="text-align:left;"><t t-esc="line['name']"/></td>
+                                        <td style="text-align:center;"><t t-esc="line['date']" t-options='{"widget": "date","format": "yyyy-MM-dd"}'/></td>
+<!--                                        <td style="text-align:left;"><t t-esc="line['code']"/></td>-->
+                                        <td style="text-align:left;"><t t-esc="line['product']"/></td>
+                                        <td style="text-align:right;"><t t-esc="line['theoretical_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['product_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['adjusted_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['cost']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['sub_total']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td><t t-esc="line['remarks']"/></td>
+                                        <td style="text-align:left;"><t t-esc="line['created_by']"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="footer o_background_footer">
+                        <div class="text-center">
+                            <ul class="list-inline">
+                                    <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                                </ul>
+                            <div t-if="report_type == 'pdf'" class="text-muted">
+                                Page:
+                                <span class="page"/>
+                                of
+                                <span class="topage"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                </t>
+        </template>
+
+
+        <!-- Location and Categories and product Wise filter -->
+
+        <template id="report_location_category_product_template_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template>
+        <template id="report_location_category_product_template">
+            <t t-call="web.html_container">
+                    <t t-call="sync_inventory_adjustment.report_location_category_product_template_internal_layout" style="margin-top:0px;padding-top:0px;display:inline;">
+                    <div class="header" t-att-style="report_header_style">
+                        <div class="o_boxed_header">
+                            <table width="100%">
+                                <tr>
+                                    <div>
+                                        <h1 style="font-weight:bold;text-align:center;font-size:24px"><span t-esc="res_company.name"/></h1>
+                                        <img class="img" src="/sync_inventory_adjustment/static/img/Oasis-Logo.jpg"
+                                            style="max-height: 90px; min-height:90px;float:right" alt="Logo"/>
+                                    </div>
+                                    <div class="col-6">
+                                        <h3 style="font-weight:bold;font-size:22px">Inventory Adjustments Report</h3>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <strong><b>Start Date : </b><span t-esc="form_data['start_date']"/></strong>
+                                        </div>
+                                        <div class="col-3">
+                                            <strong><b>End Date : </b><span t-esc="form_data['end_date']"/></strong>
+                                        </div>
+                                    </div>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="page">
+                        <t t-set="previous_location_category" t-value="''"/>
+                            <t t-foreach="parent_categories" t-as="line">
+                            <t t-if="line['location_name'] != previous_location_category">
+                                <h3 style="font-size:16px">
+                                    <t t-esc="line['location_name']"/> - <t t-esc="line['category_name']"/>
+                                </h3>
+                                <t t-set="previous_location_category" t-value="line['location_name']"/>
+                            </t>
+                        </t>
+                    <table class="table table-sm table-bordered" style="table-layout: fixed;">
+                        <thead>
+                            <tr style="background-color:#464343;color:white;text-align:center; font-size:16px">
+                                <th style="vertical-align: text-top;" width="5%" ><strong>S.No</strong></th>
+                                <th style="vertical-align: text-top;" width="15%"><strong>Reference</strong></th>
+                                <th style="vertical-align: text-top;" width="12%" ><strong>Adjustment <br/> Date</strong></th>
+<!--                                <th style="vertical-align: text-top;" width="10%"><strong>Code</strong></th>-->
+                                <th style="vertical-align: text-top;" width="25%" class="text-center"><strong>Product</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Computer <br/>Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Counted<br/> Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Adjusted<br/> Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="8%" class="text-center"><strong>Unit <br/> Cost</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Subtotal</strong></th>
+                                <th style="vertical-align: text-top;" width="20%" class="text-center"><strong> Comments </strong></th>
+                                <th style="vertical-align: text-top;" width="13%" class="text-center"><strong>Created by</strong></th>
+                            </tr>
+                        </thead>
+                            <tbody>
+                                <t t-foreach="parent_categories" t-as="line">
+                                    <tr style="font-size:14px">
+                                        <td style="text-align:right;"><t t-esc="line_index+1"/></td>
+                                        <td style="text-align:left;"><t t-esc="line['name']"/></td>
+                                        <td style="text-align:center;"><t t-esc="line['date']" t-options='{"widget": "date","format": "yyyy-MM-dd"}'/></td>
+<!--                                        <td style="text-align:left;"><t t-esc="line['code']"/></td>-->
+                                        <td style="text-align:left;"><t t-esc="line['product']"/></td>
+                                        <td style="text-align:right;"><t t-esc="line['theoretical_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['product_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['adjusted_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['cost']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['sub_total']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td><t t-esc="line['remarks']"/></td>
+                                        <td style="text-align:left;"><t t-esc="line['created_by']"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="footer o_background_footer">
+                        <div class="text-center">
+                            <ul class="list-inline">
+                                    <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                                </ul>
+                            <div t-if="report_type == 'pdf'" class="text-muted">
+                                Page:
+                                <span class="page"/>
+                                of
+                                <span class="topage"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                </t>
+        </template>
+
+
+
+                                        <!-- Category and product filter template-->
+        <template id="report_category_product_template_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template>
+        <template id="report_category_product_template">
+            <t t-call="web.html_container">
+                    <t t-call="sync_inventory_adjustment.report_category_product_template_internal_layout" style="margin-top:0px;padding-top:0px;display:inline;">
+                    <div class="header" t-att-style="report_header_style">
+                        <div class="o_boxed_header">
+                            <table width="100%">
+                                <tr>
+                                    <div>
+                                        <h1 style="font-weight:bold;text-align:center;font-size:24px"><span t-esc="res_company.name"/></h1>
+                                        <img class="img" src="/sync_inventory_adjustment/static/img/Oasis-Logo.jpg"
+                                            style="max-height: 90px; min-height:90px;float:right" alt="Logo"/>
+                                    </div>
+                                    <div class="col-6">
+                                        <h3 style="font-weight:bold;font-size:22px">Inventory Adjustments Report</h3>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <strong><b>Start Date : </b><span t-esc="form_data['start_date']"/></strong>
+                                        </div>
+                                        <div class="col-3">
+                                            <strong><b>End Date : </b><span t-esc="form_data['end_date']"/></strong>
+                                        </div>
+                                    </div>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="page">
+<!--                        <t t-foreach="location_data" t-as="loc">-->
+<!--                            <h3 style="font-size:16px">Location :&#160; <t t-esc="loc['location_name']"/></h3>-->
+<!--                        </t>-->
+                        <t t-set="previous_location_name" t-value="''"/>
+                        <t t-foreach="parent_categories" t-as="line">
+                           <t t-if="line['category_name'] != previous_location_name">
+                               <h3 style="font-size:16px"><b>Location :&#160; </b><t t-esc="line['category_name']"/></h3>
+                                <t t-set="previous_location_name" t-value="line['category_name']"/>
+                            </t>
+                        </t>
+                    <table class="table table-sm table-bordered" style="table-layout: fixed;">
+                        <thead>
+                            <tr style="background-color:#464343;color:white;text-align:center; font-size:16px">
+                                <th style="vertical-align: text-top;" width="5%" ><strong>S.No</strong></th>
+                                <th style="vertical-align: text-top;" width="15%"><strong>Reference</strong></th>
+                                <th style="vertical-align: text-top;" width="12%" ><strong>Adjustment <br/> Date</strong></th>
+<!--                                <th style="vertical-align: text-top;" width="10%"><strong>Code</strong></th>-->
+                                <th style="vertical-align: text-top;" width="25%" class="text-center"><strong>Product</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Computer <br/>Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Counted<br/> Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Adjusted<br/> Qty</strong></th>
+                                <th style="vertical-align: text-top;" width="8%" class="text-center"><strong>Unit <br/> Cost</strong></th>
+                                <th style="vertical-align: text-top;" width="10%" class="text-center"><strong>Subtotal</strong></th>
+                                <th style="vertical-align: text-top;" width="20%" class="text-center"><strong> Comments </strong></th>
+                                <th style="vertical-align: text-top;" width="13%" class="text-center"><strong>Created by</strong></th>
+                            </tr>
+                        </thead>
+                            <tbody>
+                                <t t-foreach="parent_categories" t-as="line">
+                                    <tr style="font-size:14px">
+                                        <td style="text-align:right;"><t t-esc="line_index+1"/></td>
+                                        <td style="text-align:left;"><t t-esc="line['name']"/></td>
+                                        <td style="text-align:center;"><t t-esc="line['date']" t-options='{"widget": "date","format": "yyyy-MM-dd"}'/></td>
+<!--                                        <td style="text-align:left;"><t t-esc="line['code']"/></td>-->
+                                        <td style="text-align:left;"><t t-esc="line['product']"/></td>
+                                        <td style="text-align:right;"><t t-esc="line['theoretical_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['product_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['adjusted_qty']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['cost']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td style="text-align:right;"><t t-esc="line['sub_total']" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td><t t-esc="line['remarks']"/></td>
+                                        <td style="text-align:left;"><t t-esc="line['created_by']"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="footer o_background_footer">
+                        <div class="text-center">
+                            <ul class="list-inline">
+                                    <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                                </ul>
+                            <div t-if="report_type == 'pdf'" class="text-muted">
+                                Page:
+                                <span class="page"/>
+                                of
+                                <span class="topage"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                </t>
+        </template>
+
+
+
+
+                <!--  Date filter Template  -->
+        <record id="action_report_inventory_template" model="ir.actions.report">
+            <field name="name">Inventory Adjustments Report</field>
+            <field name="model">stock.adjustment.report</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">sync_inventory_adjustment.report_inventory_adjustment_template</field>
+            <field name="report_file">sync_inventory_adjustment.report_inventory_adjustment_template</field>
+    <!--        <field name="print_report_name">'Inventory - %s' % (object.name)</field>-->
+            <field name="binding_model_id" ref="model_stock_adjustment_report"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- Location and Categories and product Wise filter-->
+        <record id="action_report_location_category_product_template" model="ir.actions.report">
+            <field name="name">Inventory Adjustments Report</field>
+            <field name="model">stock.adjustment.report</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">sync_inventory_adjustment.report_location_category_product_template</field>
+            <field name="report_file">sync_inventory_adjustment.report_location_category_product_template</field>
+    <!--        <field name="print_report_name">'Inventory - %s' % (object.name)</field>-->
+            <field name="binding_model_id" ref="model_stock_adjustment_report"/>
+            <field name="binding_type">report</field>
+        </record>
+
+                <!--  product filter Template  -->
+        <record id="action_report_product_template" model="ir.actions.report">
+            <field name="name">Inventory Adjustments Report</field>
+            <field name="model">stock.adjustment.report</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">sync_inventory_adjustment.report_inventory_product_template</field>
+            <field name="report_file">sync_inventory_adjustment.report_inventory_product_template</field>
+    <!--        <field name="print_report_name">'Inventory - %s' % (object.name)</field>-->
+            <field name="binding_model_id" ref="model_stock_adjustment_report"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- Location and product filter Template-->
+        <record id="action_report_location_product_template" model="ir.actions.report">
+            <field name="name">Inventory Adjustments Report</field>
+            <field name="model">stock.adjustment.report</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">sync_inventory_adjustment.report_inventory_location_product_template</field>
+            <field name="report_file">sync_inventory_adjustment.report_inventory_location_product_template</field>
+    <!--        <field name="print_report_name">'Inventory - %s' % (object.name)</field>-->
+            <field name="binding_model_id" ref="model_stock_adjustment_report"/>
+            <field name="binding_type">report</field>
+        </record>
+
+                <!--  Location filter Template  -->
+        <record id="action_report_location_template" model="ir.actions.report">
+            <field name="name">Inventory Adjustments Report</field>
+            <field name="model">stock.adjustment.report</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">sync_inventory_adjustment.report_inventory_location_template</field>
+            <field name="report_file">sync_inventory_adjustment.report_inventory_location_template</field>
+    <!--        <field name="print_report_name">'Inventory - %s' % (object.name)</field>-->
+            <field name="binding_model_id" ref="model_stock_adjustment_report"/>
+            <field name="binding_type">report</field>
+        </record>
+
+                <!-- Categories Wise filter -->
+         <record id="action_report_category_template" model="ir.actions.report">
+            <field name="name">Inventory Adjustments Report</field>
+            <field name="model">stock.adjustment.report</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">sync_inventory_adjustment.report_inventory_category_template</field>
+            <field name="report_file">sync_inventory_adjustment.report_inventory_category_template</field>
+    <!--        <field name="print_report_name">'Inventory - %s' % (object.name)</field>-->
+            <field name="binding_model_id" ref="model_stock_adjustment_report"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- Categories and product Wise filter -->
+         <record id="action_report_category_product_template" model="ir.actions.report">
+            <field name="name">Inventory Adjustments Report</field>
+            <field name="model">stock.adjustment.report</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">sync_inventory_adjustment.report_category_product_template</field>
+            <field name="report_file">sync_inventory_adjustment.report_category_product_template</field>
+    <!--        <field name="print_report_name">'Inventory - %s' % (object.name)</field>-->
+            <field name="binding_model_id" ref="model_stock_adjustment_report"/>
+            <field name="binding_type">report</field>
+        </record>
+
+         <!-- Location and Categories Wise filter-->
+        <record id="action_report_location_category_template" model="ir.actions.report">
+            <field name="name">Inventory Adjustments Report</field>
+            <field name="model">stock.adjustment.report</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">sync_inventory_adjustment.report_inventory_location_category_template</field>
+            <field name="report_file">sync_inventory_adjustment.report_inventory_location_category_template</field>
+    <!--        <field name="print_report_name">'Inventory - %s' % (object.name)</field>-->
+            <field name="binding_model_id" ref="model_stock_adjustment_report"/>
+            <field name="binding_type">report</field>
+        </record>
+
+
+                            <!-- Excel Report  -->
+        <record id="action_stock_adjustment_report_xlsx" model="ir.actions.report">
+            <field name="name">Stock Adjustment</field>
+            <field name="model">stock.adjustment.report</field>
+            <field name="report_type">xlsx</field>
+            <field name="report_name">sync_inventory_adjustment.report_stock_adjustment_xlsx</field>
+            <field name="report_file">Stock Adjustment Report</field>
+            <field name="binding_model_id" ref="model_stock_adjustment_report"/>
+            <field name="binding_type">report</field>
+        </record>
+    </data>
+</odoo>

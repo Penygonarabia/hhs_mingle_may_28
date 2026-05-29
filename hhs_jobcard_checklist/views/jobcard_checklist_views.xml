@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================= -->
+    <!-- Inherit Job Card form to add Post Service Checklist & Photos  -->
+    <!-- ============================================================= -->
+    <!-- ============================================================= -->
+    <!-- FALLBACK LIST VIEWS (Safety Net)                              -->
+    <!-- ============================================================= -->
+    <record id="view_jobcard_checklist_line_tree" model="ir.ui.view">
+        <field name="name">jobcard.checklist.line.tree</field>
+        <field name="model">jobcard.checklist.line</field>
+        <field name="arch" type="xml">
+            <tree string="Checklist" editable="bottom" delete="0" create="0">
+                <field name="sequence" widget="handle"/>
+                <field name="section_group" width="120px" string="Section" readonly="1"/>
+                <field name="check_item" readonly="1" width="300px"/>
+                <field name="answer_display" string="Answer" widget="checklist_answer" width="350px"/>
+                <field name="remark" width="250px" column_invisible="1"/>
+                <field name="field_type" column_invisible="1"/>
+                <field name="answer_numeric" column_invisible="1"/>
+                <field name="answer_text" column_invisible="1"/>
+                <field name="answer_selection_id" column_invisible="1"/>
+                <field name="option_labels_data" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_jobcard_checklist_photo_tree" model="ir.ui.view">
+        <field name="name">jobcard.checklist.photo.tree</field>
+        <field name="model">jobcard.checklist.photo</field>
+        <field name="arch" type="xml">
+            <tree string="Photos" editable="bottom" delete="0" create="0">
+                <field name="sequence" widget="handle"/>
+                <field name="section" width="100px"/>
+                <field name="caption" readonly="0" width="250px"/>
+                <field name="photo" widget="image" options="{'size': [64, 64]}"/>
+                <field name="photo_filename" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ============================================================= -->
+    <!-- DESKTOP FORM INHERITANCE                                      -->
+    <!-- ============================================================= -->
+    <record id="view_project_task_form_checklist" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.jobcard.checklist</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="machine_repair_management.view_project_task_form"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+
+            <!-- Add two new tabs after "Product Consume Part/Service" in the notebook -->
+            <xpath expr="//page[@name='consume_service']" position="after">
+
+                <!-- ==================== POST SERVICE CHECKLIST TAB ==================== -->
+                <page string="Post Service Checklist" name="post_service_checklist_tab" invisible="not project_related_amc_bool">
+                    <field name="checklist_loaded" invisible="1"/>
+                    <div class="mb-3">
+                        <button name="action_load_checklist"
+                                type="object"
+                                string="Load Checklist"
+                                class="btn btn-primary"
+                                icon="fa-download" invisible ="1"/>
+                    </div>
+                    <field name="checklist_line_ids" nolabel="1">
+                        <tree string="Checklist" editable="bottom" delete="0" create="0">
+                            <field name="sequence" widget="handle"/>
+                            <field name="section_group" width="120px" string="Section" readonly="1"/>
+                            <field name="check_item" readonly="1" width="300px"/>
+                            <field name="answer_display" string="Answer" widget="checklist_answer" width="350px"/>
+                            <field name="remark" width="250px" column_invisible="1"/>
+                            <field name="field_type" column_invisible="1"/>
+                            <field name="answer_numeric" column_invisible="1"/>
+                            <field name="answer_text" column_invisible="1"/>
+                            <field name="answer_selection_id" column_invisible="1"/>
+                        </tree>
+                    </field>
+                </page>
+
+                <!-- ==================== POST SERVICE PHOTOS TAB ==================== -->
+                <page string="Post Service Photos" name="post_service_photos_tab" invisible="not project_related_amc_bool">
+
+                    <field name="checklist_photo_ids" nolabel="1">
+                        <tree string="Photos" editable="bottom" delete="0" create="0">
+                            <field name="sequence" widget="handle" readonly="1"/>
+                            <field name="section" width="100px" readonly="1"/>
+                            <field name="caption" readonly="1" width="250px" />
+                            <field name="photo" widget="image" 
+                                   options="{'size': [64, 64]}"/>
+                        </tree>
+                    </field>
+                </page>
+
+            </xpath>
+
+        </field>
+    </record>
+    
+    <!-- ============================================================= -->
+    <!-- MOBILE FORM INHERITANCE                                       -->
+    <!-- ============================================================= -->
+     <record id="view_task_form_checklist_mobile" model="ir.ui.view">
+        <field name="name">project.task.form.checklist.mobile</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="machine_repair_management.view_task_form_desktop_accordion"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('FAQ')][last()]" position="after">
+                
+                <div style="display: flex; flex-direction: column;" invisible = "maintenance_type == 'corrective'">
+                        
+                
+                    <hr class="hr-5"/>
+                    <div class="FAQ" id="post_service_checklist_mobile">
+                        <div class="toggle-btn" onclick="toggleFaq(this)">
+                            <i class="fa fa-chevron-down accordion-icon"/>
+                        </div>
+                        <div class="question">Post Service Checklist</div>
+                        <div class="list" style="padding: 10px;">
+                            <field name="checklist_loaded" invisible="1"/>
+                            <div class="mb-2">
+                                <button name="action_load_checklist"
+                                        type="object"
+                                        string="Load Checklist"
+                                        class="btn btn-primary w-100"
+                                        icon="fa-download" invisible = "1"/>
+                            </div>
+                            <field name="checklist_line_ids" nolabel="1">
+                                <kanban create="0" delete="0">
+                                    <field name="section_group"/>
+                                    <field name="check_item"/>
+                                    <field name="answer_display"/>
+                                    <field name="field_type"/>
+                                    <field name="answer_numeric"/>
+                                    <field name="answer_text"/>
+                                    <field name="answer_selection_id"/>
+                                    <field name="option_labels_data"/>
+                                    <templates>
+                                        <t t-name="kanban-box">
+                                            <div class="hhs_checklist_card p-2 mb-2 border rounded bg-white shadow-sm">
+                                                <div t-if="record.section_group.raw_value" class="fw-bold text-uppercase text-primary small border-bottom mb-2 pb-1">
+                                                    <i class="fa fa-tags me-1"/> <field name="section_group"/>
+                                                </div>
+                                                <div class="fw-bold mb-1" style="font-size: 1.1em;">
+                                                    <field name="check_item"/>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <field name="answer_display" widget="checklist_answer"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                            </field>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column;" invisible = "maintenance_type == 'corrective'">
+                    <hr class="hr-5"/>
+                    <div class="FAQ" id="post_service_photos_mobile">
+                        <div class="toggle-btn" onclick="toggleFaq(this)">
+                            <i class="fa fa-chevron-down accordion-icon"/>
+                        </div>
+                        <div class="question">Post Service Photos</div>
+                        <div class="list" style="padding: 10px;">
+                            <field name="checklist_photo_ids" nolabel="1">
+                                <kanban create="0" delete="0">
+                                    <field name="sequence"/>
+                                    <field name="section"/>
+                                    <field name="caption"/>
+                                    <field name="photo"/>
+                                    <field name="photo_filename"/>
+                                    <templates>
+                                        <t t-name="kanban-box">
+                                            <div class="hhs_photo_card p-3 mb-3 border rounded bg-white shadow-sm">
+                                                <div class="fw-bold text-uppercase text-success small border-bottom mb-2 pb-1">
+                                                    <i class="fa fa-camera me-1"/> <field name="section"/>
+                                                </div>
+                                                <div class="mb-2">
+                                                   <!--  <span class="text-muted small">Caption:</span> -->
+                                                    <div class="fw-bold" style="font-size: 1.1em;">
+                                                        <field name="caption"/>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-2 text-center">
+                                                    <field name="photo" widget="checklist_photo_upload"/>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                            </field>
+                        </div>
+                    </div>
+                </div>
+
+            </xpath>
+        </field>
+    </record> 
+    
+    
+
+</odoo>

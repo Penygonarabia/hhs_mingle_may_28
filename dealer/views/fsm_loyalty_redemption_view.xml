@@ -1,0 +1,87 @@
+<odoo>
+
+    <!-- Tree View -->
+    <record id="view_fsm_loyalty_redemption_tree" model="ir.ui.view">
+        <field name="name">fsm.loyalty.redemption.tree</field>
+        <field name="model">fsm.loyalty.redemption</field>
+        <field name="arch" type="xml">
+            <tree string="Loyalty Redemptions">
+                <field name="transaction_reference"/>
+                <field name="dealer_id"/>
+                <field name="salesman_id"/>
+                <field name="date_time"/>
+                <field name="points_redeemed"/>
+                <field name="amount_paid"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+  <!-- Form View -->
+ <record id="view_fsm_loyalty_redemption_form" model="ir.ui.view">
+    <field name="name">fsm.loyalty.redemption.form</field>
+    <field name="model">fsm.loyalty.redemption</field>
+    <field name="arch" type="xml">
+        <form string="FSM Loyalty Redemption" create="true" edit="true" delete="true">            
+            <sheet>
+                <group> 
+                    <field name="transaction_reference"/>                   
+                    <field name="dealer_id"/>
+                    <field name="dealer_showroom_id"/>
+                    <field name="salesman_id"/>                    
+                    <field name="date_time"/>
+                    <field name="points_available" readonly="1"/>
+                    <field name="points_redeemed" mode="readonly" decorator="{'readonly': [('state', '=', 'processed')]}"/>
+                    <field name="amount_paid" readonly="1"/>
+                    <field name="payment_reference" mode="readonly" decorator="{'readonly': [('state', '=', 'processed')]}"/>
+                    <field name="notes" mode="readonly" decorator="{'readonly': [('state', '=', 'processed')]}"/>
+                    <field name="state" readonly="1"/>
+                </group>
+                
+                <!-- Process Redemption Button -->
+                <button name="action_process"
+                        string="Process Redemption"
+                        type="object"
+                        class="btn-primary"
+                        modifiers="{'invisible': [('state', '!=', 'draft')]}"/>
+
+                <!-- Print Receipt Button -->
+                <button name="action_print_loyalty_redemption"
+                        string="Print Receipt"
+                        type="object"
+                        class="btn-secondary"
+                        modifiers="{'invisible': [('state', '!=', 'processed')]}"/>                 
+            </sheet>
+        </form>
+    </field>
+</record>
+
+    <!-- Search View -->
+    <record id="view_fsm_loyalty_redemption_search" model="ir.ui.view">
+        <field name="name">fsm.loyalty.redemption.search</field>
+        <field name="model">fsm.loyalty.redemption</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="transaction_reference"/>
+                <field name="dealer_id"/>
+                <field name="salesman_id"/>
+                <field name="date_time"/>
+                <filter name="processed" string="Processed" domain="[('state','=','processed')]"/>
+                <filter name="draft" string="Draft" domain="[('state','=','draft')]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action Window -->
+    <record id="action_loyalty_redemption" model="ir.actions.act_window">
+        <field name="name">Redemption</field>
+        <field name="res_model">fsm.loyalty.redemption</field>
+        <field name="view_mode">tree,form</field>
+        <!-- <field name="view_id" ref="view_fsm_loyalty_redemption_form"/> -->       
+    </record>
+
+    <menuitem id="menu_fsm_loyalty_redemption" name="Redemptions"
+              parent="menu_dealer_root" 
+              action="action_loyalty_redemption"                            
+              groups="dealer.group_dealer_backoffice_user"
+              sequence="30"/>
+</odoo>

@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <record id="moves_report" model="ir.actions.report">
+        <field name="name">Custom Moves</field>
+        <field name="model">moves.details.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_moves_report.report_moves</field>
+    </record>
+    
+    <record id="action_custom_moves_report_xlsx" model="ir.actions.report">
+        <field name="name">Custom Moves</field>
+        <field name="model">moves.details.report</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">custom_moves_report.report_custom_moves_xlsx</field>
+        <field name="report_file">Custom Moves Report</field>
+        <field name="binding_model_id" ref="model_moves_details_report"/>
+        <field name="binding_type">report</field>
+    </record>
+    
+    
+
+    <template id="report_moves">
+    <t t-set="company" t-value="env.company"/>
+    <t t-call="web.html_container">
+    <t t-call="web.internal_layout">
+        <div class="page">
+            <div class="text-center">
+                <h3> <t t-esc="report_head"/> </h3>
+                <t t-if="date_start and date_stop">
+                    <strong><t t-esc="date_start" t-options="{'widget': 'date'}"/> - <t t-esc="date_stop" t-options="{'widget': 'date'}"/></strong>
+                </t>
+            </div>
+            <table  class="table table-sm">
+           	 <t t-set="opening_qty_total" t-value="0.0"></t>
+           	  <t t-set="opening_qty_value" t-value="0.0"></t>
+           	   <t t-set="total_in_qty" t-value="0.0"></t>
+           	   <t t-set="total_in_qty_value" t-value="0.0"></t>
+           	   <t t-set="total_out_qty" t-value="0.0"></t>
+           	   <t t-set="total_out_qty_value" t-value="0.0"></t>
+           	   <t t-set="final_qty" t-value="0.0"></t>
+           	   <t t-set="final_qty_value" t-value="0.0"></t>
+           	   
+            	
+                <t t-if="to_collapse">
+                    <thead><tr>
+                        <th>S.NO</th>
+                        <th>Product</th>
+                        <th>Opening Balance</th>
+                        <th>value</th>
+                        <th>Total In</th>
+                        <th>In value</th>
+                        <th>Total Out</th>
+                        <th>Out value</th>
+                        <th>Balance</th>
+                        <th>End Value</th>
+                    </tr></thead>
+                </t>
+                <t t-else="">
+                    <thead><tr>
+                        <th>Product</th>
+                        <th>Date</th>
+                        <th>Operation Type</th>
+                        <th>Reference</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>In</th>
+                        <th>In value</th>
+                        <th>Out</th>
+                        <th>Out value</th>
+                        <th>Balance</th>
+                        <th>Value</th>
+                    </tr></thead>
+                </t>
+                <tbody t-foreach='data' t-as='rec'>
+               
+                <t t-if="to_collapse">
+                    <tr>
+                        <td>
+                            <strong><t t-esc="rec_index+1"/></strong>
+                        </td>
+                        <td>
+                            <strong><t t-esc='products[rec_index]' /></strong>
+                        </td>
+                        <td>
+                            <strong><span t-esc='rec["opening_balance"]' t-options='{"widget": "float", "decimal_precision": "2"}' /></strong>
+                           
+                            <t t-set="opening_qty_total" t-value="opening_qty_total+rec['opening_balance']"></t>
+                        </td>
+                         <td>
+                            <strong><t t-esc='rec["v_value"]' t-options='{"widget": "float", "decimal_precision": "2"}'/></strong>
+                           <t t-set="opening_qty_value" t-value="opening_qty_value+rec['v_value']"></t>
+                            
+                        </td>
+
+                        <td>
+                        	<t t-esc="rec['total_in']" t-options='{"widget": "float", "decimal_precision": "2"}'/>
+                        	  <t t-set="total_in_qty" t-value="total_in_qty+rec['total_in']"></t>
+                         	</td>
+                        
+                         <td>
+                            <strong><t t-esc='rec["in_value"]' t-options='{"widget": "float", "decimal_precision": "2"}' /></strong>
+                             <t t-set="total_in_qty_value" t-value="total_in_qty_value+rec['in_value']"></t>
+                            
+                        </td>
+                        <td><t t-esc="rec['total_out']" t-options='{"widget": "float", "decimal_precision": "2"}'/>
+                            <t t-set="total_out_qty" t-value="total_out_qty+rec['total_out']"></t>
+                        
+                        </td>
+                         <td>
+                            <strong><t t-esc='rec["out_value"]'  t-options='{"widget": "float", "decimal_precision": "2"}'/></strong>
+                               <t t-set="total_out_qty_value" t-value="total_out_qty_value+rec['out_value']"></t>
+                            
+                        </td>
+                        <td>
+                            <strong><t t-esc='rec["balance"]' t-options='{"widget": "float", "decimal_precision": "2"}'/></strong>
+                                  <t t-set="final_qty" t-value="final_qty+rec['balance']"></t>
+                            
+                            
+                        </td>
+                        <td>
+                            <t  t-esc='rec["value"]' t-options='{"widget": "float", "decimal_precision": "2"}'/>
+                            <t t-set="final_qty_value" t-value="final_qty_value+rec['value']"></t>
+                            
+                        </td>
+                    </tr>
+                    
+               
+                    
+                </t>
+                
+                
+                 <t t-else="">
+                    <tr>
+                         <td>
+                            <strong><t t-esc="rec_index+1"/></strong>
+                        </td>
+                        <td colspan="2">
+                            <strong><t t-esc='products[rec_index]' /></strong>
+                        </td>
+                        <td colspan="7"></td>
+                        <td>
+                            <strong><t t-esc='rec["opening_balance"]' t-options='{"widget": "float", "decimal_precision": "2"}'/></strong>
+                        </td>
+                         <td>
+                            <t  t-esc='rec["v_value"]' t-options='{"widget": "float", "decimal_precision": "2"}'/>
+                        </td>
+                    </tr>
+                    <tr t-foreach='rec["lst"]' t-as='line'>
+                        <td></td>
+                        <td> 
+                            <t t-esc='line["date"]' /> 
+                        </td>
+                        <td>
+                            <t t-esc='line["picking_type"]' />
+                        </td>
+                        <td>
+                            <t t-esc='line["reference"]' />
+                        </td>
+                        <td>
+                            <t t-esc='line["location_id"]' />
+                        </td>
+                        <td>
+                            <t t-esc='line["location_dest_id"]' />
+                        </td>
+                        <td>
+                            <span t-esc='line["in"]'/>
+                            
+                        </td>
+                         <td>
+                            <span t-esc='line["individual_in_value"]' />
+                            
+                        
+                        </td>
+                        <td>
+                            <span t-esc='line["out"]'/>
+                        </td>
+                         <td>
+                            <span t-esc='line["individual_out_value"]'/>
+                        </td>
+                        <td>
+                            <span t-esc='line["balance"]' t-options='{"widget": "float", "decimal_precision": "2"}'/>
+                        </td>
+                        <td>
+                            <span t-esc='line["value"]' t-options='{"widget": "float", "decimal_precision": "2"}'/>
+                        </td>
+                    </tr>
+                    <tr> 
+                        <td colspan="10"></td>
+                        <td>
+                        	<strong><t t-esc='rec["balance"]' t-options='{"widget": "float", "decimal_precision": "2"}' /></strong>
+                        </td>
+                         <td>
+                            <t  t-esc='rec["value"]' t-options='{"widget": "float", "decimal_precision": "2"}'/>
+                        </td>
+                    </tr>
+                  
+	                  
+                  
+                </t>
+                </tbody>
+            </table>
+        </div>
+      		<div>
+      			<table class="table table-sm">
+                 <t t-if="to_collapse">
+                
+                  <tr>
+                    <td></td>
+        			<th style="display:inline-block;margin-left:70px;">Total</th>
+          	
+        				<td style="display:inline-block;margin-left:100px;"> <span t-esc="opening_qty_total" t-options='{"widget": "float", "decimal_precision": "2"}'></span> </td>
+        			    <td> <span t-esc="opening_qty_value" t-options='{"widget": "float", "decimal_precision": "2"}'></span> </td>
+        			    <td> <span t-esc="total_in_qty" t-options='{"widget": "float", "decimal_precision": "2"}'></span> </td>
+        			    <td> <span t-esc="total_in_qty_value" t-options='{"widget": "float", "decimal_precision": "2"}'></span> </td>
+        			    <td> <span t-esc="total_out_qty" t-options='{"widget": "float", "decimal_precision": "2"}'></span> </td>
+        			    <td> <span t-esc="total_out_qty_value" t-options='{"widget": "float", "decimal_precision": "2"}'></span> </td>
+        			    <td> <span t-esc="final_qty" t-options='{"widget": "float", "decimal_precision": "2"}'></span> </td>
+        			    <td> <span t-esc="final_qty_value" t-options='{"widget": "float", "decimal_precision": "2"}'></span> </td>
+        	
+        		</tr>
+        		</t>
+        	</table>
+         </div>
+        
+    </t>
+    </t>
+    </template>
+</openerp>

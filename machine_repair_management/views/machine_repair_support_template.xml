@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <template id="website_machine_repair_support_ticket" name="Machine Repair Request" customize_show="True">
+            <t t-call="website.layout">
+                <div class="container">
+                    <br/>
+<!--                    <div class="row"> odoo13-->
+                        <h3 style="color: #886be8;">Submit your Machine/Equipment repair request by filling below form.</h3>
+                        <br/>
+                        <form action="/machine_repair_management/request_submitted" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+<!--                            <div class="row o_website_portal_details"> odoo13-->
+<!--                                <div class="col-md-8"> odoo13-->
+                                    <h4>Personal Details</h4>
+                                    <div class="row">
+                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">
+                                            <label class="control-label" for="phone">Mobile No.</label>
+                                            <input type="text" class="form-control" name="phone" required="True" t-attf-value="#{user_id.partner_id.phone}"/>
+                                        </div>
+                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">
+                                            <label class="control-label" for="name">Customer Name</label>
+                                            <input type="text" class="form-control" name="customer_id" required="True" t-attf-value="#{user_id.partner_id.name}"/>
+                                        </div>
+                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">
+                                            <label class="control-label" for="email">Email (Optional)</label>
+                                            <input type="text" class="form-control" name="email" required="True" t-attf-value="#{user_id.partner_id.email}"/>
+                                        </div>
+
+                                        <div class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">
+                                             <label class="control-label" for="city_id">City</label>
+
+                                            <select id="city_id" required="True" name="city_id" class="form-control">
+                                                <option value="">Select City...</option>
+                                                <t t-foreach="city_ids or []" t-as="city">
+                                                    <option t-att-value="city.id">
+                                                        <t t-esc="city.name" />
+                                                    </option>
+                                                </t>
+                                            </select>
+
+                                        </div>
+                                        <div class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">
+                                             <label class="control-label" for="address">Address</label>
+                                            <input type="text" class="form-control" name="address"/>
+                                        </div>
+                                    </div>
+                            <h4>Product Details</h4>
+                                    <div class="row">
+                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">
+                                            <label class="control-label" for="name">Brand</label>
+                                            <input type="text" class="form-control" name="brand" required="True" t-attf-value="#{subject
+                                                or ''}"/>
+                                        </div>
+                                        <div t-attf-class="col-lg-6" id="service">
+                                            <label class="control-label" for="product_category">Product Type</label>
+<!--                                            <input type="text" class="form-control" name="product_category" required="True" t-attf-value="#{subject-->
+<!--                                                or ''}"/>-->
+                                            <select id="product_category" required="True" name="product_category" class="form-control">
+                                                <option value="">Select Product...</option>
+                                                <t t-foreach="product_category_ids or []" t-as="category">
+                                                    <option t-att-value="category.id">
+                                                        <t t-esc="category.name" />
+                                                    </option>
+                                                </t>
+                                            </select>
+                                        </div>
+                                        <div class="clearfix"/>
+                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">
+                                            <label class="control-label" for="product_id">Product</label>
+                                             <input type="text" class="form-control" name="product_id" required="True" t-attf-value="#{subject
+                                                or ''}"/>
+<!--                                            <select id="product_id" required="True" name="product_id" class="form-control">-->
+<!--                                                <option value="">Select Product...</option>-->
+<!--                                                <t t-foreach="product_ids or []" t-as="product">-->
+<!--                                                    <option t-att-value="product.id">-->
+<!--                                                        <t t-esc="product.name" />-->
+<!--                                                    </option>-->
+<!--                                                </t>-->
+<!--                                            </select>-->
+                                        </div>
+                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">
+                                            <label class="control-label" for="name">Serial Number</label>
+                                            <input type="text" class="form-control" name="product_slno"/>
+                                        </div>
+                                        <div class="clearfix"/>
+                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">
+                                            <label class="control-label" for="name">Purchase Invoice Number</label>
+                                            <input type="text" class="form-control" name="purchase_invoice_no"/>
+                                        </div>
+                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">
+                                            <label class="control-label" for="name">Purchase Date</label>
+<!--                                            <input type="text" class="form-control" name="purchase_date"/>-->
+                                            <input type="date"
+                                                   class="form-control"
+                                                   name="purchase_date"
+                                                   t-att-value="purchase_date or ''"
+                                                   data-oe-model="machine.repair.support"
+                                                   data-oe-field="purchase_date"
+                                                   t-attf-placeholder="YYYY-MM-DD (e.g., 2025-06-02)"
+                                                  />
+                                        </div>
+                                         <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">
+                                            <label class="control-label" for="name">Dealer Name</label>
+                                            <input type="text" class="form-control" name="purchase_dealer_name"/>
+                                        </div>
+<!--                                        <div t-attf-class="col-lg-6" id="service">-->
+<!--                                            <label class="control-label" for="service_id">Service</label>-->
+<!--                                            <input type="text" class="form-control" name="service_id" required="True" t-attf-value="#{subject-->
+<!--                                                or ''}"/>-->
+<!--&lt;!&ndash;                                            <select id="service_id" required="True" name="service_id" class="form-control">&ndash;&gt;-->
+<!--&lt;!&ndash;                                                <option value="">Select Services...</option>&ndash;&gt;-->
+<!--&lt;!&ndash;                                                <t t-foreach="service_ids or []" t-as="service">&ndash;&gt;-->
+<!--&lt;!&ndash;                                                    <option t-att-value="service.id">&ndash;&gt;-->
+<!--&lt;!&ndash;                                                        <t t-esc="service.name" />&ndash;&gt;-->
+<!--&lt;!&ndash;                                                    </option>&ndash;&gt;-->
+<!--&lt;!&ndash;                                                </t>&ndash;&gt;-->
+<!--&lt;!&ndash;                                            </select>&ndash;&gt;-->
+<!--                                        </div>-->
+                                        <div class="clearfix"/>
+                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">
+                                            <label class="control-label" for="name">Complaints</label>
+                                            <textarea class="form-control" style="align-content:left;" cols="60" name="problem" required="True" rows="5"></textarea>
+                                        </div>
+                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">
+                                            <label class="control-label" for="name">General Comments</label>
+                                            <textarea class="form-control" cols="60" name="comment" rows="5"></textarea>
+                                        </div>
+                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">
+                                            <label class="control-label" for="name">Expected Scheduled Date</label>
+                                            <input type="date"
+                                                   class="form-control"
+                                                   name="call_request_appointment_date"
+                                                   t-att-value="call_request_appointment_date or ''"
+                                                   data-oe-model="machine.repair.support"
+                                                   data-oe-field="call_request_appointment_date"
+                                                   t-attf-placeholder="YYYY-MM-DD (e.g., 2025-06-02)"
+                                                   />
+                                        </div>
+                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">
+                                            <label class="control-label" for="name">Expected Scheduled Time</label>
+                                            <input type="text" class="form-control" name="expected_time" placeholder="HH:MM"/>
+                                        </div>
+                                    </div>
+<!--                                    <h4>Machine/Equipment Repair Details</h4>-->
+<!--                                    <div class="row">-->
+<!--                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">-->
+<!--                                            <label class="control-label" for="name">Reason for Repair</label>-->
+<!--                                            <input type="text" class="form-control" name="subject" required="True" t-attf-value="#{subject-->
+<!--                                                or ''}"/>-->
+<!--                                        </div>-->
+<!--                                        <div t-attf-class="col-lg-6" id="service">-->
+<!--                                            <label class="control-label" for="service_id">Service</label>-->
+<!--                                            <select id="service_id" required="True" name="service_id" class="form-control">-->
+<!--                                                <option value="">Select Services...</option>-->
+<!--                                                <t t-foreach="service_ids or []" t-as="service">-->
+<!--                                                    <option t-att-value="service.id">-->
+<!--                                                        <t t-esc="service.name" />-->
+<!--                                                    </option>-->
+<!--                                                </t>-->
+<!--                                            </select>-->
+<!--                                        </div>-->
+<!--                                        <div class="clearfix"/>-->
+<!--                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">-->
+<!--                                            <label class="control-label" for="name">Machine Brand</label>-->
+<!--                                            <input type="text" class="form-control" name="brand"/>-->
+<!--                                        </div>-->
+<!--                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">-->
+<!--                                            <label class="control-label" for="name">Machine Model</label>-->
+<!--                                            <input type="text" class="form-control" name="model"/>-->
+<!--                                        </div>-->
+<!--                                        <div class="clearfix"/>-->
+<!--                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">-->
+<!--                                            <label class="control-label" for="name">Machine Manufacturing Year</label>-->
+<!--                                            <input type="text" class="form-control" name="year"/>-->
+<!--                                        </div>-->
+<!--                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">-->
+<!--                                            <label class="control-label" for="name">Priority</label>-->
+<!--                                            <select class="form-control" name="priority">-->
+<!--                                                <option value="0" selected="selected">Low</option>-->
+<!--                                                <option value="1">Middle</option>-->
+<!--                                                <option value="2">High</option>-->
+<!--                                            </select>-->
+<!--                                        </div>-->
+<!--                                        <div class="clearfix"/>-->
+<!--                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">-->
+<!--                                            <label class="control-label" for="name">Reason for Repair in Details</label>-->
+<!--                                            <textarea class="form-control" style="align-content:left;" cols="60" name="description" required="True" rows="5"></textarea>-->
+<!--                                        </div>-->
+<!--                                        <div t-attf-class="form-group #{error and 'name' in error and 'has-error' or ''} col-lg-6">-->
+<!--                                            <label class="control-label" for="name">List of Damage</label>-->
+<!--                                            <textarea class="form-control" cols="60" name="damage" rows="5"></textarea>-->
+<!--                                        </div>-->
+<!--                                        <div class="clearfix"/>-->
+<!--                                        <div t-attf-class="col-lg-6 o_website_form_custom_attchments">-->
+<!--                                            <label class="control-label" for="Attachments" >Attach Files</label>-->
+<!--                                            <input type="file" class="form-control o_website_form_input" name="attachment" multiple='multiple'/>-->
+<!--                                            <div>-->
+<!--                                                <label style="color:grey; font-size:12px;" >Multiple files can be attach</label>-->
+<!--                                            </div>-->
+<!--                                        </div>-->
+<!--                                        <div class="form-group  col-lg-6">-->
+<!--                                        </div>-->
+<!--                                        <div class="clearfix"/>-->
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-default btn-primary pull-right mb32 ">
+                                                Submit
+                                                <span class="fa fa-long-arrow-right" />
+                                            </button>
+                                        </div>
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+                        </form>
+<!--                    </div>-->
+                </div>
+            </t>
+        </template>
+
+        <template id="thanks_mail_send" name="Thanks">
+            <t t-call="website.layout">
+                <div id="wrap">
+                    <!-- <div class="oe_structure"/>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="alert alert-success">
+                                    <button type="button" class="close" data-dismiss="alert">&amp;times;</button>
+                                    <h5>Dear <span t-esc="user.name"/><br/><br/>
+                                        Your request number is
+                                        <t t-esc="support.name"/>
+                                        please note it for further communication and you will also receive email from our
+                                        repair team shortly, Please reply to that
+                                        email for feature conversation.
+                                        <br/><br/>
+                                        Thanks <br/><span t-esc="user.company_id.name"/>
+                                    </h5>
+                                </div>
+                                <a class="btn btn-primary pull-left mb32" href="/page/machine_repair_support_ticket" ><span class="hidden-xs">Go Back</span><span class="fa fa-long-arrow-left"/></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="oe_structure"/> -->
+                    <div class="container mt-4">
+                        <div class="row">
+                            <div class="col-lg-7 col-xl-6 mr-lg-auto oe_structure">
+                                <section class="pt40 s_text_block pb40 o_colored_level o_cc o_cc1" data-snippet="s_text_block" data-name="Text">
+                                    <div class="container">
+                                        <span class="d-block fa fa-4x fa-thumbs-up mx-auto rounded-circle bg-primary"/><br/>
+                                        <h1 class="text-center">Thank You!</h1>
+                                        <div class="pb16 pt16 s_hr" data-snippet="s_hr" data-name="Separator">
+                                            <hr class="mx-auto border-top w-50 border-dark text-center"/>
+                                        </div>
+                                            <t t-if="user.name !='Public user'">
+                                                <h5>Dear <span t-esc="user.name"/>,</h5>
+                                            </t>
+                                            <t t-else="">
+                                                <h5>Dear <span t-esc="support.website_customer"/>,</h5>
+                                            </t>
+                                            <br/>
+                                            <h5>
+                                            Your request number is
+                                            <t t-esc="support.name"/>.
+                                            Please note it for further communication and you will also receive email from our
+                                            repair team shortly, Please reply to that
+                                            email for feature conversation.
+                                            <br/><br/>
+                                            Thank you, <br/><span t-esc="user.company_id.name"/>
+                                            </h5>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                        </div>
+                </div>
+            </t>
+        </template>
+        
+        <template id="support_invalid" name="Support Invalid">
+            <t t-call="website.layout">
+                <div id="wrap">
+                    <div class="oe_structure"/>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="alert alert-danger">
+                                    <button type="button" class="close" data-dismiss="alert">&amp;times;</button>
+                                    <h2>
+                                        Dear <span t-esc="user.name"/>,<br/>
+                                        Partner not exists for entered email. Please enter valid email or contact administrator to create new partner with this email!
+                                        <br/><br/>
+                                        Thanks <span t-esc="user.company_id.name"/>
+                                    </h2>
+                                </div>
+                                <a class="btn btn-primary pull-left mb32" onclick="history.go(-1);" ><span class="hidden-xs">Go Back</span><span class="fa fa-long-arrow-left"/></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="oe_structure"/>
+                </div>
+            </t>
+        </template>
+        <record id="support_page_add" model="website.menu">
+            <field name="name">Machine Repair Request</field>
+            <field name="url">/page/machine_repair_support_ticket</field>
+<!--            <field name="parent_id" ref="support_page" />-->
+            <field name="parent_id" ref="website.main_menu"/>
+            <field name="sequence" type="int">11</field>
+        </record>
+        <record id="support_page_my_request" model="website.menu">
+            <field name="name">My Repair Request</field>
+<!--            <field name="url">/my/tickets</field>-->
+            <field name="url">/my/repair_requests</field>
+<!--            <field name="parent_id" ref="support_page" />-->
+            <field name="parent_id" ref="website.main_menu"/>
+            <field name="sequence" type="int">13</field>
+        </record>
+    </data>
+</odoo>

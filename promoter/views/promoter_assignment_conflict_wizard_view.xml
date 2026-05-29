@@ -1,0 +1,18 @@
+<odoo>
+    <record id="view_promoter_assignment_conflict_wizard" model="ir.ui.view">
+        <field name="name">promoter.assignment.conflict.wizard.form</field>
+        <field name="model">promoter.assignment.conflict.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Promoter Conflict Detected">
+                <group>
+                    <field name="conflict_text" nolabel="1" readonly="1" />
+                    <field name="conflicting_assignment_id" readonly="1" />
+                </group>
+                <footer>
+                    <button name="action_confirm" string="Proceed and Deactivate Old" type="object" class="btn-primary"/>
+                    <button name="action_cancel" string="Cancel" type="object" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+      <data noupdate="0">
+
+    <record id="ir_seq_hr_allowance" model="ir.sequence">
+			<field name="name">Payroll Transactions</field>
+			<field name="code">salary.allowance.seq</field>
+			<field name="prefix">SA</field>
+			<field name="padding">4</field>
+<!--			<field name="number_increment">1</field>-->
+<!--			<field name="number_next_actual">1</field>-->
+<!--			<field name="implementation">standard</field>-->
+            <field name="company_id" eval="False"/>
+		</record>
+
+        <record id="ir_seq_hr_detection" model="ir.sequence">
+			<field name="name">Payroll Transactions</field>
+			<field name="code">salary.detection.seq</field>
+			<field name="prefix">SD</field>
+			<field name="padding">4</field>
+<!--			<field name="number_increment">1</field>-->
+<!--			<field name="number_next_actual">1</field>-->
+<!--			<field name="implementation">standard</field>-->
+            <field name="company_id" eval="False"/>
+		</record>
+      </data>
+</odoo>

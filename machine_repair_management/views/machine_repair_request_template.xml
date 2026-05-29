@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--Website menu for repair-->
+    <record id="menu_repair" model="website.menu">
+        <field name="name">Repair</field>
+        <field name="url">/repair</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence" type="int">39</field>
+    </record>
+
+    <!--Template for website repair-->
+    <template id="repair_request_form">
+        <t t-call="website.layout">
+            <form id="repair_form" method="post" data-success-mode="redirect" action="/create/repair_request"
+                  role="form">
+                <div>
+                    <br/>
+                    <div class="col-12 text-center">
+                        <h4 class="font-weight-bold text-center">
+                            Submit Your Requests
+                        </h4>
+                    </div>
+                    <t t-if="env.user._is_internal()">
+                        <div>
+                            <div class="form-group col-12">
+                                <h5 class="text-left">
+                                    Personal Details
+                                </h5>
+                            </div>
+                            <br/>
+                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                                <label class="col-form-label col-sm-auto s_website_form_label"
+                                       style="width: 200px">
+                                    <span class="s_website_form_label_content">
+                                        Customer Name
+                                    </span>
+                                    <span class="s_website_form_mark">
+                                        *
+                                    </span>
+                                </label>
+                                <div class="col-sm">
+                                    <input type="text"
+                                           class="form-control"
+                                           name="partner_id"
+                                           data-value="env.user.id"
+                                    />
+                                </div>
+                            </div>
+                            <br/>
+                            <div>
+                                <div class="row s_col_no_resize s_col_no_bgcolor">
+                                    <label class="col-form-label col-sm-auto
+                                                                            s_website_form_label"
+                                           style="width: 200px">
+                                        <span class="s_website_form_label_content">
+                                            Email
+                                        </span>
+                                        <span class="s_website_form_mark">
+                                            *
+                                        </span>
+                                    </label>
+                                    <div class="col-sm">
+                                        <input type="email"
+                                               class="form-control"
+                                               name="partner_email"
+                                               data-value="env.user.email"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <br/>
+                            <div>
+                                <div class="row s_col_no_resize s_col_no_bgcolor">
+                                    <label class="col-form-label col-sm-auto s_website_form_label"
+                                           style="width: 200px">
+                                        <span class="s_website_form_label_content">
+                                            Phone Number
+                                        </span>
+                                    </label>
+                                    <div class="col-sm">
+                                        <input type="tel"
+                                               class="form-control s_website_form_input"
+                                               data-value="env.user.phone"
+                                               name="partner_phone"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--                            <br/>-->
+                            <!--                             <div>-->
+                            <!--                                <div class="row s_col_no_resize s_col_no_bgcolor">-->
+                            <!--                                    <label class="col-form-label col-sm-auto s_website_form_label"-->
+                            <!--                                           style="width: 200px">-->
+                            <!--                                        <span class="s_website_form_label_content">-->
+                            <!--                                            City-->
+                            <!--                                        </span>-->
+                            <!--                                    </label>-->
+                            <!--                                    <div class="col-sm">-->
+                            <!--                                        <input type="text"-->
+                            <!--                                               class="form-control s_website_form_input"-->
+                            <!--                                               name="job_card_partner_city"/>-->
+                            <!--                                    </div>-->
+                            <!--                                </div>-->
+                            <!--                             </div>-->
+                            <br/>
+                            <div>
+                                <div class="row s_col_no_resize s_col_no_bgcolor">
+                                    <label class="col-form-label col-sm-auto s_website_form_label"
+                                           style="width: 200px">
+                                        <span class="s_website_form_label_content">
+                                            Address
+                                        </span>
+                                    </label>
+                                    <div class="col-sm">
+                                        <input type="tel"
+                                               class="form-control s_website_form_input"
+                                               name="address"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <br/>
+                        </div>
+                    </t>
+                    <t t-if="not env.user._is_internal()">
+                        <div class="form-group col-12">
+                            <h5 class="text-left">
+                                Personal Details
+                            </h5>
+                        </div>
+                        <br/>
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-form-label col-sm-auto s_website_form_label"
+                                   style="width: 200px">
+                                <span class="s_website_form_label_content">
+                                    Customer Name
+                                </span>
+                                <span class="s_website_form_mark">
+                                    *
+                                </span>
+                            </label>
+                            <div class="col-sm">
+                                <input type="text"
+                                       class="form-control"
+                                       name="partner_id"
+                                       required=""/>
+                            </div>
+                        </div>
+                        <br/>
+                        <div>
+                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                                <label class="col-form-label col-sm-auto s_website_form_label"
+                                       style="width: 200px">
+                                    <span class="s_website_form_label_content">
+                                        Email
+                                    </span>
+                                    <span class="s_website_form_mark">
+                                        *
+                                    </span>
+                                </label>
+                                <div class="col-sm">
+                                    <input type="email"
+                                           class="form-control"
+                                           name="email"
+                                           required=""/>
+                                </div>
+                            </div>
+                        </div>
+                        <br/>
+                        <div>
+                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                                <label class="col-form-label col-sm-auto s_website_form_label"
+                                       style="width: 200px">
+                                    <span class="s_website_form_label_content">
+                                        Phone Number
+                                    </span>
+                                </label>
+                                <div class="col-sm">
+                                    <input type="tel"
+                                           class="form-control s_website_form_input"
+                                           name="phone"/>
+                                </div>
+                            </div>
+                        </div>
+                        <!--                        <br/>-->
+                        <!--                        <div>-->
+                        <!--                            <div class="row s_col_no_resize s_col_no_bgcolor">-->
+                        <!--                                <label class="col-form-label col-sm-auto s_website_form_label"-->
+                        <!--                                       style="width: 200px">-->
+                        <!--                                    <span class="s_website_form_label_content">-->
+                        <!--                                        City-->
+                        <!--                                    </span>-->
+                        <!--                                </label>-->
+                        <!--                                <div class="col-sm">-->
+                        <!--                                    <input type="tel"-->
+                        <!--                                           class="form-control s_website_form_input"-->
+                        <!--                                           name="job_card_partner_city"/>-->
+                        <!--                                </div>-->
+                        <!--                            </div>-->
+                        <!--                        </div>-->
+                        <br/>
+                        <div>
+                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                                <label class="col-form-label col-sm-auto s_website_form_label"
+                                       style="width: 200px">
+                                    <span class="s_website_form_label_content">
+                                        Address
+                                    </span>
+                                </label>
+                                <div class="col-sm">
+                                    <input type="tel"
+                                           class="form-control s_website_form_input"
+                                           name="address"/>
+                                </div>
+                            </div>
+                        </div>
+                        <br/>
+                    </t>
+                    <div class="col-12">
+                        <h5 class="text-left">
+                            Machine/Equipment Repair Details
+                        </h5>
+                    </div>
+                    <br/>
+                    <div>
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-form-label col-sm-auto s_website_form_label"
+                                   style="width: 200px">
+                                <span class="s_website_form_label_content">
+                                    Brand
+                                </span>
+                                <span class="s_website_form_mark">
+                                    *
+                                </span>
+                            </label>
+                            <div class="col-sm">
+                                <input id="reason" type="tel"
+                                       class="form-control s_website_form_input"
+                                       name="brand"
+                                       required=""/>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <div>
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-form-label col-sm-auto s_website_form_label"
+                                   style="width: 200px">
+                                <span class="s_website_form_label_content">
+                                    Product Type
+                                </span>
+                                <span class="s_website_form_mark">
+                                    *
+                                </span>
+                            </label>
+                            <div class="col-sm">
+                                <select name="product_category"
+                                        id="product_category"
+                                        class="form-control link-style">
+                                    <option value="">Product Type
+                                    </option>
+                                    ss
+                                    <t t-foreach="product_category"
+                                       t-as="pty">
+                                        <option t-att-value="pty.id">
+                                            <t t-esc="pty.name"
+                                               t-att-value="pty.id"
+                                               required=""/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <div>
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-form-label col-sm-auto s_website_form_label"
+                                   style="width: 200px">
+                                <span class="s_website_form_label_content">
+                                    Product
+                                </span>
+                                <span class="s_website_form_mark">
+                                    *
+                                </span>
+                            </label>
+                            <div class="col-sm">
+                                <select name="product_id"
+                                        id="product_id"
+                                        class="form-control link-style">
+                                    <option value="">Product
+                                    </option>
+                                    ss
+                                    <t t-foreach="product_id"
+                                       t-as="prod">
+                                        <option t-att-value="prod.id">
+                                            <t t-esc="prod.name"
+                                               t-att-value="prod.id"
+                                               required=""/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <div>
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-form-label col-sm-auto s_website_form_label"
+                                   style="width: 200px">
+                                <span class="s_website_form_label_content">
+                                    Serial Number
+                                </span>
+                                <span class="s_website_form_mark">
+                                    *
+                                </span>
+                            </label>
+                            <div class="col-sm">
+                                <input id="reason" type="tel"
+                                       class="form-control s_website_form_input"
+                                       name="product_slno"
+                                       required=""/>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <div>
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-form-label col-sm-auto s_website_form_label"
+                                   style="width: 200px">
+                                <span class="s_website_form_label_content">
+                                    Purchase Invoice Number
+                                </span>
+                                <span class="s_website_form_mark">
+                                    *
+                                </span>
+                            </label>
+                            <div class="col-sm">
+                                <input id="reason" type="tel"
+                                       class="form-control s_website_form_input"
+                                       name="purchase_invoice_no"
+                                       required=""/>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <div>
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-form-label col-sm-auto s_website_form_label"
+                                   style="width: 200px">
+                                <span class="s_website_form_label_content">
+                                    Purchase Date
+                                </span>
+                                <span class="s_website_form_mark">
+                                    *
+                                </span>
+                            </label>
+                            <div class="col-sm">
+                                <input id="purchase_date"
+                                       type="date"
+                                       name="purchase_date"
+                                       class="form-control o_website_form_input o_website_form_date"
+                                       required=""/>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <div>
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-form-label col-sm-auto s_website_form_label"
+                                   style="width: 200px">
+                                <span class="s_website_form_label_content">
+                                    Dealer Name
+                                </span>
+                                <span class="s_website_form_mark">
+                                    *
+                                </span>
+                            </label>
+                            <div class="col-sm">
+                                <input id="reason" type="tel"
+                                       class="form-control s_website_form_input"
+                                       name="purchase_dealer_name"
+                                       required=""/>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <div>
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-form-label col-sm-auto s_website_form_label"
+                                   style="width: 200px">
+                                <span class="s_website_form_label_content">
+                                    Complaints
+                                </span>
+                            </label>
+                            <div class="col-sm">
+                                <textarea id="model"
+                                          class="form-control s_website_form_input"
+                                          name="problem"
+                                          required=""/>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <div>
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-form-label col-sm-auto s_website_form_label"
+                                   style="width: 200px">
+                                <span class="s_website_form_label_content">
+                                    General Comments
+                                </span>
+                            </label>
+                            <div class="col-sm">
+                                <textarea id="model"
+                                          class="form-control s_website_form_input"
+                                          name="description"
+                                          required=""/>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <div>
+                        <div class="row s_col_no_resize s_col_no_bgcolor">
+                            <label class="col-form-label  col-sm-auto s_website_form_label"
+                                   style="width: 200px">
+                                <span class="s_website_form_label_content">
+                                    Priority
+                                </span>
+                                <span class="s_website_form_mark">
+                                    *
+                                </span>
+                            </label>
+                            <div class="col-sm">
+                                <select name="priority"
+                                        class="form-control link-style"
+                                        required="">
+                                    <option t-attf-value="0">Low
+                                    </option>
+                                    <option t-attf-value="2">
+                                        Middle
+                                    </option>
+                                    <option t-attf-value="1">
+                                        High
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <br/>
+                    <!--                    <div>-->
+                    <!--                        <div class="row s_col_no_resize s_col_no_bgcolor">-->
+                    <!--                            <label class="col-form-label col-sm-auto s_website_form_label"-->
+                    <!--                                   style="width: 200px">-->
+                    <!--                                <span class="s_website_form_label_content">-->
+                    <!--                                    Scheduled Date/time-->
+                    <!--                                </span>-->
+                    <!--                                <span class="s_website_form_mark">-->
+                    <!--                                    *-->
+                    <!--                                </span>-->
+                    <!--                            </label>-->
+                    <!--                            <div class="col-sm">-->
+                    <!--                                <input id="call_request_appointment_date"-->
+                    <!--                                       type="datetime-local"-->
+                    <!--                                       name="call_request_appointment_date"-->
+                    <!--                                       class="form-control o_website_form_input"-->
+                    <!--                                       required=""/>-->
+                    <!--                            </div>-->
+                    <!--                        </div>-->
+                    <!--                    </div>-->
+                </div>
+                <br/>
+                <div class="form-group col-6 s_website_form_submit"
+                     data-name="Submit Button">
+                    <div style="width: 200px;"
+                         class="s_website_form_label"/>
+                    <a t-attf-href="/contactus-thank-you">
+                        <button type="submit"
+                                style="margin-left:700px;width:30%;"
+                                class="btn btn-primary pull-center">
+                            Submit
+                        </button>
+                    </a>
+                </div>
+            </form>
+        </t>
+    </template>
+</odoo>

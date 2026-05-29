@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+     <record id="inventory_count_backdate_wizard_view_form" model="ir.ui.view">
+          <field name="name">inventory.count.backdate.wizard.view</field>
+          <field name="model">inventory.count.backdate.wizard</field>
+           <field name="arch" type="xml">
+                <form string="">
+                    <sheet>
+                        <group>
+                          <group>
+                              <field name = "inventory_count_stock_ids" widget = "many2many_tags" invisible="1" />
+                               <field name = "backdate"/>
+                          </group>
+                      </group>
+                    </sheet>
+                     <footer>
+                    <button  string="Confirm"  name="assign_backdate_inventory_counts" type="object" class="oe_highlight"  />
+                    <button string="Cancel" class="btn btn-secondary" special="cancel" icon="fa-remove" />
+                </footer>
+                </form>
+           </field>
+     </record>
+</odoo>

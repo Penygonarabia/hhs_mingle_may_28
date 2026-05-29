@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_users_form_inherit_discount_limit" model="ir.ui.view">
+        <field name="name">res.users.form.discount.limit</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Add inside Preferences tab -->
+            <xpath expr="//page[@name='preferences']/group[@name='messaging']" position="before">
+                <group>
+                    <label for="spare_parts_discount_limit" />
+                    <div class="o_row" style="width: 100px !important;">
+                        <field name="spare_parts_discount_limit"/>
+                        <span>%</span>
+                    </div>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

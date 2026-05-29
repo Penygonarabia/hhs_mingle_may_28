@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="view_call_types_tree" model="ir.ui.view">
+        <field name="name">call.types.tree.view</field>
+        <field name="model">call.types</field>
+        <field name="arch" type="xml">
+            <tree string="Call Types">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="company_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_call_types_form" model="ir.ui.view">
+        <field name="name">call.types.form.view</field>
+        <field name="model">call.types</field>
+        <field name="arch" type="xml">
+            <form string="Call Types">
+                <sheet>
+                    <group>
+
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_call_types_form" model="ir.actions.act_window">
+        <field name="name">Call Types</field>
+        <field name="res_model">call.types</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_call_types" name="Call Types" action="action_call_types_form"
+              parent="machine_repair_management.menu_machine_repair_configuration" sequence="3"
+    />
+
+    <record id="views_call_types_inherit_machine" model="ir.ui.view">
+        <field name="name">machine.repair.support.inherit.form</field>
+        <field name="model">machine.repair.support</field>
+        <field name="inherit_id" ref="machine_repair_management.machine_repair_support_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='department_id']" position="after">
+                <!-- 				<field name = "call_types_id" options="{'no_create_edit':True,'no_create':True}" />
+                 -->
+                <field name="location_id"/>
+            </xpath>
+            <!-- <xpath expr="//field[@name='department_id']" position="replace">
+                <group colspan ="2">
+
+                        <field name="department_id"/>
+
+                        <field name="location_id"/>
+
+                </group>
+            </xpath> -->
+            <!--			<xpath expr="//field[@name='location_id']" position="before">-->
+            <!--				<field name = "call_types_id" options="{'no_create_edit':True,'no_create':True}"/>-->
+            <!--				<field name = "warehouse_id" required="1" domain="[('id', 'in', available_warehouse_ids)]" options="{'no_create_edit':True,'no_create':True}"/>-->
+            <!--				<field name = "warehouse_id" options="{'no_create_edit':True,'no_create':True}"/>-->
+            <!--				<field name = "available_warehouse_ids" widget="many2many_tags" readonly="1" invisible="1" options="{'no_create_edit':True,'no_create':True}"/>-->
+            <!--				<field name = "available_category_ids" widget="many2many_tags" readonly="1" invisible="1" options="{'no_create_edit':True,'no_create':True}"/>-->
+            <!--			</xpath>-->
+
+            <!--			<xpath expr="//field[@name='priority']" position="after">-->
+            <!--				<field name="maintenance_type"  widget="radio"/>-->
+            <!--			-->
+            <!--			</xpath>-->
+            <!-- <xpath expr="//field[@name='zip_code']" position="after">
+                <field name="work_location_id" required="1"  readonly="1" force_save="1"
+                         options = "{'no_create_edit':True,'no_create':True}" string="Work Center"/>
+                <field name="work_location_id" required="1" domain="[('location_id', '=', location_id)]" options = "{'no_create_edit':True,'no_create':True}"/>
+            </xpath> -->
+
+            <xpath expr="//field[@name='problem']" position="after">
+                <field name="call_center_comments" placeholder=" " class="underline-empty"/>
+                <field name="call_request_appointment_date" class="underline-empty"/>
+            </xpath>
+
+            <!-- <xpath expr="//field[@name='team_leader_id']" position = "after">
+
+            </xpath> -->
+
+            <xpath expr="//field[@name='repair_types_ids']" position="after">
+                <field name="problem" position="move" class="underline-empty"/>
+            </xpath>
+
+            <xpath expr="//field[@name='phone']" position="after">
+                <field name="phone_number_bool" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data>
+
+        <!--Form-->
+        <record id="employee_loan_type_form" model="ir.ui.view">
+            <field name="name">employee_loan_type_form_form</field>
+            <field name="model">hr.employee.loan.type.ps</field>
+            <field name="arch" type="xml">
+                <form string="Loan Type">
+                    <sheet>
+                        <group col="4" colspan="2">
+                            <field name="name"/>
+                            <field name="is_annual"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- HR Loan Type-->
+
+        <record id="open_hr_employee_loan_type_ps" model="ir.actions.act_window">
+            <field name="name">Loan Type</field>
+            <field name="res_model">hr.employee.loan.type.ps</field>
+
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+            <field name="view_id" eval="False"/>
+        </record>
+
+
+
+
+    </data>
+</odoo>

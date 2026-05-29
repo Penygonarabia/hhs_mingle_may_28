@@ -1,0 +1,31 @@
+<odoo>
+
+    <record id="subscription_contracts_line_view_tree_inherit_amc" model="ir.ui.view">
+        <field name="name">subscription.contracts.line.view.tree.inherit.amc</field>
+        <field name="model">subscription.contracts.line</field>
+        <field name="inherit_id" ref="hhs_amc_quotation.subscription_contracts_line_view_tree"/>
+        <field name="arch" type="xml">
+
+            <!-- Add fields after product -->
+            <xpath expr="//field[@name='product_id']" position="after">
+
+                <field name="main_category_id"/>
+                <field name="brand_category_id"/>
+                <field name="contract_type_id"/>
+                <field name="amc_pricing_id"/>
+
+                <field name="unit_cost_price"/>
+                <field name="unit_selling_price"/>
+
+                <field name="spare_parts_cost"/>
+
+                <field name="total_selling_price"/>
+
+                <field name="per_unit_selling_price"/>
+
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,15 @@
+.easy_timepicker {
+    display: none; /* Initially hidden */
+    position: fixed; /* Position relative to the parent container */
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 2px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    width:200px;
+    z-index: 1000; /* Ensure it is above other elements */
+}
+
+.hours_picker, .minutes_picker{
+    font-weight:600
+}

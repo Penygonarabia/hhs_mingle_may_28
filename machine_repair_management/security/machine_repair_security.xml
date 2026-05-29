@@ -1,0 +1,120 @@
+<odoo>
+    <data noupdate="0">
+
+			
+		 <record id="category_machine_repair" model="ir.module.category">
+            <field name="name">Machine Repair Services</field>
+            <field name="sequence">998</field>  
+        </record>
+			
+        <record id="group_machine_repair_user" model="res.groups">
+            <field name="name">Services Repair Module User</field>
+			<field name="category_id" ref="machine_repair_management.category_machine_repair"/>            <!-- <field name="name">Repair User/Technician</field> -->
+            <field name="implied_ids" eval="[(4, ref('project.group_project_user')), (4, ref('account.group_account_invoice'))]"/>
+            <!--                <field name="model_id" ref ="model_machine_repair_support"/> odoo13-->
+            <field name="comment">The Service user will have access to his own data in the repair application.</field>
+        </record>
+
+        <record id="group_machine_repair_manager" model="res.groups">
+            <field name="name">Service Repair Module Manager</field>
+            <field name="category_id" ref="machine_repair_management.category_machine_repair"/>
+           <!--  <field name="name">Repair Manager</field> -->
+            <field name="implied_ids" eval="[(4, ref('group_machine_repair_user'))]"/>
+        </record>
+         <record id="group_technical_allocation_user" model="res.groups">
+             <field name="name">Supervisor</field>
+             <field name="category_id" ref="machine_repair_management.category_machine_repair"/>
+             <field name="implied_ids" eval="[(4, ref('project.group_project_user'))]"/>
+            <field name="comment">The Superuser will have access to edit the technical allocation data.</field>
+         </record>
+        <record id="group_parts_user" model="res.groups">
+            <field name="name">Parts User</field>
+            <field name="implied_ids" eval="[(4, ref('project.group_project_user'))]"/>
+          	 <field name="category_id" ref="machine_repair_management.category_machine_repair"/>
+            
+            <field name="comment">Parts User will have access to edit the technical allocation data.</field>
+        </record>
+		
+		<record id = "group_call_center_user" model = "res.groups">
+			<field name = "name">Call Center User</field>
+			<field name = "implied_ids" eval="[(4,ref('project.group_project_user'))]"/>
+			 <field name="category_id" ref="machine_repair_management.category_machine_repair"/>
+			
+			<field name = "comment">Call Center User will have access to edit the technical allocation Data. </field>
+		</record>
+		
+
+      <!--    <record id="group_machine_repair_manager" model="res.groups">
+            <field name="name">Repair Manager</field>
+            <field name="implied_ids" eval="[(4, ref('group_machine_repair_user'))]"/>
+        </record> -->
+
+        <record id="machine_repair_manager_rule" model="ir.rule">
+            <field name="name">All Repair Request</field>
+            <field ref="model_machine_repair_support" name="model_id"/>
+            
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4, ref('group_machine_repair_manager'))]"/>
+        </record>
+
+        <record id="machine_repair_user_rule" model="ir.rule">
+            <field name="name">Personal Repair Request</field>
+            <field ref="model_machine_repair_support" name="model_id"/>
+            <field name="domain_force">[('user_id','=',user.id)]</field>
+            <field name="groups" eval="[(4, ref('group_machine_repair_user'))]"/>
+        </record>
+
+        <record id="machine_repair_portal_rule" model="ir.rule">
+            <field name="name">Portal Repair Request</field>
+            <field ref="model_machine_repair_support" name="model_id"/>
+            <!-- <field name="domain_force">[('partner_id','=',user.partner_id.id)]</field> -->            <!-- odoo12 -->
+            <field name="domain_force">['|',('partner_id','child_of',user.partner_id.id),('partner_id','child_of',user.partner_id.parent_id.id)]</field>            <!-- odoo13 -->
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+        </record>
+
+        <record model="ir.rule" id="machine_repair_support_multi_comp_rule">
+            <field name="name">Machine Repair Support multi-company</field>
+            <field name="model_id" ref="model_machine_repair_support"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+
+
+
+        <record id="group_machine_repair_manager_work_center" model="res.groups">
+            <field name="name">Default Work Center</field>
+             <field name="category_id" ref="machine_repair_management.category_machine_repair"/>
+            
+            <field name="implied_ids" eval="[(4, ref('group_machine_repair_user'))]"/>
+        </record>
+
+        <record id="group_job_card_mobile_user" model="res.groups">
+            <field name="name">Job Card Mobile User</field>
+             <field name="category_id" ref="machine_repair_management.category_machine_repair"/>
+            
+            <field name="implied_ids" eval="[(4, ref('group_machine_repair_user'))]"/>
+        </record>
+        <record id="group_job_card_back_office_user" model="res.groups">
+            <field name="name">Job Card Back Office User</field>
+             <field name="category_id" ref="machine_repair_management.category_machine_repair"/>
+            
+            <field name="implied_ids" eval="[(4, ref('group_machine_repair_user'))]"/>
+        </record>
+        
+         <record id="group_job_card_warranty_expired" model="res.groups">
+            <field name="name">Allow to Authorize to Expired Purchase Unit in Job Card</field>
+            <field name="category_id" ref="machine_repair_management.category_machine_repair"/>
+            <field name="implied_ids" eval="[(4, ref('project.group_project_user'))]"/>
+            <field name="comment">Allow to Authorize to Expired Purchase Unit in Job Card.</field>
+        </record>
+        
+       <!--  <record id ="group_service_request_admin_user" model = "res.groups">
+        	<field name ="name">Admin User</field>
+        	<field name = "category_id" ref = "machine_repair_management.category_machine_repair" />
+        	<field name  ="implied_ids" eval = "[(4,ref('group_machine_repair_user'))]" />
+        </record> -->
+        
+        
+    </data>
+</odoo>

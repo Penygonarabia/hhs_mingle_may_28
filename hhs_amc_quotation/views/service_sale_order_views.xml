@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_service_sale_order_form_inherit_amc" model="ir.ui.view">
+        <field name="name">service.sale.order.form.amc</field>
+        <field name="model">service.sale.order</field>
+        <field name="inherit_id" ref="machine_repair_management.service_sale_order_form" />
+        <field name="arch" type="xml">
+
+            <!-- Add fields into the notebook page for service_sale_order_line_ids list view -->
+            <xpath expr="//field[@name='service_sale_order_line_ids']/tree/field[@name='product_id'][1]" position="before">
+                <!-- Placing categories before product to make Product the 3rd column -->
+                <field name="main_category_id" optional="show" column_invisible="1"/>
+                <field name="brand_category_id" force_save="1" optional="show" column_invisible="not parent.amc_quotation"/>
+            </xpath>
+
+            <xpath expr="//field[@name='service_sale_order_line_ids']/tree/field[@name='product_id'][2]" position="after">
+                <field name="brand_id" column_invisible="1"/>
+                <field name="contract_type_id" optional="show" column_invisible="not parent.amc_quotation" options="{'no_create': True}"/>
+                <field name="amc_pricing_id" optional="show" column_invisible="not parent.amc_quotation"/>
+                <button name="action_open_amc_template" type="object" icon="fa-external-link" 
+                        invisible="not amc_pricing_id" title="Open AMC Template" 
+                         
+                        />
+            </xpath>
+
+            <xpath expr="//field[@name='service_sale_order_line_ids']/tree/field[@name='total_price']" position="after">
+                <field name = "unit_cost_price" optional="show" column_invisible="not parent.amc_quotation" width="130px" groups = "selling_cost_price_restrict.group_product_price_user" force_save = "1"/>
+                <field name = "unit_selling_price" optional="show" column_invisible="not parent.amc_quotation" width="150px"  force_save = "1"/>
+                <field name = "spare_parts_cost_per_category" optional="show" column_invisible="not parent.amc_quotation" width="170px" groups = "selling_cost_price_restrict.group_product_price_user" force_save = "1"/>
+                <field name = "spare_parts_cost" optional="show" column_invisible="not parent.amc_quotation"  width="120px" groups = "selling_cost_price_restrict.group_product_price_user" force_save = "1"/>
+                <field name = "spare_parts_selling_price" optional="show" column_invisible="not parent.amc_quotation" width="120px" sum = "Total" digits="[16,3]" force_save = "1"/>
+                <field name = "total_selling_price" optional="show" column_invisible="not parent.amc_quotation" width="170px" sum = "Total" digits="[16,3]" force_save = "1"/>
+                <field name = "per_unit_selling_price_not_round"  column_invisible="not parent.amc_quotation" width="190px" force_save = "1"/>
+                <field name = "per_unit_selling_price" optional="show" column_invisible="not parent.amc_quotation" width="190px" force_save = "1"/>
+                
+            </xpath>
+        </field>
+    </record>
+</odoo>

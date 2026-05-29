@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_productsubs_custom_form" model="ir.ui.view">
+        <field name="name">Productsubs.form</field>
+        <field name="model">t.productsubs</field>
+        <field name="arch" type="xml">
+            <form string="Custom Language">
+                <sheet>
+                    <group>
+                        <field name="ps_dsirate"/>
+                        <field name="ps_duty"/>
+                        <field name="ps_grp"/>
+                        <field name="ps_markup"/>
+                        <field name="ps_mmgrp"/>
+                        <field name="ps_pcat"/>
+                        <field name="ps_pcode"/>
+                        <field name="ps_prcgrp"/>
+                        <field name="ps_psub"/>
+                        <field name="ps_psubgroup"/>
+                        <field name="ps_sort"/>
+                        <field name="user_id"/>
+                        <field name="user_lmd"/>
+                        <field name="user_lmt"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_productsubs_custom_tree" model="ir.ui.view">
+        <field name="name">Productsubs.custom.tree</field>
+        <field name="model">t.productsubs</field>
+        <field name="arch" type="xml">
+            <tree string="Custom Language List">                
+                        <field name="ps_dsirate"/>
+                        <field name="ps_duty"/>
+                        <field name="ps_grp"/>
+                        <field name="ps_markup"/>
+                        <field name="ps_mmgrp"/>
+                        <field name="ps_pcat"/>
+                        <field name="ps_pcode"/>
+                        <field name="ps_prcgrp"/>
+                        <field name="ps_psub"/>
+                        <field name="ps_psubgroup"/>
+                        <field name="ps_sort"/>
+                        <field name="user_id"/>
+                        <field name="user_lmd"/>
+                        <field name="user_lmt"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom_main" name="Languages" sequence="10"/> -->
+
+    <record id="action_productsubs_custom" model="ir.actions.act_window">
+        <field name="name">Productsubs Custom Languages</field>
+        <field name="res_model">t.productsubs</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom" name="Regular" action="action_res_lang_custom"  sequence="10"/> -->
+
+</odoo>

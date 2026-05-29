@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <data>
+
+
+<!--         <report-->
+<!--            id="action_employee_renewal_report_xlsx"-->
+<!--            string="Employee_Documents_Renewal_Report"-->
+<!--            model="employee.renewal.report"-->
+<!--            report_type="xlsx"-->
+<!--            file="Employee Documents Renewal Report"-->
+<!--            name="employee_document_renewal_report.report_renewal_xlsx"-->
+<!--        />-->
+       <record id="action_employee_renewal_report_xlsx" model="ir.actions.report">
+	        <field name="name">Employee Documents Renewal Report</field>
+	        <field name="model">employee.renewal.report</field>
+	        <field name="report_type">xlsx</field>
+	        <field name="report_name">employee_document_renewal_report.report_renewal_xlsx</field>
+	        <field name="report_file">Employee Documents Renewal Report</field>
+	        <field name="binding_model_id" ref="model_employee_renewal_report"/>
+	        <field name="binding_type">report</field>
+    </record>
+        
+<!--        <report-->
+<!--        	id = "action_employee_renewal_report_pdf"-->
+<!--        	string="Employee_Documents_Renewal_Report"-->
+<!--        	model="employee.renewal.report"-->
+<!--        	report_type = "qweb-pdf"-->
+<!--        	file ="Employee Documents Renewal Report"-->
+<!--        	name = "employee_document_renewal_report.report_employee_renewal_pdf"-->
+<!--        -->
+<!--        -->
+<!--        />-->
+        <record id="action_employee_renewal_report_pdf" model="ir.actions.report">
+        <field name="name">Employee Documents Renewal Report</field>
+        <field name="model">employee.renewal.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">employee_document_renewal_report.report_employee_renewal_pdf</field>
+        <field name="report_file">Employee Documents Renewal Report</field>
+        <field name="print_report_name">'Employee Documents Renewal - %s' % (object.name).replace('/', '')</field>
+        <field name="binding_model_id" ref="model_employee_renewal_report"/>
+        <field name="binding_type">report</field>
+    </record>
+
+
+
+   </data>
+</odoo>

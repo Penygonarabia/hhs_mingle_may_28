@@ -1,0 +1,12 @@
+<templates>
+    <t t-name="sale_stock_analytic.popup_message_template">
+        <div class="popup-message">
+            <div class="popup-content">
+                <p t-field="widget.message"/>
+            </div>
+            <div class="popup-footer">
+                <button class="popup-button btn-primary">OK</button>
+            </div>
+        </div>
+    </t>
+</templates>

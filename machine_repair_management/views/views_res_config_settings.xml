@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_service_module_form" model="ir.ui.view">
+        <field name="name">res.config.settings.form.services.inherit</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="10"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Service" string="Service" name="machine_repair_management" data-key="machine_repair_management" logo="/machine_repair_management/static/description/icon.png" groups="machine_repair_management.group_machine_repair_user">
+                    <h2>Machine Repair Service</h2>
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <field name="maintenance_service_show" context="{'default_company_id': company_id}" style="margin: 0; padding: 0;"/>
+                                <label for="maintenance_service_show" style="margin: 0; padding: 0;"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <field name="internal_service_show" context="{'default_company_id': company_id}" style="margin: 0; padding: 0;"/>
+                                <label for="internal_service_show" style="margin: 0; padding: 0;"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <field name="job_card_show" context="{'default_company_id': company_id}" style="margin: 0; padding: 0;"/>
+                                <label for="job_card_show" style="margin: 0; padding: 0;"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <field name="project_bool" context="{'default_company_id': company_id}" style="margin: 0; padding: 0;"/>
+                                <label for="project_bool" style="margin: 0; padding: 0;"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="row mt16">
+                                <label string="Project" for="project_id" class="col-lg-3 o_light_label" invisible="not project_bool"/>
+                                <field name="project_id" context="{'default_company_id': company_id}" invisible="not project_bool" options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="row mt16">
+                                <label string="Inspection Charge" for="inspection_amount" class="col-lg-3 o_light_label" />
+                                <field name="inspection_amount" context="{'default_company_id': company_id}" />
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="row mt16">
+                                <label string="Inspection Charges Description" for="inspection_charges_description" class="col-lg-3 o_light_label" />
+                                <field name="inspection_charges_description" context="{'default_company_id': company_id}" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="row mt16">
+                                <label string="Inspection Charge Code" for="inspection_charges_code" class="col-lg-3 o_light_label" />
+                                <field name="inspection_charges_code" context="{'default_company_id': company_id}" />
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!--  <div class="col-xs-12 col-md-6 o_setting_box">
+                         <div class="o_setting_right_pane">
+                             <div class="row mt16">
+                                 <label string="Job Card Completed Time Enable/Disable" for="job_card_closed_time_enable" class="col-lg-3 o_light_label" />
+                                 <field name="job_card_closed_time_enable" context="{'default_company_id': company_id}" />
+                             </div>
+                         </div>
+                     </div> -->
+
+                    <h2>Job Card Closing Time Enable/Disable</h2>
+                    <div class="text-muted mb-2 ms-5">
+                        Enable/Disable the job card Completed Date/Time
+                    </div>
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <field name="job_card_closed_time_enable" context="{'default_company_id': company_id}" style="margin: 0; padding: 0;"/>
+                                <label for="job_card_closed_time_enable" style="margin: 0; padding: 0;"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Service Sequence Create Enable/Disable</h2>
+                    <div class="text-muted mb-2 ms-3">
+                        Sequence Creation Based on the Machine Repair Management Enable/Disable
+                    </div>
+
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <field name="sequence_creation_bool" context="{'default_company_id': company_id}" style="margin: 0; padding: 0;"/>
+                                <label for="sequence_creation_bool" style="margin: 0; padding: 0;"/>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h2>Asset Tag Sequence Create Enable/Disable</h2>
+						<div class="text-muted mb-2 ms-3">
+						   Sequence Creation Based on the Asset Tag Enable/Disable
+						</div>
+						<div class="col-xs-12 col-md-6 o_setting_box">
+							<div class="o_setting_right_pane">
+								<div class="d-flex align-items-center" style="gap: 4px;">
+									<field name="asset_tag_sequence_creation_bool" context="{'default_company_id': company_id}"  style="margin: 0; padding: 0;"/>
+									<label for="asset_tag_sequence_creation_bool" style="margin: 0; padding: 0;"/>
+								</div>
+							</div>
+						</div>
+
+                    <h2>Whatsapp Sending Feature Enable/Disable</h2>
+                    <div class="text-muted mb-2 ms-3">
+                        All Whatsapp Send feature Enable/Disable
+                    </div>
+
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <field name="whatsapp_send_bool" context="{'default_company_id': company_id}" style="margin: 0; padding: 0;"/>
+                                <label for="whatsapp_send_bool" style="margin: 0; padding: 0;"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Allow Negative Stock Enable/Disable</h2>
+                    <div class="text-muted mb-2 ms-3">
+                        Skip Validation For Zero On Hand Quantity
+                    </div>
+
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <field name="negative_stock_allow" context="{'default_company_id': company_id}" style="margin: 0; padding: 0;"/>
+                                <label for="negative_stock_allow" style="margin: 0; padding: 0;"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Warranty Settings Enable/Disable</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="warranty_expiry_enable"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="warranty_expiry_enable"/>
+                                <div class="text-muted">
+                                Enable validation for warranty expiry
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>User Add Service/Parts Product</h2>
+                    <div class="text-muted mb-2 ms-3">
+                        User Can add/remove the service/parts Product
+                    </div>
+
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <field name="supervisor_service_product_add" context="{'default_company_id': company_id}" style="margin: 0; padding: 0;"/>
+                                <label for="supervisor_service_product_add" style="margin: 0; padding: 0;"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <field name="technician_service_product_add" context="{'default_company_id': company_id}" style="margin: 0; padding: 0;"/>
+                                <label for="technician_service_product_add" style="margin: 0; padding: 0;"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <field name="parts_service_product_add" context="{'default_company_id': company_id}" style="margin: 0; padding: 0;"/>
+                                <label for="parts_service_product_add" style="margin: 0; padding: 0;"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <field name="supervisor_parts_product_add" context="{'default_company_id': company_id}" style="margin: 0; padding: 0;"/>
+                                <label for="supervisor_parts_product_add" style="margin: 0; padding: 0;"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <field name="technician_parts_product_add" context="{'default_company_id': company_id}" style="margin: 0; padding: 0;"/>
+                                <label for="technician_parts_product_add" style="margin: 0; padding: 0;"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <field name="parts_user_parts_product_add" context="{'default_company_id': company_id}" style="margin: 0; padding: 0;"/>
+                                <label for="parts_user_parts_product_add" style="margin: 0; padding: 0;"/>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="app_settings_block" data-string="Cost Calculation" string="Cost Calculation" data-key="cost_calculation">
+
+                        <h2>Cost Calculation</h2>
+
+                        <div class="row mt16 o_settings_container">
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+
+                                <div class="o_setting_left_pane"/>
+
+                                <div class="o_setting_right_pane">
+
+                                    <label for="no_of_technician_visit"/>
+
+                                    <div class="content-group">
+
+                                        <div class="mt16">
+
+                                            <field name="no_of_technician_visit" class="oe_inline" password="True"/>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+
+                                <div class="o_setting_left_pane"/>
+
+                                <div class="o_setting_right_pane">
+
+                                    <label for="labor_cost_hr"/>
+
+                                    <div class="content-group">
+
+                                        <div class="mt16">
+
+                                            <field name="labor_cost_hr" class="oe_inline"/>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+
+                                <div class="o_setting_left_pane"/>
+
+                                <div class="o_setting_right_pane">
+
+                                    <label for="units_serviced_visit"/>
+
+                                    <div class="content-group">
+
+                                        <div class="mt16">
+
+                                            <field name="units_serviced_visit" class="oe_inline" password="True"/>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+
+                                <div class="o_setting_left_pane"/>
+
+                                <div class="o_setting_right_pane">
+
+                                    <label for="travel_hr_for_people"/>
+
+                                    <div class="content-group">
+
+                                        <div class="mt16">
+
+                                            <field name="travel_hr_for_people" class="oe_inline"/>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+
+                                <div class="o_setting_left_pane"/>
+
+                                <div class="o_setting_right_pane">
+
+                                    <label for="gross_profit"/>
+
+                                    <div class="content-group">
+
+                                        <div class="mt16">
+
+                                            <field name="gross_profit" class="oe_inline"/>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+                            <div class="col-12 col-lg-6 o_setting_box">
+
+                                <div class="o_setting_left_pane"/>
+
+                                <div class="o_setting_right_pane">
+
+                                    <label for="add_paid_service_price"/>
+
+                                    <div class="content-group">
+
+                                        <div class="mt16">
+
+                                            <field name="add_paid_service_price" class="oe_inline"/>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+
+                                <div class="o_setting_left_pane"/>
+
+                                <div class="o_setting_right_pane">
+
+                                    <label for="spare_parts_gross_profit"/>
+
+                                    <div class="content-group">
+
+                                        <div class="mt16">
+
+                                            <field name="spare_parts_gross_profit" class="oe_inline"/>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+
+                            <h2>Invoice</h2>
+
+                            <div class="col-xs-12 col-md-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <div class="row mt16">
+                                        <label string="Installment Product" for="installment_product_id" class="col-lg-3 o_light_label"/>
+                                        <field name="installment_product_id" domain="[('detailed_type', '=', 'service')]" options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                                    </div>
+                                    <div class="text-muted mb-2 ms-3">
+                                        Creating Invoice based on installment calculation
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                        </div>
+
+                    </div>
+
+                    <h2>Interface Settings</h2>
+                    <div class="text-muted mb-2 ms-3">
+	                          Interface Code Mandatory Enable/Disable
+                    </div>
+
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <field name="make_interface_code" context="{'default_company_id': company_id}" style="margin: 0; padding: 0;"/>
+                                <label for="make_interface_code" style="margin: 0; padding: 0;"/>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="o_row">
+                                <label for="maintenance_service_show" class="o_form_label"/>
+                                <div class="o_form_field">
+                                    <field name="maintenance_service_show" context="{'default_company_id': company_id}"/>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+
+                <div class="col-xs-12 col-md-6 o_setting_box">
+                    <div class="o_setting_right_pane">
+                        <div class="o_row">
+                            <label for="internal_service_show" class="o_form_label"/>
+                            <div class="o_form_field">
+                                <field name="internal_service_show" context="{'default_company_id': company_id}"/>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="machine_repair_management_config_settings_action" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <!-- <field name="view_id" ref="res_config_settings_service_module_form"/> -->
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'machine_repair_management','bin_size': False}</field>
+    </record>
+
+    <menuitem id="machine_reapir_management_menu_settings_configuration" name="Service Configuration Settings" sequence="999" parent="machine_repair_management.menu_machine_repair_configuration" action="machine_repair_management_config_settings_action" groups="base.group_system"/>
+
+</odoo>

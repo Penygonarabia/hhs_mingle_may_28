@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sh_tip_top_invoicing_product_model_tree" model="ir.ui.view">
+        <field name="name">sh.tip.top.invoicing.product.model.tree</field>
+        <field name="model">sh.tip.top.invoicing.product</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="product_id" />
+                <field name="qty" />
+            </tree>
+        </field>
+    </record>
+    <record id="sh_tip_top_invoicing_product_model_tree_action" model="ir.actions.act_window">
+        <field name="name">Top Invoicing Products</field>
+        <field name="res_model">sh.tip.top.invoicing.product</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="sh_tip_top_invoicing_product_model_tree" />
+    </record>
+   
+    <menuitem id="sh_tip_view_top_invoicing_products" name="Top Invoicing Products" parent="account.menu_finance_reports"/>
+    <menuitem id="sh_tip_top_invoicing_product" name="Top Invoicing Products" parent="sh_tip_view_top_invoicing_products" action="sh_tip_top_invoicing_product_model_tree_action" sequence="10"/>
+    <menuitem id="sh_tip_top_invoicing_product_menuitem_update" name="Update Top invoicing Products" parent="sh_tip_view_top_invoicing_products" action="sh_tip_top_invoicing_product_wizard_action" sequence="20"/>
+</odoo>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tree View -->
+    <record id="view_dbm_spareparts_warranty_tree" model="ir.ui.view">
+        <field name="name">dbm.spareparts.warranty.tree</field>
+        <field name="model">dbm.spareparts.warranty</field>
+        <field name="arch" type="xml">
+            <tree string="Spare Parts Warranty Analysis" create="false" edit="false" delete="false">
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="region"/>
+                <field name="work_location"/>
+                <field name="warranty_name"/>
+                <field name="job_card_state"/>
+                <field name="service_created_datetime" widget="datetime"/>
+                <field name="warranty_spareparts_value" sum="Spare Parts Value"/>
+                <field name="service_grand_total_amount" sum="Service Total"/>
+                <field name="parts_grand_total_amount" sum="Parts Total"/>
+                <field name="grand_total_amount" sum="Grand Total"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Pivot View -->
+    <record id="view_dbm_spareparts_warranty_pivot" model="ir.ui.view">
+        <field name="name">dbm.spareparts.warranty.pivot</field>
+        <field name="model">dbm.spareparts.warranty</field>
+        <field name="arch" type="xml">
+            <pivot string="Spare Parts Warranty Analysis" sample="1">
+                <field name="region" type="row"/>
+                <field name="warranty_name" type="col"/>
+                <field name="warranty_spareparts_value" type="measure"/>
+                <field name="grand_total_amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Graph View -->
+    <record id="view_dbm_spareparts_warranty_graph" model="ir.ui.view">
+        <field name="name">dbm.spareparts.warranty.graph</field>
+        <field name="model">dbm.spareparts.warranty</field>
+        <field name="arch" type="xml">
+            <graph string="Spare Parts Warranty Analysis" type="bar" sample="1">
+                <field name="region" type="row"/>
+                <field name="warranty_spareparts_value" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_dbm_spareparts_warranty_search" model="ir.ui.view">
+        <field name="name">dbm.spareparts.warranty.search</field>
+        <field name="model">dbm.spareparts.warranty</field>
+        <field name="arch" type="xml">
+            <search string="Search Spare Parts Warranty">
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="region"/>
+                <field name="work_location"/>
+                <field name="warranty_name"/>
+                <field name="job_card_state"/>
+                
+                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+                
+                <group expand="0" string="Group By">
+                    <filter string="Region" name="group_by_region" context="{'group_by':'region'}"/>
+                    <filter string="Work Location" name="group_by_work_location" context="{'group_by':'work_location'}"/>
+                    <filter string="Warranty Name" name="group_by_warranty" context="{'group_by':'warranty_name'}"/>
+                    <filter string="Job Card State" name="group_by_state" context="{'group_by':'job_card_state'}"/>
+                    <filter string="Service Month" name="group_by_month" context="{'group_by':'service_created_datetime:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_dbm_spareparts_warranty" model="ir.actions.act_window">
+        <field name="name">Spare Parts Warranty Analysis</field>
+        <field name="res_model">dbm.spareparts.warranty</field>
+        <field name="view_mode">tree,pivot,graph</field>
+        <field name="search_view_id" ref="view_dbm_spareparts_warranty_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+    </record>
+
+    <!-- Menu Item (Under existing root menu) -->
+    <!-- <menuitem id="menu_dbm_spareparts_warranty_view" name="Spare Parts Warranty Analysis" parent="menu_service_dashboard_root" action="action_dbm_spareparts_warranty" sequence="30"/> -->
+
+</odoo>

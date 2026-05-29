@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Pivot View -->
+<record id="view_vi_monthly_sales_target_pivot" model="ir.ui.view">
+    <field name="name">vi.monthly.sales.target.pivot</field>
+    <field name="model">vi.monthly.sales.target</field>
+    <field name="arch" type="xml">
+        <pivot string="Sales vs Target" disable_linking="true">
+            <!-- Add Region and City -->
+            <field name="region_name" type="row" expand="False"/>
+            <field name="city_name" type="row" expand="False"/>
+            <field name="product_category_name" type="row" expand="True"/>
+            <field name="group_name" type="row" expand="True"/>
+            <!-- Measures -->
+            <!-- <field name="sales_qty" type="measure"/> -->
+            <field name="actual_qty"  type="measure"/>
+            <field name="target_qty" type="measure"/>
+            <field name="variance" type="measure"/>
+            <field name="variance_percent" type="measure"/>
+            <!-- Hidden fields -->
+            <field name="promoter_latitude" invisible="1"/>
+            <field name="promoter_longitude" invisible="1"/>
+            <field name="showroom_latitude" invisible="1"/>
+            <field name="showroom_longitude" invisible="1"/>
+        </pivot>
+    </field>
+</record>
+
+    <!-- Tree View -->
+    <record id="view_vi_monthly_sales_target_tree" model="ir.ui.view">
+        <field name="name">vi.monthly.sales.target.tree</field>
+        <field name="model">vi.monthly.sales.target</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="year" widget="char"/>
+                <field name="month"/>
+                <field name="region_name"/>
+                <field name="city_name"/>
+                <field name="product_category_name"/>
+                <field name="group_name"/>
+                <field name="subgroup_name"/>
+                <!-- <field name="sales_qty"/> -->
+                <field name="actual_qty"/>
+                <field name="target_qty"/>
+                <field name="variance"/>
+                <field name="variance_percent"/>
+                <!-- Hidden fields -->
+                <field name="promoter_latitude" invisible="1"/>
+                <field name="promoter_longitude" invisible="1"/>
+                <field name="showroom_latitude" invisible="1"/>
+                <field name="showroom_longitude" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action (Backoffice) -->
+    <record id="action_vi_monthly_sales_target" model="ir.actions.act_window">
+        <field name="name">Sales vs Target</field>
+        <field name="res_model">vi.monthly.sales.target</field>
+        <field name="view_mode">pivot,tree</field>
+        <field name="target">current</field>
+    </record>
+
+    <!-- Menu (Backoffice) -->
+    <menuitem id="menu_vi_monthly_sales_target"
+              name="Sales vs Target Report"
+              parent="menu_promoter_root"
+              action="action_vi_monthly_sales_target"
+              sequence="50"/>
+
+    <!-- Action (Mobile) -->
+    <record id="action_promoter_salestarget_mobile" model="ir.actions.act_window">
+        <field name="name">Monthly Sales Target Comparison</field>
+        <field name="res_model">vi.monthly.sales.target</field>
+        <field name="view_mode">pivot</field>
+        <!-- Hide unwanted pivot controls -->
+        <field name="context">
+            {
+                'pivot_measures': ['sales_qty','target_qty','variance','variance_percent'],
+                'disable_pivot_expand': True,
+                'disable_pivot_filters': True,
+                'disable_pivot_download': True
+            }
+        </field>
+    </record>
+
+    <!-- Menu (Mobile) -->
+    <menuitem id="menu_promoter_salestarget_mobile"
+              name="Sales vs Target"
+              parent="menu_promoter_root"
+              action="action_promoter_salestarget_mobile"
+              groups="promoter.group_promoter_user"
+              sequence="80"/>
+
+    <!-- Access Rules -->
+    <record id="vi_monthly_sales_target_rule_user" model="ir.rule">
+        <field name="name">Sales vs Target: only own records</field>
+        <field name="model_id" ref="promoter.model_vi_monthly_sales_target"/>
+        <field name="domain_force">[
+            ('dealer_id','=',user.dealer_id.id),
+            ('showroom_id','=',user.showroom_id.id),
+            ('promoter_id','=',user.id)
+        ]</field>
+        <field name="groups" eval="[(4, ref('promoter.group_promoter_user'))]"/>
+    </record>
+
+    <record id="vi_monthly_sales_target_rule_backoffice" model="ir.rule">
+        <field name="name">Sales vs Target: all records</field>
+        <field name="model_id" ref="promoter.model_vi_monthly_sales_target"/>
+        <field name="groups" eval="[(4, ref('promoter.group_promoter_backoffice_user'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+</odoo>

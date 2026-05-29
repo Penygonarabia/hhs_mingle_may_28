@@ -1,0 +1,16 @@
+.card {
+    background-color: #369908;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.card .name {
+    font-weight: bold;
+    font-size: 15px;
+}

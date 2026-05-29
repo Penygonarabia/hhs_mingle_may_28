@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <data>
+
+
+      <!--    <report
+            id="action_employee_payroll_report_xlsx"
+            string="Employee_Payroll_Report"
+            model="employee.payroll.report"
+            report_type="xlsx"
+            file="Employee Payroll Report"
+            name="employee_payroll_report.report_payroll_xlsx"
+        /> -->
+        
+        <record id="action_employee_payroll_report_xlsx" model="ir.actions.report">
+	        <field name="name">Employee Payroll Report</field>
+	        <field name="model">employee.payroll.report</field>
+	        <field name="report_type">xlsx</field>
+	        <field name="report_name">employee_payroll_report.report_payroll_xlsx</field>
+	        <field name="report_file">Employee Payroll Report</field>
+	        <field name="binding_model_id" ref="model_employee_payroll_report"/>
+	        <field name="binding_type">report</field>
+    </record>
+       
+
+   </data>
+</odoo>

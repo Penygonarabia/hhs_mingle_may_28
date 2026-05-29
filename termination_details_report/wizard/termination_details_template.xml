@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <template id="termination_details_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template>
+
+        <!-- Report Template -->
+        <template id="report_termination_details_pdf">
+            <t t-call="web.html_container">
+                <t t-call="termination_details_report.termination_details_internal_layout" style="margin-top:0px;padding-top:0px;display:inline;">
+                    <div class="header" t-att-style="report_header_style">
+                        <div class="row mt32 mb32">
+                            <div class="col-3 text-left" style="font:16px lucida-console,sans-serif !important;">
+                                <span t-field="res_company.partner_id"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.street"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.street2"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.city"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.country_id"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.vat"/>
+                                <br/>
+                            </div>
+                            <div class="col-6">
+                                <h2><center>Termination Details Report</center></h2>
+
+                            </div>
+                            <div class="col-3 text-right " style="vertical-align:text-top">
+               				    <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" style="max-height: 100px; min-height:100px; min-width: 150px; max-width: 150px;" />
+            			    </div>
+                        </div>
+                    </div>
+                    <div class="page">
+
+                            <div class="row mt32 mb32">
+                                <div class="col-3 text-left" style="font:16px lucida-console,sans-serif !important;">
+                                    <b>From Date  :  <span t-esc="from_date"/></b>
+                                    <br/>
+                                </div>
+                                <div class="col-6">
+
+                                </div>
+                                <div class="col-3 text-right "  style="font:16px lucida-console,sans-serif !important;">
+                                    <b>To Date  :  <span t-esc="to_date"/></b>
+
+                                </div>
+                            </div>
+                        <br/>
+                        <br/>
+                        <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr style="background-color:#464343;color:white;text-align:center">
+                                <th width="2%" style="vertical-align:text-top">S.No</th>
+                                <th width="25%" style="vertical-align:text-top">Reason For Termination</th>
+                                <th width="5%" style="vertical-align:text-top">Emp.No</th>
+                                <th width="10%" style="vertical-align:text-top">Emp.Name</th>
+                                <th width="5%" style="vertical-align:text-top">Gender</th>
+                                <th width="7%" style="vertical-align:text-top">Job Title</th>
+                                <th width="7%" style="vertical-align:text-top">Location</th>
+                                <th width="7%" style="vertical-align:text-top">Date</th>
+                                <th width="7%" style="vertical-align:text-top">Joining Date</th>
+                                <th width="7%" style="vertical-align:text-top">Termination Date</th>
+                                <th width="6%" style="vertical-align:text-top">No.of.Days</th>
+                                <th width="6%" style="vertical-align:text-top">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="counter" t-value="1"/>
+                            <t t-foreach="selection" t-as="eos">
+                                <tr>
+                                    <td class="text-right"><span t-esc="counter"/></td>
+                                    <td><span t-esc="eos['benefit_type']"/></td>
+                                    <td class="text-right"><span t-esc="eos['emp_no']"/></td>
+                                    <td><span t-esc="eos['employee_name']"/></td>
+                                    <td><span t-esc="eos['gender']"/></td>
+                                    <td><span t-esc="eos['job_title']"/></td>
+                                    <td><span t-esc="eos['location']"/></td>
+                                    <td class="text-right"><span t-esc="eos['eos_date']"/></td>
+                                    <td class="text-right"><span t-esc="eos['joining_date']"/></td>
+                                    <td class="text-right"><span t-esc="eos['last_work_date']"/></td>
+                                    <td class="text-right"><span t-esc="eos['total_worked_days']"/></td>
+                                    <td class="text-right"><span t-esc="eos['amount']"/></td>
+                                </tr>
+                                <t t-set="counter" t-value="counter+1"/>
+                            </t>
+                        </tbody>
+                    </table>
+                    </div>
+                    <div class="footer">
+                        <style>
+                            .colorFooter {
+                            color:black;
+                            }
+                            #borderTop {
+                            border-top: 1px solid black;
+                            }
+                        </style>
+                        <center id="borderTop">
+
+                            <p class="colorFooter">
+                                <t t-if="res_company.partner_id.email">
+                                    <span t-field="res_company.partner_id.email" />
+                                </t>
+                                <t t-if="res_company.partner_id.phone"> | <span
+                                        t-field="res_company.partner_id.phone" />
+                                </t>
+                                <t t-if="res_company.partner_id.mobile"> | <span
+                                        t-field="res_company.partner_id.mobile" />
+                                </t>
+                                <br />
+                                Page <span class="page" /> of <span class="topage" />
+                            </p>
+                        </center>
+                    </div>
+
+                </t>
+            </t>
+        </template>
+</odoo>

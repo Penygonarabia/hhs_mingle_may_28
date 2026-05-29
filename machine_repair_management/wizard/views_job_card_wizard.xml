@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="wizard_machine_job_card_inherit" model="ir.ui.view">
+        <field name="name">Machine Job Card</field>
+        <field name="model">job.card.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Job Cards">
+                <sheet>
+                    <group>
+                        <field name="task_ids" widget="many2many_tags"/>
+                    </group>
+                    <footer>
+                        <button name="action_close" string="Close" class="btn-primary" type="object"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

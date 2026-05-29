@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+    <record id="employee_shift_allocation_mail_template" model="mail.template">
+        <field name="name">Employee Shift Allocation</field>
+        <field name="model_id" ref="employee_shift_scheduling_app.model_employee_shift_allocation"/>
+        <field name="email_from">{{object.user_id.email_formatted}}</field>
+		<field name="email_to">{{object.employee_id.work_email}}</field>
+        <field name="subject">Shift Allocation - {{object.name}}</field>
+        <field name="report_template" ref="employee_shift_scheduling_app.action_shift_allocation_report"/>
+        <field name="report_name">Shift Allocation {{(object.name)}}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                    Dear <t t-out="object.employee_id.name"/>
+                	</p>
+                	<br/>
+                	Your Work Shift Allocated , Your shift is <t t-out="object.shift_id.name"/>
+                	<br/>
+                    Starting From <t t-out="object.from_date"/> To <t t-out="object.to_date"/>
+                	<br/>
+                    Please find attached report
+                	<br/>
+                	<br/>
+                	Thank You,
+                    <br/>
+                	<t t-out="object.user_id.name"/>(<t t-out="object.user_id.company_id.name"/>)
+            	</div>
+            </field>
+    </record>
+
+    <record id="employee_shift_changes_mail_template" model="mail.template">
+        <field name="name">Employee Shift Changes</field>
+        <field name="model_id" ref="employee_shift_scheduling_app.model_employee_shift_changes"/>
+        <field name="email_from">{{object.sudo().shift_id.user_id.email_formatted}}</field>
+		<field name="email_to">{{object.employee_id.work_email}}</field>
+        <field name="subject">Shift Changes - {{object.name}}-{{object.employee_id.name}}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+                    Dear <t t-out="object.employee_id.name"/>,
+                	</p>
+                	<br/>
+                	Your Shift Changes Request is Approved , Your shift changes request no is <b> <t t-out="object.name"/></b>
+                	<br/>
+                    your new shift is <b> <t t-out="object.shift_id.name"/></b> start from <b> <t t-out="object.shift_id.time_from"/></b> to <b> <t t-out="object.shift_id.time_to"/></b>
+                	<br/>
+                	Thank You,
+                    <br/>
+                	<t t-out="object.shift_id.user_id.name"/>(<t t-out="object.shift_id.user_id.company_id.name"/>)
+            	</div>
+            </field>
+    </record>
+    </data>
+</odoo>

@@ -1,0 +1,47 @@
+<?xml version ="1.0" encoding ="utf-8" ?>
+<odoo>
+
+    <record id="views_stock_warehouse_inherit_customer" model="ir.ui.view">
+        <field name="name">stock.warehouse.form.inherit</field>
+        <field name="model">stock.warehouse</field>
+        <field name="inherit_id" ref="stock.view_warehouse"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='code']" position="after">
+                <field name="cst_no"/>
+                <field name="complete_name" invisible="1"/>
+                <field name="product_category_ids" widget="many2many_tags" domain="[('parent_id','=',False)]"/>
+                <field name = "work_center_id" invisible = "1"/>
+				<field name = "work_center_ids" widget = "many2many_tags" />
+				<field name = "default_work_center_bool" invisible = "1"/>
+				<field name = "region_default_warehouse_bool" />
+				<field name = "warehouse_type" required = "1"/>
+				<field name = "work_center_id" invisible = "1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_stock_warehouse_tree_list" model="ir.ui.view">
+        <field name="name">stock.warehouse.tree.inherit.view</field>
+        <field name="model">stock.warehouse</field>
+        <field name="inherit_id" ref="stock.view_warehouse_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name = 'name']" position="before">
+                <field name="product_category_ids" widget="many2many_tags"
+                       domain="[('parent_id', '=', False)]" readonly="1" force_save="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_stock_warehouse_location_inherit_search" model="ir.ui.view">
+        <field name="name">stock.warehouse.search.inherit.form</field>
+        <field name="model">stock.warehouse</field>
+        <field name="inherit_id" ref="stock.stock_warehouse_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="lot_stock_id"/>
+                <field name="product_category_ids"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

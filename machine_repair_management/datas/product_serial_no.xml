@@ -1,0 +1,9 @@
+<odoo>
+    <record id="seq_repair_serial_no" model="ir.sequence">
+        <field name="name">Repair Serial Number</field>
+        <field name="code">repair.serial</field>
+        <field name="prefix">0</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

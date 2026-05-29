@@ -1,0 +1,59 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+<odoo>
+	<template id = "payroll_payment.report_payroll_payment_format_one_bank1">
+	  <t t-call = "web.external_layout" >
+	     <t t-set = "doc" t-value = "doc" />	 	
+	   	<br/><br/><br/>
+	   	<div>
+	   		 	<p><strong><center>Payroll Payment DETAILS</center></strong></p>
+	   	</div>
+	  <br/><br/>
+	    <div>
+		    <table class = "table table-sm">
+		    	<tr>
+		    		<!-- <t t-set="colspan" t-value="5"/> -->
+		  			 <td class = "text-left"><strong>Period Name : </strong><t t-esc = "doc.name"></t></td>
+		  		<!-- 	<td class="text-left"><t t-esc="doc.name"></t></td> -->
+		  		</tr><tr>
+		  			 
+		   			 <td class = "text-left"><strong>Date : </strong><t t-esc = "doc.from_date"></t></td>
+		    
+<!-- 		    	 <td class="text-left"><t t-esc="doc.from_date"></t></td> -->
+		    	</tr>
+		    
+		    </table>
+	    </div>
+	      <br/>
+	      <div>
+	  	      <table class = "table table-sm o_main_table">
+	                    <tr>
+	                        <t t-set = "colspan" t-value = "5"/>
+	                        <th class = "text-right">Code</th>
+	                        <th class = "text-right">Employee Name</th>
+	                        <th class = "text-right">Account</th>
+	                        <th class = "text-right">Amount</th>
+	                         <th class = "text-right">Actual Amount paid</th>
+	                    </tr>
+	                <t t-foreach="doc.payroll_line_ids" t-as = "line">
+	                    <tr>
+                             <td class = "text-right"><span t-field = "line.employee_number"></span></td>
+                    	     <td class = "text-right"><span t-field = "line.employee_id.name"></span></td>
+                    	     <td class = "text-right"><span t-field = "line.bank_account_id"></span></td>
+            				 <td class = "text-right"><t t-esc = "line.net_salary"/></td>
+            				 <td class = "text-right"><t t-esc = "line.actual_amount"/></td>
+	                    </tr>
+	               </t>
+	          </table>
+	       </div> 
+	  	<br/><br/>
+	  </t>
+	</template>
+	<template id = "report_payroll_payment_format_one">
+	    <t t-call = "web.html_container">
+	        <t t-foreach = "docs" t-as = "doc">
+	           	<t t-call = "payroll_payment.report_payroll_payment_format_one_bank1" t-value = "doc" />
+	        </t>
+	    </t>
+	</template>
+
+</odoo>

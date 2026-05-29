@@ -1,0 +1,25 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+<odoo>
+	
+	<record id = "work_center_group_hyperpaybill_inherit" model = "ir.ui.view">
+		<field name = "name">work.center.group.hyperpaybill</field>
+		<field name  = "model">work.center.group</field>
+		<field name = "inherit_id" ref="machine_repair_management.views_work_center_group_form"/>
+		<field name =  "arch" type = "xml">
+		
+			<xpath expr = "//field[@name='description']" position = "after">
+				 <field name="hyperpay_url"/>
+				  <field name="hyperpay_environment"/>
+				   <field name="hyperpay_email"/>
+				   <field name="hyperpay_password" password="True"/>
+				   <field name="hyperpay_token" readonly="1" style="height: 80px; font-size: 12px; overflow-y: auto; word-break: break-all;"/>
+					 <field name="hyperpay_date_expires" readonly="1"/>
+					 <field name = "custom_region" />
+					<button name="action_generate_token" type="object" string="Generate Token" class="btn btn-primary"/>
+					 
+			</xpath>
+		
+		</field>
+	</record>
+		
+</odoo>

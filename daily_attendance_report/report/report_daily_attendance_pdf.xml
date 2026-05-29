@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+	<record id="action_report_daily_attendance_pdf" model="ir.actions.report">
+		<field name="name">Daily Attendance Report PDF</field>
+		<field name="model">daily.attendance.report</field>
+		<field name="report_type">qweb-pdf</field>
+		<field name="report_name">daily_attendance_report.report_daily_attendance_pdf</field>	
+		<field name ="report_file">daily_attendance_report.report_daily_attendance_pdf</field>
+		<field name="binding_model_id" ref="model_daily_attendance_report" />
+		<field name="binding_type">report</field>
+	
+	</record>
+	
+
+
+
+</odoo>

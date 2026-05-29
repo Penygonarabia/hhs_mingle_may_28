@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="sh_cus_invoice_analy_doc">
+        <t t-call="web.html_container">
+			<t t-call="web.external_layout">
+				<div class="page">
+					<div class="oe_structure" />
+                    <div class="row pt-4">
+						<div class="col-12 mx-auto">
+							<div class="text-center">
+								<b>
+									<h4>Customer/Vendor Invoices Analysis</h4>
+								</b>
+								<b>
+									<span t-esc="date_start" t-options="{'widget': 'date'}" />
+									To
+									<span t-esc="date_end" t-options="{'widget': 'date'}" />
+								</b>
+							</div>
+						</div>
+					</div>
+					<br/>
+					<br />
+					<t t-if="report_by == 'move'">
+						<t t-if="move_dic_by_move">
+							<t t-foreach="move_dic_by_move.keys()" t-as="customer">
+								<center>
+									<b>
+										<span t-esc="customer" />
+									</b>
+								</center>
+								<t t-set="total_invoice_amount" t-value="0" />
+								<t t-set="total_amount_paid" t-value="0" />
+								<t t-set="total_balance" t-value="0" />
+								<table class="table table-sm o_main_table table-bordered" style="table-layout: fixed; border: 1px solid black;" id="">
+									<thead style="display: table-row-group;" class="thead-light">
+										<tr style="border: 1px solid black;">
+											<th style="border: 1px solid black;">Invoice Number</th>
+											<th style="border: 1px solid black;">Invoice Date</th>
+											<th style="border: 1px solid black;">Salesperson</th>
+											<th style="border: 1px solid black;">Invoices Amount</th>
+											<th style="border: 1px solid black;">Amount Paid</th>
+											<th style="border: 1px solid black;">Balance</th>
+										</tr>
+									</thead>
+									<tbody class="invoice_tbody">
+										<t t-foreach="move_dic_by_move[customer]" t-as="invoice">
+											<t t-set="currency" t-value="request.env['res.currency'].sudo().browse(invoice.get('account_currency_id',False))" />
+											<tr>
+												<td style="border: 1px solid black;">
+													<span t-esc="invoice.get('invoice_number','')" />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="invoice.get('invoice_date','')" t-options='{"widget": "date"}' />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="invoice.get('invoice_user_id','')" />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="invoice.get('invoice_amount',0.0)" t-options='{"widget": "monetary", "display_currency": currency}' />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="invoice.get('paid_amount',0.0)" t-options='{"widget": "monetary", "display_currency": currency}' />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="invoice.get('balance_amount',0.0)" t-options='{"widget": "monetary", "display_currency": currency}' />
+												</td>
+												<t t-set="total_invoice_amount" t-value="total_invoice_amount + invoice.get('invoice_amount',0)" />
+												<t t-set="total_amount_paid" t-value="total_amount_paid + invoice.get('paid_amount',0)" />
+												<t t-set="total_balance" t-value="total_balance + invoice.get('balance_amount',0)" />
+											</tr>
+										</t>
+										<tr>
+											<td style="border:1px solid black;"></td>
+											<td style="border:1px solid black;"></td>
+											<td style="border: 1px solid black;">
+												<b>Total</b>
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%(total_invoice_amount)" />
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%(total_amount_paid)" />
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%(total_balance)" />
+											</td>
+										</tr>
+									</tbody>									
+								</table>
+							</t>
+						</t>
+					</t>
+					<t t-if="report_by == 'product'">
+						<t t-if="move_dic_by_products">
+							<t t-foreach="move_dic_by_products.keys()" t-as="product">
+								<center>
+									<b>
+										<span t-esc="product" />
+									</b>
+								</center>
+								<table class="table table-sm o_main_table table-bordered" style="table-layout: fixed; border: 1px solid black;" id="">
+									<thead style="display: table-row-group;" class="thead-light">
+										<tr style="border: 1px solid black;">
+											<th style="border: 1px solid black;">Number</th>
+											<th style="border: 1px solid black;">Date</th>
+											<th style="border: 1px solid black;">Product</th>
+											<th style="border: 1px solid black;">Price</th>
+											<th style="border: 1px solid black;">Quantity</th>
+											<th style="border: 1px solid black;">Disc.(%)</th>
+											<th style="border: 1px solid black;">Tax</th>
+											<th style="border: 1px solid black;">Subtotal</th>
+										</tr>
+									</thead>
+									<tbody class="invoice_tbody">
+										<t t-set="total_tax" t-value="0.0" />
+										<t t-set="total_subtotal" t-value="0.0" />
+										<t t-foreach="move_dic_by_products[product]" t-as="invoice">
+											<t t-set="currency" t-value="request.env['res.currency'].sudo().browse(invoice.get('account_currency_id',False))" />
+											<tr>
+												<td style="border: 1px solid black;">
+													<span t-esc="invoice.get('invoice_number','')" />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="invoice.get('invoice_date','')" t-options='{"widget": "date"}' />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="invoice.get('product_name','')" />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="invoice.get('price',0.0)" t-options='{"widget": "monetary", "display_currency": currency}' />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="invoice.get('qty',0.0)" />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="invoice.get('discount',0.0)" />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="invoice.get('tax',0.0)" t-options='{"widget": "monetary", "display_currency": currency}' />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="invoice.get('subtotal',0.0)" t-options='{"widget": "monetary", "display_currency": currency}' />
+												</td>
+											</tr>
+											<t t-set="total_tax" t-value="total_tax + invoice.get('tax',0.0)" />
+											<t t-set="total_subtotal" t-value="total_subtotal + invoice.get('subtotal',0.0)" />
+										</t>
+										<tr>
+											<td style="border:1px solid black;"></td>
+											<td style="border:1px solid black;"></td>
+											<td style="border:1px solid black;"></td>
+											<td style="border:1px solid black;"></td>
+											<td style="border:1px solid black;"></td>
+											<td style="border: 1px solid black;">
+												<b>Total</b>
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%(total_tax)" />
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%(total_subtotal)" />
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</t>
+						</t>
+					</t>					
+                </div>
+            </t>
+        </t>
+    </template>
+    <record id="paperformat_customer_invoice_analysis" model="report.paperformat">
+		<field name="name">Customer/vendor Invoices Analysis</field>
+		<field name="default" eval="True" />
+		<field name="format">A4</field>
+		<field name="orientation">Portrait</field>
+		<field name="margin_top">60</field>
+		<field name="margin_bottom">30</field>
+		<field name="margin_left">5</field>
+		<field name="margin_right">5</field>
+		<field name="header_line" eval="False" />
+		<field name="header_spacing">55</field>
+		<field name="dpi">90</field>
+	</record>
+    <record id="sh_cus_invoice_analysis_action" model="ir.actions.report">
+		<field name="name">Customer Invoices Analysis</field>
+		<field name="model">report.sh_accounting_reports.sh_cus_invoice_analy_doc</field>
+		<field name="report_type">qweb-pdf</field>
+		<field name="report_name">sh_accounting_reports.sh_cus_invoice_analy_doc</field>
+		<field name="print_report_name">'Customer/vendor Invoices Analysis'</field>
+		<field name="paperformat_id" ref="sh_accounting_reports.paperformat_customer_invoice_analysis" />
+	</record>
+</odoo>

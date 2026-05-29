@@ -1,0 +1,608 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="hr_kanban_view_employees_inherit" model="ir.ui.view">
+            <field name="name">HR - Employess Kanban</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.hr_kanban_view_employees"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="replace">
+                    <field name="name"/>
+                    <field name="last_name"/>
+                </xpath></field>
+        </record>
+        <record id="employee_no_list_view_add_inherit" model="ir.ui.view">
+            <field name="name">hr.employee.tree.view</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree/field[@name='name']" position="before">
+                    <field name="employee_no"/>
+                </xpath>
+                <xpath expr="//tree/field[@name='activity_ids']" position="attributes">
+                    <attribute name="optional">
+                        hide</attribute>
+                </xpath>
+                <xpath expr="//tree/field[@name='activity_date_deadline']" position="attributes">
+                    <attribute name="optional">
+                        hide</attribute>
+                </xpath>
+                
+                <xpath expr="//tree/field[@name='parent_id']" position="after">
+        			<field name="state" widget="badge" decoration-success="state == 'draft'" />
+        		</xpath>
+                
+               
+                <xpath expr="//tree/field[@name='company_id']" position="attributes">
+                    <attribute name="optional">
+                        hide</attribute>
+                </xpath>
+                <xpath expr="//tree" position="attributes">
+                    <attribute name="default_order">
+                        employee_no asc</attribute>
+                </xpath></field>
+        </record>
+        <!--        <record id="hr_form_view1" model="ir.ui.view">-->
+        <!--            <field name="name">hr.employee.form</field>-->
+        <!--            <field name="model">hr.employee</field>-->
+        <!--            <field name="inherit_id" ref="hr_contract.hr_hr_employee_view_form2"/>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                &lt;!&ndash;<xpath expr="//group[@name='contract_group']" position="attributes">&ndash;&gt;-->
+        <!--                &lt;!&ndash;<attribute name="invisible">1</attribute>&ndash;&gt;-->
+        <!--                &lt;!&ndash;</xpath>&ndash;&gt;-->
+        <!--&lt;!&ndash;                <xpath expr="//field[@name='parent_id']" position="replace"/>&ndash;&gt;-->
+        <!--                <xpath expr="//field[@name='children']" position="attributes">-->
+        <!--                    <attribute name="attrs">{'invisible': [('marital','=','single')]}</attribute>-->
+        <!--                </xpath>-->
+        <!--</field>-->
+        <!--        </record>-->
+        <record id="hr_form_view_inherit3" model="ir.ui.view">
+            <field name="name">hr.employee.form.inherit</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+<!--                <xpath expr="//field[@name='identification_id']" position="after">-->
+<!--                    <group string="Iqama">-->
+<!--                        &lt;!&ndash;                        <div class="o_td_label" style="width:250px;">&ndash;&gt;-->
+<!--                        &lt;!&ndash;			                <label for="iqama_no" />&ndash;&gt;-->
+<!--                        &lt;!&ndash;			            </div>&ndash;&gt;-->
+<!--                        &lt;!&ndash;	              		 <div class="o_td_label" style="width:200px;">&ndash;&gt;-->
+<!--                        &lt;!&ndash;			                <label for="identification_no" />&ndash;&gt;-->
+<!--                        &lt;!&ndash;			            </div>&ndash;&gt;-->
+<!--                        &lt;!&ndash;	                    <field name="identification_no" nolabel="1" attrs="{'invisible':[('is_saudi','=',False)], }"/> &ndash;&gt;-->
+<!--                        <field invisible="is_saudi == True" name="iqama_no" readonly="1"/>-->
+<!--                        <field invisible="is_saudi == True" name="iqama_expiry_date" readonly="1"/>-->
+<!--                    </group>-->
+<!--                    &lt;!&ndash;                </xpath>&ndash;&gt;-->
+<!--                    &lt;!&ndash;                <xpath expr="//field[@name='identification_id']" position="after">&ndash;&gt;-->
+<!--                    <group string="Passport">-->
+<!--                        <field name="passport_id" readonly="1"/>-->
+<!--                        <field invisible="0" name="passeport_expiry_date" readonly="1"/>-->
+<!--                        <field invisible="0" name="passeport_issue_place" readonly="1"/>-->
+<!--                    </group>-->
+<!--                </xpath>-->
+                <!-- Hide coach_id-->
+
+                	<xpath expr="//header" position="inside">
+					<field name="state" widget="statusbar" statusbar_visible="draft,reject"  colspan="2"/>
+				</xpath>
+
+
+				 <xpath expr="//group[@name='identification_group']" position="after">
+				<!--  <xpath expr="//page[@name='personal_information']//group" position="inside"> -->
+                    <group string="Exit Date and EOS">
+                        <field name="exit_date"  readonly="1" />
+                         <field name="allocation_used_display" invisible="1"/>
+                    </group>
+                </xpath>
+
+                <xpath expr="//field[@name='coach_id']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                <xpath expr="//field[@name='department_id']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                <xpath expr="//field[@name='parent_id']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                <xpath expr="//group[field[@name='children']]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//group[field[@name='emergency_contact']]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='passport_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='marital']" position="after">
+                    <field name="children"/>
+                </xpath>
+                <xpath expr="//separator[@name='has_work_permit']" position="attributes">
+                    <attribute name="invisible">True</attribute>
+                </xpath>
+                <!--                <xpath expr="//page[@name='personal_information']/group[1]/group[6]" position="attributes">-->
+                <!--                    <attribute name="invisible">True</attribute>-->
+                <!--                </xpath>-->
+                <!--    <xpath expr="//page[@name='personal_information']/group/group/field[@name='emergency_contact']" position="replace">
+	                	 <div class="o_td_label" style="width:200px;">
+					                <label for="emergency_contact" />
+					            </div>
+                             <field name="emergency_contact" nolabel="1"/>
+                </xpath>
+ -->
+
+
+
+                <xpath expr="//page[@name='hr_settings']/group/group[@name='active_group']/field[@name='employee_type']" position="replace">
+                    <field name="employee_type"/>
+                </xpath>
+                <!--                <xpath expr="//field[@name='department_id']" position="before">-->
+                <!--                    <field name="branch_id"/>-->
+                <!--                </xpath>-->
+                <!--  <xpath expr="//field[@name='department_id']" position="attributes">
+                    <attribute name="domain">[('is_main_department', '=', False)]</attribute>
+                </xpath>
+                <xpath expr="//field[@name='department_id']" position="after">
+             		<div class="o_td_label" style="width:200px;">
+		                <label for="main_department_id" />
+		            </div>
+                    <field name="main_department_id" nolabel="1" readonly="1" domain="[('is_main_department','=',True)]"/>
+                </xpath> -->
+                <xpath expr="//group" position="before">
+                    <group>
+                        <!-- <group string="Arabic Details"> -->
+                        <group>
+                            <!-- <label for="arabic_name" class="oe_inline"/> -->
+                            <field name="employee_no" readonly="auto_employee_no == True" required="auto_employee_no == False"/>
+                        </group>
+                        <group>
+                            <field invisible="1" name="auto_employee_no"/>
+                            <field name="arabic_name" placeholder="Arabic Name"/>
+                            <!-- <label for="employee_no" class="oe_edit_only"/> -->
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="middle_name"/>
+                            <field name="third_name"/>
+                            <field name="last_name"/>
+                        </group>
+                        <group>
+                            <field name="department_id" position="move"/>
+                            <field domain="[('is_main_department','=',True)]" name="main_department_id" position="move" readonly="1"/>
+                            <field name="parent_id" position="move"/>
+                        </group>
+                    </group>
+                    <!-- <group>
+	                	<group>
+	                			<field name="department_id" position="move"/>
+	                             <field name="parent_id" position="move"/>
+	                             <field name="coach_id" position="move"/>
+
+	                	</group>
+                	</group>
+
+               -->
+                </xpath>
+                <xpath expr="//field[@name='birthday']" position="replace">
+                    <field name="birthday"/>
+                    <field name="age"/>
+                </xpath>
+                <xpath expr="//field[@name='work_email']" position="attributes">
+                </xpath>
+                <!--  <xpath expr="//field[@name='work_phone']" position="after">
+                    <field name="normal_leave"/>
+                </xpath>
+ -->
+                <!-- <xpath expr="//field[@name='id_attachment_id']" position="after">
+                	<group>
+
+	                	<field name="passport_id" position="move" readonly="1"/>
+	                    <field name="passeport_expiry_date" invisible="0" readonly="1"/>
+	                     <field name="passeport_issue_place" invisible="0" readonly="1"/>
+                     </group>
+                </xpath> -->
+                 <xpath expr="//field[@name='job_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+
+                </xpath>
+                <xpath expr="//notebook/page[@name='hr_settings']/group[1]/group[@name='payroll_group']" position="attributes">
+                    <attribute name="invisible">0</attribute>
+                </xpath>
+                 <xpath expr="//notebook/page[@name='hr_settings']/group[1]/group[@name='payroll_group']" position="inside">
+                     <field name="contract_id"/>
+                     <field name="job_id"/>
+                     <field name="grade_id"/>
+                    <field name="iqama_professional" invisible = "is_saudi == True" options="{'no_create': True, 'no_open': True}"/>
+                </xpath>
+
+                <xpath expr="//notebook/page[@name='personal_information']/group[1]/group[5]" position="replace"/>
+                <xpath expr="///notebook/page[@name='personal_information']/group[1]/group[1]" position="after">
+                    <group string="Citizenship">
+                        <field name="country_id" options='{"no_open": True, "no_create": True}'/>
+                        <field name="identification_id"/>
+                        <field name="ssnid"/>
+                        <field name="passport_id"/>
+                        <field name="gender"/>
+                        <field name="birthday"/>
+                        <field name="place_of_birth"/>
+                        <field name="country_of_birth"/>
+                    </group>
+                </xpath>
+                <xpath expr="//field[@name='country_id']" position="before">
+                    <field name="is_saudi"/>
+                    <field name="religion"/>
+                </xpath>
+                <xpath expr="//group[@name='active_group']" position="before">
+                    <group invisible="1" string="Employment">
+                        <field invisible="1" name="join_date"/>
+                    </group>
+                </xpath>
+<!--                <xpath expr="//field[@name='job_id']" position="after">-->
+<!--                    <field name="grade_id"/>-->
+<!--                    <field name="iqama_professional" options="{'no_create': True, 'no_open': True}"/>-->
+<!--                    &lt;!&ndash;                    <field name="iqama_profession_id" attrs="{'invisible':[('is_saudi','=',True)], }"/>&ndash;&gt;-->
+<!--                </xpath>-->
+                <xpath expr="//field[@name='address_id']" position="after">
+                    <field name="country_mobile_phone" widget="phone"/>
+                    <field invisible="1" name="residence_expiration_date"/>
+                    <field invisible="1" name="country_address"/>
+                </xpath>
+                <xpath expr="//div[@name='div_km_home_work']" position="after">
+                    <!--  <div class="o_row" > -->
+                    <field name="emergency_contact" position="move"/>
+                    <field class="o_force_ltr" name="emergency_phone" position="move"/>
+                    <!-- </div> -->
+                    <!-- <field name="emergency_contact" position="move"/>
+                    <field name="emergency_phone" class="o_force_ltr" position="move"/> -->
+                </xpath>
+                <xpath expr="//field[@name='gender']" position="attributes">
+                </xpath>
+                <!--                <xpath expr="//page[1]" position="attributes">-->
+                <!--                    <attribute name="groups">base.group_user</attribute>-->
+                <!--                </xpath>-->
+                <!--                <xpath expr="//page[2]" position="attributes">-->
+                <!--                    <attribute name="groups">base.group_user</attribute>-->
+                <!--                </xpath>-->
+                <xpath expr="//notebook/page[@name='public']/div/div/group" position="inside">
+                    <field name="mobile_phone" position="move" widget="phone"/>
+                    <field name="work_phone" position="move" widget="phone"/>
+                    <field name="work_email" position="move" widget="email"/>
+                    <field groups="base.group_multi_company" name="company_id" position="move"/>
+                </xpath>
+                <!--
+                <xpath expr="//page[2]" position="after">
+
+                    <page string="Medical Insurances" groups="base.group_user">
+                        <field name="insurance_ids" nolabel="1"/>
+                    </page>
+                </xpath>
+-->
+                <!--                  <xpath expr="//page[4]" position="before">-->
+                <!--                          <page string="bank account">-->
+                <!--                    <group string="Bank Accounts">-->
+                <!--                            <field name="bank_ids">-->
+                <!--                                <tree editable="bottom">-->
+                <!--                                    <field name="acc_number"/>-->
+                <!--                                    <field name="acc_holder_name" invisible="1"/>-->
+                <!--                                </tree>-->
+                <!--</field>-->
+                <!--                        </group>-->
+                <!--                          </page>-->
+                <!--                  </xpath>-->
+                <!--                <xpath expr="//page[4]" position="before">-->
+                <!--                    <page string="Training Courses">-->
+                <!--                        <field name="training_ids" nolabel="1" readonly="1">-->
+                <!--                            <tree string="Training Courses">-->
+                <!--                                <field name="name" required="1"/>-->
+                <!--                                <field name="date_from"/>-->
+                <!--                                <field name="date_to"/>-->
+                <!--                                <field name="duration"/>-->
+                <!--                                <field name="type"/>-->
+                <!--                            </tree>-->
+                <!--</field>-->
+                <!--                    </page>-->
+                <!--                </xpath>-->
+                <!--                <xpath expr="//field[@name='tz']" position="after">-->
+                <!--                    <field name="disability" />-->
+                <!--                    <group colspan="4">-->
+                <!--                        <field name="relative_ids">-->
+                <!--                            <tree>-->
+                <!--                                <field name="name" string="Name"/>-->
+                <!--                                <field name="email" string="Email"/>-->
+                <!--                                <field name="phone" string="Phone"/>-->
+                <!--                            </tree>-->
+                <!--</field>-->
+                <!--                        <field name="not_relative_ids">-->
+                <!--                            <tree>-->
+                <!--                                <field name="name" string="Name"/>-->
+                <!--                                <field name="email" string="Email"/>-->
+                <!--                                <field name="phone" string="Phone"/>-->
+                <!--                            </tree>-->
+                <!--</field>-->
+                <!--                    </group>-->
+                <!--                </xpath>-->
+                <xpath expr="//field[@name='birthday']" position="attributes">
+                    <attribute name="groups">
+                        base.group_user</attribute>
+                </xpath>
+                <xpath expr="//field[@name='marital']" position="before">
+                    <field name="ticket_depends"/>
+                </xpath></field>
+        </record>
+        <!-- Remove partner_id field from Bank account view -->
+        <!--        <record id="hr_form_view_partner_bank_inherit" model="ir.ui.view">-->
+        <!--            <field name="name">Bank Account</field>-->
+        <!--            <field name="model">res.partner.bank</field>-->
+        <!--            <field name="inherit_id" ref="base.view_partner_bank_form"/>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <xpath expr="//field[@name='partner_id']" position="replace">-->
+        <!--                </xpath>-->
+        <!--</field>-->
+        <!--        </record>-->
+        <!-- Search View For HR Employee -->
+        <record id="view_saudi_hr_employee_filter" model="ir.ui.view">
+            <field name="name">Employees</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='job_id']" position="after">
+                    <field name="employee_no" string="Employee  No"/>
+                    <separator/>
+                </xpath>
+                <xpath expr="//search/group" position="before">
+                    <newline/>
+                    <filter domain="[('is_saudi','=',True)]" name="Saudi" string="Saudi"/>
+                    <filter domain="[('is_saudi','=',False)]" name="Non-Saudi" string="Non-saudi"/>
+                </xpath></field>
+        </record>
+        <!--
+            HR Qualification
+        -->
+        <!--        <record id="view_form_hr_qualification" model="ir.ui.view">-->
+        <!--            <field name="name">hr.qualification.form</field>-->
+        <!--            <field name="model">hr.qualification</field>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <form string="Qualifications">-->
+        <!--                    <group>-->
+        <!--                        <group>-->
+        <!--                            <field name="name" required="1"/>-->
+        <!--                            <field name="attended_date_from" required="1"/>-->
+        <!--                        </group>-->
+        <!--                        <group>-->
+        <!--                            <field name="university_name" required="1"/>-->
+        <!--                            <field name="attended_date_to"/>-->
+        <!--                        </group>-->
+        <!--                        <group>-->
+        <!--                            <field name="program_type" required="1"/>-->
+        <!--                        </group>-->
+        <!--                        <group>-->
+        <!--                            <field name="description"/>-->
+        <!--                        </group>-->
+        <!--                    </group>-->
+        <!--                </form>-->
+        <!--</field>-->
+        <!--        </record>-->
+        <!--        <record id="view_tree_hr_qualification" model="ir.ui.view">-->
+        <!--            <field name="name">hr.qualification.tree</field>-->
+        <!--            <field name="model">hr.qualification</field>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <tree string="Qualifications">-->
+        <!--                    <field name="name"/>-->
+        <!--                    <field name="university_name"/>-->
+        <!--                    <field name="attended_date_from"/>-->
+        <!--                    <field name="attended_date_to"/>-->
+        <!--                    <field name="program_type"/>-->
+        <!--                    <field name="description"/>-->
+        <!--                </tree>-->
+        <!--</field>-->
+        <!--        </record>-->
+        <!--
+            HR Certification
+        -->
+        <!--        <record id="view_form_hr_certification" model="ir.ui.view">-->
+        <!--            <field name="name">hr.certification.form</field>-->
+        <!--            <field name="model">hr.certification</field>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <form string="Certifications">-->
+        <!--                    <group>-->
+        <!--                        <group>-->
+        <!--                            <field name="name" required="1"/>-->
+        <!--                            <field name="issue_date" required="1"/>-->
+        <!--                            <field name="reg_no" required="1"/>-->
+        <!--                        </group>-->
+        <!--                        <group>-->
+        <!--                            <field name="organization_name"/>-->
+        <!--                            <field name="expiry_date"/>-->
+        <!--                        </group>-->
+        <!--                    </group>-->
+        <!--                </form>-->
+        <!--</field>-->
+        <!--        </record>-->
+        <!--        <record id="view_tree_hr_certification" model="ir.ui.view">-->
+        <!--            <field name="name">hr.certification.tree</field>-->
+        <!--            <field name="model">hr.certification</field>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <tree string="Certifications">-->
+        <!--                    <field name="name"/>-->
+        <!--                    <field name="organization_name"/>-->
+        <!--                    <field name="reg_no"/>-->
+        <!--                    <field name="issue_date"/>-->
+        <!--                    <field name="expiry_date"/>-->
+        <!--                </tree>-->
+        <!--</field>-->
+        <!--        </record>-->
+        <!-- HR Experience -->
+        <!--        <record id="view_form_hr_experience" model="ir.ui.view">-->
+        <!--            <field name="name">hr.experience.form</field>-->
+        <!--            <field name="model">hr.experience</field>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <form string="Experiences">-->
+        <!--                    <group>-->
+        <!--                        <group>-->
+        <!--                            <field name="job_title" required="1"/>-->
+        <!--                            <field name="date_from" required="1"/>-->
+        <!--                            <field name="location"/>-->
+        <!--                        </group>-->
+        <!--                        <group>-->
+        <!--                            <field name="company" required="1"/>-->
+        <!--                            <field name="date_to" required="1"/>-->
+        <!--                        </group>-->
+        <!--                        <field name="description"/>-->
+        <!--                    </group>-->
+        <!--                </form>-->
+        <!--</field>-->
+        <!--        </record>-->
+        <!--        <record id="view_tree_hr_experience" model="ir.ui.view">-->
+        <!--            <field name="name">hr.experience.tree</field>-->
+        <!--            <field name="model">hr.experience</field>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <tree string="Experiences">-->
+        <!--                    <field name="job_title"/>-->
+        <!--                    <field name="company"/>-->
+        <!--                    <field name="location"/>-->
+        <!--                    <field name="date_from"/>-->
+        <!--                    <field name="date_to"/>-->
+        <!--                    <field name="description"/>-->
+        <!--                </tree>-->
+        <!--</field>-->
+        <!--        </record>-->
+        <!-- Documents -->
+        <!--        <record id="view_form_documents" model="ir.ui.view">-->
+        <!--            <field name="name">res.documents.form</field>-->
+        <!--            <field name="model">res.documents</field>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <form string="Document">-->
+        <!--                    <group>-->
+        <!--                        <group>-->
+        <!--                            <field name="type_id" required="1"/>-->
+        <!--                            <field name="issue_date" required="1"/>-->
+        <!--                            <field name="document" required="1" filename="document_filename"/>-->
+        <!--                            <field name="document_filename" invisible="1"/>-->
+        <!--                        </group>-->
+        <!--                        <group>-->
+        <!--                            <field name="issue_place" required="1"/>-->
+        <!--                            <field name="expiry_date" required="1"/>-->
+        <!--                        </group>-->
+        <!--                        <field name="notes"/>-->
+        <!--                    </group>-->
+        <!--                </form>-->
+        <!--</field>-->
+        <!--        </record>-->
+        <!--        <record id="view_tree_document" model="ir.ui.view">-->
+        <!--            <field name="name">res.documents.tree</field>-->
+        <!--            <field name="model">res.documents</field>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <tree string="Documents">-->
+        <!--                    <field name="type_id" required="1"/>-->
+        <!--                    <field name="issue_place"/>-->
+        <!--                    <field name="issue_date"/>-->
+        <!--                    <field name="expiry_date"/>-->
+        <!--                    <field name="notes"/>-->
+        <!--                    <field name="document" filename="document_filename"/>-->
+        <!--                    <field name="document_filename" invisible="1"/>-->
+        <!--                </tree>-->
+        <!--</field>-->
+        <!--        </record>-->
+        <!--
+         Medical Insurance
+        <record id="view_form_medical_insurance" model="ir.ui.view">
+            <field name="name">hr.medical.insurance.form</field>
+            <field name="model">hr.medical.insurance</field>
+            <field name="arch" type="xml">
+                <form string="Medical Insurance">
+                    <group>
+                        <group>
+                            <field name="member_name" required="1"/>
+                            <field name="birth_date" required="1"/>
+                            <field name="relation" required="1"/>
+                            <field name="gender" required="1"/>
+                        </group>
+                        <group>
+                            <field name="class_type_id" required="1"/>
+                            <field name="sponsor_id" required="1"/>
+                            <field name="id_number" required="1"/>
+                            <field name="expiry_date" required="1"/>
+
+                        </group>
+                    </group>
+                </form></field>
+        </record>
+
+        <record id="view_tree_medical_insurance" model="ir.ui.view">
+            <field name="name">hr.medical.insurance.tree</field>
+            <field name="model">hr.medical.insurance</field>
+            <field name="arch" type="xml">
+                <tree string="Medical Insurances">
+                    <field name="member_name"/>
+                    <field name="birth_date"/>
+                    <field name="gender"/>
+                    <field name="relation"/>
+                    <field name="id_number"/>
+                    <field name="class_type_id"/>
+                    <field name="sponsor_id"/>
+                    <field name="expiry_date"/>
+                </tree></field>
+        </record>
+-->
+        <!--        <menuitem-->
+        <!--            id="hr.menu_hr_root"-->
+        <!--            name="Employees"-->
+        <!--            groups="base.group_user"-->
+        <!--            web_icon="saudi_hr,static/description/icon.png"-->
+        <!--            sequence="75"/>-->
+        <!--        <menuitem-->
+        <!--            id="hr.menu_hr_main"-->
+        <!--            name="Human Resources"-->
+        <!--            parent="menu_hr_root"-->
+        <!--            groups="base.group_user"-->
+        <!--            sequence="0"/>-->
+        <menuitem groups="base.group_user" id="hr.menu_hr_employee_payroll" name="Employees" parent="hr.menu_hr_root" sequence="3"/>
+        <!-- This menu cheange to om_hr_payroll - Apl-26-2024-->
+        <!--<menuitem
+                id="hr.menu_hr_employee_user"
+                name="Employees"
+                action="hr.open_view_employee_list_my"
+                parent="hr.menu_hr_employee_payroll"
+                groups="base.group_user"
+                sequence="1"/>-->
+        <menuitem action="hr.hr_employee_public_action" groups="hr_saudi.group_hrm" id="hr.menu_hr_employee" name="Employee Directory" parent="hr.menu_hr_root" sequence="4"/>
+        <record id="hr_grade_view_tree" model="ir.ui.view">
+            <field name="name">hr.grade.tree</field>
+            <field name="model">hr.grade</field>
+            <field name="arch" type="xml">
+                <tree string="Grade">
+                    <field name="name"/>
+                </tree></field>
+        </record>
+        <record id="hr_grade_view_form" model="ir.ui.view">
+            <field name="name">hr.grade.form</field>
+            <field name="model">hr.grade</field>
+            <field name="arch" type="xml">
+                <form string="Grade">
+                    <group>
+                        <field name="name"/>
+                    </group>
+                    <!--					<group colspan="4">-->
+                    <!--						<separator string="JOB" />-->
+                    <!--						<field name="hr_job_ids" widget="many2many" readonly="1" nolabel="1" colspan="4">-->
+                    <!--                            <tree>-->
+                    <!--                                <field name="name"/>-->
+                    <!--                                <field name="department_id"/>-->
+                    <!--                            </tree>-->
+                    <!--</field>-->
+                    <!--					</group>-->
+                </form></field>
+        </record>
+        <record id="action_hr_grade" model="ir.actions.act_window">
+            <field name="name">Grades</field>
+            <field name="res_model">hr.grade</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to define a new Grade.
+                </p></field>
+        </record>
+        <menuitem action="action_hr_grade" id="menu_hr_grade" parent="hr.menu_human_resources_configuration" sequence="6"/>
+    </data>
+</odoo>

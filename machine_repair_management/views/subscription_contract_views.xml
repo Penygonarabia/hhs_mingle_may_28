@@ -1,0 +1,54 @@
+<?xml version = "1.0" encoding ="utf-8" ?>
+<odoo>
+
+	<record id="subscription_contracts_view_form_inherit_tax_customer" model="ir.ui.view">
+        <field name="name">Subscription Contracts</field>
+        <field name="model">subscription.contracts</field>
+        <field name="inherit_id" ref="sales_contract_and_recurring_invoices.subscription_contracts_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group/field[@name='next_invoice_date']" position="after">
+                <field name="customer_identification_scheme" string="Tax Type" force_save="1"/>
+                <field name="customer_identification_number"
+                    string="VAT No"
+                    force_save="1"
+                    required="customer_identification_scheme in ('TIN','CRN','IQA','NAT')"/>
+
+                <field name="building_number"
+                    force_save="1"
+                    required="customer_identification_scheme == 'TIN'"/>
+
+                <field name="plot_identification"
+                    force_save="1"
+                    required="customer_identification_scheme == 'TIN'"/>
+                    
+                  <field name = "customer_code" />
+                 <field name = "warehouse_id" required = "1"/>
+                 <field name = "district" invisible = "1"/>
+                 <field name = "work_center_id" invisible = "1" />
+                 <field name = "work_center_group_id" invisible = "1" />
+                 <field name = "sales_person_user_id" invisible = "1"/>
+            </xpath>
+        </field>
+       </record>
+        
+      <record id="subscription_contracts_view_form_inherit" model="ir.ui.view">
+        <field name="name">Subscription Contracts</field>
+        <field name="model">subscription.contracts</field>
+        <field name="inherit_id" ref="sales_contract_and_recurring_invoices.subscription_contracts_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='reference']" position="after">
+                <field name="amc_quotation_id" domain="[('amc_quotation', '=', True)]" readonly="1"/>
+            </xpath>
+            <xpath expr="//field[@name='amc_quotation_id']" position="after">
+                <field name="partner_name"/>
+            </xpath>
+            <xpath expr="//group/field[@name='manual_next_invoice_date']" position="after">
+                <field name="technician_id" domain="[('project_ids', 'in', [project_id])]"/>
+                <field name="project_id" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+        
+
+
+</odoo>

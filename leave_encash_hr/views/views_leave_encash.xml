@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="views_leave_encash_search" model="ir.ui.view">
+            <field name="name">views.leave.encash.search</field>
+            <field name="model">leave.encash</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="employee_number"/>
+                    <field name="employee_id"/>
+                    <group>
+                        <filter context="{'group_by' : 'leave_type_id'}" name="leave_type" string="Leave Type"/>
+                        <filter context="{'group_by' : 'employee_id'}" name="employee" string="Employee"/>
+                        <filter context="{'group_by' : 'date'}" name="date" string="Date"/>
+                    </group>
+                </search></field>
+        </record>
+        <record id="views_leave_encash_tree" model="ir.ui.view">
+            <field name="name">views.leave.encash.tree</field>
+            <field name="model">leave.encash</field>
+            <field name="arch" type="xml">
+                <tree default_order="name Desc">
+                    <field name="name"/>
+                    <field name="employee_number"/>
+                    <field name="employee_id"/>
+                    <field name="leave_type_id"/>
+                    <field name="leave_carry"/>
+                    <field name="days_want" string="Applied Encash Leave"/>
+                    <field name="date"/>
+                    <field name="amount"/>
+                    <field name="state"/>
+                </tree></field>
+        </record>
+        <record id="views_leave_encash_form" model="ir.ui.view">
+            <field name="name">views.leave.encash.form</field>
+            <field name="model">leave.encash</field>
+            <field name="arch" type="xml">
+                <form>
+                    <!-- <form delete="false"> -->
+                    <header>
+                        <button invisible="state not in ['draft']" name="action_request" string="Request For DM Approval" type="object"/>
+                        <button groups="hr_saudi.group_dm" help="First Phase Approval" invisible="state not in ['request']" name="action_progress" string="DM Approve" type="object"/>
+                        <button groups="hr_saudi.group_hrm" help="Second Phase Approval" invisible="state not in ['progress']" name="action_progress2" string="HR Manager Approve" type="object"/>
+                        <button groups="hr_saudi.group_finance_manager" help="Finance Manager Approval" invisible="state not in ['progress2']" name="action_approve" string="FM Approve" type="object"/>
+                        <button groups="hr_saudi.group_admin_approval" help="Admin &amp; Financial Director approval" invisible="state not in ['progress3']" name="action_progress3" string="Admin &amp; Financial Director approval" type="object"/>
+                        <button groups="hr.group_hr_manager" invisible="state not in ['request','guarantor_approve','progress','progress2']" name="action_draft" string="Back to Draft" type="object"/>
+                        <!-- <button name="request_for_approve" string="Request for Manager Approved" type="object"  attrs="{'invisible':[('state','!=',('draft'))]}"/> -->
+                        <!--  <button name='approve' string="Approve" type="object" attrs="{'invisible':[('state','!=',('draft'))]}" style="color : white;background-color : #7c7bad;" /> -->
+                        <button invisible="state != ['draft', 'approved']" name="cancel" string="Cancel" style="color : white;background-color : #7c7bad;" type="object"/>
+                        <!-- <button name="leave_approve" string="Leave Encash" type="object"/> -->
+                        <field name="state" statusbar_visible="draft,approved,paid,canceled" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <field name="name" readonly="1"/>
+                        </group>
+                        <group col="4">
+                            <field domain="[('contract_warning','=',False)]" name="employee_id" options="{'no_create_edit': True}" readonly="state != 'draft'"/>
+                            <field force_save="1" name="employee_number" readonly="1"/>
+                            <field force_save="1" name="date" readonly="1"/>
+                            <field force_save="1" name="leave_carry" readonly="state != 'draft'"/>
+                            <field domain="[('is_leave_encash','=',True)]" name="leave_type_id" options="{'no_create_edit': True}" readonly="state != 'draft'"/>
+                            <field force_save="1" name="department_id" options="{'no_create_edit': True}" readonly="state != 'draft'"/>
+                            <field force_save="1" name="particular_total_leave"/>
+                        </group>
+                        <group col="2">
+                            <group>
+                                <field force_save="1" name="contract_id" options="{'no_create_edit': True}" readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field force_save="1" name="days_want" readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field force_save="1" name="job_id" options="{'no_create_edit': True}" readonly="state != 'draft'"/>
+                            </group>
+                            <group>
+                                <field force_save="1" invisible="days_want == 0.0" name="leave_calculation" options="{'no_create_edit': True}" readonly="state != 'draft'" required="days_want > 0.0"/>
+                            </group>
+                            <group>
+                                <field force_save="1" name="payslip_id" options="{'no_create_edit': True}" readonly="1"/>
+                            </group>
+                            <group>
+                                <field force_save="1" invisible="days_want == 0.0" name="amount" readonly="state != 'draft'"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field invisible="1" name="company_id"/>
+                            <field invisible="1" name="is_progress3_clicked"/>
+                        </group>
+                        <group>
+                            <field invisible="1" name="payslip_bool"/>
+                            <field invisible="1" name="leave_deducted"/>
+                        </group>
+                        <notebook>
+                            <page string="Approval Notes">
+                                <group>
+                                    <group>
+                                        <field name="d_manager"/>
+                                        <field name="d_manager_note" nolabel="1" placeholder="Direct Manager Note" readonly="state != 'request'"/>
+                                        <field name="hr_manage_id"/>
+                                        <field name="hr_manage_note" nolabel="1" placeholder="HR Manager Note" readonly="state != 'progress'"/>
+                                    </group>
+                                    <group>
+                                        <field name="account_manage_id"/>
+                                        <field name="account_manage_note" nolabel="1" placeholder="Admin Manager Note" readonly="state != 'progress2'"/>
+                                        <field name="admin_manager_id"/>
+                                        <field name="admin_manager_note" nolabel="1" placeholder="Accounting Manager Note" readonly="state != 'progress3'"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form></field>
+        </record>
+        <record id="action_leave_encash" model="ir.actions.act_window">
+            <field name="name">Leave Encash</field>
+            <field name="res_model">leave.encash</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+<!--        <menuitem action="action_leave_encash" id="menu_leave_encash" name="Leave Encash" parent="om_hr_payroll.menu_leave_time_off_head" sequence="21"/>-->
+        <menuitem action="action_leave_encash" id="menu_leave_encash" name="Leave Encash" parent="hr_holidays.menu_hr_holidays_approvals" sequence="21"/>
+    </data>
+</odoo>

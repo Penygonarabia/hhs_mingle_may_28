@@ -1,0 +1,26 @@
+.o_statusbar_blocked {
+  pointer-events: none; /* 🚫 disable all clicks */
+  opacity: 0.6; /* 👀 faded look */
+  cursor: not-allowed !important;
+
+  /* 🚫 show blocked cursor */
+}
+.o_btn_disabled {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed !important;
+}
+.o_readonly_banner {
+  position: fixed; /* 🔥 stays on screen */
+  top: 25%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* background: rgba(181, 241, 211, 0.8);
+   */
+  background: linear-gradient(90deg, #1a4893 0%, #40c1af 25%, #40c174);
+  color: #0a0a0a;
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 8px;
+  z-index: 1000;
+}

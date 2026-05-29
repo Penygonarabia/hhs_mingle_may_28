@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+     <record id="group_access_for_bill" model="res.groups">
+        <field name="name">Customer Approve on bill </field>
+        <field name="category_id" ref="base.module_category_hidden"/>
+    </record>
+    <record id="group_access_for_invoice" model="res.groups">
+        <field name="name">Customer Approve on invoice </field>
+        <field name="category_id" ref="base.module_category_hidden"/>
+    </record>
+</odoo>

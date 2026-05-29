@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <data>
+
+
+<!--         <report-->
+<!--            id="action_report_employee_advance_report_xlsx"-->
+<!--            string="Advance_Transaction_Report"-->
+<!--            model="employee.advance.report"-->
+<!--            report_type="xlsx"-->
+<!--            file="Advance Transaction Report"-->
+<!--            name="employee_advance_report.report_employee_advance_xlsx"-->
+<!--        />-->
+        <record id="action_report_employee_advance_report_xlsx" model="ir.actions.report">
+	        <field name="name">Advance Transaction Report</field>
+	        <field name="model">employee.advance.report</field>
+	        <field name="report_type">xlsx</field>
+	        <field name="report_name">employee_advance_report.report_employee_advance_xlsx</field>
+	        <field name="report_file">Advance Transaction Report</field>
+	        <field name="binding_model_id" ref="model_employee_advance_report"/>
+	        <field name="binding_type">report</field>
+
+         </record>
+
+
+   </data>
+</odoo>

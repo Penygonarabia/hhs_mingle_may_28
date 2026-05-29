@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+	<!-- Loan Start -->
+
+	<!-- Workflow Start-->
+	<record id="wkf_hr_employee_loan_ps" model="workflow">
+	    <field name="name">hr.employee.loan.ps.wkf</field>
+	    <field name="osv">hr.employee.loan.ps</field>
+	    <field name="on_create" eval='True' />
+	</record>
+	<!-- Workflow End-->
+
+	<!-- Activity Start-->
+	<record id="act_draft" model="workflow.activity">
+	    <field name="wkf_id" ref="wkf_hr_employee_loan_ps"/>
+	    <field name="flow_start">True</field>
+	    <field name="name">draft</field>
+            <field name="action">write({'state':'draft'})</field>
+            <field name="kind">function</field>
+	</record>
+
+        <record id="act_request" model="workflow.activity">
+            <field name="wkf_id" ref="wkf_hr_employee_loan_ps"/>
+            <field name="name">request</field>
+            <field name="action">action_request()</field>
+            <field name="kind">function</field>
+        </record>
+
+        <record id="act_guarantor_approve" model="workflow.activity">
+            <field name="wkf_id" ref="wkf_hr_employee_loan_ps"/>
+            <field name="name">guarantor_approve</field>
+            <field name="action">action_guarantor_approve()</field>
+            <field name="kind">function</field>
+        </record>
+
+        <record id="act_progress" model="workflow.activity">
+            <field name="wkf_id" ref="wkf_hr_employee_loan_ps"/>
+            <field name="name">progress</field>
+            <field name="action">action_progress()</field>
+            <field name="kind">function</field>
+        </record>
+
+        <record id="act_approve" model="workflow.activity">
+            <field name="wkf_id" ref="wkf_hr_employee_loan_ps"/>
+            <field name="name">approve</field>
+            <field name="action">action_approve()</field>
+            <field name="kind">function</field>
+        </record>
+
+        <record id="act_refuse" model="workflow.activity">
+            <field name="wkf_id" ref="wkf_hr_employee_loan_ps"/>
+            <field name="name">refuse</field>
+            <field name="flow_stop">True</field>
+            <field name="action">write({'state':'refuse'})</field>
+            <field name="kind">function</field>
+        </record>
+	<!-- Activity End-->
+
+	<!-- Transition Start-->
+        <record id="t1" model="workflow.transition">
+            <field name="act_from" ref="act_draft"/>
+            <field name="act_to" ref="act_request"/>
+            <field name="signal">action_request</field>
+        </record>
+
+        <record id="t2" model="workflow.transition">
+            <field name="act_from" ref="act_request"/>
+            <field name="act_to" ref="act_refuse"/>
+            <field name="signal">action_refuse</field>
+        </record>
+
+        <record id="t3" model="workflow.transition">
+            <field name="act_from" ref="act_request"/>
+            <field name="act_to" ref="act_draft"/>
+            <field name="signal">action_draft</field>
+        </record>
+
+        <record id="t4" model="workflow.transition">
+            <field name="act_from" ref="act_request"/>
+            <field name="act_to" ref="act_guarantor_approve"/>
+            <field name="signal">action_guarantor_approve</field>
+        </record>
+
+        <record id="t5" model="workflow.transition">
+            <field name="act_from" ref="act_request"/>
+            <field name="act_to" ref="act_progress"/>
+            <field name="signal">action_progress</field>
+        </record>
+
+        <record id="t6" model="workflow.transition">
+            <field name="act_from" ref="act_guarantor_approve"/>
+            <field name="act_to" ref="act_progress"/>
+            <field name="signal">action_progress</field>
+        </record>
+
+        <record id="t7" model="workflow.transition">
+            <field name="act_from" ref="act_guarantor_approve"/>
+            <field name="act_to" ref="act_refuse"/>
+            <field name="signal">action_refuse</field>
+        </record>
+
+        <record id="t8" model="workflow.transition">
+            <field name="act_from" ref="act_guarantor_approve"/>
+            <field name="act_to" ref="act_draft"/>
+            <field name="signal">action_draft</field>
+        </record>
+
+        <record id="t9" model="workflow.transition">
+            <field name="act_from" ref="act_progress"/>
+            <field name="act_to" ref="act_approve"/>
+            <field name="signal">action_approve</field>
+        </record>
+
+        <record id="t10" model="workflow.transition">
+            <field name="act_from" ref="act_progress"/>
+            <field name="act_to" ref="act_refuse"/>
+            <field name="signal">action_refuse</field>
+        </record>
+
+        <record id="t11" model="workflow.transition">
+            <field name="act_from" ref="act_progress"/>
+            <field name="act_to" ref="act_draft"/>
+            <field name="signal">action_draft</field>
+        </record>
+	<!-- Transition End-->
+	<!-- Loan Start -->
+
+
+	<!-- Advance Start -->
+
+	<!-- Workflow Start-->
+	<record id="wkf_hr_employee_advance_ps" model="workflow">
+	    <field name="name">hr.employee.advance.ps.wkf</field>
+	    <field name="osv">hr.employee.advance.ps</field>
+	    <field name="on_create" eval='True' />
+	</record>
+	<!-- Workflow End-->
+
+	<!-- Activity Start-->
+	<record id="act_advance_draft" model="workflow.activity">
+	    <field name="wkf_id" ref="wkf_hr_employee_advance_ps"/>
+	    <field name="flow_start">True</field>
+	    <field name="name">draft</field>
+            <field name="action">write({'state':'draft'})</field>
+            <field name="kind">function</field>
+	</record>
+
+        <record id="act_advance_request" model="workflow.activity">
+            <field name="wkf_id" ref="wkf_hr_employee_advance_ps"/>
+            <field name="name">request</field>
+            <field name="action">action_request()</field>
+            <field name="kind">function</field>
+        </record>
+
+        <record id="act_advance_progress" model="workflow.activity">
+            <field name="wkf_id" ref="wkf_hr_employee_advance_ps"/>
+            <field name="name">progress</field>
+            <field name="action">action_progress()</field>
+            <field name="kind">function</field>
+        </record>
+
+        <record id="act_advance_approve" model="workflow.activity">
+            <field name="wkf_id" ref="wkf_hr_employee_advance_ps"/>
+            <field name="name">approve</field>
+            <field name="action">action_approve()</field>
+            <field name="kind">function</field>
+        </record>
+
+        <record id="act_advance_refuse" model="workflow.activity">
+            <field name="wkf_id" ref="wkf_hr_employee_advance_ps"/>
+            <field name="name">refuse</field>
+            <field name="flow_stop">True</field>
+            <field name="action">write({'state':'refuse'})</field>
+            <field name="kind">function</field>
+        </record>
+	<!-- Activity End-->
+
+	<!-- Transition Start-->
+        <record id="ta1" model="workflow.transition">
+            <field name="act_from" ref="act_advance_draft"/>
+            <field name="act_to" ref="act_advance_request"/>
+            <field name="signal">action_request</field>
+        </record>
+
+        <record id="ta2" model="workflow.transition">
+            <field name="act_from" ref="act_advance_request"/>
+            <field name="act_to" ref="act_advance_refuse"/>
+            <field name="signal">action_refuse</field>
+        </record>
+
+        <record id="ta3" model="workflow.transition">
+            <field name="act_from" ref="act_advance_request"/>
+            <field name="act_to" ref="act_advance_draft"/>
+            <field name="signal">action_draft</field>
+        </record>
+
+        <record id="ta4" model="workflow.transition">
+            <field name="act_from" ref="act_advance_request"/>
+            <field name="act_to" ref="act_advance_progress"/>
+            <field name="signal">action_progress</field>
+        </record>
+
+        <record id="ta5" model="workflow.transition">
+            <field name="act_from" ref="act_advance_progress"/>
+            <field name="act_to" ref="act_advance_approve"/>
+            <field name="signal">action_approve</field>
+        </record>
+
+        <record id="ta6" model="workflow.transition">
+            <field name="act_from" ref="act_advance_progress"/>
+            <field name="act_to" ref="act_advance_refuse"/>
+            <field name="signal">action_refuse</field>
+        </record>
+
+        <record id="ta7" model="workflow.transition">
+            <field name="act_from" ref="act_advance_progress"/>
+            <field name="act_to" ref="act_advance_draft"/>
+            <field name="signal">action_draft</field>
+        </record>
+	<!-- Transition End-->
+
+
+
+    </data>
+</odoo>

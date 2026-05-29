@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_cat_desc_form" model="ir.ui.view">
+        <field name="name">catalogdesc.form</field>
+        <field name="model">catalogdesc</field>
+        <field name="arch" type="xml">
+            <form string="Custom Language">
+                <sheet>
+                    <group>
+                        <field name="cat_comments"/>
+                        <field name="cat_desc"/>
+                        <field name="cat_grp" />
+                        <field name="cat_lang" readonly="1"/>
+                        <field name="cat_part" />
+                        <field name="cat_sdesc" />
+                        <field name="cat_shortdesc" />
+                        <field name="cat_specs" />
+                        <field name="cat_splname" />
+                        <field name="cat_stock" />
+                        <field name="lang_flag" />
+                        <field name="user_lmd" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_cat_desc_tree" model="ir.ui.view">
+        <field name="name">catalogdesc.custom.tree</field>
+        <field name="model">catalogdesc</field>
+        <field name="arch" type="xml">
+            <tree string="Custom Language List">
+                <field name="cat_comments"/>
+                <field name="cat_desc"/>
+                <field name="cat_grp" />
+                <field name="cat_lang" />
+                <field name="cat_part" />
+                <field name="cat_sdesc" />
+                <field name="cat_shortdesc" />
+                <field name="cat_specs" />
+                <field name="cat_splname" />
+                <field name="cat_stock" />
+                <field name="lang_flag" />
+                <field name="user_lmd" />
+            </tree>
+        </field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom_main" name="Languages" sequence="10"/> -->
+
+    <record id="action_cat_desc_custom" model="ir.actions.act_window">
+        <field name="name">Catalogdesc</field>
+        <field name="res_model">catalogdesc</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom" name="Regular" action="action_res_lang_custom"  sequence="10"/> -->
+
+</odoo>

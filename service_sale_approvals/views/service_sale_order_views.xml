@@ -1,0 +1,172 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <record id="view_service_order_form_inherit_approval" model="ir.ui.view">
+        <field name="name">view.service.order.form.inherit.approval</field>
+        <field name="model">service.sale.order</field>
+        <field name="inherit_id" ref="machine_repair_management.service_sale_order_form"/>
+        <field name="arch" type="xml">
+<!--            <xpath expr="//header" position="inside">-->
+<!--                <field name="is_approval_reject_button" invisible="1"/>-->
+<!--                <field name="is_approval" invisible="1"/>-->
+<!--                -->
+<!--                <field name="is_rejected" invisible="1"/>-->
+<!--                <field name="all_level_approved" invisible="1"/>-->
+<!--                <button string="Approve" name="action_approve" type="object"-->
+<!--                        class="oe_highlight"-->
+<!--                        invisible="not is_approval_reject_button or is_rejected or all_level_approved"/>-->
+<!--                <button string="Reject" name="action_reject" type="object"-->
+<!--                        context="{'default_order_id': context.get('active_id')}"-->
+<!--                        invisible="not is_approval_reject_button or is_rejected or all_level_approved"/>-->
+<!--&lt;!&ndash;                <button name="action_create_contract"&ndash;&gt;-->
+<!--&lt;!&ndash;                        type="object"&ndash;&gt;-->
+<!--&lt;!&ndash;                        string="Create Contract"&ndash;&gt;-->
+<!--&lt;!&ndash;                        class="btn-primary"&ndash;&gt;-->
+<!--&lt;!&ndash;                        invisible="contract_id"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                &lt;!&ndash; Show contract link in header &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;                <field name="contract_id" widget="many2one" options="{'no_create': True}" invisible="1"/>&ndash;&gt;-->
+<!--            </xpath>-->
+            <xpath expr="//button[@name='action_cancel']" position="before">
+                <field name="is_approval_reject_button" invisible="1"/>
+                <field name="is_rejected" invisible="1"/>
+                <field name="all_level_approved" invisible="1"/>
+                <button string="Approve" name="action_approve" type="object"
+                        class="oe_highlight"
+                        invisible="not is_approval_reject_button or is_rejected or all_level_approved"/>
+            </xpath>
+             <xpath expr="//button[@name='action_cancel']" position="after">
+                <field name="is_approval_reject_button" invisible="1"/>
+                <field name="is_rejected" invisible="1"/>
+                <field name="all_level_approved" invisible="1"/>
+                <button string="Reject" name="action_reject" type="object"
+                    context="{'default_order_id': context.get('active_id')}"
+                    invisible="not is_approval_reject_button or is_rejected or all_level_approved"/>
+            </xpath>
+<!--            <xpath expr="//sheet" position="inside">-->
+<!--                <div class="oe_button_box" name="button_box">-->
+
+<!--						<button class = "oe_stat_button" icon = "fa-pencil-square" name ="show_contract" string = "Show Contract" type = "object"  invisible ="not id"-->
+<!--                    		/>-->
+
+<!--                        </div>-->
+<!--            </xpath>-->
+
+            <xpath expr="//button[@name='action_confirm']" position="after">
+<!--                <button name="action_confirm_amc_quotation" id="action_confirm" data-hotkey="q" string="Confirm" class="btn-primary" type="object" invisible ="state in ('draft', 'waiting', 'done', 'cancel', 'reject') or not amc_quotation"/>-->
+                <button name="action_confirm_amc_quotation" id="action_confirm" data-hotkey="q" string="Send for Approval" class="btn-primary" type="object" invisible ="state not in ('draft') or not amc_quotation or not show_approval_button"/>
+                <button name="action_without_approval" data-hotkey="q" string="To Approve" class="btn-primary" type="object" invisible ="state not in ('draft') or not amc_quotation or show_approval_button"/>
+                <field name = "show_approval_button" invisible = "1"/>
+            </xpath>
+            <xpath expr="//button[@name='action_contract_creation']" position="attributes">
+                <attribute name="invisible">
+                    (state != 'done' and state != 'approve' and state != 'sent')
+                </attribute>
+            </xpath>
+            <xpath expr="//field[@name='state']" position="after">
+<!--                <field name="state"  widget="statusbar" statusbar_visible="draft,sent,waiting,approve,done,cancel,reject" invisible = "job_task_id"/>-->
+                <field name="state"  widget="statusbar" statusbar_visible="draft,sent,sale" invisible = "job_task_id"/>
+            </xpath>
+             <xpath expr="//field[@name='approval_level_id']" position="attributes">
+                <attribute name="domain">[('id', 'in', suggested_ids)]</attribute>
+             </xpath>
+
+            <xpath expr="//field[@name='no_of_correct_service']" position="after">
+                <field name="is_approval" invisible="0"/>
+                <field name="suggested_ids" invisible="0" widget="many2many_tags"/>
+                <field name="service_sale_approval_id"
+                       domain="[('id', 'in', suggested_ids)]"
+                       readonly="state not in ('draft','sent') and 0"
+                       options="{'no_create': True, 'no_create_edit': True}"/>
+            </xpath>
+<!--            invisible="not is_approval"-->
+
+<!--            <xpath expr="//page[@name='customer_signature']" position="after">-->
+<!--                <page name="approval_info" string="Approval Info" invisible="not is_approval">-->
+             <xpath expr="//page[@id='service_sale_order_line']" position="after">
+                <page name="approval_info" string="Approval Info" invisible = "not amc_quotation or not is_approval">
+                    <group>
+                        <group name="next_approval" string="Approval">
+                            <field name="next_approval_level" readonly="1"/>
+                            <field name="user_ids" widget="many2many_avatar_user" readonly="1"/>
+                            <field name="group_ids" widget="many2many_tags" readonly="1"/>
+                            <field name="approved_user_ids" widget="many2many_avatar_user" invisible="1" readonly="1"/>
+                            <field name="current_waiting_approval_line_id" invisible="1" readonly="1"/>
+                            <field name="current_approval_state" readonly="1" invisible="1"/>
+                        </group>
+                        <group name="rejection" string="Rejection">
+                            <field name="reject_date" readonly="1"/>
+                            <field name="rejected_user_id" widget="many2one_avatar_user" readonly="1"/>
+                            <field name="reject_reason" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <field name="service_sale_approved_ids" readonly="1"
+                           options="{'no_create':True,'no_create_edit':True}"
+                           style="pointer-events:none;">
+                        <tree readonly="1">
+                            <field name="order_id" invisible="1"/>
+                            <field name="service_sale_approval_id" invisible="1"/>
+                            <field name="approval_level"/>
+                            <field name="user_ids"/>
+                            <field name="group_ids"/>
+                            <field name="state" widget="boolean_toggle" readonly="1"/>
+                            <field name="approved_date"/>
+                            <field name="approved_id" widget="many2one_avatar_user"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_service_sale_my_approval" model="ir.actions.act_window">
+        <field name="name">My Approval Orders</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">service.sale.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_my_quotation': 1, 'my_approval': True}</field>
+        <field name="domain">['|', ('user_ids', 'in', uid), ('is_display', '=', True), ('state', '=', 'waiting'), ('amc_quotation', '=', True)]</field>
+    </record>
+
+    <record id="action_service_sale_waiting_approval" model="ir.actions.act_window">
+        <field name="name">Waiting Approval Orders</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">service.sale.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_my_quotation': 1}</field>
+        <field name="domain">[('state', '=', 'waiting'), ('amc_quotation', '=', True)]</field>
+    </record>
+
+    <menuitem id="menu_service_sale_my_approval"
+              name="My Approval"
+              parent="crm.crm_menu_sales"
+              action="action_service_sale_my_approval"
+              sequence="101"/>
+    <menuitem id="menu_service_sale_waiting_approval"
+              name="Waiting Approval"
+              parent="crm.crm_menu_sales"
+              action="action_service_sale_waiting_approval"
+              sequence="102"/>
+</odoo>
+
+
+<!--<?xml version="1.0" encoding="utf-8"?>-->
+<!--<odoo>-->
+<!--    <record id="view_service_order_form_inherit_approval" model="ir.ui.view">-->
+<!--        <field name="name">view.service.order.form.inherit.approval</field>-->
+<!--        <field name="model">service.sale.order</field>-->
+<!--        <field name="inherit_id" ref="machine_repair_management.service_sale_order_form"/>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <xpath expr="//header" position="inside">-->
+<!--                <field name="is_approval_reject_button" invisible="1"/>-->
+<!--                <field name="is_rejected" invisible="1"/>-->
+<!--                <field name="all_level_approved" invisible="1"/>-->
+<!--                <button string="Approve" name="action_approve" type="object"-->
+<!--                        class="oe_highlight"-->
+<!--                        invisible="not is_approval_reject_button or is_rejected or all_level_approved"/>-->
+<!--                <button string="Reject" name="action_reject" type="object"-->
+<!--                        context="{'default_order_id': context.get('active_id')}"-->
+<!--                        invisible="not is_approval_reject_button or is_rejected or all_level_approved"/>-->
+<!--            </xpath>-->
+<!--        </field>-->
+<!--    </record>-->
+<!--</odoo>-->

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_db_project_task_tree" model="ir.ui.view">
+             <field name="name">db_project_task.tree</field>
+            <field name="model">db.product.task</field>
+            <field name="arch" type="xml">
+                <tree string="db project List">
+                        <field name="Work_Location_ID"/>
+                        <field name="Work_Location"/>
+                        <field name="Technician_ID" />
+                        <field name="Technician"/>
+                        <field name="Job_Status"/>
+                        <field name="Warranty_Status"/>
+                        <field name="CIC_Ref_No"/>
+                        <field name="Parts_Warranty_Cost"/>
+                        <field name="Service_Charge"/>
+                        <field name="Parts_Charge"/>
+                        <field name="Job_Created_Datetime"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <record id="view_db_project_task_form" model="ir.ui.view">
+            <field name="name">db_project_task.form</field>
+            <field name="model">db.product.task</field>
+            <field name="arch" type="xml">
+                <form string="db project Form">
+                    <sheet>
+                       <group>
+                        <field name="Work_Location_ID"/>
+                        <field name="Work_Location"/>
+                        <field name="Technician_ID" />
+                        <field name="Technician"/>
+                        <field name="Job_Status"/>
+                        <field name="Warranty_Status"/>
+                        <field name="CIC_Ref_No"/>
+                        <field name="Parts_Warranty_Cost"/>
+                        <field name="Service_Charge"/>
+                        <field name="Parts_Charge"/>
+                        <field name="Job_Created_Datetime"/>
+                     </group>
+                    </sheet>
+                </form>
+            </field>
+    </record>
+
+    <record id="action_db_project_task" model="ir.actions.act_window">
+        <field name="name">Db Project Task </field>
+        <field name="res_model">db.product.task</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+
+    </data>
+</odoo>

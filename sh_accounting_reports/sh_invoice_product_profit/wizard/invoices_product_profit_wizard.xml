@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sh_invoices_product_profit_wizard" model="ir.ui.view">
+        <field name="name">sh.invoice.product.profit.wizard</field>
+        <field name="model">sh.invoice.product.profit.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Invoices Product Profit">
+                <group>
+                    <group>
+                        <field name="sh_start_date"/>
+                        <field name="sh_move_type" widget="radio"/>
+                        <field invisible="report_by_customer == 'product' and report_by_vendor == 'product'" name="sh_partner_ids" options="{'no_create': True}" widget="many2many_tags"/>
+                    </group>
+                    <group>
+                        <field name="sh_end_date"/>
+                        <field invisible="sh_move_type in ['in_invoice', 'in_refund']" name="report_by_customer" widget="radio"/>
+                        <field invisible="sh_move_type in ['out_invoice', 'out_refund']" name="report_by_vendor" widget="radio"/>
+                        <field invisible="report_by_customer == 'customer_report' and report_by_vendor == 'vendor_report'" name="sh_product_ids" widget="many2many_tags"/>
+                        <field groups="base.group_multi_company" name="company_ids" options="{'no_create': True}" widget="many2many_tags"/>
+                    </group>
+                </group>
+                <footer>
+                    <button class="oe_highlight" icon="fa-print" name="print_report" string="Print" type="object"/>
+                    or
+                    <button class="oe_highlight" icon="fa-file-excel-o" name="print_xls_report" string="Print In XLS" type="object"/>
+                    or
+                    <button class="btn-default" special="cancel" string="Cancel"/>
+                    <button class="oe_highlight" name="generate_report" string="Generate" type="object"/>
+                </footer>
+            </form></field>
+    </record>
+    <record id="sh_invoices_product_profit_tree_view" model="ir.ui.view">
+        <field name="name">sh.invoice.product.profit.wizard.tree</field>
+        <field name="model">sh.invoice.product.profit.wizard</field>
+        <field name="arch" type="xml">
+            <tree create="0" delete="0" edit="0" limit="30" string="Product Profit">
+                <field name="invoice_number" widget="none"/>
+                <field name="invoice_date" widget="none"/>
+                <field name="invoice_date_time" widget="none"/>
+                <field invisible="1" name="invoice_time"/>
+                <!--                      <field name="invoice_date_time" widget="none"  context="{'group_by': 'invoice_date_time:hour'}"/>
+ -->
+                <!--                     <field name="bill_date" widget="none" attrs="{'invisible':[('move_type','in',['out_invoice','out_refund'])]}"/>
+ -->
+                <field name="product_category" widget="none"/>
+                <field name="account_analytic_id" widget="none"/>
+                <field name="customer_name" widget="none"/>
+                <!--                     <field name="vendor_name" widget="none"/>
+ -->
+                <field name="product_id" widget="none"/>
+                <field class="text-right" name="product_quantity" sum="Total"/>
+                <field class="text-right" name="product_cost" sum="Total"/>
+                <field class="text-right" name="product_sales" sum="Total"/>
+                <field class="text-right" name="tax_individual" sum="Total"/>
+                <field class="text-right" name="untaxed_total" sum="Total"/>
+                <field class="text-right" name="product_discount" sum="Total"/>
+                <field class="text-right" name="product_profit" sum="Total"/>
+                <!--                     <field name="product_margin" class="text-right"/>
+ -->
+            </tree></field>
+    </record>
+    <!-- <record id="invoice_product_profit_act_window" model="ir.actions.act_window">
+            <field name="name">Sales and Cost Analysis Report - Detail</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sh.invoice.product.profit.wizard</field>
+            <field name="view_mode">tree</field>
+        </record> -->
+    <record id="invoice_product_profit_act_window" model="ir.actions.act_window">
+        <field name="name">Sales and Cost Analysis Report - Detail</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sh.invoice.product.profit.wizard</field>
+        <field name="view_mode">tree,pivot</field>
+    </record>
+    <!-- <record id="view_invoice_product_profit_search_wizard" model="ir.ui.view">
+            <field name="name">sh.invoice.product.profit.wizard.search</field>
+            <field name="model">sh.invoice.product.profit.wizard</field>
+            <field name="arch" type="xml">
+                <search string="Invoice Product">
+           
+                   <group expand="1" string="Group By">
+						<filter string="Day" name="invoice_time_group_by" domain="[]" context="{'group_by': 'invoice_time:hour'}" />  
+					</group> 
+                </search></field>
+        </record> -->
+    <record id="view_invoice_product_profit_pivot" model="ir.ui.view">
+        <field name="name">sh.invoice.product.profit.wizard.pivot</field>
+        <field name="model">sh.invoice.product.profit.wizard</field>
+        <field name="arch" type="xml">
+            <pivot string="Invoice Product Profit">
+                <field name="invoice_number"/>
+                <field name="invoice_date"/>
+                <field name="invoice_date_time"/>
+                <field name="product_category"/>
+                <field name="product_quantity" type="measure"/>
+                <field name="product_cost" type="measure"/>
+                <field name="product_sales" type="measure"/>
+                <field name="tax_individual" type="measure"/>
+                <field name="untaxed_total" type="measure"/>
+                <field name="product_discount" type="measure"/>
+                <field name="product_profit" type="measure"/>
+                <!-- 	                    <field name="product_margin" type="measure"/>
+ -->
+            </pivot></field>
+    </record>
+    <record id="action_invoices_product_profit" model="ir.actions.act_window">
+        <field name="name">Sales and Cost Analysis Report - Detail</field>
+        <field name="res_model">sh.invoice.product.profit.wizard</field>
+        <field name="view_id" ref="sh_invoices_product_profit_wizard"/>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <menuitem action="action_invoices_product_profit" id="sh_invoices_product_profit_report_menuitem" parent="account.account_reports_management_menu" sequence="100"/>
+    <menuitem action="action_invoices_product_profit" id="menu_sales_summary_report_detail" name="Sales and Cost Analysis Report - Detail" parent="sale.menu_sale_report" sequence="6"/>
+</odoo>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="views_work_center_location_tree" model="ir.ui.view">
+        <field name="name">work.center.location.tree.view</field>
+        <field name="model">work.center.location</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="work_center_group_id"/>
+                <!--                <field name="location_id"/>-->
+                <field name="company_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="views_work_location_center_form" model="ir.ui.view">
+        <field name="name">work.center.location.form,view</field>
+        <field name="model">work.center.location</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group colspan="2">
+                            <field name="code"/>
+                        </group>
+                        <group colspan="2">
+                            <field name="name"/>
+                        </group>
+                        <group colspan="2">
+                            <field name="work_center_group_id" required="1"
+                                   options="{'no_create':True,'no_edit':True}"/>
+                        </group>
+                        <group colspan="2">
+                            <field name="default_mail_send_parts"/>
+                        </group>
+
+                        <group colspan="2">
+                            <field name="mail_cc_send_parts"/>
+                        </group>
+
+                        <group colspan="2">
+                            <field name="default_mail_send_coordinator"/>
+                        </group>
+
+                        <group colspan="2">
+                            <field name="mail_cc_send_coordinator"/>
+                        </group>
+                        <group>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                        <!--                        Added by Raj - 12-03-2026-->
+                        <group colspan="2">
+                            <field name="technician_warehouse_required_bool"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_work_center_location" model="ir.actions.act_window">
+        <field name="name">Work Center</field>
+        <field name="res_model">work.center.location</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!--    <menuitem id="menu_work_center_location" name="Work Center"-->
+    <!--              active="False"-->
+    <!--    />-->
+    <menuitem id="menu_work_center_location" name="Work Center"
+              parent="machine_repair_management.menu_machine_repair_configuration"
+              action="action_work_center_location"
+              sequence="5"
+    />
+
+</odoo>

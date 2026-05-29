@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+	<template id="payment_bank_two.payroll_bank_two_template_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template> 
+	<template id = "payment_bank_two.report_payroll_payment_pdf">
+	  	<t t-call="web.html_container">
+	  	<t t-call ="payment_bank_two.payroll_bank_two_template_internal_layout">
+            <t t-foreach="docs" t-as="doc">
+
+			<t t-if="doc and 'company_id' in doc">
+                <t t-set="company" t-value="doc.company_id"></t>
+            </t>
+            <t t-if="not doc or not 'company_id' in doc">
+                <t t-set="company" t-value="res_company"></t>
+            </t>
+			<div class="header">
+                <div class="row mt32 mb32">
+                    
+					<div class="col-3" style="font:12px lucida-console,sans-serif !important;">
+                        <span t-field="company.partner_id"/>
+                        <br/>
+                        <span  t-field="company.partner_id.street"/>
+                        <br/>
+                        <span  t-field="company.partner_id.street2"/>
+                        <br/>
+                        <span  t-field="company.partner_id.city"/>
+                        <br/>
+                        <span  t-field="company.partner_id.country_id"/>
+                        <br/>
+                        <span  t-field="company.partner_id.vat"/>
+                    </div>
+						
+	
+                  
+                     <div class="col-6">
+						   <h2 class="text-center">Bank Transfer Report </h2>
+                 	
+<!--                         <h2 style="font-weight:bold;text-align:left;font-size:23px"><span t-field="o.company_id.name"/> </h2>
+-->                      </div>
+                   <div class="col-3 text-right " style="vertical-align:text-top">
+               				 <img t-if="doc.company_id.logo" t-att-src="image_data_uri(doc.company_id.logo)" style="max-height: 100px; min-height:100px; min-width: 150px; max-width: 150px;" />
+            			</div>
+
+                </div>
+            </div> 	
+	   	
+	
+	    <div>
+  			 <td class = "text-left"><strong>Period Name : </strong><t t-esc = "doc.name"></t></td>
+   			 <br/>
+   			 <td class = "text-left"><strong>Date : </strong><t t-esc = "doc.from_date"></t></td>
+		    	
+
+	    </div>
+	      <br/>
+	      <div>
+	      	 <t t-if="doc.bank_format =='sib_format'">
+	  			<table class = "table table-sm table-bordered">	               
+	                  <tr>	                 
+                         <th  class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Net Salary</th> 
+                          <th  class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Beneficiary Account</th>
+                         <!--  <th  class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Payroll Reference</th>
+                          <th  class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Period From</th>
+                          <th  class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Period To</th> -->
+                           <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Beneficiary Name</th>
+                           <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Beneficiary Address 1</th>	                           
+                    	    <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Beneficiary Address 2</th>
+                    	    <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Beneficiary Address 3</th>	                    	    
+                    	   	<th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Payment Description (optional)</th>	                    	    	                           
+                            <th  class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Basic Salary</th>
+	                        <th  class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Housing Allowance</th>
+	                        <th  class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Other Earnings</th>
+	                        <th  class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Deductions</th>
+	                        <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Beneficiary ID</th>	              
+	                    </tr>
+	                	  <t t-foreach = "doc.payroll_two_line_ids" t-as = "line">
+	                    <tr>	                    
+	                    	     <td class = "text-right"><t t-esc = "line.net_salary"/></td>
+	                    	     <td class = "text-right"><span t-field = "line.bank_account_id"></span></td>
+	                    	      
+	                    	     <!--  <td class = "text-left"><t t-esc = "line.payroll_reference"/></td>
+	                    	     <td class = "text-left"><span t-field = "line.date_from"></span></td>
+	                    	      <td class = "text-left"><span t-field = "line.date_to"></span></td>
+	                    	      -->
+	                    	      <td class = "text-left"><span t-field = "line.employee_id.name"></span></td>
+	                    	      <td class = "text-left"><span t-field = "line.employee_beneficiary"></span></td>
+	                    	      <td class = "text-left"><span t-field = "line.employee_beneficiary_address_two"></span></td>
+	                    	     
+	                    	      <td class = "text-left"><span t-field = "line.employee_beneficiary_address_three"></span></td>
+	                    	      <td class = "text-left"><span t-field = "line.payment_description"></span></td>
+	            				<td class = "text-right"><span t-field = "line.basic_salary"></span></td>
+	            				<td class = "text-right"><span t-field = "line.housing_allowance"/></td>
+	            				<td class = "text-right"><span t-field = "line.other_earning"/></td>
+	            				<td class = "text-right"><span t-field = "line.deduction"/></td>  
+	            				<td class = "text-right"><span t-field = "line.beneficiary_id"></span></td>      					                   
+	                    </tr>	      
+	              </t>	  
+	                </table>
+	          </t> 
+	          
+	          <t t-if="doc.bank_format=='sabb_format'" >
+	          
+		          	  <table class = "table table-sm table-bordered">
+		                    <tr>
+		                        <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Code</th>
+		                        <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Employee Name</th>
+		                       <!--  <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Payroll Reference</th> -->
+		                        <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Bank Name</th>
+		                        <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Bank Account Number</th>
+		                        <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Amount</th>
+		                         
+		                    </tr>
+		                <t t-foreach="doc.payroll_two_line_ids" t-as = "line">
+		                    <tr>
+	                             <td class = "text-left"><span t-field = "line.employee_id.employee_no"></span></td>
+	                    	     <td class = "text-left"><span t-field = "line.employee_id.name"></span></td>
+	                    	    <!--  <td class = "text-left"><span t-field = "line.payroll_reference"></span></td> -->
+	            				 <td class = "text-left"><t t-esc = "line.employee_id.bank_account_id.bank_id.name"/></td>
+	            				 <td class = "text-right"><t t-esc = "line.employee_id.bank_account_id.acc_number"/></td>
+	            				 <td class = "text-right"><t t-esc = "line.net_salary"/></td>
+	            				 
+		                    </tr>
+		               </t>
+		          </table>
+	          
+	          </t>  
+	          
+	          <t t-if="doc.bank_format=='bank_3_format'">
+	          
+	          		<table class="table table-sm table-bordered">
+	               
+                   <tr>
+                
+                       	                                    
+                      <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Employee ID</th>
+                      <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Employee Resident Id</th>
+                      <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Employee Bank ID</th>
+                      <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Employee Account number</th>                    
+                  
+                   	  <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Employee Name</th>                   
+  					 <!--  <th class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Payroll Reference</th>  -->                  
+                     
+                       <th  class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Payment Amount</th>
+                       <th  class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Basic Salary</th>
+                       <th  class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Housing Allowance</th>
+                       <th  class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Other Earnings</th>
+                       <th  class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Deductions</th>
+                       <!-- <th  class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Regulatory Reporting</th>
+                       <th  class = "text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Remarks</th> -->
+                                                                     
+                   </tr>
+               	  <t t-foreach="doc.payroll_two_line_ids" t-as="line">
+                   <tr>
+                   
+                       <td class="text-left"><span t-field="line.employee_id.employee_no"></span></td>
+                        <td class="text-left"><span t-field="line.beneficiary_id"></span></td>
+                   	    <td class="text-left"><span t-field="line.employee_id.bank_account_id.bank_id.name"></span></td>
+                   	   <td class="text-left"><span t-field="line.employee_id.bank_account_id.acc_number"></span></td>
+                   	    <td class="text-left"><span t-field="line.employee_id.name"></span></td>
+                
+            			<!-- <td class="text-left"><span t-field="line.payroll_reference"></span></td> -->
+                   
+           				<td class="text-right"><t t-esc="line.net_salary"/></td>
+           				<td class="text-right"><span t-field="line.basic_salary"></span></td>
+           				<td class="text-right"><span t-field="line.housing_allowance"/></td>
+           				<td class="text-right"><span t-field="line.other_earning"/></td>
+           				<td class="text-right"><span t-field="line.deduction"/></td>  
+           				<!-- <td class="text-right"><span t-field="line.regulatory"/></td>       				
+                         <td class="text-right"><span t-field="line.remarks"/></td> -->         				
+                  
+                   </tr>
+     
+	              </t>
+	  
+	          </table>
+	          	
+	       </t> 
+	          
+	      </div> 
+            <div class="footer o_background_footer">
+                  <div class="text-center">
+                      <ul class="list-inline">
+                          <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                      </ul>
+                      <div t-if="report_type == 'pdf'" class="text-muted">
+                          Page:
+                          <span class="page"/>
+                          of
+                          <span class="topage"/>
+                      </div>
+                  </div>
+              </div>
+                   	          
+		  </t>
+		</t>
+	  </t>
+	</template>		
+	<!-- <template id = "report_payroll_payment_pdf">
+	    <t t-call = "web.html_container">
+	        <t t-foreach = "docs" t-as = "doc">	       		 
+	           	<t t-call = "payment_bank_two.report_payroll_payment_pdf_two" t-value = "doc" />	           	         
+	        </t>
+	    </t>
+	</template> -->
+</odoo>

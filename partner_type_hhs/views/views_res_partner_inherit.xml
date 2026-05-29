@@ -1,0 +1,20 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+<odoo>
+
+	<record id ="views_res_partner_type_form_inherit" model = "ir.ui.view">
+		<field name = "name" >res.partner.type.form.inherit</field>
+		<field name = "model">res.partner</field>
+		<field name = "inherit_id" ref = "base.view_partner_form"/>
+		<field name = "arch" type = "xml">
+			
+			<xpath expr = "//field[@name = 'lang']" position ="after">
+				<field name = "partner_type_hhs" />
+				<field name = "sub_partner_type" />
+			</xpath>
+		
+		</field>
+	</record>
+
+
+
+</odoo>

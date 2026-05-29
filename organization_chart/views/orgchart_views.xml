@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <record id="action_orgchart_employee" model="ir.actions.client">
+    <field name="name">Employee Chart</field>
+    <field name="tag">organization_chart.employee_orgchart</field>
+  </record>
+
+ <!--  <menuitem name="OrgChart" id="menu_orgchart_root" web_icon="organization_chart,static/description/icon.png" groups="hr.group_hr_user"/> -->
+
+	<!--  <menuitem name="Employee Hierarchy" id="menu_orgchart_employee" action="action_orgchart_employee" parent="menu_orgchart_root" groups="hr.group_hr_user"/> -->
+  <menuitem name="Employee Hierarchy" id="menu_orgchart_employee" action="action_orgchart_employee" groups="hr.group_hr_user"
+  	parent="om_hr_payroll.prime_data_base_employee" sequence="95"
+  		/>
+</odoo>

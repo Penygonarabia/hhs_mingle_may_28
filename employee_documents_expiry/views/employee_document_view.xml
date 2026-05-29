@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="employee_data_reminder" model="ir.cron">
+        <field name="name">HR Employee Data Expiration</field>
+        <field name="model_id" ref="model_hr_employee_document"/>
+        <field name="state">code</field>
+        <field name="code">model.mail_reminder()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+    </record>
+    
+    <record id="search_employee_document" model="ir.ui.view">
+    	<field name ="name">hr.employee.document.search.view</field>
+    	<field name="model">hr.employee.document</field>
+    	<field name="arch" type="xml">
+    		<search>
+    		  	<field name="employee_ref"/>
+    		  	<field name="employee_number" />
+	    		<group string="Group By" expand="0">
+           			 <filter string="Employee Name" name="employee_ref" domain="[]" context="{'group_by': 'employee_ref'}"/>
+        		</group>
+       		 </search>	
+    	   </field>
+    
+    </record>
+
+    <record model='ir.ui.view' id='employee_document_form_view'>
+        <field name="name">hr.employee.document.form</field>
+        <field name="model">hr.employee.document</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_ref" options="{'no_create_edit': True, 'no_create': True}" domain="[('contract_warning', '=', False )]"/>
+                            <field name="employee_number" readonly="1" force_save = "1"/>
+                            <field name="document_name"/>
+                                <div class="o_td_label" style="width:200px;">
+                                    <label for="name" string="Document Number"/>
+                                </div>
+                            <field name="name" nolabel="1"/>
+
+                            <field name="doc_attachment_id" widget="many2many_binary" class="oe_inline"/>
+                        </group>
+                        <group>
+                            <field name="place_city_id"  required="place_of_issue_req == True" readonly="place_of_issue_req != True"/>
+                            <field name="place_of_issue_req" invisible="1"/>
+                            <field name="issue_date" required="date_of_issue_req == True" readonly="date_of_issue_req != True"/>
+                            <field name="date_of_issue_req" invisible="1"/>
+                            <field name="expiry_date" required="expiry_date_req == True" readonly="expiry_date_req != True"/>
+                            <field name="expiry_date_req" invisible="1"/>
+                            <field name="notification_on" options="{'horizontal': true}" widget="radio"/>
+<!--                            <field name="mail_sent"/>-->
+						
+
+							
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description">
+                            <field name="description"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record model='ir.ui.view' id='employee_document_tree_view'>
+        <field name="name">hr.employee.document.tree</field>
+        <field name="model">hr.employee.document</field>
+        <field name="arch" type="xml">
+            <tree default_order="employee_number asc">
+            	<field name="employee_number"/>
+				<field name="employee_ref"/>
+				<field name="document_name"/>
+                <field name="name"/>
+                <field name="issue_date"/>
+                <field name="expiry_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="hr_employee_document_inherit_form_view">
+        <field name="name">hr.employee.form.view</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <div class="oe_button_box" position="inside">
+                <button class="oe_stat_button" name="document_view" type="object" icon="fa-list-ol" >
+                    <field string="Documents" name="document_count" widget="statinfo"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_view_document_types_list">
+            <field name="name">Employee Documents</field>
+            <field name="res_model">hr.employee.document</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="help" type="html">
+                <p class="oe_view_no_content_create">Create new record
+                </p>
+            </field>
+        </record>
+
+
+<!--    <menuitem id="document_types" name="Employee Documents" parent="hr.menu_human_resources_configuration"-->
+<!--                  action="action_view_document_types_list" />-->
+    
+    <!-- Transfer to om_hr_payroll in employee_all_menu -->
+    
+    <!--<menuitem id="menu_employee_documents"
+              name="Employee Documents"
+              action="action_view_document_types_list"
+              parent="hr.menu_hr_employee_payroll"
+              sequence="20"/>-->
+
+</odoo>

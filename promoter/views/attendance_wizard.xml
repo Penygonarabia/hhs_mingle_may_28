@@ -1,0 +1,27 @@
+  <odoo>
+    <record id="view_attendance_wizard_tree" model="ir.ui.view">
+        <field name="name">attendance.wizard.tree</field>
+        <field name="model">attendance.wizard</field>
+        <field name="arch" type="xml">                
+            <tree string="Review Attendance" create="false" delete="false">
+                <field name="dealer_id"/>
+                <field name="showroom_id"/>
+                <field name="promoter_id"/>
+                <field name="att_date"/>
+                <field name="shift_from"/>
+                <field name="shift_to"/>
+                <field name="check_in"/>
+                <field name="check_out"/>
+            </tree>
+        </field>            
+    </record>
+
+      <record id="action_attendance_wizard" model="ir.actions.act_window">
+        <field name="name">Review Attendance</field>
+        <field name="res_model">attendance.wizard</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_attendance_wizard_tree"/>
+        <field name="target">current</field>
+        <!-- <field name="domain">[('employee_id.is_promoter', '=', True)]</field> -->
+    </record>
+    </odoo>

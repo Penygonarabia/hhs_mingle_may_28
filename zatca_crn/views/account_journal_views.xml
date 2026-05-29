@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+          <record id="view_account_journal_multi_crn_form" model="ir.ui.view">
+            <field name="name">account.journal.form.multi.crn</field>
+            <field name="model">account.journal</field>
+            <field name="inherit_id" ref="account.view_account_journal_form"/>
+            <field name="arch" type="xml">
+                 <xpath expr="//page[@name='advanced_settings']" position="inside">
+                    <group name="zatca_crn" string="Zatca CRN">
+                        <field name="l10n_sa_additional_identification_scheme" />
+                        <field name="l10n_sa_additional_identification_number" />
+                    </group>
+                </xpath>
+            </field>
+          </record>
+    </data>
+</odoo>

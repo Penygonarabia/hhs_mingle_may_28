@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="preventive_job_card_template">
+        <t t-call="web.basic_layout">
+            <!-- Custom CSS Styling optimized for PDF rendering in wkhtmltopdf -->
+            <style>
+                .report-container {
+                    font-family: 'Arial', sans-serif;
+                    color: #1F2937;
+                    font-size: 11px;
+                    line-height: 1.4;
+                    padding: 5px;
+                }
+                .report-header {
+                    width: 100%;
+                    border-bottom: 2px solid #1E3A8A;
+                    padding-bottom: 8px;
+                    margin-bottom: 15px;
+                }
+                .report-header-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                .report-header-table td {
+                    vertical-align: middle;
+                }
+                .report-title-box {
+                    text-align: center;
+                }
+                .report-title-en {
+                    font-size: 18px;
+                    font-weight: bold;
+                    color: #1E3A8A;
+                    margin: 0;
+                }
+                .report-title-ar {
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #1E3A8A;
+                    margin: 2px 0 0 0;
+                }
+                .info-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 12px;
+                }
+                .info-table td {
+                    padding: 5px 8px;
+                    vertical-align: middle;
+                    border: 1px solid #E5E7EB;
+                }
+                .label-cell {
+                    font-weight: bold;
+                    color: #374151;
+                    background-color: #F9FAFB;
+                    width: 18%;
+                }
+                .value-cell {
+                    color: #111827;
+                    width: 32%;
+                }
+                .section-header {
+                    background-color: #1E3A8A;
+                    color: white;
+                    font-size: 12px;
+                    font-weight: bold;
+                    padding: 6px 10px;
+                    margin-top: 15px;
+                    margin-bottom: 8px;
+                    border-radius: 3px;
+                }
+                .section-header-table {
+                    width: 100%;
+                }
+                .section-header-en {
+                    float: left;
+                }
+                .section-header-ar {
+                    float: right;
+                }
+                .data-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 12px;
+                }
+                .data-table th {
+                    background-color: #F3F4F6;
+                    color: #374151;
+                    font-weight: bold;
+                    padding: 6px 8px;
+                    border: 1px solid #D1D5DB;
+                    font-size: 10px;
+                }
+                .data-table td {
+                    padding: 6px 8px;
+                    border: 1px solid #E5E7EB;
+                    vertical-align: middle;
+                }
+                .bg-highlight {
+                    background-color: #E6F7FF !important; /* Soft highlight for manual entry fields */
+                }
+                .photo-grid-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 10px;
+                }
+                .photo-grid-table td {
+                    width: 50%;
+                    padding: 8px;
+                    vertical-align: top;
+                }
+                .photo-box {
+                    border: 1px solid #E5E7EB;
+                    padding: 8px;
+                    background-color: #F9FAFB;
+                    text-align: center;
+                    border-radius: 4px;
+                }
+                .photo-img {
+                    max-height: 160px;
+                    max-width: 100%;
+                    object-fit: contain;
+                    border-radius: 3px;
+                    margin-bottom: 6px;
+                }
+                .photo-caption {
+                    font-weight: bold;
+                    color: #374151;
+                    font-size: 10px;
+                    margin-top: 5px;
+                }
+                .photo-desc {
+                    color: #6B7280;
+                    font-size: 9px;
+                    margin-top: 2px;
+                }
+                .text-center {
+                    text-align: center;
+                }
+                .text-right {
+                    text-align: right;
+                }
+                .text-left {
+                    text-align: left;
+                }
+                .clearfix::after {
+                    content: "";
+                    clear: both;
+                    display: table;
+                }
+            </style>
+
+            <div class="report-container">
+                <!-- TOP HEADER SECTION -->
+                <div class="report-header">
+                    <table class="report-header-table">
+                        <tr>
+                            <!-- Left: Company Logo -->
+                            <td style="width: 25%;">
+                                <img t-if="doc.company_id.logo" t-att-src="image_data_uri(doc.company_id.logo)" style="max-height: 55px; max-width: 180px;" alt="Company Logo"/>
+                            </td>
+                            <!-- Center: Title -->
+                            <td style="width: 50%;" class="report-title-box">
+                                <h1 class="report-title-en">PREVENTIVE MAINTENANCE JOB CARD</h1>
+                                <h2 class="report-title-ar">بطاقة صيانة وقائية</h2>
+                            </td>
+                            <!-- Right: Empty spacer for alignment -->
+                            <td style="width: 25%; text-align: right;">
+                                <div style="font-size: 9px; color: #6B7280;">
+                                    <strong>Job Card Ref: </strong> <span t-out="doc.name"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- MAIN CUSTOMER & JOB DETAILS (10 FIELDS GRID) -->
+                <table class="info-table">
+                    <tr>
+                        <!-- Field 1: CIC Ref No -->
+                        <td class="label-cell">
+                            <div>CIC Ref No</div>
+                            <div class="text-right" style="font-size: 9px; color: #6B7280;">رقم مرجع بطاقة التحكم</div>
+                        </td>
+                        <td class="value-cell">
+                            <span t-out="doc.control_card_no or ''"/>
+                        </td>
+                        <!-- Field 6: Date -->
+                        <td class="label-cell">
+                            <div>Date</div>
+                            <div class="text-right" style="font-size: 9px; color: #6B7280;">التاريخ</div>
+                        </td>
+                        <td class="value-cell">
+                            <span t-out="doc.call_date or doc.create_date.date()"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <!-- Field 2: Customer Name -->
+                        <td class="label-cell">
+                            <div>Customer Name</div>
+                            <div class="text-right" style="font-size: 9px; color: #6B7280;">اسم العميل</div>
+                        </td>
+                        <td class="value-cell">
+                            <span t-out="doc.partner_id.name or ''"/>
+                        </td>
+                        <!-- Field 7: Promised Date/Time -->
+                        <td class="label-cell">
+                            <div>Promised Date/Time</div>
+                            <div class="text-right" style="font-size: 9px; color: #6B7280;">التاريخ/الوقت الموعود</div>
+                        </td>
+                        <td class="value-cell">
+                            <span t-out="doc.service_requested_datetime or doc.planned_date_begin or ''"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <!-- Field 3: Customer Address -->
+                        <td class="label-cell">
+                            <div>Customer Address</div>
+                            <div class="text-right" style="font-size: 9px; color: #6B7280;">عنوان العميل</div>
+                        </td>
+                        <td class="value-cell">
+                            <span t-out="doc.partner_id.contact_address or doc.partner_id.street or ''"/>
+                        </td>
+                        <!-- Field 8: Technician -->
+                        <td class="label-cell">
+                            <div>Technician</div>
+                            <div class="text-right" style="font-size: 9px; color: #6B7280;">الفني</div>
+                        </td>
+                        <td class="value-cell">
+                            <span t-out="doc.technician_id.name or (doc.user_ids and doc.user_ids[0].name) or ''"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <!-- Field 4: Customer Mobile No -->
+                        <td class="label-cell">
+                            <div>Customer Mobile No</div>
+                            <div class="text-right" style="font-size: 9px; color: #6B7280;">رقم جوال العميل</div>
+                        </td>
+                        <td class="value-cell">
+                            <span t-out="doc.phone or doc.partner_id.phone or doc.partner_id.mobile or ''"/>
+                        </td>
+                        <!-- Field 9: Branch -->
+                        <td class="label-cell">
+                            <div>Branch</div>
+                            <div class="text-right" style="font-size: 9px; color: #6B7280;">الفرع</div>
+                        </td>
+                        <td class="value-cell">
+                            <span t-out="doc.region_id.name or (doc.technician_id.employee_id.branch_id.name) or ''"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <!-- Field 5: Customer VAT No -->
+                        <td class="label-cell">
+                            <div>Customer VAT No</div>
+                            <div class="text-right" style="font-size: 9px; color: #6B7280;">الرقم الضريبي للعميل</div>
+                        </td>
+                        <td class="value-cell">
+                            <span t-out="doc.partner_id.vat or ''"/>
+                        </td>
+                        <!-- Field 10: Dealer -->
+                        <td class="label-cell">
+                            <div>Dealer</div>
+                            <div class="text-right" style="font-size: 9px; color: #6B7280;">الموزع</div>
+                        </td>
+                        <td class="value-cell">
+                            <span t-out="doc.dealer_id.name or ''"/>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- SECTION: MACHINE DETAILS -->
+                <div class="section-header clearfix">
+                    <span class="section-header-en">MACHINE DETAILS</span>
+                    <span class="section-header-ar">تفاصيل الجهاز</span>
+                </div>
+                <table class="info-table">
+                    <tr>
+                        <td class="label-cell">
+                            <div>Contract No</div>
+                            <div class="text-right" style="font-size: 9px; color: #6B7280;">رقم العقد</div>
+                        </td>
+                        <td class="value-cell">
+                            <span t-out="doc.contract_id.name or ''"/>
+                        </td>
+                        <td class="label-cell">
+                            <div>Asset Tag No</div>
+                            <div class="text-right" style="font-size: 9px; color: #6B7280;">رقم أصل الجهاز</div>
+                        </td>
+                        <td class="value-cell">
+                            <span t-out="doc.asset_id.name or ''"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">
+                            <div>Service Unit Type</div>
+                            <div class="text-right" style="font-size: 9px; color: #6B7280;">نوع وحدة الخدمة</div>
+                        </td>
+                        <td class="value-cell">
+                            <span t-out="doc.service_products_code_id.name or ''"/>
+                        </td>
+                        <td class="label-cell">
+                            <div>Job Type</div>
+                            <div class="text-right" style="font-size: 9px; color: #6B7280;">نوع الوظيفة</div>
+                        </td>
+                        <td class="value-cell">
+                            <t t-if="doc.maintenance_type == 'preventive'">
+                                <span>Preventive Maintenance / صيانة وقائية</span>
+                            </t>
+                            <t t-elif="doc.maintenance_type == 'corrective'">
+                                <span>Corrective Maintenance / صيانة تصحيحية</span>
+                            </t>
+                            <t t-else="">
+                                <span t-out="doc.maintenance_type or ''"/>
+                            </t>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- SECTION: PRODUCT DETAILS TABLE -->
+                <div class="section-header clearfix">
+                    <span class="section-header-en">PRODUCT DETAILS</span>
+                    <span class="section-header-ar">تفاصيل المنتج</span>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <div>Brand</div>
+                                <div style="font-size: 9px; color: #6B7280; font-weight: normal;">الماركة</div>
+                            </th>
+                            <th>
+                                <div>Model</div>
+                                <div style="font-size: 9px; color: #6B7280; font-weight: normal;">الموديل</div>
+                            </th>
+                            <th>
+                                <div>Serial No</div>
+                                <div style="font-size: 9px; color: #6B7280; font-weight: normal;">الرقم التسلسلي</div>
+                            </th>
+                            <th>
+                                <div>Invoice No</div>
+                                <div style="font-size: 9px; color: #6B7280; font-weight: normal;">رقم الفاتورة</div>
+                            </th>
+                            <th>
+                                <div>Date</div>
+                                <div style="font-size: 9px; color: #6B7280; font-weight: normal;">التاريخ</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span t-out="doc.brand or ''"/></td>
+                            <td><span t-out="doc.model or ''"/></td>
+                            <td><span t-out="doc.product_slno or ''"/></td>
+                            <td><span t-out="doc.purchase_invoice_no or ''"/></td>
+                            <td><span t-out="doc.purchase_date or ''"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- SECTION: CHECKLISTS -->
+                <!-- Setup Filtered Lists -->
+                <t t-set="indoor_lines" t-value="doc.checklist_line_ids.filtered(lambda l: 'indoor' in (l.section_group or '').lower())"/>
+                <t t-set="outdoor_lines" t-value="doc.checklist_line_ids.filtered(lambda l: 'outdoor' in (l.section_group or '').lower())"/>
+
+                <!-- 1. Indoor Checklist -->
+                <t t-if="indoor_lines">
+                    <div class="section-header clearfix">
+                        <span class="section-header-en">INDOOR CHECKLIST</span>
+                        <span class="section-header-ar">قائمة الفحص الداخلي</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 8%;" class="text-center">
+                                    <div>SL No</div>
+                                    <div style="font-size: 8px; color: #6B7280; font-weight: normal;">الرقم</div>
+                                </th>
+                                <th style="width: 52%;">
+                                    <div>Checklist Description</div>
+                                    <div style="font-size: 8px; color: #6B7280; font-weight: normal;">وصف بند الفحص</div>
+                                </th>
+                                <th style="width: 20%;" class="text-center">
+                                    <div>Reading / Value</div>
+                                    <div style="font-size: 8px; color: #6B7280; font-weight: normal;">القراءة / القيمة</div>
+                                </th>
+                                <th style="width: 20%;">
+                                    <div>Remarks</div>
+                                    <div style="font-size: 8px; color: #6B7280; font-weight: normal;">الملاحظات</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="sl_idx" t-value="1"/>
+                            <t t-foreach="indoor_lines" t-as="line">
+                                <tr>
+                                    <td class="text-center"><t t-esc="sl_idx"/><t t-set="sl_idx" t-value="sl_idx + 1"/></td>
+                                    <td><span t-out="line.check_item or ''"/></td>
+                                    <!-- Render value based on field type and apply soft highlight if manual entry -->
+                                    <td t-att-class="'text-center bg-highlight' if line.field_type in ('numeric', 'text') else 'text-center'">
+                                        <t t-if="line.field_type in ('yes_no', 'condition', 'multiple')">
+                                            <span t-out="line.answer_selection_id.name or ''"/>
+                                        </t>
+                                        <t t-elif="line.field_type in ('numeric', 'calculated')">
+                                            <span t-out="line.answer_numeric"/>
+                                        </t>
+                                        <t t-elif="line.field_type == 'text'">
+                                            <span t-out="line.answer_text or ''"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span t-out="line.answer_selection_id.name or line.answer_text or line.answer_numeric or ''"/>
+                                        </t>
+                                    </td>
+                                    <td><span t-out="line.remark or ''"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </t>
+
+                <!-- 2. Outdoor Checklist -->
+                <t t-if="outdoor_lines">
+                    <div class="section-header clearfix" style="page-break-before: auto;">
+                        <span class="section-header-en">OUTDOOR CHECKLIST</span>
+                        <span class="section-header-ar">قائمة الفحص الخارجي</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 8%;" class="text-center">
+                                    <div>SL No</div>
+                                    <div style="font-size: 8px; color: #6B7280; font-weight: normal;">الرقم</div>
+                                </th>
+                                <th style="width: 52%;">
+                                    <div>Checklist Description</div>
+                                    <div style="font-size: 8px; color: #6B7280; font-weight: normal;">وصف بند الفحص</div>
+                                </th>
+                                <th style="width: 20%;" class="text-center">
+                                    <div>Reading / Value</div>
+                                    <div style="font-size: 8px; color: #6B7280; font-weight: normal;">القراءة / القيمة</div>
+                                </th>
+                                <th style="width: 20%;">
+                                    <div>Remarks</div>
+                                    <div style="font-size: 8px; color: #6B7280; font-weight: normal;">الملاحظات</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="sl_idx_out" t-value="1"/>
+                            <t t-foreach="outdoor_lines" t-as="line">
+                                <tr>
+                                    <td class="text-center"><t t-esc="sl_idx_out"/><t t-set="sl_idx_out" t-value="sl_idx_out + 1"/></td>
+                                    <td><span t-out="line.check_item or ''"/></td>
+                                    <!-- Render value and apply soft highlight if manual entry -->
+                                    <td t-att-class="'text-center bg-highlight' if line.field_type in ('numeric', 'text') else 'text-center'">
+                                        <t t-if="line.field_type in ('yes_no', 'condition', 'multiple')">
+                                            <span t-out="line.answer_selection_id.name or ''"/>
+                                        </t>
+                                        <t t-elif="line.field_type in ('numeric', 'calculated')">
+                                            <span t-out="line.answer_numeric"/>
+                                        </t>
+                                        <t t-elif="line.field_type == 'text'">
+                                            <span t-out="line.answer_text or ''"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span t-out="line.answer_selection_id.name or line.answer_text or line.answer_numeric or ''"/>
+                                        </t>
+                                    </td>
+                                    <td><span t-out="line.remark or ''"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </t>
+
+                <!-- SECTION: BEFORE/AFTER PHOTOS -->
+                <!-- Setup Photo groups -->
+                <t t-set="before_photos" t-value="doc.checklist_photo_ids.filtered(lambda p: p.section == 'before')"/>
+                <t t-set="after_photos" t-value="doc.checklist_photo_ids.filtered(lambda p: p.section == 'after')"/>
+
+                <!-- Before Photos Grid -->
+                <t t-if="before_photos">
+                    <div class="section-header clearfix" style="page-break-before: auto;">
+                        <span class="section-header-en">BEFORE MAINTENANCE PHOTOS</span>
+                        <span class="section-header-ar">صور العمل قبل الصيانة</span>
+                    </div>
+                    <table class="photo-grid-table">
+                        <t t-set="idx" t-value="0"/>
+                        <t t-foreach="before_photos" t-as="photo">
+                            <t t-if="idx % 2 == 0">
+                                <tr>
+                                    <td>
+                                        <div class="photo-box">
+                                            <img t-if="photo.photo" t-att-src="image_data_uri(photo.photo)" class="photo-img" alt="Before Maintenance Photo"/>
+                                            <div class="photo-caption"><span t-out="photo.caption or 'Before Photo'"/></div>
+                                            <div class="photo-desc" t-if="photo.template_photo_id"><span t-out="photo.template_photo_id.name or ''"/></div>
+                                        </div>
+                                    </td>
+                                    <t t-set="next_photo_idx" t-value="idx + 1"/>
+                                    <t t-if="next_photo_idx &lt; len(before_photos)">
+                                        <t t-set="next_photo" t-value="before_photos[next_photo_idx]"/>
+                                        <td>
+                                            <div class="photo-box">
+                                                <img t-if="next_photo.photo" t-att-src="image_data_uri(next_photo.photo)" class="photo-img" alt="Before Maintenance Photo"/>
+                                                <div class="photo-caption"><span t-out="next_photo.caption or 'Before Photo'"/></div>
+                                                <div class="photo-desc" t-if="next_photo.template_photo_id"><span t-out="next_photo.template_photo_id.name or ''"/></div>
+                                            </div>
+                                        </td>
+                                    </t>
+                                    <t t-else="">
+                                        <td></td>
+                                    </t>
+                                </tr>
+                            </t>
+                            <t t-set="idx" t-value="idx + 1"/>
+                        </t>
+                    </table>
+                </t>
+
+                <!-- After Photos Grid -->
+                <t t-if="after_photos">
+                    <div class="section-header clearfix" style="page-break-before: auto;">
+                        <span class="section-header-en">AFTER MAINTENANCE PHOTOS</span>
+                        <span class="section-header-ar">صور العمل بعد الصيانة</span>
+                    </div>
+                    <table class="photo-grid-table">
+                        <t t-set="idx_a" t-value="0"/>
+                        <t t-foreach="after_photos" t-as="photo">
+                            <t t-if="idx_a % 2 == 0">
+                                <tr>
+                                    <td>
+                                        <div class="photo-box">
+                                            <img t-if="photo.photo" t-att-src="image_data_uri(photo.photo)" class="photo-img" alt="After Maintenance Photo"/>
+                                            <div class="photo-caption"><span t-out="photo.caption or 'After Photo'"/></div>
+                                            <div class="photo-desc" t-if="photo.template_photo_id"><span t-out="photo.template_photo_id.name or ''"/></div>
+                                        </div>
+                                    </td>
+                                    <t t-set="next_photo_idx_a" t-value="idx_a + 1"/>
+                                    <t t-if="next_photo_idx_a &lt; len(after_photos)">
+                                        <t t-set="next_photo_a" t-value="after_photos[next_photo_idx_a]"/>
+                                        <td>
+                                            <div class="photo-box">
+                                                <img t-if="next_photo_a.photo" t-att-src="image_data_uri(next_photo_a.photo)" class="photo-img" alt="After Maintenance Photo"/>
+                                                <div class="photo-caption"><span t-out="next_photo_a.caption or 'After Photo'"/></div>
+                                                <div class="photo-desc" t-if="next_photo_a.template_photo_id"><span t-out="next_photo_a.template_photo_id.name or ''"/></div>
+                                            </div>
+                                        </td>
+                                    </t>
+                                    <t t-else="">
+                                        <td></td>
+                                    </t>
+                                </tr>
+                            </t>
+                            <t t-set="idx_a" t-value="idx_a + 1"/>
+                        </t>
+                    </table>
+                </t>
+
+                <!-- FOOTER / SIGNATURE SECTION -->
+                <div style="margin-top: 40px; page-break-inside: avoid;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="width: 33%; text-align: center; border: none;">
+                                <div style="border-top: 1px dashed #9CA3AF; width: 80%; margin: 0 auto; padding-top: 5px;">
+                                    <strong>Technician Signature</strong><br/>
+                                    <span style="font-size: 9px; color: #6B7280;">توقيع الفني</span>
+                                </div>
+                            </td>
+                            <td style="width: 34%; text-align: center; border: none;">
+                                <!-- Space for stamp or note -->
+                            </td>
+                            <td style="width: 33%; text-align: center; border: none;">
+                                <div style="border-top: 1px dashed #9CA3AF; width: 80%; margin: 0 auto; padding-top: 5px;">
+                                    <strong>Customer Signature</strong><br/>
+                                    <span style="font-size: 9px; color: #6B7280;">توقيع العميل</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+            </div>
+        </t>
+    </template>
+</odoo>

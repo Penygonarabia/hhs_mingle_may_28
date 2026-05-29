@@ -1,0 +1,52 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+<odoo>
+
+    <record id="search_on_hold_spare_parts_reason" model="ir.ui.view">
+        <field name="name">onhold.spareparts.reason.search.view</field>
+        <field name="model">onhold.spareparts.reason</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="views_onhold_spare_parts_reason" model="ir.ui.view">
+        <field name="name">onhold.spareparts.reason.tree.view</field>
+        <field name="model">onhold.spareparts.reason</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="code"/>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="form_on_hold_spare_parts_reason" model="ir.ui.view">
+        <field name="name">onhold.spareparts.reason.form.view</field>
+        <field name="model">onhold.spareparts.reason</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="code" required="1"/>
+                        <field name="name" required="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_on_hold_spare_parts_reason" model="ir.actions.act_window">
+        <field name="name">On Hold Spare Parts Reason</field>
+        <field name="res_model">onhold.spareparts.reason</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_onhold_spare_parts_reason" name="On Hold Spare Parts Reason"
+              action="action_on_hold_spare_parts_reason"
+              parent="machine_repair_management.menu_machine_repair_configuration"
+              sequence="98"
+    />
+
+</odoo> 

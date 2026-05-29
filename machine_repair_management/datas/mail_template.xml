@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+
+        <record id="mail_template_service_sale_order" model="mail.template">
+            <field name="name">Quotation Template</field>
+            <field name="model_id" ref="machine_repair_management.model_service_sale_order"/>
+            <field name="email_from">{{ (user.login)}}</field>
+            <field name="email_to">{{ object.crm_id.email_from }}</field>
+            <field name="subject">Quotation: {{ object.name }}</field>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p> Dear <t t-out="object.customer_name or ''"/>,</p>
+                    <p>Please find the attached Quotation of the period: <t t-out="format_date(object.service_sale_quotation_date)"/> - <t t-out="format_date(object.date_expiry)"/></p>
+                    <p>In case of any queries concerning this matter, do not hesitate to contact our Service Department.</p>
+                    <br/>
+                    Best Regards,
+                    <br/>
+                    <t t-out="user.name"/>
+                    <br/>
+                </div>
+            </field>
+            <field name="report_template_ids" eval="[(4, ref('machine_repair_management.service_sale_order_quotation_report'))]"/>
+        </record>
+
+    </data>
+</odoo>

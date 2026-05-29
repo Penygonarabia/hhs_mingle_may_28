@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_cstclassificationdesc_form" model="ir.ui.view">
+        <field name="name">cstclassificationdesc.form</field>
+        <field name="model">t.cstclassificationdesc</field>
+        <field name="arch" type="xml">
+            <form string="Custom Language">
+                <sheet>
+                    <group>                      
+                        <field name="cc_code"/>
+                        <field name="cc_desc"/>
+                        <field name="cc_lang"/>
+                        <field name="lang_flag"/>
+                        <field name="user_lmd"/>  
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_cstclassificationdesc_tree" model="ir.ui.view">
+        <field name="name">cstclassificationdesc.custom.tree</field>
+        <field name="model">t.cstclassificationdesc</field>
+        <field name="arch" type="xml">
+            <tree string="Custom Language List">
+                        <field name="cc_code"/>
+                        <field name="cc_desc"/>
+                        <field name="cc_lang"/>
+                        <field name="lang_flag"/>
+                        <field name="user_lmd"/> 
+            </tree>
+        </field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom_main" name="Languages" sequence="10"/> -->
+
+    <record id="action_cstclassificationdesc_custom" model="ir.actions.act_window">
+        <field name="name">cstclassificationdesc Custom Model</field>
+        <field name="res_model">t.cstclassificationdesc</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom" name="Regular" action="action_res_lang_custom"  sequence="10"/> -->
+
+</odoo>

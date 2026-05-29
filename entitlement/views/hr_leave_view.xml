@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- explicit list view definition -->
+        <record id="hr_leave_type_entitlement_view_form_inherit" model="ir.ui.view">
+            <field name="name">hr.leave.type.entitlement.view.form.inherit</field>
+            <field name="model">hr.leave.type</field>
+            <field name="inherit_id" ref="hr_holidays.edit_holiday_status_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@id='allocation_requests']" position="after">
+                    <group String="Transaction Code" name="accrued_transaction">
+<!--                        <h4>-->
+<!--                            Transaction Code-->
+<!--                        </h4>-->
+<!--                        <br/>-->
+                        <field domain="[('code','=','ACL')]" name="transact_code_accrd_leave"/>
+                        <field domain="[('code','=','TENC')]" name="transact_code_accrd_ticket"/>
+                        <field domain="[('code','=','ADALL')]" name="transact_code_adv_payment"/>
+                        <field name="prepare_payslip"/>
+                        <field invisible="not code" name="monthly_carry_accrued_leave"/>
+                        <field invisible="not code" name="full_accrued_leave"/>
+                        <field name="thirty_days_flag"/>
+                        <field invisible="not code" name="calendar_days_flag"/>
+                    </group>
+                </xpath></field>
+        </record>
+<!--        <record id="hr_leave_of_absence_entitlement_view_form_inherit" model="ir.ui.view">-->
+<!--            <field name="name">hr.leave.of.absence.entitlement.view.form.inherit</field>-->
+<!--            <field name="model">hr.leave</field>-->
+<!--            <field name="inherit_id" ref="hr_holidays.hr_leave_view_form_manager"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <xpath expr="//field[@name='holiday_status_id']" position="replace"/>-->
+<!--                <xpath expr="//div[hasclass('col_left')]" position="after">-->
+<!--                    <field context="{'from_manager_leave_form': True ,'employee_id': employee_id, 'default_date_from':date_from, 'default_date_to':date_to}" name="holiday_status_id" options="{'no_open': True}"/>-->
+<!--                </xpath></field>-->
+<!--        </record>-->
+    </data>
+</odoo>

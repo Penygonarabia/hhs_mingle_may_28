@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+	
+	<menuitem id='root_geo_marking_menu' name="Geo Marking App" />
+    
+    <menuitem id="all_db_submenu" name="All DB" parent="geomarking_attendance_mobile_app_knk.root_geo_marking_menu" action='all_db_actions' sequence="1" />
+
+    <menuitem id="geomarking_configuration_menu" name="Configuration" parent="geomarking_attendance_mobile_app_knk.root_geo_marking_menu" sequence="3" />
+    <menuitem id="removal_request_menu" name="Removal Request" parent="geomarking_attendance_mobile_app_knk.geomarking_configuration_menu" sequence="5" />
+    <menuitem id="account_removal_request_menu" name="Account Removal Request" parent="geomarking_attendance_mobile_app_knk.removal_request_menu" action='action_account_removal_request' sequence="1" />
+    <menuitem id="removal_request_reason_menu" name="Removal Request Reason" parent="geomarking_attendance_mobile_app_knk.removal_request_menu" action='action_removal_request_reason' sequence="2" />
+
+    <menuitem id="attendance_request_menu" parent="hr_attendance.menu_hr_attendance_root" action="action_attendance_request" sequence="12"/>
+
+</odoo>

@@ -1,0 +1,1008 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* employee_shift_scheduling_app
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-30 04:06+0000\n"
+"PO-Revision-Date: 2024-07-30 04:06+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: employee_shift_scheduling_app
+#: model:ir.actions.report,print_report_name:employee_shift_scheduling_app.action_shift_allocation_report
+msgid "'Shift Allocation - %s' % object.name"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.shift_allocation_report_temp_doc
+msgid "<b style=\"font-size:130%;\">Week End</b>"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.shift_allocation_report_temp_doc
+msgid "<b style=\"font-size:130%;\">Working Day</b>"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:mail.template,body_html:employee_shift_scheduling_app.employee_shift_allocation_mail_template
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                    Dear <t t-out=\"object.employee_id.name\"/>\n"
+"                \t</p>\n"
+"                \t<br/>\n"
+"                \tYour Work Shift Allocated , Your shift is <t t-out=\"object.shift_id.name\"/>\n"
+"                \t<br/>\n"
+"                    Starting From <t t-out=\"object.from_date\"/> To <t t-out=\"object.to_date\"/>\n"
+"                \t<br/>\n"
+"                    Please find attached report\n"
+"                \t<br/>\n"
+"                \t<br/>\n"
+"                \tThank You,\n"
+"                    <br/>\n"
+"                \t<t t-out=\"object.user_id.name\"/>(<t t-out=\"object.user_id.company_id.name\"/>)\n"
+"            \t</div>\n"
+"            "
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:mail.template,body_html:employee_shift_scheduling_app.employee_shift_changes_mail_template
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"                    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"                    Dear <t t-out=\"object.employee_id.name\"/>,\n"
+"                \t</p>\n"
+"                \t<br/>\n"
+"                \tYour Shift Changes Request is Approved , Your shift changes request no is <b> <t t-out=\"object.name\"/></b>\n"
+"                \t<br/>\n"
+"                    your new shift is <b> <t t-out=\"object.shift_id.name\"/></b> start from <b> <t t-out=\"object.shift_id.time_from\"/></b> to <b> <t t-out=\"object.shift_id.time_to\"/></b>\n"
+"                \t<br/>\n"
+"                \tThank You,\n"
+"                    <br/>\n"
+"                \t<t t-out=\"object.shift_id.user_id.name\"/>(<t t-out=\"object.shift_id.user_id.company_id.name\"/>)\n"
+"            \t</div>\n"
+"            "
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_needaction
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__message_needaction
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__message_needaction
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__message_needaction
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__message_needaction
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__message_needaction
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__message_needaction
+msgid "Action Needed"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__activity_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__activity_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__activity_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__activity_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__activity_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__activity_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__activity_ids
+msgid "Activities"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__activity_exception_decoration
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__activity_exception_decoration
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__activity_exception_decoration
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__activity_exception_decoration
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__activity_exception_decoration
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__activity_exception_decoration
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__activity_state
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__activity_state
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__activity_state
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__activity_state
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__activity_state
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__activity_state
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__activity_state
+msgid "Activity State"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__activity_type_icon
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__activity_type_icon
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__activity_type_icon
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__activity_type_icon
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__activity_type_icon
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__activity_type_icon
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__activity_type_icon
+msgid "Activity Type Icon"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__allocation_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_hr_employee__allocation_ids
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_changes_search_view
+msgid "Allocation"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields.selection,name:employee_shift_scheduling_app.selection__employee_shift_changes__state__approve
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_changes_form_view
+msgid "Approve"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_attachment_count
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__message_attachment_count
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__message_attachment_count
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__message_attachment_count
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__message_attachment_count
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__message_attachment_count
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__message_attachment_count
+msgid "Attachment Count"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model,name:employee_shift_scheduling_app.model_bulk_allocation_wizard
+msgid "Bulk Allocation Wizard"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model,name:employee_shift_scheduling_app.model_bulk_week_end
+msgid "Bulk Week End"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.actions.act_window,name:employee_shift_scheduling_app.action_bulk_allocation_wizard
+msgid "Bulk of Shift Allocation"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields.selection,name:employee_shift_scheduling_app.selection__employee_shift_allocation__state__cancel
+#: model:ir.model.fields.selection,name:employee_shift_scheduling_app.selection__employee_shift_changes__state__cancel
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.bulk_allocation_wizard_form_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_allocation_form_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_changes_form_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.payment_invoice_wizard_form
+msgid "Cancel"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__company_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__company_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__company_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__company_id
+msgid "Company"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.bulk_allocation_wizard_form_view
+msgid "Create"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.ui.menu,name:employee_shift_scheduling_app.menu_bulk_allocation_wizard
+msgid "Create Bulk of Shift Allocation"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__create_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_week_end__create_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__create_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__create_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__create_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_roster_report_wizard__create_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__create_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_end__create_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__create_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_work_day__create_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__create_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_week_end__create_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__create_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__create_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__create_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_roster_report_wizard__create_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__create_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_end__create_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__create_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_work_day__create_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_end__date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_work_day__date
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.shift_allocation_report_temp_doc
+msgid "Date of Week"
+msgstr "تاريخ الاسبوع"
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__name
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__name
+msgid "Day"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__day_no
+msgid "Day Number"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_week_end__week_off_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_end__week_off_id
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.shift_allocation_report_temp_doc
+msgid "Day of Week"
+msgstr "يوم من الأسبوع"
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__display_name
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_week_end__display_name
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__display_name
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__display_name
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__display_name
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_roster_report_wizard__display_name
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__display_name
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_end__display_name
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__display_name
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_work_day__display_name
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields.selection,name:employee_shift_scheduling_app.selection__employee_shift_allocation__state__done
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_allocation_form_view
+msgid "Done"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields.selection,name:employee_shift_scheduling_app.selection__employee_shift_allocation__state__draft
+#: model:ir.model.fields.selection,name:employee_shift_scheduling_app.selection__employee_shift_changes__state__draft
+msgid "Draft"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__employee_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__employee_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__employee_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_end__employee_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_work_day__employee_id
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_allocation_search_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_changes_search_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_week_end_search_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_work_day_search_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.shift_allocation_report_temp_doc
+msgid "Employee"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.actions.act_window,name:employee_shift_scheduling_app.action_employee_shift
+#: model:ir.model,name:employee_shift_scheduling_app.model_employee_shift
+#: model:ir.ui.menu,name:employee_shift_scheduling_app.menu_employee_shift
+msgid "Employee Shift"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.actions.act_window,name:employee_shift_scheduling_app.action_employee_shift_allocation
+#: model:ir.model,name:employee_shift_scheduling_app.model_employee_shift_allocation
+#: model:ir.model,name:employee_shift_scheduling_app.model_employee_work_day
+#: model:ir.ui.menu,name:employee_shift_scheduling_app.main_menu_employee_shift_allocation
+#: model:mail.template,name:employee_shift_scheduling_app.employee_shift_allocation_mail_template
+msgid "Employee Shift Allocation"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.actions.act_window,name:employee_shift_scheduling_app.action_employee_shift_changes
+#: model:ir.model,name:employee_shift_scheduling_app.model_employee_shift_changes
+#: model:ir.ui.menu,name:employee_shift_scheduling_app.main_menu_employee_shift_changes
+#: model:mail.template,name:employee_shift_scheduling_app.employee_shift_changes_mail_template
+msgid "Employee Shift Changes"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.actions.act_window,name:employee_shift_scheduling_app.action_employee_work_day
+#: model:ir.ui.menu,name:employee_shift_scheduling_app.menu_employee_work_day
+msgid "Employee Shift Day"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.actions.act_window,name:employee_shift_scheduling_app.action_employee_shift_roster_report_wizard
+#: model:ir.ui.menu,name:employee_shift_scheduling_app.menu_employee_shift_roster_report_wizard
+msgid "Employee Shift Roster Report"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model,name:employee_shift_scheduling_app.model_employee_week_day
+msgid "Employee Week Day"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model,name:employee_shift_scheduling_app.model_employee_week_end
+msgid "Employee Week End"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.actions.act_window,name:employee_shift_scheduling_app.action_employee_week_end
+#: model:ir.ui.menu,name:employee_shift_scheduling_app.menu_employee_week_end
+msgid "Employee Week Off"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.actions.act_window,name:employee_shift_scheduling_app.action_employee_week_day
+#: model:ir.ui.menu,name:employee_shift_scheduling_app.menu_employee_week_day
+msgid "Employee Weekday"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.actions.act_window,name:employee_shift_scheduling_app.action_employee_week_off
+#: model:ir.model,name:employee_shift_scheduling_app.model_employee_week_off
+#: model:ir.ui.menu,name:employee_shift_scheduling_app.menu_employee_week_off
+msgid "Employee Weekoff"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_roster_report_wizard__end_date
+msgid "End Date"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_roster_report_wizard__file
+msgid "File"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_roster_report_wizard__file_name
+msgid "File Name"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_follower_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__message_follower_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__message_follower_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__message_follower_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__message_follower_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__message_follower_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__message_follower_ids
+msgid "Followers"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_partner_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__message_partner_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__message_partner_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__message_partner_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__message_partner_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__message_partner_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__message_partner_ids
+msgid "Followers (Partners)"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_bulk_allocation_wizard__activity_type_icon
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift__activity_type_icon
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_allocation__activity_type_icon
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_changes__activity_type_icon
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_day__activity_type_icon
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_off__activity_type_icon
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_shift_type__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_allocation_search_view
+msgid "From"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__from_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__from_date
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.shift_allocation_report_temp_doc
+msgid "From Date"
+msgstr "من التاريخ"
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__time_from
+msgid "From Time"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_allocation_search_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_changes_search_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_week_end_search_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_work_day_search_view
+msgid "Group By"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model,name:employee_shift_scheduling_app.model_hr_employee
+msgid "HR Employee"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__has_message
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__has_message
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__has_message
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__has_message
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__has_message
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__has_message
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__has_message
+msgid "Has Message"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_week_end__id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_roster_report_wizard__id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_end__id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_work_day__id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__id
+msgid "ID"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__activity_exception_icon
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__activity_exception_icon
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__activity_exception_icon
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__activity_exception_icon
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__activity_exception_icon
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__activity_exception_icon
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__activity_exception_icon
+msgid "Icon"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_bulk_allocation_wizard__activity_exception_icon
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift__activity_exception_icon
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_allocation__activity_exception_icon
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_changes__activity_exception_icon
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_day__activity_exception_icon
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_off__activity_exception_icon
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_shift_type__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_needaction
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_unread
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift__message_needaction
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift__message_unread
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_allocation__message_needaction
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_allocation__message_unread
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_changes__message_needaction
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_changes__message_unread
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_day__message_needaction
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_day__message_unread
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_off__message_needaction
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_off__message_unread
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_shift_type__message_needaction
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_shift_type__message_unread
+msgid "If checked, new messages require your attention."
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_has_error
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_has_sms_error
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift__message_has_error
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift__message_has_sms_error
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_allocation__message_has_error
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_allocation__message_has_sms_error
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_changes__message_has_error
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_changes__message_has_sms_error
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_day__message_has_error
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_day__message_has_sms_error
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_off__message_has_error
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_off__message_has_sms_error
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_shift_type__message_has_error
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_shift_type__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_is_follower
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__message_is_follower
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__message_is_follower
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__message_is_follower
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__message_is_follower
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__message_is_follower
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__message_is_follower
+msgid "Is Follower"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard____last_update
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_week_end____last_update
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift____last_update
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation____last_update
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes____last_update
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_roster_report_wizard____last_update
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day____last_update
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_end____last_update
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off____last_update
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_work_day____last_update
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type____last_update
+msgid "Last Modified on"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__write_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_week_end__write_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__write_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__write_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__write_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_roster_report_wizard__write_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__write_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_end__write_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__write_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_work_day__write_uid
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__write_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_week_end__write_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__write_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__write_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__write_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_roster_report_wizard__write_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__write_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_end__write_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__write_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_work_day__write_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__late
+msgid "Late Threshold"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_main_attachment_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__message_main_attachment_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__message_main_attachment_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__message_main_attachment_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__message_main_attachment_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__message_main_attachment_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__message_main_attachment_id
+msgid "Main Attachment"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_has_error
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__message_has_error
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__message_has_error
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__message_has_error
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__message_has_error
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__message_has_error
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__message_has_error
+msgid "Message Delivery error"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__message_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__message_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__message_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__message_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__message_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__message_ids
+msgid "Messages"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__my_activity_date_deadline
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__my_activity_date_deadline
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__my_activity_date_deadline
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__my_activity_date_deadline
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__my_activity_date_deadline
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__my_activity_date_deadline
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__name
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__name
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__name
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__name
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_allocation_form_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_changes_form_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_form_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_week_day_form_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_week_off_form_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.shift_type_form_view
+msgid "Name"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__activity_calendar_event_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__activity_calendar_event_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__activity_calendar_event_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__activity_calendar_event_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__activity_calendar_event_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__activity_calendar_event_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__activity_date_deadline
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__activity_date_deadline
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__activity_date_deadline
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__activity_date_deadline
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__activity_date_deadline
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__activity_date_deadline
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__activity_summary
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__activity_summary
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__activity_summary
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__activity_summary
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__activity_summary
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__activity_summary
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__activity_summary
+msgid "Next Activity Summary"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__activity_type_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__activity_type_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__activity_type_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__activity_type_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__activity_type_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__activity_type_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__activity_type_id
+msgid "Next Activity Type"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__day_no
+msgid "No"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__note
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_changes_form_view
+msgid "Note"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_needaction_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__message_needaction_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__message_needaction_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__message_needaction_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__message_needaction_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__message_needaction_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__message_needaction_counter
+msgid "Number of Actions"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_week_end__week_day_ids
+msgid "Number of Week"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_has_error_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__message_has_error_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__message_has_error_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__message_has_error_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__message_has_error_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__message_has_error_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__message_has_error_counter
+msgid "Number of errors"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_needaction_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift__message_needaction_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_allocation__message_needaction_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_changes__message_needaction_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_day__message_needaction_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_off__message_needaction_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_shift_type__message_needaction_counter
+msgid "Number of messages which requires an action"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_has_error_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift__message_has_error_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_allocation__message_has_error_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_changes__message_has_error_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_day__message_has_error_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_off__message_has_error_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_shift_type__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_unread_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift__message_unread_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_allocation__message_unread_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_changes__message_unread_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_day__message_unread_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_off__message_unread_counter
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_shift_type__message_unread_counter
+msgid "Number of unread messages"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__overtime
+msgid "Overtime Threshold"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.payment_invoice_wizard_form
+msgid "Print"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields.selection,name:employee_shift_scheduling_app.selection__employee_shift_changes__state__process
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_changes_form_view
+msgid "Process"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__user_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__user_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__user_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_end__user_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_work_day__user_id
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.shift_allocation_report_temp_doc
+msgid "Responsible"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__activity_user_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__activity_user_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__activity_user_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__activity_user_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__activity_user_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__activity_user_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__activity_user_id
+msgid "Responsible User"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_has_sms_error
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__message_has_sms_error
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__message_has_sms_error
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__message_has_sms_error
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__message_has_sms_error
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__message_has_sms_error
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__shift_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__shift_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__shift_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_end__shift_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_work_day__shift_id
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_allocation_search_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_changes_search_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_week_end_search_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_work_day_search_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.shift_allocation_report_temp_doc
+msgid "Shift"
+msgstr "يحول"
+
+#. module: employee_shift_scheduling_app
+#: model:ir.actions.report,name:employee_shift_scheduling_app.action_shift_allocation_report
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_week_end__wizard_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_end__allocation_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_work_day__allocation_id
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_week_end_search_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_work_day_search_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.hr_employee_form_inherited_view
+msgid "Shift Allocation"
+msgstr "تخصيص التحول"
+
+#. module: employee_shift_scheduling_app
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.shift_allocation_report_temp_doc
+msgid "Shift Allocation -"
+msgstr "تخصيص التحول-"
+
+#. module: employee_shift_scheduling_app
+#: model:mail.template,subject:employee_shift_scheduling_app.employee_shift_allocation_mail_template
+msgid "Shift Allocation - {{object.name}}"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:mail.template,report_name:employee_shift_scheduling_app.employee_shift_allocation_mail_template
+msgid "Shift Allocation {{(object.name)}}"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:mail.template,subject:employee_shift_scheduling_app.employee_shift_changes_mail_template
+msgid "Shift Changes - {{object.name}}-{{object.employee_id.name}}"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.ui.menu,name:employee_shift_scheduling_app.main_menu_employee_shift
+#: model:ir.ui.menu,name:employee_shift_scheduling_app.menu_employee_sheet_schedule
+msgid "Shift Schedule"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.actions.act_window,name:employee_shift_scheduling_app.action_shift_type
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__shift_type_id
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__shift_type_id
+#: model:ir.ui.menu,name:employee_shift_scheduling_app.menu_shift_type
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.shift_allocation_report_temp_doc
+msgid "Shift Type"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model,name:employee_shift_scheduling_app.model_shift_type
+msgid "Shift type"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_roster_report_wizard__start_date
+msgid "Start Date"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__state
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__state
+msgid "State"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_bulk_allocation_wizard__activity_state
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift__activity_state
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_allocation__activity_state
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_changes__activity_state
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_day__activity_state
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_off__activity_state
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_shift_type__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__to_date
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__to_date
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.shift_allocation_report_temp_doc
+msgid "To Date"
+msgstr "ان يذهب في موعد"
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__time_to
+msgid "To Time"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_bulk_allocation_wizard__activity_exception_decoration
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift__activity_exception_decoration
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_allocation__activity_exception_decoration
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_changes__activity_exception_decoration
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_day__activity_exception_decoration
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_off__activity_exception_decoration
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_shift_type__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_unread
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__message_unread
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__message_unread
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__message_unread
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__message_unread
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__message_unread
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__message_unread
+msgid "Unread Messages"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__message_unread_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__message_unread_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__message_unread_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__message_unread_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__message_unread_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__message_unread_counter
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__message_unread_counter
+msgid "Unread Messages Counter"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__website_message_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__website_message_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__website_message_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__website_message_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_day__website_message_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_week_off__website_message_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__website_message_ids
+msgid "Website Messages"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_bulk_allocation_wizard__website_message_ids
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift__website_message_ids
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_allocation__website_message_ids
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_shift_changes__website_message_ids
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_day__website_message_ids
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_employee_week_off__website_message_ids
+#: model:ir.model.fields,help:employee_shift_scheduling_app.field_shift_type__website_message_ids
+msgid "Website communication history"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_allocation_form_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.hr_employee_form_inherited_view
+msgid "Week End"
+msgstr "عطلة نهاية الاسبوع"
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__weekend_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_hr_employee__weekend_ids
+msgid "Week Ends"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_bulk_allocation_wizard__weekend_ids
+msgid "Weeks"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_allocation_form_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.hr_employee_form_inherited_view
+msgid "Work Day"
+msgstr "يوم عمل"
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_allocation__workday_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift_changes__workday_ids
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_hr_employee__workday_ids
+msgid "Work Days"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_shift_type__work_hours
+msgid "Work Hours"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model.fields,field_description:employee_shift_scheduling_app.field_employee_shift__resource_calendar_id
+msgid "Working Hours"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model:ir.model,name:employee_shift_scheduling_app.model_employee_shift_roster_report_wizard
+msgid "employee.shift.roster.report.wizard"
+msgstr ""
+
+#. module: employee_shift_scheduling_app
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_allocation_search_view
+#: model_terms:ir.ui.view,arch_db:employee_shift_scheduling_app.employee_shift_changes_search_view
+msgid "state"
+msgstr ""

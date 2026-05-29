@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <record id="property_rule_employee_contract_user" model="ir.rule">
+            <field name="name">Employee Contract</field>
+            <field name="model_id" ref="hr_contract.model_hr_contract"/>
+            <field name="domain_force">['|',('employee_id.user_id','=',user.id),('employee_id.parent_id.user_id','=',user.id)]</field>
+            <field name="groups" eval="[(4,ref('base.group_user'))]"/>
+        </record>
+
+        <record id="property_rule_employee_contract_hr_acc" model="ir.rule">
+            <field name="name">HR and Accounting Employee Contract</field>
+            <field name="model_id" ref="hr_contract.model_hr_contract"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4,ref('saudi_hr.group_hr')),(4,ref('saudi_hr.group_accounting'))]"/>
+        </record>
+
+
+
+        <record id="ir_rule_see_own_stuff_overtime" model="ir.rule">
+            <field name="name">See Own Employees [Overtime]</field>
+            <field name="model_id" ref="model_hr_overtime"/>
+            <field name="domain_force">['|',('overtime_line_ids.employee_id', 'child_of', user.employee_ids.ids),('overtime_line_ids.employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('saudi_hr.group_employee'))]"/>
+        </record>
+
+        <record id="ir_rule_see_all_overtime" model="ir.rule">
+            <field name="name">See all Overtimes</field>
+            <field name="model_id" ref="model_hr_overtime"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4, ref('saudi_hr.group_hr'))]"/>
+        </record>
+
+        <!--<record id="ir_rule_see_own_stuff_training_01" model="ir.rule">
+            <field name="name">See Own Employees [Training Requests]</field>
+            <field name="model_id" ref="model_hr_training_request"/>
+            <field name="domain_force">['|',('employee_id', 'child_of', user.employee_ids.ids),('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        </record>-->
+
+        <record id="own_hr_employee_directory" model="ir.rule">
+            <field name="name">Own Employee Profile Directory</field>
+            <field name="model_id" ref="hr.model_hr_employee_public"/>
+            <field name="domain_force">[('id', '=', user.employee_id.id)]</field>
+            <field name="groups" eval="[(4,ref('saudi_hr.group_employee'))]"/>
+        </record>
+
+        <record id="own_hr_employee_profile_hrm" model="ir.rule">
+            <field name="name">All Employee Profile Directory</field>
+            <field name="model_id" ref="hr.model_hr_employee_public"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4,ref('group_hrm'))]"/>
+        </record>
+
+
+<record id="own_hr_employee_profile_employee" model="ir.rule">
+    <field name="name">Employee own profile</field>
+    <field name="model_id" ref="hr.model_hr_employee_public"/>
+    <field name="domain_force">['|',
+        ('user_id','=',user.id),
+        ('user_id.employee_id', 'child_of', [user.employee_id.id])
+        ]</field>
+    <field name="groups" eval="[
+            (4,ref('base.group_user')),
+            (4,ref('group_employee'))]"/>
+</record>
+
+<record id="own_hr_employee_dir_profile_employee" model="ir.rule">
+    <field name="name">Employee Directory own profile</field>
+    <field name="model_id" ref="hr.model_hr_employee_public"/>
+    <field name="domain_force">['|', ('user_id','=',user.id), ('id', 'child_of', user.employee_id.id)]</field>
+    <field name="groups" eval="[
+            (4,ref('base.group_user')),
+            (4,ref('group_employee'))]"/>
+</record>
+
+<record id="own_hr_employee_profile_employee" model="ir.rule">
+    <field name="name">Employee own profile</field>
+    <field name="model_id" ref="hr.model_hr_employee"/>
+    <field name="domain_force">['|', ('user_id','=',user.id), ('id', 'child_of', user.employee_id.id)]</field>
+    <field name="groups" eval="[
+            (4,ref('base.group_user')),
+            (4,ref('group_employee'))]"/>
+</record>
+        <record id="dept_employee_visibility" model="ir.rule">
+            <field name="name">Own Department</field>
+            <field name="model_id" ref="hr.model_hr_employee_public"/>
+            <field name="domain_force">[('department_id','=',user.employee_id.department_id.id)]</field>
+            <field name="groups" eval="[
+                    (4,ref('saudi_hr.group_rdm'))]"/>
+        </record>
+
+        <record id="employee_own_profile" model="ir.rule">
+            <field name="name">Own HR Employee Profile</field>
+            <field name="model_id" ref="model_hr_employee"/>
+            <field name="domain_force">[('id', '=', user.employee_id.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user')), (4, ref('saudi_hr.group_employee'))]"/>
+        </record>
+
+        <record id="employee_dept_manager_profile" model="ir.rule">
+            <field name="name">Manager Employee Profile</field>
+            <field name="model_id" ref="model_hr_employee"/>
+            <field name="domain_force">['|', ('id', '=', user.employee_id.id), ('id', 'child_of', user.employee_id.parent_id.id)]</field>
+            <field name="groups" eval="[(4, ref('saudi_hr.group_dm')), (4, ref('saudi_hr.group_rdm'))]"/>
+        </record>
+
+        <record id="employee_all_profile" model="ir.rule">
+            <field name="name">All Employee Profile</field>
+            <field name="model_id" ref="model_hr_employee"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4, ref('saudi_hr.group_hrm')), (4, ref('base.group_erp_manager'))]"/>
+        </record>
+        
+        <!-- New Rule -->
+        <record id="ir_rule_see_own_employee_payslip_records" model="ir.rule">
+            <field name="name">EmployeeSee Own Payslip records</field>
+            <field name="model_id" ref="model_hr_payslip"/>
+            <!-- <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field> -->
+            <field name="domain_force">['|',('employee_id.user_id', '=', user.id),('employee_id.parent_id.user_id','=',user.id)]</field>
+            <field name="groups" eval="[(4, ref('hr.group_hr_user'))]"/>
+        </record>
+        <!-- End New Rule -->
+        
+    </data>
+</odoo>

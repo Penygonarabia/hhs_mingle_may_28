@@ -1,0 +1,215 @@
+<odoo>
+    <!-- Tree View -->
+    <record id="view_dealer_shop_status_tree" model="ir.ui.view">
+        <field name="name">dsales.shop.status.tree</field>
+        <field name="model">dsales.shop.status</field>
+        <field name="arch" type="xml">
+            <tree>
+                <!-- <field name="name"/> -->
+                <field name="dealer_id"/>
+                <field name="dealer_showroom_id" />
+                <field name="dealer_assignment_id" />
+                <field name="date_time"/>
+                <field name="notes"/>
+                <field name="priority"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- 2️⃣ Search View -->
+<record id="view_dealer_shop_status_search" model="ir.ui.view">
+    <field name="name">dsales.shop.status.search</field>
+    <field name="model">dsales.shop.status</field>
+    <field name="arch" type="xml">
+        <search string="Search Shop Status">
+            <field name="dealer_id" string="Dealer"/>
+            <field name="dealer_showroom_id" string="Showroom"/>
+            <field name="dealer_assignment_id" string="Salesman"/>
+
+            <separator/>
+
+            <group expand="0" string="Group By">
+                <filter name="group_dealer" string="Dealer" context="{'group_by': 'dealer_id'}"/>
+                <filter name="group_showroom" string="Showroom" context="{'group_by': 'dealer_showroom_id'}"/>
+                <filter name="group_sale_dealer_id" string="Salesman" context="{'group_by': 'dealer_assignment_id'}"/>
+            </group>
+        </search>
+    </field>
+</record>
+
+    <!-- Form View -->
+    <record id="view_dealer_shop_status_form" model="ir.ui.view">
+        <field name="name">dsales.shop.status.form</field>
+        <field name="model">dsales.shop.status</field>
+        <field name="arch" type="xml">
+            <form js_class="dealer_sales_redirect_form">
+             <sheet>
+                <group class="deskvw">                    
+                    <field name="dealer_id" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                    <field name="dealer_showroom_id" domain="[('dealer_id', '=', dealer_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                    <field name="dealer_assignment_id" domain="[('dealer_id', '=', dealer_id), ('dealer_showroom_id', '=', dealer_showroom_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>                 
+                </group>
+                <group  class="deskvw">                
+                    <field name="date_time"/>                    
+                    <field name="notes"/>
+                    <field name="priority"/>
+                    <field name="attachment_ids" widget="many2many_binary"/>                   
+                    <field name ="dealer_mobile_user_bool" invisible="1"/>
+                    <field name ="dealer_access_bool" invisible="1" />
+                </group>
+                 <group  class="mobvw">                
+                    <field name="date_time"/>                    
+                    <!-- <field name="notes"/>
+                    <field name="priority"/>
+                    <field name="attachment_ids" widget="many2many_binary"/>     -->
+                    <div style="font-size:15px;font-weight:bold;color: #070808ff;">Notes</div>
+                    <div class="o_attachment col-12" width="100%">
+                        <field name="notes" style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
+                    </div>
+                    <field name="priority"/>
+                    <div style="font-size:15px;font-weight:bold;color: #070808ff;">Attachments</div>
+                    <div  width="70%" height="400px">
+                        <field name="attachment_ids" widget="many2many_binary"/>
+                    </div>               
+                    <field name ="dealer_mobile_user_bool" invisible="1"/>
+                    <field name ="dealer_access_bool" invisible="1" />
+                </group>
+                 </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+        <!-- Kanban View -->
+    <record id="view_dealer_shop_status_kanban" model="ir.ui.view">
+        <field name="name">dsales.shop.status.kanban</field>
+        <field name="model">dsales.shop.status</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_small_column">
+                <field name="dealer_id"/>
+                <field name="dealer_showroom_id"/>
+                <field name="dealer_assignment_id"/>
+                <field name="date_time"/>
+                <field name="priority"/>
+                <field name="notes"/>
+
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="o_kanban_card">
+                            <div>
+                                <strong><field name="dealer_assignment_id"/></strong>
+                            </div>
+                            <div>
+                                Dealer: <field name="dealer_id"/>
+                            </div>
+                            <div>
+                                Showroom: <field name="dealer_showroom_id"/>
+                            </div>
+                            <div>
+                                Date/Time: <field name="date_time"/>
+                            </div>
+                            <div>
+                                Priority: <field name="priority"/>
+                            </div>
+                            <div>
+                                Notes:<small><field name="notes"/></small>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+
+     <!-- Kanban View -->
+    <record id="view_dealer_shop_status_kanban_mob" model="ir.ui.view">
+        <field name="name">dsales.shop.status.kanban</field>
+        <field name="model">dsales.shop.status</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_small_column">
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="o_kanban_card  oe_kanban_global_click">
+                            <div>
+                                <strong><field name="date_time"/></strong>
+                            </div>
+                            <div>
+                                Notes: <field name="notes"/>
+                            </div>                            
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+           <record id="view_dealer_shop_status_form_noduplicate" model="ir.ui.view">
+                <field name="name">dsales.shop.status.form.noduplicate</field>
+                <field name="model">dsales.shop.status</field>
+                <field name="inherit_id" ref="dealer.view_dealer_shop_status_form"/>
+                <field name="arch" type="xml">
+                    <xpath expr="//form" position="attributes">
+                        <attribute name="duplicate">false</attribute>
+                    </xpath>
+                </field>
+            </record>
+
+    <!-- Action Window -->
+    <record id="action_dealer_shop_status" model="ir.actions.act_window">
+        <field name="name">Review Shop Status</field>
+        <field name="res_model">dsales.shop.status</field>
+        <field name="view_mode">tree,form,kanban</field>   
+        <field name="search_view_id" ref="view_dealer_shop_status_search"/>        
+    </record>
+
+
+    <menuitem id="menu_dealer_shop_status_root"
+              name="Review Shop Status"
+              parent="menu_dealer_root"
+              action="action_dealer_shop_status"
+              groups="dealer.group_dealer_backoffice_user"
+              sequence="30"/>
+
+    <!-- =====================
+         ACTION & MENU
+    ====================== -->
+   <record id="action_dealer_status_mobile" model="ir.actions.act_window">
+        <field name="name">Update Shop Status (Mobile)</field>
+        <field name="res_model">dsales.shop.status</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="view_id" ref="view_dealer_shop_status_kanban_mob"/>
+        <field name="domain"> [('user_id', '=', uid)]</field>        
+    </record>
+
+    <menuitem id="menu_dealer_status_mobile"
+              name="Update Shop Status"
+              parent="menu_dealer_root"
+              action="action_dealer_status_mobile"
+              groups="dealer.group_dealer_user"
+              sequence="70"/>
+
+
+    <!-- =========================
+         RECORD RULES
+    ========================== -->
+    <!-- Mobile users: only own records -->
+    <record id="dealer_showroom_status_rule_user" model="ir.rule">
+        <field name="name">dealer Status: only own records</field>
+        <field name="model_id" ref="model_dsales_shop_status"/>
+        <field name="groups" eval="[(4, ref('dealer.group_dealer_user'))]"/>
+        <field name="domain_force"> [('dealer_assignment_id.sale_dealer_id', '=', user.id)]</field>
+    </record>
+
+    <!-- Back-office users: all records -->
+    <record id="dealer_showroom_status_rule_backoffice" model="ir.rule">
+        <field name="name">dealer Status: all records</field>
+        <field name="model_id" ref="model_dsales_shop_status"/>
+        <field name="groups" eval="[(4, ref('dealer.group_dealer_backoffice_user'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+</odoo>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+	
+	<record id="views_res_config_settings_inherit" model="ir.ui.view">
+	
+		<field name="name">res.config.settings.form</field>
+		<field name="model">res.config.settings</field>
+		<field name="inherit_id" ref="hr.res_config_settings_view_form"/>
+		<field name="arch" type="xml">
+			
+		<xpath expr="//block[@name='employee_rights_setting_container']" position="after">
+            <h2>Employee Leave Arrival</h2>
+            <block class="row mt16 o_settings_container" name="number_of_days_setting_container">
+                <div class="col-12 col-lg-6 o_setting_box" title="Number of days for employee-related calculations.">
+                    <!-- <div class="o_setting_right_pane">
+                        <field name="number_of_days"/>
+                    </div> -->
+                    <div class="content-group">
+                                    <div class="mt16" >
+                                    <label string="Number of Days" for="number_of_days" />
+                                        <field name="number_of_days" class="oe_inline"/>
+                                        <!-- <div class="text-muted">
+                                             Number of days to use in employee-related calculations
+                                        </div> -->   
+                                    </div>
+                                </div>
+                    <!-- <div class="o_setting_left_pane">
+                        <label for="number_of_days"/>
+                        <div class="text-muted">
+                            Number of days to use in employee-related calculations
+                        </div>
+                    </div> -->
+                </div>
+            </block>
+        </xpath>
+			
+		
+		</field>
+	
+	
+	</record>
+	
+
+</odoo>

@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="maintenance_equipment_inherit_view_form" model="ir.ui.view">
+        <field name="name">maintenance.equipment.inherit.view</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='location']" position="after">
+                <field name="maintenance_equipment_bool" invisible="1"/>
+                  <field name = "crm_lead_id" invisible = "1"/>
+            </xpath>
+            <xpath expr="//field[@name ='maintenance_team_id']" position="attributes">
+                <attribute name="invisible">maintenance_equipment_bool == True</attribute>
+            </xpath>
+            <xpath expr="//field[@name ='assign_date']" position="attributes">
+                <attribute name="invisible">maintenance_equipment_bool == True</attribute>
+            </xpath>
+            <xpath expr="//field[@name ='scrap_date']" position="attributes">
+                <attribute name="invisible">maintenance_equipment_bool == True</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name ='employee_id']" position="attributes">
+                <attribute name="invisible">maintenance_equipment_bool == True</attribute>
+            </xpath>
+            <xpath expr="//field[@name ='department_id']" position="attributes">
+                <attribute name="invisible">maintenance_equipment_bool == True</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name ='effective_date']" position="attributes">
+                <attribute name="invisible">maintenance_equipment_bool == True</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name ='cost']" position="attributes">
+                <attribute name="invisible">maintenance_equipment_bool == True</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name ='warranty_date']" position="attributes">
+                <attribute name="invisible">maintenance_equipment_bool == True</attribute>
+            </xpath>
+
+            <xpath expr="//page[@name ='maintenance']" position="attributes">
+                <attribute name="invisible">maintenance_equipment_bool == True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='equipment_assign_to']" position="attributes">
+                <attribute name="invisible">maintenance_equipment_bool == True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='serial_no']" position="attributes">
+                <attribute name="required">0</attribute>
+            </xpath>
+            <xpath expr="//field[@name='serial_no']" position="after">
+                <field name="equipment_contract_id" invisible="1"/>
+                <field name="maintenance_contract_type_id"/>
+            </xpath>
+            <!--            <xpath expr="//field[@name='model']" position="attributes">-->
+            <!--                <attribute name="required">1</attribute>-->
+            <!--            </xpath>-->
+            <xpath expr="//field[@name='model']" position="replace">
+                <field name ="brand_id"/>
+                <field name="model_id" required="0" context="{'default_brand_id': brand_id}" domain="[('brand_id', '=', brand_id)]"/>
+            </xpath>
+            <xpath expr="//field[@name='location']" position="attributes">
+                <attribute name="required">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name ='partner_id']" position="attributes">
+                <attribute name="invisible">maintenance_equipment_bool == True</attribute>
+            </xpath>
+            <xpath expr="//field[@name ='partner_ref']" position="attributes">
+                <attribute name="invisible">maintenance_equipment_bool == True</attribute>
+            </xpath>
+            <xpath expr="//field[@name ='category_id']" position="attributes">
+                <attribute name="invisible">maintenance_equipment_bool == True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="string">Asset Tag No</attribute>
+            </xpath>
+            <xpath expr="//page[@name='description']" position="before">
+                <page name="product_information" position="move"/>
+            </xpath>
+            <xpath expr="//field[@name='technician_user_id']" position="attributes">
+                <attribute name="domain">[('id', 'in', allowed_technicians)]</attribute>
+                <attribute name="force_save">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='technician_user_id']" position="before">
+                <field name="project_team_id" force_save="1"/>
+                <field name="allowed_technicians" widget="many2many_tags" invisible="1" force_save="1"/>
+
+            </xpath>
+            <xpath expr="//field[@name='location']" position="after">
+                <field name="recurrent" readonly="1"/>
+            </xpath>
+            <xpath expr="//button[@name='%(maintenance.hr_equipment_request_action_from_equipment)d']"
+                   position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="create_service_request" string="Create Service Request" type="object"
+                            class="oe_highlight" invisible = "1"/>
+                      <button name = "create_single_service_request" string= "Create Single Service Request" type = "object"
+                     		class = "oe_highlight"
+                     
+                     />  
+                </header>
+            </xpath>
+
+            <!--            <xpath expr="//field[@name='category_id']" position="after">-->
+            <!--                 <field name="contracts_no_ids" widget="One2many"/>-->
+            <!--            </xpath>-->
+
+        </field>
+    </record>
+    <record id="maintenance_equipment_inherit_view_machine_repair_form_inherit" model="ir.ui.view">
+        <field name="name">maintenance.equipment.machine.repair.management.inherit.view</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="inherit_id" ref="machine_repair_management.maintenance_equipment_inherit_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='brand']" position="replace">
+                <field name="brand_id"/>
+            </xpath>
+
+            <xpath expr="//field[@name='no_of_visits']" position="replace"/>
+            <xpath expr="//field[@name='service_group_batch']" position="before">
+                <field name="no_of_visits"/>
+            </xpath>
+            <xpath expr="//field[@name='service_group_batch']" position="after">
+                <field name="next_schedule_visit"/>
+                <field name="last_actual_prevent_visit" readonly="1"/>
+            </xpath>
+
+        </field>
+    </record>
+    <record id="maintenance_equipment_inherit_view_tree" model="ir.ui.view">
+        <field name="name">maintenance.equipment.inherit.tree.view</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_view_tree"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name ='assign_date']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+            <xpath expr="//field[@name ='category_id']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+            <xpath expr="//field[@name='name']" position="after">
+                <!--                <field name="brand" invisible="1"/>-->
+                <field name="brand_id" required="1"/>
+                <field name="service_product_name" required="1"/>
+                <!--                <field name="model" invisible="1"/>-->
+                <field name="model_id" required="1"/>
+
+            </xpath>
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="string">Asset Tag No</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="service_group_batch"/>
+            </xpath>
+            <xpath expr="//field[@name='technician_user_id']" position="after">
+                <field name="next_schedule_visit"/>
+            </xpath>
+            <xpath expr="//field[@name='next_schedule_visit']" position="after">
+                <field name="last_actual_prevent_visit"/>
+            </xpath>
+
+            <xpath expr="//field[@name = 'name']" position="before">
+                <field name="contract_id"/>
+            </xpath>
+            <xpath expr="//field[@name = 'contract_id']" position="after">
+                <field name="maintenance_contract_type_id"/>
+            </xpath>
+
+            <xpath expr="//tree" position="attributes">
+                <attribute name="default_order">create_date DESC</attribute>
+            </xpath>
+
+        </field>
+    </record>
+    <record id="maintenance_equipment_category_inherit_view_tree" model="ir.ui.view">
+        <field name="name">hr.maintenance.equipment.category.inherit.tree.view</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="inherit_id" ref="hr_maintenance.maintenance_equipment_view_tree_inherit_hr"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name ='employee_id']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+            <xpath expr="//field[@name ='department_id']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+            </xpath>
+        </field>
+    </record>
+    <record id="maintenance_equipment_view_search_inherit_hhs_service" model='ir.ui.view'>
+        <field name="name">maintenance.equipment.view.search.inherit.hhs.service</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="replace">
+                <field string="Asset Tag No" name="name" filter_domain="[
+                    '|', '|', '|',
+                    ('name', 'ilike', self), ('model', 'ilike', self), ('serial_no', 'ilike', self), ('partner_ref', 'ilike', self)]"/>
+            </xpath>
+            <xpath expr="//field[@name='owner_user_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='category_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='employee_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='department_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <field name="category_id" position="after">
+                <field name="brand_id" />
+                <field name="service_products_code_id" />
+                <field name="model_id"  required="1"/>
+                <field name="serial_no" />
+            </field>
+            <group position="inside">
+                <filter string="Asset Tag No" name="name" domain="[]" context="{'group_by': 'name'}"/>
+                <filter string="Brand" name="brand_id" domain="[]" context="{'group_by': 'brand_id'}"/>
+                <filter string="Service Unit Type" name="service_products_code_id" domain="[]"
+                        context="{'group_by': 'service_products_code_id'}"/>
+                <filter string="Model" name="model_id" domain="[]"
+                        context="{'group_by': 'model_id'}"/>
+
+                <filter string="Serial Number" name="serial_no" domain="[]"
+                        context="{'group_by': 'serial_no'}"/>
+
+            </group>
+            <xpath expr="//group/filter[@name='technicians']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//group/filter[@name='category']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//group/filter[@name='owner']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//group/filter[@name='vendor']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//group/filter[@name='employee']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//group/filter[@name='department']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+    <record id="maintenance.hr_equipment_action" model="ir.actions.act_window">
+        <field name="view_mode">tree,kanban,form</field>
+    </record>
+    <record id="maintenance.hr_equipment_action_from_category_form" model="ir.actions.act_window">
+        <field name="view_mode">tree,kanban,form</field>
+    </record>
+    <record id="hr_equipment_action_tree_view_inherit" model="ir.actions.act_window.view">
+        <field name="sequence" eval="0"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="maintenance.hr_equipment_view_tree"/>
+        <field name="act_window_id" ref="maintenance.hr_equipment_action"/>
+    </record>
+</odoo>

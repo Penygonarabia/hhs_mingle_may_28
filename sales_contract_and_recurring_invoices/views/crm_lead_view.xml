@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Inherited form view of Sale Order -->
+<!--    <record id="crm_lead_form_view_inherit" model="ir.ui.view">-->
+<!--        <field name="name">crm.lead.view.form.inherit.contract.and.recurring.invoices</field>-->
+<!--        <field name="model">crm.lead</field>-->
+<!--        <field name="inherit_id" ref="crm.crm_lead_view_form"/>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <xpath expr="//button[@name='action_set_won_rainbowman']" position="after">-->
+<!--                <button name="quotation_amc" string="Quotation Amc" type="object" class="oe_highlight" data-hotkey="w"/>-->
+<!--            </xpath>-->
+<!--        </field>-->
+<!--    </record>-->
+    <record id="sale_crm_lead_form_view_inherit" model="ir.ui.view">
+        <field name="name">sale.crm.lead.view.form.inherit.contract.and.recurring.invoices</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="sale_crm.crm_case_form_view_oppor"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_view_sale_quotation']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+             <xpath expr="//button[@name='action_view_sale_quotation']" position="after">
+                <button class="oe_stat_button" type="object" name="view_amc_quotation" icon="fa-pencil-square-o" invisible="type == 'lead'">
+                    <field name="amc_quotation_count" widget="statinfo" string="Quotations"/>
+                </button>
+            </xpath>
+             <xpath expr="//button[@name='action_sale_quotations_new']" position="after">
+                <button name="quotation_amc" string="New Quotation" type="object" class="oe_highlight" data-hotkey="w"/>
+            </xpath>
+            <xpath expr="//button[@name='action_sale_quotations_new']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+     <!-- <record id="crm_lead_service_kanban_view_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.view.service.inherit.kanban.inherit.iap.mine</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_kanban_view_leads"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_generate_leads']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+     <record id="crm_lead_service_tree_view_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.service.view.tree.inherit.kanban.inherit.iap.mine</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_oppor"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_generate_leads']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record> -->
+    <record id="crm.crm_lead_action_pipeline" model="ir.actions.act_window">
+        <field name="view_mode">tree,kanban,graph,pivot,form,calendar,activity</field>
+    </record>
+    <record id="crm.crm_lead_action_pipeline_view_tree" model="ir.actions.act_window.view">
+            <field name="sequence" eval="0"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="crm.crm_case_tree_view_oppor"/>
+            <field name="act_window_id" ref="crm.crm_lead_action_pipeline"/>
+        </record>
+     <record id="crm.crm_lead_action_pipeline_view_kanban" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">kanban</field>
+            <field name="view_id" ref="crm.crm_case_kanban_view_leads"/>
+            <field name="act_window_id" ref="crm.crm_lead_action_pipeline"/>
+        </record>
+        
+        <record id = "city_replace_view_crm_form_view" model = "ir.ui.view">
+        	<field name = "name">crm.lead.city.view.inherit</field>
+        	<field name = "model">crm.lead</field>
+        	<field name = "inherit_id" ref = "crm.crm_lead_view_form" />
+        	<field name = "arch" type = "xml">
+        	
+        	
+        	<xpath expr="//page[@name='lead']//div[contains(@class, 'o_address_format')]//field[@name='street2']" position = "after">
+        		
+		            <field name="customer_city_id"
+		                   class="o_address_city"
+		                   placeholder="Customer City"/>
+		        </xpath>
+        		
+        		<xpath expr="//page[@name='lead']//div[contains(@class, 'o_address_format')]//field[@name='city']" position = "attributes">
+        		<!-- <xpath expr = "//page[@name='lead']/group/group/div[@hasclass='o_address_format']/field[@name='city']" position = "attributes"> -->
+        			<attribute name = "invisible">1</attribute>
+        		</xpath>
+        		
+        		<xpath expr = "//header/button[@name = 'action_set_won_rainbowman']" position = "attributes">
+        			
+        			<attribute name = "invisible">1</attribute>
+        			
+        		</xpath>
+        		
+        		<xpath expr = "//header/button[@name ='%(crm.crm_lead_lost_action)d']" position = "attributes"> 
+        			
+        			<attribute name  = "invisible">1</attribute>	
+        			
+        		</xpath>
+        		
+        		<xpath expr = "//header/field[@name ='stage_id']" position = "attributes">
+        				
+        				<attribute name = "invisible">1</attribute>
+        				
+        		</xpath>
+        		
+        		<xpath expr = "//field[@name='name']" position = "attributes">
+        			<attribute name ="placeholder">Project – Name</attribute>
+        		</xpath>
+        		
+        	
+        	</field>
+        
+        
+        </record>
+        
+        
+        
+        
+</odoo>

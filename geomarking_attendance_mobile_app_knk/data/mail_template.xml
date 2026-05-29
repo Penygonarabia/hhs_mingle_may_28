@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="geomarking_employee_email_notification" model="mail.template">
+        <field name="name">Geomarking: Employee Email Notification</field>
+        <field name="model_id" ref="hr.model_hr_employee" />
+        <field name="email_from">"{{ object.company_id.name }}" &lt;{{ (object.company_id.email or user.email) }}&gt;</field>
+        <field name="email_to">{{ object.work_email }}</field>
+        <field name="subject">{{ ctx.get('title') }}</field>
+        <field name="body_html" type="html">
+            <div>
+                Hi <span t-out="object.name">Employee Name</span>,
+                <br></br><br></br>
+                <p t-out="ctx.get('body')">Email Body</p>
+                <br></br><br></br>
+                Thanks and Regards
+            </div>
+        </field>
+    </record>
+</odoo>

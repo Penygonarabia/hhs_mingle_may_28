@@ -1,0 +1,176 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* tw_gosi
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-31 06:58+0000\n"
+"PO-Revision-Date: 2024-07-31 06:58+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: tw_gosi
+#: model:ir.model.fields,field_description:tw_gosi.field_hr_contract__calculate_based_on_allowance
+msgid "Calculate Based On"
+msgstr "الحساب على أساس"
+
+#. module: tw_gosi
+#: model:ir.model,name:tw_gosi.model_res_config_settings
+msgid "Config Settings"
+msgstr "تهيئة الإعدادات "
+
+#. module: tw_gosi
+#: model_terms:ir.ui.view,arch_db:tw_gosi.res_config_settings_view_form_gosi
+msgid "Employee and Employer's Deduction from BASIC."
+msgstr ""
+
+#. module: tw_gosi
+#: model_terms:ir.ui.view,arch_db:tw_gosi.view_hr_contract_inherited_gosi
+msgid "Employee contribution"
+msgstr "مساهمة الموظف"
+
+#. module: tw_gosi
+#: model:ir.model.fields,field_description:tw_gosi.field_res_config_settings__non_saudi_employee_deduction
+#: model:ir.model.fields,field_description:tw_gosi.field_res_config_settings__saudi_employee_deduction
+#: model_terms:ir.ui.view,arch_db:tw_gosi.res_config_settings_view_form_gosi
+msgid "Employee's Deduction"
+msgstr ""
+
+#. module: tw_gosi
+#: model_terms:ir.ui.view,arch_db:tw_gosi.view_hr_contract_inherited_gosi
+msgid "Employer contribution for Non-Saudi"
+msgstr "مساهمة جهة العمل لغير السعوديين"
+
+#. module: tw_gosi
+#: model_terms:ir.ui.view,arch_db:tw_gosi.view_hr_contract_inherited_gosi
+msgid "Employer contribution for Saudi"
+msgstr "مساهمة صاحب العمل للسعوديين"
+
+#. module: tw_gosi
+#: model:ir.model.fields,field_description:tw_gosi.field_res_config_settings__non_saudi_employer_deduction
+#: model:ir.model.fields,field_description:tw_gosi.field_res_config_settings__saudi_employer_deduction
+#: model_terms:ir.ui.view,arch_db:tw_gosi.res_config_settings_view_form_gosi
+msgid "Employer's Deduction"
+msgstr ""
+
+#. module: tw_gosi
+#: model_terms:ir.ui.view,arch_db:tw_gosi.res_config_settings_view_form_gosi
+msgid "For Non-Saudi Employees"
+msgstr ""
+
+#. module: tw_gosi
+#: model_terms:ir.ui.view,arch_db:tw_gosi.res_config_settings_view_form_gosi
+msgid "For Saudi Employees"
+msgstr ""
+
+#. module: tw_gosi
+#: model:hr.salary.rule.category,name:tw_gosi.GOSI
+msgid "GOSI"
+msgstr ""
+
+#. module: tw_gosi
+#: model:hr.salary.rule,name:tw_gosi.hr_rule_gosi_comp
+msgid "GOSI Company Contribution For Saudi Employee"
+msgstr ""
+
+#. module: tw_gosi
+#: model:hr.salary.rule,name:tw_gosi.hr_rule_gosi
+msgid "GOSI Contribution For Saudi Employee"
+msgstr ""
+
+#. module: tw_gosi
+#: model:ir.model.fields,field_description:tw_gosi.field_hr_contract__gosi_amt
+#: model:ir.model.fields,field_description:tw_gosi.field_hr_contract__gosi_percentage
+msgid "Gosi Amount"
+msgstr ""
+
+#. module: tw_gosi
+#: model:ir.model.fields,field_description:tw_gosi.field_hr_contract__gosi_comp_amt
+msgid "Gosi Company Contribution Amount"
+msgstr ""
+
+#. module: tw_gosi
+#: model:ir.model.fields,field_description:tw_gosi.field_hr_contract__gosi_non_comp
+msgid "Gosi Company Contribution non saudi employee"
+msgstr ""
+
+#. module: tw_gosi
+#: model_terms:ir.ui.view,arch_db:tw_gosi.view_hr_contract_inherited_gosi
+msgid "Gosi Non Saudi Company Contribution"
+msgstr "مساهمة شركة التأمينات غير السعودية"
+
+#. module: tw_gosi
+#: model_terms:ir.ui.view,arch_db:tw_gosi.view_hr_contract_inherited_gosi
+msgid "Gosi Saudi deduction"
+msgstr "خصم جوسي سعودي"
+
+#. module: tw_gosi
+#: model:ir.model,name:tw_gosi.model_hr_contract
+msgid "HR Contract"
+msgstr ""
+
+#. module: tw_gosi
+#: model:ir.model.fields.selection,name:tw_gosi.selection__hr_contract__calculate_based_on_allowance__hra
+msgid "HRA"
+msgstr ""
+
+#. module: tw_gosi
+#: model:ir.model.fields.selection,name:tw_gosi.selection__hr_contract__calculate_based_on_allowance__hra_trv
+msgid "HRA + Travel"
+msgstr ""
+
+#. module: tw_gosi
+#: model:ir.model.fields.selection,name:tw_gosi.selection__hr_contract__calculate_based_on_allowance__hr_tr_fx
+msgid "HRA + Travel + Fixed"
+msgstr ""
+
+#. module: tw_gosi
+#: model:ir.model.fields.selection,name:tw_gosi.selection__hr_contract__calculate_based_on_allowance__hr_tr_fd
+msgid "HRA + Travel + Food"
+msgstr ""
+
+#. module: tw_gosi
+#: model:ir.model.fields.selection,name:tw_gosi.selection__hr_contract__calculate_based_on_allowance__hr_tr_fl
+msgid "HRA + Travel + Fuel"
+msgstr ""
+
+#. module: tw_gosi
+#: model:ir.model.fields.selection,name:tw_gosi.selection__hr_contract__calculate_based_on_allowance__hr_tr_mb
+msgid "HRA + Travel + Mobile"
+msgstr ""
+
+#. module: tw_gosi
+#: model:ir.model.fields.selection,name:tw_gosi.selection__hr_contract__calculate_based_on_allowance__hr_tr_oth
+msgid "HRA + Travel + Other"
+msgstr ""
+
+#. module: tw_gosi
+#: model:ir.model.fields.selection,name:tw_gosi.selection__hr_contract__calculate_based_on_allowance__hr_tr_sch
+msgid "HRA + Travel + School"
+msgstr ""
+
+#. module: tw_gosi
+#: model:ir.model.fields.selection,name:tw_gosi.selection__hr_contract__calculate_based_on_allowance__hr_tr_tk
+msgid "HRA + Travel + Ticket"
+msgstr ""
+
+#. module: tw_gosi
+#: model:ir.model.fields.selection,name:tw_gosi.selection__hr_contract__calculate_based_on_allowance__hr_tr_wk
+msgid "HRA + Travel + Work"
+msgstr ""
+
+#. module: tw_gosi
+#: model_terms:ir.ui.view,arch_db:tw_gosi.res_config_settings_view_form_gosi
+msgid "Payroll GOSI Configuration"
+msgstr ""
+
+#. module: tw_gosi
+#: model_terms:ir.ui.view,arch_db:tw_gosi.res_config_settings_view_form_gosi
+msgid "These gosi are set in any new employee."
+msgstr ""

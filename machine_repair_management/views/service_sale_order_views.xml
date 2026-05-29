@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Add the missing tree view -->
+    <record id="service_sale_order_tree" model="ir.ui.view">
+        <field name="name">service.sale.order.tree</field>
+        <field name="model">service.sale.order</field>
+        <field name="arch" type="xml">
+            <tree default_order="service_sale_quotation_date Desc" create="0" delete="0" duplicate="0">
+                <field name="name" string="Quotation Number"/>
+                <field name="service_sale_quotation_date" string="Date"/>
+                <field name="customer_name" string="Customer"/>
+                <!--                <field name="state" string="Status"/>-->
+                <field name="grand_total_amount" string="Total Amount"/>
+                <field name="state" string="Status" widget="badge" decoration-success="state in ('done','locked')"
+                       decoration-info="state =='draft'" decoration-primary="state == 'sale'"/>
+                <field name="company_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="service_sale_order_form" model="ir.ui.view">
+        <field name="name">service.sale.order.form.view</field>
+        <field name="model">service.sale.order</field>
+        <field name="arch" type="xml">
+            <form create="0" delete="0" duplicate="0">
+                <header name="service_sale">
+                    <button name="whatsapp_service_sale_sent" string="Send by Whatsapp" icon="fa-whatsapp" type="object"
+                            class="oe_highlight"
+                            invisible="whatsapp_button_click_bool == True or state !='draft' or amc_quotation"/>
+                    <button name="whatsapp_amc_service_sale_sent" string="Send by Whatsapp" icon="fa-whatsapp"
+                            type="object" class="oe_highlight"
+                            invisible="whatsapp_button_click_bool == True or state !='approve' or not amc_quotation or create_uid != uid"/>
+                    <field name="create_uid" invisible="1"/>
+                    <field name="whatsapp_button_click_bool" invisible="1"/>
+                    <button name="action_send_email" string="Send by E-Mail" icon="fa-envelope" type="object"
+                            class="oe_highlight"
+                            invisible="whatsapp_button_click_bool == True or state !='approve' or not amc_quotation or create_uid != uid"/>
+                    <button name="action_confirm" id="action_confirm" data-hotkey="q" string="Confirm"
+                            class="btn-primary" type="object" invisible="state in ('done','sale','cancel') or crm_id"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,sent,sale"
+                           invisible="not job_task_id"/>
+                    <field name="amc_quotation" invisible="1"/>
+                    <field name="whatsapp_sale_send_bool" invisible="1"/>
+                    <button name="action_contract_creation" type="object" string="Confirm" class="btn-primary"
+                            invisible="contract_id or not amc_quotation or state not in ('done', 'sent')"/>
+                    <!-- <button name="action_cancel" class="btn-primary" type="object" string="Cancel"-->
+                    <!-- confirm="Do you want to cancel this quotation?."-->
+                    <!-- data-hotkey="x" invisible="state in ('sale','cancel') or not amc_quotation"/>-->
+                    <button name="action_cancel" class="btn-primary" type="object" string="Reject"
+                            confirm="Do you want to cancel this quotation?." data-hotkey="x"
+                            invisible="state not in ('draft','sent') or crm_id"/>
+                    <button name="action_cancel" class="btn-primary" type="object" string="Cancel Quotation"
+                            confirm="Do you want to cancel this quotation?." data-hotkey="x"
+                            invisible="state not in ('done') or crm_id or job_task_id.state_status"/>
+                    <!-- or not amc_quotation -->
+                    <field name="contract_id" widget="many2one" options="{'no_create': True}" invisible="1"/>
+                    <field name="quote_created_user_id" invisible="1"/>
+                    <field name="quote_created_by" invisible="1"/>
+                </header>
+
+                <sheet>
+                    <div class="mobvw">
+                        <div style="display: flex; flex-direction: column;">
+                            <div class="FAQ" id="Customerinfo">
+                                <div class="toggle-btn" onclick="toggleFaq(this)">
+                                    <i class="fa fa-chevron-down accordion-icon" title="Toggle Customer Information"/>
+                                </div>
+                                <div class="question">Customer Information</div>
+                                <div class="list">
+                                    <div class="oe_title">
+                                        <h1>
+                                            <field name="name" readonly="1"/>
+                                        </h1>
+                                    </div>
+                                    <group>
+                                        <group>
+                                            <field name="partner_name"
+                                                   readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
+                                            <field name="customer_name"
+                                                   readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
+                                            <field name="contact_name"
+                                                   readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
+                                            <field name="function"
+                                                   readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
+                                            <field name="mobile"
+                                                   readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
+                                            <field name="customer_address"
+                                                   readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
+                                            <field name="contract_period" invisible="amc_quotation == False"
+                                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+                                            <field name="contract_interval" invisible="amc_quotation == False"
+                                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+                                            <field name="no_of_prevent_service" invisible="amc_quotation == False"
+                                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+                                            <field name="add_paid_service_price" readonly="1" invisible="1"/>
+                                        </group>
+
+                                        <group>
+                                            <field name="service_sale_quotation_date"
+                                                   readonly="state in ('approve','sale','sent','done','cancel','reject')"/>
+                                            <field name="date_expiry" invisible="amc_quotation == False"
+                                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+
+                                            <!-- Added: invoice_interval_duration selection (visible only for AMC) -->
+                                            <field name="invoice_interval_duration" invisible="amc_quotation == False"
+                                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+
+                                            <!-- Use existing integer field invoice_interval to show computed days -->
+                                            <field name="invoice_interval" string="Invoice Interval (Days)"
+                                                   invisible="amc_quotation == False" readonly="1"/>
+
+                                            <field name="payment_term_id" invisible="amc_quotation == False"
+                                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+                                            <field name="approval_level_id" invisible=" not amc_quotation"
+                                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+
+                                            <field name="no_of_correct_service" invisible="1"/>
+                                            <field name="job_task_id" invisible="1"/>
+                                            <field name="warehouse_id" invisible="1"/>
+                                            <field name="rejection_reason" invisible="1"/>
+                                            <field name="whatsapp_button_click_bool" invisible="1"/>
+                                            <field name="company_id" invisible="1"/>
+                                            <field name="user_id" widget="many2one_avatar" invisible="1"/>
+                                            <field name="quote_created_user_id" invisible="1"/>
+                                            <field name="quote_created_by" invisible="1"/>
+                                        </group>
+                                    </group>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="hr-5"/>
+                        <div style="display: flex; flex-direction: column;">
+                            <div class="FAQ" id="Productorderlinetab">
+                                <div class="toggle-btn" onclick="toggleFaq(this)">
+                                    <i class="fa fa-chevron-down accordion-icon" title="Toggle Order Lines"/>
+                                </div>
+                                <div class="question">Order Lines</div>
+                                <div class="list square-signature">
+                                    <field name="service_order_line_duplicate"
+                                           readonly="state in ('approve','sent','sale','done','cancel','reject')">
+                                        <tree editable="bottom">
+                                            <field name="product_id"/>
+                                            <field name="product_qty"/>
+                                            <field name="product_uom"/>
+                                            <field name="price_unit"/>
+                                            <field name="cost" column_invisible="not parent.amc_quotation"/>
+                                            <field name="margin" column_invisible="not parent.amc_quotation"/>
+                                            <field name="margin_percent" column_invisible="not parent.amc_quotation"/>
+                                            <field name="vat"/>
+                                            <field name="tax_amount" column_invisible="1"/>
+                                            <field name="discount" column_invisible="not parent.amc_quotation"/>
+                                            <field name="total"/>
+                                            <field name="amc_quotation" column_invisible="1"/>
+                                            <field name="under_warranty_bool" column_invisible="1"/>
+                                        </tree>
+                                    </field>
+
+                                    <div class="row mt16" invisible="amc_quotation == True">
+                                        <div class="col-6">
+                                            <span style="color:#00c292; font-weight:bold; margin-left:5px; white-space:nowrap;">
+                                                Parts Amount:
+                                            </span>
+                                        </div>
+                                        <div class="col-6" style="text-align:right; padding-right: 20px;">
+                                            <field name="untaxed_amount" readonly="1" force_save="1"/>
+                                        </div>
+
+                                        <div class="col-6">
+                                            <span style="color:#00c292; font-weight:bold; margin-left:5px; white-space:nowrap;">
+                                                VAT:
+                                            </span>
+                                        </div>
+                                        <div class="col-6" style="text-align:right; padding-right: 20px;">
+                                            <field name="vat_amount" readonly="1" force_save="1"/>
+                                        </div>
+
+                                        <div class="col-6">
+                                            <span style="color:#00c292; font-weight:bold; margin-left:5px; white-space:nowrap;">
+                                                Grand Total:
+                                            </span>
+                                        </div>
+                                        <div class="col-6" style="text-align:right; padding-right: 20px">
+                                            <field name="grand_total_amount" readonly="1" force_save="1"/>
+                                        </div>
+
+                                        <div class="col-6">
+                                            <span style="color:#00c292; font-weight:bold; margin-left:5px; white-space:nowrap;">
+                                                Inspection Charges Amount Received:
+                                            </span>
+                                        </div>
+                                        <div class="col-6" style="text-align:right; padding-right: 20px;">
+                                            <field name="inspection_charges_amount" readonly="1" force_save="1"/>
+                                        </div>
+
+                                        <div class="col-6">
+                                            <span style="color:#00c292; font-weight:bold; margin-left:5px; white-space:nowrap;">
+                                                Balance To Be Paid:
+                                            </span>
+                                        </div>
+                                        <div class="col-6" style="text-align:right; padding-right: 20px">
+                                            <field name="balance_paid" readonly="1" force_save="1"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mt16" invisible="amc_quotation == False">
+                                        <div class="col-6">
+                                            <span style="color:#00c292; font-weight:bold; margin-left:5px; white-space:nowrap;">
+                                                Untaxed Amount:
+                                            </span>
+                                        </div>
+                                        <div class="col-6" style="text-align:right; padding-right: 20px;">
+                                            <field name="untaxed_amount" readonly="1" force_save="1"/>
+                                        </div>
+
+                                        <div class="col-6">
+                                            <span style="color:#00c292; font-weight:bold; margin-left:5px; white-space:nowrap;">
+                                                Total Discount (-):
+                                            </span>
+                                        </div>
+                                        <div class="col-6" style="text-align:right; padding-right: 20px;">
+                                            <field name="total_discount" readonly="1" force_save="1"/>
+                                        </div>
+
+                                        <div class="col-6">
+                                            <span style="color:#00c292; font-weight:bold; margin-left:5px; white-space:nowrap;">
+                                                VAT:
+                                            </span>
+                                        </div>
+                                        <div class="col-6" style="text-align:right; padding-right: 20px;">
+                                            <field name="vat_amount" readonly="1" force_save="1"/>
+                                        </div>
+
+                                        <div class="col-6">
+                                            <span style="color:#00c292; font-weight:bold; margin-left:5px; white-space:nowrap;">
+                                                Grand Total:
+                                            </span>
+                                        </div>
+                                        <div class="col-6" style="text-align:right; padding-right: 20px">
+                                            <field name="grand_total_amount" readonly="1" force_save="1"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-pencil-square" name="action_view_project_task"
+                                string="Job Card" type="object" invisible="not job_task_id"/>
+                    </div>
+
+                    <div class="oe_title deskvw">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group class="deskvw">
+                        <!--20260408 Gokul -->
+                        <group>
+                            <field name="partner_name"
+                                   readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
+                            <field name="customer_name"
+                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+                            <field name="mobile"
+                                   readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
+                            <field name="email_from"
+                                   readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
+                            <field name="job_position"
+                                   readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
+                            <field name="customer_address" widget="text"
+                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+                            <field name="contract_period" invisible="amc_quotation == False"
+                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+                            <field name="contract_interval" invisible="amc_quotation == False"
+                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+                            <field name="contract_duration_days"
+                                   readonly="1" force_save="1"/>
+                            <field name="no_of_prevent_service" invisible="1"/>
+                            <field name="add_paid_service_price" invisible="amc_quotation == False"
+                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+                            <field name="crm_id" invisible="1"/>
+                            <field name="show_standard_hours" invisible="1"/>
+                        </group>
+
+                        <group>
+                            <field name="service_sale_quotation_date"
+                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+                            <field name="date_expiry" invisible="amc_quotation == False"
+                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+
+                            <!-- Added: invoice_interval_duration selection (visible only for AMC) -->
+                            <field name="invoice_interval_duration" invisible="amc_quotation == False"
+                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+
+                            <field name="number_of_installments" invisible="amc_quotation == False"
+                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+
+                            <!-- Use existing integer invoice_interval field (readonly) to show computed days -->
+                            <field name="invoice_interval" string="Invoice Interval (Days)" readonly="1" invisible="1"/>
+
+                            <field name="payment_term_id" invisible="amc_quotation == False"
+                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+
+                            <field name="approval_level_id" invisible="1"/>
+                            <field name="no_of_correct_service" invisible="1"/>
+
+                            <field name="travel_hours" invisible="amc_quotation == False"
+                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+
+                            <field name="gross_profit" invisible="amc_quotation == False"
+                                   groups="selling_cost_price_restrict.group_product_price_user"
+                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+                            <field name="sp_gross_margin" invisible="1"
+                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+                            <field name="spare_parts_amount_discount" invisible="amc_quotation == False"
+                             groups="selling_cost_price_restrict.group_product_price_user"
+                                   readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+							
+							  <field name  = "customer_code" invisible = "1"/>
+							
+							 <field name = "work_center_id" invisible = "1"/>
+                			 <field name = "work_center_group_id" invisible = "1"/>
+                			 <field name = "sales_person_user_id" invisible = "1"/>
+							
+                            <field name="job_task_id" invisible="1"/>
+                            <field name="warehouse_id" invisible="1" readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
+                            <field name="rejection_reason" invisible="1"/>
+                            <field name="whatsapp_button_click_bool" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="user_id" widget="many2one_avatar" invisible="1"/>
+                            <field name="amc_quotation" invisible="1"/>
+                            <field name="quote_created_user_id" invisible="1"/>
+                            <field name="quote_created_by" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <div class="deskvw">
+                        <notebook>
+                            <page id="service_sale_order_line" string="Order Lines">
+                                <field name="service_sale_order_line_ids"
+                                       readonly="state in ('approve','sent','sale','done','cancel','reject')">
+                                    <tree editable="bottom">
+                                        <!-- <field name="product_id" width="150px" domain="[('detailed_type', '=', 'consu')]" column_invisible="not parent.job_task_id"/>
+                                        <field name="product_id" domain="[('detailed_type', '=', 'service')]" column_invisible="parent.job_task_id"/>
+                                        <field name="description" force_save="1" optional="hide" width="150px"/>
+                                        <field name="product_qty"/>
+                                        <field name="no_of_visits_per_year" column_invisible="not parent.amc_quotation" width="210px"/>
+                                        <field name="no_of_emergency_visit" column_invisible="not parent.amc_quotation" width="195px" readonly="0"/>
+                                        <field name="days_required_for_rpm" column_invisible="not parent.show_standard_hours or not parent.amc_quotation" width="195px"/>
+                                        <field name="standard_hours" column_invisible="not parent.show_standard_hours or not parent.amc_quotation" force_save="1" width="85px"/>
+                                        <field name="total_hr" column_invisible="not parent.show_standard_hours or not parent.amc_quotation" width="85px"/>
+                                        <field name="total_cost" column_invisible="not parent.show_standard_hours or not parent.amc_quotation"/>
+                                        <field name="total_price" column_invisible="not parent.amc_quotation" digits="[16,2]"/>
+                                        <field name="product_uom" optional="hide"/>
+                                        <field name="price_unit" optional="hide"/>
+                                        <field name="cost" column_invisible="parent.job_task_id"/>
+                                        <field name="margin" column_invisible="parent.job_task_id"/>
+                                        <field name="margin_percent" column_invisible="parent.job_task_id"/>
+                                        <field name="discount" column_invisible="parent.job_task_id" optional="hide"/>
+                                        <field name="vat" column_invisible="not parent.amc_quotation"/>
+                                        <field name="vat_percent" column_invisible="not parent.amc_quotation" digits="[16,2]"/>
+                                        <field name="vat" column_invisible="parent.amc_quotation"/>
+                                        <field name="tax_amount" column_invisible="1"/>
+                                        <field name="under_warranty_bool" column_invisible="1"/>
+                                        <field name="total" column_invisible="not parent.job_task_id"/>
+                                        <field name="total_amc" column_invisible="parent.job_task_id" digits="[16,2]" readonly="1"/>
+                                        <field name="amc_quotation" column_invisible="1"/>
+                                        <field name="days_require_rpm_round_off" column_invisible="True" readonly="1" width="210px"/>
+                                        <field name="actual_prevent_count" column_invisible="True" readonly="1" width="210px"/>
+                                        <field name="balance_prevent_count" column_invisible="True" readonly="1" width="210px"/>
+                                        <field name="total_correct_count" column_invisible="True" readonly="1" width="210px"/>
+                                        <field name="actual_correct_count" column_invisible="True" readonly="1" width="210px"/>
+                                        <field name="balance_correct_count" column_invisible="True" readonly="1" width="210px"/> -->
+
+                                        <!-- mar 31 2026 -->
+                                        <field name="product_id" width="150px"
+                                               domain="[('detailed_type', '=', 'consu')]"
+                                               column_invisible="not parent.job_task_id"/>
+                                        <field name="product_id" domain="[('detailed_type', '=', 'service')]"
+                                               column_invisible="parent.job_task_id"/>
+                                        <field name="description" force_save="1" optional="hide" width="150px"/>
+                                        <field name="product_qty" width="100px" sum="Total"/>
+                                        <field name="no_of_visits_per_year" column_invisible="not parent.amc_quotation"
+                                               width="210px"/>
+                                        <field name="no_of_emergency_visit" column_invisible="not parent.amc_quotation"
+                                               width="195px" readonly="0" sum="Total"/>
+                                        <field name="days_required_for_rpm"
+                                               column_invisible="not parent.show_standard_hours or not parent.amc_quotation"
+                                               width="195px" sum="Total"/>
+                                        <field name="standard_hours" force_save="1" width="85px"/>
+                                        <field name="total_hr"
+                                               column_invisible="not parent.show_standard_hours or not parent.amc_quotation"
+                                               width="85px" sum="Total"/>
+                                        <field name="total_cost" sum="Total"
+                                               column_invisible="not parent.show_standard_hours or not parent.amc_quotation"/>
+                                        <field name="total_price" column_invisible="not parent.amc_quotation"
+                                               sum="Total" digits="[16,2]"/>
+                                        <field name="product_uom" optional="hide"/>
+                                        <field name="price_unit" optional="hide"/>
+                                        <field name="cost" column_invisible="parent.job_task_id"/>
+                                        <field name="margin" column_invisible="parent.job_task_id"/>
+                                        <field name="margin_percent" column_invisible="parent.job_task_id"/>
+                                        <field name="discount" column_invisible="parent.job_task_id" optional="hide"/>
+                                        <field name="vat" column_invisible="not parent.amc_quotation"/>
+                                        <field name="vat_percent" column_invisible="not parent.amc_quotation"
+                                               sum="Total" digits="[16,2]"/>
+                                        <field name="vat" column_invisible="parent.amc_quotation"/>
+                                        <field name="tax_amount" column_invisible="1"/>
+                                        <field name="total" column_invisible="not parent.job_task_id"/>
+                                        <field name="total_amc" column_invisible="parent.job_task_id" digits="[16,2]"
+                                               sum="Total" readonly="1"/>
+                                        <field name="amc_quotation" column_invisible="1"/>
+                                        <field name="days_require_rpm_round_off" column_invisible="True" readonly="1"
+                                               width="210px"/>
+                                        <field name="actual_prevent_count" column_invisible="True" readonly="1"
+                                               width="210px"/>
+                                        <field name="balance_prevent_count" column_invisible="True" readonly="1"
+                                               width="210px"/>
+                                        <field name="total_correct_count" column_invisible="True" readonly="1"
+                                               width="210px"/>
+                                        <field name="actual_correct_count" column_invisible="True" readonly="1"
+                                               width="210px"/>
+                                        <field name="balance_correct_count" column_invisible="True" readonly="1"
+                                               width="210px"/>
+                                        <field name="amc_quotation_id" column_invisible="1"/>
+                                    </tree>
+                                </field>
+                                <group style="float:right;">
+                                    <field name="untaxed_amount" style="text-align:right" readonly="1" force_save="1"/>
+                                    <field name="total_discount" style="text-align:right" readonly="1" force_save="1"
+                                           invisible="1"/>
+                                    <field name="vat_amount" style="text-align:right" readonly="1" force_save="1"/>
+                                    <field name="grand_total_amount" string="Grand Total" style="text-align:right"
+                                           readonly="1" force_save="1"/>
+                                    <field name="inspection_charges_amount" string="Inspection Charges Amount Received"
+                                           style="text-align:right" readonly="1" force_save="1"
+                                           invisible="amc_quotation"/>
+                                    <field name="balance_paid" string="Balance To Be Paid" style="text-align:right"
+                                           readonly="1" force_save="1" invisible="amc_quotation"/>
+                                    <field name="parts_vat_totamount" invisible="1" readonly="1" force_save="1"/>
+                                    <field name="parts_total_amount" invisible="1" readonly="1" force_save="1"/>
+                                    <field name="service_vat_amount" invisible="1" readonly="1" force_save="1"/>
+                                    <field name="service_charge_amount" invisible="1" readonly="1" force_save="1"/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </div>
+                </sheet>
+
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="service_sale_order_view_search" model="ir.ui.view">
+        <field name="name">service.sale.order.view.search</field>
+        <field name="model">service.sale.order</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="customer_name"/>
+                <field name="state"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter context="{'group_by': 'name'}" domain="[]" name="name" string="Quotation No."/>
+                    <filter context="{'group_by': 'customer_name'}" domain="[]" name="customer_name" string="Customer"/>
+                    <filter context="{'group_by': 'state'}" domain="[]" name="state" string="State"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- <record id="action_service_sale_order_form" model="ir.actions.act_window">
+        <field name="name">Quotation</field>
+        <field name="res_model">service.sale.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('amc_quotation', '=', False)]</field>
+        <field name="view_id" ref="service_sale_order_tree"/>
+    </record> -->
+
+    <record id="action_amc_service_sale_order_form" model="ir.actions.act_window">
+        <field name="name">AMC Quotation</field>
+        <field name="res_model">service.sale.order</field>
+        <field name="domain">[('amc_quotation', '=', True)]</field>
+        <field name="view_id" ref="service_sale_order_tree"/>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- <menuitem id="menu_action_service_sale_order" name="Quotation" action="action_service_sale_order_form" parent="machine_repair_management.menu_machine_repair_support" sequence="99"/> -->
+
+    <menuitem id="menu_action_amc_service_sale_order" name="AMC Quotation" action="action_amc_service_sale_order_form"
+              parent="crm.crm_menu_sales" sequence="100"/>
+</odoo>

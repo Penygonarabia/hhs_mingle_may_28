@@ -1,0 +1,205 @@
+<?xml version ="1.0" encoding ="utf-8" ?>
+<odoo>
+
+    <record id="view_job_card_preformat" model="ir.actions.report">
+        <field name="name">Pre-Printed Job Card</field>
+        <field name="model">project.task</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_file">machine_repair_management.report_job_card_preformat</field>
+        <field name="report_name">machine_repair_management.report_job_card_preformat</field>
+        <field name="binding_model_id" ref="model_project_task"/>
+        <field name="binding_type">report</field>
+    </record>
+
+
+    <template id="report_job_card_preformat">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.basic_layout">
+                    <div class="page" style="margin-top:40px;">
+                        <div style="margin-left:-15px;">
+                            <p style="padding-top:2px;">
+                                <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y  %H:%M:%S')"/>
+                            </p>
+                        </div>
+
+                        <!--<h4 style="margin-top:20px;"><b>Machine Repair Support Document</b></h4>-->
+                        <table class="table table-responsive" style="margin-top:5px; width: 90%;">
+                            <tr style="border-bottom:hidden;">
+                                <td>
+                                     <!-- empty-->
+                                </td>
+                                <td width="5px">
+                                </td>
+                                <!-- CiC name DOC Name-->
+                                <td width="95px">
+                                    <span t-field="doc.name"/>
+                                </td>
+                                <td>
+
+                                </td>
+                                <td width="5px">
+                                     <!-- empty-->
+                                </td>
+                                <td width="95px">
+                                    <span t-field="doc.customer_city_id.name"/>
+                                </td>
+                                <td width="5px">
+                                     <!-- empty-->
+                                </td>
+                                <td width="5px">
+                                    <!-- Date-->
+                                </td>
+                                <td width="95px">
+                                    <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y')"/>
+                                </td>
+                            </tr>
+
+
+                            <tr style="border-bottom:hidden;">
+                                <td width="5px">
+                                     <!-- empty-->
+                                </td>
+                                <td width="5px">
+                                    <!-- Customer Name-->
+                                </td>
+                                <td width="95px" style="padding:2px">
+                                    <span t-field="doc.customer_name"/>
+                                </td>
+                                <td width="5px">
+                                     <!-- empty-->
+                                </td>
+                                <td width="5px">
+                                    <!-- Location-->
+                                </td>
+                                <td width="95px" style="padding:2px">
+                                    <span t-field="doc.customer_city_id.name"/>
+                                </td>
+                                <td width="35px">
+
+                                </td>
+                                <!--                           <td width="30px">-->
+                                <!--                               <div t-field="doc.partner_id" t-options='{"widget": "contact", "fields": ["address", "phone"], "no_marker": True, "phone_icons": True}'/>-->
+                                <!--                       </td>-->
+
+                            </tr>
+                            <tr style="border-bottom:hidden;">
+                                <td width="5px">
+                                     <!-- empty-->
+                                </td>
+                                <td width="5px">
+                                    <!-- Customer VAt Number-->
+                                </td>
+                                <td width="95px" style="padding:2px">
+                                    <span t-field="doc.customer_identification_number"/>
+                                </td>
+                                <td width="5px">
+                                     <!-- empty-->
+                                </td>
+                                <td width="5px">
+                                    <!-- Mobile Number-->
+                                </td>
+
+                                <td width="95px" style="padding:2px">
+                                    <span t-field="doc.phone"/>
+                                </td>
+                                <td width="5px">
+                                     <!-- empty-->
+                                </td>
+                                <td width="5px">
+                                    <!-- Tel Number-->
+                                </td>
+
+                                <td width="95px" style="padding:2px">
+                                    <span t-field="doc.phone"/>
+                                </td>
+                                <!--                           <td width="30px">-->
+                                <!--                               <div t-field="doc.partner_id" t-options='{"widget": "contact", "fields": ["address", "phone"], "no_marker": True, "phone_icons": True}'/>-->
+                                <!--                       </td>-->
+
+                            </tr>
+                            <tr style="border-bottom:hidden;">
+                                <td width="5px">
+                                     <!-- empty-->
+                                </td>
+                                <td width="5px">
+                                    <!-- Promised date & Time-->
+                                </td>
+
+                                <td width="95px" style="padding:2px">
+                                    <span t-out="doc.planned_date_begin" t-options="{'widget': 'datetime'}"/>
+                                </td>
+                                <td width="5px">
+                                     <!-- empty-->
+                                </td>
+                                <td width="5px">
+                                    <!-- Technician-->
+                                </td>
+
+                                <td width="95px" style="padding:2px">
+                                    <span t-field="doc.team_id.name"/>
+                                </td>
+                                <td width="5px">
+                                     <!-- empty-->
+                                </td>
+                                <td width="5px">
+                                    <!-- Dealer-->
+                                </td>
+
+                                <td width="95px" style="padding:2px">
+                                    <span t-field="doc.dealer_id.name"/>
+
+                                </td>
+                            </tr>
+                        </table>
+                        <table class="table table-responsive" style="margin-top:-15px; width: 90%;">
+
+                            <tr style="border-bottom:hidden;">
+                                <td width="10px">
+                                    <!-- Model Number-->
+                                </td>
+                                <td width="90px">
+                                    <span t-field="doc.product_id.default_code"/>
+                                </td>
+                                <td width="30px">
+                                    <!-- Serial Number-->
+                                </td>
+                                <td width="70px">
+                                    <span t-field="doc.product_slno"/>
+                                </td>
+                                <td width="40px">
+                                    <!-- Invoice Number-->
+                                </td>
+                                <td width="60px">
+                                    <span t-field="doc.purchase_invoice_no"/>
+                                </td>
+                                <td width="35px">
+                                    <!-- Invoice Date-->
+                                </td>
+                                <td width="75px">
+                                    <span t-out="doc.purchase_date" t-options="{'widget': 'date'}"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <table class="table table-responsive" style="margin-top:50px;">
+
+                            <tr style="border-bottom:hidden;">
+                                <td colspan="1" width="100px">
+                                    <!-- Invoice Date-->
+                                </td>
+                                <td colspan="3" width="100px">
+                                    <span t-field="doc.client_comments"/>
+                                </td>
+                            </tr>
+
+                        </table>
+
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+
+</odoo>

@@ -1,0 +1,113 @@
+<odoo>
+    <record id="view_hr_attendance_review_mobile_tree_inherit" model="ir.ui.view">
+        <field name="name">hr.attendance.review.mobile.tree.inherit</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+        <field name="arch" type="xml">                   
+            <xpath expr="//field[@name='employee_no']" position="attributes">
+                <attribute name="groups">!promoter.group_promoter_user</attribute>                        
+            </xpath>
+            <xpath expr="//field[@name='employee_id']" position="attributes">
+                <attribute name="groups">!promoter.group_promoter_user</attribute>                        
+            </xpath>
+            <xpath expr="//field[@name='check_in']" position="attributes">
+                <attribute name="groups">!promoter.group_promoter_user</attribute>                        
+            </xpath> 
+            <xpath expr="//field[@name='check_out']" position="attributes">
+                <attribute name="groups">!promoter.group_promoter_user</attribute>                        
+            </xpath>    
+            <xpath expr="//field[@name='work_type']" position="attributes">
+                <attribute name="groups">!promoter.group_promoter_user</attribute>                        
+            </xpath>  
+             <xpath expr="//field[@name='process']" position="attributes">
+                <attribute name="groups">!promoter.group_promoter_user</attribute>                        
+            </xpath> 
+             <xpath expr="//field[@name='worked_hours']" position="attributes">
+                <attribute name="groups">!promoter.group_promoter_user</attribute>                        
+            </xpath>  
+            <xpath expr="//field[@name='overtime_hours']" position="attributes">
+                <attribute name="groups">!promoter.group_promoter_user</attribute>                        
+            </xpath> 
+            <xpath expr="//field[@name='check_in']" position="before">
+                <field name="att_date" string="Date" groups="promoter.group_promoter_user"/>
+                <field name="psignin" string="Planned Sign In" groups="promoter.group_promoter_backoffice_user"/>
+                <field name="psignout" string="Planned Sign Out" groups="promoter.group_promoter_backoffice_user"/>
+                <field name="check_in_time" string="Check In" groups="promoter.group_promoter_user"/>
+                <field name="check_out_time" string="Check Out" groups="promoter.group_promoter_user"/>
+                <field name="is_promoter" column_invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='overtime_hours']" position="attributes">
+                <attribute name="groups">!promoter.group_promoter_user</attribute>                        
+            </xpath>  
+            <!-- <xpath expr="//tree" position="attributes">
+                <attribute name="create">false</attribute>
+                <attribute name="groups">promoter.group_promoter_user</attribute>
+            </xpath> -->          
+        </field>
+    </record>        
+    
+    <record id="view_attendance_review_wizard_form" model="ir.ui.view">
+        <field name="name">attendance.review.wizard.form</field>
+        <field name="model">attendance.review.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Attendance Review">
+                <group>
+                    <field name="available_promoter_ids" invisible="1"/>
+                    <field name="promoter_id" domain="[('id','in',available_promoter_ids)]"/>
+                    <field name="from_date"/>
+                    <field name="to_date"/>                    
+                </group>
+                <footer>
+                    <button string="Populate" type="object" name="action_populate" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_attendance_review" model="ir.actions.act_window">
+        <field name="name">Review Attendance</field>
+        <field name="res_model">hr.attendance</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="hr_attendance.hr_attendance_view_filter"/>
+        <field name="target">current</field>        
+    </record>    
+   
+    <record id="action_attendance_review_wizard" model="ir.actions.act_window">
+        <field name="name">Attendance Review Wizard</field>
+        <field name="res_model">attendance.review.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_attendance_review_wizard_form"/>        
+    </record>
+
+     <menuitem id="menu_attendance_review_wizard"
+              name="Review Attendance"
+              parent="menu_promoter_root"
+              action="action_attendance_review_wizard"
+              groups="promoter.group_promoter_backoffice_user"
+              sequence="30"/>
+   
+    <record id="action_promoter_attendance_mobiles" model="ir.actions.act_window">
+        <field name="name">Attendance Enquiry</field>
+        <field name="res_model">hr.attendance</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_hr_attendance_review_mobile_tree_inherit"/>
+        <field name="target">current</field>
+        <field name="domain">
+                [
+                    ('employee_id.is_promoter', '=', True),
+                    '|',
+                    ('employee_id.user_id', '=', uid),
+                    ('employee_id.parent_id.user_id', '=', uid)
+                ]
+        </field>
+      </record>
+    
+    <menuitem id="menu_promoter_attendance_mobile"
+          name="Attendance Enquiry"
+          parent="menu_promoter_root"
+          action="action_promoter_attendance_mobiles"
+          groups="promoter.group_promoter_user"
+          sequence="90"/>
+</odoo>

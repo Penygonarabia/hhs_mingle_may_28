@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="material_request_form_view" model="ir.ui.view">
+        <field name="name">material.request.form.view</field>
+        <field name="model">material.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button class="btn-primary" groups="stock.group_stock_user" invisible="state in ['confirm', 'approve', 'reject']" name="action_confirm" string="Submit for Transfer" type="object"/>
+                    <button class="btn-primary" groups="stock.group_stock_manager" invisible="state in ['draft', 'approve', 'reject']" name="action_approve" string="Approve" type="object"/>
+                    <button class="btn-primary" groups="stock.group_stock_manager" invisible="state in ['draft', 'approve', 'reject']" name="action_reject" string="Reject" type="object"/>
+                    <button class="btn-primary" groups="stock.group_stock_manager" invisible="state in ['approve', 'confirm', 'draft']" name="action_reset_draft" string="Reset to draft" type="object"/>
+                    <button class="oe_highlight" groups="stock.group_stock_user" invisible="1 or state not in ['confirm']" name="action_send_mail" string="Send by Email" type="object"/>
+                    <button class="oe_highlight" groups="stock.group_stock_manager" invisible="1" name="action_response_mail" string="Response Mail" type="object"/>
+                    <button class="oe_highlight" groups="stock.group_stock_manager" invisible="1" name="action_reject_mail" string="Reject Mail" type="object"/>
+                    <field invisible="state in ['draft', 'reject']" name="delivery_state" widget="statusbar"/>
+                    <field name="state" statusbar_visible="draft,confirm" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" groups="stock.group_stock_manager,stock.group_stock_user" icon="fa-truck" invisible="state not in ['approve']" name="show_picking" string="Picking" type="object"/>
+                        <!--                             <field name="picking_count" widget="statinfo" string="Pickings"/>
+ -->
+                    </div>
+                    <div class="oe_title">
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name"/>
+                                <br/>
+                            </h1>
+                        </div>
+                    </div>
+                    <group>
+                        <group>
+                            <field force_save="1" name="user_id" readonly="1"/>
+                            <!--                            <field name="location_id" required="1"-->
+                            <!--                                   domain="[('usage', '=', 'internal')]"-->
+                            <!--                                   attrs="{'readonly': [('state', '!=', 'draft')]}"-->
+                            <!--                                   options="{'no_create': True}"/>-->
+                            <!--                            <field name="picking_type_id" required="1" domain="[('code', '=', 'internal')]"-->
+                            <!--                                   attrs="{'readonly': [('state', '!=', 'draft')]}" options="{'no_create': True}"/>-->
+                            <!--                            <field name="dest_location_id"-->
+                            <!--                               domain="[('usage', '=', 'internal')]"-->
+                            <!--                               attrs="{'readonly': [('state', 'in', ['approve', 'reject'])]}"-->
+                            <!--                               options="{'no_create': True}"/>-->
+                            <field domain="[('code', '=', 'internal')]" name="needed_picking_type_id" options="{'no_create': True, 'no_open': True}" readonly="state != 'draft'" required="1"/>
+                            <field domain="[('usage', '=', 'internal')]" name="location_id" options="{'no_create': True, 'no_open': True}" readonly="state != 'draft'" required="1"/>
+                            <field domain="[('code', '=', 'internal')]" name="picking_type_id" options="{'no_create': True, 'no_open': True}" readonly="state != 'draft'" required="1"/>
+                            <field domain="[('usage', '=', 'internal')]" name="dest_location_id" options="{'no_create': True, 'no_open': True}" readonly="state in ['approve', 'reject']"/>
+                        </group>
+                        <group>
+                            <field name="request_date" readonly="state != 'draft'"/>
+                            <!--                            <field name="picking_request_id" invisible="1"/>-->
+                            <field name="good_needed_on" readonly="state != 'draft'"/>
+                            <field name="approved_user_id" options="{'no_create':True,'no_edit':True,'no_create_edit':True, 'no_open': True}" readonly="state != 'draft'" widget="many2one_tags"/>
+                            <field force_save="1" invisible="1" name="request_picking_type" readonly="state != 'draft'"/>
+                            <field invisible="1" name="two_verify" options="{'no_create': True, 'no_create_edit':True}" readonly="state != 'draft'"/>
+                            <!--                             <field name="two_verify" options="{'no_create': True, 'no_create_edit':True}" attrs="{'invisible': [('picking_two_verify', '=', False)], 'readonly': [('state', '!=', 'draft')]}"/>
+ -->
+                            <field invisible="1" name="picking_two_verify" readonly="state != 'draft'"/>
+                            <field groups="base.group_multi_company" name="company_id" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Material Lines">
+                            <field name="request_line_ids" readonly="state in ['approve', 'reject', 'confirm']" required="state == 'confirm'">
+                                <tree editable="bottom">
+                                    <field name="product_id" options="{'no_create': True}"/>
+                                    <field invisible="1" name="product_uom_category_id"/>
+                                    <field name="description"/>
+                                    <field name="qty"/>
+                                    <field name="on_hand_qty"/>
+                                    <field groups="uom.group_uom" name="uom_id" options="{'no_create': True}"/>
+                                </tree>
+                                <form>
+                                    <group>
+                                        <group>
+                                            <field name="product_id" options="{'no_create': True}"/>
+                                            <field name="description"/>
+                                        </group>
+                                        <group>
+                                            <field name="qty"/>
+                                            <field invisible="1" name="product_uom_category_id"/>
+                                            <field groups="uom.group_uom" name="uom_id" options="{'no_create': True}"/>
+                                        </group>
+                                    </group>
+                                </form></field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form></field>
+    </record>
+    <record id="material_request_tree_view" model="ir.ui.view">
+        <field name="name">material.request.view.tree</field>
+        <field name="model">material.request</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="location_id"/>
+                <field name="dest_location_id"/>
+                <field name="request_date"/>
+                <field decoration-info="state not in ('approve', 'cancel', 'reject')" decoration-muted="state == 'draft'" decoration-success="state == 'approve'" name="state" optional="show" widget="badge"/>
+                <field invisible="1" name="approved_user_id"/>
+            </tree></field>
+    </record>
+    <record id="material_request_search_view" model="ir.ui.view">
+        <field name="name">material.request.search</field>
+        <field name="model">material.request</field>
+        <field name="arch" type="xml">
+            <search string="Material Request Search">
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="request_date"/>
+                <field name="location_id"/>
+                <field name="dest_location_id"/>
+                <field name="state"/>
+                <!--                 <field name="request_line_ids" filter_domain="[('request_line_ids.product_id','ilike',self)]"/>
+ -->
+                <group expand="0" string="Group By">
+                    <filter context="{'group_by':'user_id'}" name="user_id" string="User"/>
+                    <filter context="{'group_by':'request_date'}" name="request_date" string="Reqisition Date"/>
+                    <filter context="{'group_by':'location_id'}" name="location" string="Location"/>
+                    <filter context="{'group_by':'dest_location_id'}" name="dest_location_id" string="Destination Location"/>
+                    <filter context="{'group_by':'state'}" name="state" string="State"/>
+                </group>
+            </search></field>
+    </record>
+    <record id="action_material_request" model="ir.actions.act_window">
+        <field name="name">Internal Stock Request</field>
+        <field name="res_model">material.request</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <menuitem action="action_material_request" groups="stock.group_stock_manager,stock.group_stock_user" id="menu_action_material_request" name="Internal Stock Request" parent="stock.menu_stock_warehouse_mgmt" sequence="1"/>
+    <menuitem action="action_material_request" id="menu_point_of_sale_item" name="Internal Stock Request" parent="point_of_sale.menu_point_root" sequence="1"/>
+</odoo>

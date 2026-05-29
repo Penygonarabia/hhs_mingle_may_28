@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_financial_statements_root" name="Financial Statements" sequence="10"/>
+    <menuitem id="menu_financial_statements" name="Financial Statements" parent="menu_financial_statements_root"/>
+    <menuitem id="menu_balance_sheet" name="Balance Sheets" parent="menu_financial_statements" action="action_balance_sheet"/>
+    <menuitem id="menu_profit_loss" name="Profit &amp; Loss" parent="menu_financial_statements" action="action_profit_loss"/>
+    <menuitem id="menu_cash_flow" name="Cash Flow" parent="menu_financial_statements" action="action_cash_flow"/>
+</odoo>

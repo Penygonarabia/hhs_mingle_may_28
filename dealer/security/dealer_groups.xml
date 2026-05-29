@@ -1,0 +1,39 @@
+<odoo>
+  <data noupdate="0">  
+
+      <!-- Create Dealer Module Category -->
+      <record id="module_category_dealer" model="ir.module.category">
+        <field name="name">Dealer Salesman</field>
+        <field name="sequence">10</field>
+      </record>
+
+      <!-- Back Office User -->
+      <record id="group_dealer_backoffice_user" model="res.groups">
+        <field name="name">Back Office User</field>
+        <field name="category_id" ref="dealer.module_category_dealer"/>
+      </record> 
+
+      <!-- Module User (optional general group) -->
+      <record id="group_dealer_module_user" model="res.groups">
+        <field name="name">Module User</field>
+        <field name="category_id" ref="dealer.module_category_dealer"/>
+      </record>  
+
+      <!-- Mobile User -->
+      <record id="group_dealer_user" model="res.groups">
+        <field name="name">Mobile User</field>
+        <field name="category_id" ref="dealer.module_category_dealer"/>
+      </record> 
+      
+      <record id="group_dealer_sales_readonly" model="res.groups">
+        <field name="name">Sales Readonly</field>
+        <field name="category_id" ref="dealer.module_category_dealer"/>
+      </record>     
+      
+      <record id="group_dealer_sales_donotshow" model="res.groups">
+        <field name="name">Sales Donot Show ListView</field>
+        <field name="category_id" ref="dealer.module_category_dealer"/>
+      </record>     
+
+  </data>
+</odoo>

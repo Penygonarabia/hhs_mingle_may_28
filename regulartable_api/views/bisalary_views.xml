@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_bisalary_custom_form" model="ir.ui.view">
+        <field name="name">bisalary.form</field>
+        <field name="model">bisalary</field>
+        <field name="arch" type="xml">
+            <form string="bisalary Custom Language">
+                <sheet>
+                    <group>
+                        <field name="absenteeismamount"/>
+                        <field name="absenteeismdays"/>
+                        <field name="accruedleaveamount"/>
+                        <field name="accruedleavedays"/>
+                        <field name="advances"/>
+                        <field name="advancespaid"/>
+                        <field name="allowance9"/>
+                        <field name="analysiscode"/>
+                        <field name="analysiskey"/>
+                        <field name="basicsalary"/>
+                        <field name="billsotherdeductibles"/>
+                        <field name="bonus"/>
+                        <field name="city"/>
+                        <field name="commission"/>
+                        <field name="costcentercode"/>
+                        <field name="costcentername"/>
+                        <field name="department"/>
+                        <field name="departmentcode"/>
+                        <field name="departmentname"/>
+                        <field name="e_dateleft"/>
+                        <field name="employeecode"/>
+                        <field name="employeegosi"/>
+                        <field name="employeergosi"/>
+                        <field name="eos"/>
+                        <field name="eosadvances"/>
+                        <field name="facatorycode"/>
+                        <field name="factoryname"/>
+                        <field name="finesamount"/>
+                        <field name="finesdays"/>
+                        <field name="fixeallowance"/>
+                        <field name="foodallowance"/>
+                        <field name="fuelallowance"/>
+                        <field name="gender"/>
+                        <field name="holidayovertimehours"/>
+                        <field name="housingallowance"/>
+                        <field name="jobtitle"/>
+                        <field name="jobtitlecode"/>
+                        <field name="joindate"/>
+                        <field name="loanrepayments"/>
+                        <field name="loans"/>
+                        <field name="locationcode"/>
+                        <field name="locationname"/>
+                        <field name="mobileallowance"/>
+                        <field name="name"/>
+                        <field name="nationality"/>
+                        <field name="nationalitycode"/>
+                        <field name="netsalary"/>
+                        <field name="otheradditions"/>
+                        <field name="otherdeductions"/>
+                        <field name="overtimeamount"/>
+                        <field name="overtimeamountamount"/>
+                        <field name="overtimehours"/>
+                        <field name="personalleaveamount"/>
+                        <field name="personalleavedays"/>
+                        <field name="processdate"/>
+                        <field name="publicholidaysamount"/>
+                        <field name="publicholidaysdays"/>
+                        <field name="region"/>
+                        <field name="salarygrade"/>
+                        <field name="salarygradedesc"/>
+                        <field name="salarymonth"/>
+                        <field name="salaryyear"/>
+                        <field name="schoolallowance"/>
+                        <field name="severancepay"/>
+                        <field name="subdepartmentcode"/>
+                        <field name="subdepartmentname"/>
+                        <field name="ticketallowance"/>
+                        <field name="tickets"/>
+                        <field name="totalpayable"/>
+                        <field name="transportallowance"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_bisalary_custom_tree" model="ir.ui.view">
+        <field name="name">bisalary.custom.tree</field>
+        <field name="model">bisalary</field>
+        <field name="arch" type="xml">
+            <tree string="bisalary Custom Language List">                
+                        <field name="absenteeismamount"/>
+                        <field name="absenteeismdays"/>
+                        <field name="accruedleaveamount"/>
+                        <field name="accruedleavedays"/>
+                        <field name="advances"/>
+                        <field name="advancespaid"/>
+                        <field name="allowance9"/>
+                        <field name="analysiscode"/>
+                        <field name="analysiskey"/>
+                        <field name="basicsalary"/>
+                        <field name="billsotherdeductibles"/>
+                        <field name="bonus"/>
+                        <field name="city"/>
+                        <field name="commission"/>
+                        <field name="costcentercode"/>
+                        <field name="costcentername"/>
+                        <field name="department"/>
+                        <field name="departmentcode"/>
+                        <field name="departmentname"/>
+                        <field name="e_dateleft"/>
+                        <field name="employeecode"/>
+                        <field name="employeegosi"/>
+                        <field name="employeergosi"/>
+                        <field name="eos"/>
+                        <field name="eosadvances"/>
+                        <field name="facatorycode"/>
+                        <field name="factoryname"/>
+                        <field name="finesamount"/>
+                        <field name="finesdays"/>
+                        <field name="fixeallowance"/>
+                        <field name="foodallowance"/>
+                        <field name="fuelallowance"/>
+                        <field name="gender"/>
+                        <field name="holidayovertimehours"/>
+                        <field name="housingallowance"/>
+                        <field name="jobtitle"/>
+                        <field name="jobtitlecode"/>
+                        <field name="joindate"/>
+                        <field name="loanrepayments"/>
+                        <field name="loans"/>
+                        <field name="locationcode"/>
+                        <field name="locationname"/>
+                        <field name="mobileallowance"/>
+                        <field name="name"/>
+                        <field name="nationality"/>
+                        <field name="nationalitycode"/>
+                        <field name="netsalary"/>
+                        <field name="otheradditions"/>
+                        <field name="otherdeductions"/>
+                        <field name="overtimeamount"/>
+                        <field name="overtimeamountamount"/>
+                        <field name="overtimehours"/>
+                        <field name="personalleaveamount"/>
+                        <field name="personalleavedays"/>
+                        <field name="processdate"/>
+                        <field name="publicholidaysamount"/>
+                        <field name="publicholidaysdays"/>
+                        <field name="region"/>
+                        <field name="salarygrade"/>
+                        <field name="salarygradedesc"/>
+                        <field name="salarymonth"/>
+                        <field name="salaryyear"/>
+                        <field name="schoolallowance"/>
+                        <field name="severancepay"/>
+                        <field name="subdepartmentcode"/>
+                        <field name="subdepartmentname"/>
+                        <field name="ticketallowance"/>
+                        <field name="tickets"/>
+                        <field name="totalpayable"/>
+                        <field name="transportallowance"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom_main" name="Languages" sequence="10"/> -->
+
+    <record id="action_bisalary_custom" model="ir.actions.act_window">
+        <field name="name">bisalary Custom Languages</field>
+        <field name="res_model">bisalary</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom" name="Regular" action="action_res_lang_custom"  sequence="10"/> -->
+
+</odoo>

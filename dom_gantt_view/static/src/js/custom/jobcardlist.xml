@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<templates xml:space="preserve">
+
+    <t t-name="JobcardList" owl="1">
+
+        <div t-if="!state.hideJobcardList">
+
+
+
+            <div t-att-style="'margin-bottom: 15px; padding: 15px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); max-width: 300px; background: ' + (state.name ? 'linear-gradient(to right, #cafac0 0%, #1e5f22 50%, #0fa528ff 100%)' : 'linear-gradient(to right, #ffe082, #ffb300)')">
+
+                <input type="text" class="form-control mb-2" t-att-value="state.name" placeholder="Job Card#" t-att-readonly="true" style="background-color: #ffffff; border: 1px solid #90cdf4; color: #333333;"/>
+
+                <input type="text" class="form-control mb-2" t-att-value="state.customerName" placeholder="Customer Name" t-att-readonly="true" style="background-color: #ffffff; border: 1px solid #90cdf4; color: #333333;"/>
+
+                <input type="text" class="form-control" t-att-value="state.service_requested_datetime_formatted" placeholder="Service Requested Appt Date and Time" t-att-readonly="true" style="background-color: #ffffff; border: 1px solid #90cdf4; color: #333333;"/>
+
+
+                <t t-if="state.selectedJobCardId" class="form-control mt-2">
+                    <button type="button" t-on-click="resetSelectedJobCard" class="reset-button">
+                           Reset Selected Job Card
+                    </button>
+                </t>
+
+            </div>
+
+
+
+
+
+            <div style="display: flex; height: 58vh; width:100%;">
+                <div t-ref="cardList" class="jobcard-list" style="width: 100%; max-height: 72vh; overflow-y: auto;
+                                            position: sticky; top: 0; padding: 10px;
+                                            background-color: #dff8d7ff; box-shadow: 2px 0 4px rgba(0,0,0,0.1);">
+
+
+
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+
+                        <div style="position: sticky; top: 0; background: white; padding: 10px; font-weight: bold; z-index: 1000; border-bottom: 1px solid #ccc;">
+                            <t t-if="state.language.startsWith('ar')">
+                              بطاقات العمل :
+                            </t>
+                            <t t-else="">
+                                 Job Cards :
+                            </t>
+
+                            <span class="job-card-count">
+                                <t t-esc="state.jobCards.length"/>
+                            </span>
+
+                            <div class="mb-2 mt-2 d-flex align-items-center gap-2" t-att-style="'position: sticky; top: 0; z-index: 1000; border-radius: 4px; padding: 5px; box-shadow: 0 2px 6px rgba(6,83,51,0.15); background: ' + (state.selectedCityId ? 'linear-gradient(to right, #cafac0 0%, #1e5f22 50%, #0fa528ff 100%)' : 'linear-gradient(to right, #ffe082, #ffb300)')">
+                                <select id="cityFilter" t-on-change="onCityFilterChange" class="form-select form-select" style="position: sticky; top: 0;width: 200px;background: white;">
+
+                                    <option value="">JobCard Cities</option>
+                                    <t t-foreach="state.combinedCities" t-as="city" t-key="city.id">
+                                        <option t-att-value="city.id">
+                                            <t t-esc="city.name"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+
+                            <div class="mb-2 mt-2 d-flex align-items-center gap-2" t-att-style="'position: sticky; top: 0; z-index: 1000; border-radius: 4px; padding: 5px; box-shadow: 0 2px 6px rgba(6,83,51,0.15); background: ' + (state.selectedStatusCode ? 'linear-gradient(to right, #cafac0 0%, #1e5f22 50%, #0fa528ff 100%)' : 'linear-gradient(to right, #ffe082, #ffb300)')">
+                                <select id="statusFilter" t-on-change="onStatusFilterChange" class="form-select form-select" style="position: sticky; top: 0;width: 200px;background: white;">
+                                    <option value="">JobCard Status</option>
+                                    <t t-foreach="state.loadedJobcardStates" t-as="status" t-key="status.id">
+                                        <option t-att-value="status.id">
+                                            <t t-esc="status.name"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+
+
+
+
+
+                        <t t-foreach="state.jobCards" t-as="card" t-key="card.id">
+                            <div class="job-card" t-att-data-id="card.id" t-att-data-name="card.name" t-att-data-customer="card.customer_name" t-att-data-service="card.service_requested_datetime" t-on-click="onCardClick" t-attf-class="job-card #{state.selectedJobCardId === card.id ? 'selected' : ''}" style="display: flex; justify-content: flex-start; align-items: center;
+                            color: #06470d; font-weight: 300; border-radius: 8px;
+                            padding: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                            cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+
+                                <div style="font-size: 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 5px;">
+
+                                    <div style="display: flex; align-items: center; gap: 5px;" title="Job Card #">
+                                        <i class="fa fa-hashtag" aria-hidden="true" style="color: white; background-color: #006400; border-radius: 50%; padding: 5px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;"></i>
+                                        <t t-esc="card.name"/>
+                                    </div>
+                                    <!-- <t t-if="card.dealer_id">
+                                        <div style="display: flex; align-items: center; gap: 5px;" title="Dealer Name">
+                                            <i class="fa fa-user" aria-hidden="true" style="color: white; background-color: #006400; border-radius: 50%; padding: 5px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;"></i>
+                                            <t t-esc="card.dealer_id"/>
+                                        </div>
+                                    </t> -->
+                                    <t t-if="card.dealer_id">
+                                        <div style="display: flex; align-items: center; gap: 5px;" title="Dealer Name">
+                                            <!-- <img src="/dom_gantt_view/static/src/images/supplier.png" alt="Dealer" style="width: 20px; height: 20px; border-radius: 60%; background-color: #d9f3d9ff; padding: 5px; object-fit: cover;"/> -->
+                                            <!-- <i class="fa fa-user" aria-hidden="true" style="color: white; background-color: #006400; border-radius: 50%; padding: 5px; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center;"></i> -->
+
+                                            <!-- <span style="font-style: italic; font-weight: 800;">
+                                                <t t-esc="card.dealer_id"/>
+                                            </span> -->
+                                            <div style="display:flex; align-items:center; gap:6px;">
+                                                <img src="/dom_gantt_view/static/src/images/supplier.png" alt="Dealer" style="width:30px; height:30px; border-radius:60%; background-color:#d9f3d9ff; padding:5px; object-fit:cover;"/>
+
+                                                <span style="font-style: italic; font-weight: 800;">
+                                                    <t t-esc="card.dealer_id"/>
+                                                </span>
+                                            </div>
+
+
+                                        </div>
+                                    </t>
+
+
+                                    <t t-if="card.customer_name">
+                                        <div style="display: flex; align-items: center; gap: 5px;" title="Customer Name">
+                                            <i class="fa fa-user" aria-hidden="true" style="color: white; background-color: #006400; border-radius: 50%; padding: 5px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;"></i>
+                                            <t t-esc="card.customer_name"/>
+                                        </div>
+                                    </t>
+
+                                    <t t-if="card.service_requested_datetime">
+                                        <div style="display: flex; align-items: center; gap: 5px;" title="Service Requested Appt Date and Time">
+                                            <i class="fa fa-calendar" aria-hidden="true" style="color: white; background-color: #006400; border-radius: 50%; padding: 5px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;"></i>
+                                            <t t-esc="card.service_requested_datetime_formatted"/>
+                                        </div>
+                                    </t>
+
+
+                                    <t t-if="card.job_card_state">
+                                        <div style="display: flex; align-items: center; gap: 5px;" title="Status">
+                                            <i class="fa fa-info-circle" aria-hidden="true" style="color: white; background-color: #006400; border-radius: 50%; padding: 5px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;"></i>
+                                            <t t-esc="card.job_card_state"/>
+                                        </div>
+                                    </t>
+                                    <t t-if="card.customer_city_name">
+                                        <div style="display: flex; align-items: center; gap: 5px;" title="City">
+                                            <i class="fa fa-map-marker" aria-hidden="true" style="color: white; background-color: #006400; border-radius: 50%; padding: 5px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;"></i>
+                                            <t t-esc="card.customer_city_name"/>
+
+                                        </div>
+                                    </t>
+                                    <t t-if="card.customer_district_name">
+                                        <div style="display: flex; align-items: center; gap: 5px;" title="District">
+                                            <i class="fa fa-compass" aria-hidden="true" style="color: white; background-color: #006400; border-radius: 50%; padding: 5px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;"></i>
+                                            <t t-esc="card.customer_district_name"/>
+                                        </div>
+                                    </t>
+
+
+
+
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+
+
+    <t t-name="FilterDialog" owl="1">
+        <Dialog title="'Filter Job Cards'">
+            <div class="p-4 space-y-4">
+
+                <div>
+                    <label class="block font-medium mb-1">Select City</label>
+                    <select t-ref="city" class="form-select w-full border rounded p-2" t-on-change="onCityChange">
+                        <option value="">All Cities</option>
+
+                        <t t-foreach="cityList" t-as="city" t-key="city.id">
+                            <option t-att-value="city.id" t-esc="city.name" />
+                        </t>
+                    </select>
+                </div>
+
+
+                <div>
+                    <label class="block font-medium mb-1">Select Job Status</label>
+                    <select t-ref="status" class="form-select w-full border rounded p-2">
+                        <option value="">All Status</option>
+                        <t t-if="jobStates and  jobStates.length">
+                            <t t-foreach="jobStates" t-as="status" t-key="status.id">
+                                <option t-att-value="status.id" t-esc="status.name" />
+                            </t>
+                        </t>
+                    </select>
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
+                <div class="flex justify-end gap-2 p-3">
+                    <button class="btn btn-primary m-1" t-on-click="onConfirm">Apply Filter</button>
+                    <button class="btn btn-secondary" t-on-click="onCancel">Cancel</button>
+                </div>
+            </t>
+        </Dialog>
+    </t>
+</templates>

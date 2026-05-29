@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_inventory_request_internal_layout">
+        <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+          <t t-raw="0"/>
+        </div>
+    </template>
+
+    <template id="report_request_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="ak_material_request.report_inventory_request_internal_layout" style="margin-top:0px;padding-top:0px;display:inline;">
+
+
+                    <div class="header" t-att-style="report_header_style">
+                        <div class="o_boxed_header">
+                            <table width="100%">
+                                <br/>
+                                <tr>
+                                    <div class="row mt32 mb32">
+                                        <div class="col-3 text-left" style="font:16px lucida-console,sans-serif !important;">
+                                            <span t-field="res_company.partner_id" t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}' />
+                <!--										<p t-if="o.sudo().partner_id.vat"><t t-esc="o.company_id.country_id.vat_label or 'Tax ID'"/>: <span t-field="o.sudo().partner_id.vat"/></p>-->
+                                        </div>
+                                        <div class="col-6 text-center">
+                                               <h2  style="font-weight:bold;text-align:center;">Request Document</h2>
+                                        </div>
+                                        <div class="col-3 text-right">
+                                            <img t-if="res_company.logo" t-att-src="'data:image/png;base64,%s' % to_text(res_company.logo)" style="max-height: 90px;min-height:90px;" />
+                                        </div>
+                                    </div>
+                                    <br/>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <br/>
+                    <div class="page">
+                    	
+                        <table class="table table-sm" style=" table-layout:fixed;">
+                            <thead>
+                                <tr>
+                                    <th class="text-center" width="30px"
+                                        style="vertical-align: text-top;background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">
+                                        <strong>Requested By</strong>
+                                    </th>
+                                    <th class="text-center" width="30px"
+                                        style="vertical-align: text-top;background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">
+                                        <strong>Stock From Branch</strong>
+                                    </th>
+                                    <th class="text-center" width="30px"
+                                        style="vertical-align: text-top;background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">
+                                        <strong>Request Reference</strong>
+                                    </th>
+                                    <th class="text-center" width="30px"
+                                        style="vertical-align: text-top;background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">
+                                        <strong>Request Date Time</strong>
+                                    </th>
+                                    <th class="text-center" width="30px"
+                                        style="vertical-align: text-top;background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">
+                                        <strong>Approved By</strong>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="border: 1px !important; border-style: solid !important; border-color: #fff !important;">
+                                        <div t-field="o.user_id"
+                                           t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+    <!--                                    <p t-if="o.sudo().user_id.vat"><t t-esc="o.company_id.country_id.vat_label or 'Tax ID'"/>: <span t-field="o.sudo().partner_id.vat"/></p>-->
+                                    </td>
+                                    <td style="border: 1px !important; border-style: solid !important; border-color: #fff !important;">
+                                        <span t-field="o.picking_type_id.warehouse_id.name"/>
+                                         <div t-field="o.picking_type_id.warehouse_id.partner_id"
+                                                t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                                    </td>
+                                    <td style="border: 1px !important; border-style: solid !important; border-color: #fff !important;">
+                                        <b>
+                                            <div style="font-weight:bold;font-size:20px" t-field="o.name"/>
+                                        </b>
+                                    </td>
+                                    <td style="border: 1px !important; border-style: solid !important; border-color: #fff !important;">
+                                        <div t-field="o.request_date" t-options='{"widget": "datetime","format": "dd-MM-yyyy HH:mm:ss"}'/>
+                                    </td>
+                                    <td style="border: 1px !important; border-style: solid !important; border-color: #fff !important;">
+                                        <b>
+                                            <div t-field="o.approved_user_id"/>
+                                        </b>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <table class="table table-sm" style="table-layout: fixed;">
+                            <thead>
+                                <tr style="background-color:#464343;color:white;text-align:center;">
+                                    <th class="text-center"   width="20px"
+                                    style="vertical-align: text-top;background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Item Code</strong></th>
+                                    <th class="text-center"   width="30px"
+                                    style="vertical-align: text-top;background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Description</strong></th>
+                                    <th class="text-center"   width="20px"
+                                    style="vertical-align: text-top;background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>UOM</strong></th>
+                                    <th class="text-center"   width="20px"
+                                    style="vertical-align: text-top;background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>O/H Qty</strong></th>
+                                    <th class="text-center"   width="20px"
+                                    style="vertical-align: text-top;background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Order QTY</strong></th>
+<!--                                    <th class="text-center"   width="20px"-->
+<!--                                    style="vertical-align: text-top;background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Del Qty</strong></th>-->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.request_line_ids" t-as="line">
+                                    <tr style="font-size:13px" >
+<!--                                        <td groups="stock.group_stock_multi_locations"></td>-->
+                                        <td><span t-field="line.product_id.default_code"/></td>
+                                        <td><span t-field="line.product_id.name"/></td>
+                                        <td class="text-left"> <span t-field="line.uom_id"/></td>
+                                        <td class="text-right"><span t-field="line.on_hand_qty" t-options='{"widget": "float", "decimal_precision": "2"}'/> </td>
+                                        <td class="text-right"><span t-field="line.qty" t-options='{"widget": "float", "decimal_precision": "2"}'/> </td>
+<!--                                        <td class="text-right"></td>-->
+                                    </tr>
+                                </t>
+<!--                                <t>-->
+<!--                                    <tr style="font-size:13px">-->
+<!--                                        <td><b>Remarks</b></td>-->
+<!--                                        <td colspan="8"><span t-field="o.remarks" style="white-space: normal;"/>-->
+<!--                                        </td>-->
+<!--                                    </tr>-->
+<!--                                </t>-->
+                            </tbody>
+                        </table>
+
+<!--                        <t t-if="o.filter == 'product' and o.product_id">-->
+<!--                          <div class="row justify-content-end">-->
+<!--                            <div class="col-4">-->
+<!--                                 <table class="table table-sm">-->
+<!--                                    <tr class="border-black">-->
+<!--                                        <td><strong>Total Quantity</strong></td>-->
+<!--                                        <td class="text-right">-->
+<!--                                            <span t-field="o.total_qty"/> <span t-field="o.product_id.uom_id"/>-->
+<!--                                        </td>-->
+<!--                                    </tr>-->
+<!--                                </table>-->
+<!--                            </div>-->
+<!--                          </div>-->
+<!--                        </t>-->
+                    </div>
+                    <div class="footer o_background_footer">
+                        <div class="text-center">
+                            <ul class="list-inline">
+                                    <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                                </ul>
+                            <div t-if="report_type == 'pdf'" class="text-muted">
+                                Page:
+                                <span class="page"/>
+                                of
+                                <span class="topage"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+             </t>
+         </t>
+    </template>
+
+    <record id="action_report_request_document" model="ir.actions.report">
+        <field name="name">Request Document</field>
+        <field name="model">material.request</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">ak_material_request.report_request_document</field>
+        <field name="report_file">ak_material_request.report_request_document</field>
+        <field name="print_report_name">'Request Document - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_material_request"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

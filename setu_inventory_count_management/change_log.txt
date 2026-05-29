@@ -1,0 +1,34 @@
+Date : 17th March 2023
+Version : '15.5' (in __manifest__.py)
+Odoo Version : 15
+Done by : Udit Ramani
+Tested by : Udit Ramani
+Description : Added Inventory Count and Inventory Adjustment reference in the stock move and stock move line.
+
+Date : 28th February 2023
+Version : '15.4' (in __manifest__.py)
+Odoo Version : 15
+Done by : Devangi Pabari
+Tested by : Udit Ramani, Devangi Pabari
+Description : Reject lines removed once session submitted to avoid wrong inventory adjustment issue.
+
+Date : 9th February 2023
+Version : '15.3' (in __manifest__.py)
+Odoo Version : 15
+Done by : Udit Ramani
+Tested by : Udit Ramani
+Description : Accounting entry from valuation up and down will have inventory count name in reference.
+
+Date : 8th February 2023
+Version : '15.2' (in __manifest__.py)
+Odoo Version : 15
+Done by : Udit Ramani
+Tested by : Udit Ramani, Nikhilbhai
+Description : Fixed an issue of unwanted moves creation and added a configuration to auto validate inventory adjustment.
+
+Date : 19th January 2023
+Version : '15.1' (in __manifest__.py)
+Odoo Version : 15
+Done by : Niyati Palan, Ashish Rangani, Udit Ramani
+Tested by : Udit Ramani, Ashish Rangani, Nikhilbhai
+Description : Lot/Serial number supported, Auto suggestion of Lots at other location in scanning and bug fixes.

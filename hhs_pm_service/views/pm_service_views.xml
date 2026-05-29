@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- PM SERVICE - TREE VIEW (List of Headers) -->
+        <record id="view_pm_service_tree" model="ir.ui.view">
+            <field name="name">pm.service.tree</field>
+            <field name="model">pm.service</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="service_unit_type_id"/>
+                    <field name="service_unit_sub_type_id"/>
+                    <field name="service_type_id"/>
+                    <field name="sort_order_header"/>
+                    <field name="id" optional="hide"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- PM SERVICE - FORM VIEW (Header + Detail Lines) -->
+        <record id="view_pm_service_form" model="ir.ui.view">
+            <field name="name">pm.service.form</field>
+            <field name="model">pm.service</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group string="Header" col="2">
+
+                            <!-- LEFT SIDE (ENGLISH) -->
+                            <group>
+                                <field name="service_unit_type_id"/>
+                                <field name="service_unit_sub_type_id"/>
+                                <field name="service_type_id"/>
+                                <field name="sort_order_header"/>
+                                <field name="print_always_default"/>
+                            </group>
+
+                            <!-- RIGHT SIDE (ARABIC LABELS ONLY) -->
+                            <group style="direction: rtl; text-align: right;">
+
+                                <!-- Empty placeholder for alignment -->
+                                <separator/>
+
+                                <!-- Arabic Labels mapped to SAME fields -->
+                                <field name="service_unit_sub_type_ar"/>
+                                <field name="service_type_ar"/>
+
+                            </group>
+
+                        </group>
+
+                        <separator string="Detail"/>
+                        <field name="line_ids" context="{'default_sno': 0}">
+                            <tree editable="bottom" decoration-muted="not active">
+                                <field name="sort_order" widget="handle"/>
+                                <field name="service_type" column_invisible="1"/>
+                                <field name="service_type_ar" column_invisible="1"/>
+                                <field name="parameter"/>
+                                <field name="parameter_ar"/>
+                                <field name="parameter_sortorder" string="Parameter Sort Order"/>
+                                <field name="parameter_sortorder_ar" string="Parameter Sort Order ar"
+                                       column_invisible="1"/>
+                                <field name="description" widget="text"/>
+                                <field name="description_ara" widget="text" class="desc_column"/>
+                                <field name="sno" style="width:80px; min-width:80px;"/>
+                                <field name="active" widget="boolean_toggle" force_save="1"/>
+                            </tree>
+                        </field>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- PM SERVICE - SEARCH VIEW -->
+        <record id="view_pm_service_search" model="ir.ui.view">
+            <field name="name">pm.service.search</field>
+            <field name="model">pm.service</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="service_unit_type_id"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- ACTION -->
+        <record id="action_pm_service" model="ir.actions.act_window">
+            <field name="name">PM Service</field>
+            <field name="res_model">pm.service</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first PM Service
+                </p>
+                <p>
+                    Select a Service Unit Type and define the maintenance checklist parameters.
+                </p>
+            </field>
+        </record>
+
+        <!-- MENU INSIDE CRM -->
+        <menuitem id="menu_pm_service_root" name="PM Service" parent="crm.crm_menu_config" action="action_pm_service"
+                  sequence="100"/>
+
+    </data>
+</odoo>

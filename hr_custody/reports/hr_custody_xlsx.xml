@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <data>
+         <report
+            id="action_report_employee_custody_report_xlsx"
+            string="Employees_Custody_Report"
+            model="employee.custody.report"
+            report_type="xlsx"
+            file="Employees Custody Report"
+            name="hr_custody.report_employee_custody_xlsx"
+        />
+        <record id="action_report_employee_custody_report_xlsx" model="ir.actions.report">
+	        <field name="name">Employee Custody Report</field>
+	        <field name="model">employee.custody.report</field>
+	        <field name="report_type">xlsx</field>
+	        <field name="report_name">hr_custody.report_employee_custody_xlsx</field>
+	        <field name="report_file">Employee Custody Report</field>
+	        <field name="binding_model_id" ref="model_employee_custody_report"/>
+	        <field name="binding_type">report</field>
+    </record>
+   </data>
+</odoo>

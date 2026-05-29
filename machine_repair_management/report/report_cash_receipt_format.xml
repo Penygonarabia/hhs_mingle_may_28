@@ -1,0 +1,982 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+<odoo>
+	
+	<record id = "service_cash_receipt_report" model = "ir.actions.report">
+		<field name ="name">Cash Receipt</field>
+		<field name = "model">project.task</field>
+		<field name = "report_type">qweb-pdf</field>
+		<field name = "report_file">machine_repair_management.cash_report_template</field>
+		<field name = "report_name">machine_repair_management.cash_report_template</field>
+		<field name = "paperformat_id" ref="machine_repair_management.job_card_report_paperformat_id"/>
+		<field name = "print_report_name">'job_card_service - %s' % (object.name)</field>
+		<field name = "binding_type">report</field>
+	</record>
+	
+	 <template id="service_cash_report_internal_layout">
+        <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+          <t t-raw="0"/>
+        </div>
+    </template>
+    
+	
+	<template id = "cash_report_template" >
+		
+		<t t-call = "web.html_container">
+			
+			<t t-foreach = "service_jobs" t-as = "doc">
+			
+				<t t-call = "machine_repair_management.service_cash_report_internal_layout">
+				
+					 <div class="header" t-att-style="report_header_style">
+	 						<div class="row mt32 mb32">
+	                            <div class="col-4 text-left">
+	                                <img src="machine_repair_management/static/src/img/HHS_Header_Left.png" alt="img"
+	                                     style="height: 120px; width: 350px; "/>
+	                            </div>
+	                            <div class="col-4 text-center " style="vertical-align:text-top">
+	                                <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)"
+	                                     style="max-height: 100px; min-height:100px; min-width: 200px; max-width: 200px;"/>
+	                            </div>
+	                            <div class="col-4 text-right " style="vertical-align:text-top;text-align:right">
+	                                <img src="machine_repair_management/static/src/img/HHS_Header_Right.png" alt="img"
+	                                     style="height: 120px; width: 350px;"/>
+	                            </div>
+	                        </div>
+                        <h2>
+                            <center>Cash Report</center>
+                        </h2>
+                       
+                    </div>
+                    
+                    <div class="page" style="display: table; width: 100%; border-collapse: collapse;">
+                    <div style="border: 1px solid black;">
+                       <div style="display: table; width: 100%; border-collapse: collapse;">
+
+				    <!-- First Row -->
+					    <div style="display: table-row;">
+					        <div style="display: table-cell; width: 8%; white-space: nowrap; font-weight: bold; ">
+					           <span>الرقم المرجعي</span><br/>CIC Ref No.:
+					        </div>
+					        <div style="display: table-cell; width: 26%; text-align: left; ">
+					        	<br/>
+					            ..................................................................................
+					        </div>
+					        <div style="display: table-cell; width:6%; font-weight: bold; ">
+					            <span>فرع</span><br/>Branch:
+					        </div>
+					        <div style="display: table-cell; width: 28%; text-align: left; ">
+					           <br/>
+					            ..................................................................................
+					        </div>
+					        <div style="display: table-cell;  width: 6%; font-weight: bold; ">
+					            <span>التاريخ</span><br/>Date:
+					        </div>
+					        <div style="display: table-cell;  width: 26%; text-align: left; ">
+					           <br/>
+					            ............../....................../............................
+					        </div>	        
+					    </div>
+					    <!-- Second Row -->
+					    <div style="display: table-row;">
+					        <div style="display: table-cell; width: 8%; white-space: nowrap; font-weight: bold; ">
+					           <span>الرقم المرجعي</span><br/>Customer Name.:
+					        </div>
+					        <div style="display: table-cell; width: 26%; text-align: left; ">
+					        	<br/>
+					            ..................................................................................
+					        </div>
+					        <div style="display: table-cell; width:6%; font-weight: bold; ">
+					            <span>فرع</span><br/>Location:
+					        </div>
+					        <div style="display: table-cell; width: 28%; text-align: left; ">
+					           <br/>
+					            .....................................................................
+					        </div>	
+					        <div style="display: table-cell;  width: 6%; font-weight: bold; ">
+					        <br/>
+					            ..........................................................
+					        </div>
+					        <div style="display: table-cell;  width: 26%; text-align: left; ">
+					           <br/>
+					            ........................................................................
+					        </div>					      			       					       				       					        
+					    </div>
+					    
+					   <!-- Third Row -->
+					    <div style="display: table-row;">
+					        <div style="display: table-cell; width: 8%; white-space: nowrap; font-weight: bold; ">
+					           <span>الرقم المرجعي</span><br/>Customer VAT No.:
+					        </div>
+					        <div style="display: table-cell; width: 26%; text-align: left; ">
+					        	<br/>
+					            ..................................................................................
+					        </div>
+					        <div style="display: table-cell; width:6%; font-weight: bold; ">
+					            <span>فرع</span><br/>Mobile:
+					        </div>
+					        <div style="display: table-cell; width: 28%; text-align: left; ">
+					           <br/>
+					            ..................................................................................
+					        </div>
+					        <div style="display: table-cell;  width: 6%; font-weight: bold; ">
+					            <span>التاريخ</span><br/>Tel No:
+					        </div>
+					        <div style="display: table-cell;  width: 26%; text-align: left; ">
+					           <br/>
+					            ............../....................../...................................
+					        </div>	        
+					    </div> 
+					    
+					    <!-- Fourth Row -->
+					    <div style="display: table-row;">
+					        <div style="display: table-cell; width: 8%; white-space: nowrap; font-weight: bold; ">
+					           <span>الرقم المرجعي</span><br/>Promised Date/Time.:
+					        </div>
+						        <div style="display: table-cell; width: 26%; text-align: left; ">
+						        	<br/>
+						            ..................................................................................
+						        </div>
+						        <div style="display: table-cell; width:6%; font-weight: bold; ">
+						            <span>فرع</span><br/>Technician:
+						        </div>
+						        <div style="display: table-cell; width: 28%; text-align: left; ">
+						           <br/>
+						            .................................................................
+						        </div>
+						        <div style="display: table-cell;  width: 6%; font-weight: bold; ">
+						            <span>التاريخ</span><br/>Dealer:
+						        </div>
+						        <div style="display: table-cell;  width: 26%; text-align: left; ">
+						           <br/>
+						            ..........................................................
+						        </div>	        
+					      </div> 
+					    
+					   </div>					   					     
+						    
+					       <table class="table table-bordered border-dark" style="width:98%;margin-left:auto; margin-right:auto;"> 
+							    <tr>
+							    <th>Model<span>التاريخ</span></th>
+							    <th>Serial No.<span>التاريخ</span> </th>
+							    <th>Invoice No. <span>التاريخ</span></th>
+							    <th>Date<span>التاريخ</span></th>
+							    </tr>
+							    <tr>
+							    <td>Gokul</td>
+							    <td>Gokul</td>
+							    <td>Gokul</td>
+							    <td>Gokul</td>
+							    </tr>					    
+					        </table>  	 
+					        <p>
+							  <strong>Warranty Status:</strong>
+							  <span style="margin-right: 20px;"><input type="checkbox"/> IN</span>
+							  <span style="margin-right: 20px;"><input type="checkbox"/> OUT</span>
+							  <span><input type="checkbox"/> NONE</span>
+							</p>
+					      <!-- <p><strong>Warranty Status:</strong> <span class="checkbox"></span>IN <span class="checkbox"></span>OUT <span class="checkbox"></span>NONE</p> -->
+ 
+                        <p><strong>Customer Complaint:</strong></p>  
+                        
+                        <table class="table table-bordered border-dark" style="table-layout: fixed; width: 100%; font-weight: bold;">
+							  <tr>
+							    <!-- 60% width -->
+							    <td style="width:70%;">
+							     <div style="display: flex; justify-content: space-between;">
+								    <span style="direction: ltr; text-align: left;">
+								      Description Of Work Done :
+								    </span>
+								    
+								    <span style="direction: ltr; text-align: right;padding-left:33rem;">
+								      :الرقم المرجعي
+								    </span>
+								  </div>
+								   <div style="border-bottom: 1px dotted #000; height: 20px; margin-top: 15px;"></div>
+                                   <div style="border-bottom: 1px dotted #000; height: 20px; margin-top: 15px;"></div>
+							    </td>
+							
+							    <!-- 10% width -->
+							    <td style="width:10%;">
+							      <span>الرقم المرجعي</span><br/>First Visit :
+							    </td>
+							
+							    <!-- 30% width -->
+							    <td style="width:20%;">
+								  <span>الرقم المرجعي</span><br/>Date:<br/>
+								  <span>الرقم المرجعي</span><br/>
+								  
+								  <!-- Time In + Time Out in single line -->
+								  <div style="display: flex; justify-content: space-between; width: 100%;" >
+								    <span>Time In :.................</span>
+								    <span>Out :................</span>
+								  </div>
+								  
+								  <span>الرقم المرجعي</span><br/>Technician :
+								</td>
+							  </tr>
+							  
+							  <tr>
+							    <!-- 60% width -->
+							     <td style="width:70%;">
+							     <div style="display: flex; justify-content: space-between;">
+								    <span style="direction: ltr; text-align: left;">
+								      Description Of Work Done :
+								    </span>
+								    
+								    <span style="direction: ltr; text-align: right;padding-left:33rem;">
+								      :الرقم المرجعي
+								    </span>
+								  </div>
+								    <div style="border-bottom: 1px dotted #000; height: 20px; margin-top: 15px;"></div>
+                                   <div style="border-bottom: 1px dotted #000; height: 20px; margin-top: 15px;"></div>
+							    </td>
+							
+							    <!-- 10% width -->
+							    <td style="width:10%;">
+							      <span>الرقم المرجعي</span><br/>2nd Visit :
+							    </td>
+							
+							    <!-- 30% width -->
+							     <td style="width:20%;">
+								  <span>الرقم المرجعي</span><br/>Date :<br/>
+								  <span>الرقم المرجعي</span><br/>
+								  
+								  <!-- Time In + Time Out in single line -->
+								  <div style="display: flex; justify-content: space-between; width: 100%;" >
+								    <span>Time In :.................</span>
+								    <span>Out :................</span>
+								  </div>
+								  
+								  <span>الرقم المرجعي</span><br/>Technician :
+								</td>
+							  </tr>
+							  
+						</table>											
+                        
+                        <table class="table table-bordered border-dark" style="width: 100%; margin-bottom: 20px;">
+						    <thead>
+						        <tr>
+						            <th>Symptom</th>
+						            <th>Defect</th>
+						            <th>Repair</th>
+						            <th>Volt</th>
+						            <th>AMP</th>
+						            <th>L/P</th>
+						            <th>H/P</th>
+						            <th>S.A.T.</th>
+						            <th>R.A.T.</th>
+						            <th>Area</th>
+						            <th>PLLength</th>
+						        </tr>
+						    </thead>
+						    <tbody>
+						        <tr>
+						            <td></td>
+						            <td></td>
+						            <td></td>
+						            <td></td>
+						            <td></td>
+						            <td></td>
+						            <td></td>
+						            <td></td>
+						            <td></td>
+						            <td></td>
+						            <td></td>
+						        </tr>
+						    </tbody>
+						</table>
+						
+						<table class="table table-bordered border-dark" style="width: 100%; margin-bottom: 20px;">
+							    <thead>
+							        <tr style="border-bottom: 1px solid black;">
+							            <th style="text-align: left; padding: 5px; width: 10%;">No.</th>
+							            <th style="text-align: left; padding: 5px; width: 20%;">Part Number</th>
+							            <th style="text-align: left; padding: 5px; width: 40%;">Description</th>
+							            <th style="text-align: right; padding: 5px; width: 15%;">Unit Price</th>
+							            <th style="text-align: center; padding: 5px; width: 10%;">Qty.</th>
+							            <th style="text-align: right; padding: 5px; width: 15%;">Amount</th>
+							        </tr>
+							    </thead>
+							    <tbody>
+							         <tr>
+								            <td style="padding: 5px; border-bottom: 1px dotted #eee;"></td>
+								            <td style="padding: 5px; border-bottom: 1px dotted #eee;"></td>
+								            <td style="padding: 5px; border-bottom: 1px dotted #eee;"></td>
+								            <td style="padding: 5px; text-align: right; border-bottom: 1px dotted #eee;"></td>
+								            <td style="padding: 5px; text-align: center; border-bottom: 1px dotted #eee;"></td>
+								            <td style="padding: 5px; text-align: right; border-bottom: 1px dotted #eee;"></td>
+								     </tr>
+							        <tr style="border-bottom: 1px solid black;">
+							            <td style="border-bottom: 1px dotted #000; height: 20px; margin-top: 15px;"></td>
+							            <td style="border-bottom: 1px dotted #000; height: 20px; margin-top: 15px;"></td>
+							            <td style="border-bottom: 1px dotted #000; height: 20px; margin-top: 15px;"></td>
+							            <td style="border-bottom: 1px dotted #000; height: 20px; margin-top: 15px;"></td>
+							            <td style="border-bottom: 1px dotted #000; height: 20px; margin-top: 15px;"></td>
+							            <td style="border-bottom: 1px dotted #000; height: 20px; margin-top: 15px;"></td>
+							        </tr>
+							        <tr style="border-bottom: 1px solid black;">
+							            <td style="border-bottom: 1px dotted #000; height: 20px; margin-top: 15px;"></td>
+							            <td style="border-bottom: 1px dotted #000; height: 20px; margin-top: 15px;"></td>
+							            <td style="border-bottom: 1px dotted #000; height: 20px; margin-top: 15px;"></td>
+							            <td style="border-bottom: 1px dotted #000; height: 20px; margin-top: 15px;"></td>
+							            <td style="border-bottom: 1px dotted #000; height: 20px; margin-top: 15px;"></td>
+							            <td style="border-bottom: 1px dotted #000; height: 20px; margin-top: 15px;"></td>
+							        </tr>
+							    </tbody>
+							</table>
+						
+						
+						
+						
+										   			          		    			    				    
+				         <table class="table table-bordered border-dark" style="width: 100%; margin-bottom: 20px;">
+							    <tr>
+							      <!-- Left Side -->
+							      <td style="width: 60%; height: 150px;">
+							        <b>Unit History</b><br/><br/>
+							      </td>
+							<td style="width: 40%; border: 1px solid black; padding: 0;">
+							      <table style="width: 100%; border-collapse: collapse; text-align: center;">
+							        <tr>
+							          <td style="border: 1px solid black; padding: 5px; width: 25%; text-align: left;">Spare Parts</td>
+							          <td style="border: 1px solid black; padding: 5px; width: 41%;"></td>
+							          <td style="border: 1px solid black; padding: 5px; width: 33%; text-align: right;">قطع غيار</td>
+							        </tr>
+							        <tr>
+							          <td style="border: 1px solid black; padding: 5px; width: 25%; text-align: left;">Service Charge</td>
+							          <td style="border: 1px solid black; padding: 5px; width: 41%;"></td>
+							          <td style="border: 1px solid black; padding: 5px; width: 33%; text-align: right;">أجرة الخدمة</td>
+							        </tr>
+							        <tr>
+							          <td style="border: 1px solid black; padding: 5px; width: 25%; text-align: left;">Consumable</td>
+							          <td style="border: 1px solid black; padding: 5px; width: 41%;"></td>
+							          <td style="border: 1px solid black; padding: 5px; width: 33%; text-align: right;">المواد المستخدمة</td>
+							        </tr>
+							        <tr>
+							          <td style="border: 1px solid black; padding: 5px; width: 25%; text-align: left;">Sub Total</td>
+							          <td style="border: 1px solid black; padding: 5px; width: 41%;"></td>
+							          <td style="border: 1px solid black; padding: 5px; width: 33%; text-align: right;">المجموع</td>
+							        </tr>
+							        <tr>
+							          <td style="border: 1px solid black; padding: 5px; width: 25%; text-align: left;">VAT</td>
+							          <td style="border: 1px solid black; padding: 5px; width: 41%;"></td>
+							          <td style="border: 1px solid black; padding: 5px; width: 33%; text-align: right;">ضريبة القيمة المضافة</td>
+							        </tr>
+							        <tr>
+							          <td style="border: 1px solid black; padding: 5px; width: 25%; text-align: left;"><b>Total Amount</b></td>
+							          <td style="border: 1px solid black; padding: 5px; width: 41%;"></td>
+							          <td style="border: 1px solid black; padding: 5px; width: 33%; text-align: right;"><b>المبلغ الإجمالي</b></td>
+							        </tr>
+							      </table>
+							    </td>
+						    </tr>
+					  </table>
+				  		 
+				  		 
+				  		<table class="table table-bordered border-dark" style="width:100%; border-collapse: collapse; font-weight: bold; text-align:center; ">
+								  <tr>
+								    <!-- Left big column -->
+								    <td style="width:65%; text-align:left; padding:8px; vertical-align:top;">
+								      <div style="text-align:right; font-size:13px;">
+								        أنا استلمت الجهاز الخاص بي بعد الإصلاح وأنا راض عن خدماتكم.
+								      </div>
+								      <div style="text-align:left; font-size:13px; margin-top:3px;">
+								        I received my machine after repairing and I am satisfied with its service.
+								      </div>
+								      <br/>
+								      <div style="display:flex; justify-content:space-between; font-size:13px;">
+								        <span>Customer Signature : ....................................................</span>
+								        <span style="text-align:right;">توقيع العميل</span>
+								      </div>
+								    </td>
+								
+								    <!-- Right small column (divided into 3 sub-columns) -->
+								    <td style="width:35%; padding:0;">
+								      <table style="width:100%; height:100%; border-collapse: collapse; font-size:13px; text-align:center;" border="1">
+								        <tr>
+								          <td style="width:33%; padding:5px; vertical-align:middle;">
+								            الفني<br/>Technician
+								          </td>
+								          <td style="width:33%; padding:5px; vertical-align:middle;">
+								            المحاسب<br/>Accountant
+								          </td>
+								          <td style="width:34%; padding:5px; vertical-align:middle;">
+								            مدير الصيانة<br/>SVC Manager
+								          </td>
+								        </tr>
+								      </table>
+								    </td>
+								  </tr>
+							</table>
+											  
+				    </div>				   
+                   
+ 
+				  </div>
+				  
+
+                    
+                    
+                    <!--    <div  style="border: 2px solid #000 !important;
+        								border-collapse: collapse;margin-right:10px;padding:10px;">
+                    
+	                    <table style="border: 0px transparent !important;">
+	                    	
+	                    	
+	                    <tr>
+							<td width="12%">CIC Ref No.<br/><span>الرقم المرجعي</span></td>
+							<td width="20%">.............................................</td>
+							<td width="12%">Branch<br/><span>فرع</span></td>
+							<td width="22%">.............................................</td>
+
+							<td  width="12%">Date<br/><span>التاريخ</span></td>
+							<td  width="22%">.............................................</td>
+
+						</tr>
+						<tr col="4">
+							<td class="label">Customer Name<br/><span>اسم العميل</span></td>
+							<td>.............................................</td>
+							<td class="label">Location<br/><span>الموقع</span></td>
+							<td>.............................................</td>
+							<td class="label">Tel. No.<br/><span>رقم الهاتف</span></td>
+							<td>.............................................</td>
+						</tr>
+							<tr col="4">
+							<td class="label">Customer VAT No.<br/><span>رقم ضريبة القيمة المضافة للعميل</span></td>
+							<td>.............................................</td>
+							<td class="label">Mobile<br/><span>جوال</span></td>
+							<td>.............................................</td>
+							<td class="label">Dealer<br/><span>الموزع</span></td>
+							<td>.............................................</td>
+						</tr>
+						<tr>
+							<td class="label">Promised Date / Time<br/><span>تاريخ / الوقت المتوقع</span></td>
+							<td>.............................................</td>
+
+							<td class="label">Technician<br/><span>الفني</span></td>
+							<td>.............................................</td>
+							
+							<td colspan="3"></td>
+							
+						<td>.............................................</td>
+							
+						</tr>
+	                    
+	                    
+                    
+                    
+                    </table>
+                    </div> -->
+                    <!-- </div> -->
+                    
+                    <!-- <div class="col-12">
+	                    <table class="table table-bordered border-dark"> 	
+	                    
+	                    <tr>
+						<td class="label">CIC Ref No.<br/><span>الرقم المرجعي</span></td>
+						<td><div class="input"></div></td>
+						<td class="label">Branch<br/><span>فرع</span></td>
+						<td><div class="input"></div></td>
+						<td class="label">Date<br/><span>التاريخ</span></td>
+						<td><div class="input"></div></td>
+						</tr>
+						<tr>
+						<td class="label">Customer Name<br/><span>اسم العميل</span></td>
+						<td><div class="input"></div></td>
+						<td class="label">Location<br/><span>الموقع</span></td>
+						<td><div class="input"></div></td>
+						<td class="label">Tel. No.<br/><span>رقم الهاتف</span></td>
+						<td><div class="input"></div></td>
+						</tr>
+						<tr>
+						<td class="label">Customer VAT No.<br/><span>رقم ضريبة القيمة المضافة للعميل</span></td>
+						<td><div class="input"></div></td>
+						<td class="label">Mobile<br/><span>جوال</span></td>
+						<td><div class="input"></div></td>
+						<td class="label">Dealer<br/><span>الموزع</span></td>
+						<td><div class="input"></div></td>
+						</tr>
+						<tr>
+						<td class="label">Promised Date / Time<br/><span>تاريخ / الوقت المتوقع</span></td>
+						<td><div class="input"></div></td>
+						<td class="label">Technician<br/><span>الفني</span></td>
+						<td colspan="3"><div class="input"></div></td>
+						</tr>                    
+	                    
+	                    </table>
+	                 </div>  
+	                 
+	                 
+	                 <div class="col-12">
+	                    <table class="table table-bordered border-dark"> 	
+	                    
+						 <tr>
+							<th>Model<br/><span>الموديل</span></th>
+							<th>Serial No.<br/><span>رقم التسلسل</span></th>
+							<th>Invoice No.<br/><span>رقم الفاتورة</span></th>
+							<th>Date<br/><span>التاريخ</span></th>
+							</tr>
+							<tr>
+							<td><div class="input-line"></div></td>
+							<td><div class="input-line"></div></td>
+							<td><div class="input-line"></div></td>
+							<td><div class="input-line"></div></td>
+						</tr>
+	                   </table>
+	                 </div> 
+	                 <p>
+		                <strong>Warranty Status : </strong>
+						<span class="checkbox">IN ☐</span>
+						<span class="checkbox">OUT ☐</span>
+						<span class="checkbox">NONE ☐</span>
+						<span style="float:right;">حالة الضمان</span>
+	                 </p> 
+	                 <p>
+	                   <strong>Customer Complaint : </strong> <span style="float:right;">شكوى العميل</span>
+	                 </p>
+                    </div> -->
+                    
+                    
+                    <!-- <div class="page" style="page-break-after: always;">
+                        <div class="row mt32 mb32">
+                        
+                      <div class="col-6">
+	                        <table class="table table-bordered border-dark">
+	                        
+		                        <tr>
+									<td class="label">CIC Ref No.<br/><span>الرقم المرجعي</span></td>
+									<td><div class="input"></div></td>
+									<td class="label">Branch<br/><span>فرع</span></td>
+									<td><div class="input"></div></td>
+									<td class="label">Date<br/><span>التاريخ</span></td>
+									<td><div class="input"></div></td>
+									</tr>
+									<tr>
+									<td class="label">Customer Name<br/><span>اسم العميل</span></td>
+									<td><div class="input"></div></td>
+									<td class="label">Location<br/><span>الموقع</span></td>
+									<td><div class="input"></div></td>
+									<td class="label">Tel. No.<br/><span>رقم الهاتف</span></td>
+									<td><div class="input"></div></td>
+									</tr>
+									<tr>
+									<td class="label">Customer VAT No.<br/><span>رقم ضريبة القيمة المضافة للعميل</span></td>
+									<td><div class="input"></div></td>
+									<td class="label">Mobile<br/><span>جوال</span></td>
+									<td><div class="input"></div></td>
+									<td class="label">Dealer<br/><span>الموزع</span></td>
+									<td><div class="input"></div></td>
+									</tr>
+									<tr>
+									<td class="label">Promised Date / Time<br/><span>تاريخ / الوقت المتوقع</span></td>
+									<td><div class="input"></div></td>
+									<td class="label">Technician<br/><span>الفني</span></td>
+									<td colspan="3"><div class="input"></div></td>
+								</tr>
+								
+	                        </table>
+                        </div>
+                        
+                        <div class="col-6">
+	                        <table class="table table-bordered border-dark">
+								<tr>
+								<th>Model<br/><span>الموديل</span></th>
+								<th>Serial No.<br/><span>رقم التسلسل</span></th>
+								<th>Invoice No.<br/><span>رقم الفاتورة</span></th>
+								<th>Date<br/><span>التاريخ</span></th>
+								</tr>
+								<tr>
+								<td><div class="input-line"></div></td>
+								<td><div class="input-line"></div></td>
+								<td><div class="input-line"></div></td>
+								<td><div class="input-line"></div></td>
+								</tr>
+							</table>
+                        </div>
+                        
+                        
+                        
+                       
+                            <div class="col-6">
+                                <table class="table table-bordered border-dark">
+                                    <colgroup>
+                                        <col width='30%'/>
+                                        <col width='40%'/>
+                                        <col width='30%'/>
+                                    </colgroup>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <strong>Warehouse:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="doc['warehouse_id']" t-esc="doc['warehouse_id']"/>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <strong>: مستودع</strong>
+               <br>                             </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Customer Name:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="doc['customer_name']"
+                                                      t-esc="doc['customer_name']"/>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <strong>:اسم العميل</strong>
+                                            </td>
+
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Customer Address:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="doc['address']"
+                                                      t-esc="doc['address']"/>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <strong>: عنوان العميل</strong>
+                                            </td>
+
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>VAT #:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="doc['vat']"
+                                                      t-esc="doc['vat']"/>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <strong>:ضريبة القيمة المضافة</strong>
+                                            </td>
+
+                                        </tr>
+                                      
+                                        <tr>
+                                            <td>
+                                                <strong>Job Card No.:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="doc['job_card_no']"
+                                                      t-esc="doc['job_card_no']"/>
+                                            </td>
+                                            <td style="text-align: right; ">
+                                                <strong>:رقم بطاقة العمل</strong>
+                                            </td>
+
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Engineer Comments:</strong>
+                                            </td>
+                                            <td colspan="5">
+                                                <span t-if="doc['engineer_comments']"
+                                                      t-esc="doc['engineer_comments']"/>
+                                            </td>
+                                          
+                                        </tr>
+                                       
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-6">
+                                <table class="table table-bordered border-dark">
+                                    <colgroup>
+                                        <col width='38%'/>
+                                        <col width='32%'/>
+                                        <col width='30%'/>
+                                    </colgroup>
+                                    <tbody>
+                                    
+                                    	<tr>
+                                            <td>
+                                                <strong>Service Created Date &amp; Time:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="doc['service_created_date']"
+                                                      t-esc="doc['service_created_date']"/>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <strong>:تاريخ ووقت إنشاء الخدمة</strong>
+                                            </td>
+
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Closed Date &amp; Time:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="doc['completed_date_time']"
+                                                      t-esc="doc['completed_date_time']"/>
+                                                      t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
+                                            </td>
+                                            <td style="text-align: right;">
+                                            	<strong>:تاريخ ووقت الإغلاق</strong>
+                                             
+                                            </td>
+
+                                        </tr>
+                                    
+                                        
+                                        <tr>
+                                            <td>
+                                                <strong>Technician Name:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="doc['technician_name']"
+                                                      t-esc="doc['technician_name']"/>
+                                            </td>
+                                            <td style="text-align: right; ">
+                                                <strong>:اسم الفني</strong>
+                                            </td>
+
+                                        </tr>
+                                       
+                                        <tr>
+                                            <td>
+                                                <strong>Model No:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="doc['model_no']"
+                                                      t-esc="doc['model_no']"/>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <strong>:رقم الموديل</strong>
+
+                                            </td>
+                                            
+
+                                        </tr>
+                                        
+                                         <tr>
+                                            <td>
+                                                <strong>Serial No:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="doc['serial_no']"
+                                                      t-esc="doc['serial_no']"/>
+                                            </td>
+                                            <td style="text-align: right;">
+                                              <strong>:الرقم التسلسلي</strong>
+
+                                            </td>
+                                            
+
+                                        </tr>
+
+                                        <tr>
+                                            <td>
+                                                <strong>VAT Registration:</strong>
+                                            </td>
+                                            <td>
+                                                <span t-if="doc['company_vat']"
+                                                      t-esc="doc['company_vat']"/>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <strong>: ضريبة القيمة المضافة</strong>
+                                            </td>
+
+                                        </tr>
+                                        
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+
+                        <table class="table table-bordered border-dark">
+                            <thead>
+                                <tr style="text-align:center">
+                                    <th width="2%" style="vertical-align:text-top">
+                                        <strong>قم</strong>
+                                        <br/>
+                                        <strong>No</strong>
+                                    </th>
+                                    <th width="8%" style="vertical-align:text-top">
+                                        <strong>الفئة</strong>
+                                        <br/>
+                                        <strong>Stock Group</strong>
+                                    </th>
+                                    <th width="10%" style="vertical-align:text-top">
+                                        <strong>رقم الصنف</strong>
+                                        <br/>
+                                        <strong>Stock Number</strong>
+                                    </th>
+                                    <th width="29%" style="vertical-align:text-top">
+                                        <strong>الوصف</strong>
+                                        <br/>
+                                        <strong>Description</strong>
+                                    </th>
+                                    <th width="5%" style="vertical-align:text-top">
+                                        <strong>الكمية</strong>
+                                        <br/>
+                                        <strong>Qty</strong>
+                                    </th>
+                                    <th width="6%" style="vertical-align:text-top">
+                                        <strong>سعر الوحدة</strong>
+                                        <br/>
+                                        <strong>Unit Price</strong>
+                                    </th>
+                                    <th width="6%" style="vertical-align:text-top">
+                                        <strong>خصم الوحدة</strong>
+                                        <br/>
+                                        <strong>Unit Discount</strong>
+                                    </th>
+                                    <th width="7%" style="vertical-align:text-top">
+                                        <strong>سعر الوحدة الصافي</strong>
+                                        <br/>
+                                        <strong>Net Unit Price</strong>
+                                    </th>
+                                    <th width="7%" style="vertical-align:text-top">
+                                        <strong>السعر الإجمالي</strong>
+                                        <br/>
+                                        <strong>Extended Price</strong>
+                                    </th>
+                                    <th width="6%" style="vertical-align:text-top">
+                                        <strong>نسبة الضريبة</strong>
+                                        <br/>
+                                        <strong>Vat %</strong>
+                                    </th>
+                                    <th width="7%" style="vertical-align:text-top">
+                                        <strong>قيمة الضريبة</strong>
+                                        <br/>
+                                        <strong>Vat Amount</strong>
+                                    </th>
+                                    <th width="7%" style="vertical-align:text-top">
+                                        <strong>الإجمالي</strong>
+                                        <br/>
+                                        <strong>Amount</strong>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="counter" t-value="1"/>
+                                <t t-foreach="product_lines" t-as="product">
+                                    <tr>
+                                        <td class="text-right">
+                                            <span t-esc="counter"/>
+                                        </td>
+                                        <td>
+                                            <span t-esc="product['stock_group']"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="product['stock_number']"/>
+                                        </td>
+                                        <td>
+                                            <span t-esc="product['description']"/>
+                                        </td>
+                                        <td class="text-right" style="text-align: right;">
+                                            <span t-esc="product['qty']"/>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <span t-esc="product['unit_price']"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                        <td>
+                                            <span t-esc="product['unit_discount']"/>
+                                        </td>
+                                        <td class="text-right" style="text-align: right;">
+                                            <span t-esc="product['net_unit_price']"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                        <td class="text-right" style="text-align: right;">
+                                            <span t-esc="product['extended_price']"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                        <td class="text-right" style="text-align: right;">
+                                            <span t-esc="product['vat_percent']"/>
+                                            %
+                                        </td>
+                                        <td class="text-right" style="text-align: right;">
+                                            <span t-esc="product['vat_amount']"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                        <td class="text-right" style="text-align: right;">
+                                            <span t-esc="product['total']"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                    </tr>
+
+                                    <t t-set="counter" t-value="counter+1"/>
+                                </t>
+                                <t t-foreach="totals" t-as="total">
+                                    <tr>
+                                        <td colspan="8" style="text-align:right">
+                                            <strong>Total</strong>
+                                        </td>
+                                        <td style="text-align:right">
+                                            <strong>
+                                                <span t-esc="total['total_extended_price']"
+                                                      t-options="{'widget': 'float', 'precision': 2}"/>
+                                            </strong>
+                                        </td>
+                                        <td/>
+                                        <td style="text-align:right">
+                                            <strong>
+                                                <span t-esc="total['total_vat_amt']"
+                                                      t-options="{'widget': 'float', 'precision': 2}"/>
+                                            </strong>
+                                        </td>
+                                        <td rowspan="2"  style="text-align:right">
+                                            <strong>
+                                                <span t-esc="total['grand_total']"
+                                                      t-options="{'widget': 'float', 'precision': 2}"/>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                  
+                                    <tr>
+                                        <td colspan="11"   style="text-align:right">
+                                            <strong>
+                                                <span t-esc="total['amount_words']"/>
+                                                Only
+                                            </strong>
+                                        </td>
+                                       
+                                    </tr>
+                                   
+                                </t>
+                            </tbody>
+
+                        </table>
+
+
+                     
+                    </div>
+                     -->
+                    
+                    <div class="footer">
+                        <div>
+                            <img src="machine_repair_management/static/src/img/Arabic_Text.png" alt="img"
+                                 style="height:60px; width: 100%;"/>
+                        </div>
+                        <br/>
+                        <div>
+                            <img src="machine_repair_management/static/src/img/Footer_Address.png" alt="img"
+                                 style="height:80px; width: 100%;"/>
+                        </div>
+                    </div>
+				
+			
+				
+				</t>
+			
+			</t>
+		
+		
+		</t>
+	
+	
+	
+	
+	</template>
+	
+	
+</odoo>

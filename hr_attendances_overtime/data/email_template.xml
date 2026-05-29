@@ -1,0 +1,35 @@
+<?xml version ="1.0" encoding = "utf-8" ?>
+<odoo>
+
+	<!-- <record id = "email_template_for_absent_employee" model ="mail.template">
+		<field name = "name">Email Template For Absent Employee</field>
+		<field name = "model_id" ref="hr_attendances_overtime.model_hr_employee" />
+		<field name ="email_from">{{object.user_id.login or ''}}</field>
+		<field name = "email_to">{{object.work_email or ''}}</field>
+		<field name = "email_cc">{{object.parent_id.work_email or ' '}}</field>
+		<field name = "subject">Absence Notification - {{object.name}}  At {{ ctx.get('yesterday_str') }}</field>
+		 <field name="subject">Absence Notification - {{ object.name }} on {{ (context_today() - relativedelta(days=1)).strftime('%d-%m-%Y') }}</field>
+		<field name ="body_html" type="html">
+			<div style = "margin : 0px; padding :0px;">
+				<p style="color:#0000FF;font-size:20px"> Dear <strong t-out ="object.name"/>
+				<br/> Our attendance records indicate that you were absent on
+					<strong t-out ="(datetime.datetime.now().date() - datetime.timedelta(days = 1)).strftime('%d-%m-%Y')"/>
+					<br/>
+					If this is incorrect or if you have a valid reason for the absence, please inform your Direct manager or the HR team immediately with supporting details.
+					</p>
+				
+				<br/>
+				<br/>
+				
+              	<b style="color:#0000FF;font-size:20px">Best Regards</b><br/>
+                <b style="color:#0000FF;font-size:20px">Human Resource Dept</b><br/>
+                 <b style="color:#0000FF;font-size:20px">HH-Shaker</b>
+              
+			</div>
+			
+		
+		
+		</field>
+	</record> -->
+
+</odoo>

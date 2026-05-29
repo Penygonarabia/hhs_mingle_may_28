@@ -1,0 +1,105 @@
+<odoo>
+    <!-- Menu Item -->
+    <menuitem id="menu_sales_target_root"
+              name="Sales Targets"
+              parent="dealer.menu_dealer_root"
+              groups="dealer.group_dealer_backoffice_user"  
+              sequence="50"/>
+
+    <!-- Sales Target Tree/Form -->
+    <record id="view_sales_target_tree" model="ir.ui.view">
+        <field name="name">dealer.sales.target.tree</field>
+        <field name="model">dealer.sales.target</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="dealer_id"/>
+                <field name="dealer_showroom_id"/> 
+                <field name="sale_dealer_id"/>
+                <field name="franchise_id"/>
+                <field name="group_id"/>
+                <field name="subgroup_id"/>
+                <field name="product_id"/>
+                <field name="capacity"/>
+                <field name="year"/>
+                <field name="month"/>
+                <field name="target_qty"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_sales_target_form" model="ir.ui.view">
+        <field name="name">sales.target.form</field>
+        <field name="model">dealer.sales.target</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="dealer_id" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="dealer_showroom_id" domain="[('dealer_id', '=', dealer_id),('sale_dealer_required','=',True)]"  options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="sale_dealer_id" domain="[('id','in',sale_dealer_user_ids)]"
+                                        options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="franchise_id"  domain="[('parent_id','=',False),('name', '!=', 'All')]"/>
+                        <field name="group_id"  domain="[('parent_id','=',franchise_id)]"/>
+                        <field name="subgroup_id"  domain="[('parent_id','=',group_id)]"/>
+                        <field name="product_id" domain="[('categ_id','child_of',
+                                         (subgroup_id if subgroup_id else (group_id if group_id else franchise_id)))]"/>
+                        <field name="capacity"/>
+                        <field name="year"/>
+                        <field name="month"/>
+                        <field name="target_qty"/>
+                        <field name ="sale_dealer_user_ids" invisible="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record  id="action_sales_target" model="ir.actions.act_window">
+        <field name="name">Sales Targets </field>
+        <field name="res_model">dealer.sales.target</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_sales_target"
+              name="Sales Target Entries"
+              parent="menu_sales_target_root"
+              action="action_sales_target"
+              groups="dealer.group_dealer_backoffice_user"
+              sequence="10"/>              
+
+
+    <!-- Import Wizard -->
+    <record id="view_sales_target_import_wizard" model="ir.ui.view">
+        <field name="name">dealer.sales.target.import.wizard.form</field>
+        <field name="model">sales.target.import.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="file" filename="filename"/>
+                        <field name="filename" invisible="1"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Import" type="object" name="action_import_sales_targets" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sales_target_import_wizard" model="ir.actions.act_window">
+        <field name="name">Import Sales Targets</field>
+        <field name="res_model">sales.target.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_sales_target_import"
+              name="Import Sales Targets"
+              parent="menu_sales_target_root"
+              action="action_sales_target_import_wizard"
+              groups="dealer.group_dealer_backoffice_user"
+              sequence="20"/>
+
+</odoo>

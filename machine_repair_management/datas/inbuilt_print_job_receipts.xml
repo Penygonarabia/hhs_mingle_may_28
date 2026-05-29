@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding = "utf-8" ?>
+<odoo>
+
+
+	<record id = "action_inspection_charges_receipt_document" model = "ir.actions.server" >
+			<field name ="name">Print Inspection Charges Receipt</field>
+			<field name = "model_id" ref="machine_repair_management.model_project_task"/>
+			<!-- <field name = "binding_model_id" ref ="machine_repair_management.model_project_task"/> -->
+			<field name = "state">code</field>
+			<field name = "code">
+				action = records.print_inspection_charge_receipt()
+			</field>
+			<field name = "binding_view_types">form</field>
+			<field name = "binding_model_id" eval="False"/>
+			<field name = "sequence">1</field>
+	</record>
+	
+	<record id = "action_inbuilt_quotation" model = "ir.actions.server" >
+			<field name ="name">Print Quotation</field>
+			<field name = "model_id" ref="machine_repair_management.model_project_task"/>
+			<field name = "binding_model_id" ref ="machine_repair_management.model_project_task"/>
+			<field name = "state">code</field>
+			<field name = "code">
+				action = records.print_job_card()
+			</field>
+			<field name = "binding_view_types">form</field>
+			<field name = "sequence">2</field>
+	</record>
+	
+	<record id = "action_inbuilt_service_request" model = "ir.actions.server" >
+			<!-- <field name ="name">Print Service Receipt</field> -->
+			<field name ="name">Print Proforma Invoice</field>
+			<field name = "model_id" ref="machine_repair_management.model_project_task"/>
+			<field name = "binding_model_id" ref ="machine_repair_management.model_project_task"/>
+			<field name ="state">code</field>
+			<field name ="code">
+				action = records.print_job_card_receipt()
+			</field>
+			<field name = "binding_view_types">form</field>
+			<field name = "sequence">3</field>
+	</record>
+	
+	
+	<record id = "action_inbuilt_invoice_request" model = "ir.actions.server" >
+			<field name ="name">Print Invoice Document</field>
+			<field name = "model_id" ref="machine_repair_management.model_project_task"/>
+			<field name = "binding_model_id" ref ="machine_repair_management.model_project_task"/>
+			<field name = "state">code</field>
+			<field name = "code">
+				action = records.print_job_card_invoice()
+<!-- action = records.print_job_card_invoice()
+if action:
+    action['type'] = 'ir.actions.report'
+				 -->
+			</field>
+			<field name = "binding_view_types">form</field>
+			<field name = "sequence">4</field>
+	</record>
+	
+	
+		<record id = "action_service_job_card_report" model = "ir.actions.server">
+			<field name = "name">Print Job Card</field>
+			<field name = "model_id" ref = "machine_repair_management.model_project_task"/>
+			<field name = "binding_model_id" ref="machine_repair_management.model_project_task"/>
+			<field name = "state">code</field>
+			<field name = "code">
+				action = records.job_card_service_report()
+			</field>
+			<field name ="binding_view_types">form</field>
+			<field name = "sequence">5</field>
+		
+		</record>
+		
+		
+<!--			<record id="action_service_amc_quotation_report" model="ir.actions.server">-->
+
+<!--			    <field name="name">AMC Quotation</field>-->
+<!--			-->
+<!--			    <field name="model_id" ref="machine_repair_management.model_service_sale_order"/>-->
+<!--			-->
+<!--			    <field name="binding_model_id" ref="machine_repair_management.model_service_sale_order"/>-->
+<!--			-->
+<!--			    <field name="state">code</field>-->
+<!--			-->
+<!--			    <field name="code">action = records.amc_quotation_report()</field>-->
+<!--			-->
+<!--			    <field name="binding_view_types">form</field>-->
+<!--			-->
+<!--			    <field name="sequence">1</field>-->
+<!--			-->
+<!--			</record>-->
+	
+	
+	
+
+</odoo>

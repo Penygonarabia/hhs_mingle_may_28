@@ -1,0 +1,99 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data>
+
+
+        <menuitem name="Loan and Advance" id="menu_hr_employee_loan_advance_ps"
+                  sequence="4"
+                  parent="hr.menu_hr_root"/>
+        <menuitem action="open_hr_employee_loan_ps" name="Loan" id="menu_hr_employee_loan_ps"
+                  sequence="1" parent="menu_hr_employee_loan_advance_ps"/>
+
+<!--        <menuitem action="open_hr_employee_loan_ps"-->
+<!--                  id="menu_open_hr_employee_loan_ps"-->
+<!--                  sequence="1"-->
+<!--                  parent="menu_hr_employee_loan_ps"-->
+<!--                  />-->
+
+<!--        <menuitem action="open_hr_employee_loan_ps_my_guaranty"-->
+<!--                  id="menu_open_hr_employee_loan_ps_my_guaranty"-->
+<!--                  sequence="2" parent="menu_hr_employee_loan_ps"/>-->
+<!--        <menuitem action="open_hr_employee_loan_ps_direct"-->
+<!--                  id="menu_open_hr_employee_loan_ps_direct"-->
+<!--                  sequence="3"-->
+<!--                  parent="menu_hr_employee_loan_ps"/>-->
+<!--        <menuitem action="open_hr_employee_loan_ps_hrm"-->
+<!--                  id="menu_open_hr_employee_loan_ps_hrm"-->
+<!--                  sequence="4"-->
+<!--                  parent="menu_hr_employee_loan_ps"-->
+<!--                  groups="hr.group_hr_manager"/>-->
+<!--        <menuitem action="open_hr_employee_loan_ps_all"-->
+<!--                  id="menu_open_hr_employee_loan_ps_all"-->
+<!--                  sequence="5"-->
+<!--                  parent="menu_hr_employee_loan_ps"-->
+<!--                  groups="account.group_account_manager"/>-->
+<!--        &lt;!&ndash;        Admin and Financial Director&ndash;&gt;-->
+<!--        <menuitem action="open_hr_employee_loan_ps_admin"-->
+<!--                  id="menu_open_hr_employee_loan_ps_admin"-->
+<!--                  sequence="6"-->
+<!--                  parent="menu_hr_employee_loan_ps"-->
+<!--                  groups="hr_loan_advance.group_admin_fd_user"/>-->
+        <menuitem action="open_hr_employee_advance_ps" name="Advance" id="menu_hr_employee_advance_ps"
+                  sequence="10" parent="menu_hr_employee_loan_advance_ps"/>
+<!--        <menuitem action="open_hr_employee_advance_ps"-->
+<!--                  id="menu_open_hr_employee_advance_ps"-->
+<!--                  sequence="1"-->
+<!--                  parent="menu_hr_employee_advance_ps"-->
+<!--                  groups="base.group_user"/>-->
+<!--        <menuitem action="open_hr_employee_advance_ps_direct"-->
+<!--                  id="menu_open_hr_employee_advance_ps_direct"-->
+<!--                  sequence="3"-->
+<!--                  parent="menu_hr_employee_advance_ps"/>-->
+<!--        <menuitem action="open_hr_employee_advance_ps_hrm"-->
+<!--                  id="menu_open_hr_employee_advance_ps_hrm"-->
+<!--                  sequence="4"-->
+<!--                  parent="menu_hr_employee_advance_ps"-->
+<!--                  groups="hr.group_hr_manager"/>-->
+<!--        <menuitem action="open_hr_employee_advance_ps_all"-->
+<!--                  id="menu_open_hr_employee_advance_ps_all"-->
+<!--                  sequence="5"-->
+<!--                  parent="menu_hr_employee_advance_ps"-->
+<!--                  groups="account.group_account_manager"/>-->
+<!--        &lt;!&ndash;        Admin and Financial Director&ndash;&gt;-->
+<!--        <menuitem action="open_hr_employee_advance_ps_admin"-->
+<!--                  id="menu_open_hr_employee_advance_ps_admin"-->
+<!--                  sequence="6"-->
+<!--                  parent="menu_hr_employee_advance_ps"-->
+<!--                  groups="hr_loan_advance.group_admin_fd_user"/>-->
+        
+
+		<!-- Report -->
+		<menuitem name="Reports" id="menu_hr_employee_advance_report_ps"
+                  sequence="20" parent="menu_hr_employee_loan_advance_ps"/>
+      <!--   <menuitem action="action_report_loan_advance" 
+                  name="Loan &amp; Advance"
+                  id="menu_report_loan_advance" 
+                  sequence="10"
+                  parent="menu_hr_employee_advance_report_ps" 
+                  groups="hr.group_hr_manager"/>
+ -->
+
+        <!--CONFIGURATION-->
+        <!--<menuitem name="Loan and Advance Type" id="menu_hr_employee_loan_advance_type_ps"
+                  sequence="5" parent="hr.menu_human_resources_configuration"/>-->
+        <menuitem action="open_hr_employee_advance_type_ps"
+                  id="menu_hr_employee_advance_type_ps"
+                  sequence="17"
+                  parent="hr.menu_human_resources_configuration"/>
+        <menuitem action="open_hr_employee_loan_type_ps"
+                  id="menu_hr_employee_loan_type_ps"
+                  sequence="16"
+                  parent="hr.menu_human_resources_configuration"/>
+
+        <menuitem action="action_hr_loan_config_settings"
+                  id="main_menu_hr_loan_config_settings"
+                  name="Loan Settings"
+                  parent="hr.menu_human_resources_configuration" sequence="15"/>
+
+    </data>
+</odoo>

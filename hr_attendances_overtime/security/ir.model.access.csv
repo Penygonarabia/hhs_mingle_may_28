@@ -1,0 +1,17 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_overtime_rules,overtime.rules,model_hr_attendances_overtime,base.group_user,1,1,1,1
+access_late_in_rules,late.in.rules,model_hr_attendance_late,base.group_user,1,1,1,1
+access_late_in_rules_line,late.in.rules.line,model_hr_attendance_late_line,base.group_user,1,1,1,1
+access_absence_rules,absence.rules,model_hr_attendance_absence,base.group_user,1,1,1,1
+access_absence_rules_line,absence.rules.line,model_hr_attendance_absence_line,base.group_user,1,1,1,1
+access_diff_rules,diff.rules,model_hr_attendance_diff,base.group_user,1,1,1,1
+access_diff_rules_line,diff.rules.line,model_hr_attendance_diff_line,base.group_user,1,1,1,1
+access_attendance_policies,attendance.policies,model_hr_attendance_policies,base.group_user,1,1,1,1
+access_hr_overtime_line,hr.overtime.line,model_hr_overtime_line,base.group_user,1,1,1,1
+access_attendance_sheet,attendance.sheet,model_hr_attendance_sheet,base.group_user,1,1,1,1
+access_attendance_sheet_line,attendance.sheet.line,model_hr_attendance_sheet_line,base.group_user,1,1,1,1
+access_hr_change_attendance,access_hr_change_attendance,model_hr_change_attendance,base.group_user,1,1,1,1
+hr_attendances_overtime.access_attendance_sheet_batch,access_attendance_sheet_batch,hr_attendances_overtime.model_attendance_sheet_batch,base.group_user,1,1,1,1
+hr_attendances_overtime.access_attendance_sheet_batch_line,access_attendance_sheet_batch_line,hr_attendances_overtime.model_attendance_sheet_batch_line,base.group_user,1,1,1,1
+hr_attendances_overtime.access_hr_attendance_earlyout,access_hr_attendance_earlyout,hr_attendances_overtime.model_hr_attendance_earlyout,base.group_user,1,1,1,1
+hr_attendances_overtime.access_hr_attendance_earlyout_line,access_hr_attendance_earlyout_line,hr_attendances_overtime.model_hr_attendance_earlyout_line,base.group_user,1,1,1,1

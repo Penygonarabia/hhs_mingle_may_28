@@ -1,0 +1,23 @@
+<?xml version ="1.0" encoding = "utf-8" ?>
+<odoo>
+	
+	<data>
+	
+		<record id = "cron_maintenance_equipment_service_creation" model = "ir.cron">
+			
+			<field name = "name">Maintenance Service Creation</field>
+			<field name = "model_id" ref = "model_maintenance_equipment"/>
+			<field name = "state">code</field>
+			<field name = "code">model._cron_service_request_creation()</field>	
+			<field name = "interval_number">1</field>
+			<field name = "interval_type">days</field>
+			<field name="numbercall">-1</field>
+			<field name = "active">True</field>	
+			<field name="doall" eval="False"/>
+			
+		
+		</record>
+	
+	</data>
+
+</odoo>

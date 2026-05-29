@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<odoo>
+	<record id="view_hr_payroll_advice_tree" model="ir.ui.view">
+		<field name="name">hr.payroll.advice.tree.view</field>
+		<field name="model">hr.payroll.advice</field>
+		<field name="arch" type="xml">
+			<tree string="Payroll Advice Tree">
+				<field name="name" string = "Period Name"/>
+				 
+			     <field name="from_date"/>
+			    <field name="to_date"/>
+			</tree>
+		</field>
+	</record>
+
+	<record id="view_hr_payroll_advice_form" model="ir.ui.view">
+		<field name="name">hr.payroll.advice.form.view</field>
+		<field name="model">hr.payroll.advice</field>
+		<field name="arch" type="xml">
+			<form string="Payroll Advice Form">
+			<!-- <header>
+                        <button string="Generate Employee info" name="action_date_done" type="object" 
+                                class="oe_highlight"/>                     
+                       
+                    </header> -->
+				<sheet>
+				<group>
+		        <group col = "2">				          
+                       <field name="name" string = "Period Name"/>
+                                               
+			   </group>		
+					<group col = "2">
+			    		 <field name="from_date"/>
+					
+			    		 <field name="to_date"/>
+			    		
+					</group>
+					
+				</group>	
+			   <group>	
+					<notebook>
+					    <page string = "Payment Information" class="oe_highlight">
+					         <field name = "payroll_advice_line_ids">
+					           <tree editable = "bottom">
+					              <field name = "employee_id"/>
+					              <field name = "employee_name"/>
+					              
+					              <!-- <field name = "employee_resident"/>					              
+					              <field name = "employee_bank"/> -->
+					              <!-- <field name = "employee_account_number"/> -->
+					              <field name = "net_salary"/>	
+					              <field name = "basic_salary"/>
+					             <!--  <field name = "housing_allowance"/>
+					              <field name = "other_earning"/>	
+					              <field name = "deduction"/> -->		             		              
+					           					           
+      					        </tree>
+					              
+					         </field>
+					    </page>
+					
+					</notebook>
+				</group>
+			
+			</sheet>	
+			</form>
+		</field>
+		</record>
+
+	<record id="action_view_hr_payroll_advice"  model="ir.actions.act_window">
+		<field name="name">Payment Advice</field>
+		<field name="type">ir.actions.act_window</field>
+		<field name="res_model">hr.payroll.advice</field>
+		<field name="view_mode">tree,form</field>
+		<field name="context">{}</field>
+		<field name="domain">[]</field>
+	</record>
+	
+		
+            <menuitem id="menu_bank_transfer_report1"
+              name="Payment Advice"
+               parent="om_hr_payroll.menu_hr_payroll_root"
+              action="action_view_hr_payroll_advice"
+            
+              sequence="10"/>
+
+</odoo>

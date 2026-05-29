@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="daily_attendance_report_form_view" model="ir.ui.view">
+        <field name="name">daily.attendance.report.wizard.view</field>
+        <field name="model">daily.attendance.report</field>
+        <field name="arch" type="xml">
+            <form string="Daily Attendance Report">
+                <group>
+                    <group>
+                        <field name="employee_ids" options="{'no_create_edit':True,'no_create':True,'no_edit':True}" widget="many2many_tags"/>
+                        <field name="department_ids" options="{'no_create_edit':True,'no_create':True,'no_edit':True}" widget="many2many_tags"/>
+                        <field invisible="summary_based_report" name="sort_by"/>
+                        <field invisible="summary_based_report" name="status_filter"/>
+                        <field name="summary_based_report"/>
+                    </group>
+                    <group>
+                        <field name="from_date" required="1"/>
+                        <field name="to_date" required="1"/>
+                        <field invisible="summary_based_report" name="attendance_policy_ids" options="{'no_create_edit':True,'no_create':True,'no_edit':True}" widget="many2many_tags"/>
+                        <field invisible="summary_based_report" name="report_for_option"/>
+                        <field invisible="1" name="company_id"/>
+                    </group>
+                </group>
+                <footer>
+                    <button class="oe_highlight" name="daily_attendance_excel" string="Print Excel" type="object"/>
+                    <button class="oe_highlight" invisible="1" name="daily_attendance_pdf" string="Print PDF" type="object"/>
+                    <button class="btn-secondary" name="clear" special="cancel" string="Cancel"/>
+                </footer>
+            </form></field>
+    </record>
+    <record id="action_daily_attendance_report" model="ir.actions.act_window">
+        <field name="name">Daily Attendance Report</field>
+        <field name="res_model">daily.attendance.report</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="model_daily_attendance_report"/>
+        <field name="binding_type">report</field>
+    </record>
+    <menuitem action="action_daily_attendance_report" id="menu_daily_attendance_report" name="Daily Attendance Report" parent="hr_attendances_overtime.reporting_menu_action" sequence="550"/>
+</odoo>

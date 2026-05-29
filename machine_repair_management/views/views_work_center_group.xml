@@ -1,0 +1,64 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+<odoo>
+
+    <record id="search_work_center_group_view" model="ir.ui.view">
+        <field name="name">Work Center Group search</field>
+        <field name="model">work.center.group</field>
+        <field name="arch" type="xml">
+            <search string="Work center group">
+                <field name="name"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="views_work_center_group_tree" model="ir.ui.view">
+        <field name="name">work.center.group.tree.view</field>
+        <field name="model">work.center.group</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="description"/>
+                <field name="company_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="views_work_center_group_form" model="ir.ui.view">
+        <field name="name">work.center.group.form.view</field>
+        <field name="model">work.center.group</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group col="2">
+                            <field name="code" required="1"/>
+                        </group>
+                        <group col="2">
+                            <field name="name" required="1"/>
+                        </group>
+                        <group colspan="2">
+                            <field name="description"/>
+                        </group>
+                        <group>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_work_center_group" model="ir.actions.act_window">
+        <field name="name">Work Center Group</field>
+        <field name="res_model">work.center.group</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_work_center_group"
+              parent="machine_repair_management.menu_machine_repair_configuration"
+              action="machine_repair_management.action_work_center_group"
+              sequence="40"
+    />
+
+</odoo>

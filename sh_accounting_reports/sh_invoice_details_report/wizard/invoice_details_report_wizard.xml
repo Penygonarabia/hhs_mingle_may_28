@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sh_invoice_details_report_wizard_form" model="ir.ui.view">
+        <field name="name">sh.invoice.details.report.wizard.form</field>
+        <field name="model">sh.invoice.details.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Invoice Details">
+                <group>
+                <group>
+                    <field name="start_date" />
+                    <field name="sh_state" widget="radio"/>                   
+                </group>
+                <group>
+                    <field name="end_date" />                                                   
+                    <field name="sh_move_type" widget="radio"/>
+                    <field name="company_ids" options="{'no_create': True}" widget="many2many_tags" groups="base.group_multi_company" />
+                </group>
+                </group>
+                <footer>
+                    <button name="print_report" string="Print" type="object" class="btn-primary" />
+                    <button name="print_invoice_detail_xls_report" string="Print Xls" type="object" class="oe_highlight" />
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="sh_invoice_details_report_action" model="ir.actions.act_window">
+        <field name="name">Invoices Details Report</field>
+        <field name="res_model">sh.invoice.details.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+<!--    <menuitem id="sh_custom_invoice_details_report_menu" parent="account.menu_finance" name="Invoice Details Report" action="sh_invoice_details_report_action"/>-->
+    <menuitem id="sh_invoice_details_report_menuitem" action="sh_invoice_details_report_action" parent="account.menu_finance_reports"/>
+</odoo>

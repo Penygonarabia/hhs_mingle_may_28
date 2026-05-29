@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<template id = "payment_advice_payroll.report_payroll_payment_pdf_two">
+	  <t t-call = "web.external_layout" >
+	     <t t-set = "doc" t-value = "doc" />
+	
+	   	<br/><br/><br/>
+	   	
+	   	<div>
+	   		 	<p><strong><center>Payroll Payment Details</center></strong></p>	   	
+	   	</div>
+	  <br/><br/>
+	    <div>
+	    <table class = "table table-sm">
+	    	<tr>
+	    		<t t-set = "colspan" t-value = "5"/>
+	  			 <td class = "text-center"><strong>Period Name : </strong></td>
+	   			 <td class = "text-center"><strong>Date : </strong></td>	   			 
+	    	</tr>
+	        <tr>
+	  			 <td class = "text-center"><t t-esc = "doc.name"></t></td>
+	    		 <td class = "text-center"><t t-esc = "doc.from_date"></t></td>	 			    	
+	    	</tr>	    
+	    </table>
+	    </div>	
+	      <br/>	      
+	      <div>
+	  	<table class = "table table-sm o_main_table">	               
+	                    <tr>	                 
+	                        <t t-set = "colspan" t-value = "5"/>	                                    
+	                         <th  class = "text-right">Net Salary</th> 
+	                          <th  class = "text-right">Beneficiary Account</th>
+	                           <th class = "text-right">Beneficiary Name 1</th>
+	                           <th class = "text-right">Beneficiary Name 2</th>	                           
+	                    	    <th class = "text-right">Beneficiary Name 3</th>
+	                    	    <th class = "text-right">Beneficiary Bank</th>	                    	    
+	                    	   <th class = "text-right">Payment Description (optional)</th>	                    	    	                           
+	                            <th  class = "text-right">Basic Salary</th>
+		                        <th  class = "text-right">Housing Allowance</th>
+		                        <th  class = "text-right">Other Earnings</th>
+		                        <th  class = "text-right">Deductions</th>
+		                        <th class = "text-right">Beneficiary ID</th>	              
+	                    </tr>
+	                	  <t t-foreach = "doc.payroll_two_line_ids" t-as = "line">
+	                    <tr>	                    
+	                    	     <td class = "text-right"><t t-esc = "line.net_salary"/></td>
+	                    	     <td class = "text-right"><span t-field = "line.bank_account_id"></span></td>
+	                    	      <td class = "text-right"><span t-field = "line.employee_id.name"></span></td>
+	                    	      <td class = "text-right"><span t-field = "line.employee_beneficiary"></span></td>
+	                    	      <td class = "text-right"><span t-field = "line.employee_benefi"></span></td>
+	                    	      <td class = "text-right"><span t-field = "line.bank_name"></span></td>
+	                    	      <td class = "text-right"><span t-field = "line.payment_description"></span></td>
+	            				<td class = "text-right"><span t-field = "line.basic_salary"></span></td>
+	            				<td class = "text-right"><span t-field = "line.housing_allowance"/></td>
+	            				<td class = "text-right"><span t-field = "line.other_earning"/></td>
+	            				<td class = "text-right"><span t-field = "line.deduction"/></td>  
+	            				<td class = "text-right"><span t-field = "line.beneficiary_id"></span></td>      					                   
+	                    </tr>	      
+	              </t>	  
+	                </table>	                
+	               </div> 	          
+	  	<br/><br/>	
+	  </t>
+	</template>		
+	<template id = "report_payroll_payment_pdf">
+	    <t t-call = "web.html_container">
+	        <t t-foreach = "docs" t-as = "doc">	       		 
+	           	<t t-call = "payment_advice_payroll.report_payroll_payment_pdf_two" t-value = "doc" />	           	         
+	        </t>
+	    </t>
+	</template>
+	
+	
+	<template id = "payment_advice_payroll.report_payroll_payment_format_one_bank1">
+	  <t t-call = "web.external_layout" >
+	     <t t-set = "doc" t-value = "doc" />	 	
+	   	<br/><br/><br/>
+	   	<div>
+	   		 	<p><strong><center>Payroll Payment DETAILS</center></strong></p>
+	   	</div>
+	  <br/><br/>
+	    <div>
+		    <table class = "table table-sm">
+		    	<tr>
+		    		<!-- <t t-set="colspan" t-value="5"/> -->
+		  			 <td class = "text-left"><strong>Period Name : </strong><t t-esc = "doc.name"></t></td>
+		  		<!-- 	<td class="text-left"><t t-esc="doc.name"></t></td> -->
+		  		</tr><tr>
+		  			 
+		   			 <td class = "text-left"><strong>Date : </strong><t t-esc = "doc.from_date"></t></td>
+		    
+<!-- 		    	 <td class="text-left"><t t-esc="doc.from_date"></t></td> -->
+		    	</tr>
+		    
+		    </table>
+	    </div>
+	      <br/>
+	      <div>
+	  	      <table class = "table table-sm o_main_table">
+	                    <tr>
+	                        <t t-set = "colspan" t-value = "5"/>
+	                        <th class = "text-right">Code</th>
+	                        <th class = "text-right">Employee Name</th>
+	                        <th class = "text-right">Account</th>
+	                        <th class = "text-right">Amount</th>
+	                         <th class = "text-right">Actual Amount paid</th>
+	                    </tr>
+	                <t t-foreach="doc.payroll_line_ids" t-as = "line">
+	                    <tr>
+                             <td class = "text-right"><span t-field = "line.employee_number"></span></td>
+                    	     <td class = "text-right"><span t-field = "line.employee_id.name"></span></td>
+                    	     <td class = "text-right"><span t-field = "line.bank_account_id"></span></td>
+            				 <td class = "text-right"><t t-esc = "line.net_salary"/></td>
+            				 <td class = "text-right"><t t-esc = "line.actual_amount"/></td>
+	                    </tr>
+	               </t>
+	          </table>
+	       </div> 
+	  	<br/><br/>
+	  </t>
+	</template>
+	<template id = "report_payroll_payment_format_one">
+	    <t t-call = "web.html_container">
+	        <t t-foreach = "docs" t-as = "doc">
+	           	<t t-call = "payment_advice_payroll.report_payroll_payment_format_one_bank1" t-value = "doc" />
+	        </t>
+	    </t>
+	</template>
+	
+	
+	
+	<template id="payment_advice_payroll.report_payroll_payment1">
+	  <t t-call="web.external_layout" >
+	     <t t-set="doc" t-value="doc" />
+	 	
+	
+	   	<br/><br/><br/>
+	   	
+	   	<div>
+	   		 	<p><strong><center>Payroll Payment DETAILS</center></strong></p>
+	   	
+	   	</div>
+	  <br/><br/>
+	    <div>
+	    <table class="table table-sm">
+	    	<tr>
+	    		<t t-set="colspan" t-value="5"/>
+	  			 <td class="text-right"><strong>Period Name:</strong></td>
+	   			 <td class="text-right"><strong>Date:</strong></td>
+	   		
+	 
+	    	</tr>
+	    <tr>
+	  			 <td class="text-right"><t t-esc="doc.name"></t></td>
+	    		 <td class="text-right"><t t-esc="doc.from_date"></t></td>
+	    		
+	    	
+	    	</tr>
+	    
+	    </table>
+	    </div>
+	
+	      <br/>
+	      
+	      <div>
+	  	<table class="table table-sm o_main_table">
+	               
+	                    <tr>
+	                 
+	                        <t t-set="colspan" t-value="5"/>	                                    
+	                       <th class="text-right">Employee ID</th>
+	                       <th class="text-right">Employee Resident Id</th>
+	                       <th class="text-right">Employee Bank ID</th>
+	                       <th class="text-right">Employee Account number</th>                    
+	                   
+	                     <th class="text-right">Employee Name</th>                   
+
+	                      
+	                        <th  class="text-right">Payment Amount</th>
+	                        <th  class="text-right">Basic Salary</th>
+	                        <th  class="text-right">Housing Allowance</th>
+	                        <th  class="text-right">Other Earnings</th>
+	                        <th  class="text-right">Deductions</th>
+	                        <th  class="text-right">Regulatory Reporting</th>
+	                        <th  class="text-right">Remarks</th>
+	                                                                      
+	                    </tr>
+	                	  <t t-foreach="doc.payroll_advice_line_ids" t-as="line">
+	                    <tr>
+	                             <td class="text-right"><span t-field="line.employee_number"></span></td>
+	                              <td class="text-right"><span t-field="line.employee_resident_id"></span></td>
+	                    	     <td class="text-right"><span t-field="line.bank_code"></span></td>
+	                    	     <td class="text-right"><span t-field="line.bank_account_id"></span></td>
+	                    	    
+	                    	     
+	                    	    
+	                    	      <td class="text-right"><span t-field="line.employee_id.name"></span></td>
+	                    
+	            
+	            				<td class="text-right"><t t-esc="line.net_salary"/></td>
+	            				<td class="text-right"><span t-field="line.basic_salary"></span></td>
+	            				<td class="text-right"><span t-field="line.housing_allowance"/></td>
+	            				<td class="text-right"><span t-field="line.other_earning"/></td>
+	            				<td class="text-right"><span t-field="line.deduction"/></td>  
+	            				<td class="text-right"><span t-field="line.regulatory"/></td>       				
+	                            <td class="text-right"><span t-field="line.remarks"/></td>         				
+	                   
+	                    </tr>
+	      
+	              </t>
+	  
+	                </table>
+	                
+	               </div> 
+	          
+	  	<br/><br/>
+	
+	  </t>
+	</template>
+	
+	
+	<template id="report_payroll_payment">
+	    <t t-call="web.html_container">
+	        <t t-foreach="docs" t-as="doc">
+	       		 
+	           	<t t-call="payment_advice_payroll.report_payroll_payment1" t-value="doc" />
+	           
+	         
+	        </t>
+	    </t>
+	</template>
+	
+	
+	
+</odoo>

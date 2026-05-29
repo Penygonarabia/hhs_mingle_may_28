@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="payment_invoice_wizard_form" model="ir.ui.view">
+        <field name="name">employee.shift.roster.report.wizard.form</field>
+        <field name="model">employee.shift.roster.report.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <group>
+                        <field invisible="file != False" name="start_date" required="1"/>
+                        <field invisible="file != False" name="end_date" required="1"/>
+                    </group>
+                    <field filename="file_name" invisible="file == False" name="file" readonly="1"/>
+                    <field invisible="1" name="file_name"/>
+                </group>
+                <footer>
+                    <button class="btn-primary" name="print_excel_report" string="Print" type="object"/>
+                    <button class="btn-default" special="cancel" string="Cancel"/>
+                </footer>
+            </form></field>
+    </record>
+    <record id="action_employee_shift_roster_report_wizard" model="ir.actions.act_window">
+        <field name="name">Employee Shift Roster Report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">employee.shift.roster.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <menuitem action="action_employee_shift_roster_report_wizard" groups="hr.group_hr_user" id="menu_employee_shift_roster_report_wizard" name="Employee Shift Roster Report" parent="main_menu_employee_shift" sequence="10"/>
+</odoo>

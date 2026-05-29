@@ -1,0 +1,153 @@
+<?xml version ="1.0" encoding ="utf-8" ?>
+<odoo>
+
+	
+	<record id = "actions_payment_receipt_report_pdf" model = "ir.actions.report">
+		<field name ="name">Payment Receipt</field>
+		<field name ="model">payment.receipt</field>
+		<field name ="report_type">qweb-pdf</field>
+		<field name ="report_name">machine_repair_management.report_receipt_payment</field>
+		<field name ="report_file">machine_repair_management.report_receipt_payment</field>
+		<field name="binding_model_id" ref="model_payment_receipt"/>
+        <field name="binding_type">report</field>
+	
+	</record>
+
+
+	<template id="machine_repair_management.receipt_payment_template_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template> 
+
+    <template id="report_receipt_payment">
+        <t t-call="web.html_container">
+        
+        <!-- <t t-set="company" t-value="docs[0].company_id if docs and docs[0].company_id else res_company"/> -->
+		  <t t-call ="machine_repair_management.receipt_payment_template_internal_layout">
+             <t t-foreach="docs" t-as="o">
+
+			<t t-if="o and 'company_id' in o">
+                <t t-set="company" t-value="o.company_id"></t>
+            </t>
+            <t t-if="not o or not 'company_id' in o">
+                <t t-set="company" t-value="res_company"></t>
+            </t>
+			<div class="header">
+                <div class="row mt32 mb32">
+                    
+					<div class="col-3" style="font:12px lucida-console,sans-serif !important;">
+                        <span t-field="company.partner_id"/>
+                        <br/>
+                        <span  t-field="company.partner_id.street"/>
+                        <br/>
+                        <span  t-field="company.partner_id.street2"/>
+                        <br/>
+                        <span  t-field="company.partner_id.city"/>
+                        <br/>
+                        <span  t-field="company.partner_id.country_id"/>
+                        <br/>
+                        <span  t-field="company.partner_id.vat"/>
+                    </div>
+						
+			
+                     <div class="col-6">
+						   <h2 class="text-center">Payment Receipt</h2>
+                 		<!-- <p class="text-center" t-field="o.name"/> -->
+<!--                         <h2 style="font-weight:bold;text-align:left;font-size:23px"><span t-field="o.company_id.name"/> </h2>
+-->                      </div>
+                   <div class="col-3 text-right " style="vertical-align:text-top">
+               				 <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" style="max-height: 100px; min-height:100px; min-width: 150px; max-width: 150px;" />
+            			</div>
+
+                </div>
+            </div>
+				 <div class="page">
+				 	<table class="table table-sm">
+				 	
+				 		<tr>
+				 			<td>
+				 				<strong>Reference :</strong>	
+				 			</td>
+				 			<td style="text-align:left">
+				 		 		<span t-esc="o.name"/>
+				 		 	</td>
+				 		
+				 		</tr>
+				 		<tr>
+				 			<td>
+				 				<strong>Date :</strong>	
+				 			</td>
+				 			<td style="text-align:left">
+				 		 		<span t-esc="o.date.strftime('%d-%m-%Y')"/>
+				 		 	</td>
+				 		
+				 		</tr>
+				 		<tr>
+				 			<td>
+				 				<strong>Job Card No :</strong>	
+				 			</td>
+				 			<td style="text-align:left">
+				 		 		<span t-esc="o.job_card_no_id.name"/>
+				 		 	</td>
+				 		
+				 		</tr>
+				 		<tr>
+				 			<td>
+				 				<strong>Customer Name :</strong>	
+				 			</td>
+				 			<td style="text-align:left">
+				 		 		<span t-esc="o.customer_name"/>
+				 		 	</td>
+				 		
+				 		</tr>
+				 		<tr>
+				 			<td>
+				 				<strong>Amount :</strong>	
+				 			</td>
+				 			<td style="text-align:left">
+				 		 		<span t-esc="o.amount"/>
+				 		 	</td>
+				 		
+				 		</tr>
+				 		<tr>
+				 			<td>
+				 				<strong>Memo :</strong>	
+				 			</td>
+				 			<td style="text-align:left">
+				 		 		<span t-esc="o.memo"/>
+				 		 	</td>
+				 		
+				 		</tr>
+				 	
+				 	</table>
+				 
+				 </div>
+				 
+			   <div class="footer o_background_footer">
+		            <div class="text-center">
+		              <ul class="list-inline">
+						<li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+						</ul>
+		                   <div t-if="report_type == 'pdf'" class="text-muted">
+		                          Page:
+		                       <span class="page"/>
+		                          of
+		                      <span class="topage"/>
+		                      </div>
+		            </div>
+               </div>
+			
+			</t>
+			
+			
+			</t>
+		
+		</t>
+	
+	
+	</template>
+
+
+
+</odoo>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+         <report
+            id="action_shift_allocation_report"
+            string="Shift Allocation"
+            model="employee.shift.allocation"
+            report_type="qweb-pdf"
+            file="employee_shift_scheduling_app.shift_allocation_report_temp"
+            name="employee_shift_scheduling_app.shift_allocation_report_temp"
+            print_report_name="'Shift Allocation - %s' % object.name"
+            paperformat="employee_shift_scheduling_app.shift_allocation_report_paperformat"
+            menu="True"
+        />
+
+    </data>
+</odoo>

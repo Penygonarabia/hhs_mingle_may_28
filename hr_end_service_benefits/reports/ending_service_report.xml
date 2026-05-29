@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+        <report id="action_report_hr_end_service_benefit"
+                string="End of Service Statement"
+                model="hr.end.service.benefit"
+                report_type="qweb-pdf"
+                file="hr_end_service_benefits.ending_service_reward_report"
+                name="hr_end_service_benefits.ending_service_reward_report"
+                print_report_name="'%s' % (object.name)"/>
+
+
+<!--        <template id="ending_service_report_document">-->
+<!--            <t t-call="web.external_layout">-->
+
+        <template id="hr_end_service_benefits.ending_service_template_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template>
+
+    <template id="ending_service_report_document">
+        <t t-call="web.html_container">
+		<t t-call ="hr_end_service_benefits.ending_service_template_internal_layout">
+            <t t-foreach="docs" t-as="o">
+
+			<t t-if="o and 'company_id' in o">
+                <t t-set="company" t-value="o.company_id"></t>
+            </t>
+            <t t-if="not o or not 'company_id' in o">
+                <t t-set="company" t-value="res_company"></t>
+            </t>
+			<div class="header">
+                <div class="row mt32 mb32">
+
+					<div class="col-3" style="font:12px lucida-console,sans-serif !important;">
+                        <span t-esc="company.partner_id.name"/>
+                        <br/>
+                        <span  t-esc="company.partner_id.street"/>
+                        <br/>
+                        <span  t-esc="company.partner_id.street2"/>
+                        <br/>
+                        <span  t-esc="company.partner_id.city"/>
+                        <br/>
+                        <span  t-esc="company.partner_id.country_id.name"/>
+                        <br/>
+                        <span  t-esc="company.partner_id.vat"/>
+                    </div>
+                    <div class="col-6">
+                        <h2 class="text-center">End of Service Reward Statement</h2>
+                    </div>
+                    <div class="col-3 text-right " style="vertical-align:text-top">
+                        <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" style="max-height: 70px; min-height:70px; min-width: 200px; max-width: 200px;" />
+                    </div>
+
+                </div>
+            </div>
+
+<!--                <t t-set="doc" t-value="doc.with_context({'lang':user.partner_id.lang})"/>-->
+                <div class="page">
+<!--                    <div class="oe_structure"/>-->
+<!--                    <h2 class="text-center">End of Service Reward Statement</h2>-->
+                    <div class="row mt32 mb32" id="informations">
+                        <div class="col-12">
+                            <table  style="font-size:22px" class="table table-sm table-bordered">
+                                <colgroup>
+                                    <col width='20%'/>
+                                    <col width='30%'/>
+                                    <col width='20%'/>
+                                    <col width='30%'/>
+                                </colgroup>
+                                <tbody>
+                                    <tr style="font-size:22px">
+                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Name</strong></td>
+                                        <td>
+                                            <span t-if="o.employee_id.name" t-esc="o.employee_id.name"/>
+                                        </td>
+                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Designation</strong></td>
+                                        <td>
+                                            <span t-if="o.employee_id.job_id"
+                                                  t-esc="o.employee_id.job_id.name"/>
+                                        </td>
+                                    </tr>
+                                    <tr style="font-size:22px">
+                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Address</strong></td>
+                                        <td colspan="3">
+                                            <span t-if="o.employee_id.work_location"
+                                                  t-esc="o.employee_id.work_location"/>
+                                        </td>
+                                    </tr>
+                                    <tr style="font-size:22px">
+                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Email</strong></td>
+                                        <td>
+                                            <span t-if="o.employee_id.work_email"
+                                                  t-esc="o.employee_id.work_email"/>
+                                        </td>
+                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Identification No</strong></td>
+                                        <td>
+                                            <span t-if="o.employee_id.identification_id"
+                                                  t-esc="o.employee_id.identification_id"/>
+                                        </td>
+                                    </tr>
+                                    <tr style="font-size:22px">
+                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Reference</strong></td>
+                                        <td>
+                                            <span t-if="o.name"
+                                                  t-esc="o.name"/>
+                                        </td>
+                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Payment Ref</strong></td>
+                                        <td>
+                                            <span t-if="o.payment_id"
+                                                  t-esc="o.payment_id.name"/>
+                                        </td>
+                                    </tr>
+                                    <tr style="font-size:22px">
+                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Joining Date</strong></td>
+                                        <td>
+                                            <span t-if="o.joining_date"
+                                                  t-esc="o.joining_date" t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
+                                        </td>
+                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Date</strong></td>
+                                        <td>
+                                            <span t-if="o.date"
+                                                  t-esc="o.date" t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
+                                        </td>
+                                    </tr>
+                                    <tr style="font-size:22px">
+                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Reward Type</strong></td>
+                                        <td>
+<!--                                            <span t-if="o.type"-->
+<!--                                                  t-esc="o.type" />-->
+<!--                                            <span t-if="o.type" t-esc="dict(o.type.fields_get()['type']['selection'])[o.type]"/>-->
+                                            <span t-if="o.type" t-esc="dict(o._fields['type'].selection).get(o.type)"/>
+                                        </td>
+                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Termination Date</strong></td>
+                                        <td>
+                                            <span t-if="o.termination_date"
+                                                  t-esc="o.termination_date" t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
+                                        </td>
+                                    </tr>
+                                    <tr style="font-size:22px">
+                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>ES Reason</strong></td>
+                                        <td colspan="3">
+                                            <span t-if="o.end_service_benefit_type_id"
+                                                  t-field="o.end_service_benefit_type_id.name"/>
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                            <br/>
+                            <h2 class="text-center">Duration</h2>
+                            <table style="font-size:22px" class="table table-sm table-bordered">
+                                <thead style="font-size:22px">
+                                    <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Years</th>
+                                    <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Months</th>
+                                    <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Days</th>
+                                    <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Service Period</th>
+                                    <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; " t-if="o.type=='ending_service'">Last Month Worked Days Number</th>
+
+                                </thead>
+                                <tbody>
+                                    <tr style="font-size:22px">
+                                        <td class="text-right">
+                                            <span t-esc="o.years"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="o.months"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="o.days"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <span t-esc="o.service_period" t-options='{"widget": "float", "decimal_precision": "2"}'/>
+                                        </td>
+                                        <td class="text-right" t-if="o.type=='ending_service'">
+                                            <span t-esc="o.days_number" t-options='{"widget": "integer"}' />
+                                        </td>
+
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <br/>
+                            <br/>
+                            <h2 class="text-center">Payment</h2>
+                            <table style="font-size:22px" class="table table-sm table-bordered">
+                                <colgroup>
+                                    <col width='50%'/>
+                                    <col width='50%'/>
+                                </colgroup>
+                                <tbody>
+                                    <!-- <tr t-if="doc.total_payslip_deserved_amount"> -->
+                                    <tr style="font-size:22px">
+<!--                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Total Holidays Deserved Amount</td>-->
+                                        <td>Accrued Leave Amount</td>
+                                        <td class="text-right">
+                                            <span t-esc="'%.2f'%(o.total_holiday_deserved_amount)"
+                                                  t-esc-options='{"widget": "monetary", "display_currency": "doc.currency_id"}'/>
+                                        </td>
+                                    </tr>
+                                    <!-- <tr t-if="doc.total_payslip_deserved_amount"> -->
+                                    <tr style="font-size:22px">
+<!--                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Total Deserved Payslip Amount</td>-->
+                                        <td>Payslip Amount</td>
+                                        <td class="text-right">
+                                            <span t-esc="'%.2f'%(o.total_payslip_deserved_amount)"
+                                                  t-esc-options='{"widget": "monetary", "display_currency": "doc.currency_id"}'/>
+                                        </td>
+                                    </tr>
+                                    <tr style="font-size:22px">
+<!--                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Other Amount</td>-->
+                                        <td>Other Amount</td>
+                                        <td class="text-right">
+                                            <span t-esc="'%.2f'%(o.other_amount)"
+                                                  t-esc-options='{"widget": "monetary", "display_currency": "doc.currency_id"}'/>
+                                        </td>
+                                    </tr>
+<!--                                     <tr>-->
+<!--                                        <td>Total Sanction</td>-->
+<!--                                        <td class="text-right">-->
+<!--                                            <span t-esc="'%.2f'%(doc.total_sanction)"-->
+<!--                                                  t-esc-options='{"widget": "monetary", "display_currency": "doc.currency_id"}'/>-->
+<!--                                        </td>-->
+<!--                                    </tr>-->
+                                    <tr style="font-size:22px">
+<!--                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Total Deserved Amount</td>-->
+                                        <td>End of Server Award (EOS) Amount</td>
+                                        <td class="text-right">
+                                            <span t-esc="'%.2f'%(o.total_deserved_amount)"
+                                                  t-esc-options='{"widget": "monetary", "display_currency": "doc.currency_id"}'/>
+                                        </td>
+                                    </tr>
+                                    <tr style="font-size:22px">
+<!--                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Total Allowances</td>-->
+                                        <td>Total Allowances</td>
+                                        <td class="text-right">
+                                            <span t-esc="'%.2f'%(o.total_allowance_new)"
+                                                  t-esc-options='{"widget": "monetary", "display_currency": "doc.currency_id"}'/>
+                                        </td>
+                                    </tr>
+                                    <tr style="font-size:22px">
+<!--                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Total Reward + Payslip + Allowances - Loan Amount</td>-->
+                                        <td>Terminal Pay Amount</td>
+                                        <td class="text-right">
+                                            <span t-esc="'%.2f'%(o.total_reward)"
+                                                  t-esc-options='{"widget": "monetary", "display_currency": "doc.currency_id"}'/>
+                                        </td>
+                                    </tr>
+                                    <tr style="font-size:22px">
+<!--                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Previously Disbursed Amount</td>-->
+                                        <td>Previously Disbursed Amount</td>
+                                        <td class="text-right">
+                                            <span t-esc="'%.2f'%(o.total_taken_amount)"
+                                                  t-esc-options='{"widget": "monetary", "display_currency": "doc.currency_id"}'/>
+                                        </td>
+                                    </tr>
+                                    <tr style="font-size:22px">
+<!--                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Available Amount</td>-->
+                                        <td>Amount Due</td>
+                                        <td class="text-right">
+                                            <span t-esc="'%.2f'%(o.available_amount)"
+                                                  t-esc-options='{"widget": "monetary", "display_currency": "doc.currency_id"}'/>
+                                        </td>
+                                    </tr>
+<!--                                    <tr style="font-size:22px">-->
+<!--&lt;!&ndash;                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; ">Reward Requested Amount</td>&ndash;&gt;-->
+<!--                                        <td>Reward Requested Amount</td>-->
+<!--                                        <td class="text-right">-->
+<!--                                            <span t-esc="'%.2f'%(o.amount)"-->
+<!--                                                  t-esc-options='{"widget": "monetary", "display_currency": "doc.currency_id"}'/>-->
+<!--                                        </td>-->
+<!--                                    </tr>-->
+<!--                                     <tr>-->
+<!--                                        <td>Total Housiing Loan/Advance</td>-->
+<!--                                        <td class="text-right">-->
+<!--                                            <span t-esc="'%.2f'%(doc.total_advance_loan)"-->
+<!--                                                  t-esc-options='{"widget": "monetary", "display_currency": "doc.currency_id"}'/>-->
+<!--                                        </td>-->
+<!--                                    </tr>-->
+<!--                                    <tr>-->
+<!--                                        <td>Total Ticket Amount</td>-->
+<!--                                        <td class="text-right">-->
+<!--                                            <span t-esc="'%.2f'%(doc.total_ticket)"-->
+<!--                                                  t-esc-options='{"widget": "monetary", "display_currency": "doc.currency_id"}'/>-->
+<!--                                        </td>-->
+<!--                                    </tr>-->
+                                </tbody>
+                            </table>
+                            <br/>
+                            <br/>
+                        </div>
+                        <div class="col-12" t-if="o.notes">
+                            <h2>Notes</h2>
+                            <div class="col-1"></div>
+                            <div class="col-11">
+                                <span t-field="o.notes"/>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <h2>Signature</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer o_background_footer">
+                    <div class="text-center">
+                        <ul class="list-inline">
+                            <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                        </ul>
+                        <div t-if="report_type == 'pdf'" class="text-muted">
+                                  Page:
+                               <span class="page"/>
+                                  of
+                              <span class="topage"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+        </t>
+        </template>
+
+
+        <template id="ending_service_reward_report">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="hr_end_service_benefits.ending_service_report_document"
+                       t-lang="user.partner_id.lang"/>
+                </t>
+            </t>
+        </template>
+
+
+    </data>
+</odoo>

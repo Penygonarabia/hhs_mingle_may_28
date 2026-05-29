@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="edit_holiday_status_form" model="ir.ui.view">
+        <field name="name">hr.leave.type</field>
+        <field name="model">hr.leave.type</field>
+        <field name="inherit_id" ref="hr_holidays.edit_holiday_status_form"/>
+        <field name="arch" type="xml">
+            <field name="leave_validation_type" position="before">
+                <field name="code"/></field></field>
+    </record>
+    <record id="view_holiday_status_normal_tree" model="ir.ui.view">
+        <field name="name">hr.leave.type</field>
+        <field name="model">hr.leave.type</field>
+        <field name="inherit_id" ref="hr_holidays.view_holiday_status_normal_tree"/>
+        <field name="arch" type="xml">
+            <field name="display_name" position="after">
+                <field name="code"/></field></field>
+    </record>
+    <record id="view_holidays_status_filter" model="ir.ui.view">
+        <field name="name">hr.leave.type</field>
+        <field name="model">hr.leave.type</field>
+        <field name="inherit_id" ref="hr_holidays.view_holidays_status_filter"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="code"/></field></field>
+    </record>
+
+    <record id="time_off_type_inherit_form" model="ir.ui.view">
+    	<field name="name">hr.leave.accrual.plan.inherit.form</field>
+    	<field name="model">hr.leave.accrual.plan</field>
+    	<field name="inherit_id" ref="hr_holidays.hr_accrual_plan_view_form" />
+    	<field name="arch" type="xml">
+    		<xpath expr="//field[@name='is_based_on_worked_time']" position="after">
+                <field name="time_off_type_id"  groups="base.group_multi_company"/>
+    		</xpath>
+    	</field>
+    </record>
+
+    <record id="view_employee_number_tree_inherit" model="ir.ui.view">
+	   	<field name ="name">hr.leave.form.inherit</field>
+	   	<field name="model">hr.leave</field>
+	   	<field name="inherit_id" ref="hr_holidays.hr_leave_view_tree"/>
+	   	<field name="arch" type="xml">
+	   		<xpath expr="//field[@name='employee_id']" position="before">
+	   				<field name="employee_number" />
+	   		  </xpath>
+	   	</field>
+   </record>
+
+   <record id="leave_employee_number_filter_search" model="ir.ui.view">
+
+   		<field name="name">hr.holidays.filter</field>
+		<field name="model">hr.leave</field>
+		<field name="inherit_id" ref="hr_holidays.view_hr_holidays_filter"/>
+		<field name="arch" type="xml">
+			<xpath expr="//field[@name='employee_id']" position="before">
+				<field name="employee_number" />
+			</xpath>
+		</field>
+      </record>
+
+
+    <record id="view_send_mail_inherit" model="ir.ui.view">
+        <field name="name">hr.leave.inherit.form</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_refuse']" position="after">
+                <button class="oe_highlight" invisible="state in ['draft', 'confirm', 'refuse']" name="send_mail_leave_automatically" string="Send Mail" type="object"/>
+            </xpath>
+<!--            <xpath expr="//div[@name='duration_display']" position="after">-->
+<!--                <field invisible="1" name="show_leave_fields"/>-->
+<!--                <field force_save="1" invisible="not show_leave_fields" name="vacation_entitle"/>-->
+<!--                <field force_save="1" invisible="not show_leave_fields" name="national_holiday"/>-->
+<!--                &lt;!&ndash;                    <field name="vacation_utilised"  force_save="1" attrs="{'invisible': [('show_leave_fields', '=', False)], 'readonly': [('state', 'not in', ['draft', 'confirm'])]}"/>&ndash;&gt;-->
+<!--                <field force_save="1" invisible="not show_leave_fields" name="vacation_utilised"/>-->
+<!--                <field force_save="1" invisible="not show_leave_fields" name="paid_leave"/>-->
+<!--                <field force_save="1" invisible="not show_leave_fields" name="unpaid_leave"/>-->
+<!--                <field force_save="1" invisible="not show_leave_fields" name="actual_return_date"/>-->
+<!--                &lt;!&ndash;                    <field name="current_start_date" invisible="1" force_save="1" attrs="{'invisible': [('show_leave_fields', '=', False)]}"/>&ndash;&gt;-->
+<!--            </xpath>-->
+
+            <xpath expr="//group[@name='col_left']" position="replace">
+                   <group name="col_left">
+                            <field name="employee_company_id" invisible="1"/>
+
+                            <field name="holiday_status_id" force_save="1"
+                                domain="[
+                                    '|',
+                                        ('requires_allocation', '=', 'no'),
+                                        '&amp;',
+                                            ('has_valid_allocation', '=', True),
+                                            '&amp;',
+                                                ('max_leaves', '>', '0'),
+                                                '|',
+                                                    ('allows_negative', '=', True),
+                                                    '&amp;',
+                                                        ('virtual_remaining_leaves', '&gt;', 0),
+                                                        ('allows_negative', '=', False),
+                                ]"
+                                context="{'employee_id': employee_id, 'default_date_from': date_from, 'default_date_to': date_to}"
+                                options="{'no_create': True, 'no_open': True, 'request_type': 'leave'}"
+                                readonly="state in ['cancel', 'refuse', 'validate', 'validate1']"/>
+                            <field name="employee_number"/>
+                            <field name="date_from" invisible="1" readonly="state in ['cancel', 'refuse', 'validate', 'validate1']"/>
+                            <field name="date_to" invisible="1" readonly="state in ['cancel', 'refuse', 'validate', 'validate1']"/>
+                            <field name="request_date_from" invisible="0" widget="daterange" string="Leave Date From"/>
+                            <field name="request_date_to" invisible="0" widget="daterange" string="Expected Return Date"/>
+
+                        <label for="number_of_days_display" string="Duration" />
+                        <div name="duration_display" >
+                            <div >
+                                <field name="number_of_days_display" class="oe_inline" />
+                                <span class="ms-3">Days</span>
+                                <field name="request_unit_hours" invisible="1" readonly="state not in ('draft', 'confirm')" class="ms-5" />
+                                <field name="request_unit_half"  invisible="1" readonly="state not in ('draft', 'confirm')" />
+
+                            </div>
+                            <div invisible="1" class="o_row">
+                                <field name="number_of_hours_text" />
+                            </div>
+                        </div>
+                        <field invisible="1" name="show_leave_fields"/>
+                        <field force_save="1" invisible="not show_leave_fields" name="vacation_entitle"/>
+                        <field force_save="1" invisible="not show_leave_fields" name="national_holiday"/>
+                        <!--                    <field name="vacation_utilised"  force_save="1" attrs="{'invisible': [('show_leave_fields', '=', False)], 'readonly': [('state', 'not in', ['draft', 'confirm'])]}"/>-->
+                        <field force_save="1" invisible="not show_leave_fields" name="vacation_utilised"/>
+                        <field force_save="1" invisible="not show_leave_fields" name="paid_leave"/>
+                        <field force_save="1" invisible="not show_leave_fields" name="unpaid_leave"/>
+                        <field force_save="1" invisible="not show_leave_fields" name="actual_return_date"/>
+
+
+
+                        <field name="name" readonly="state not in ('draft', 'confirm')" widget="text" placeholder="Add a description..." />
+                        <field name="user_id" invisible="1" />
+                        <field name="leave_type_support_document" invisible="1" />
+                        <label for="supported_attachment_ids" string="Supporting Document" invisible="not leave_type_support_document or state not in ('draft', 'confirm', 'validate1')" />
+                        <field name="supported_attachment_ids" widget="many2many_binary" nolabel="1" invisible="not leave_type_support_document or state not in ('draft', 'confirm', 'validate1')" />
+                   </group>
+            </xpath>
+
+            <xpath expr="//div[@name='duration_warning']" position="replace">
+<!--            <div name="duration_warning" invisible="not leave_type_increases_duration" class="alert alert-warning mb-0" role="alert">-->
+<!--                    <span >You can only take this time off in whole days, so if your schedule has half days, it won't be used efficiently.</span>-->
+<!--                </div>-->
+            </xpath>
+
+
+
+
+<!--            <xpath expr="//field[@name='request_date_from']" position="attributes">-->
+<!--       			<attribute name="invisible">0</attribute>-->
+<!--       		</xpath>-->
+<!--       		<xpath expr="//field[@name='request_date_to']" position="attributes">-->
+<!--       			<attribute name="invisible">0</attribute>-->
+<!--       		</xpath>-->
+
+<!--           <xpath expr="//label[@for='request_date_from'][1]" position="replace">-->
+<!--                <label for="request_date_from" invisible="1" string="New Date Label" />-->
+<!--            </xpath>-->
+
+<!--            &lt;!&ndash; Replace the second label with for="request_date_from" &ndash;&gt;-->
+<!--            <xpath expr="//label[@for='request_date_from'][2]" position="replace">-->
+<!--                <label for="request_date_from" invisible="1" string="New Dates Label" />-->
+<!--            </xpath>-->
+
+<!--            <xpath expr="//div[@class='o_row' and field[@name='request_date_from']]" position="replace">-->
+<!--            <div class="o_row">-->
+<!--                <field name="request_date_from" string="Date" invisible="1" readonly="state not in ('draft', 'confirm')" />-->
+<!--                <field name="request_date_from_period" invisible="1" readonly="state not in ('draft', 'confirm')"/>-->
+<!--            </div>-->
+<!--             <div class="o_row">-->
+<!--                    <field-->
+<!--                        name="request_date_from"-->
+<!--                        widget="daterange"-->
+<!--                        readonly="state not in ('draft', 'confirm')"-->
+<!--                        required="not date_from or not date_to"-->
+<!--                        options="{'end_date_field': 'request_date_to'}" invisible="1"/>-->
+<!--                    <field name="request_date_to" invisible="1" />-->
+<!--                </div>-->
+
+<!--                <label for="request_unit_half" string="" invisible="1"/>-->
+<!--                            <div class="o_row o_row_readonly oe_edit_only" style="margin-left: -2px;" invisible="1">-->
+<!--                                <field name="request_unit_half"  invisible="1" readonly="state not in ('draft', 'confirm')" />-->
+<!--                                <label for="request_unit_half" invisible="1" />-->
+<!--                                <field name="request_unit_hours" invisible="1" readonly="state not in ('draft', 'confirm')" class="ms-5" />-->
+<!--                                <label for="request_unit_hours" invisible="1" />-->
+<!--                            </div>-->
+<!--                            <label for="request_hour_from" string="" invisible="1"/>-->
+<!--                            <div class="o_row o_row_readonly" invisible="1">-->
+<!--                                <label for="request_hour_from" string="From" />-->
+<!--                                <field name="request_hour_from" invisible="1" readonly="state == 'validate'" required="request_unit_hours" />-->
+<!--                                <label for="request_hour_to" string="To" />-->
+<!--                                <field name="request_hour_to" invisible="1" readonly="state == 'validate'" required="request_unit_hours" />-->
+<!--                            </div>-->
+
+<!--                            <label for="number_of_days_display" string="Duration" invisible="1" />-->
+<!--                            <div name="duration_display" invisible="1">-->
+<!--                                <div invisible="1">-->
+<!--                                    <field name="number_of_days_display"  />-->
+<!--                                    <span class="ms-3">Days</span>-->
+<!--                                </div>-->
+<!--                                <div invisible="1" class="o_row">-->
+<!--                                    <field name="number_of_hours_text" />-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--        </xpath>-->
+
+
+            <!--           Newly added this code Expected Return Date - creation date - 26/08/2024-->
+<!--            <xpath expr="//label[@for='request_date_from']" position="replace">-->
+<!--                <label for="request_date_from" id="label_dates" invisible="1" string="Leave Date From"/>-->
+<!--            </xpath>-->
+<!--            <xpath expr="//div[field[@name='request_date_from']]" position="replace">-->
+<!--                <field invisible="1" name="request_date_from" widget="daterange"/>-->
+<!--                <field invisible="1" name="request_date_to"/>-->
+<!--&lt;!&ndash;                 <field name ="request_unit_custom" invisible="1" />-->
+<!-- &ndash;&gt;                <field class="oe_inline" name="request_date_from" options="{'related_end_date': 'request_date_to'}" readonly="state not in ('draft', 'confirm')" required="not date_from or not date_to" string="Leave Date From" widget="daterange"/>-->
+<!--                <field class="oe_inline" invisible="request_unit_half or request_unit_hours" name="request_date_to" options="{'related_start_date': 'request_date_from'}" readonly="state not in ('draft', 'confirm')" required="not date_from or not date_to" string="Expected Return Date" widget="daterange"/>-->
+<!--                <div class="o_row o_row_readonly">-->
+<!--                    <field class="oe_inline" invisible="not request_unit_half" name="request_date_from_period" options="{'horizontal': True}" readonly="state not in ('draft', 'confirm')" required="request_unit_half" string="In"/>-->
+<!--                </div>-->
+<!--               &lt;!&ndash;  <div class="o_row o_row_readonly oe_edit_only" style="margin-left: -2px;">-->
+<!--                    <field invisible="leave_type_request_unit" name="request_unit_half" readonly="state not in ('draft', 'confirm')"/>-->
+<!--                    <label for="request_unit_half" invisible="leave_type_request_unit"/>-->
+<!--                    <field class="ml-5" invisible="not leave_type_request_unit" name="request_unit_hours" readonly="state not in ('draft', 'confirm')"/>-->
+<!--                    <label for="request_unit_hours" invisible="not leave_type_request_unit"/>-->
+<!--                    <field class="ml-5" invisible="1" name="request_unit_custom" readonly="state not in ('draft', 'confirm')"/>-->
+<!--                    <label for="request_unit_custom" invisible="1"/>-->
+<!--                </div> &ndash;&gt;-->
+<!--                <div class="o_row o_row_readonly">-->
+<!--                    <label for="request_hour_from" invisible="not request_unit_hours" string="From"/>-->
+<!--                    <field invisible="not request_unit_hours" name="request_hour_from" readonly="state" required="request_unit_hours"/>-->
+<!--                    <label for="request_hour_to" invisible="not request_unit_hours" string="To"/>-->
+<!--                    <field invisible="not request_unit_hours" name="request_hour_to" readonly="state" required="request_unit_hours"/>-->
+<!--                </div>-->
+<!--            </xpath>-->
+        </field>
+    </record>
+</odoo>

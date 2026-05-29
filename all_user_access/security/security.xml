@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- <record id="group_all_user_access" model="res.groups">
+            <field name="name">All User Access</field>
+            <field name="category_id" ref="base.module_category_user_type"/>
+        </record> -->
+         <record model="ir.module.category" id="module_category_user_access">
+	        <field name="name">User Access</field>
+	        <field name="sequence">2</field>
+	  </record>
+	
+	<record id="group_all_user_access" model="res.groups">
+	    <field name="name">Unlock User Access</field>
+	    <field name="category_id" ref="module_category_user_access"/>
+	</record>
+    </data>
+</odoo>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+	<data>
+		
+		<template id="portal_loan_request" inherit_id="portal.portal_my_home">
+			<xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+				<t t-call='portal.portal_docs_entry'>
+					<t t-set="url">/my/loanDate</t>
+					<t t-set="title">My Loan Request</t>
+					<t t-set="placeholder_count" t-value="'loan_count'"/>
+					
+				</t>
+			
+			</xpath>
+		
+		
+		
+		</template>
+		
+	
+	</data>
+
+</odoo>

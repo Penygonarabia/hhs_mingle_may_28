@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+   <data>
+
+
+<!--         <report-->
+<!--            id="action_report_payroll_transaction_report_xlsx"-->
+<!--            string="Employee Transaction"-->
+<!--            model="payroll.transaction.report"-->
+<!--            report_type="xlsx"-->
+<!--            file="Payroll Transactions Report"-->
+<!--            name="payroll_transactions_report.payroll_transaction_report"-->
+<!--        />-->
+        <record id="action_report_payroll_transaction_report_xlsx" model="ir.actions.report">
+	        <field name="name">Employee Payroll Transaction Report</field>
+	        <field name="model">payroll.transaction.report</field>
+	        <field name="report_type">xlsx</field>
+	        <field name="report_name">payroll_transactions_report.payroll_transaction_report</field>
+	        <field name="report_file">Payroll Transactions Report</field>
+	        <field name="binding_model_id" ref="model_payroll_transaction_report"/>
+	        <field name="binding_type">report</field>
+    </record>
+
+
+   </data>
+</odoo>

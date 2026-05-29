@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+<!--        <record id="hr_salary_rule_allowance_by_code" model="hr.salary.rule">-->
+<!--            <field name="code">Mob-ALW</field>-->
+<!--            <field name="amount_select">code</field>-->
+<!--            <field name="amount_python_compute">result=(contract.get_allowances_by_code(100))</field>-->
+<!--            <field name="category_id" ref="om_hr_payroll.ALW"/>-->
+<!--            <field name="name">Mobile Allowances</field>-->
+<!--            <field name="sequence" eval="51"/>-->
+<!--            <field name="note">Get mobile allowances granted to employee</field>-->
+<!--        </record>-->
+
+        <record id="hr_salary_rule_allowance" model="hr.salary.rule">
+            <field name="code">ALLOWANCES</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result=(contract.get_all_allowances())</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="name">All Allowances</field>
+            <field name="sequence" eval="51"/>
+            <field name="note">Get all allownaces granted to employee</field>
+
+        </record>
+    </data>
+</odoo>

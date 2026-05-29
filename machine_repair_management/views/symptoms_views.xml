@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="search_symptom_description" model="ir.ui.view">
+        <field name="name">symptoms.search.form</field>
+        <field name="model">symptoms</field>
+        <field name="arch" type="xml">
+            <search string="Symptoms">
+                <!-- <field name = "sym_complete_name" string ="Name"/> -->
+                <field name="sym_desc" string="Name"/>
+                <field name="sym_code" string="Code"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_symptoms_tree" model="ir.ui.view">
+        <field name="name">symptoms.tree</field>
+        <field name="model">symptoms</field>
+        <field name="arch" type="xml">
+            <tree string="Symptoms">
+                <field name="symptom_product_category_id"/>
+                <field name='sym_servicetypeid'/>
+                <field name="sym_code"/>
+                <field name="sym_desc"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View Definition -->
+    <record id="view_symptoms_form" model="ir.ui.view">
+        <field name="name">Symptoms.form</field>
+        <field name="model">symptoms</field>
+        <field name="arch" type="xml">
+            <form string="Defects">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name = "symptom_product_category_id" domain = "[('parent_id','=',False)]" required = "1"/>
+                            <field name='sym_servicetypeid'/>
+                            <field name="sym_code"/>
+                            <field name="sym_desc"/>
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                </sheet>
+                <!-- <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="message_ids"/>
+                </div> -->
+            </form>
+        </field>
+    </record>
+
+    <!-- Action Definition to Show Views -->
+    <record id="action_symptoms" model="ir.actions.act_window">
+        <field name="name">Symptoms</field>
+        <field name="res_model">symptoms</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem name="Symptoms" id="menu_item_symptoms"
+              parent="machine_repair_management.menu_machine_repair_configuration"
+              action="machine_repair_management.action_symptoms" sequence='5'/>
+
+</odoo>

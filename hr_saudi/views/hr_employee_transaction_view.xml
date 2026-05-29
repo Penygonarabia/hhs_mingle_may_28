@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+
+        <!-- HR Employee Transaction -->
+
+        <record id="view_form_hr_employee_transaction" model="ir.ui.view">
+            <field name="name">hr.employee.transaction.form</field>
+            <field name="model">hr.employee.transaction</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <form string="Employees Transfer">
+                    <header>
+
+                        <button string="Request For DM Approval"
+                                name="action_request"
+                                type="object"
+                                invisible="state != 'draft'"/>
+
+                        <button string="DM Approve"
+                                name="action_progress"
+                                invisible="state != 'request'"
+                                groups="hr_saudi.group_dm"
+                                type="object" help="First Phase Approval"
+                                />
+                        <button string="HR Manager Approve"
+                                name="action_progress2"
+                                invisible="state != 'progress'"
+                                groups="hr_saudi.group_hrm"
+                                type="object" help="Second Phase Approval"
+                               />
+                        <button string="FM Approve"
+                                help="Finance Manager Approval"
+                                name="action_approve" type="object"
+                                groups="hr_saudi.group_finance_manager"
+                                invisible="state != 'progress2'"
+                                />
+                        <button string="Admin &amp; Financial Director approval"
+                                name="action_progress3"
+                                type="object" help="Admin &amp; Financial Director approval"
+                                groups="hr_saudi.group_admin_approval"
+                                invisible="is_progress3_clicked == True and state not in ['progress3']"
+                               />
+
+                        <button string="Back to Draft" name="action_draft"
+                                invisible="state not in ['request','guarantor_approve','progress','progress2']"
+
+                                groups="hr.group_hr_manager" type="object"/>
+                        <field name="is_progress3_clicked" invisible="1"/>
+
+
+                        <field name="state" widget="statusbar" statusbar_visible="draft,approve"
+                               statusbar_colors='{"draft":"red"}'/>
+                    </header>
+                    <sheet>
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                        <group>
+                            <group>
+                                <field name="date" required="1" force_save="1" readonly="state != 'draft'"/>
+                                <field name="employee_id" required="1" force_save="1" readonly="state != 'draft'"  domain="[('state','=','draft')]"/>
+                                <field name="employee_no" readonly="1" force_save="1" />
+<!--                                <field name="join_date" readonly="1"/>-->
+                            </group>
+                        </group>
+                        <group>
+                            <group string="FROM">
+                                <field name="current_job_id" readonly="1" force_save="1"/>
+                                <field name="current_department_id" readonly="1" force_save="1"/>
+                                <field name="current_main_department_id" readonly="1" force_save="1"/>
+                                <field name="current_grade_id" readonly="1" force_save="1"/>
+                                <field name="current_branch_id" readonly="1" force_save="1"/>
+                                <field name="current_analytic_account_id" readonly="1" force_save="1"/>
+                                
+                            </group>
+                            <group string="TO">
+                                <field name="new_job_id" required="1" force_save="1" readonly="state != 'draft'"/>
+                                <field name="new_department_id" force_save="1" readonly="state != 'draft'"/>
+                                <field name="new_main_department_id"  force_save="1" readonly="state != 'draft'"/>
+                                <field name="new_grade_id" required="1" force_save="1" readonly="state != 'draft'"/>
+                                <field name="new_branch_id" required="1" force_save="1" readonly="state != 'draft'"/>
+                                <field name="new_analytic_account_id" required="1" force_save="1" readonly = "state != 'draft'"/>
+                                
+                            </group>
+                        </group>
+                        <div style="width: 100%;">
+						    <div style="margin-bottom: 10px; font-weight: bold;">CONTRACTS</div>
+						    <field name="contract_ids" nolabel="1" required="1"
+						           readonly="1" force_save="1"
+						           context="{'default_employee_id': employee_id, 'disable_employee': True}"/>
+						</div>
+
+
+                        
+                        <!-- <group string="Contracts">
+                            <field name="contract_ids" nolabel="1" required="1" style="width:100%"
+                                   readonly="1" force_save="1"
+                                   context="{'default_employee_id': employee_id,
+                                             'disable_employee':True}"/>
+                           <field name="contract_ids" nolabel="1" required="1"
+                                  attrs="{'readonly':[('employee_id','=',False)]}"
+                                  context="{'default_employee_id': employee_id,
+                                            'disable_employee':True}"/>
+                        </group> -->
+                        <notebook>
+                            <page string="Approval Notes">
+                                    <group>
+                                        <group>
+                                            <field name="d_manager"/>
+                                            <field name="d_manager_note" nolabel="1" placeholder="Direct Manager Note" readonly="state != 'request'"/>
+                                            <field name="hr_manage_id"/>
+                                            <field name="hr_manage_note" nolabel="1" placeholder="HR Manager Note" readonly="state != 'progress'"/>
+                                        </group>
+                                        <group>
+                                            <field name="account_manage_id"/>
+                                            <field name="account_manage_note" nolabel="1" placeholder='Admin Manager Note' readonly="state != 'progress2'"/>
+                                            <field name="admin_manager_id"/>
+                                            <field name="admin_manager_note" nolabel="1"
+                                                   placeholder="Accounting Manager Note" readonly="state != 'progress3'"/>
+                                        </group>
+                                    </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_tree_hr_employee_transaction" model="ir.ui.view">
+            <field name="name">hr.employee.transaction.tree</field>
+            <field name="model">hr.employee.transaction</field>
+            <field name="arch" type="xml">
+                <tree string="Employees Transfer" default_order="employee_no asc">
+                    <field name="name" string="Reference"/>
+                    <field name="date" string="Date"/>
+                    <field name="employee_no"/>
+                    <field name="employee_id"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_search_hr_employee_transaction" model="ir.ui.view">
+            <field name="name">hr.employee.transaction.search</field>
+            <field name="model">hr.employee.transaction</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="date"/>
+                    <field name="employee_id"/>
+                     <field name="employee_no"/>
+                </search>
+              	 <!-- <group string="Group By" expand="0">
+           			 <filter string="Employee Name" name="employee_id" domain="[]" context="{'group_by': 'employee_id'}"/>
+        		</group> -->
+            </field>
+        </record>
+
+         <!-- Employee Transaction -->
+        <record id="action_hr_employee_transaction" model="ir.actions.act_window">
+            <field name="name">Transfer</field>
+            <field name="res_model">hr.employee.transaction</field>
+            <field name="context">{'readonly_by_pass': True}</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Employee Transaction -->
+<!--        <record id="action_hr_employee_transaction" model="ir.actions.act_window">-->
+<!--            <field name="name">Transfer</field>-->
+<!--            <field name="res_model">hr.employee.transaction</field>-->
+<!--&lt;!&ndash;            <field name="context">{'readonly_by_pass': True}</field>&ndash;&gt;-->
+<!--            <field name="view_mode">tree,form</field>-->
+<!--            <field name="domain">[('employee_id.user_id','=',uid)]</field>-->
+<!--            <field name="context">{'transfer':True,'user': 'user_id'-->
+<!--                ,'cond': 'in','val': uid}-->
+<!--            </field>-->
+<!--            <field name="view_id" eval="view_tree_hr_employee_transaction"/>-->
+<!--        </record>-->
+
+<!--        <record id="action_hr_employee_transaction" model="ir.actions.act_window">-->
+<!--            <field name="name">Transfer</field>-->
+<!--            <field name="res_model">hr.employee.transaction</field>-->
+<!--            <field name="view_mode">tree,form</field>-->
+<!--            <field name="domain">[-->
+<!--                '|',-->
+<!--                ('employee_id.user_id','=',uid),-->
+<!--                ('employee_id.user_id','in', get_group_ids())-->
+<!--            ]</field>-->
+<!--            <field name="context">{-->
+<!--                'transfer': True,-->
+<!--                'user': 'user_id',-->
+<!--                'cond': 'in',-->
+<!--                'val': uid-->
+<!--            }</field>-->
+<!--            <field name="view_id" eval="view_tree_hr_employee_transaction"/>-->
+<!--             &lt;!&ndash; Define the get_group_ids() function here &ndash;&gt;-->
+<!--            <function name="get_group_ids" model="ir.actions.act_window">-->
+<!--                <value>[[self.env.ref('hr_saudi.group_dm').id,-->
+<!--            self.env.ref('hr_saudi.group_hrm').id]]</value>-->
+<!--            </function>-->
+<!--        </record>-->
+
+
+<!--        <record id="action_admin_transaction" model="ir.actions.act_window">-->
+<!--            <field name="name">Admin User</field>-->
+<!--            <field name="res_model">hr.employee.transaction</field>-->
+<!--            <field name="view_mode">tree,form</field>-->
+<!--            <field name="domain">[('state','!=',False)]</field>-->
+<!--            <field name="context">{'transfer_admin_view':True, 'user': 'id'-->
+<!--                ,'cond': 'not in','val': False,'search_default_progress2':1}-->
+<!--            </field>-->
+<!--            <field name="view_id" eval="view_tree_hr_employee_transaction"/>-->
+<!--        </record>-->
+
+<!--        <record id="open_hr_employee_loan_ps" model="ir.actions.act_window">-->
+<!--            <field name="name">My Loan Request</field>-->
+<!--            <field name="res_model">hr.employee.loan.ps</field>-->
+
+<!--            <field name="view_mode">tree,form</field>-->
+<!--            <field name="domain">[('employee_id.user_id','=',uid)]</field>-->
+<!--            <field name="context">{'my_loan_request':True,'user': 'user_id'-->
+<!--                ,'cond': 'in','val': uid}-->
+<!--            </field>-->
+<!--            <field name="view_id" eval="view_hr_employee_loan_tree_ps"/>-->
+<!--            <field name="help" type="html">-->
+<!--                <p class="oe_view_nocontent_create">-->
+<!--                    Click to add a new Loan.-->
+<!--                </p>-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <menuitem id="menu_hr_employee_transaction_root"
+                  parent="hr.menu_hr_root"
+                  sequence="300"
+                  name="Employees Transfer"/>
+
+        <menuitem id="menu_hr_employee_transaction"
+                  action="action_hr_employee_transaction"
+                  parent="om_hr_payroll.prime_data_base_employee"
+                  sequence="50"
+                  name="Transfer"/>
+
+<!--        <menuitem id="menu_hr_admin_transaction"-->
+<!--                  action="action_admin_transaction"-->
+<!--                  parent="om_hr_payroll.prime_data_base_employee"-->
+<!--                  sequence="60"-->
+<!--                  name="Transfer Admin view"-->
+<!--                  groups="hr_saudi.group_hrm"-->
+<!--        />-->
+    </data>
+</odoo>

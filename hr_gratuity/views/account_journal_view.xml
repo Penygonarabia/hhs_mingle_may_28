@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="custom_account_journals_view" model="ir.ui.view">
+            <field name="name">account.journal.form</field>
+            <field name="model">account.journal</field>
+            <field name="inherit_id" ref="account.view_account_journal_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='restrict_mode_hash_table']" position="before">
+                    <field groups="account.group_account_manager" name="custom_is_gratuity_journal" optional="hide"/>
+                    <field column_invisible="True" groups="!account.group_account_manager" name="custom_is_gratuity_journal"/>
+                </xpath>
+                <xpath expr="//notebook/page[@name='bank_account']/group/group[2]" position="before">
+                    <group>
+                        <field invisible="custom_is_gratuity_journal != True" name="default_debit_account_id"/>
+                        <field invisible="custom_is_gratuity_journal != True" name="default_credit_account_id"/>
+                    </group>
+                </xpath></field>
+        </record>
+    </data>
+</odoo>

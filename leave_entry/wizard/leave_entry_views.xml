@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="leave_entry_tree_views" model="ir.ui.view">
+        <field name="name">leave.analysis.employee.tree.view</field>
+        <field name="model">leave.analysis.employee</field>
+        <field name="arch" type="xml">
+            <form string="Attendance Analysis">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="dept_ids" widget="many2many_tags"/>
+                            <field name="employee_ids" widget="many2many_tags"/>
+                        </group>
+                        <group>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                        </group>
+                        <!-- <field name="leave_type_id" invisible="0"/> -->
+                        <field invisible="leave_reference_bool == False" name="leave_reference_id"/>
+                        <field invisible="1" name="leave_boolean"/>
+                        <field invisible="1" name="leave_reference_bool"/>
+                        <button class="oe_highlight" invisible="1" name="show_leave" string="Show leave" type="object"/>
+                    </group>
+                    <footer>
+                        <button class="oe_highlight" invisible="leave_boolean == True" name="generate_leave_entry" string="Generate" type="object"/>
+                        <button class="btn-secondary" invisible="leave_boolean == True" special="cancel" string="Cancel"/>
+                    </footer>
+                </sheet>
+            </form></field>
+    </record>
+    <record id="leave_analaysis_view_form" model="ir.ui.view">
+        <field name="name">leave.analysis.employee.form.view</field>
+        <field name="model">leave.analysis.employee</field>
+        <field name="arch" type="xml">
+            <tree create="0" delete="0" edit="0">
+                <field name="s_no"/>
+                <field name="employee_code"/>
+                <field name="employee_name"/>
+                <field name="emp_dept_name"/>
+                <field name="emp_designation"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="date_no_1" widget="colored_field"/>
+                <field name="date_no_2" widget="colored_field"/>
+                <field name="date_no_3" widget="colored_field"/>
+                <field name="date_no_4" widget="colored_field"/>
+                <field name="date_no_5" widget="colored_field"/>
+                <field name="date_no_6" widget="colored_field"/>
+                <field name="date_no_7" widget="colored_field"/>
+                <field name="date_no_8" widget="colored_field"/>
+                <field name="date_no_9" widget="colored_field"/>
+                <field name="date_no_10" widget="colored_field"/>
+                <field name="date_no_11" widget="colored_field"/>
+                <field name="date_no_12" widget="colored_field"/>
+                <field name="date_no_13" widget="colored_field"/>
+                <field name="date_no_14" widget="colored_field"/>
+                <field name="date_no_15" widget="colored_field"/>
+                <field name="date_no_16" widget="colored_field"/>
+                <field name="date_no_17" widget="colored_field"/>
+                <field name="date_no_18" widget="colored_field"/>
+                <field name="date_no_19" widget="colored_field"/>
+                <field name="date_no_20" widget="colored_field"/>
+                <field name="date_no_21" widget="colored_field"/>
+                <field name="date_no_22" widget="colored_field"/>
+                <field name="date_no_23" widget="colored_field"/>
+                <field name="date_no_24" widget="colored_field"/>
+                <field name="date_no_25" widget="colored_field"/>
+                <field name="date_no_26" widget="colored_field"/>
+                <field name="date_no_27" widget="colored_field"/>
+                <field invisible="twenty_28_bool == False" name="date_no_28" widget="colored_field"/>
+                <field invisible="twenty_29_days_bool == False" name="date_no_29" widget="colored_field"/>
+                <field invisible="thirty_30_bool == False" name="date_no_30" widget="colored_field"/>
+                <field invisible="thirty_one_31_bool == False" name="date_no_31" widget="colored_field"/>
+                <field column_invisible="1" name="max_days_in_month"/>
+                <button class="oe_highlight" icon="fa-calendar" name="attendance_view" title="View Attendance" type="object"/>
+                <field column_invisible="1" name="start_date"/>
+                <field column_invisible="1" name="end_date"/>
+                <field column_invisible="1" name="leave_reference_bool"/>
+                <field column_invisible="1" name="twenty_28_bool"/>
+                <field column_invisible="1" name="twenty_29_days_bool"/>
+                <field column_invisible="1" name="thirty_30_bool"/>
+                <field column_invisible="1" name="thirty_one_31_bool"/>
+                <!--  <field name="leave_type_id" widget="many2one" context="{'form_view_ref':'hr_holidays.hr_leave_type_view_form'}"/> -->
+                <!-- Clickable Leave Type -->
+            </tree></field>
+    </record>
+    <record id="leave_analaysis_view_form_analysis" model="ir.ui.view">
+        <field name="name">leave.analysis.employee.form.view</field>
+        <field name="model">leave.analysis.employee</field>
+        <field name="arch" type="xml">
+            <form create="0" delete="0" edit="0">
+                <field name="employee_code" string="Employee Number"/>
+                <br/>
+                <field name="employee_name" string="Employee Name"/>
+                <br/>
+                <field name="emp_dept_name" string="Department"/>
+                <br/>
+                <field name="emp_designation" string="Designation"/>
+                <br/>
+                <field name="leave_reference_id" string="Leave Reference" style="background-color:#35979c;font-size:15px;font_color:#F6F6F6;"/>
+                <!--  <field name="leave_type_id" widget="many2one" context="{'form_view_ref':'hr_holidays.hr_leave_type_view_form'}"/> -->
+                <!-- Clickable Leave Type -->
+            </form></field>
+    </record>
+    <record id="view_search_leave_analaysis" model="ir.ui.view">
+        <field name="name">leave.analysis.employee.search</field>
+        <field name="model">leave.analysis.employee</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="employee_code"/>
+                <field name="employee_name"/>
+                <field name="emp_dept_name"/>
+                <field name="emp_designation"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter context="{'group_by': 'employee_name'}" domain="[]" name="employee_name" string="Employee Name"/>
+                    <filter context="{'group_by': 'emp_dept_name'}" domain="[]" name="emp_dept_name" string="Department Name"/>
+                    <filter context="{'group_by': 'emp_designation'}" domain="[]" name="emp_designation" string="Designation"/>
+                </group>
+            </search></field>
+    </record>
+    <record id="action_leave_analysis_entry" model="ir.actions.act_window">
+        <field name="name">Employee Attendance Analysis</field>
+        <field name="res_model">leave.analysis.employee</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="leave_entry_tree_views"/>
+    </record>
+    <menuitem action="action_leave_analysis_entry" id="menu_leave_entry_register" name="Employee Attendance Analysis" parent="hr_attendances_overtime.reporting_menu_action" sequence="501"/>
+    <record id="leave_action_entry_window" model="ir.actions.act_window">
+        <field name="name">Employee Attendance Analysis</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">leave.analysis.employee</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!-- <record id="leave_entry_tree_views" model="ir.ui.view">
+		<field name="name">leave.analysis.employee.tree.view</field>
+		<field name="model">leave.analysis.employee</field>
+		<field name="arch" type="xml">
+			<form string="Employee Attendance Analysis">
+				<sheet>
+					<group>
+						<group>
+							<field name="dept_ids" widget="many2many_tags"  />
+							<field name="employee_ids" widget="many2many_tags" />
+						</group>
+						<group>
+							<field name="start_date" />
+							<field name="end_date" />
+						</group>
+							<field name="leave_type_id" invisible="0"/>
+						<field name="leave_reference_id"  attrs="{'invisible':[('leave_reference_bool','=',False)]}"/>
+						<field name="leave_boolean" invisible="1"/>
+						<field name="leave_reference_bool" invisible="1"/>
+						<button name="show_leave" string="Show leave" type="object" class="oe_highlight" invisible="1"/>
+					</group>
+					<footer>
+						<button string="Generate" type="object" attrs="{'invisible':[('leave_boolean','=',True)]}" name="generate_leave_entry" class="oe_highlight"/>
+						<button string="Cancel" class="btn-secondary" attrs="{'invisible':[('leave_boolean','=',True)]}" special="cancel"/>
+					</footer>
+				
+				</sheet>
+				
+			</form>
+			
+		</field>
+		
+	</record>
+	
+		<record id="leave_analaysis_view_form" model="ir.ui.view">
+			<field name="name">leave.analysis.employee.form.view</field>
+			<field name="model">leave.analysis.employee</field>
+			<field name="arch" type="xml">
+				 <tree>
+		            <field name="s_no" />
+		            <field name="employee_code" />
+		            <field name="employee_name" />
+		            <field name="emp_dept_name" />
+		            <field name="emp_designation" />
+		            
+		
+		            <field name="date_no_1" widget="colored_field"/>
+		            <field name="date_no_2" widget="colored_field"/>
+		            <field name="date_no_3" widget="colored_field"/>
+		            <field name="date_no_4" widget="colored_field"/>
+		            <field name="date_no_5" widget="colored_field"/>
+		            <field name="date_no_6" widget="colored_field"/>
+		            <field name="date_no_7" widget="colored_field"/>
+		            <field name="date_no_8" widget="colored_field"/>
+		            <field name="date_no_9" widget="colored_field"/>
+		            <field name="date_no_10" widget="colored_field"/>
+		            <field name="date_no_11" widget="colored_field"/>
+		            <field name="date_no_12" widget="colored_field"/>
+		            <field name="date_no_13" widget="colored_field"/>
+		            <field name="date_no_14" widget="colored_field"/>
+		            <field name="date_no_15" widget="colored_field"/>
+		            <field name="date_no_16" widget="colored_field"/>
+		            <field name="date_no_17" widget="colored_field"/>
+		            <field name="date_no_18" widget="colored_field"/>
+		            <field name="date_no_19" widget="colored_field"/>
+		            <field name="date_no_20" widget="colored_field"/>
+		            <field name="date_no_21" widget="colored_field"/>
+		            <field name="date_no_22" widget="colored_field"/>
+		            <field name="date_no_23" widget="colored_field"/>
+		            <field name="date_no_24" widget="colored_field"/>
+		            <field name="date_no_25" widget="colored_field"/>
+		            <field name="date_no_26" widget="colored_field"/>
+		            <field name="date_no_27" widget="colored_field"/>
+		           <field name="date_no_28" widget="colored_field" attrs="{'invisible':[('twenty_28_bool', '=', False)]}" />
+					<field name="date_no_29" widget="colored_field" attrs="{'invisible':[('twenty_29_days_bool', '=', False)]}" />
+					<field name="date_no_30" widget="colored_field" attrs="{'invisible':[('thirty_30_bool', '=', False)]}" />
+					<field name="date_no_31" widget="colored_field" attrs="{'invisible':[('thirty_one_31_bool', '=', False)]}" />
+					<field name="max_days_in_month" invisible="1"/>
+		        	<button name = "attendance_view" type="object" class="oe_highlight"  icon="fa-calendar" title="View Attendance"/>
+		        	<field name="start_date" invisible="1"/>
+		        	<field name="end_date" invisible="1" />
+		        	<field name="leave_reference_bool" invisible="1"/>
+		        	<field name="twenty_28_bool" invisible="1" />
+		        	<field name="twenty_29_days_bool" invisible="1"/>
+		        	<field name="thirty_30_bool" invisible="1"/>
+		        	<field name= "thirty_one_31_bool" invisible="1" />
+		        	
+		        	    <field name="leave_type_id" widget="many2one" context="{'form_view_ref':'hr_holidays.hr_leave_type_view_form'}"/> Clickable Leave Type
+		        	
+		        </tree>
+			</field>
+		
+		</record>
+		
+		<record id="leave_analaysis_view_form_analysis" model="ir.ui.view">
+			<field name="name">leave.analysis.employee.form.view</field>
+			<field name="model">leave.analysis.employee</field>
+			<field name="arch" type="xml">
+				 <form>
+		           <sheet>
+		            <field name="employee_code" string="Employee Number"/>
+		            <br/>
+		            <field name="employee_name" string="Employee Name"/>
+		            <br/>
+		            <field name="emp_dept_name" string="Department"/>
+		            <br/>
+		            <field name="emp_designation" string="Designation"/>
+		            <br/>
+		            <field name="leave_reference_id" string="Leave Reference"/>
+		            <br/>
+		            <field name="leave_reference_id_day_1" string="Leave Reference Day 1"/>
+		            <br/>
+                            <field name="leave_reference_id_day_2" string="Leave Reference Day 2"/>
+                            <field name="leave_reference_id_day_3" string="Leave Reference Day 3"/>
+                            <field name="leave_reference_id_day_4" string="Leave Reference Day 4"/>
+                            <field name="leave_reference_id_day_5" string="Leave Reference Day 5"/>
+                            <field name="leave_reference_id_day_6" string="Leave Reference Day 6"/>
+                            <field name="leave_reference_id_day_7" string="Leave Reference Day 7"/>
+                            <field name="leave_reference_id_day_8" string="Leave Reference Day 8"/>
+                            <field name="leave_reference_id_day_9" string="Leave Reference Day 9"/>
+                            <field name="leave_reference_id_day_10" string="Leave Reference Day 10"/>
+                            <field name="leave_reference_id_day_11" string="Leave Reference Day 11"/>
+                            <field name="leave_reference_id_day_12" string="Leave Reference Day 12"/>
+                            <field name="leave_reference_id_day_13" string="Leave Reference Day 13"/>
+                            <field name="leave_reference_id_day_14" string="Leave Reference Day 14"/>
+                            <field name="leave_reference_id_day_15" string="Leave Reference Day 15"/>
+                            <field name="leave_reference_id_day_16" string="Leave Reference Day 16"/>
+                            <field name="leave_reference_id_day_17" string="Leave Reference Day 17"/>
+                            <field name="leave_reference_id_day_18" string="Leave Reference Day 18"/>
+                            <field name="leave_reference_id_day_19" string="Leave Reference Day 19"/>
+                            <field name="leave_reference_id_day_20" string="Leave Reference Day 20"/>
+                            <field name="leave_reference_id_day_21" string="Leave Reference Day 21"/>
+                            <field name="leave_reference_id_day_22" string="Leave Reference Day 22"/>
+                            <field name="leave_reference_id_day_23" string="Leave Reference Day 23"/>
+                            <field name="leave_reference_id_day_24" string="Leave Reference Day 24"/>
+                            <field name="leave_reference_id_day_25" string="Leave Reference Day 25"/>
+                            <field name="leave_reference_id_day_26" string="Leave Reference Day 26"/>
+                            <field name="leave_reference_id_day_27" string="Leave Reference Day 27"/>
+                            <field name="leave_reference_id_day_28" string="Leave Reference Day 28" />
+                            <field name="leave_reference_id_day_29" string="Leave Reference Day 29" />
+                            <field name="leave_reference_id_day_30" string="Leave Reference Day 30" />
+                            <field name="leave_reference_id_day_31" string="Leave Reference Day 31" />
+		        	    <field name="leave_type_id" widget="many2one" context="{'form_view_ref':'hr_holidays.hr_leave_type_view_form'}"/> Clickable Leave Type
+		        		
+		        	</sheet>
+		        </form>
+			</field>
+		
+		</record>
+		
+		<record id="view_search_leave_analaysis" model="ir.ui.view">
+			<field name="name">leave.analysis.employee.search</field>
+			<field name="model">leave.analysis.employee</field>
+			<field name="arch" type="xml">
+				<search>
+					<field name="employee_code" />
+		            <field name="employee_name" />
+		            <field name="emp_dept_name" />
+		            <field name="emp_designation" />
+				 <separator/>	
+					<group string="Group By" expand="0">
+	           			 <filter string="Employee Name" name="employee_name" domain="[]" context="{'group_by': 'employee_name'}"/>
+	        		     <filter string="Department Name" name="emp_dept_name" domain="[]" context="{'group_by': 'emp_dept_name'}"/>
+	        		    <filter string="Designation" name="emp_designation" domain="[]" context="{'group_by': 'emp_designation'}"/>
+	        				
+	        		</group>
+					
+				</search>
+				
+			
+			</field>
+			
+		
+		</record> -->
+</odoo>

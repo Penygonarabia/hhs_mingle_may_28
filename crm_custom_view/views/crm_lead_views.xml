@@ -1,0 +1,181 @@
+<odoo>
+    <record id="view_crm_lead_form_custom" model="ir.ui.view">
+        <field name="name">crm.lead.form.custom</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Add hidden field -->
+            <xpath expr="//field[@name='company_id']" position="after">
+                <field name="hide_additional_fields" invisible="1" force_save="1"/>
+            </xpath>
+
+            <!-- Hide Internal Notes -->
+            <!-- <xpath expr="//page[@name='internal_notes']" position="attributes">
+                <attribute name="groups">!crm_custom_view.group_hide_additional_fields</attribute>
+            </xpath> -->
+
+            <xpath expr="//page[@name='internal_notes']" position="attributes">
+                <attribute name="invisible">hide_additional_fields</attribute>
+            </xpath>
+
+            <!-- Hide Marketing -->
+            <!--  <xpath expr="//page[@name='lead']/group/group[3]" position="attributes">
+                 <attribute name="groups">!crm_custom_view.group_hide_additional_fields</attribute>
+             </xpath> -->
+
+            <!-- Hide Marketing -->
+            <xpath expr="//page[@name='lead']/group/group[3]" position="attributes">
+                <attribute name="invisible">hide_additional_fields</attribute>
+            </xpath>
+
+            <!-- Hide Tracking -->
+            <!--  <xpath expr="//page[@name='lead']/group/group[4]" position="attributes">
+                 <attribute name="groups">!crm_custom_view.group_hide_additional_fields</attribute>
+             </xpath> -->
+            <xpath expr="//page[@name='lead']/group/group[4]" position="attributes">
+                <attribute name="invisible">hide_additional_fields</attribute>
+            </xpath>
+
+            <!-- Rename Project Name -->
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="string">Project Name</attribute>
+                <attribute name="required">1</attribute>
+            </xpath>
+
+            <!-- Make fields visually required -->
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="required">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='email_from']" position="attributes">
+                <attribute name="required">1</attribute>
+            </xpath>
+
+            <!--            <xpath expr="//field[@name='phone']" position="attributes">-->
+            <!--                <attribute name="invisible">1</attribute>-->
+            <!--            </xpath>-->
+
+
+            <!--            <xpath expr="//field[@name='partner_name']" position="attributes">-->
+            <!--                <attribute name="required">1</attribute>-->
+            <!--            </xpath>-->
+
+            <xpath expr="//field[@name='street']" position="attributes">
+                <attribute name="required">1</attribute>
+            </xpath>
+
+
+            <xpath expr="//page[@name='lead']//group[contains(@class, 'mt48')]" position="attributes">
+                <attribute name="invisible">hide_additional_fields</attribute>
+
+            </xpath>
+
+
+            <!-- Remove from Contact Info page -->
+            <!--            <xpath expr="//page[@name='lead']//field[@name='partner_name']" position="replace"/>-->
+
+            <!-- Remove Address Label -->
+            <xpath expr="//page[@name='lead']//label[@for='street_page_lead']" position="replace"/>
+
+            <!-- Remove Address Block -->
+            <xpath expr="//page[@name='lead']//div[contains(@class, 'o_address_format')]" position="replace"/>
+
+            <!-- Remove website -->
+            <xpath expr="//page[@name='lead']//field[@name='website']" position="replace"/>
+
+            <xpath expr="//group[@name='opportunity_partner']//field[@name='lost_reason_id']" position="before">
+                <label for="street" string="Address"/>
+                <div class="o_address_format">
+                    <field name="street" placeholder="Street..." class="o_address_street"/>
+                    <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+                    <field name="customer_city_id" placeholder="City" class="o_address_city"/>
+                    <field name = "district" placeholder="District" class="o_address_city" domain ="[('city_id','=',customer_city_id)]"/>
+                    <field name="state_id" class="o_address_state" placeholder="State"
+                           options="{&quot;no_open&quot;: True}"/>
+                    <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                    <field name="country_id" placeholder="Country" class="o_address_country"
+                           options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+                </div>
+                
+                <field name = "work_center_id" readonly = "1" force_save = "1" invisible = "1"/>
+                <field name = "work_center_group_id" readonly = "1" force_save = "1" invisible = "1"/>
+                
+                <field name="website" widget="url"/>
+            </xpath>
+
+            <xpath expr="//page[@name='lead']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <!--            <xpath expr="//group[@name='lead_partner']//field[@name='is_partner_visible']" position="before">-->
+            <!--                <field name="partner_name"></field>-->
+            <!--            </xpath>-->
+            <xpath expr="//group[@name='opportunity_partner']/field[@name='partner_id']" position="before">
+                
+                <field name="phone"/>
+                <field name="partner_name"/>
+                 
+                <field name  = "customer_code" required = "0"/>
+            </xpath>
+
+            <xpath expr="//group[@name='opportunity_partner']/field[@name='partner_id']" position="after">
+                 <field name="type_of_property"/>
+
+                <field name="property_type_maintenance_details_id"
+                       domain="[('type_of_property','=',type_of_property)]"
+                       options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+
+                <field name="company_preventive_maintenance_bool" invisible="1"/>
+
+                <field name="company_preventive_maintenance"
+                       widget="radio"
+                       class="pm_radio_inline"
+                       required="1"/>
+               
+            </xpath>
+
+
+            <!-- Remove phone label -->
+            <xpath expr="//group[@name='opportunity_partner']/label[@for='phone']" position="replace"/>
+
+            <!-- Remove phone block -->
+            <xpath expr="//group[@name='opportunity_partner']/div[field[@name='phone']]" position="replace"/>
+
+            <xpath expr="//group[@name='opportunity_partner']//div[field[@name='email_from']]" position="after">
+                <field name="job_position"/>
+                
+                
+            </xpath>
+            
+          
+			
+			<xpath expr = "//field[@name = 'tag_ids']" position = "after">
+				<field name = "warehouse_id" required = "0"/>
+			
+			</xpath>
+			
+		
+			
+			<!-- <xpath expr="//field[@name='partner_id']" position="attributes">
+			    <attribute name="context">
+			        {'default_country_id': ref('base.sa')}
+			    </attribute>
+			</xpath>
+ -->
+
+            <!--            <xpath expr="//field[@name='contact_name']" position="attributes">-->
+            <!--                <attribute name="required">0</attribute>-->
+            <!--            </xpath>-->
+
+            <!--            <xpath expr="//field[@name='function']" position="attributes">-->
+            <!--                <attribute name="required">0</attribute>-->
+            <!--            </xpath>-->
+
+            <!--            <xpath expr="//field[@name='mobile']" position="attributes">-->
+            <!--                <attribute name="required">0</attribute>-->
+            <!--            </xpath>-->
+
+
+        </field>
+    </record>
+</odoo>

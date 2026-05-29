@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <!--
+            Department
+        -->
+        <record id="view_form_hr_department_inherit" model="ir.ui.view">
+            <field name="name">hr.department.form.inherit</field>
+            <field name="model">hr.department</field>
+            <field name="inherit_id" ref="hr.view_department_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="before">
+                    <field name="dept_code" required="1"/>
+                </xpath>
+                <field name="parent_id" position="before">
+                    <field name="description"/>
+                </field>
+                <field name="name" position="after">
+                    <field name="is_main_department"/>
+                </field>
+                <sheet position="inside">
+<!--                    <group>-->
+                        <separator string="Departments" colspan="4"/>
+                        <field name="child_ids" nolabel="1" >
+                            <tree editable="bottom" >
+                                <field name="name"/>
+<!--                                <field name="manager_id"/>-->
+                            </tree>
+                        </field>
+<!--                    </group>-->
+                </sheet>
+<!--                Need refactoring-->
+<!--                <field name="id" invisible="1"/>-->
+<!--                <field name="parent_id" position="attributes">-->
+<!--                    <attribute name="domain">[('id','!=',id)]</attribute>-->
+<!--                </field>-->
+            </field>
+        </record>
+
+<!--        Need refactoring-->
+<!--        <record id="view_tree_hr_department_inherit" model="ir.ui.view">-->
+<!--            <field name="name">hr.department.tree.inherit</field>-->
+<!--            <field name="model">hr.department</field>-->
+<!--            <field name="inherit_id" ref="hr.view_department_tree"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <tree position="attributes">-->
+<!--                    <attribute name="class">oe_tree_view</attribute>-->
+<!--                </tree>-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <!--
+            Department Hierarchy
+        -->
+        <record id="view_tree_hr_department_tree_view" model="ir.ui.view">
+            <field name="name">hr.department.tree.view</field>
+            <field name="model">hr.department</field>
+<!--            <field name="field_parent">child_ids</field>-->
+            <field name="arch" type="xml">
+                <tree string="Department Hierarchy">
+                    <field name="dept_code"/>
+                    <field name="name"/>
+                    <field name="parent_id" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_hr_department_tree_view" model="ir.actions.act_window">
+            <field name="name">Department Hierarchy</field>
+            <field name="res_model">hr.department</field>
+            <field name="domain">[('parent_id','=',False)]</field>
+            <field name="view_id" ref="view_tree_hr_department_tree_view"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">Click here to add new departments</p>
+            </field>
+        </record>
+
+        <menuitem id="menu_hr_department_tree_view"
+                  action="action_hr_department_tree_view"
+                  parent="hr.menu_human_resources_configuration"
+                  sequence="4"
+                  />
+        <record id="make_invisible" model="res.groups">
+
+            <field name="name">Invisible</field>
+
+        </record>
+        <menuitem
+                id="hr.menu_hr_department_kanban"
+                action="hr.hr_department_kanban_action"
+                parent="hr.menu_human_resources_configuration"
+                groups="hr_saudi.group_hrm,hr_saudi.make_invisible"
+                name="Departments" sequence="3"/>
+
+<!--        <record id="hr.hr_department_tree_action" model="ir.actions.act_window">-->
+<!--            <field name="name">Department Hierarchy</field>-->
+<!--            <field name="res_model">hr.department</field>-->
+<!--        </record>-->
+
+<!--        <menuitem-->
+<!--                action="action_hr_department_tree_view"-->
+<!--                id="menu_hr_department_hierarchy_tree_view"-->
+<!--                parent="hr.menu_human_resources_configuration"-->
+<!--                sequence="4"-->
+<!--                groups="hr_saudi.group_hrm"-->
+<!--                name="Department Hierarchy"-->
+<!--                active="False"/>-->
+
+    </data>
+</odoo>

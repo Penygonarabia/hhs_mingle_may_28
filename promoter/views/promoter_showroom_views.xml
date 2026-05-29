@@ -1,0 +1,182 @@
+<odoo>
+
+    <!-- Promoter Showroom Form View -->
+    <record id="view_form_promoter_showroom" model="ir.ui.view">
+        <field name="name">promoter.showroom.form</field>
+        <field name="model">promoter.showroom</field>
+        <field name="arch" type="xml">
+            <form string="Promoter Showroom">
+    <sheet>
+
+        <!-- General Info -->
+        <group string="General Info">
+            <field name="code"/>
+            <field name="name"/>
+            <field name="dealer_id"
+                domain="[('is_dealer', '=', True)]"
+                options="{'no_create_edit': True, 'no_open': True, 'no_create': True, 'no_edit': True}"/>
+            <field name="address"/>
+            <field name="city"
+                options="{'no_create_edit': True, 'no_open': True, 'no_create': True, 'no_edit': True}"/>
+            <field name="district"
+                domain="[('city_id','=',city)]"
+                readonly="0" force_save="1"
+                options="{'no_create_edit': True, 'no_open': True, 'no_create': True, 'no_edit': True}"/>
+            <field name="region_id"
+                readonly="1" force_save="1"
+                options="{'no_create_edit': True, 'no_open': True, 'no_create': True, 'no_edit': True}"/>
+            <field name="contact_no"/>
+            <field name="email"/>
+        </group>
+
+        <!-- Location -->
+        <group string="Google Map" col="2">
+            <group col="2">
+                <field name="google_maps_url" nolabel="0" class="o_inline"/>
+                <button name="update_google_map" string="Update"
+                        type="object" class="oe_highlight o_inline" nolabel="1"/>
+            </group>            
+        </group>
+
+        <group>
+            <group col="2">
+                <field name="latitude" readonly="0"/>
+                <field name="longitude" readonly="0"/>
+            </group>
+        </group>
+
+        <!-- Promoter Assignment -->
+        <group string="Promoter Information" col="2">
+            <!-- Left side -->
+            <group>
+                <field name="promoter_required"/>
+                <field name="promoter_id"/>
+                <field name="from_date"/>
+                <field name="to_date"/>
+                <field name="shift1_from"/>
+                <field name="shift1_to"/>
+                <field name="shift2_from"/>
+                <field name="shift2_to"/>
+            </group>
+
+            <!-- Right side -->
+            <group>
+                <field name="promoter_id" invisible="1"/> <!-- keep relation available -->
+                <!-- Related fields from promoter_id -->
+                <field name="work_email" readonly="1" invisible="not promoter_id"/>
+                <field name="mobile" readonly="1" invisible="not promoter_id"/>
+                <field name="gender" readonly="1" invisible="not promoter_id"/>
+            </group>
+        </group>
+
+        <!-- <group string="Promoter Information">
+            <field name="promoter_required"/>
+            <field name="promoter_id"/>
+            <field name="from_date"/>
+            <field name="to_date"/>
+            <field name="shift1_from"/>
+            <field name="shift1_to"/>
+            <field name="shift2_from"/>
+            <field name="shift2_to"/>
+        </group> -->
+
+    </sheet>
+
+    <div class="oe_chatter">
+        <field name="message_follower_ids" widget="mail_followers"/>
+        <field name="activity_ids" widget="mail_activity"/>
+        <field name="message_ids" widget="mail_thread"/>
+    </div>
+</form>
+
+        </field>
+    </record>
+
+    <record id="view_promoter_showroom_tree" model="ir.ui.view">
+        <field name="name">promoter.showroom.tree</field>
+        <field name="model">promoter.showroom</field>
+        <field name="arch" type="xml">
+            <tree string="Promoter Showrooms">                
+                  <!-- <field name="address" width="120"/> --> 
+                        <field name="dealer_id" />  
+                        <field name="code"/>
+                        <field name="name" width="120"/>                     
+                        <field name="region_id"/>                       
+                        <field name="city"/>
+                        <field name="district"/>                       
+                        <field name="contact_no"/>
+                        <field name="email"/>
+                        <field name="latitude"/>
+                        <field name="longitude" width="120"/>
+                        <field name="promoter_required" width="120"/>
+                        <field name="promoter_id" width="120"/>
+                        <field name="from_date"/>
+                        <field name="to_date"/>
+                        <field name="shift1_from"/>
+                        <field name="shift1_to"/>
+                        <field name="shift2_from"/>
+                        <field name="shift2_to"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_promoter_showroom_search" model="ir.ui.view">
+        <field name="name">promoter.showroom.search</field>
+        <field name="model">promoter.showroom</field>
+        <field name="arch" type="xml">
+            <search string="Showrooms">
+                <!-- Search by dealer -->
+                <field name="dealer_id" string="Dealer" />
+                <!-- Search by showroom code -->
+                <field name="code" string="Showroom Code"/>
+                <!-- Search by showroom name -->
+                <field name="name" string="Showroom Name"/>
+                <!-- Search by region -->
+                <field name="region_id" string="Region"/>
+                <!-- Search by city -->
+                <field name="city" string="City"/>
+                <!-- Search by district -->
+                <field name="district" string="District"/>                
+                <!-- Optional: add filters if needed -->
+                <!-- <filter name="active_showrooms" string="Active Showrooms" domain="[('active','=',True)]"/> -->
+            </search>
+        </field>
+    </record>
+
+
+    <!-- Action: Promoter Showroom -->
+    <record id="action_promoter_showroom" model="ir.actions.act_window">
+        <field name="name">Showrooms</field>
+        <field name="res_model">promoter.showroom</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_promoter_showroom_tree"/>
+        <field name="search_view_id" ref="view_promoter_showroom_search"/>
+    </record>
+
+    <!-- Action: Dealer List -->
+    <record id="action_promoter_dealer" model="ir.actions.act_window">
+        <field name="name">Dealers</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_dealer', '=', True)]</field>
+    </record>
+
+    <!-- Root Menu: Promoter -->
+    <menuitem id="menu_promoter_root" name="Promoter" sequence="10" groups="promoter.group_promoter_module_user"/>
+
+    <!-- Submenu: Configuration under Promoter -->
+    <menuitem id="menu_promoter_configuration" name="Configuration"
+              parent="menu_promoter_root" sequence="150"
+              groups="promoter.group_promoter_backoffice_user"/>
+
+    <!-- Submenu: Showrooms -->
+    <menuitem id="menu_promoter_showroom" name="Showrooms"
+              parent="menu_promoter_configuration"
+              action="action_promoter_showroom" sequence="20"/>
+
+    <!-- Submenu: Dealers -->
+    <menuitem id="menu_promoter_dealer" name="Dealers"
+              parent="menu_promoter_configuration"
+              action="action_promoter_dealer" sequence="10"/>
+
+</odoo>

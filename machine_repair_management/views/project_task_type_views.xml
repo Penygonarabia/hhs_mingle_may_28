@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<odoo>
+    <record id="view_task_type_form_inherit_user_flags" model="ir.ui.view">
+        <field name="name">project.task.type.form.inherit.user.flags</field>
+        <field name="model">project.task.type</field>
+        <field name="inherit_id" ref="project.task_type_edit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='project_ids']" position="after">
+                <field name="code"/>
+                <field name="back_office_user"/>
+                <field name="mobile_user"/>
+                <field name="kanban_color"/>
+                <field name="whatsapp_bool"/>
+                <field name="whatsapp_en_template" invisible="whatsapp_bool == False"/>
+                <field name="whatsapp_ar_template" invisible="whatsapp_bool == False"/>
+            	<field name = "status_copied_bool" />
+            </xpath>
+
+            <xpath expr="//field[@name = 'sequence']" position="after">
+                <field name="back_office_user_code"/>
+                <field name="mobile_user_code"/>
+                <field name="parts_user_code"/>
+                <field name="internal_technician_status_hide"/>
+                <field name="other_status_hide"/>
+                <field name="dynamic_job_state_code"/>
+                <field name="scheduling_status_bool"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_task_type_tree_inherit_user_flags" model="ir.ui.view">
+        <field name="name">project.task.type.tree.inherit.user.flags</field>
+        <field name="model">project.task.type</field>
+        <field name="inherit_id" ref="project.task_type_tree_inherited"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='project_ids']" position="after">
+                <field name="code"/>
+                <field name="back_office_user"/>
+                <field name="mobile_user"/>
+                <field name="whatsapp_bool"/>
+                <field name="kanban_color"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+

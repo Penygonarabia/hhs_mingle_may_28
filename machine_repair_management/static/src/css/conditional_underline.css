@@ -1,0 +1,24 @@
+/* .o_field_widget.underline-if-empty input[data-value=""]:not(:focus),
+.o_field_widget.underline-if-empty .o_input:not(:has(> input[value])) {
+    border-bottom: 1px solid #888 !important;
+} */
+.o_field_widget.underline-empty .o_input:placeholder-shown,
+.o_field_widget.underline-empty input:placeholder-shown {
+    border: none !important;
+    border-bottom: 1px solid #888 !important;
+    background-color: transparent !important;
+    border-radius: 0 !important;
+}
+
+Remove underline when field has content
+.o_field_widget.underline-empty .o_input:not(:placeholder-shown),
+.o_field_widget.underline-empty input:not(:placeholder-shown) {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+Optional: Style for readonly fields
+.o_field_widget.underline-empty .o_input[readonly],
+.o_field_widget.underline-empty input[readonly] {
+    border-bottom: none !important;
+}

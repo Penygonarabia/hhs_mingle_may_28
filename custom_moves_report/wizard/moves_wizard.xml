@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="moves_details_wizard" model="ir.ui.view">
+            <field name="name">moves.details.wizard.form</field>
+            <field name="model">moves.details.report</field>
+            <field name="arch" type="xml">
+                <form string="Moves">
+                    <group>
+                        <field name="start_date"/>
+                        <field name="end_date"/>
+                    </group>
+                    <group>
+                        <group>
+                             <field name = "warehouse_ids" widget = "many2many_tags" required = "1" domain="[('company_id', '=', company_id)]"/>
+                            <field name = "company_id" invisible = "1"/>
+                            <field name = "location_id"/>
+                             <field name = "product_ids"  widget = "many2many_tags"/>
+                        </group>
+                        <group>
+                            <field name="to_collapse"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="generate_report" string = "PDF" type = "object" class = "btn-primary" data-hotkey="q"/>
+                        <button name="print_xls_report" string = "XLS" type = "object" class = "oe_highlight" />
+                        <button string="Cancel" class = "btn-secondary" special = "cancel" data-hotkey = "z" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+</odoo>

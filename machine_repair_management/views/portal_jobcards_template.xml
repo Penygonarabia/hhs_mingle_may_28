@@ -1,0 +1,283 @@
+<odoo>
+    <data>
+        <!-- Website Menu -->
+        <record id="menu_jobcards" model="website.menu">
+            <field name="name">My Job Cards</field>
+            <field name="url">/my/jobcards</field>
+            <field name="parent_id" ref="website.main_menu"/>
+            <field name="sequence">10</field>
+        </record>
+
+        <!-- Job Card List Template -->
+        <template id="portal_jobcards" name="Job Card List">
+            <t t-call="website.layout">
+                <t t-set="no_footer" t-value="True"/> <!-- Disable footer -->
+                <t t-set="title">My Job Cards</t>
+                <div class="container mt-4">
+                    <!-- Title Section -->
+                    <div class="text-center mb-4 p-3" style="background-color: #f4f8fb; border-radius: 10px;">
+                        <h2 class="text-dark font-weight-bold mb-2" style="font-size: calc(1.5rem + 1vw);">My Job Cards</h2>
+                        <p class="text-secondary" style="font-size: calc(0.9rem + 0.5vw);">View and manage all your assigned job cards</p>
+                    </div>
+
+                    <!-- Kanban Style Layout -->
+                    <div class="row">
+                        <t t-if="jobcards">
+                            <t t-foreach="jobcards" t-as="jobcard">
+                                <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+                                    <div class="card shadow-sm border-0 h-100">
+                                        <div class="card-header bg-primary text-white">
+                                            <h5 class="mb-0"><t t-esc="jobcard.name"/></h5>
+                                        </div>
+                                        <div class="card-body bg-light">
+                                            <p><strong>Customer:</strong> <t t-esc="jobcard.partner_id.name or 'N/A'"/></p>
+                                            <p><strong>Product:</strong> <t t-esc="jobcard.product_id.name or 'N/A'"/></p>
+                                        </div>
+                                        <div class="card-footer text-center bg-white">
+                                            <a t-att-href="'/my/jobcard/%s' % jobcard.id" class="btn btn-primary btn-sm">
+                                                View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </t>
+                        <t t-else="">
+                            <div class="col-12 text-center">
+                                <p class="text-muted">No job cards found.</p>
+                            </div>
+                        </t>
+                    </div>
+
+                    <!-- Pagination -->
+                    <t t-if="pager">
+                        <div class="mt-3 d-flex justify-content-center" t-raw="pager['html']"/>
+                    </t>
+                </div>
+            </t>
+        </template>
+
+      <template id="portal_jobcard_page" name="Job Card Details">
+    <t t-call="website.layout">
+        <t t-set="no_footer" t-value="True"/> <!-- Disable footer -->
+        <!-- Fixed Position Back Button Inside Job Card Details -->
+        <div class="mt-3 mb-4 text-left">
+            <a href="/my/jobcards" class="btn btn-outline-secondary">
+                <i class="fa fa-arrow-left"></i> Back to Job Card List
+            </a>
+        </div>
+        <t t-set="title" t-value="'Job Card - ' + jobcard.name"/>
+
+        <!-- Full Background with Professional Look -->
+        <div class="min-vh-100 bg-lightblue d-flex flex-column">
+            <div class="container py-3 flex-grow-1">
+                <!-- Header Section -->
+                <div class="text-center mb-3">
+                    <h2 class="text-dark font-weight-bold" style="font-size: calc(1.5rem + 0.5vw);">Job Card Details</h2>
+                    <p class="text-muted" style="font-size: calc(0.9rem + 0.5vw);">Detailed Information About The Job Card</p>
+                </div>
+
+                <!-- Product Details Section -->
+                <div class="row mb-3">
+                    <div class="col-lg-6 col-md-12 mb-3">
+                        <div class="card shadow border-info">
+                            <div class="card-header bg-info text-white">
+                                Product Information
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Category:</strong> <t t-esc="jobcard.product_category_id.name or 'N/A'"/></p>
+                                <p><strong>Product:</strong> <t t-esc="jobcard.product_id.name or 'N/A'"/></p>
+                                <p><strong>Brand:</strong> <t t-esc="jobcard.brand or 'N/A'"/></p>
+                                <p><strong>Model:</strong> <t t-esc="jobcard.model or 'N/A'"/></p>
+                                <p><strong>Serial Number:</strong> <t t-esc="jobcard.product_slno or 'N/A'"/></p>
+                                <p><strong>Purchase Invoice Number:</strong> <t t-esc="jobcard.purchase_invoice_no or 'N/A'"/></p>
+                                <p><strong>Purchase Date:</strong> <t t-esc="jobcard.purchase_date or 'N/A'"/></p>
+                                <p><strong>Purchase Dealer Name:</strong> <t t-esc="jobcard.purchase_dealer_name or 'N/A'"/></p>
+                                <p><strong>Warranty:</strong> <t t-esc="jobcard.warranty or 'N/A'"/></p>
+                                <p><strong>Warranty Expiry Date:</strong> <t t-esc="jobcard.warranty_expiry_date or 'N/A'"/></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Symptoms Section -->
+                <div class="row mb-3">
+                    <div class="col-md-12 mb-3">
+                        <div class="card shadow border-danger">
+                            <div class="card-header bg-danger text-white">
+                                Symptoms
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>Code</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="jobcard.symptoms_line_ids" t-as="line">
+                                                <tr>
+                                                    <td><t t-esc="line.code or 'N/A'"/></td>
+                                                    <td><t t-esc="line.description or 'N/A'"/></td>
+                                                </tr>
+                                            </t>
+                                            <t t-if="not jobcard.symptoms_line_ids">
+                                                <tr>
+                                                    <td colspan="2" class="text-center text-muted">
+                                                        No Symptoms Found.
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p><strong>Client Comments:</strong> <t t-esc="jobcard.client_comments or 'N/A'"/></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Defects Section -->
+                <div class="row mb-3">
+                    <div class="col-md-12 mb-3">
+                        <div class="card shadow border-warning">
+                            <div class="card-header bg-warning text-dark">
+                                Defects
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>Code</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="jobcard.defects_type_ids" t-as="line">
+                                                <tr>
+                                                    <td><t t-esc="line.code or 'N/A'"/></td>
+                                                    <td><t t-esc="line.description or 'N/A'"/></td>
+                                                </tr>
+                                            </t>
+                                            <t t-if="not jobcard.defects_type_ids">
+                                                <tr>
+                                                    <td colspan="2" class="text-center text-muted">
+                                                        No Defects Found.
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p><strong>Technician Comments:</strong> <t t-esc="jobcard.technician_comments or 'N/A'"/></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Section -->
+                <div class="row mb-3">
+                    <div class="col-md-12 mb-3">
+                        <div class="card shadow border-success">
+                            <div class="card-header bg-success text-white">
+                                Service
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>Code</th>
+                                                <th>Description</th>
+                                                <th>Action Type</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="jobcard.service_type_ids" t-as="line">
+                                                <tr>
+                                                    <td><t t-esc="line.code or 'N/A'"/></td>
+                                                    <td><t t-esc="line.description or 'N/A'"/></td>
+                                                    <td><t t-esc="line.action_type or 'N/A'"/></td>
+                                                </tr>
+                                            </t>
+                                            <t t-if="not jobcard.service_type_ids">
+                                                <tr>
+                                                    <td colspan="3" class="text-center text-muted">
+                                                        No Services Found.
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p><strong>Engineer Comments:</strong> <t t-esc="jobcard.engineer_comments or 'N/A'"/></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Consume Part/Service Section -->
+                <div class="row mb-3">
+                    <div class="col-md-12 mb-3">
+                        <div class="card shadow border-warning">
+                            <div class="card-header bg-warning text-dark">
+                                Product Consume Part/Service
+                            </div>
+                            <div class="card-body table-responsive">
+                                <table class="table table-striped">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Quantity</th>
+                                            <th>UoM</th>
+                                            <th>Price</th>
+                                            <th>VAT</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="jobcard.product_line_ids" t-as="line">
+                                            <tr>
+                                                <td><t t-esc="line.product_id.name or 'N/A'"/></td>
+                                                <td><t t-esc="line.qty or 0"/></td>
+                                                <td><t t-esc="line.uom_id.name or 'N/A'"/></td>
+                                                <td><t t-esc="line.price_unit or 0.0"/></td>
+                                                <td><t t-esc="line.vat or 0.0"/></td>
+                                                <td><t t-esc="line.total or 0.0"/></td>
+                                            </tr>
+                                        </t>
+                                        <t t-if="not jobcard.product_line_ids">
+                                            <tr>
+                                                <td colspan="6" class="text-center text-muted">
+                                                    No Products Found.
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</template>
+
+
+    <template id="portal.my_account_link" name="Link to frontend portal" inherit_id="portal.user_dropdown">
+        <xpath expr="//*[@id='o_logout_divider']" position="before">
+            <!--
+            <a href="/my/home" role="menuitem" class="dropdown-item ps-3">
+                <i class="fa fa-fw fa-id-card-o me-1 small text-primary"/> My Account
+            </a>
+            -->
+        </xpath>
+    </template>
+
+
+    </data>
+</odoo>

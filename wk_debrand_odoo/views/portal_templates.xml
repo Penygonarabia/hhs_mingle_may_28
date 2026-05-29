@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2016-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- License URL : <https://store.webkul.com/license.html/> -->
+
+<odoo>
+    <template id="portal_record_sidebar_inherit" inherit_id="portal.portal_record_sidebar">
+        <xpath expr="//div[hasclass('text-muted')]" position="replace">
+            <div class="d-none d-lg-block mt-5 small text-center text-muted">
+            </div>
+        </xpath>
+    </template>
+</odoo>

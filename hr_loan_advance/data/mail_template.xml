@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+	<data>
+
+		<record id="mail_template_loan_request" model="mail.template">
+			<field name="name">Loan Request Mail Template</field>
+			<field name="model_id"  ref="hr_loan_advance.model_hr_employee_loan_ps"/>
+			<field name="email_from">{{object.employee_id.work_email or ''}}</field>
+			<field name="email_to">{{object.employee_id.work_email or ''}}</field>
+			<field name="subject">Loan Request : {{object.name}}</field>
+			<field name="body_html" type="html">
+				<div style="margin: 0px; padding: 0px;">
+				<p> Dear <strong t-out="object.employee_id.name or ''"/>,</p>
+
+				<p style="text-indent: 100px;">Reference Number is <strong t-out="object.name or ''"/> and Requested Date is  <strong t-out="object.request_date.strftime('%d-%m-%Y %H:%M:%S') or ''"></strong> .</p>
+                    <br/>
+                    <br/>
+                     <div>
+	  	     			 <table class = "table table-sm o_main_table"  style="border: 1px solid black; border-collapse: collapse;">
+		                    <tr>
+		                        <t t-set = "colspan" t-value = "5"/>
+		                        <th style="border: 1px solid black;text-align: center;font-weight: bold;">Reference</th>
+		                        <th style="border: 1px solid black;text-align: center;font-weight: bold;">Employee</th>
+		                      	<th style="border: 1px solid black;text-align: center;font-weight: bold;">Loan Type</th>
+							  <t t-if="object.state == 'request'">
+		                        <th style="border: 1px solid black;text-align: center;font-weight: bold;">Request Date</th>
+		                        <th style="border: 1px solid black;text-align: center;font-weight: bold;">Loan Amount Required</th>
+							  </t>
+						      <t t-if="object.state == 'approve'">
+		                        <th style="border: 1px solid black;text-align: center;font-weight: bold;">Installment Start Date</th>
+		                        <th style="border: 1px solid black;text-align: center;font-weight: bold;">Confirmed Date</th>
+		                        <th style="border: 1px solid black;text-align: center;font-weight: bold;">Loan Amount Approved</th>
+							  </t>
+							</tr>
+<!--	                <t t-foreach="object.request_line_ids" t-as = "line">-->
+	                    <tr>
+                             <td style="border: 1px solid black;text-align: center;font-weight: bold;"><span t-esc = "object.name"></span></td>
+                    	     <td style="border: 1px solid black;text-align: center;font-weight: bold;"><span t-esc = "object.employee_id.name"></span></td>
+                    	     <td style="border: 1px solid black;text-align: center;font-weight: bold;"><span t-esc = "object.type_id.name"></span></td>
+							<t t-if="object.state == 'request'">
+                    	     <td style="border: 1px solid black;text-align: center;font-weight: bold;"><span t-esc = "object.request_date"></span></td>
+							 <td style="border: 1px solid black;text-align: center;font-weight: bold;" ><t t-esc = "object.loan_amount_required"/></td>
+							</t>
+							<t t-if="object.state == 'approve'">
+                    	     <td style="border: 1px solid black;text-align: center;font-weight: bold;"><span t-esc = "object.loan_ins_start_date"></span></td>
+							 <td style="border: 1px solid black;text-align: center;font-weight: bold;" ><t t-esc = "object.account_manager_date"/></td>
+							 <td style="border: 1px solid black;text-align: center;font-weight: bold;"><span t-esc = "object.loan_amount"></span></td>
+							</t>
+	                    </tr>
+<!--	               </t>-->
+	          </table>
+	       </div>
+
+<!--	       <br/><br/>-->
+<!--                    <p>In case of any queries concerning this matter, do not hesitate to contact our team.</p>-->
+<!--                    <br/>-->
+<!--                 	  <strong>Best Regards,</strong>-->
+<!--                    <br/>-->
+<!--                  	  <strong t-out="object.company_id.partner_id.name or ''"/>-->
+<!--                    <br/>-->
+<!--                     	<strong t-out="object.company_id.partner_id.street or ''"/>-->
+<!--                     <br/>-->
+<!--                     	<strong t-out="object.company_id.partner_id.phone or ''"/>-->
+<!--                     <br/>-->
+<!--                       	<strong t-out="object.company_id.partner_id.email or ''"/>-->
+<!--                     <br/>-->
+
+
+				</div>
+
+			</field>
+		</record>
+
+	</data>
+
+</odoo>

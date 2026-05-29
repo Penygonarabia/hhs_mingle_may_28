@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Region Tree View -->
+    <record id="iqama_tree_view" model="ir.ui.view">
+        <field name="name">iqama.company.tree</field>
+        <field name="model">iqama.company</field>
+        <field name="arch" type="xml">
+            <tree>
+                 <field name="code"/>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+    <!-- Region Form View -->
+    <record id="iqama_form_view" model="ir.ui.view">
+        <field name="name">iqama.company.form</field>
+        <field name="model">iqama.company</field>
+        <field name="arch" type="xml">
+            <form string="Sponsors">
+                <sheet>
+                        <group>
+                            <field name="code" force_save="1"/>
+                            <field name="name" force_save="1"/>
+                        </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_iqama_company" model="ir.actions.act_window">
+        <field name="name">Sponsors</field>
+        <field name="res_model">iqama.company</field>
+        <field name="view_id" ref="iqama_tree_view" />
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

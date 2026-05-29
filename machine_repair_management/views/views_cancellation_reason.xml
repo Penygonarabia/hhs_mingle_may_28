@@ -1,0 +1,53 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+<odoo>
+
+    <record id="search_cancellation_reason_view" model="ir.ui.view">
+        <field name="name">cancellation.reason.search.view</field>
+        <field name="model">cancellation.reason</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="views_cancellation_reason_tree" model="ir.ui.view">
+        <field name="name">cancellation.reason.tree.view</field>
+        <field name="model">cancellation.reason</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="code"/>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_cancellation_reason_form" model="ir.ui.view">
+        <field name="name">cancellation.reason.form.view</field>
+        <field name="model">cancellation.reason</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="code" required="1"/>
+                        <field name="name" required="1"/>
+                        <field name="arabic_name"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_cancellation_reason" model="ir.actions.act_window">
+        <field name="name">Cancellation Reason</field>
+        <field name="res_model">cancellation.reason</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_cancellation_reason" name="Cancellation Reason"
+              action="action_cancellation_reason"
+              parent="machine_repair_management.menu_machine_repair_configuration"
+              sequence="95"
+    />
+
+</odoo>

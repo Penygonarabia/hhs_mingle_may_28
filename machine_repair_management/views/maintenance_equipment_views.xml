@@ -1,0 +1,50 @@
+<?xml version = "1.0" encoding ="utf-8" ?>
+<odoo>
+	
+	 <record id="maintenance_equipment_inherit_view_form" model="ir.ui.view">
+        <field name="name">maintenance.equipment.inherit.view</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name = 'partner_ref']" position="after">
+                <field name="brand" required="1"/>
+                <field name="service_products_code_id" domain="[('id','in',product_unit_type_ids)]" options="{'no_create': True, 'no_open': True,'no_edit':True}" required="1"/>
+                <field name="product_unit_type_ids" invisible="1" widget="many2many_tags"/>
+                <!--                <field name="unit_type" required="1"/>-->
+            </xpath>
+            <xpath expr="//field[@name='category_id']" position="after">
+                <!--                <field name="contracts_no_ids" widget="many2many_tags"/>-->
+                <field name="contract_id" required="1" domain="[('state', '=', 'Ongoing')]"/>
+                <field name="customer" force_save="1" readonly="1"/>
+                <field name="description"/>
+                <field name="contract_start_date" force_save="1" readonly="1"/>
+                <field name="contract_end_date" force_save="1" readonly="1"/>
+                <field name="no_of_visits" force_save="1"/>
+                <field name = "pm_service_count" />
+                <field name = "emergency_count" />
+                <field name = "product_ordered_count" invisible = "1"/>
+                <field name  = "customer_code" invisible = "1"/>
+                <field name = "warehouse_id" invisible = "0"/>
+                <field name = "district" invisible = "1"/>
+                <field name = "work_center_id" invisible = "1"/>
+                <field name = "work_center_group_id" invisible = "1"/>
+                <field name = "sales_person_user_id" invisible = "1"/>
+                <!-- <field name = "sequence_count" /> -->
+            </xpath>
+            <xpath expr="//field[@name='location']" position="after">
+                <field name="service_group_batch" force_save="1"/>
+            </xpath>
+            <xpath expr="//div[@class='oe_button_box']" position="inside">
+                <button name="action_open_related_tasks" type="object" class="oe_stat_button" icon="fa-tasks">
+                    <field name="task_count" widget="statinfo"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+    
+    <record id="maintenance.hr_equipment_request_action_from_equipment" model="ir.actions.act_window">
+            <field name="binding_model_id" eval="False"/>
+        </record>
+	
+
+</odoo>

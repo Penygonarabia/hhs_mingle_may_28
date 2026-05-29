@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_service_order_form_inherit_scope_work" model="ir.ui.view">
+        <field name="name">view.service.order.form.inherit.scope.work</field>
+        <field name="model">service.sale.order</field>
+        <field name="inherit_id" ref="service_sale_approvals.view_service_order_form_inherit_approval"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@id='service_sale_order_line']" position="after">
+                <page name="scope_of_work" string="Scope of Work / Subject">
+                    <group>
+                        <group>
+                            <field name="subject" readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
+                        </group>
+
+                        <group>
+                            <field name="scope_of_work" widget="text" readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
+                        </group>
+                    </group>
+                    <!-- Second row: full width -->
+                    <group>
+                        <field name="others" widget="text" readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
+                    </group>
+
+                </page>
+            </xpath>
+
+
+            <!-- Exclusion Tab -->
+            <xpath expr="//page[@name='scope_of_work']" position="after">
+                <page name="terms_of_execution" string="Terms of Execution">
+                    <field name="terms_of_execution"
+                           placeholder="Enter terms and conditions here..."
+                           readonly="state in ('approve', 'sent','sale','done','cancel','reject')"
+                           />
+                </page>
+            </xpath>
+
+            <!-- Payment Tab readonly="state == 'confirmed'"-->
+            <xpath expr="//page[@name='terms_of_execution']" position="after">
+                <page name="payment_tab" string="Payment">
+                    <!-- Payment Schedule Lines -->
+                    <field name="payment_term_ids" nolabel="1">
+                        <tree editable="bottom" create="0" delete="0" edit="1"
+                              decoration-success="state == 'paid'"
+                              decoration-info="state == 'invoiced'"
+                              decoration-muted="state == 'pending'">
+
+                            <field name="name" string="Payment"/>
+                            <field name="name_arabic" column_invisible="1"/>
+                            <field name="payment_date" string="Date"/>
+
+                            <field name="amount"
+                                   string="Amount (SAR)"
+                                   widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"/>
+
+                            <field name="currency_id" column_invisible="1"/>
+
+                            <field name="state" string="Status" widget="badge"
+                                   decoration-success="state == 'paid'"
+                                   decoration-info="state == 'invoiced'"
+                                   decoration-warning="state == 'pending'" column_invisible="1"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+
+            <!-- Terms of Execution-->
+            <xpath expr="//page[@name='payment_tab']" position="after">
+                <page name="exclusions_tab" string="Exclusions/Notes">
+                    <group>
+
+                        <group>
+
+                            <field name="exclusions_text"
+                                   placeholder="Enter exclusions here..."
+                                   readonly="state in ('approve', 'sent','sale','done','cancel','reject')"
+                                   />
+                        </group>
+
+                        <group>
+
+                            <field name="others_text"
+                                   placeholder="Enter notes here"
+                                   readonly="state in ('approve', 'sent','sale','done','cancel','reject')"
+                            />
+                        </group>
+
+                    </group>
+
+
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+
+</odoo>

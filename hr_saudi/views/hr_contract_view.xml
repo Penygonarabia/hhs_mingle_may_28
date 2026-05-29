@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="hr_contract_view_inherit_form1" model="ir.ui.view">
+            <field name="name">hr.contract.view.inherit.form1</field>
+            <field name="model">hr.contract</field>
+            <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+            <field name="arch" type="xml">
+                <field name="name" position="replace">
+                    <field name="auto_contract_no" invisible="1"/>
+                    <field name="name" readonly="0"/>
+                </field>
+                <xpath expr="//field[@name='resource_calendar_id']" position="before">
+                    <field name="duration"/>
+                </xpath>
+                 <xpath expr="//group[@name='allowances']" position="attributes">
+                   <attribute name="invisible">1</attribute>
+                </xpath>
+
+                 <xpath expr="//group[@name='salary']" position="replace">
+                    <div class="o_form_field" id="wage" style="display: flex; align-items: center; gap: 120px; margin-left: 10px;">
+                        <label for="wage" style="font-weight: bold;">Wage</label>
+                        <span style="display: flex; align-items: center;">
+                            <field name="wage" style="width: 100px;"/>
+                            <span style="margin-left: 5px;">/ month</span>
+                        </span>
+                    </div>
+                 </xpath>
+
+<!--                <xpath expr="//field[@name='structure_type_id']" position="after">-->
+<!--                    <field name="is_special_gosi"/>-->
+<!--                </xpath>-->
+                <xpath expr="//group[@name='allowances']" position="before">
+                    <group name="salary_and_advantages" string="Salary and Advantages" colspan="2">
+                    <!-- Group to hold all allowance fields statically aligned -->
+                    <div class="o_form_field" id="allowance_group" style="display: grid; grid-template-columns: 200px 120px 40px; grid-gap: 10px; align-items: center;">
+
+                        <label for="house_allowance" style="font-weight: bold;margin-left:30px;">House Allowance</label>
+                        <field name="house_allowance" style="width:100px;"/>
+                        <field name="house_allowance_bool" nolabel="1"/>
+
+                        <label for="transport_allowance" style="font-weight: bold;margin-left:30px">Transport Allowance</label>
+                        <field name="transport_allowance" style="width:100px;"/>
+                        <field name="transport_allowance_bool" nolabel="1"/>
+
+                        <label for="school_allowance" style="font-weight: bold; margin-left:30px;">School Allowance</label>
+                        <field name="school_allowance" style="width:100px;"/>
+                        <field name="school_allowance_bool" nolabel="1"/>
+
+                        <label for="food_allowance" style="font-weight: bold; margin-left:30px;">Food Allowance</label>
+                        <field name="food_allowance" style="width:100px;"/>
+                        <field name="food_allowance_bool" nolabel="1"/>
+
+                        <label for="fuel_allowance" style="font-weight: bold; margin-left:30px;">Fuel Allowance</label>
+                        <field name="fuel_allowance" style="width:100px;"/>
+                        <field name="fuel_allowance_bool" nolabel="1"/>
+
+                        <label for="ticket_allowance" style="font-weight: bold; margin-left:30px;">Ticket Allowance</label>
+                        <field name="ticket_allowance" style="width:100px;"/>
+                        <field name="ticket_allowance_bool" nolabel="1"/>
+
+                        <label for="fixed_allowance" style="font-weight: bold; margin-left:30px;">Fixed Allowance</label>
+                        <field name="fixed_allowance" style="width:100px;"/>
+                        <field name="fixed_allowance_bool" nolabel="1"/>
+
+                        <label for="mobile_allowance" style="font-weight: bold; margin-left:30px;">Mobile Allowance</label>
+                        <field name="mobile_allowance" style="width:100px;"/>
+                        <field name="mobile_allowance_bool" nolabel="1"/>
+
+                        <label for="work_allowance" style="font-weight: bold; margin-left:30px;">Medical Allowance</label>
+                        <field name="work_allowance" style="width:100px;"/>
+                        <field name="work_allowance_bool" nolabel="1"/>
+
+                        <label for="housing_allowance" style="font-weight: bold; margin-left:30px;">Other Allowance</label>
+                        <field name="housing_allowance" style="width:100px;"/>
+                        <field name="housing_allowance_bool" nolabel="1"/>
+
+                        <label for="total" style="font-weight: bold; margin-left:30px;">Total</label>
+                        <field name="total" style="width:100px;"/>
+                    </div>
+                </group>
+                </xpath>
+
+                <xpath expr="//group[@name='top_info']" position="after">
+                    <group name="duration_group" string="Duration">
+                        <field name="nature"/>
+                        <field name="date_start"/>
+                        <field name="date_end" invisible="nature == 'indef'" required="nature == 'fixed'"/>
+                        <field name="duration" invisible="nature == 'indef'"/>
+                        <field name="hr_responsible_id"/>
+                    </group>
+                </xpath>
+<!--                <xpath expr="//field[@name='employee_id']" position="attributes">-->
+<!--                    <attribute name="readonly">context.get('disable_employee', False)</attribute>-->
+<!--                </xpath>-->
+<!--                <xpath expr="//field[@name='job_id']" position="attributes">-->
+<!--                    <attribute name="readonly">1</attribute>-->
+<!--                </xpath>-->
+<!--                <xpath expr="//field[@name='department_id']" position="attributes">-->
+<!--                    <attribute name="readonly">1</attribute>-->
+<!--                </xpath>-->
+                <xpath expr="//group[@name='top_info']" position="after">
+                    <group string="Working Hours">
+                        <field name="resource_calendar_id" required="1"/>
+                        <field name="ramadan_working_hours" />
+                    </group>
+                    <group string="Contract File">
+                        <field name="document" filename="document_filename"/>
+                        <field name="document_filename" invisible="1"/>
+                    </group>
+<!--                    <group string="Annual Ticket Count">-->
+<!--                        <field name="ticket_count"/>-->
+<!--                        <field name="per_ticket_amt"/>-->
+<!--                        <field name="computed_ticket_amt" groups="base.group_erp_manager"/>-->
+<!--                    </group>-->
+                </xpath>
+                <field name="employee_id" position="after">
+                    <field name="employee_no"/>
+                </field>
+<!--                <xpath expr="//page[@name='information']" position="after">-->
+<!--                    <page name="salary_information" string="Salary Structure Information">-->
+<!--                        <field name="salary_information_ids">-->
+<!--                            <tree editable="bottom" create="0" edit="0" delete="0">-->
+<!--                                <field name="name"/>-->
+<!--                                <field name="code"/>-->
+<!--                                <field name="category_id"/>-->
+<!--                                <field name="amount"/>-->
+<!--                            </tree>-->
+<!--                            <form create="0" edit="0" delete="0">-->
+<!--                                <group>-->
+<!--                                    <group>-->
+<!--                                        <field name="name"/>-->
+<!--                                        <field name="code"/>-->
+<!--                                    </group>-->
+<!--                                    <group>-->
+<!--                                        <field name="category_id"/>-->
+<!--                                        <field name="amount"/>-->
+<!--                                    </group>-->
+<!--                                </group>-->
+<!--                            </form>-->
+<!--                        </field>-->
+<!--                    </page>-->
+<!--                </xpath>-->
+<!--                <xpath expr="//header" position="inside">-->
+<!--                    <button name="compute_salary_structure_lines" string="Compute Salary Information" type="object"-->
+<!--                            attrs="{'invisible':['|', ('struct_id','=',False), ('wage','=',0.0)]}"-->
+<!--                            class="oe_highlight" help="Helps us to compute the salary information for the selected Salary Struct Type and Wage."/>-->
+<!--                </xpath>-->
+            </field>
+        </record>
+
+<!--        Contract Search view inherited-->
+        <record id="hr_contract_view_inherit_search" model="ir.ui.view">
+            <field name="name">hr.contract.view.inherit.search</field>
+            <field name="model">hr.contract</field>
+            <field name="inherit_id" ref="hr_contract.hr_contract_view_search"/>
+            <field name="arch" type="xml">
+                <field name="employee_id" position="after">
+                    <field name="employee_no"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="action_hr_contract_type" model="ir.actions.act_window">
+            <field name="name">Contract Type</field>
+            <field name="res_model">hr.payroll.structure.type</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                Create a new contract type
+              </p>
+            </field>
+        </record>
+
+<!--        <menuitem action="action_hr_contract_type" id="hr_contract.hr_menu_contract_type" parent="hr.menu_human_resources_configuration" sequence="3" groups="hr_saudi.group_hr"/>-->
+<!--        <menuitem action="hr_contract.action_hr_contract" id="hr_contract.hr_menu_contract" parent="hr.menu_hr_root" name="Contracts" sequence="4" groups="hr_saudi.group_hr"/>-->
+
+
+<!--        <record id="hr_contract_view_inherit_form1_inherited" model="ir.ui.view">-->
+<!--            <field name="name">hr.contract.view.inherit.form1.inherited</field>-->
+<!--            <field name="model">hr.contract</field>-->
+<!--            <field name="inherit_id" ref="hr_contract.hr_hr_employee_view_form2"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <xpath expr="//div[@name='button_box']/button[@name='%(hr_contract.act_hr_employee_2_hr_contract)d']" position="attributes">-->
+<!--                    <groups>hr_contract.group_hr_contract_manager,base.group_user</groups>-->
+<!--                </xpath>-->
+<!--            </field>-->
+<!--        </record>-->
+
+<!--        <record id="hr_contract.hr_hr_employee_view_form2" model="ir.ui.view">-->
+<!--            <field name="name">hr.hr.employee.view.form2</field>-->
+<!--            <field name="model">hr.employee</field>-->
+<!--            <field name="inherit_id" ref="hr.view_employee_form"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <data>-->
+<!--                    <div name="button_box" position="inside">-->
+<!--                        <field name="contract_warning" invisible="1"/>-->
+<!--                        <button name="%(hr_contract.act_hr_employee_2_hr_contract)d"-->
+<!--                            class="oe_stat_button"-->
+<!--                            icon="fa-book"-->
+<!--                            type="action"-->
+<!--                            groups="hr_contract.group_hr_contract_manager,base.group_user">-->
+<!--                            <div class="o_stat_info">-->
+<!--                                <span class="o_stat_text text-success" attrs="{'invisible' : [('contract_warning', '=', True)]}" title="In Contract Since"> In Contract Since</span>-->
+<!--                                <span class="o_stat_value text-success" attrs="{'invisible' : [('contract_warning', '=', True)]}">-->
+<!--                                    <field name="first_contract_date" readonly="1"/>-->
+<!--                                </span>-->
+<!--                                <span class="o_stat_text text-danger" attrs="{'invisible' : [('contract_warning', '=', False)]}" title="In Contract Since">-->
+<!--                                    In Contract Since-->
+<!--                                </span>-->
+<!--                                <span class="o_stat_value text-danger" attrs="{'invisible' : [('contract_warning', '=', False)]}">-->
+<!--                                    <field name="first_contract_date" readonly="1"/>-->
+<!--                                </span>-->
+<!--                            </div>-->
+<!--&lt;!&ndash;                            <div attrs="{'invisible' : [('first_contract_date', '!=', False)]}" class="o_stat_info">&ndash;&gt;-->
+<!--&lt;!&ndash;                                <span class="o_stat_value text-danger">&ndash;&gt;-->
+<!--&lt;!&ndash;                                   <field name="contracts_count"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                                </span>&ndash;&gt;-->
+<!--&lt;!&ndash;                                <span class="o_stat_text text-danger">&ndash;&gt;-->
+<!--&lt;!&ndash;                                    Contracts&ndash;&gt;-->
+<!--&lt;!&ndash;                                </span>&ndash;&gt;-->
+<!--&lt;!&ndash;                            </div>&ndash;&gt;-->
+<!--                        </button>-->
+<!--                    </div>-->
+
+<!--                    <xpath expr="//field[@name='bank_account_id']" position="replace">-->
+<!--                        <field name="bank_account_id" context="{'display_partner':True}"/>-->
+<!--                    </xpath>-->
+<!--                    <xpath expr="//field[@name='resource_calendar_id']" position="replace">-->
+<!--                        <field name="calendar_mismatch" invisible="1"/>-->
+<!--                        <label for="resource_calendar_id"/>-->
+<!--                        <div>-->
+<!--                            <field name="resource_calendar_id" required="1" nolabel="1"/>-->
+<!--                            <span attrs="{'invisible': [('calendar_mismatch', '=', False)]}"-->
+<!--                                class="fa fa-exclamation-triangle text-danger o_calendar_warning pl-3">-->
+<!--                            </span>-->
+<!--                            <span class="o_calendar_warning_tooltip text-danger">-->
+<!--                                Calendar Mismatch : The employee's calendar does not match its current contract calendar. This could lead to unexpected behaviors.-->
+<!--                            </span>-->
+<!--                        </div>-->
+<!--                    </xpath>-->
+<!--                </data>-->
+<!--            </field>-->
+<!--        </record>-->
+
+    </data>
+</odoo>

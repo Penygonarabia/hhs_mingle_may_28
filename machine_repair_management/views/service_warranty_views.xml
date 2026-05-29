@@ -1,0 +1,60 @@
+<?xml version = "1.0" encoding ="utf-8" ?>
+<odoo>
+    <record id="service_warranty_tree_view" model="ir.ui.view">
+        <field name="name">service.warranty.tree.view</field>
+        <field name="model">service.warranty</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name = "code"/>
+				<field name = "name" />
+				<field name = "warranty_applicable_bool" />
+				<field name = "misuse_warranty_bool" />
+				<!-- """Code Added by Vengatesh On Mar 25 2026""" -->
+				<field name = "amount_required"/>
+				<!-- Code Added on May 05 2026 -->
+				<field name = "warranty_expire_alert_bool" />
+				
+				<field name = "company_id" column_invisible ="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="service_warranty_form_view" model="ir.ui.view">
+        <field name="name">service.warranty</field>
+        <field name="model">service.warranty</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group col="2">
+                            <field name = "code"/>
+							<field name = "name"/>
+							<field name = "warranty_applicable_bool" />
+							<field name = "misuse_warranty_bool" />
+							<field name = "customer_need_quote_hide_bool" invisible = "1"/>
+							<field name = "job_card_status_hide" />
+							<!-- """Code Added by Vengatesh On Mar 25 2026""" -->
+				      		<field name = "amount_required"/>
+				      		<!-- Code Added on May 05 2026 -->
+							<field name = "warranty_expire_alert_bool" />
+                        </group>
+                        <group>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    
+
+    <record id="action_service_warranty" model="ir.actions.act_window">
+        <field name="name">Service Warranty</field>
+        <field name="res_model">service.warranty</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_service_warranty" name="Service Warranty" action="action_service_warranty" parent="machine_repair_management.menu_machine_repair_configuration" sequence="25" />
+
+</odoo>

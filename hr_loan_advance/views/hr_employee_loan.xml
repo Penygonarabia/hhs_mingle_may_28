@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- HR Loan-->
+        <record id="view_hr_employee_loan_filter_ps" model="ir.ui.view">
+            <field name="name">Loans</field>
+            <field name="model">hr.employee.loan.ps</field>
+            <field name="arch" type="xml">
+                <search string="Loans">
+                    <field name="name"/>
+                    <field name="employee_id"/>
+                    <field name="contract_id"/>
+                    <field name="type_id"/>
+                    <field name="employee_number"/>
+                    <filter domain="[('state','=','request')]" icon="terp-camera_test" name="request" string="Waiting for Direct Manager approval"/>
+                    <filter domain="[('state','=','progress')]" icon="terp-camera_test" name="progress" string="Waiting for HR Manager approval"/>
+                    <filter domain="[('state','=','progress2')]" icon="terp-camera_test" name="progress2" string="Waiting for finance Manager approval"/>
+                    <filter domain="[('state','=','approve')]" help="Approved" icon="terp-document-new" name="state" string="Approved"/>
+                    <filter domain="[('state','=','refuse')]" help="Refused" icon="terp-document-new" name="state" string="Refused"/>
+                    <filter domain="[('state','=','request')]" icon="terp-document-new" name="guaranty" string="Loan for Guaranty Approval"/>
+                    <group expand="0" string="Group By">
+                        <filter context="{'group_by':'employee_id'}" domain="[]" icon="terp-personal" name="state" string="Employee"/>
+                        <filter context="{'group_by':'contract_id'}" domain="[]" icon="terp-personal" name="state" string="Contract"/>
+                        <filter context="{'group_by':'type_id'}" domain="[]" icon="terp-personal+" name="state" string="Loan Type"/>
+                        <filter context="{'group_by':'state'}" icon="terp-stock_effects-object-colorize" name="state" string="States"/>
+                    </group>
+                </search></field>
+        </record>
+        <record id="view_hr_employee_loan_tree_ps" model="ir.ui.view">
+            <field name="name">hr.employee.loan.tree.ps</field>
+            <field name="model">hr.employee.loan.ps</field>
+            <field name="arch" type="xml">
+                <tree string="Loans">
+                    <field name="name"/>
+                    <field name="employee_number"/>
+                    <field name="employee_id"/>
+                    <field name="type_id"/>
+                    <field name="contract_id"/>
+                    <field name="loan_amount"/>
+                    <field name="loan_month_ins"/>
+                    <field name="loan_ins_start_date"/>
+                    <field name="paid_amount"/>
+                    <field name="balance_amount"/>
+                    <field name="paid_installment"/>
+                    <field name="unpaid_installment"/>
+                    <field name="state"/>
+                </tree></field>
+        </record>
+        <record id="view_hr_employee_loan_form_ps" model="ir.ui.view">
+            <field name="name">hr.employee.loan.form.ps</field>
+            <field name="model">hr.employee.loan.ps</field>
+            <field name="arch" type="xml">
+                <form string="HR Employee Loan">
+                    <header>
+                        <!--<button string="Send Request" name="action_request" states="draft" type="object"/>
+                        <button string="Guarantor Confirm"
+                                name="action_guarantor_approve"
+                                class="oe_highlight"
+                                icon="gtk-yes"
+                                attrs="{'invisible':['|',('current_user', '=', False),('state','!=','request')]}"
+                                type="object"/>
+                        <button string="Progress Loan"
+                                name="action_progress"
+                                states="guarantor_approve"
+                                type="object" groups="hr.group_hr_manager"/>
+                        <button string="Progress Loan" name="action_progress"
+                                type="object"
+                                attrs="{'invisible':['|',('guarantor_id', '!=', False),('state','!=','request')]}"
+                                groups="hr.group_hr_manager"/>
+                        <button string="Approve" name="action_approve" states="progress" type="object"
+                                groups="account.group_account_manager"/>-->
+                        <button invisible="state not in ['draft']" name="action_request" string="Request For DM Approval" type="object"/>
+                        <!--                        <button string="Guarantor Confirm"-->
+                        <!--                                name="action_guarantor_approve"-->
+                        <!--                                class="oe_highlight"-->
+                        <!--                                icon="gtk-yes"-->
+                        <!--                                attrs="{'invisible':[('state','!=','request')]}"-->
+                        <!--                                type="object"/>-->
+                        <button groups="hr_saudi.group_dm" help="First Phase Approval" invisible="state not in ['request']" name="action_progress" string="DM Approve" type="object"/>
+                        <button groups="hr_saudi.group_hrm" help="Second Phase Approval" invisible="state not in ['progress']" name="action_progress2" string="HR Manager Approve" type="object"/>
+                        <button groups="hr_saudi.group_finance_manager" help="Finance Manager Approval" invisible="state not in ['progress2']" name="action_approve" string="FM Approve" type="object"/>
+                        <button groups="hr_saudi.group_admin_approval" help="Admin  &amp; Financial Director approval" invisible="is_progress3_clicked == True and state not in ['progress3']" name="action_progress3" string="Admin  &amp; Financial Director approval" type="object"/>
+                        <button groups="hr.group_hr_manager" invisible="state not in ['request','guarantor_approve','progress','progress2']" name="action_draft" string="Back to Draft" type="object"/>
+                        <button groups="hr.group_hr_manager" invisible="state not in ['request']" name="action_refuse" string="Refuse" type="object"/>
+                        <!--                        <button string="Refuse" name="action_refuse" type="object"-->
+                        <!--                                attrs="{'invisible':[('state','!=','request')]}"/>-->
+                        <button groups="hr.group_hr_manager" invisible="state not in ['guarantor_approve']" name="action_refuse" string="Refuse" type="object"/>
+                        <button groups="account.group_account_manager" invisible="state not in ['progress','progress2']" name="action_refuse" string="Refuse" type="object"/>
+                        <button colspan="2" invisible="is_progress3_clicked == True" name="compute_installment_board" string="Compute Installment" type="object"/>
+                        <field name="state" statusbar_colors='{"draft":"red"}' statusbar_visible="draft,approve" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Request Details">
+                                <field domain="[('state','!=','exit')]" name="employee_id" options="{'no_create_edit': True, 'no_create': True}" readonly="state not in ('draft', False)"/>
+                                <field force_save="1" name="employee_number" readonly="1"/>
+                                <field name="type_id" readonly="state not in ('draft', False)"/>
+                                <field domain="[('id','!=',employee_id)]" name="guarantor_id" readonly="state not in 'draft'"/>
+                            </group>
+                            <group>
+                                <field domain="[('employee_id','=',employee_id)]" name="contract_id" readonly="state not in ('draft', False)"/>
+                                <div class="o_td_label" style="width:200px;">
+                                    <label for="loan_amount_required" string="Loan Amount Required"/>
+                                </div>
+                                <field name="loan_amount_required" nolabel="1" readonly="state not in ('draft', False)"/>
+<!--                                <field invisible="request_date == False" name="request_date" readonly="1"/>-->
+                                <field name="request_date" readonly="state not in ('draft')" required="1"/>
+                                <field name="amount_based_loan" readonly="state in ('approve','refused')"/>
+                                <field name="monthly_based_amount" invisible="amount_based_loan == False" required="amount_based_loan == True"/>
+                                <field name ="amount_enterable" invisible="1"/>
+
+                            </group>
+                        </group>
+                        <!--                        <field name="current_user" invisible='1'/>-->
+                        <field invisible="1" name="loan_open"/>
+                        <field invisible="1" name="currency_id"/>
+                        <field invisible="1" name="is_progress3_clicked" readonly="1"/>
+                        <field class="hr_loan_advance_warning" invisible="state not in ('progress2', 'progress', 'approve')" name="warning" readonly="1"/>
+                        <notebook>
+                            <page name="approval_details" string="Approval Details">
+                                <group col="4">
+                                    <div class="o_td_label" style="width:200px;">
+                                        <label for="old_loan_remaining" string="Old Loan Remaining Amount"/>
+                                    </div>
+                                    <field name="old_loan_remaining" nolabel="1"/>
+                                    <div class="o_td_label" style="width:200px;">
+                                        <label for="loan_amount" string="Loan Amount Approved"/>
+                                    </div>
+                                    <field name="loan_amount" nolabel="1" readonly="state in ('approve', 'refused')"/>
+                                    <field invisible="account_manager_id == False" name="account_manager_id" readonly="1"/>
+                                    <field invisible="old_loan_remaining &lt;= 0" name="allow_another_loan" readonly="state in ('approve', 'refused')"/>
+                                    <!--                                    <field name="is_direct_manager" invisible='1'/>-->
+                                    <!--                                    <field name="is_coach" invisible='1'/>-->
+                                    <div class="o_td_label" style="width:200px;">
+                                        <label for="loan_month_ins" string="Number of Installments"/>
+                                    </div>
+                                    <field name="loan_month_ins" nolabel="1" readonly="state in ('approve', 'refused')"/>
+                                    <field name="loan_ins_start_date" readonly="state in ('approve', 'refused')"/>
+                                    <field invisible="move_id == False" name="move_id" readonly="1"/>
+                                    <field invisible="account_manager_date == False" name="account_manager_date" readonly="1"/>
+                                    <field groups="base.group_multi_company" name="company_id" readonly="1"/>
+                                    <!--                                    <field name="is_show_dm_approve" invisible="1"/>-->
+                                    <!--                                    <field name="is_show_hrm_approve" invisible="1"/>-->
+                                    <!--                                    <field name="is_show_fm_approve" invisible="1"/>-->
+                                    <!--                                    <field name="is_show_admin_approve" invisible="1"/>-->
+                                </group>
+                            </page>
+                            <page invisible="state not in ('progress3', 'progress2', 'progress', 'approve')" name="payment_scheduler" string="Payment Scheduler">
+                                <field colspan="4" name="hr_employee_loan_line_ps" nolabel="1" string="Loan List">
+                                    <tree colors="blue:(state == 'notdeducted');black:(state == 'deducted')" create="0" delete="0" editable="bottom" string="Loan Lines">
+                                        <field column_invisible="parent.state not in ['draft']" name="sequence"/>
+                                        <field name="name" readonly="1"/>
+                                        <field name="installment_date" readonly="state == 'deducted'"/>
+                                        <field  name="installment_value" readonly="state == 'deducted'" column_invisible="parent.state not in ['draft']"/>
+                                        <field name="amount"  readonly="state == 'deducted'"/>
+                                        <field name="remaining_value" readonly="state == 'deducted'" column_invisible="parent.state not in ['draft']"/>
+                                        <field name="confirm" readonly="reschedule_done == True"/>
+                                        <!--                                        <field name="state" readonly="False"/>-->
+                                        <field name="state"/>
+                                        <button class="oe_highlight" invisible="confirm == True or reschedule_done == True" name="reschedule_loan" string="Reschedule" type="object"/>
+                                        <field invisible="1" name="reschedule_done"/>
+                                    </tree></field>
+                                <group class="oe_subtotal_footer oe_right" colspan="2">
+                                    <field invisible="1" name="total_amount"/>
+                                    <field invisible="1" name="paid_amount"/>
+                                    <field name="balance_amount" readonly="1"/>
+                                    <field invisible="1" name="paid_installment"/>
+                                    <field invisible="1" name="unpaid_installment"/>
+                                </group>
+                            </page>
+                            <page string="Comments">
+                                <group col="4">
+                                    <field colspan="4" name="employee_comment" placeholder="Write your comments" readonly="state not in ('draft', False)"/>
+                                    <field colspan="4" invisible="state not in ('progress2', 'progress', 'approve')" name="dm_comment" placeholder="Direct Manager comments" readonly="state in ('approve', 'refused')"/>
+                                    <field colspan="4" invisible="state not in ('progress2', 'progress', 'approve')" name="hr_comment" placeholder="HR comments" readonly="state in ('approve', 'refused')"/>
+                                    <field colspan="4" invisible="state not in ('progress2', 'progress', 'approve', 'refused')" name="account_comment" placeholder="Account Manager comments" readonly="state in ('approve', 'refused')"/>
+                                </group>
+                            </page>
+                            <page string="Approval Notes">
+                                <group>
+                                    <group>
+                                        <field name="d_manager"/>
+                                        <field groups="hr_saudi.group_dm" name="d_manager_note" nolabel="1" placeholder="Direct Manager Note" readonly="state != 'request'"/>
+                                        <field name="hr_manage_id"/>
+                                        <field groups="hr_saudi.group_hrm" name="hr_manage_note" nolabel="1" placeholder="HR Manager Note" readonly="state != 'progress'"/>
+                                    </group>
+                                    <group>
+                                        <field name="account_manage_id"/>
+                                        <field groups="hr_saudi.group_finance_manager" name="account_manage_note" nolabel="1" placeholder="Accounting Manager Note" readonly="state != 'progress2'"/>
+                                        <field name="admin_manager_id"/>
+                                        <field groups="hr_saudi.group_sys_manager" name="admin_manager_note" nolabel="1" placeholder="Admin Manager Note" readonly="state != 'progress3'"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field groups="base.group_user" name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form></field>
+        </record>
+        <!--ACTION-->
+        <!--MY LOAN REQUEST-->
+        <record id="open_hr_employee_loan_ps" model="ir.actions.act_window">
+            <field name="name">Loan</field>
+            <field name="res_model">hr.employee.loan.ps</field>
+            <field name="context">{'readonly_by_pass': True}</field>
+            <field name="view_mode">tree,form</field>
+            <!--            <field name="domain">[('employee_id.user_id','=',uid)]</field>-->
+            <!--            <field name="context">{'my_loan_request':True,'user': 'user_id'-->
+            <!--                ,'cond': 'in','val': uid}-->
+            <!--</field>-->
+            <!--            <field name="view_id" eval="view_hr_employee_loan_tree_ps"/>-->
+            <!--            <field name="help" type="html">-->
+            <!--                <p class="oe_view_nocontent_create">-->
+            <!--                    Click to add a new Loan.-->
+            <!--                </p>-->
+            <!--</field>-->
+        </record>
+        <!--LOAN FOR GUARANTOR APPROVAL-->
+        <!--        <record id="open_hr_employee_loan_ps_my_guaranty" model="ir.actions.act_window">-->
+        <!--            <field name="name">Loan for Guaranty Approval</field>-->
+        <!--            <field name="res_model">hr.employee.loan.ps</field>-->
+        <!--            <field name="type">ir.actions.act_window</field>-->
+        <!--            <field name="view_mode">tree,form</field>-->
+        <!--            <field name="domain">[('guarantor_id.user_id', 'in', [uid])]</field>-->
+        <!--            <field name="context">{'my_guaranty_loan_request':True,'user': 'guarantor_id.user_id'-->
+        <!--                ,'cond': 'in','val':uid,'search_default_guaranty':1}-->
+        <!--</field>-->
+        <!--            <field name="view_id" eval="view_hr_employee_loan_tree_ps"/>-->
+        <!--            <field name="search_view_id" ref="view_hr_employee_loan_filter_ps"/>-->
+        <!--        </record>-->
+        <!--DM APPROVAL-->
+        <!--        <record id="open_hr_employee_loan_ps_direct" model="ir.actions.act_window">-->
+        <!--            <field name="name">Direct MGR Approval</field>-->
+        <!--            <field name="res_model">hr.employee.loan.ps</field>-->
+        <!--            <field name="view_mode">tree,form</field>-->
+        <!--            <field name="domain">[('employee_id.parent_id.user_id', 'in', [uid])]</field>-->
+        <!--            <field name="context">{'my_dm_loan_request':True,'user': 'parent_id.user_id'-->
+        <!--                ,'cond': 'in','val':uid,'search_default_request':1}-->
+        <!--</field>-->
+        <!--            <field name="view_id" eval="False"/>-->
+        <!--            <field name="help" type="html">-->
+        <!--                <p class="oe_view_nocontent_create">-->
+        <!--                    Click to add a new Loan.-->
+        <!--                </p>-->
+        <!--</field>-->
+        <!--        </record>-->
+        <!--HRM APPROVAL-->
+        <!--        <record id="open_hr_employee_loan_ps_hrm" model="ir.actions.act_window">-->
+        <!--            <field name="name">HR MGR Approval</field>-->
+        <!--            <field name="res_model">hr.employee.loan.ps</field>-->
+        <!--            <field name="view_mode">tree,form</field>-->
+        <!--            <field name="domain">[]</field>-->
+        <!--            <field name="context">{'my_hrm_loan_request':True,'user': 'id'-->
+        <!--                ,'cond': 'not in','val': False,'search_default_progress':1}-->
+        <!--</field>-->
+        <!--            <field name="view_id" eval="False"/>-->
+        <!--        </record>-->
+        <!--FM APPROVAL-->
+        <!--        <record id="open_hr_employee_loan_ps_all" model="ir.actions.act_window">-->
+        <!--            <field name="name">Finance MGR Approval</field>-->
+        <!--            <field name="res_model">hr.employee.loan.ps</field>-->
+        <!--            <field name="view_mode">tree,form</field>-->
+        <!--            <field name="domain">[('state','not in',('draft',False))]</field>-->
+        <!--            <field name="context">{'my_fm_loan_request':True, 'user': 'id'-->
+        <!--                ,'cond': 'not in','val': False,'search_default_progress2':1}-->
+        <!--</field>-->
+        <!--            <field name="view_id" eval="view_hr_employee_loan_tree_ps"/>-->
+        <!--        </record>-->
+        <!--Admin & Financial Director APPROVAL-->
+        <!--        <record id="open_hr_employee_loan_ps_admin" model="ir.actions.act_window">-->
+        <!--            <field name="name">Admin &amp; FD Approval</field>-->
+        <!--            <field name="res_model">hr.employee.loan.ps</field>-->
+        <!--            <field name="view_mode">tree,form</field>-->
+        <!--            <field name="domain">[('state','=','progress3')]</field>-->
+        <!--            <field name="context">{'my_fd_loan_request':True, 'user': 'id'-->
+        <!--                ,'cond': 'not in','val': False,'search_default_progress3':1}-->
+        <!--</field>-->
+        <!--            <field name="view_id" eval="view_hr_employee_loan_tree_ps"/>-->
+        <!--        </record>-->
+    </data>
+</odoo>

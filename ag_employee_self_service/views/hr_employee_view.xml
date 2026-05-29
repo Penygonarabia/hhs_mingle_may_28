@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <menuitem groups="hr.group_hr_manager,hr.group_hr_user" id="employee_report_menu" name="Reports" sequence="30"/>
+        <menuitem groups="hr.group_hr_manager,hr.group_hr_user" id="menu_hr_management" name="HR Management" parent="hr.menu_hr_root" sequence="5"/>
+        <record id="hr_employee_inherit_form_view4" model="ir.ui.view">
+            <field name="name">hr.employee.form.view</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='department_id']" position="attributes">
+                     <attribute name="required">1</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='birthday']" position="attributes">
+                     <attribute name="required">1</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='department_id']" position="after">
+                    <field invisible="1" name="joining_date"/>
+                </xpath>
+                <xpath expr="//field[@name='name']" position="replace">
+                    <field name="name" placeholder="Employee's Name" required="True"/>
+                </xpath>
+                <xpath expr="//field[@name='coach_id']" position="after">
+                    <field invisible="1" name="sequence" string="Code"/>
+                </xpath>
+<!--                <xpath expr="//h2" position="replace">-->
+<!--                </xpath>-->
+                <!--  <xpath expr="//page[@name='personal_information']/group/group[2]" position="after">
+
+                    <group string="Work Experience">
+                     <div class="o_td_label" style="width:250px;">
+			                <label for="yrs_of_exp"/>
+			            </div>
+                        <field name="yrs_of_exp" nolabel="1"/>
+
+                    </group>
+                </xpath> -->
+                <xpath expr="//group[@name='active_group']" position="after">
+                    <group string="Work Experience">
+                        <!-- <div class="o_td_label" style="width:250px;">
+			                <label for="yrs_of_exp"/>
+			            </div> -->
+                        <field name="yrs_of_exp"/>
+                    </group>
+                </xpath>
+                <xpath expr="//field[@name='category_ids']" position="replace">
+                    <field groups="hr.group_hr_manager" invisible="1" name="category_ids" options="{'color_field': 'color', 'no_create_edit': True}" placeholder="Tags" widget="many2many_tags"/>
+                </xpath>
+                <!--                <xpath expr="//page[@name='personal_information']/group" position="after">-->
+                <!--                    <group name="fam_ids" colspan="4" string="Dependence Details" invisible="1">-->
+                <!--                        <field name="fam_ids">-->
+                <!--                            <tree editable="bottom">-->
+                <!--                                <field name="member_name" required="1"/>-->
+                <!--                                <field name="relation_id" required="1"/>-->
+                <!--                                <field name="member_contact"/>-->
+                <!--                                <field name="birth_date"/>-->
+                <!--                            </tree>-->
+                <!--</field>-->
+                <!--                    </group>-->
+                <!--                </xpath>-->
+                <field name="identification_id" position="replace"/>
+                <!--                <field name="passport_id" position="replace"/>-->
+                <xpath expr="//page[@name='dependence_details']" position="after">
+                    <!-- <xpath expr="//page[@name='personal_information']/group/group[1]" position="after"> -->
+                    <page name="identification_no" string="Documents">
+                        <group invisible="0" name="identification_id" string="Documents">
+                            <field invisible="1" name="identification_id" readonly="0"/>
+                            <field groups="hr.group_hr_user" invisible="identification_id in [None, False]" name="id_expiry_date"/>
+                            <field class="oe_inline" groups="hr.group_hr_user" invisible="identification_id in [None, False]" name="id_attachment_id" widget="many2many_binary"/>
+                        </group>
+                    </page>
+                    <!--                    <group name="passport_id" string="Passport ID">-->
+                    <!--                        <field name="passport_id"/>-->
+                    <!--                         <field name="eid" invisible="1"/>-->
+                    <!--                        field name="passport_expiry_date" groups="hr.group_hr_user" attrs="{'invisible': [('passport_id', 'in', [None,False])]}"/>-->
+                    <!--                        <field name="passport_attachment_id" groups="hr.group_hr_user" widget="many2many_binary" class="oe_inline" attrs="{'invisible': [('passport_id', 'in', [None,False])]}"/>-->
+                    <!--                    </group>-->
+                </xpath>
+            </field>
+        </record>
+        <!--        <record id="hr_gamification.hr_hr_employee_view_form" model="ir.ui.view">-->
+        <!--            <field name="name">hr.employee.view.form.inherit</field>-->
+        <!--            <field name="model">hr.employee</field>-->
+        <!--            <field name="inherit_id" ref="hr.view_employee_form"/>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <xpath expr="//page[@name='personal_information']" position="after">-->
+        <!--                    <page string="Received Badges" attrs="{'invisible': [('user_id', '=', False)]}">-->
+        <!--                        <div name="badges" groups="hr.group_hr_user">-->
+        <!--                            <field name="has_badges" invisible="1"/>-->
+        <!--                            <button string="Grant a Badge" type="action" name="%(hr_gamification.action_reward_wizard)d"/> to reward this employee for a good action-->
+        <!--                            <div class="oe_view_nocontent" attrs="{'invisible': [('has_badges', '=', True)]}">-->
+        <!--                                <p class="oe_view_nocontent_create">-->
+        <!--                                    Click to grant this employee his first badge-->
+        <!--                                </p><p class="oe_grey">-->
+        <!--                                    Badges are rewards of good work. Give them to people you believe deserve it.-->
+        <!--                                </p>-->
+        <!--                            </div>-->
+        <!--                        </div>-->
+        <!--                        <field name="badge_ids" widget="many2many_kanban" />-->
+        <!--                    </page>-->
+        <!--                </xpath>-->
+        <!--</field>-->
+        <!--        </record>-->
+        <record id="hr_departure_wizard_view_form_inherit" model="ir.ui.view">
+            <field name="name">hr.departure.wizard.view.form.inherit</field>
+            <field name="model">hr.departure.wizard</field>
+            <field name="inherit_id" ref="hr.hr_departure_wizard_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/footer" position="replace">
+                    <footer>
+                        <button class="oe_highlight" name="action_register_departure" string="Save" type="object"/>
+                    </footer>
+                </xpath></field>
+        </record>
+        <!--  <record id="hr_employee_inherited_search_view" model="ir.ui.view">
+            <field name="name">hr.employee.inherited.search.view</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_filter"/>
+            <field name="arch" type="xml">
+                 <xpath expr="//search/group" position="inside">
+                    <separator/>
+                    <filter string="Archived Reason"
+                            name="departure_reason"
+                             domain="[]" context="{'group_by': 'departure_reason'}"/>
+                    <filter string="Archived Reason"
+                            name="departure_date"
+                             domain="[]" context="{'group_by': 'departure_date'}"/>
+
+                    <separator/>
+                 </xpath></field>
+        </record>
+-->
+
+        <record id="hr_job_form_view_inherit" model="ir.ui.view">
+            <field name="name">hr.job.view.form.inherit</field>
+            <field name="model">hr.job</field>
+            <field name="inherit_id" ref="hr.view_hr_job_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/div[hasclass('oe_title')]" position="before">
+                    <label for="code"/>
+                   <field name="code" nolabel="1" required="1"/>
+                </xpath>
+            </field>
+        </record>
+         <record id="hr_job_tree_view_inherit" model="ir.ui.view">
+            <field name="name">hr.job.view.tree.inherit</field>
+            <field name="model">hr.job</field>
+            <field name="inherit_id" ref="hr.view_hr_job_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="before">
+                   <field name="code"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

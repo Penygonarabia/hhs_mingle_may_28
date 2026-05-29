@@ -1,0 +1,229 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+<odoo>
+	
+	<data>
+
+        <record id="paperformat_ac_unit_service_receipt_document_hhs" model="report.paperformat">
+            <field name="name">AC Unit Service Receipt HHS</field>
+            <field name="default" eval="True"/>
+            <field name="format">A4</field>
+            <field name="page_height">0</field>
+            <field name="page_width">0</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">38</field>
+            <field name="margin_bottom">20</field>
+            <field name="margin_left">5</field>
+            <field name="margin_right">5</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">35</field>
+            <field name="dpi">140</field>
+        </record>
+        
+        
+        <template id="ac_unit_service_receipt_document_template_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id"
+                 t-att-data-oe-lang="o and o.env.context.get('lang')">
+                <t t-raw="0"/>
+            </div>
+        </template>
+
+        <!-- Custom Report Template -->
+        <template id="report_ac_unit_service_receipt_document_hhs">
+        
+        	<t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+
+            <t t-call="machine_repair_management.ac_unit_service_receipt_document_template_internal_layout">
+        
+            <t t-if="doc and 'company_id' in doc">
+                <t t-set="company" t-value="doc.company_id"/>
+            </t>
+            <t t-if="not doc or not 'company_id' in doc">
+                <t t-set="company" t-value="res_company"/>
+            </t>
+            <div class="header" t-att-style="report_header_style">
+                <div class="row mt32 mb32">
+                    <div class="col-4 text-left">
+                        <img src="/machine_repair_management/static/src/img/HHS_Header_Left.png" alt="img"
+                             style="height: 120px; width: 350px; image-rendering: crisp-edges;"/>
+                    </div>
+                    <div class="col-4 text-center" style="vertical-align:text-top">
+                     	<img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)"
+                                     style="max-height: 100px; min-height:100px; min-width: 200px; max-width: 200px;"/>
+                        <!-- <img t-if="doc.company_id.logo" t-att-src="image_data_uri(doc.company_id.logo)"
+                             style="max-height: 100px; min-height:100px; min-width: 200px; max-width: 200px; image-rendering: crisp-edges;"/> -->
+                    </div>
+                    <div class="col-4 text-right" style="vertical-align:text-top; text-align:right">
+                        <img src="/machine_repair_management/static/src/img/HHS_Header_Right.png" alt="img"
+                             style="height: 120px; width: 350px; image-rendering: crisp-edges;"/>
+                    </div>
+                </div>
+                <h2>
+                    <center>
+                        <t>AC Unit Service Receipt Report</t>
+                    </center>
+                </h2>
+            </div>
+
+            <div class="page" style="page-break-after: always;">
+                <div class="row mt32 mb32">
+                    <div class="col-6">
+                        <table class="table table-bordered border-dark">
+                            <colgroup>
+                                <col width='30%'/>
+                                <col width='30%'/>
+                                <col width='40%'/>
+                            </colgroup>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Job Card No :</strong></td>
+                                    <td><span t-field="doc.name"/></td>
+                                    <td style="text-align:right"><strong> : رقم البطاقة الوظيفية</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Customer Name:</strong></td>
+                                    <td><span t-field="doc.customer_name"/></td>
+                                    <td style="text-align:right"><strong>:اسم العميل</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Phone:</strong></td>
+                                    <td><span t-field="doc.phone"/></td>
+                                    <td style="text-align:right"><strong>  : هاتف</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Address:</strong></td>
+                                     <td>
+                                        <div t-field="doc.partner_id"
+                                             t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+                                    </td>
+                                      <td style="text-align:right"><strong>: عنوان</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-6">
+                        <table class="table table-bordered border-dark">
+                            <colgroup>
+                                <col width='30%'/>
+                                <col width='45%'/>
+                                <col width='25%'/>
+                            </colgroup>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Date:</strong></td>
+                                    <td><span t-field="doc.service_created_datetime"/></td>
+                                    <td style="text-align:right"><strong>: تاريخ</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Technician:</strong></td>
+                                    <td><span t-field="doc.technician_id.name"/></td>
+                                    <td style="text-align:right"><strong>: فني</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <p><b>AC Unit Details</b></p>
+                <table class="table table-bordered border-dark">
+                    <thead>
+                        <tr style="text-align:center; color:black;">
+                            <th width="2%">
+                                <strong>قم</strong><br/>
+                                <strong>S.No</strong></th>
+                            <th width="5%">
+                                <strong>ماركة</strong><br/>
+                                <strong>Brand</strong></th>
+                            <th width="6%">
+                                <strong> رقم الموديل</strong><br/>
+                                <strong>Model No</strong></th>
+                            <th width="7%">
+                                <strong>رقم سري</strong><br/>
+                                <strong>Serial No.</strong></th>
+                            <th width="7%">
+                                <strong> سعة</strong><br/>
+                                <strong>Capacity</strong></th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="counter" t-value="1"/>
+                            <tr>
+                                    <td style="text-align:left"><span t-esc="counter"/></td>
+                                    <td><span t-esc="doc.product_category_id.name"/></td>
+
+
+                                    <td style="text-align:left">
+                                        <span t-esc="doc.product_id.default_code"
+                                              />
+                                    </td>
+                                    <td style="text-align:left">
+                                        <span t-esc="doc.product_slno"
+                                              />
+                                    </td>
+
+                                    <td style="text-align:left">
+                                        <span t-esc="doc.svc_id or None"
+                                              />
+                                    </td>
+
+                                </tr>
+                    </tbody>
+                </table>
+                <br/>
+                <p>Technician has collected the AC unit(s) from the customer for indoor/outdoor service. A receipt has been provided for acknowledgement.</p>
+                <br/>
+                <div class="row mt32 mb32">
+                    <div class="col-4 text-left">
+                        <p style="font-size:18px;">توقيع العميل</p>
+                        <p style="font-size:18px;">Customer Signature</p>
+                    </div>
+                    <div class="col-4"/>
+                    <div class="col-4 text-right">
+                        <p style="font-size:18px;">توقيع الفني</p>
+                        <p style="font-size:18px;">Technician Signature</p>
+                    </div>
+
+                </div>
+            </div>
+            
+             <div class="footer">
+                   <img src="machine_repair_management/static/src/img/JobCard_Footer_img.png"
+                        style="width:100%;"/>
+              </div>
+           <!--  <div class="footer">
+                <div>
+                    <img src="/machine_repair_management/static/src/img/Arabic_Text.png" alt="img"
+                         style="height:60px; width:100%; image-rendering: crisp-edges;"/>
+                </div>
+                <br/>
+                <br/>
+                <div>
+                    <img src="/machine_repair_management/static/src/img/Footer_Address.png" alt="img"
+                         style="height:100px; width:100%;"/>
+                </div>
+            </div> -->
+            </t>
+            </t>
+            </t>
+        </template>
+        <!-- Override Default Report Action -->
+        <record id="ac_unit_service_receipt_document_hhs_report" model="ir.actions.report">
+            <field name="name">AC Service Receipt Report</field>
+            <field name="model">project.task</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">machine_repair_management.report_ac_unit_service_receipt_document_hhs</field>
+            <field name="report_file">machine_repair_management.report_ac_unit_service_receipt_document_hhs</field>
+            <field name="binding_model_id" ref="machine_repair_management.model_project_task"/>
+            <field name="binding_type">report</field>
+            <field name="paperformat_id" ref="machine_repair_management.paperformat_ac_unit_service_receipt_document_hhs"/>
+        </record>
+        
+        
+        
+        
+    </data>    
+	
+
+	
+
+</odoo> 

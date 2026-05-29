@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_employee_advance_report_form" model="ir.ui.view">
+		 <field name="name">employee.advance.report.wizard</field>
+		 <field name="model">employee.advance.report</field>
+		 <field name="arch" type="xml">
+		 	<form string="Advance Transaction Report">
+					<group>
+						<field name="employee_ids" widget="many2many_tags"/>
+					</group>
+					<group>
+						<field name="company_id" invisible="1"/>
+					</group>
+				  <footer>
+						 <button name="print_salary_report" string="Print Excel" type="object" class="oe_highlight"/>
+						 <button name="print_detail_report" string="Print PDF" type="object" class="oe_highlight"/>
+						<button name="clear" string="Cancel" class="btn-secondary" special="cancel"/>
+				</footer>
+
+			 </form>
+
+		 </field>
+	</record>
+
+
+    <record id="action_employee_advance_report" model="ir.actions.act_window">
+		<field name="name">Advance</field>
+		<field name="res_model">employee.advance.report</field>
+		<field name="view_mode">form</field>
+         <field name="view_id" ref="view_employee_advance_report_form"/>
+		<field name="target">new</field>
+		 <field name="binding_model_id" ref="model_employee_advance_report"/>
+        <field name="binding_type">report</field>
+	</record>
+
+<!--	<menuitem id="menu_action_employee_loan_report" name="Employee Loan Report" action="action_employee_loan_report"  parent="hr.menu_hr_employee_payroll"-->
+<!--              sequence="40"/>-->
+
+	<menuitem action="action_employee_advance_report" name="Advance" id="menu_action_employee_advance_report" sequence="30"
+                  parent="hr_loan_advance.menu_hr_employee_advance_report_ps" />
+
+	<record id="action_employee_advance_pdf" model="ir.actions.report">
+        <field name="name">Advance Transaction Report</field>
+        <field name="model">employee.advance.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">employee_advance_report.report_employee_advance_pdf</field>
+        <field name="report_file">employee_advance_report.report_employee_advance_pdf</field>
+        <field name="binding_model_id" ref="model_employee_advance_report"/>
+        <field name="binding_type">report</field>
+    </record>
+<!--	         <field name="paperformat_id" ref="employee_details_report.custom_branch_paperformat_id" />-->
+
+
+
+</odoo>

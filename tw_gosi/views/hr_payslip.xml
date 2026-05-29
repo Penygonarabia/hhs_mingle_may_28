@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_hr_contract_inherited_gosi" model="ir.ui.view">
+            <field name="name">hr.contract.inherited.gosi</field>
+            <field name="model">hr.contract</field>
+            <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='allowances']" position="after">
+                     <group string="Gosi Saudi deduction" name="Deduction">
+                        <field name="calculate_based_on_allowance"/>
+                        <field name="gosi_amt"  string="Employee contribution"/>
+                        <field name="gosi_comp_amt" string="Employer contribution for Saudi" />
+                     </group>
+                    <group string="Gosi Non Saudi Company Contribution">
+                        <field name="gosi_non_comp" string="Employer contribution for Non-Saudi"/>
+                    </group>
+
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

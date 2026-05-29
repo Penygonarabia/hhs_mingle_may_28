@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+      <record id="CD" model="hr.salary.rule.category">
+            <field name="name">Credit</field>
+            <field name="code">CD</field>
+        </record>
+        <!-- Salary Rules -->
+
+        <record id="hr_salary_rule_absent" model="hr.salary.rule">
+            <field name="amount_select">code</field>
+            <!-- <field name="amount_python_compute">result = -(employee.attendance_sheet_id.absent) or False
+            </field> -->
+             <field name="amount_python_compute">result = -(employee.attendance_sheet_id.absent) or False
+            </field>
+            <field name="code">ABR</field>
+            <!-- <field name="struct_id" ref="hr_payroll.structure_base"/> -->
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="name">Absent Rule</field>
+            <field name="sequence" eval="121"/>
+        </record>
+          <!--  if employee.attendance_sheet_id.total_absence > absent.time: -->
+
+        <record id="hr_salary_rule_overtime" model="hr.salary.rule">
+            <field name="amount_select">code</field>
+            <!-- <field name="amount_python_compute">result = (employee.attendance_sheet_id.overtime)
+            </field> -->
+            <field name="amount_python_compute">result = (employee.attendance_sheet_id.overtime)
+            </field>
+            <field name="code">OT</field>
+            <!-- <field name="struct_id" ref="hr_payroll.structure_base"/> -->
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <!-- <field name="category_id" ref="hr_attendances_overtime.CD"/> -->
+            <field name="name">Overtime Rule</field>
+            <field name="sequence" eval="122"/>
+        </record>
+
+        <record id="hr_salary_rule_timedifferent" model="hr.salary.rule">
+            <field name="amount_select">code</field>
+           <!--  <field name="struct_id" ref="hr_payroll.structure_base"/> -->
+            <!-- <field name="amount_python_compute">result = -(employee.attendance_sheet_id.time_different)
+            </field> -->
+            <field name="amount_python_compute">result = -(employee.attendance_sheet_id.time_different)
+            </field>
+            <field name="code">TDF</field>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="name">Time-Different Rule</field>
+            <field name="sequence" eval="123"/>
+        </record>
+
+        <record id="hr_salary_rule_latein" model="hr.salary.rule">
+            <field name="amount_select">code</field>
+            <!-- <field name="struct_id" ref="hr_payroll.structure_base"/> -->
+            <!-- <field name="amount_python_compute">result = -(employee.attendance_sheet_id.latein)
+            </field> -->
+            <field name="amount_python_compute">result = -(employee.attendance_sheet_id.latein)
+            </field>
+            <field name="code">LT</field>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="name">Late In Rule</field>
+            <field name="sequence" eval="124"/>
+        </record>
+        
+        <record id="hr_salary_rule_early_checkout" model="hr.salary.rule">
+        	<field name="amount_select">code</field>
+        	<field name="amount_python_compute">result = -(employee.attendance_sheet_id.early_check_out_amount)</field> 
+        	<field name="code">EARLYOUT</field>
+        	<field name="category_id" ref="om_hr_payroll.DED"/>
+        	<field name="name">Early Checkout Rules</field>
+        	<field name="sequence" eval="125"/>
+        </record>
+        
+</odoo>

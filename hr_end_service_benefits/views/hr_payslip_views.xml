@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_hr_payslip_total_reward_form" model="ir.ui.view">
+            <field name="name">hr.payslip.form</field>
+            <field name="model">hr.payslip</field>
+            <field name="inherit_id" ref="om_hr_payroll.view_hr_payslip_form" />
+            <field name="arch" type="xml">
+                <field name="is_terminated" position="after">
+                    <field name="terminal_amount" force_save="1" invisible="1"/>
+                    <field name="eos_accured_leave" force_save="1" invisible="1"/>
+                    <field name="eos_outstanding_loan" force_save="1" invisible="1"/>
+                    <field name="eos_outstanding_advance" force_save="1" invisible="1"/>
+           
+                </field>
+            </field>
+        </record>
+
+    </data>
+</odoo>

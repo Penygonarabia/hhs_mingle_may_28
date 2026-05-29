@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.ui.view" id="product_template_cost_price_inherited_form_view">
+        <field name="name">product.template.cost.price.form</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='standard_price_uom']" position="replace">
+                <div name="standard_price_uom" invisible="not is_cost_price">
+                    <field name="standard_price" class="oe_inline" widget='monetary' options="{'currency_field': 'cost_currency_id', 'field_digits': True}"/>
+                    <span>per
+                        <field name="uom_name" class="oe_inline"/>
+                    </span>
+                </div>
+            </xpath>
+             <xpath expr="//field[@name='standard_price']" position="after">
+                <field name="is_cost_price" invisible="1"/>
+            </xpath>
+            <xpath expr="//label[@for='standard_price']" position="replace">
+                <label for="standard_price" invisible="not is_cost_price"/>
+            </xpath>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="product_template_cost_price_inherited_tree_view">
+        <field name="name">product.template.cost.price.tree</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='standard_price']" position="replace">
+                <field name="standard_price" widget="monetary" options="{'currency_field': 'cost_currency_id'}" readonly="1" groups="selling_cost_price_restrict.group_product_price_user"/>
+            </xpath>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="product_product_cost_price_inherited_tree_view">
+        <field name="name">product.product.cost.price.tree</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_product_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='standard_price']" position="replace">
+                <field name="standard_price" widget="monetary" options="{'currency_field': 'cost_currency_id'}" readonly="1" groups="selling_cost_price_restrict.group_product_price_user"/>
+            </xpath>
+
+        </field>
+    </record>
+
+<!--    <record id="product_product_cost_price_inherited_form_view" model="ir.ui.view">-->
+<!--        <field name="name">product.product.form</field>-->
+<!--        <field name="model">product.product</field>-->
+<!--        <field name="inherit_id" ref="product.product_normal_form_view"/>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <xpath expr="//field[@name='uom_po_id']" position="after">-->
+<!--                <field name="product_seasons_type" />-->
+<!--                <field name="default_vendor_id"/>-->
+<!--                <field name="country_id" options="{'no_create': True, 'no_open': True}"/>-->
+<!--            </xpath>-->
+<!--        </field>-->
+<!--    </record>-->
+</odoo>

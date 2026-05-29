@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+  <t t-name="organization_chart.orgchart">
+    <Layout display="{ controlPanel: { 'top-right' : true, 'bottom-right': false } }">
+        <t t-set-slot="control-panel-navigation-additional">
+          <div class="float-left">
+            <button id="js_btn_reload" class="ml8 btn btn-primary js_btn_reload" title="Reload Chart" t-on-click="onClickReload">
+              <i class="fa fa-refresh"/>
+            </button>
+
+            <button id="js_btn_export_png" class="ml8 btn btn-secondary js_btn_export_png" title="Export PNG" t-on-click="onClickExportPNG">
+              <i class="fa fa-image"></i>
+            </button>
+
+            <button id="js_btn_export_pdf" class="ml8 btn btn-secondary js_btn_export_pdf" title="Export PDF" t-on-click="onClickExportPDF">
+              <i class="fa fa-file-pdf-o"></i>
+            </button>
+
+            <button id="js_btn_switch" class="ml8 btn btn-secondary js_btn_switch" title="Switch Chart" t-on-click="onClickSwitchChart">
+              <i class="fa fa-exchange"></i>
+            </button>
+
+            <button id="js_btn_zoom_in" class="ml8 btn btn-secondary js_btn_zoom_in" title="Zoom In" t-on-click="onClickSZommIn">
+              <i class="fa fa-search-plus"></i>
+            </button>
+
+            <button id="js_btn_zoom_out" class="ml8 btn btn-secondary js_btn_zoom_out" title="Zoom Out" t-on-click="onClickSZommOut">
+              <i class="fa fa-search-minus"></i>
+            </button>
+
+            <button id="js_btn_path" class="ml8 btn btn-secondary js_btn_path" title="Path" t-on-click="onClickPath">
+              <i class="fa fa-arrow-up"></i>
+            </button>
+
+            <button id="js_btn_expand" class="ml8 btn btn-secondary js_btn_expand" title="Expand" t-on-click="onClickExpand">
+              <i class="fa fa fa-expand"></i>
+            </button>
+
+          </div>
+          <div class="btn-group  d-md-inline-flex float-right" style="float: right;">
+            <input type="text" id="js_btn_search" class="o_input js_btn_search" placeholder="Search OrgChart" t-ref="search_input" t-on-keyup="onKeyupSearch"/>
+            <button type="button" id="js_btn_search_filter" class="btn btn-primary js_btn_search_filter" t-on-click="onClickSearch">
+                Filter
+            </button>
+            <button type="button" id="js_btn_search_clear" class="btn btn-secondary js_btn_search_clear" t-on-click="onClickClearSearch">
+                Clear
+            </button>
+          </div>
+        </t>
+
+        <div class="o_employee_orgcharts">
+            <div class="container-fluid o_employee_orgchart">
+              <t t-call="organization_chart.employee_orgchart_content"/>
+            </div>
+        </div>
+    </Layout>
+    
+  </t>
+
+  <t t-name="organization_chart.employee_orgchart_content">
+    <div class="o_employee_orgchart_content">
+      <div id="chart_container" class="chart_container" t-ref="chart_container"></div>
+    </div>
+  </t>
+
+</templates>

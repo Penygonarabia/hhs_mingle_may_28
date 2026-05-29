@@ -1,0 +1,16 @@
+<!-- <?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+	
+	<record id="no_edit_in_exit_state" model="ir.rule">
+		<field name="name">No form edit in Exit state</field>
+		<field name="model_id"  ref="hr.model_hr_employee"/>
+		<field name="groups" eval="[(4,ref('base.group_user'))]"/>
+		<field name="perm_unlink" eval="0"/>
+		<field name="perm_create" eval="0"/>
+		<field name="perm_write" eval="0"/>
+		<field name="perm_read" eval="1"/>
+		<field name="domain_force">[('state','=','exit')] </field>
+	</record>
+
+
+</odoo> -->

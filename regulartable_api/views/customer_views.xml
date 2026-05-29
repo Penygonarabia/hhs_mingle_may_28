@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_customer_custom_form" model="ir.ui.view">
+        <field name="name">customer.form</field>
+        <field name="model">customer</field>
+        <field name="arch" type="xml">
+            <form string="customer Custom Language">
+                <sheet>
+                    <group>
+                        <field name="cst_account"/>
+                        <field name="cst_add"/>
+                        <field name="cst_add2"/>
+                        <field name="cst_addno"/>
+                        <field name="cst_alloweditcstname"/>
+                        <field name="cst_allowloyalty"/>
+                        <field name="cst_balance"/>
+                        <field name="cst_buildno"/>
+                        <field name="cst_calcretailfromfix"/>
+                        <field name="cst_climit"/>
+                        <field name="cst_cname"/>
+                        <field name="cst_cname2"/>
+                        <field name="cst_comreg"/>
+                        <field name="cst_credit"/>
+                        <field name="cst_cstclassification"/>
+                        <field name="cst_cstpromogrp"/>
+                        <field name="cst_ctitle"/>
+                        <field name="cst_ctitle2"/>
+                        <field name="cst_defslt"/>
+                        <field name="cst_defwh"/>
+                        <field name="cst_disabled"/>
+                        <field name="cst_district"/>
+                        <field name="cst_doctype"/>
+                        <field name="cst_dsireq"/>
+                        <field name="cst_email"/>
+                        <field name="cst_export"/>
+                        <field name="cst_exsh"/>
+                        <field name="cst_fax"/>
+                        <field name="cst_hhscash"/>
+                        <field name="cst_idnumber"/>
+                        <field name="cst_intdate"/>
+                        <field name="cst_invreqautocrnote"/>
+                        <field name="cst_lpoint"/>
+                        <field name="cst_lredeem"/>
+                        <field name="cst_message"/>
+                        <field name="cst_message2"/>
+                        <field name="cst_name"/>
+                        <field name="cst_name2"/>
+                        <field name="cst_nationality"/>
+                        <field name="cst_nearby"/>
+                        <field name="cst_no"/>
+                        <field name="cst_noofvehicles"/>
+                        <field name="cst_odsi"/>
+                        <field name="cst_otheradd"/>
+                        <field name="cst_partcustomer"/>
+                        <field name="cst_pcode"/>
+                        <field name="cst_region"/>
+                        <field name="cst_showdiscount"/>
+                        <field name="cst_sman"/>
+                        <field name="cst_streetname"/>
+                        <field name="cst_subregion"/>
+                        <field name="cst_suspendc"/>
+                        <field name="cst_tele"/>
+                        <field name="cst_tprv"/>
+                        <field name="cst_ty1"/>
+                        <field name="cst_ty2"/>
+                        <field name="cst_ty3"/>
+                        <field name="cst_ty4"/>
+                        <field name="cst_vatgrp"/>
+                        <field name="cst_vatreg"/>
+                        <field name="cst_whcrcustomer"/>
+                        <field name="cst_ytd"/>
+                        <field name="lang_flag"/>
+                        <field name="lang_flag2"/>
+                        <field name="user_id"/>
+                        <field name="user_lmd"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_customer_custom_tree" model="ir.ui.view">
+        <field name="name">customer.custom.tree</field>
+        <field name="model">customer</field>
+        <field name="arch" type="xml">
+            <tree string="customer Custom Language List">                
+                        <field name="cst_account"/>
+                        <field name="cst_add"/>
+                        <field name="cst_add2"/>
+                        <field name="cst_addno"/>
+                        <field name="cst_alloweditcstname"/>
+                        <field name="cst_allowloyalty"/>
+                        <field name="cst_balance"/>
+                        <field name="cst_buildno"/>
+                        <field name="cst_calcretailfromfix"/>
+                        <field name="cst_climit"/>
+                        <field name="cst_cname"/>
+                        <field name="cst_cname2"/>
+                        <field name="cst_comreg"/>
+                        <field name="cst_credit"/>
+                        <field name="cst_cstclassification"/>
+                        <field name="cst_cstpromogrp"/>
+                        <field name="cst_ctitle"/>
+                        <field name="cst_ctitle2"/>
+                        <field name="cst_defslt"/>
+                        <field name="cst_defwh"/>
+                        <field name="cst_disabled"/>
+                        <field name="cst_district"/>
+                        <field name="cst_doctype"/>
+                        <field name="cst_dsireq"/>
+                        <field name="cst_email"/>
+                        <field name="cst_export"/>
+                        <field name="cst_exsh"/>
+                        <field name="cst_fax"/>
+                        <field name="cst_hhscash"/>
+                        <field name="cst_idnumber"/>
+                        <field name="cst_intdate"/>
+                        <field name="cst_invreqautocrnote"/>
+                        <field name="cst_lpoint"/>
+                        <field name="cst_lredeem"/>
+                        <field name="cst_message"/>
+                        <field name="cst_message2"/>
+                        <field name="cst_name"/>
+                        <field name="cst_name2"/>
+                        <field name="cst_nationality"/>
+                        <field name="cst_nearby"/>
+                        <field name="cst_no"/>
+                        <field name="cst_noofvehicles"/>
+                        <field name="cst_odsi"/>
+                        <field name="cst_otheradd"/>
+                        <field name="cst_partcustomer"/>
+                        <field name="cst_pcode"/>
+                        <field name="cst_region"/>
+                        <field name="cst_showdiscount"/>
+                        <field name="cst_sman"/>
+                        <field name="cst_streetname"/>
+                        <field name="cst_subregion"/>
+                        <field name="cst_suspendc"/>
+                        <field name="cst_tele"/>
+                        <field name="cst_tprv"/>
+                        <field name="cst_ty1"/>
+                        <field name="cst_ty2"/>
+                        <field name="cst_ty3"/>
+                        <field name="cst_ty4"/>
+                        <field name="cst_vatgrp"/>
+                        <field name="cst_vatreg"/>
+                        <field name="cst_whcrcustomer"/>
+                        <field name="cst_ytd"/>
+                        <field name="lang_flag"/>
+                        <field name="lang_flag2"/>
+                        <field name="user_id"/>
+                        <field name="user_lmd"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom_main" name="Languages" sequence="10"/> -->
+
+    <record id="action_customer_custom" model="ir.actions.act_window">
+        <field name="name">customer Custom Languages</field>
+        <field name="res_model">customer</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom" name="Regular" action="action_res_lang_custom"  sequence="10"/> -->
+
+</odoo>

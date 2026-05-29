@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+	<data>
+		<record id="office_leaving_reason" model="removal.request.reason">
+			<field name="name">Office Leaving</field>
+		</record>
+		<record id="personal_privacy_reason" model="removal.request.reason">
+			<field name="name">Personal Privacy</field>
+		</record>
+		<record id="other_reason" model="removal.request.reason">
+			<field name="name">Others</field>
+		</record>
+	</data>
+</odoo>

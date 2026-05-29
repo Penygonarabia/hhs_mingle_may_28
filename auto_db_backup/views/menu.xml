@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Root Menu — ADMIN ONLY (base.group_system = Settings/Technical group) -->
+        <menuitem id="menu_auto_db_backup_root"
+                  name="Auto Backup"
+                  sequence="200"
+                  groups="base.group_system"
+                  web_icon="base,static/description/icon.png"/>
+
+        <!-- Sub Menus — Also Admin Only -->
+        <menuitem id="menu_backup_config"
+                  name="Backup Configurations"
+                  parent="menu_auto_db_backup_root"
+                  action="action_auto_db_backup_config"
+                  groups="base.group_system"
+                  sequence="10"/>
+
+        <menuitem id="menu_backup_logs"
+                  name="Backup History"
+                  parent="menu_auto_db_backup_root"
+                  action="action_auto_db_backup_log"
+                  groups="base.group_system"
+                  sequence="20"/>
+    </data>
+</odoo>

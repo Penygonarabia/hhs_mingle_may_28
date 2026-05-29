@@ -1,0 +1,61 @@
+/* ============================================================
+   Traditional Arabic Font Styling for Bilingual PDF Reports
+   ============================================================ */
+
+/* Arabic Text: RTL direction + custom font */
+.arabic-text {
+    font-family: 'TraditionalArabic', 'Arial', sans-serif !important;
+    direction: rtl !important;
+    text-align: right !important;
+    unicode-bidi: embed;
+}
+
+/* English Text: LTR direction + default font */
+.english-text {
+    font-family: 'Arial', sans-serif;
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+/* Bilingual row: English left, Arabic right side by side */
+.bilingual-row {
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 8px;
+
+    .bilingual-en {
+        float: left;
+        width: 50%;
+        text-align: left;
+        direction: ltr;
+        font-family: 'Arial', sans-serif;
+    }
+
+    .bilingual-ar {
+        float: right;
+        width: 50%;
+        text-align: right;
+        direction: rtl;
+        font-family: 'TraditionalArabic', 'Arial', sans-serif !important;
+        unicode-bidi: embed;
+    }
+
+    &::after {
+        content: '';
+        display: table;
+        clear: both;
+    }
+}
+
+/* Bilingual table headers */
+.th-ar {
+    font-family: 'TraditionalArabic', 'Arial', sans-serif !important;
+    direction: rtl;
+    text-align: right;
+}
+
+.th-en {
+    font-family: 'Arial', sans-serif;
+    direction: ltr;
+    text-align: left;
+}

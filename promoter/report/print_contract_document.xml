@@ -1,0 +1,61 @@
+<odoo>
+    <!-- Report Template -->
+    <template id="report_contract_document_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <h2>Contract Document</h2>
+                <p><strong>Showroom:</strong> <t t-esc="doc.showroom_id.name"/></p>
+                <p><strong>Promoter:</strong> <t t-esc="doc.promoter_id.name"/></p>
+                <p><strong>Start Date:</strong> <t t-esc="doc.from_date"/></p>
+                <p><strong>End Date:</strong> <t t-esc="doc.to_date"/></p>
+            </t>
+        </t>
+    </template>
+
+    <!-- Report Action -->
+    <report
+        id="action_report_contract_document"
+        model="promoter.showroom"
+        string="Contract Document"
+        report_type="qweb-pdf"
+        name="promoter.report_contract_document_template"
+        file="promoter.report_contract_document_template"
+    />
+</odoo>
+
+
+
+
+<!-- <odoo>
+    <template id="print_contract_document_template">
+        <t t-call="web.external_layout">
+            <div class="page">
+                <h2 class="text-center">Contract Document / وثيقة العقد</h2>
+                <t t-foreach="docs" t-as="doc">
+                    <table class="table table-bordered" style="width:100%; margin-top:20px;">
+                        <tbody>
+                            <tr>
+                                <td>Showroom Name: <t t-esc="doc.name"/></td>
+                                <td>اسم المعرض: <t t-esc="doc.name"/></td>
+                            </tr>
+                            <tr>
+                                <td>Dealer: <t t-esc="doc.dealer_id.name"/></td>
+                                <td>الوكيل: <t t-esc="doc.dealer_id.name"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <report
+        id="action_report_contract_document"
+        model="promoter.showroom"
+        string="Contract Document"
+        report_type="qweb-pdf"
+        name="promoter.print_contract_document_template"
+        file="promoter.print_contract_document_template"
+        print_report_name="'Contract_Document_' + object.name"
+    />
+</odoo> -->

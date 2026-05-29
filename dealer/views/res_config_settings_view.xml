@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_dealer" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.dealer</field>
+        <field name="model">res.config.settings</field>
+
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Dealer" string="Dealer" name="dealer_settings"
+                     data-key="dealer" logo="/dealer/static/description/location_maker.png" >
+        <!-- <field name="inherit_id" ref="machine_repair_management.res_config_settings_service_module_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside"> -->
+            <!-- <xpath expr="//div[contains(@class,'settings_tab')]" position="inside"> -->
+                <div class="app_settings_block" data-string="Dealer Settings" string="Dealer Settings">
+                    <h2>Dealer Settings</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-12 o_setting_box">
+                            <div class="o_setting_left_pane">
+                                <field name="validate_geo_location"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="validate_geo_location"/>
+                                <div class="text-muted">
+                                    Enable this option to validate geo-location during dealer sales operations.
+                                </div>
+                            </div>
+                               <!-- dealer WFO Radius -->
+                               <div class="row mt16">
+                                    <label for="dealer_wfo_radius"/>
+                                    <field name="dealer_wfo_radius"/>
+                               </div>                            
+                            <div class="o_setting_box">
+                            <div class="o_setting_left_pane">
+                            <field name="show_dealer_menu"/>
+                            </div>
+                           <div class="o_setting_right_pane">
+                                <label for="show_dealer_menu"/>
+                                <div class="text-muted">
+                                    Tick this to show or hide the Dealer menu in the backend.
+                                </div>
+                            </div>
+                            </div>
+                             <!-- dealer WFO Radius -->
+                               <div class="row mt16">
+                                    <label for="fsm_loyalty_point_value"/>
+                                    <field name="fsm_loyalty_point_value"/>
+                               </div>   
+                        </div>
+                    </div>
+                </div>
+               </app>
+            </xpath>
+        </field>
+    </record>
+
+        <!-- <record id="res_config_settings_view_fsm_loyalty" model="ir.ui.view">
+        <field name="name">res.config.settings.fsm.loyalty</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+                    <xpath expr="//form" position="inside">
+                        <app name="fsm_loyalty_settings"
+                            string="FSM Loyalty"
+                            data-key="fsm_loyalty">
+
+                            <block title="FSM Loyalty Settings">
+                                <setting>
+                                    <field name="fsm_loyalty_point_value"/>
+                                </setting>
+                            </block>
+
+                        </app>
+                    </xpath>
+        </field>
+    </record> -->
+
+<record id="view_res_config_settings_inherit_interface" model="ir.ui.view">
+    <field name="name">res.config.settings.interface.mandatory</field>
+    <field name="model">res.config.settings</field>
+    <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+    <field name="arch" type="xml">
+
+        <xpath expr="//app[@name='machine_repair_management']" position="inside">
+            <block title="Interface Settings">
+                <setting>
+                    <field name="make_interface_code_mandatory"/>
+                </setting>
+            </block>
+        </xpath>
+
+    </field>
+</record>
+
+</odoo>

@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Action subscription contracts -->
+    <record id="subscription_contracts_action" model="ir.actions.act_window">
+        <field name="name">Contracts</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">subscription.contracts</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new record!
+            </p>
+        </field>
+    </record>
+    <!-- Contracts menu -->
+    <menuitem id="subscription_contract_menu_action"
+              name="Contracts"
+              parent="crm.crm_menu_sales"
+              action="subscription_contracts_action"
+              sequence="999"
+              />
+                        
+    <!-- Subscription contract form view -->
+    <record id="subscription_contracts_view_form" model="ir.ui.view">
+        <field name="name">subscription.contracts.view.form</field>
+        <field name="model">subscription.contracts</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget='statusbar'
+                           statusbar_visible='New,Ongoing,Expire Soon,Expired'/>
+                    <button name="action_to_confirm" class="oe_highlight"
+                            string="Confirm" type="object"
+                            help="Confirm your Subscription Contracts"
+                            invisible="state != 'New'" confirm="Are you sure?"/>
+                    <button name="action_generate_invoice"
+                            class="oe_highlight"
+                            string="Generate Invoice"
+                            type="object"
+                            invisible="state not in ('Ongoing','Expire Soon')"
+                            help="Generate Invoices for your Contracts"/>
+                    <button name="action_lock" class="oe_highlight"
+                            string="Lock" type="object"
+                            help="Lock your Subscription Contracts"
+                            invisible="1"
+                    />
+                    <button name="action_to_unlock" class="oe_highlight"
+                            string="Unlock" type="object"
+                            help="Unlock your Subscription Contracts"
+                            invisible="1"
+                    />
+                    <button name="action_to_cancel" class="oe_highlight"
+                            string="Cancel" type="object"
+                            help="Cancel your Subscription Contracts"
+                            invisible="state not in ('Ongoing', 'Expire Soon')"
+                    />
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" icon="fa-pencil-square" name="show_amc_quotation_view"
+                                string="Show Quotation" type="object"/>
+                        <button class="oe_stat_button" type="object"
+                                name="action_get_invoice"
+                                icon="fa-pencil-square-o"
+                                invisible="state not in ('Ongoing', 'Expire Soon', 'Expired')">
+                            <field string="Invoices"
+                                   name="invoice_count" widget="statinfo"
+                            />
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Contracts"
+                                   readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="reference" required="1"
+                                   readonly="lock or state not in 'New' "/>
+                            <field name="partner_id" options="{'no_create': True}"
+                                   readonly="lock or state not in 'New' "/>
+                            <field name="contract_type" readonly="lock or state not in 'New' " invisible="1"/>
+                            <field name="recurring_period"
+                                   readonly="lock or state not in 'New' " 
+                                   help="Contract duration in months"/>
+                            <!-- REMOVED: recurring_period_interval field as per code changes -->
+                            <field name="recurring_invoice"
+                                   readonly="lock or state not in 'New' "
+                                   help="Frequency of invoice generation"/>
+                            <field name="next_invoice_date" required="1"
+                                   readonly="lock or state not in 'New'" widget="date"/>
+                            <field name="current_reference" invisible="1"/>
+                            <field name="invoices_active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="contract_reminder"
+                                   readonly="lock" 
+                                   help="Days before expiration to send reminder"/>
+                            <field name="payment_term_id"
+                                   readonly="lock" invisible="1"/>
+                            <field name="company_id"
+                                   readonly="lock or state not in 'New' " invisible="1"/>
+                            <field name="currency_id"
+                                   readonly="lock or state not in 'New' " invisible="1"/>
+                            <field name="lock" invisible="1"/>
+                            <field name="date_start"
+                                   readonly="lock or state not in 'New' "/>
+                            <field name="date_end"
+                                   readonly="lock or state not in 'New' "/>
+                            <field name="add_paid_service_price"/>
+                            <field name="travel_hours"/>
+                            <field name="gross_profit" groups="selling_cost_price_restrict.group_product_price_user"/>
+                            <field name="manual_next_invoice_date" invisible="1"/>
+                            <field name="show_product_fields" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                       <page string="Contract Lines">
+                            <field name="contract_line_ids"
+                                   readonly="lock or state not in 'New'"/>
+                            <group style="float:right;">
+                                <field name="untaxed_amount" style="text-align:right" readonly="1" force_save="1"/>
+                                <field name="total_discount" style="text-align:right" readonly="1" force_save="1" invisible="1"/>
+                                <field name="vat_amount" style="text-align:right" readonly="1" force_save="1"/>
+                                <field name="amount_total" string="Grand Total" style="text-align:right" readonly="1" force_save="1"/>
+                            </group>
+                        </page>
+                       <page string="Sale Order Lines" invisible="1">
+                            <field name="sale_order_line_ids"
+                                   readonly="lock or state not in 'New'"/>
+                        </page>
+                        <page string="Terms and Conditions" invisible="1">
+                            <field name="note"
+                                   placeholder="Terms and Conditions"
+                                   readonly="lock"/>
+                        </page>
+                        <page string="Other Info">
+                            <group>
+                                <group>
+                                    <field name="customer_name" readonly="state not in 'New' "/>
+                                    <field name="contact_person" readonly="state not in 'New' "/>
+                                    <field name="job_position" readonly="state not in 'New' "/>
+                                    <field name="id_party" readonly="state not in 'New' "/>
+                                    <field name="email" readonly="state not in 'New' "/>
+                                    <field name="mobile_no" readonly="state not in 'New' "/>
+                                    <field name="signature" widget="signature" invisible="1"/>
+                                    <field name="date" invisible="1"/> 
+                                </group>
+                                <group>
+                                    <field name="additional_info" readonly="state not in 'New' "/>
+                                    <field name="site_address" readonly="state not in 'New' "/>                                    
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Visit Count" invisible="0">
+                            <group>
+                                <field name="actual_correct_count" readonly="1"/>
+                                <field name="actual_prevent_count" readonly="1"/>
+                                <field name="paid_visit_count" readonly="1"/>
+                            </group>
+                            <group invisible="1">
+                                <group name="preventive" string="Preventive">
+                                    <field name="entitlement_prevent"/>
+                                    <field name="actuals_up_to_date_prevent" invisible="1"/>
+                                    <field name="balance_prevent" placeholder="Entitlement-Actual"/>
+                                    <field name="actual_prevent_count" />
+                                    <field name="paid_visit_count"/>
+                                </group>
+                                <group name="corrective" string="Corrective">
+                                    <field name="entitlement_correct"/>
+                                    <field name="actuals_up_to_date_correct" invisible="1"/>
+                                    <field name="balance_correct" placeholder="Entitlement-Actual"/>
+                                    <field name="actual_correct_count" />
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Subscription contract tree view -->
+    <record id="subscription_contracts_view_tree" model="ir.ui.view">
+        <field name="name">subscription.contracts.view.tree</field>
+        <field name="model">subscription.contracts</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="recurring_invoice" string="Frequency"/>
+                <field name="next_invoice_date"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'Ongoing'"
+                       decoration-warning="state =='Expire Soon'"
+                       decoration-info="state =='New'"
+                       decoration-danger="state in('Cancelled','Expired')"/>
+                <field name="amount_total"/>
+            </tree>
+        </field>
+    </record>
+    
+    <!-- Contract line tree view -->
+    <record id="subscription_contracts_line_view_tree" model="ir.ui.view">
+        <field name="name">subscription.contracts.line.view.tree</field>
+        <field name="model">subscription.contracts.line</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom" delete="0">
+                <field name="product_id" width="150px"/>
+                <field name="description" optional="hide"/>
+                <field name="asset_number" optional="hide"/>
+                <field name="analytic_account_id" optional="hide"/>
+                <field name="qty_ordered"/>
+                <field name="no_of_visits_per_year" width="175px"/>
+                <field name="no_of_emergency_visit" width="175px"/>
+                <field name="days_required_for_rpm" column_invisible="not parent.show_product_fields" width="195px"/>
+                <field name="standard_hours" column_invisible="not parent.show_product_fields" width="150px" force_save="1"/>
+                <field name="total_hr" column_invisible="not parent.show_product_fields" width="130px"/>
+                <field name="total_cost" column_invisible="not parent.show_product_fields" width="120px"/>
+                <field name="total_price" width="120px"/>
+                <field name="vat" />
+                <field name="vat_amt" />
+                <field name="product_uom_id" optional="hide"/>
+                <field name="price_unit" optional="hide"/>
+                <field name="tax_ids" widget="many2many_tags" optional="hide"/>
+                <field name="discount" optional="hide"/>
+                <field name="sub_total"/>
+                <field name="days_require_rpm_round_off" width="210px" readonly="1"/>
+                <field name="actual_prevent_count" width="210px" readonly="1"/>
+                <field name="balance_prevent_count" width="210px" readonly="1"/>
+                <field name="total_correct_count" width="175px" readonly="1"/>
+                <field name="actual_correct_count" width="210px" readonly="1"/>
+                <field name="balance_correct_count" width="230px" readonly="1"/>
+                <field name="paid_visit_count" width="230px" readonly="1"/>
+            </tree>
+        </field>
+    </record>
+    
+    <!-- Add 'Print Contract Document' to the Actions menu -->
+    <record id="action_print_contract_document_server" model="ir.actions.server">
+        <field name="name">Print Contract Document</field>
+        <field name="model_id" ref="model_subscription_contracts"/>
+        <field name="state">code</field>
+        <field name="binding_model_id" ref="model_subscription_contracts"/>
+        <field name="binding_type">action</field>
+        <field name="code">
+            action = env["subscription.contracts"].browse(env.context.get("active_ids")).action_print_contract_document()
+        </field>
+    </record>
+</odoo>

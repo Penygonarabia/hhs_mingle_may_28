@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+     <record model='ir.ui.view' id='employee_check_list_form_view'>
+        <field name="name">employee.checklist.form</field>
+        <field name="model">employee.checklist</field>
+        <field name="arch" type="xml">
+            <form string="Checklist">
+                <sheet>
+                    <group>
+                        <group>
+                        <field name="name"/>
+                        <field name="document_type"/>
+                    </group>
+                    <group>
+                        <div class="o_td_label" style="width:200px;">
+
+                            <label for="place_of_issue_req" string="Place of Issue Required"/>
+                        </div>
+                        <field name="place_of_issue_req" nolabel="1"/>
+                        <div class="o_td_label" style="width:200px;">
+
+                            <label for="date_of_issue_req" string="Date of Issue Required"/>
+
+                        </div>
+                        <field name="date_of_issue_req" nolabel="1"/>
+                        <div class="o_td_label" style="width:200px;">
+                            <label for="expiry_date_req" string="Expiry Date Required"/>
+                        </div>
+                        <field name="expiry_date_req" nolabel="1"/>
+                        <field name="alert_required"/>
+                        <field name="alert_no_days"  invisible="alert_required != True"/>
+                        <div class="o_td_label" style="width:200px;">
+                            <label for="mail_expiry_date" string="Mail Expiry Date to Employee"/>
+
+                        </div>
+                        <field name="mail_expiry_date" nolabel="1"/>
+                        <field name="active" widget="boolean_toggle"/>
+                    </group>
+                    </group>
+
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+     <record model='ir.ui.view' id='employee_check_list_tree_view'>
+        <field name="name">employee.checklist.tree</field>
+        <field name="model">employee.checklist</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="document_type"/>
+            </tree>
+        </field>
+    </record>
+     <record id="employee_check_list_search_view" model="ir.ui.view">
+        <field name="name">>employee.checklist.search</field>
+        <field name="model">employee.checklist</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <filter string="Archived" name="active" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+
+     <record model="ir.actions.act_window" id="action_view_employee_check_list">
+            <field name="name">Document Types</field>
+            <field name="res_model">employee.checklist</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="help" type="html">
+                <p class="oe_view_no_content_create">Create new record
+                </p>
+            </field>
+        </record>
+
+
+    <menuitem id="checklist_employee" name="Document Types" parent="hr.menu_human_resources_configuration"
+                  action="action_view_employee_check_list" />
+</data>
+
+
+</odoo>

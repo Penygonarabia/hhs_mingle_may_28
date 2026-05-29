@@ -1,0 +1,104 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+    <record model="ir.ui.view" id="view_hr_transaction_entry_list">
+      <field name="name">Transaction list</field>
+      <field name="model">hr.transaction.entry</field>
+      <field name="arch" type="xml">
+        <tree string="Transaction">
+          <field name="description"/>
+          <field name="transaction_type_id" />
+          <field name="name" />
+          <field name="code"/>
+          <field name="rule_type"/>
+          <field name="unit_type"/>
+          <field name="fixed_amount"/>
+
+
+
+        </tree>
+      </field>
+    </record>
+    <record model="ir.ui.view" id="view_hr_transaction_entry_form">
+      <field name="name">Transaction Form</field>
+      <field name="model">hr.transaction.entry</field>
+      <field name="arch" type="xml">
+        <form string="Transaction">
+
+          <sheet>
+            <group>
+            <group>
+              <field name="name" readonly="1"/>
+              <field name="transaction_type_id"/>
+              <field name="code"/>
+               <field name="description"/>
+                <field name="complete_name" invisible="1" readonly="1"/>
+
+            </group>
+            <group>
+              <field name="rule_type"/>
+              <field name="unit_type" />
+              <field name="calculate_based_on_allowance" invisible="unit_type == 'amount'"/>
+              <field name="transact_visibility" invisible="1"/>
+              <field name="fixed_amount" invisible="unit_type != 'amount'"/>
+              <field name="rate" invisible="unit_type == 'amount'"/>
+
+            </group>
+          </group>
+          </sheet>
+          <div class="oe_chatter">
+                        <field name="message_follower_ids" groups="base.group_user"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+        </form>
+      </field>
+    </record>
+    <record id="view_hr_transaction_entry" model="ir.ui.view">
+            <field name="name">rhr.transaction.entry.search</field>
+            <field name="model">hr.transaction.entry</field>
+            <field name="arch" type="xml">
+                <search string="Transactions">
+                    <field name="description" string="Description"/>
+                    <field name="transaction_type_id" string="Transaction Type"/>
+                </search>
+            </field>
+        </record>
+
+
+    <!-- actions opening views on models -->
+    <record model="ir.actions.act_window" id="action_windows_hr_transaction_entry_form">
+      <field name="name">Transaction Definition</field>
+      <field name="res_model">hr.transaction.entry</field>
+      <field name="view_mode">tree,form,search</field>
+    </record>
+
+<!--     server action to the one above-->
+<!--    <record model="ir.actions.server" id="hr_transaction.action_server">-->
+<!--      <field name="name">hr_transaction server</field>-->
+<!--      <field name="model_id" ref="model_hr_transaction_hr_transaction"/>-->
+<!--      <field name="state">code</field>-->
+<!--      <field name="code">-->
+<!--        action = {-->
+<!--          "type": "ir.actions.act_window",-->
+<!--          "view_mode": "tree,form",-->
+<!--          "res_model": model._name,-->
+<!--        }-->
+<!--      </field>-->
+<!--    </record>-->
+
+    <!-- Top menu item -->
+<!--
+    <menuitem name="hr_transaction" id="hr_transaction.menu_root"/>
+-->
+    <!-- menu categories -->
+<!--    <menuitem name="Menu 1" id="hr_transaction.menu_1" parent="hr_transaction.menu_root"/>-->
+<!--    <menuitem name="Menu 2" id="hr_transaction.menu_2" parent="hr_transaction.menu_root"/>-->
+    <!-- actions -->
+
+<!--    <menuitem name="Server to list" id="hr_transaction" parent="hr_transaction.menu_2"-->
+<!--              action="hr_transaction.action_server"/>-->
+       <menuitem name="Transaction Definition" id="menu_hr_transaction_entry" parent="hr.menu_human_resources_configuration"
+              action="action_windows_hr_transaction_entry_form" sequence="23"/>
+  </data>
+</odoo>

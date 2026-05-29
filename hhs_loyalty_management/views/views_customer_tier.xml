@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Tree View -->
+        <record id="view_customer_tier_tree" model="ir.ui.view">
+            <field name="name">customer.tier.tree</field>
+            <field name="model">customer.tier</field>
+            <field name="arch" type="xml">
+                <tree string="Customer Tiers">
+                    <field name="name"/>
+                    <field name="min_loyalty_points"/>
+                    <field name="sort_order"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Form View -->
+        <record id="view_customer_tier_form" model="ir.ui.view">
+            <field name="name">customer.tier.form</field>
+            <field name="model">customer.tier</field>
+            <field name="arch" type="xml">
+                <form string="Customer Tier">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="min_loyalty_points"/>
+                            <field name="sort_order"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="view_customer_tier_search" model="ir.ui.view">
+            <field name="name">customer.tier.search</field>
+            <field name="model">customer.tier</field>
+            <field name="arch" type="xml">
+                <search string="Search Customer Tier">
+                    <field name="name"/>
+                    <field name="min_loyalty_points"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action window -->
+        <record id="action_customer_tier" model="ir.actions.act_window">
+            <field name="name">Customer Tier</field>
+            <field name="res_model">customer.tier</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a new Customer Tier
+                </p>
+                <p>
+                    Manage tiers based on loyalty points to categorize your customers.
+                </p>
+            </field>
+        </record>
+        
+           <record id = "customer_loyalty_history_view_tree" model = "ir.ui.view">
+		<field name = "name">customer.loyalty.points.history.tree.view</field>   
+		<field name =  "model">customer.loyalty.points.history</field> 
+		<field name = "arch" type = "xml">
+		
+			<tree>
+				<field name  = "clph_cstid"/>
+				<field name  = "clph_docnumber"/>
+				<field name  = "clph_cstcode"/>
+				<field name  = "clph_date"/>
+				<field name  = "clph_doctype"/>
+				<field name  = "clph_whouse"/>
+				<field name  = "clph_adjtype"/>
+				<field name  = "clph_type"/>
+				<field name  = "clph_regpoints"/>
+				<field name  = "clph_totalpoints"/>
+			
+			</tree>
+		
+		</field>
+    </record>
+    <record id = "customer_loyalty_history_view_form" model = "ir.ui.view">
+		<field name = "name">customer.loyalty.points.history.form.view</field>   
+		<field name =  "model">customer.loyalty.points.history</field> 
+		<field name = "arch" type = "xml">
+		
+			<form>
+				<sheet>
+					
+					<field name  = "clph_cstid"/>
+					<field name  = "clph_docnumber"/>
+					<field name  = "clph_cstcode"/>
+					<field name  = "clph_date"/>
+					<field name  = "clph_doctype"/>
+					<field name  = "clph_whouse"/>
+					<field name  = "clph_adjtype"/>
+					<field name  = "clph_type"/>
+					<field name  = "clph_regpoints"/>
+					<field name  = "clph_totalpoints"/>
+					<field name = "clph_note" />
+					<field name = "clph_uid"/>
+					<field name = "clph_reasoncode"/>
+					<field name = "clph_promoref"/>
+					<field name = "clph_export"/>
+				
+				</sheet>
+				
+			
+			</form>
+		
+		</field>
+    </record>
+    
+    <record id = "action_customer_loyalty_history" model="ir.actions.act_window">
+    	<field name ="name">Customer Loyalty History</field>
+    	<field name = "res_model">customer.loyalty.points.history</field>
+    	<field name = "view_mode">tree,form</field>
+    
+    
+    </record>
+
+        <!-- Customer Tier Submenu -->
+        <menuitem
+                id="menu_customer_tier"
+                name="Customer Tier"
+                parent="menu_loyalty_points_configuration"
+                action="action_customer_tier"
+                sequence="25"/>
+
+
+    </data>
+</odoo>

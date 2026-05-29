@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <template id="payroll_transactions_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template>
+
+        <!-- Report Template -->
+        <template id="report_payroll_transactions_pdf">
+            <t t-call="web.html_container">
+                <t t-call="payroll_transactions_report.payroll_transactions_internal_layout" style="margin-top:0px;padding-top:0px;display:inline;">
+                    <div class="header" t-att-style="report_header_style">
+                        <div class="row mt32 mb32">
+                            <div class="col-3 text-left" style="font:16px lucida-console,sans-serif !important;">
+                                <span t-field="res_company.partner_id"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.street"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.street2"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.city"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.country_id"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.vat"/>
+                                <br/>
+                            </div>
+                            <div class="col-6">
+                                <h2><center>Employee Payroll Transaction Report</center></h2>
+
+                            </div>
+                            <div class="col-3 text-right " style="vertical-align:text-top">
+               				    <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" style="max-height: 70px; min-height:70px; min-width: 200px; max-width: 200px;"/>
+            			    </div>
+                        </div>
+                    </div>
+                    <div class="page">
+
+                            <div class="row mt32 mb32">
+                                <div class="col-3 text-left" style="font:16px lucida-console,sans-serif !important;">
+                                    <b>From Date  :  <span t-esc="from_date"/></b>
+                                    <br/>
+                                </div>
+                               <!--  <div class="col-6">
+
+                                </div> -->
+                                <div class="col-3 text-right "  style="font:16px lucida-console,sans-serif !important;">
+                                    <b>To Date  :  <span t-esc="to_date"/></b>
+
+                                </div>
+                            </div>
+                            <t>
+                                <t t-if="form_data['employee_ids'] and (form_data['department_ids'] or form_data['job_title_ids'] or form_data['nationality_ids'] or form_data['branch_location_ids'])">
+                                    <h4><center>Employee Wise Search</center></h4>
+                                </t>
+
+                                <t t-elif="form_data['department_ids'] or form_data['sort_by']=='department'">
+                                        <h4><center>Department Wise Search</center></h4>
+                                </t>
+                                <t t-elif="form_data['job_title_ids'] or form_data['sort_by']=='job_title'">
+                                    <h4><center>Job Wise Search</center></h4>
+                                </t>
+                                <t t-elif="form_data['nationality_ids'] or form_data['sort_by']=='nationality'">
+                                    <h4><center>Nation Wise Search</center></h4>
+                                </t>
+                                <t t-elif="form_data['branch_location_ids'] or form_data['sort_by']=='branch_location'">
+                                    <h4><center>Branch Location Wise Search</center></h4>
+                                </t>
+                                <t t-elif="form_data['sort_by']=='employee_no'">
+                                    <h4><center>Employee Number Wise Sort</center></h4>
+                                </t>
+                                
+                    	    </t>
+                       
+                        <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr style="background-color:#464343;color:white;text-align:center">
+                                <th width="2%" style="vertical-align:text-top">S.No</th>
+                                <th width="5%" style="vertical-align:text-top">Emp.No</th>
+                                <th width="18%" style="vertical-align:text-top">Emp.Name</th>
+                                <th width="7%" style="vertical-align:text-top">Job Title</th>
+                                <th width="7%" style="vertical-align:text-top">Nationality</th>
+                                <th width="7%" style="vertical-align:text-top">Location</th>
+                                <th width="7%" style="vertical-align:text-top">Reference</th>
+                                <th width="10%" style="vertical-align:text-top">Date</th>
+                                <th width="5%" style="vertical-align:text-top">Code</th>
+                                <th width="7%" style="vertical-align:text-top">Description</th>
+                                <th width="9%" style="vertical-align:text-top">Units</th>
+                               <!--  <th width="6%" style="vertical-align:text-top">No. of <br/> Units</th> -->
+                                <th width="6%" style="vertical-align:text-top">Amount</th>
+                                <th width="18%" style="vertical-align:text-top">Remarks</th>
+                                <th width="10%" style="vertical-align:text-top">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="counter" t-value="1"/>
+                            <t t-set="sort_department" t-value="set()"/>
+                            <t t-set="sort_job" t-value="set()"/>
+                            <t t-set="sort_nation" t-value="set()"/>
+                            <t t-set="sort_branch_location" t-value="set()"/>
+                            <t t-foreach="selection" t-as="salary">
+                                <t t-if="form_data['sort_by']=='department' and salary['department'] not in sort_department ">
+	                                		<tr style="background-color:#464343;color:white;text-align:center">
+	                                			<td colspan="16" width="100%"><span t-esc="salary['department']"/></td>
+           										 <t t-set="sort_department" t-value="sort_department | set([salary['department']])"/>	                                		
+           									</tr>
+                                		</t>
+                                		<t t-if="form_data['sort_by']=='job_title' and salary['job_title'] not in sort_job">
+                                			<tr style="background-color:#464343;color:white;text-align:center">
+                                				<td colspan="16" ><span t-esc="salary['job_title']"/></td>
+                                				<t t-set="sort_job" t-value="sort_job | set([salary['job_title']])"/>
+                                			</tr>
+
+                                		</t>
+
+                                		<t t-if="form_data['sort_by']=='nationality' and salary['nationality'] not in sort_nation ">
+	                                		<tr style="background-color:#464343;color:white;text-align:center">
+	                                			<td colspan="16" width="100%" ><span t-esc="salary['nationality']"/></td>
+           										 <t t-set="sort_nation" t-value="sort_nation | set([salary['nationality']])"/>	                                		
+           									</tr>
+                                		</t>
+                                		<t t-if="form_data['sort_by']=='branch_location' and salary['location'] not in sort_branch_location">
+                                			<tr style="background-color:#464343;color:white;text-align:center">
+                                				<td colspan="16" ><span t-esc="salary['location']"/></td>
+                                				<t t-set="sort_branch_location" t-value="sort_branch_location | set([salary['location']])"/>
+                                			</tr>
+
+                                		</t>
+                                <tr>
+                                    <td class="text-right"><span t-esc="counter"/></td>
+                                   <td><span t-esc="salary['emp_no']"/></td>
+                                    <td><span t-esc="salary['employee_name']"/></td>
+                                    <td><span t-esc="salary['job_title']"/></td>
+                                    <td><span t-esc="salary['nationality']"/></td>
+                                    
+                                    <td><span t-esc="salary['location']"/></td>
+                                    <td><span t-esc="salary['reference']"/></td>
+                                    <td><span t-esc="salary['salary_allw_ded_date']"/></td>
+                                    <td><span t-esc="salary['code']"/></td>
+                                    <td><span t-esc="salary['description']"/></td>
+                                    <td class="text-right"><span t-esc="salary['units']"/></td>
+                                    <!-- <td class="text-right"><span t-esc="salary['no_of_units']"/></td> -->
+                                    <td class="text-right"><span t-esc="salary['amount']"/></td>
+                                    <td><span t-esc="salary['remarks']"/></td>
+                                    <td><span t-esc="salary['state']"/></td>
+                                </tr>
+                                <t t-set="counter" t-value="counter+1"/>
+                            </t>
+                        </tbody>
+                    </table>
+                    </div>
+                    <div class="footer o_background_footer">
+                        <div class="text-center">
+                            <ul class="list-inline">
+                                <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                            </ul>
+                            <div t-if="report_type == 'pdf'" class="text-muted">
+                                Page:
+                                <span class="page"/>
+                                of
+                                <span class="topage"/>
+                            </div>
+                        </div>
+                    </div>
+
+                </t>
+            </t>
+        </template>
+</odoo>

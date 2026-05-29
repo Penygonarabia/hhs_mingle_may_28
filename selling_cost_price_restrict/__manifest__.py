@@ -1,0 +1,21 @@
+{
+    "name": "Product Price Restriction",
+    "summary": "Product Price Restriction in Sales, Invoice, Point of sale and Product Master",
+    "author": "Maxwell",
+    "website": "www.cieloerpcloud.com",
+    "category": "Product",
+    # "version": "17.0.1",
+    "license": "LGPL-3",
+    "Sequence": "-101",
+    "depends": ['base','product','sale','account', 'machine_repair_management', 'sales_team'],
+     "data": [
+              "security/product_security.xml",
+              "views/product_views.xml",
+              "views/sale_order_view.xml",
+              "views/service_sale_order_view.xml",
+              # "views/pos_order_view.xml",
+              ],
+    "application":"true",
+    "assets": {},
+"description": "Product Restriction",
+}

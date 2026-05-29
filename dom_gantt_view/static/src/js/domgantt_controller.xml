@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <!-- <button class="btn btn-primary o-calendar-button-new me-1" t-on-click="onClickAddButton">New</button> -->
+    <t t-name="dom_gantt_view.DomGanttController" t-inherit="web.CalendarController" t-inherit-mode="primary">
+        <xpath expr="//Layout" position="inside">
+            <t t-set-slot="control-panel-create-button">
+                <t t-if="model.canCreate">
+                    <!-- <t t-if="state.lastJobcardId">
+                        <button class="btn btn-secondary o-calendar-button-back me-1" t-on-click="onClickBackButton">
+                            ⬅ Back to Jobcard
+                        </button>
+                    </t> -->
+                </t>
+            </t>
+        </xpath>
+    </t>
+
+    <t t-name="dom_gantt_view.CalendarRenderer" t-inherit="web.CalendarRenderer" t-inherit-mode="extension">
+
+        <!-- Only apply this replacement for project.task -->
+        <xpath expr="//div[contains(@class, 'o_calendar_renderer')]" position="replace">
+            <t t-if="env.searchModel.resModel == 'project.task'">
+                <div class="o_calendar_renderer d-flex" style="height: 100%;">
+
+                    <t t-if="!env.searchModel.context.hide_jobcard_list">
+                        <div class="o_calendar_sidebar p-2" style="width: 250px; overflow-y: auto;">
+                            <div class="d-flex flex-column gap-1">
+                                <JobcardList t-on-jobcard-updated="onJobcardUpdated" t-on-slot-click="onSlotClick"/>
+                            </div>
+                        </div>
+                    </t>
+
+                    <div class="flex-grow-1 d-flex flex-column" style="height: 100%;">
+                        <t t-if="env.searchModel.context.hide_jobcard_list">
+                            <MyComponent t-on-jobcard-updated="onJobcardUpdated" t-on-slot-click="onSlotClick"/>
+                        </t>
+
+                        <ActionSwiper t-props="actionSwiperProps">
+                            <t t-component="calendarComponent" t-props="props" t-key="calendarKey" />
+                        </ActionSwiper>
+                    </div>
+
+                </div>
+            </t>
+
+            <!-- For other models keep default calendar renderer -->
+            <t t-else="">
+                <div class="o_calendar_renderer" style="height: 100%;">
+                    <t t-component="calendarComponent" t-props="props" t-key="calendarKey" />
+                </div>
+            </t>
+        </xpath>
+
+    </t>
+
+    <t t-name="dom_gantt_view.CalendarCommonRenderer" t-inherit="web.CalendarCommonRenderer" t-inherit-mode="extension">
+        <xpath expr="//div[contains(@class, 'o_calendar_widget')]" position="before">
+            <t t-if="env.searchModel.resModel == 'project.task'">
+                <!--                Newly Added on - 2025-11-16-->
+
+                <t t-if="projectState.showProjectSelector">
+                <!-- may 20 2026 -->
+                    <div class="jobcard-gantt-header" style="width:25%; display:flex; justify-content:center; margin:10px 0;">
+
+                        <select t-on-change="onProjectChange" t-att-value="projectState.project_id" style="min-width:30px; padding:6px 10px; border-radius:6px; border:1px solid #c6c6c6;">
+
+                            <option value="">Select Project</option>
+
+                            <t t-foreach="projectState.projects" t-as="proj" t-key="proj.id">
+                                <option t-att-value="proj.id">
+                                    <t t-esc="proj.name"/>
+                                </option>
+                            </t>
+
+                        </select>
+                    </div>
+                </t>
+                <!-- <div class="jobcard-gantt-header" style="width:25%; display:flex; justify-content:center; margin:10px 0;">
+                    <select t-on-change="onProjectChange" style="min-width:30px; padding:6px 10px; border-radius:6px; border:1px solid #c6c6c6;">
+                        <option value="">Select Project</option>
+                        <t t-foreach="projectState.projects" t-as="proj" t-key="proj.id">
+                            <option t-att-value="proj.id">
+                                <t t-esc="proj.name"/>
+                            </option>
+                        </t>
+                    </select>
+                </div> -->
+                <!--                End -->
+
+                <div t-if="state.loading" class="o_calendar_loader_overlay">
+                    <br/>
+                    <div class="loading-bubble">
+                        <span>Loading Job Cards and Technicians</span>
+                        <t t-esc="state.showingDay"/>
+                        <div class="wave">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+        </xpath>
+
+    </t>
+</templates>
+ 

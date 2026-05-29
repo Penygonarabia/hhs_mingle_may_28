@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_salary_allowance_detection_user,salary.allowance.detection,model_salary_allowance_detection,base.group_user,1,1,1,1
+access_salary_allowance_detection_officer,salary.allowance.detection,model_salary_allowance_detection,hr.group_hr_user,1,1,1,1
+access_salary_allowance_detection_manager,salary.allowance.detection,model_salary_allowance_detection,hr.group_hr_manager,1,1,1,1
+access_salary_allowance_detection_account_manager,salary.allowance.detection,model_salary_allowance_detection,account.group_account_manager,1,1,1,1

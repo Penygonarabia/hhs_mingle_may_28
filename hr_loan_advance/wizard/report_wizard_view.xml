@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data>
+
+        <record id="report_loan_advance_view" model="ir.ui.view">
+            <field name="name">Loan advance Form</field>
+            <field name="model">report.loan.advance</field>
+            <field name="arch" type="xml">
+                <form string="Loan &amp; Advcance Report">
+                    <label for="type" string="Generate report by click the Generate Button"/>
+                    <group>
+                        <group>
+                            <field name="type"/>
+                        </group>
+                        <group>
+                            <field name="only_unpaid"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <footer>
+                        <button name="action_generate" type="object" string="Generate" class="oe_highlight"
+                                target="_blank"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="action_report_loan_advance" model="ir.actions.act_window">
+            <field name="name">Loan &amp; Advance</field>
+            <field name="res_model">report.loan.advance</field>
+
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="report_loan_advance_view"/>
+            <field name="target">new</field>
+        </record>
+        
+        <!--<menuitem action="action_report_loan_advance" name="Loan &amp; Advcance Report" id="menu_loan_advance_report" sequence="10"
+                  parent="hr_loan_advance.menu_hr_employee_advance_report_ps" />
+-->
+
+
+
+    </data>
+</odoo>

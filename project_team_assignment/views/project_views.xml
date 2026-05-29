@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="project_view_inherit" model="ir.ui.view">
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project" />
+        <field name="arch" type="xml">
+            <page name="description" position="after">
+                <page name="project_team_member" string="Team Members" groups="project.group_project_user">
+                    <button name="action_team_member_assign" string="Assign Tasks" type="object" class="oe_highlight" invisible="not team_member_ids" />
+                    <field name="team_member_ids">
+                        <tree editable="bottom">
+                            <field name="role_id" />
+                            <field name="user_id" />
+                            <field name="note" />
+                        </tree>
+                    </field>
+                </page>
+            </page>
+        </field>
+    </record>
+    <record id="view_project_kanban_inherit" model="ir.ui.view">
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_kanban" />
+        <field name="arch" type="xml">
+            <!-- Kanban view > View > Resources-->
+            <xpath expr="//templates//div/div/div[1]" position="inside">
+                <div role="menuitem">
+                    <a name="action_team_member_assign" type="object">Assign Tasks</a>
+                </div>
+            </xpath>
+        </field>
+    </record>
+    <record id="project_team_member_assignment_task_gantt_view" model="ir.ui.view">
+        <field name="name">project_task_gantt_view</field>
+        <field name="model">project.task</field>
+        <field name="priority">9999</field>
+        <field name="arch" type="xml">
+            <gantt date_start="planned_date_begin" date_stop="planned_date_end" string="Tasks" mode="day" color="color" event_open_popup="true" quick_create="false" resource_order="planned_date_begin asc" resource_width_percentage="15%" scales="day,week,month,year" class="o_gantt_click_to_chose">
+                <field name="user_ids" m2o="1" widget="many2many_avatar_user" resource_wo_event_field="1" readonly="1" domain="[('id', 'in', context.get('team_member_ids', []))]" />
+                <field name="work_center_id" invisible="1"/>
+                <field name="job_card_state_code" invisible="1"/>
+                <field name="job_card_state" invisible="1"/>
+
+
+                <templates>
+                    <field name="allow_milestones" invisible="1" />
+                    <field name="project_id" widget="project" invisible="context.get('default_project_id', False)" />
+                    <field name="display_in_project" invisible="1" />
+                    <field name="subtask_count" invisible="1" />
+                    <field name="milestone_id" invisible="not allow_milestones or not milestone_id" />
+                    <field name="user_ids" widget="many2many_avatar_user" invisible="not user_ids" />
+                    <field name="partner_id" invisible="not partner_id" />
+                    <field name="priority" widget="priority" />
+                    <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" invisible="not tag_ids" />
+                    <field name="stage_id" invisible="not project_id or not stage_id" />
+                    <field name="state" widget="project_task_state_selection" readonly="1" />
+                    <field name="personal_stage_id" string="Personal Stage" options="{'no_open': True}" invisible="project_id or not personal_stage_id" />
+                    <field name="task_properties" />
+                </templates>
+            </gantt>
+        </field>
+    </record>
+
+    <record id="action_team_member_assignment_task" model="ir.actions.act_window">
+        <field name="name">Tasks Assignment</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">gantt,kanban,list,form,calendar,pivot,graph,activity</field>
+        <field name="context">{'search_default_my_tasks': 1}</field>
+        <field name="domain">[('project_id', '!=', False), ('display_in_project', '=', True)]</field>
+        <field name="search_view_id" ref="project.view_task_search_form" />
+        <field name="view_ids" eval="[(5, 0, 0),
+                     (0, 0, {'view_mode': 'gantt', 'view_id': ref('project_team_member_assignment_task_gantt_view')}),
+                     ]" />
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No tasks found. Let's create one!
+            </p>
+            <p>
+                Keep track of the progress of your tasks from creation to completion.<br
+                />
+                Collaborate efficiently by chatting in real-time or via email.
+            </p>
+        </field>
+    </record>
+
+
+    <!-- <record id="action_project_task_gantt" model="ir.actions.act_window">
+        <field name="name">Job Card Scheduling</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">gantt,kanban,tree,form</field>
+        <field name="view_id" ref="project_team_member_assignment_task_gantt_view"/>
+        <field name="context">{'default_view_mode': 'gantt','defaultDate': context.get('planned_date_begin') or time.strftime('%%Y-%%m-%%d'),'hide_jobcard_list': True}</field>
+    </record> -->
+    <record id="action_project_task_gantt_show_sidebar" model="ir.actions.act_window">
+        <field name="name">Job Card Scheduling</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">gantt,kanban,tree,form</field>
+        <field name="view_id" ref="project_team_member_assignment_task_gantt_view"/>
+        <field name="context">
+        {'default_view_mode': 'gantt',
+         'defaultDate': context.get('planned_date_begin') or time.strftime('%%Y-%%m-%%d'),
+         'hide_jobcard_list': False}
+        </field>
+    </record>
+
+    <record id="action_project_task_gantt_hide_sidebar" model="ir.actions.act_window">
+        <field name="name">Job Card Scheduling</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">gantt,kanban,tree,form</field>
+        <field name="view_id" ref="project_team_member_assignment_task_gantt_view"/>
+        <field name="context">
+        {'default_view_mode': 'gantt',
+         'defaultDate': context.get('planned_date_begin') or time.strftime('%%Y-%%m-%%d'),
+         'hide_jobcard_list': True}
+        </field>
+    </record>
+
+    <!-- Menu Item for the Gantt View -->
+    <menuitem id="menu_project_task_gantt" name="Job Card Scheduling" action="action_project_task_gantt_show_sidebar" parent="machine_repair_management.menu_machine_repair_support" sequence="20" />
+
+</odoo>

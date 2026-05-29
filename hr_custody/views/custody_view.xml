@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="seq_hr_custody_seq" model="ir.sequence">
+            <field name="name">Custody Code</field>
+            <field name="code">hr.custody</field>
+            <field name="prefix">CR</field>
+            <field eval="4" name="padding"/>
+            <field eval="False" name="company_id"/>
+        </record>
+        <record id="wizard_return_date_form" model="ir.ui.view">
+            <field name="name">wizard.return.date.form</field>
+            <field name="model">wizard.return.date</field>
+            <field name="arch" type="xml">
+                <form string="Renewal Request">
+                    <group>
+                        <group>
+                            <field name="returned_date"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button class="oe_highlight" name="proceed" string="Proceed" type="object"/>
+                        or
+                        <button class="oe_link" special="cancel" string="Cancel"/>
+                    </footer>
+                </form></field>
+        </record>
+        <record id="custody_custody_form_view" model="ir.ui.view">
+            <field name="name">custody.property.form</field>
+            <field name="model">custody.property</field>
+            <field name="arch" type="xml">
+                <form string="Equipments">
+                    <sheet>
+                        <field class="oe_avatar" name="image" widget="image"/>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="Name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="property_selection" widget="radio"/>
+                                <field invisible="property_selection != 'product'" name="product_id"/>
+                                <field groups="base.group_multi_company" name="company_id" options="{'no_create': True}"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="desc" string="Description">
+                                <field name="desc"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form></field>
+        </record>
+        <record id="wizard_return_date_act" model="ir.actions.act_window">
+            <field name="name">Custody Request</field>
+            <field name="res_model">wizard.return.date</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="wizard_return_date_form"/>
+            <field name="target">new</field>
+        </record>
+        <record id="hr_custody_form_view" model="ir.ui.view">
+            <field name="name">hr.custody.form</field>
+            <field name="model">hr.custody</field>
+            <field name="arch" type="xml">
+                <form string="Custody">
+                    <header>
+                        <button class="oe_highlight" invisible="state not in 'draft'" name="sent" string="Send For Approval" type="object"/>
+                        <button class="oe_highlight" groups="hr.group_hr_manager" invisible="state not in 'to_approve' or renew_return_date == True" name="approve" string="Approve" type="object"/>
+                        <button class="oe_highlight" groups="hr.group_hr_manager" invisible="state not in 'to_approve' or renew_return_date == False" name="renew_approve" string="Renewal Approval" type="object"/>
+                        <button class="btn-primary" context="{'reject_id':id,'model_id':'hr.custody'}" groups="hr.group_hr_manager" invisible="state not in 'to_approve' or renew_return_date == True" name="%(hr_custody.wizard_reason_act)d" string="Refuse" type="action"/>
+                        <button class="btn-primary" context="{'reject_id':id,'model_id':'hr.custody','renew': 'renew'}" groups="hr.group_hr_manager" invisible="state not in 'to_approve' or renew_return_date == False" name="%(hr_custody.wizard_reason_act)d" string="Refuse" type="action"/>
+                        <button invisible="state not in 'rejected'" name="set_to_draft" string="Set to Draft" type="object"/>
+                        <button groups="hr.group_hr_manager" invisible="state not in 'approved'" name="set_to_return" string="Return" type="object"/>
+                        <button groups="hr.group_hr_manager" invisible="mail_send == False or state not in 'approved'" name="send_mail" string="Send Mail" type="object"/>
+                        <button class="oe_highlight" groups="hr.group_hr_manager" invisible="mail_send == True or state not in 'approved'" name="send_mail" string="Send Mail" type="object"/>
+                        <button class="oe_highlight" context="{'custody_id':id}" invisible="state not in 'approved' or renew_return_date == True" name="%(wizard_return_date_act)d" string="Renew" type="action"/>
+                        <field name="state" statusbar_visible="draft,to_approve,approved,returned" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <h1>
+                            <field name="name" nolabel="1" readonly="1"/>
+                        </h1>
+                        <group>
+                            <group>
+                                <field invisible="1" name="read_only"/>
+                                <field name="employee" options="{'no_create_edit': True, 'no_create': True}" readonly="state not in 'draft'"/>
+                                <field force_save="1" name="employee_number" readonly="1"/>
+                                <!--                                <field name="custody_name" options="{'no_open':True,'no_create':True}"-->
+                                <!--                                       domain="[('company_id','child_of',[company_id])]"/>-->
+<!--                                <field name="asset_types" options="{'no_open':True,'no_create':True}" readonly="state in 'draft'"/>-->
+                                <field name="asset_types" options="{'no_open':True,'no_create':True}" readonly="state not in 'draft'" />
+                                <field invisible="asset_types == False" name="custody_name" options="{'no_open':True,'no_create':True}"/>
+                                <field invisible="1" name="renew_return_date"/>
+                                <field invisible="1" name="renew_reject"/>
+                                <field invisible="1" name="mail_send"/>
+                                <field name="purpose" readonly="state not in 'draft'"/>
+                            </group>
+                            <group>
+                                <field name="date_request" readonly="state not in 'draft'"/>
+                                <field invisible="renew_return_date == True and renew_date not in [None, False] and renew_reject == False" name="return_date" readonly="state not in 'draft'"/>
+                                <field invisible="renew_return_date == False or state != 'to_approve'" name="renew_date"/>
+                                <field invisible="state not in 'rejected'" name="rejected_reason"/>
+                                <field invisible="renew_reject == False or state not in 'approved'" name="renew_rejected_reason"/>
+                                <field groups="base.group_multi_company" name="company_id" options="{'no_create': True}"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Notes">
+                                <field name="notes"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form></field>
+        </record>
+        <record id="hr_custody_tree_view" model="ir.ui.view">
+            <field name="name">hr.custody.tree</field>
+            <field name="model">hr.custody</field>
+            <field name="arch" type="xml">
+                <!--                <tree decoration-info="state == 'draft'" colors="red:current_date > return_date;grey:state == 'rejected';green:state == 'approved';-->
+                <!--                black:state == 'to_approve';grey:state == 'returned';">-->
+                <tree default_order="employee_number asc">
+                    <field name="name"/>
+                    <field name="employee_number"/>
+                    <field name="employee"/>
+                    <field name="custody_name"/>
+                    <field name="asset_types"/>
+                    <field name="purpose"/>
+                    <field name="date_request"/>
+                    <field name="return_date"/>
+                    <field name="state"/>
+                </tree></field>
+        </record>
+        <record id="hr_property_tree_view" model="ir.ui.view">
+            <field name="name">hr_property_tree_view.tree</field>
+            <field name="model">custody.property</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                </tree></field>
+        </record>
+        <record id="hr_custody_search_view" model="ir.ui.view">
+            <field name="name">hr.custody.search</field>
+            <field name="model">hr.custody</field>
+            <field name="arch" type="xml">
+                <search string="Custody">
+                    <field name="name"/>
+                    <field name="employee"/>
+                    <field name="employee_number"/>
+                    <field name="custody_name"/>
+                    <field name="purpose"/>
+                    <field name="date_request"/>
+                    <field name="return_date"/>
+                    <field name="state"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter context="{'group_by':'state'}" domain="[]" name="status" string="Status"/>
+                        <filter context="{'group_by':'employee'}" domain="[]" name="employee" string="Employee"/>
+                        <filter context="{'group_by':'custody_name'}" domain="[]" name="custody" string="Custody Name"/>
+                    </group>
+                </search></field>
+        </record>
+        <record id="action_hr_custody" model="ir.actions.act_window">
+            <field name="name">Items In Custody</field>
+            <field name="res_model">hr.custody</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="hr_custody_search_view"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to Create a New Record.
+                </p></field>
+        </record>
+        <record id="action_hr_property" model="ir.actions.act_window">
+            <field name="name">Property</field>
+            <field name="res_model">custody.property</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to Create a New Record.
+                </p></field>
+        </record>
+        <!--        <menuitem id="hr_custody_main_menu"-->
+        <!--                  web_icon="hr_custody,static/description/custody_icon.png"-->
+        <!--                  name="Custody" sequence="20"/>-->
+        <!-- ""Main menu"" -->
+        <!--<menuitem id="hr_custody_main_menu"
+                  name="Custody" parent="hr.menu_hr_root" sequence="20"/>-->
+        <!--<menuitem id="hr_custody_menu" parent="hr_custody_main_menu"
+                  name="Custody Management" sequence="20"
+                  />-->
+        <menuitem action="action_hr_custody" groups="hr.group_hr_manager" id="hr_custody_menu" name="Items In Custody" parent="om_hr_payroll.prime_data_base_employee" sequence="40"/>
+        <!--<menuitem action="action_hr_custody" id="hr_custody_menu" parent="hr_custody.hr_custody_main_menu"
+                  name="Custody Request" groups="hr.group_hr_manager" sequence="1"/>-->
+        <!--        <menuitem action="action_hr_property" id="hr_property_menu" parent="hr_custody.hr_custody_main_menu"-->
+        <!--                  name="Property" sequence="5" groups="hr.group_hr_manager"/>-->
+    </data>
+</odoo>

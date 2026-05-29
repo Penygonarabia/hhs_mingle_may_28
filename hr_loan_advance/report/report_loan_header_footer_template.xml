@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_loan_template_header_footer">
+
+        <t t-if="not o" t-set="o" t-value="doc" />
+            <t t-set="lang" t-value="'ar_001'"/>
+            <t t-set="o" t-value="o.with_context(lang=lang)" />
+<!--                <t t-lang="o.partner_id.lang"/>-->
+            <t t-if="not company">
+                <t t-if="company_id">
+                    <t t-set="company" t-value="company_id" />
+                </t>
+                <t t-elif="o and 'company_id' in o">
+                    <t t-set="company" t-value="o.company_id.sudo()" />
+                </t>
+                <t t-else="else">
+                    <t t-set="company" t-value="res_company" />
+                </t>
+            </t>
+            <t t-foreach = "docs" t-as="f">
+					 <t t-set="lang2" t-value="'ar_001'"/>
+                    <t t-set="f" t-value="f.with_context(lang=lang2)" />
+				</t>
+        <div>
+            <div class="header">
+                <style>
+                    #mycolor {
+                    color:black;
+                    }
+
+                    #borderBox {
+                    border: 1px solid black;
+                    }
+
+                    #borderBottom {
+                    border-bottom: 1px solid black;
+                    }
+
+                    #borderTop {
+                    border-top: 1px solid black;
+                    }
+                </style>
+                <div class="o_standard_header">
+                    <div class="row" style="width:100%;">
+                        <div style="margin-left:10px;width:22%;">
+                            <p id="mycolor">
+                                <span t-esc="f.company_id.partner_id.name" />
+                                <br />
+                                <span t-esc="f.company_id.partner_id.street" />
+                                <br />
+                                <span t-esc="f.company_id.partner_id.city" />
+                                <br />
+                                <span t-esc="f.company_id.partner_id.state_id.name" />
+                                <br />
+                                <span t-esc="f.company_id.partner_id.zip" />
+                                <br />
+                            </p>
+
+                        </div>
+
+                        <div style="margin-right:20px;width:56%;">
+<!--                            <h2 class="text-center">Loan Report</h2>-->
+                        </div>
+                        <div style="width:22%;">
+                            <img t-if="res_company.logo"
+                                t-att-src="'data:image/png;base64,%s' % to_text(res_company.logo)"
+                                alt="Company Logo"
+                                style="height:100px; width:auto; max-width:350px" />
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="article o_report_layout_standard">
+                <t t-out="0" />
+            </div>
+
+            <div class="footer">
+                <style>
+                    .colorFooter {
+                    color:black;
+                    }
+                    #borderTop {
+                    border-top: 1px solid black;
+                    }
+                </style>
+                <center id="borderTop">
+<!--                    <div class="footer o_background_footer">-->
+                        <div class="text-center">
+                          <ul class="list-inline">
+                            <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                            </ul>
+                               <div  class="text-muted">
+                                      Page:
+                                   <span class="page"/>
+                                      of
+                                  <span class="topage"/>
+                                  </div>
+                        </div>
+<!--                </div>-->
+
+                </center>
+            </div>
+        </div>
+    </template>
+
+</odoo>

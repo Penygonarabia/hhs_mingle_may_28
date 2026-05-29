@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_res_config_settings_inherit_crm_custom" model="ir.ui.view">
+        <field name="name">res.config.settings.inherit.crm.custom</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Inherit CRM app -->
+            <xpath expr="//app[@name='crm']/block[1]" position="inside">
+
+                <!-- ✅ Your New Setting -->
+                <setting string="Hide the Additional Fields"
+                         help="Hide internal notes, marketing and tracking fields">
+
+                    <field name="hide_additional_fields"/>
+
+                </setting>
+
+                <!-- ✅ New Text Area -->
+                <!-- <setting string="Subject"
+                         help="Enter default subject">
+                    <field name="subject" widget="text"/>
+                </setting> -->
+
+            </xpath>
+            
+            
+
+        </field>
+    </record>
+    
+    	<record id = "crm_custom_default_setting_for_quotation" model = "ir.ui.view">
+    		
+    		<field name = "name">res.config.settings.notes.quotation.default</field>
+    		<field name = "model">res.config.settings</field>
+    		<field name = "inherit_id" ref = "crm.res_config_settings_view_form"/>
+    		<field name = "arch" type = "xml">
+    		
+    		
+    			<xpath expr= "//app[@name='crm']/block[@name ='generate_lead_setting_container']" position="after">
+    			
+    				<h2>Default Quotation Creation Notes </h2>
+    				<div class="row mt16 o_settings_container">
+    				
+    					 <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <label for="subject"/>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="subject" class="oe_inline"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <label for="scope_of_work"/>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="scope_of_work" class="oe_inline" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <label for="terms_of_execution"/>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="terms_of_execution" class="oe_inline" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <label for="exclusions"/>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="exclusions" class="oe_inline"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                                <label for="notes"/>
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="notes" class="oe_inline"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                        
+    				
+    				</div>
+    			
+    			</xpath>
+    		
+    		</field>
+    	</record>
+
+</odoo>

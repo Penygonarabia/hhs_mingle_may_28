@@ -1,0 +1,108 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+    <record model="ir.ui.view" id="update_accrued_leave_tree_view">
+      <field name="name">Update Accrued Leave Tree</field>
+      <field name="model">update.accrued.leave</field>
+      <field name="arch" type="xml">
+        <tree string="Update Accrued Leave">
+	
+		 <field name = "employee_no"/>
+		 <field name="employee_id" />
+          <field name="leave_ticket" />
+          <field name="type_of_adjustment"/>
+          <field name="no_of_tickets"/>
+
+        </tree>
+      </field>
+    </record>
+    <record model="ir.ui.view" id="update_accrued_leave_form_view">
+      <field name="name">>Update Accrued Leave Form</field>
+      <field name="model">update.accrued.leave</field>
+      <field name="arch" type="xml">
+        <form string="Update Accrued Leave">
+          <sheet>
+            <group>
+                <group>
+                  <field name="employee_id" force_save="1"/>
+                  <field name="employee_no" force_save="1"/>
+                  <field name="leave_ticket" force_save="1"/>
+
+                </group>
+                <group>
+                  <div class="o_td_label" style="width:150px;">
+
+                      <label for="type_of_adjustment" string="Type of Adjustment"/>
+
+                  </div>
+                  <field name="type_of_adjustment" nolabel="1"/>
+                  <field name="no_of_tickets" force_save="1"/>
+
+                </group>
+              </group>
+          </sheet>
+
+
+        </form>
+      </field>
+    </record>
+
+
+    <!-- actions opening views on models -->
+    <record model="ir.actions.act_window" id="action_update_accrued_leave_form">
+      <field name="name">Update Accrued Leave Days / Tickets</field>
+      <field name="res_model">update.accrued.leave</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+	<record id="search_updated_accured_leave" model="ir.ui.view">
+    	<field name="name">updated.leave.days.search</field>
+    	<field name="model">update.accrued.leave</field>
+    	<field name="arch" type="xml">
+    	
+    		<search>
+    		
+    			<field name="employee_id"/>
+    			<field name="employee_no"/>
+    			
+    			
+    			<group string="Group By" expand="0">
+           			 <filter string="Employee Name" name="employee_id" domain="[]" context="{'group_by': 'employee_id'}"/>
+        		</group>
+    		</search>
+    		
+    	
+    	</field>
+    
+    </record>
+
+<!--     server action to the one above-->
+<!--    <record model="ir.actions.server" id="hr_transaction.action_server">-->
+<!--      <field name="name">hr_transaction server</field>-->
+<!--      <field name="model_id" ref="model_hr_transaction_hr_transaction"/>-->
+<!--      <field name="state">code</field>-->
+<!--      <field name="code">-->
+<!--        action = {-->
+<!--          "type": "ir.actions.act_window",-->
+<!--          "view_mode": "tree,form",-->
+<!--          "res_model": model._name,-->
+<!--        }-->
+<!--      </field>-->
+<!--    </record>-->
+
+    <!-- Top menu item -->
+<!--
+    <menuitem name="hr_transaction" id="hr_transaction.menu_root"/>
+-->
+    <!-- menu categories -->
+<!--
+    <menuitem name="Menu 1" id="hr_transaction.menu_1" parent="hr_transaction.menu_root"/>
+    <menuitem name="Menu 2" id="hr_transaction.menu_2" parent="hr_transaction.menu_root"/>
+-->
+    <!-- actions -->
+    <menuitem name="Update Accrued Leave Days / Tickets" id="menu_update_accrued_leave" parent="hr.menu_human_resources_configuration"
+              action="action_update_accrued_leave_form" sequence="27"/>
+<!--    <menuitem name="Server to list" id="hr_transaction" parent="hr_transaction.menu_2"-->
+<!--              action="hr_transaction.action_server"/>-->
+  </data>
+</odoo>

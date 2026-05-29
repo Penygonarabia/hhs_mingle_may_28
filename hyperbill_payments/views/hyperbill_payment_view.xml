@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Inherit mobile accordion view -->
+        <!--        <record id="view_task_form_desktop_accordion_hyperbill" model="ir.ui.view">-->
+        <!--            <field name="name">project.task.form.desktop.accordion.hyperbill</field>-->
+        <!--            <field name="model">project.task</field>-->
+        <!--            <field name="inherit_id" ref="machine_repair_management.view_task_form_desktop_accordion"/>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                &lt;!&ndash; Add button in Product Information accordion &ndash;&gt;-->
+        <!--                <xpath expr="//div[@id='Productinfo']//field[@name='inspection_charges_amount']" position="after">-->
+        <!--                    <button name="action_create_hyperbill_inspection_payment"-->
+        <!--                            string="Create Hyperbill Payment Link"-->
+        <!--                            type="object"-->
+        <!--                            class="btn-primary"-->
+        <!--                            />-->
+        <!--                </xpath>-->
+        <!--            </field>-->
+        <!--        </record>-->
+
+        <!-- Inherit desktop form view -->
+        <record id="view_project_task_form_hyperbill" model="ir.ui.view">
+            <field name="name">project.task.form.hyperbill</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="machine_repair_management.view_project_task_form"/>
+            <field name="arch" type="xml">
+
+                <!-- Insert the button after the inspection_charges_amount field -->
+                <xpath expr="//group[@name='purchase_information']/field[@name='mode_of_payment']"
+                       position="after">
+                    <field name="inspection_inv_no" invisible = "1"/>
+                    <field name="payment_insp_link_sent_bool" invisible="1"/>
+                    <field name="payment_button_hide" invisible="1"/>
+                    <field name="payment_final_button_hide" invisible="1"/>
+
+                    <div colspan="2" class="d-flex justify-content-end">
+                        <button name="action_create_hyperbill_inspection_payment"
+                                string="Send Inspection Payment Link"
+                                type="object"
+                                class="btn btn-primary"
+                                style="width: 100px;"
+                                invisible="payment_insp_link_sent_bool or mode_of_payment != 'online'"/>
+                        <button name="action_create_hyperbill_inspection_payment"
+                                string="Resend Inspection Payment Link"
+                                type="object"
+                                class="btn btn-primary"
+                                style="width: 100px;"
+                                invisible="not payment_insp_link_sent_bool or mode_of_payment != 'online' or payment_button_hide"/>
+                    </div>
+                </xpath>
+                <xpath expr="//group[@name='purchase_information']/field[@name='mode_of_payment_balance_amount']"
+                       position="after">
+                    <field name="balance_inv_no" invisible="1"/>
+                    <field name="payment_bal_link_sent_bool" invisible="1"/>
+                    <div colspan="2" class="d-flex justify-content-end">
+                        <button name="action_create_hyperbill_balance_payment"
+                                type="object"
+                                string="Send Final Payment Link"
+                                class="btn btn-primary"
+                                style="width: 100px;"
+                                invisible="payment_bal_link_sent_bool or mode_of_payment_balance_amount != 'online' or payment_final_button_hide"
+                        />
+                        <button name="action_create_hyperbill_balance_payment"
+                                type="object"
+                                string="Resend Final Payment Link"
+                                class="btn btn-primary"
+                                style="width: 100px;"
+                                invisible="not payment_bal_link_sent_bool or mode_of_payment_balance_amount != 'online' or payment_final_button_hide"
+                        />
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_project_task_form_hyperbill_mobile" model="ir.ui.view">
+            <field name="name">project.task.form.hyperbill.mobile</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="machine_repair_management.view_task_form_desktop_accordion"/>
+            <field name="arch" type="xml">
+
+                <!-- Insert the button after the inspection_charges_amount field -->
+                <xpath expr="//group[@name='purchase_information_mo']/field[@name='mode_of_payment']"
+                       position="after">
+                    <field name="inspection_inv_no" invisible="1"/>
+                    <field name="payment_insp_link_sent_bool" invisible="1"/>
+                    <field name="payment_button_hide" invisible="1"/>
+                    <field name="payment_final_button_hide" invisible="1"/>
+                    <div colspan="2" class="d-flex justify-content-end">
+                        <button name="action_create_hyperbill_inspection_payment"
+                                string="Send Inspection Payment Link"
+                                type="object"
+                                class="mobile-payment-btn"
+                                invisible="payment_insp_link_sent_bool or mode_of_payment != 'online' or payment_button_hide"
+                        />
+                        <!-- After first click -->
+                        <button name="action_create_hyperbill_inspection_payment"
+                                string="Resend Inspection Payment Link"
+                                type="object"
+                                class="mobile-payment-btn"
+                                invisible="not payment_insp_link_sent_bool or mode_of_payment != 'online' or payment_button_hide"/>
+                    </div>
+                </xpath>
+                <xpath expr="//group[@name='purchase_information_mo']/field[@name='mode_of_payment_balance_amount']"
+                       position="after">
+                    <field name="balance_inv_no" invisible="1"/>
+                    <field name="payment_bal_link_sent_bool" invisible="1"/>
+                    <div colspan="2" class="d-flex justify-content-end">
+                        <button name="action_create_hyperbill_balance_payment"
+                                type="object"
+                                string="Send Final Payment Link"
+                                class="mobile-payment-btn"
+                                invisible="payment_bal_link_sent_bool or mode_of_payment_balance_amount != 'online' or payment_final_button_hide"
+                        />
+                        <button name="action_create_hyperbill_balance_payment"
+                                type="object"
+                                string="Resend Final Payment Link"
+                                class="mobile-payment-btn"
+                                invisible="not payment_bal_link_sent_bool or mode_of_payment_balance_amount != 'online' or payment_final_button_hide"
+                        />
+                    </div>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>

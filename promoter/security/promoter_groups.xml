@@ -1,0 +1,33 @@
+<odoo>
+  <data noupdate="0">  
+
+      <!-- Create Promoter Module Category -->
+      <record id="module_category_promoter" model="ir.module.category">
+        <field name="name">Promoter</field>
+        <field name="sequence">10</field>
+      </record>
+
+      <!-- Back Office User -->
+      <record id="group_promoter_backoffice_user" model="res.groups">
+        <field name="name">Promoter Back Office User</field>
+        <field name="category_id" ref="promoter.module_category_promoter"/>
+      </record> 
+
+      <!-- Module User (optional general group) -->
+      <record id="group_promoter_module_user" model="res.groups">
+        <field name="name">Promoter Module User</field>
+        <field name="category_id" ref="promoter.module_category_promoter"/>
+      </record>  
+
+      <!-- Mobile User -->
+      <record id="group_promoter_user" model="res.groups">
+        <field name="name">Promoter Mobile User</field>
+        <field name="category_id" ref="promoter.module_category_promoter"/>
+      </record> 
+      
+      <record id="group_promoter_sales_readonly" model="res.groups">
+        <field name="name">Promoter Sales Readonly</field>
+        <field name="category_id" ref="promoter.module_category_promoter"/>
+      </record>     
+  </data>
+</odoo>

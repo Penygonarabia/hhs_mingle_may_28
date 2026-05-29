@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Sequences for Contract Number -->
+        <record id="hr_contract_seq" forcecreate="1" model="ir.sequence">
+            <field name="name">Contract Reference</field>
+            <field name="code">hr.contract.seq</field>
+            <field eval="1" name="number_increment"/>
+            <field name="padding">6</field>
+        </record>
+
+    </data>
+</odoo>

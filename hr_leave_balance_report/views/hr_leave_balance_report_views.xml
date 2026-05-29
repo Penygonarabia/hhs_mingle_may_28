@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--<odoo>-->
+<!--    <record id="view_hr_leave_balance_report_tree" model="ir.ui.view">-->
+<!--        <field name="name">hr.leave.balance.report.tree</field>-->
+<!--        <field name="model">hr.leave.balance.report</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <tree>-->
+<!--                <field name="employee_id"/>-->
+<!--                <field name="gender"/>-->
+<!--                <field name="nationality"/>-->
+<!--                <field name="department"/>-->
+<!--                <field name="leave_type"/>-->
+<!--                <field name="allocated_leave"/>-->
+<!--                <field name="taken_leaves"/>-->
+<!--                <field name="remaining_leaves"/>-->
+<!--            </tree>-->
+<!--        </field>-->
+<!--    </record>-->
+
+
+<!--    <record id="view_hr_leave_balance_report_action_form" model="ir.ui.view">-->
+<!--        <field name="name">hr.leave.balance.report.action.form</field>-->
+<!--        <field name="model">hr.leave.balance.report</field>-->
+<!--        <field name="arch" type="xml">-->
+<!--            <form string="HR Leave Balance Report">-->
+<!--                <header>-->
+<!--                    <button name="action_generate_report" type="object" string="Generate Report" class="oe_highlight"/>-->
+<!--                </header>-->
+<!--                <sheet>-->
+<!--                    <group>-->
+<!--                        <field name="employee_id"/>-->
+<!--                        <field name="gender"/>-->
+<!--                        <field name="nationality"/>-->
+<!--                        <field name="department"/>-->
+<!--                        <field name="leave_type"/>-->
+<!--                        <field name="allocated_leave"/>-->
+<!--                        <field name="taken_leaves"/>-->
+<!--                        <field name="remaining_leaves"/>-->
+<!--                    </group>-->
+<!--                </sheet>-->
+<!--            </form>-->
+<!--        </field>-->
+<!--    </record>-->
+
+<!--    <record id="action_hr_leave_balance_report" model="ir.actions.act_window">-->
+<!--        <field name="name">Leave Balance Report</field>-->
+<!--        <field name="res_model">hr.leave.balance.report</field>-->
+<!--        <field name="view_mode">tree</field>-->
+<!--    </record>-->
+
+<!--    <menuitem id="menu_hr_leave_balance_report" name="Leave Balance Report" parent="hr_holidays.menu_hr_holidays_report" action="action_hr_leave_balance_report" sequence="10"/>-->
+<!--</odoo>-->
+
+<odoo>
+    <record id="view_hr_leave_balance_report_tree" model="ir.ui.view">
+        <field name="name">hr.leave.balance.report.tree</field>
+        <field name="model">hr.leave.balance.report</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="employee_id"/>
+                <field name="gender"/>
+                <field name="nationality"/>
+                <field name="department"/>
+                <field name="leave_type"/>
+                <field name="allocated_leave"/>
+                <field name="taken_leaves"/>
+                <field name="remaining_leaves"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_hr_leave_balance_report_form" model="ir.ui.view">
+        <field name="name">hr.leave.balance.report.form</field>
+        <field name="model">hr.leave.balance.report</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="employee_id"/>
+                        <field name="gender"/>
+                        <field name="nationality"/>
+                        <field name="department"/>
+                        <field name="leave_type"/>
+                        <field name="allocated_leave"/>
+                        <field name="taken_leaves"/>
+                        <field name="remaining_leaves"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hr_leave_balance_report_filter" model="ir.ui.view">
+        <field name="name">hr.leave.balance.report.search</field>
+        <field name="model">hr.leave.balance.report</field>
+        <field name="arch" type="xml">
+            <search string="Leave Balance Report">
+                <field name="employee_id"/>
+                <field name="gender"/>
+                <field name="nationality"/>
+                <field name="department"/>
+                <field name="leave_type"/>
+
+                <filter name="filter_employee" string="Employee" domain="[]"/>
+                <filter name="filter_gender" string="Gender" domain="[]"/>
+                <filter name="filter_nationality" string="Nationality" domain="[]"/>
+                <filter name="filter_department" string="Department" domain="[]"/>
+                <filter name="filter_leave_type" string="Leave Type" domain="[]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_by_employee" string="Employee" context="{'group_by':'employee_id'}"/>
+                    <filter name="group_by_gender" string="Gender" context="{'group_by':'gender'}"/>
+                    <filter name="group_by_nationality" string="Nationality" context="{'group_by':'nationality'}"/>
+                    <filter name="group_by_department" string="Department" context="{'group_by':'department'}"/>
+                    <filter name="group_by_leave_type" string="Leave Type" context="{'group_by':'leave_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hr_leave_balance_report" model="ir.actions.act_window">
+        <field name="name">Leave Balance Report</field>
+        <field name="res_model">hr.leave.balance.report</field>
+<!--        <field name="view_type">form</field>-->
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to create a new leave balance report.
+            </p>
+        </field>
+        <field name="context">{'create': False, 'edit': False}</field>
+
+    </record>
+
+       <menuitem id="menu_hr_leave_balance_report" name="Leave Balance Report" parent="hr_holidays.menu_hr_holidays_report" action="action_hr_leave_balance_report" sequence="10"/>
+
+</odoo>
+

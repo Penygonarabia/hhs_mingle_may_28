@@ -1,0 +1,96 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+            <record id="hr_employee_entitlement_view_form_inherit" model="ir.ui.view">
+            <field name="name">hr.employee.entitlement.view.form.inherit</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//page[@name='hr_settings']" position="after">
+                    <page string="Contract" name="contract">
+                        <group invisible="1">
+                            <group name="col_left">
+                                 <div class="o_td_label">
+                                    <div class="o_row">
+                                        <label for="leave_entitle_days" />
+                                        <field name="leave_entitle_days" nolabel="1" style="margin-left:50px;"/>
+                                            <span class="oe_inline" style="margin-left:10px;">
+                                                Days/
+                                            </span>
+                                        <field name="leave_days" class="oe_inline" style="margin-left:45px;"/>
+                                        <field name="leave_entitle_period" class="oe_inline" nolabel="1" style="margin-left:40px;"/>
+                                    </div>
+                                 </div>
+
+                            </group>
+                            <group/>
+                        </group>
+                        <group>
+                            <group name="col_left">
+                                <div class="o_td_label" style="width:500px;">
+                                <div class="o_row">
+                                    <label for="air_ticket_entitle_days" string="Air ticket Entitlement"/>
+                                    <field name="air_ticket_entitle_days" nolabel="1" style="margin-left:30px;"/>
+                                        <span class="oe_inline" style="margin-left:10px;">
+                                            Tickets/
+                                        </span>
+                                    <field name="air_tkt_days" class="oe_inline" style="margin-left:40px;"/>
+                                    <field name="air_ticket_entitle_period" class="oe_inline" nolabel="1" style="margin-left:40px;"/>
+                                </div>
+                            </div>
+                            </group>
+
+                            <group name="Air Ticket"> 
+	                            <div class="o_td_label" style="width:200px;">
+				                	<label for="air_ticket_unit_price" />
+				            	</div>
+                                <field name="air_ticket_unit_price" nolabel="1"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+                <xpath expr="//page[@name='hr_settings']/group/group[@name='application_group']" position="before">
+                        <group string="Leave Accruals" name="leave_accrual">
+	                        <div class="o_td_label" style="width:300px;">
+			                	<label for="entitlement" />
+			            	</div>
+                                <field name="entitlement" force_save="1" nolabel="1"/>
+                                <label for="bfwd_previous_year" string="B/Fwd-Previous Year"/>
+                                <field name="bfwd_previous_year" nolabel="1"/>
+                                <field name="adjustments" />
+                                 <field name="utilised_this_year"/>
+                                <field name="balance" force_save="1"/>
+                                <field name="accrued_leave" width="40%%" force_save="1" />
+                                <field name="accrued_leave_num_of_days"/>
+                                <field name="eos_start_date" force_save="1"/>
+                                <field name="last_leave_date"/>
+                                <field name="last_return_date"/>
+                                <field name="status" invisible="1"/>
+                                <field name="total_paid_leave"/>
+                                <field name="total_unpaid_leave"/>
+                                <field name="accrued_leave_num_of_days_end_of_service" invisible="1"/>
+                                <field name="accrued_leave_end_of_service" invisible="1"/>
+                                <field name="accrued_leave_boolean" invisible="1"/>
+                                <field name="emp_on_vacation" force_save="1" invisible="0"/>
+                            </group>
+                            <group string="Ticket Accruals" name="ticket_accrual">
+	                             <div class="o_td_label" style="width:300px;">
+				                	<label for="entitlement_ticket" />
+				            	</div>
+                                <field name="entitlement_ticket" force_save="1" nolabel="1"/>
+                                <label for="bfwd_previous_year_ticket" string="B/Fwd-Previous Year"/>
+                                <field name="bfwd_previous_year_ticket" nolabel="1"/>
+                                <field name="adjustments_ticket"/>
+                                 <field name="utilised_this_year_ticket"/>
+                                <field name="balance_ticket" force_save="1"/>
+                                <field name="accrued_ticket_num_of_days" />
+                            </group>
+
+
+                </xpath>
+
+            </field>
+        </record>
+  </data>
+</odoo>

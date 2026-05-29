@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_profit_loss_form" model="ir.ui.view">
+        <field name="name">profit.loss.form</field>
+        <field name="model">profit.loss</field>
+        <field name="arch" type="xml">
+            <form string="Profit and Loss Statement">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" string="Reference"/>
+                            <field name="company_id" string="Company"/>
+                        </group>
+                        <group>
+                            <field name="date_from" string="From Date"/>
+                            <field name="date_to" string="To Date"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Income">
+                            <group>
+                                <h2><b>Income</b></h2>
+                                <group>
+                                    <field name="revenue" string="Revenue"/>
+                                    <field name="other_income" string="Other Income"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Expenses">
+                            <group>
+                                <h2><b>Cost of Services</b></h2>
+                                <group>
+                                    <field name="cost_of_services" string="Cost of Services"/>
+                                </group>
+
+                                <h2><b>Detailed Expenses</b></h2>
+                                <group>
+                                    <field name="directors_fee" string="Directors' Fee"/>
+                                    <field name="printing_stationery" string="Printing and Stationery"/>
+                                    <field name="telecom_internet" string="Telecom and Internet"/>
+                                    <field name="fines_penalties" string="Fines and Penalties"/>
+                                    <field name="refreshment_mess" string="Refreshment and Mess"/>
+                                    <field name="hire_upkeep_lorries" string="Hire and Upkeep of Lorries"/>
+                                    <field name="transport_charges" string="Transport Charges"/>
+                                    <field name="general_expenses" string="General Expenses"/>
+                                    <field name="bank_charges" string="Bank Charges"/>
+                                    <field name="incorporation_fee" string="Incorporation Fee Written Off"/>
+                                    <field name="compilation_filing_fees" string="Compilation and Filing Fees"/>
+                                </group>
+
+                                <h2><b>Summary Expenses</b></h2>
+                                <group>
+                                    <field name="admin_expenses" string="Administrative Expenses"/>
+                                    <field name="other_operating_expenses" string="Other Operating Expenses"/>
+                                    <field name="finance_cost" string="Finance Cost"/>
+                                    <field name="depreciation" string="Depreciation"/>
+                                    <field name="income_tax" string="Income Tax"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Calculations">
+                            <group>
+                                <h2><b>Calculations</b></h2>
+                                <group>
+                                    <field name="gross_profit" string="Gross Profit" readonly="1"/>
+                                    <field name="profit_from_operations" string="Profit from Operations" readonly="1"/>
+                                    <field name="profit_before_tax" string="Profit Before Tax" readonly="1"/>
+                                    <field name="net_profit" string="Net Profit" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Notes">
+                            <group>
+                                <h2><b>Notes</b></h2>
+                                <field name="notes" string="Additional Notes"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_profit_loss_tree" model="ir.ui.view">
+        <field name="name">profit.loss.tree</field>
+        <field name="model">profit.loss</field>
+        <field name="arch" type="xml">
+            <tree string="Profit and Loss Statements">
+                <field name="name" string="Reference"/>
+                <field name="date_from" string="From Date"/>
+                <field name="date_to" string="To Date"/>
+                <field name="company_id" string="Company"/>
+                <field name="revenue" string="Revenue"/>
+                <field name="net_profit" string="Net Profit"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

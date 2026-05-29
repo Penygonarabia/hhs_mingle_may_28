@@ -1,0 +1,72 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+    <record model="ir.ui.view" id="view_hr_transaction_list">
+      <field name="name">Transaction Types list</field>
+      <field name="model">hr.transaction.rule</field>
+      <field name="arch" type="xml">
+        <tree string="Transaction Types" create="1" editable="bottom">
+
+          <field name="code" />
+          <field name="name" />
+          <field name="rule_type"/>
+          <field name="unit_type"/>
+
+        </tree>
+      </field>
+    </record>
+        <record model="ir.ui.view" id="view_hr_transaction_form">
+      <field name="name">Transaction Types Form</field>
+      <field name="model">hr.transaction.rule</field>
+      <field name="arch" type="xml">
+        <form string="Transaction Types">
+          <sheet>
+            <field name="code"/>
+          <field name="name"/>
+          <field name="rule_type"/>
+          <field name="unit_type"/>
+          </sheet>
+
+
+        </form>
+      </field>
+    </record>
+
+
+    <!-- actions opening views on models -->
+    <record model="ir.actions.act_window" id="action_window_hr_transaction">
+      <field name="name">Transaction Types</field>
+      <field name="res_model">hr.transaction.rule</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+<!--     server action to the one above-->
+<!--    <record model="ir.actions.server" id="hr_transaction.action_server">-->
+<!--      <field name="name">hr_transaction server</field>-->
+<!--      <field name="model_id" ref="model_hr_transaction_hr_transaction"/>-->
+<!--      <field name="state">code</field>-->
+<!--      <field name="code">-->
+<!--        action = {-->
+<!--          "type": "ir.actions.act_window",-->
+<!--          "view_mode": "tree,form",-->
+<!--          "res_model": model._name,-->
+<!--        }-->
+<!--      </field>-->
+<!--    </record>-->
+
+    <!-- Top menu item -->
+<!--
+    <menuitem name="hr_transaction" id="hr_transaction.menu_root"/>
+-->
+    <!-- menu categories -->
+<!--
+    <menuitem name="Menu 1" id="hr_transaction.menu_1" parent="hr_transaction.menu_root"/>
+    <menuitem name="Menu 2" id="hr_transaction.menu_2" parent="hr_transaction.menu_root"/>
+-->
+    <!-- actions -->
+    <menuitem name="Transaction Types" id="menu_hr_transaction_rule" parent="hr.menu_human_resources_configuration"
+              action="action_window_hr_transaction" sequence="22"/>
+<!--    <menuitem name="Server to list" id="hr_transaction" parent="hr_transaction.menu_2"-->
+<!--              action="hr_transaction.action_server"/>-->
+  </data>
+</odoo>

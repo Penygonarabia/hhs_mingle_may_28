@@ -1,0 +1,14 @@
+<?xml version = "1.0" encoding="utf-8" ?>
+<odoo>
+
+	<record id="report_daily_attendance_report_xlsx" model="ir.actions.report">
+		<field name = "name">Daily Attendance Report</field> 
+		<field name = "model" >daily.attendance.report</field>
+		<field name = "report_type">xlsx</field>
+		<field name = "report_name" >daily_attendance_report.report_daily_attendance_xlsx</field>
+		<field name = "report_file" >Daily Attendance Report</field>
+		<field name = "binding_model_id" ref="model_daily_attendance_report" />
+		<field name="binding_type">report</field>	
+	</record>
+
+</odoo>

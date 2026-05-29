@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="project_task_view_inherit" model="ir.ui.view">
+        <field name="name">project_task_view_inherit</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <label for="planned_date_begin" string="Planned Date" />
+                <div class="w-100">
+                    <div class="o_row">
+                        <field
+                            name="planned_date_begin"
+                            widget="daterange"
+                            options="{'related_end_date': 'planned_date_end'}"
+                        />
+                        <i
+                            class="fa fa-long-arrow-right mx-2 oe_edit_only"
+                            aria-label="Arrow icon"
+                            title="Arrow"
+                        />
+                        <i
+                            class="fa fa-long-arrow-right mx-2 oe_read_only"
+                            aria-label="Arrow icon"
+                            title="Arrow"
+                        />
+                        <field
+                            name="planned_date_end"
+                            widget="daterange"
+                            options="{'related_start_date': 'planned_date_begin'}"
+                        />
+                    </div>
+                </div>
+            </xpath>
+            <field name="displayed_image_id" position="after">
+                <field name="color" widget="color_picker" string="color" />
+            </field>
+        </field>
+    </record>
+
+    <record id="project_task_gantt_view" model="ir.ui.view">
+        <field name="name">project_task_gantt_view</field>
+        <field name="model">project.task</field>
+        <field name="arch" type="xml">
+	        <gantt
+	                date_start="planned_date_begin"
+	                date_stop="planned_date_end"
+	                string="Tasks"
+	                mode="month"
+	                color="color"
+	                event_open_popup="true"
+	                quick_create="false"
+	                resource_order="planned_date_begin asc"
+	                resource_width_percentage="15%"
+	                scales="day,week,month,year"
+	                resource="user_ids"
+	                default_group_by="user_ids"
+	            >
+            <!-- <gantt
+                date_start="planned_date_begin"
+                date_stop="planned_date_end"
+                string="Tasks"
+                mode="month"
+                color="color"
+                event_open_popup="true"
+                quick_create="false"
+                resource_order="planned_date_begin asc"
+                resource_width_percentage="15%"
+                scales="day,week,month,year"
+            > -->
+                <field name="user_ids" m2o="1" widget="many2many_avatar_user" />
+                <!--  <field name="work_center_id" m2o="1"/> -->
+                
+                <templates>
+                    <field name="allow_milestones" invisible="1" />
+                    <field
+                        name="project_id"
+                        widget="project"
+                        invisible="context.get('default_project_id', False)"
+                    />
+                    <field name="display_in_project" invisible="1" />
+                    <field name="subtask_count" invisible="1" />
+                    <field
+                        name="milestone_id"
+                        invisible="not allow_milestones or not milestone_id"
+                    />
+                    <field
+                        name="user_ids"
+                        widget="many2many_avatar_user"
+                        invisible="not user_ids"
+                    />
+                   <!--  <field name="work_center_id"  invisible="not work_center_id"/> -->
+                    <field name="partner_id" invisible="not partner_id" />
+                    <field name="priority" widget="priority" />
+                    <field
+                        name="tag_ids"
+                        widget="many2many_tags"
+                        options="{'color_field': 'color'}"
+                        invisible="not tag_ids"
+                    />
+                    <field name="stage_id" invisible="not project_id or not stage_id" />
+                    <field
+                        name="state"
+                        widget="project_task_state_selection"
+                        readonly="1"
+                    />
+                    <field
+                        name="personal_stage_id"
+                        string="Personal Stage"
+                        options="{'no_open': True}"
+                        invisible="project_id or not personal_stage_id"
+                    />
+                    <field name="task_properties" />
+                </templates>
+            </gantt>
+        </field>
+    </record>
+
+    <record id="project.action_view_task" model="ir.actions.act_window">
+        <field
+            name="view_mode"
+        >kanban,tree,form,calendar,pivot,graph,activity,gantt</field>
+    </record>
+    <record id="project.action_view_all_task" model="ir.actions.act_window">
+        <field
+            name="view_mode"
+        >kanban,tree,form,calendar,pivot,graph,activity,gantt</field>
+    </record>
+
+    <record
+        id="project.act_project_project_2_project_task_all"
+        model="ir.actions.act_window"
+    >
+        <field
+            name="view_mode"
+        >kanban,tree,form,calendar,pivot,graph,activity,gantt</field>
+    </record>
+
+    <record id="project.project_task_action_sub_task" model="ir.actions.act_window">
+        <field
+            name="view_mode"
+        >kanban,tree,form,calendar,pivot,graph,activity,gantt</field>
+    </record>
+
+    <record id="project.project_task_action_from_partner" model="ir.actions.act_window">
+        <field name="view_mode">kanban,tree,form,gantt</field>
+    </record>
+
+    <record
+        id="project.action_view_task_overpassed_draft"
+        model="ir.actions.act_window"
+    >
+        <field name="view_mode">tree,form,calendar,graph,kanban,gantt</field>
+    </record>
+
+    <record id="project.dblc_proj" model="ir.actions.act_window">
+        <field name="view_mode">tree,form,calendar,graph,kanban,gantt</field>
+    </record>
+
+    <record
+        id="project.act_res_users_2_project_task_opened"
+        model="ir.actions.act_window"
+    >
+        <field name="view_mode">tree,form,calendar,graph,gantt</field>
+    </record>
+</odoo>

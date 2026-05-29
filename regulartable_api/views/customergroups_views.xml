@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_cus_grp_desc_form" model="ir.ui.view">
+        <field name="name">customergroups.form</field>
+        <field name="model">customergroups</field>
+        <field name="arch" type="xml">
+            <form string="Custom Language">
+                <sheet>
+                    <group>                      
+                        <field name="cst_group"/>
+                        <field name="cst_no"/>
+                        <field name="user_id"/>
+                        <field name="user_lmd"/>
+                        <field name="user_lmt"/>                         
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_cus_grp_desc_tree" model="ir.ui.view">
+        <field name="name">customergroups.custom.tree</field>
+        <field name="model">customergroups</field>
+        <field name="arch" type="xml">
+            <tree string="Custom Language List">
+                <field name="cst_group"/>
+                <field name="cst_no"/>
+                <field name="user_id"/>
+                <field name="user_lmd"/>
+                <field name="user_lmt"/>  
+            </tree>
+        </field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom_main" name="Languages" sequence="10"/> -->
+
+    <record id="action_cus_grp_desc_custom" model="ir.actions.act_window">
+        <field name="name">customergroups</field>
+        <field name="res_model">customergroups</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom" name="Regular" action="action_res_lang_custom"  sequence="10"/> -->
+
+</odoo>

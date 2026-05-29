@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_normal_form_view_inherit_is_machine" model="ir.ui.view">
+        <field name="name">product.template.form.inherit</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='options']" position="inside">
+                <span class="d-inline-block">
+                    <field name="is_machine"/>
+                    <label for="is_machine"/>
+                </span>
+            </xpath>
+
+            <xpath expr="//field[@name ='categ_id']" position="before">
+                <field name="product_main_grp_id"/>
+                <field name="product_category_id" required="1"/>
+                <field name="product_group_id"/>
+                <field name="product_sub_group_id"/>
+                <field name="product_sub_grouping_id"/>
+            </xpath>
+
+            <xpath expr="//field[@name='categ_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='categ_id']" position="after">
+                <field name="contract_number" invisible="not contract_field_visible"/>
+                <field name="asset_number" invisible="not contract_field_visible"/>
+                <field name="contract_field_visible" invisible="1"/>
+                <field name="brand"/>
+                <!-- <field name="color"/> odoo13 -->
+                <field name="color_custom"/>
+                <field name="model"/>
+                <field name="year"/>
+                <field name="service_type_bool"/>
+                <field name="use_for_promoter" groups="promoter.group_promoter_module_user"/>
+                <!--  <field name = "use_for_promoter" invisible = "not promoter_user_bool"/> -->
+                <!--  <field name = "promoter_user_bool" invisible = "0"/> -->
+                <field name="category_group_type"/>
+                <field name="category_code" invisible="1" force_save="1"/>
+                <field name="group_code" invisible="1" force_save="1"/>
+                <field name="sub_group_code" invisible="1" force_save="1"/>
+                <field name="sub_grouping_code" invisible="1" force_save="1"/>
+                <!-- <field name = "sub_grouping_code" invisible = "0" force_save ="1"/> -->
+                <!--  <field name = "category_level_one" invisible = "1" force_save ="1" />
+                 <field name = "category_level_two" invisible = "1" force_save ="1"/>
+                 <field name = "category_level_three" invisible = "1" force_save ="1"/>
+                 <field name = "category_level_four"  invisible ="1" force_save ="1"/> -->
+                <field name="warehouse_id" invisible="1" force_save="1"/>
+                <field name="on_hand_qty" invisible="1" force_save="1"/>
+            </xpath>
+
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button class="oe_stat_button" type="object" name="action_machine_repair_request" string="Repair Request" icon="fa-list" />
+            </xpath>
+
+            <xpath expr="//field[@name ='uom_po_id']" position="after">
+                <field name="standard_hours" invisible="detailed_type != 'service'"/>
+                <!-- code added By vengatesh Mar 31 2026 -->
+                <field name  = "return_damage_item_to_warehouse"/>
+                <field name  = "service_product_price_edit_bool" />
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <record id="product_template_inherit_form_view_machine" model="ir.ui.view">
+        <field name="name">product.template.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='options']" position="inside">
+                <span class="d-inline-block">
+                    <field name="is_machine"/>
+                    <label for="is_machine"/>
+                </span>
+            </xpath>
+
+            <xpath expr="//field[@name ='categ_id']" position="before">
+                <field name="product_main_grp_id"/>
+                <field name="product_category_id" required="1"/>
+                <field name="product_group_id"/>
+                <field name="product_sub_group_id"/>
+                <field name="product_sub_grouping_id"/>
+            </xpath>
+
+            <xpath expr="//field[@name='categ_id']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='categ_id']" position="after">
+                <field name="category_code" invisible="1" force_save="1"/>
+                <field name="group_code" invisible="1" force_save="1"/>
+                <field name="sub_group_code" invisible="1" force_save="1"/>
+                <field name="sub_grouping_code" invisible="1" force_save="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='barcode']" position="after">
+                <field name="brand"/>
+                <!-- <field name="color"/>-->
+                <field name="color_custom"/>
+                <field name="model"/>
+                <field name="year"/>
+                <field name="service_type_bool"/>
+                <field name="use_for_promoter" groups="promoter.group_promoter_module_user"/>
+                <!--  <field name = "promoter_user_bool" invisible = "1"/> -->
+
+                <field name="category_template_group_type"/>
+                <field name="warehouse_id" invisible="1" force_save="1"/>
+                <field name="on_hand_qty" invisible="1" force_save="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name ='uom_po_id']" position="after">
+                <field name="standard_hours" invisible="detailed_type != 'service'"/>
+                <field name  = "return_damage_item_to_warehouse"/>
+                <field name  = "service_product_price_edit_bool" />
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <record id="product_product_template_view_inherit" model="ir.ui.view">
+        <field name="name">product.template.tree.inherit.view</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree/field[@name='standard_price']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="product_product_kanban_view_inherit" model="ir.ui.view">
+        <field name="name">product.product.kanban.inherit.view</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_kanban_view"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//div[@name='product_lst_price']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="product_product_tree_view_inherit" model="ir.ui.view">
+        <field name="name">product.product.tree.inherit.view</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_product_tree_view"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//tree/field[@name='standard_price']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+            <xpath expr="//tree/field[@name='product_template_variant_value_ids']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='lst_price']" position="after">
+                <field name="warehouse_id" column_invisible="1"/>
+                <field name="on_hand_qty" column_invisible="1"/>
+            </xpath>
+            <!-- <xpath expr="//tree" position ="attributes">
+                <attribute name ="editable">bottom</attribute>
+            </xpath> -->
+            <!-- <xpath expr="//field[@name='qty_available']" position="replace">
+            <field name="qty_available" string="On Hand (Warehouse)" store="False" optional="show" decoration-danger="qty_available &lt; 0" decoration-warning="qty_available == 0" groups="stock.group_stock_user" context="{'warehouse': warehouse_id}" />
+        </xpath> -->
+
+            <!-- 	<xpath expr="//field[@name='qty_available']" position="attributes">
+                    <attribute name="context">{'warehouse': warehouse_id}</attribute>
+                </xpath>   -->
+
+            <xpath expr="//field[@name='qty_available']" position="attributes">
+                <attribute name="string">O/H Qty</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='virtual_available']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='lst_price']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name = 'categ_id']" position="before">
+                <field name="product_main_grp_id"/>
+                <!-- <field name = "product_category_id"/> -->
+            </xpath>
+
+            <xpath expr="//field[@name = 'categ_id']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+
+            <!-- <xpath expr="//field[@name='qty_available']" position="attributes">
+               <attribute name="groups">stock.group_stock_user,!machine_repair_management.group_machine_repair_user </attribute>
+           </xpath>  -->
+            <!-- <xpath expr="//field[@name='virtual_available']" position="attributes">
+               <attribute name="groups">stock.group_stock_user,!machine_repair_management.group_machine_repair_user </attribute>
+           </xpath> -->
+
+        </field>
+    </record>
+
+
+    <record id="product_template_form_view_inherit_arabic_name" model="ir.ui.view">
+        <field name="name">product_template_form_view_inherit_product_arabic_name</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@class='oe_title']" position="after">
+                <div class="oe_title">
+                    <label for="product_arabic_name" string="Product Name 2"/>
+                    <h2>
+                        <field name="product_arabic_name" class="text-break" placeholder="اسم المنتج"/>
+                    </h2>
+                </div>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="action_product_machine" model="ir.actions.act_window">
+        <field name="name">Machines</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.product</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <!--            <field name="view_type">form</field> odoo13-->
+        <field name="domain">[('is_machine', '=', True)]</field>
+        <field name="view_id" ref="product.product_product_tree_view"/>
+        <field name="search_view_id" ref="product.product_search_form_view"/>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to define a new product.
+            </p>
+            <p>
+                You must define a product for everything you sell, whether it's
+                a physical product, a consumable or a service you offer to
+                customers.
+            </p>
+            <p>
+                The product form contains information to simplify the sale
+                process: price, notes in the quotation, accounting data,
+                procurement methods, etc.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_product_machine_parts" model="ir.actions.act_window">
+        <field name="name">Machine Parts</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">product.product</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <!--            <field name="view_type">form</field> odoo13-->
+        <field name="domain">[('is_machine', '=', False)]</field>
+        <field name="view_id" ref="product.product_product_tree_view"/>
+        <field name="search_view_id" ref="product.product_search_form_view"/>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to define a new product.
+            </p>
+            <p>
+                You must define a product for everything you sell, whether it's
+                a physical product, a consumable or a service you offer to
+                customers.
+            </p>
+            <p>
+                The product form contains information to simplify the sale
+                process: price, notes in the quotation, accounting data,
+                procurement methods, etc.
+            </p>
+        </field>
+    </record>
+
+
+</odoo>

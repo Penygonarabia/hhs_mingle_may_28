@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+
+    <t t-name="dom_gantt_view.DomGanttCommonPopover.footer">
+        <t t-if="isEventEditable">
+            <a
+                href="#"
+                class="btn btn-primary o_cw_popover_edit"
+                t-on-click="onEditEvent"
+            >Edit</a>
+        </t>
+        <!-- <t t-if="isEventDeletable">
+            <a
+                href="#"
+                class="btn btn-secondary o_cw_popover_delete"
+                t-on-click="onDeleteEvent"
+            >Delete</a>
+        </t> -->
+        <t t-if="isEventViewMoreOptions and !isEventEditable">
+            <div
+                class="btn-group w-100 w-lg-auto ms-lg-auto order-first order-lg-0 px-2 px-lg-0"
+            >
+                <a
+                    href="#"
+                    class="btn btn-primary btn-outline-secondary"
+                    t-on-click="goToFullEvent"
+                >More Options</a>
+            </div>
+        </t>
+    </t>
+</templates>

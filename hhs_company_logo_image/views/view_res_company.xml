@@ -1,0 +1,22 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+<odoo>
+
+    <record id="view_res_company_inherit_image" model="ir.ui.view">
+        <field name="name">res.company.type.image.inherit</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name = 'color']" position="after">
+                <!--                <div class="col-3 d-flex justify-content-center align-items-center">-->
+                <!--                    <field name="app_logo_image" widget="image" style="margin-left:5px" class="oe_avatar"/>-->
+                <!--                </div>-->
+                <field name="app_logo_image" widget="image"
+                       style="width:90px; height:90px;border:1px solid #dee2e6; display:inline-block; vertical-align:middle;"/>
+            </xpath>
+
+        </field>
+    </record>
+
+
+</odoo>

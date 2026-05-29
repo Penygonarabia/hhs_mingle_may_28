@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="inh_view_employee_form" model="ir.ui.view">
+        <field name="name">hr.employee.form</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='hr_settings']//group" position="inside">
+                <group string="Employee ID">
+                    <field name="empl_id"/>
+                </group>
+                <group string="Device Info">
+                    <field name="device_id" password="1" readonly="0"/>
+                    <field name="firebase_token" password="1"/>
+                    <field invisible="1" name="is_air_planeMode"/>
+                    <field invisible="1" name="device_type"/>
+                    <field invisible="1" name="is_location_enabled"/>
+                    <field invisible="1" name="build_id"/>
+                    <field invisible="1" name="geo_location"/>
+                </group>
+                <group string="Password Info">
+                    <field invisible="1" name="password"/>
+                    <field invisible="1" name="is_biometric_enable"/>
+                </group>
+            </xpath>
+            <xpath expr="//field[@name='address_id']" position="after">
+                <field invisible="1" name="image_authentication"/>
+                <field invisible="1" name="image_unique"/>
+            </xpath>
+            <!--            <xpath expr="//page[@name='personal_information']//group//field[@name='gender']" position="after">-->
+            <xpath expr="//field[@name='gender']" position="after">
+                <field invisible="0" name="is_face"/>
+                <field invisible="0" name="is_wfh"/>
+            </xpath>
+            
+            </field>
+    </record>
+    <record id="hr_attendance_config_settings_view_form" model="ir.ui.view">
+        <field name="name">hr.attendance.res.config.settings</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="hr_attendance.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+        
+          <xpath expr="//app[@name='hr_attendance']" position="inside">
+<!--          		<app data-string="Attendances" string="Attendances" name="hr_attendance" groups="hr_attendance.group_hr_attendance_manager">
+ -->
+<!--             <xpath expr="//div[@name='pincode_setting_container']" position="inside">
+ -->                <div class="col-12 col-lg-6 o_setting_box" title="Set Work From Radius for Mobile App Geofencing">
+                    <div class="o_setting_right_pane">
+                        <span class="o_form_label">
+                            WFO Radius (in meters)
+                        </span>
+                        <field name="wfo_radius" style="width:70px"/>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6 o_setting_box" title="Attendance Requests Limit">
+                    <div class="o_setting_right_pane">
+                        <span class="o_form_label">
+                            Attendance Requests Limit
+                        </span>
+                        <field name="attendance_request_limit" style="width:70px"/>
+                        <div class="text-muted">
+                            Set Limit for each employee to make atmost attenance requests for each month.
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6 o_setting_box" title="Leave Request Hidden">
+                    <div class="o_setting_right_pane">
+                        <span class="o_form_label">
+                            Leave Request Hide at Present
+                        </span>
+                        <field name="leave_request_hidden" style="width:70px"/>
+                        <div class="text-muted">
+                            Hide the leave request in the mobile app
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6 o_setting_box" title="Timesheet hide">
+                    <div class="o_setting_right_pane">
+                        <span class="o_form_label">
+                            Timesheet Hide At Present
+                        </span>
+                        <field name="timesheet_hide" style="width:70px"/>
+                        <div class="text-muted">
+                            Hide the Timesheet in the mobile app
+                        </div>
+                    </div>
+                </div>
+               <!--  </app>   -->
+            </xpath>
+          
+            </field>
+    </record>
+    <record id="hr_employee_config_settings_view_form" model="ir.ui.view">
+        <field name="name">hr.employee.res.config.settings</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="hr.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='hr']" position="inside">
+            
+<!--              <app data-string="Employees" string="Employees" name="hr" groups="hr.group_hr_manager">
+ -->                <div class="col-12 col-lg-6 o_setting_box" id="hr_manager_configuration" title="Configuration of HR Manager">
+                    <div class="o_setting_right_pane">
+                        <span class="o_form_label">
+                            HR Manager Configuration
+                        </span>
+                        <div class="content-group" name="hr_manager_configuration">
+                            <div class="row">
+                                <label class="o_light_label ml16" for="hr_manager"/>
+                                <field class="col-lg-6 ml16" name="hr_manager"/>
+                            </div>
+                            <div class="row">
+                                <field class="col-lg-1 ml16" name="on_leave"/>
+                                <label class="o_light_label" for="on_leave"/>
+                                <span>
+                                    (Enable when HR Manager on Leave)
+                                </span>
+                            </div>
+                            <div class="row" invisible="not on_leave">
+                                <label class="o_light_label ml16" for="alternative_hr_manager"/>
+                                <field class="col-lg-6 ml16" name="alternative_hr_manager"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- </app> -->
+            </xpath>
+            </field>
+    </record>
+    <record id="inherit_view_company_form" model="ir.ui.view">
+        <field name="name">inherit.res.company</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='currency_id']" position="after">
+                <field name="fcm_api_key"/>
+            </xpath></field>
+    </record>
+</odoo>

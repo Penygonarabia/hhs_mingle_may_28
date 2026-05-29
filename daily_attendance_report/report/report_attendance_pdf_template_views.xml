@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+	 <template id="attendance_report_internal_layout">
+            <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+              <t t-raw="0"/>
+            </div>
+        </template>
+
+        <!-- Report Template -->
+        <template id="report_daily_attendance_pdf">
+            <t t-call="web.html_container">
+                <t t-call="daily_attendance_report.attendance_report_internal_layout" style="margin-top:0px;padding-top:0px;display:inline;">
+                    <div class="header" t-att-style="report_header_style">
+                        <div class="row mt32 mb32">
+                            <div class="col-3 text-left" style="font:12px lucida-console,sans-serif !important;">
+                                <span t-field="res_company.partner_id"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.street"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.street2"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.city"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.country_id"/>
+                                <br/>
+                                <span t-field="res_company.partner_id.vat"/>
+                                <br/>
+                            </div>
+                            <div class="col-6">
+                                <h2><center>Daily Attendance Report</center></h2>
+
+                            </div>
+                            
+                            <div class="col-3 text-right" style="vertical-align:text-top">
+               				    <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" style="max-height: 70px; min-height:70px; min-width: 200px; max-width: 200px;" />
+            			    </div>
+                        </div>
+                    </div>
+                    <div class="page">
+                    	
+                    	<t>
+                    		<t t-if="form_data['from_date'] ">
+                    			From Date : <span t-esc="from_date"  > </span> <br/>To Date :<span t-esc="to_date"  > </span>
+                    		</t>
+                    		
+                                <t t-if="form_data['employee_ids'] or (form_data['sort_by']=='employee' ) and not form_data['summary_based_report']">
+                                    <h4><center>Employee Wise Search</center></h4>
+                                </t>
+
+                                <t t-elif="form_data['department_ids'] or form_data['sort_by']=='department'">
+                                        <h4><center>Department Wise Search</center></h4>
+                                </t>
+                                <t t-if="form_data['summary_based_report']">
+                                	
+                                	<h4><center>Summary Based Report</center></h4>
+                                </t>
+                                <t t-if="form_data['sort_by']=='date'">
+                                	<h4><center>Date Wise Sorting</center></h4>
+                                </t>
+                                
+                    	</t>
+                    	<br/>
+                    
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                              <t t-if="not form_data['summary_based_report']">
+	                                <tr style="background-color:#464343;color:white;text-align:center">
+	                                    <th width="1%" style="vertical-align:text-top">S.No</th>
+	                                    <th width="10%" style="vertical-align:text-top">Employee No</th>
+	                                    <th width="15%" style="vertical-align:text-top">Employee Name</th>
+	                                    <th width="13%" style="vertical-align:text-top">Department</th>
+	                                    <th width="8%" style="vertical-align:text-top">Date</th>
+	                                    <th width="14%" style="vertical-align:text-top">Day</th>
+	                                    <th width="14%" style="vertical-align:text-top">Clock In</th>
+	                                     <th width="8%" style="vertical-align:text-top">Clock Out</th>
+	                                    <th width="14%" style="vertical-align:text-top">Check In</th>
+	                                    <th width="14%" style="vertical-align:text-top">Check Out</th>
+	                                    <th width="10%" style="vertical-align:text-top">Late In</th>
+	                                    <th width="14%" style="vertical-align:text-top">Early Out</th>
+	                                    <th width="14%" style="vertical-align:text-top">Overtime</th>
+	                                    <th width="10%" style="vertical-align:text-top">Status</th>
+	                                    <th width="10%" style="vertical-align:text-top">Work Type</th>
+	                                </tr>
+                              </t>  
+                              	
+                              	 <t t-if="form_data['summary_based_report']">
+	                                <tr style="background-color:#464343;color:white;text-align:center">
+	                                    <th width="1%" style="vertical-align:text-top">S.No</th>
+	                                    <th width="5%" style="vertical-align:text-top">Employee No</th>
+	                                    <th width="15%" style="vertical-align:text-top">Employee Name</th>
+	                                    <th width="15%" style="vertical-align:text-top">Department</th>
+	                                    
+	                                    <th width="8%" style="vertical-align:text-top">Late In</th>
+	                                 	<th width="8%" style="vertical-align:text-top">Total Late In</th>
+	                                 	
+	                                 	<th width="8%" style="vertical-align:text-top">Early Out</th>
+	                                    <th width="10%" style="vertical-align:text-top">Total Early Out</th>
+	                                     
+	                                    <th width="8%" style="vertical-align:text-top">Overtime</th>
+	                                    <th width="10%" style="vertical-align:text-top">Total Overtime</th>
+	
+	                                </tr>
+                              </t>  
+                              	
+                            </thead>
+                            <tbody>
+                                <t t-set="counter" t-value="1"/>
+                                <t t-set="sort_department" t-value="set()"/>
+                                <t t-set="sort_employee" t-value="set()"/>
+                                <t t-set="sort_date" t-value="set()"/>
+                               
+                                
+                                <t t-if="not form_data['summary_based_report'] and not form_data['sort_by']=='date'"> 
+	                                <t t-foreach="attendance_employee" t-as="attendance">
+	                                		
+	                                		<t t-if="form_data['sort_by']=='department' and attendance['dept_name'] not in sort_department ">
+		                                		<tr style="background-color:#464343;color:white;text-align:center">
+		                                			<td colspan="16" width="100%"><span t-esc="attendance['dept_name']"/></td>
+	           										 <t t-set="sort_department" t-value="sort_department | set([attendance['dept_name']])"/>	                                		</tr>
+	                                		</t>
+	                                		<t t-if="form_data['sort_by']=='employee' and attendance['emp_name'] not in sort_employee">
+	                                			<tr style="background-color:#464343;color:white;text-align:center">
+	                                				<td colspan="16"><span t-esc="attendance['emp_name']"/></td>
+	                                				<t t-set="sort_employee" t-value="sort_employee | set([attendance['emp_name']])"/>
+	                                			</tr>
+	                                		
+	                                		</t>
+	                                		
+	                                	
+	                                			
+		                                     <tr>
+		                                        <td class="text-right"><span t-esc="counter"/></td>
+		                                        <td><span t-esc="attendance['emp_no']"/></td>
+		                                        <td><span t-esc="attendance['emp_name']"/></td>
+		                                        <td><span t-esc="attendance['dept_name']"/></td>
+		                                        <td><span t-esc="attendance['date']"/></td>
+		                                        <td><span t-esc="attendance['day']"/></td>
+		                                       <td class="text-right"><span t-esc="attendance['clock_in']"/></td>
+		                                        <td class="text-right"><span t-esc="attendance['clock_out']"/></td>
+		                                        <td class="text-right"><span t-esc="attendance['check_in']"/></td>
+		                                        <td class="text-right"><span t-esc="attendance['check_out']"/></td>
+		                                        <td class="text-right"><span t-esc="attendance['late_in']"/></td>
+		                                       <td class="text-right"><span t-esc="attendance['early_out']"/></td>
+		                                        <td class="text-right"><span t-esc="attendance['overtime']"/></td>
+		                                        <td><span t-esc="attendance['status']"/></td>
+		                                       <td><span t-esc="attendance['work_type']"/></td>
+		                                    </tr>
+		                                    <t t-set="counter" t-value="counter+1"/>
+		                                </t>
+		                                
+		                            </t>
+	                               <t t-if="form_data['summary_based_report']"> 
+	                               	
+	                               		<t t-foreach="total_attendance_employee" t-as="summary">
+	                                		
+	                                			
+		                                     <tr>
+		                                        <td class="text-right"><span t-esc="counter"/></td>
+		                                        <td><span t-esc="summary['emp_no']"/></td>
+		                                        <td><span t-esc="summary['emp_name']"/></td>
+		                                        <td><span t-esc="summary['dept_name']"/></td>
+		                                       
+		                                         <td class="text-right"><span t-esc="summary['late_in']"/></td>
+		                                         <td class="text-right"><span t-esc="summary['late_in_count']"/></td>
+		                                          
+		                                        <td class="text-right"><span t-esc="summary['early_out']"/></td>
+		                                        <td class="text-right"><span t-esc="summary['early_out_count']"/></td>
+		                                        <td class="text-right"><span t-esc="summary['overtime']"/></td>
+		                                        <td class="text-right"><span t-esc="summary['overtime_count']"/></td>
+		                                      
+		                                       
+		                                    </tr>
+		                                    <t t-set="counter" t-value="counter+1"/>
+		                                </t>
+	                               </t>
+	                               
+	                             <t t-if="form_data['sort_by']=='date'"> 
+	                                <t t-foreach="date_attendance_employee" t-as="attendance_date">
+	                                		
+	                                		
+	                                		<t t-if="form_data['sort_by']=='date' and attendance_date['date'] not in sort_date">
+	                                			<tr style="background-color:#464343;color:white;text-align:center">
+	                                				<td colspan="16"><span t-esc="attendance_date['date']"/></td>
+	                                				<t t-set="sort_date" t-value="sort_date | set([attendance_date['date']])"/>
+	                                			</tr>
+	                                		
+	                                		</t>
+	                                		
+	                                	
+	                                			
+		                                     <tr>
+		                                        <td class="text-right"><span t-esc="counter"/></td>
+		                                        <td><span t-esc="attendance_date['emp_no']"/></td>
+		                                        <td><span t-esc="attendance_date['emp_name']"/></td>
+		                                        <td><span t-esc="attendance_date['dept_name']"/></td>
+		                                        <td><span t-esc="attendance_date['date']"/></td>
+		                                        <td><span t-esc="attendance_date['day']"/></td>
+		                                       <td class="text-right"><span t-esc="attendance_date['clock_in']"/></td>
+		                                        <td class="text-right"><span t-esc="attendance_date['clock_out']"/></td>
+		                                        <td class="text-right"><span t-esc="attendance_date['check_in']"/></td>
+		                                        <td class="text-right"><span t-esc="attendance_date['check_out']"/></td>
+		                                        <td class="text-right"><span t-esc="attendance_date['late_in']"/></td>
+		                                       <td class="text-right"><span t-esc="attendance_date['early_out']"/></td>
+		                                        <td class="text-right"><span t-esc="attendance_date['overtime']"/></td>
+		                                        <td><span t-esc="attendance_date['status']"/></td>
+		                                       <td><span t-esc="attendance_date['work_type']"/></td>
+		                                    </tr>
+		                                    <t t-set="counter" t-value="counter+1"/>
+		                                </t>
+		                                
+		                            </t>
+	                                
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="footer o_background_footer">
+                        <div class="text-center">
+                            <ul class="list-inline">
+                                <li><strong>Printed by : </strong><span t-esc="request.env.user.name"/><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d-%m-%Y %H:%M')" style="padding-left:2em;"/></li>
+                            </ul>
+                            <div t-if="report_type == 'pdf'" class="text-muted">
+                                Page:
+                                <span class="page"/>
+                                of
+                                <span class="topage"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+
+
+
+</odoo>

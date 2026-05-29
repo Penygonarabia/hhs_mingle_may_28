@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="report_hr_advance_document">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="hr_loan_advance.report_loan_template_header_footer">
+                        <div class="page">
+                            <table border="1" style="width:100%;border: 1px solid black;">
+                                <thead style="background-color:#893b74 !important;border: 1px !important; border-style: solid black!important; border-color: #000000; color:#fff !important;">
+                                    <tr style="border:1px solid black">
+                                        <th class="text-center"
+                                            style="width:100%;background-color:#893b74 !important;border: 1px !important; border-style: solid black!important; border-color: #000000; color:#fff !important;"
+                                            colspan="4">HR Advance
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="border:1px solid black">
+                                        <td style="width:10%;background-color:#e6e6ff;border-right:1px solid black;">Serial No</td>
+                                        <td class="text-center" style="width:40%;border-right:1px solid black;">
+                                            <span t-field="o.name"/>
+                                        </td>
+                                        <td style="width:10%;background-color:#e6e6ff;border-right:1px solid black;">State</td>
+                                        <td style="width:40%;border-right:1px solid black;">
+                                            <span t-field="o.state"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table style="width:100%;border:1px solid black;">
+                                <thead style="background-color:#893b74 !important;border: 2px !important; border-style: solid black!important; border-color: black; color:#fff !important;">
+                                    <tr style="background-color:#893b74 !important;border: 2px !important; border-style: solid black!important; border-color: black; color:#fff !important;">
+                                        <th class="text-center"
+                                            style="width:100%;background-color:#893b74 !important;border: 2px !important; border-style: solid black!important; border-color: black; color:#fff !important;" colspan="4">Request Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="border:1px solid black">
+                                        <td class="text-left" style="width:25%;background-color:#e6e6ff;border-right:1px solid black;">Employee</td>
+                                        <td class="text-left" style="width:25%;border-right:1px solid black;">
+                                            <span t-field="o.employee_id"/>
+                                        </td>
+                                        <td class="text-left" style="width:25%;background-color:#e6e6ff;border-right:1px solid black;">Contract</td>
+                                        <td class="text-right" style="width:25%;border-right:1px solid black;">
+                                            <span t-field="o.contract_id"/>
+                                        </td>
+                                    </tr>
+                                    <tr style="border:1px solid black">
+                                        <td class="text-left" style="width:25%;background-color:#e6e6ff;border-right:1px solid black;">Advance Type
+                                        </td>
+                                        <td class="text-left" style="width:25%;border-right:1px solid black;">
+                                            <span t-field="o.type_id"/>
+                                        </td>
+                                        <td class="text-left" style="width:25%;background-color:#e6e6ff;border-right:1px solid black;">Advance Amount
+                                            Required
+                                        </td>
+                                        <td class="text-right" style="width:25%;border-right:1px solid black;">
+                                            <span t-esc="'%.2f'%o.advance_amount_required"/>
+                                        </td>
+                                    </tr>
+                                    <tr style="border:1px solid black">
+                                        <td class="text-left" style="width:25%;background-color:#e6e6ff;border-right:1px solid black;">Request Date
+                                        </td>
+                                        <td class="text-left" style="width:25%;border-right:1px solid black;">
+                                            <span t-field="o.request_date"/>
+                                        </td>
+                                        <td class="text-left" style="width:25%;border-right:1px solid black;"/>
+                                        <td class="text-left" style="width:25%;border-right:1px solid black;"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <!--<table style=";border: 1px solid gray;width:100%" t-if="o.employee_comment">
+                                <thead style="background-color:#006495;border:1px solid gray;color:white">
+                                    <tr>
+                                        <th class="text-center;background-color:#006495"
+                                            style="width:100%;border:1px solid black;">Employee
+                                            Comments
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="border:1px solid black">
+                                        <td style="width:100%;">
+                                            <span t-field="o.employee_comment"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+-->
+                            <!--<table style="border:1px solid black;width:100%">
+                                <thead>
+                                    <tr style="border:1px solid black;width:100%;background-color:#e6e6ff">
+                                        <th class="text-center" style="width:10%;border-right:1px solid black"></th>
+                                        <th class="text-center" style="border-right:1px solid black;width:30%;">Name
+                                        </th>
+                                        <th class="text-center" style="border-right:1px solid black;width:30%;">
+                                            Signature
+                                        </th>
+                                        <th class="text-center" style="width:30%;">Date</th>
+                                    </tr>
+                                    <tr style="border:1px solid black;width:100%">
+                                        <th class="text-center"
+                                            style="width:10%;border-right:1px solid black;background-color:#e6e6ff">
+                                            Employee
+                                        </th>
+                                        <th class="text-center" style="border-right:1px solid black;width:30%;">
+                                            <span t-field="o.employee_id.user_id"/>
+                                        </th>
+                                        <th class="text-center" style="border-right:1px solid black;width:30%;"></th>
+                                        <th class="text-center" style="width:30%;">
+                                            <span t-field="o.request_date"/>
+                                        </th>
+                                    </tr>
+                                </thead>
+                            </table>-->
+
+
+                            <table style="border:1px solid black;width:100%">
+                                <thead style="background-color:#893b74 !important;border: 1px !important; border-style: solid black!important; border-color: black; color:#fff !important;">
+                                    <tr style="background-color:#893b74 !important;border: 1px !important; border-style: solid black!important; border-color: black; color:#fff !important;">
+                                        <th class="text-center" style="width:100%;background-color:#893b74 !important;border: 2px !important; border-style: solid black!important; border-color: black; color:#fff !important;" colspan="4">Approval Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="border:1px solid black">
+                                        <td class="text-left" style="width:25%;background-color:#e6e6ff;border-right:1px solid black;">Advance Amount
+                                            Approved
+                                        </td>
+                                        <td class="text-right" style="width:25%;border-right:1px solid black;">
+                                            <span t-esc="'%.2f'%o.advance_amount"/>
+                                        </td>
+                                        <td class="text-left" style="width:25%;background-color:#e6e6ff;border-right:1px solid black;">Company</td>
+                                        <td class="text-left" style="width:25%;border-right:1px solid black;">
+                                            <span t-field="o.company_id"/>
+                                        </td>
+                                    </tr>
+                                    <tr style="border:1px solid black">
+                                        <td class="text-left" style="width:25%;background-color:#e6e6ff;border-right:1px solid black;">Number of
+                                            Installments
+                                        </td>
+                                        <td class="text-right" style="width:25%;border-right:1px solid black;">
+                                            <span t-field="o.advance_month_ins"/>
+                                        </td>
+                                        <td class="text-left" style="width:25%;background-color:#e6e6ff;border-right:1px solid black;">Installment
+                                            Start Date
+                                        </td>
+                                        <td class="text-left" style="width:25%;border-right:1px solid black;">
+                                            <span t-field="o.advance_ins_start_date"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table border="1" style="width:100%;" t-if="o.hr_comment">
+                                <thead style="background-color:#893b74 !important;border: 1px !important; border-style: solid black!important; border-color: black; color:#fff !important;">
+                                    <tr>
+                                        <th class="text-center"
+                                            style="width:100%;background-color:#893b74 !important;border: 2px !important; border-style: solid black!important; border-color: black; color:#fff !important;">HR
+                                            Comments
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="border:1px solid black">
+                                        <td style="width:100%;" class="text-center">
+                                            <span t-field="o.hr_comment"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!--<table style="border:1px solid black;width:100%">
+                                <thead>
+                                    <tr style="border:1px solid black;width:100%;background-color:#e6e6ff">
+                                        <th class="text-center" style="width:10%;border-right:1px solid black"></th>
+                                        <th class="text-center" style="border-right:1px solid black;width:30%;">Name
+                                        </th>
+                                        <th class="text-center" style="border-right:1px solid black;width:30%;">
+                                            Signature
+                                        </th>
+                                        <th class="text-center" style="width:30%;">Date</th>
+                                    </tr>
+                                    <tr style="border:1px solid black;width:100%">
+                                        <th class="text-center"
+                                            style="width:10%;border-right:1px solid black;background-color:#e6e6ff">HR
+                                            Manager
+                                        </th>
+                                        <th class="text-center" style="border-right:1px solid black;width:30%;">
+                                            <span t-field="o.hr_manager_id.name"/>
+                                        </th>
+                                        <th class="text-center" style="border-right:1px solid black;width:30%;"></th>
+                                        <th class="text-center" style="width:30%;">
+                                            <span t-field="o.hr_manager_date"/>
+                                        </th>
+                                    </tr>
+                                </thead>
+                            </table>-->
+
+                            <table style="border:1px solid black;width:100%;" t-if="o.hr_employee_advance_line_ps">
+                                <thead style="background-color:#893b74 !important;border: 1px !important; border-style: solid black!important; border-color: black; color:#fff !important;">
+                                    <tr>
+                                        <th class="text-center"
+                                            style="width:100%;background-color:#893b74 !important;border: 1px !important; border-style: solid black!important; border-color: black; color:#fff !important;"
+                                            colspan="7">Payment Scheduler
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="border:1px solid black;background-color:#e6e6ff">
+                                        <td class="text-center" style="width:25%;border-right:1px solid black;">
+                                            Installment Name
+                                        </td>
+                                        <td class="text-center" style="width:10%;border-right:1px solid black;">
+                                            Installment Date
+                                        </td>
+                                        <td class="text-center" style="width:15%;border-right:1px solid black;">Amount
+                                            Already Paid
+                                        </td>
+                                        <td class="text-center" style="width:15%;border-right:1px solid black;">Current
+                                            Installment
+                                        </td>
+                                        <td class="text-center" style="width:15%;border-right:1px solid black;">Next
+                                            Period Installment
+                                        </td>
+                                        <td class="text-center" style="width:5%;border-right:1px solid black;">Confirm
+                                        </td>
+                                        <td class="text-center" style="width:15%;">Status</td>
+                                    </tr>
+
+                                    <t t-foreach="o.hr_employee_advance_line_ps" t-as="l">
+                                        <tr style="border:1px solid black;">
+                                            <td class="text-left" style="width:25%;border-right:1px solid black;">
+                                                <span t-field="l.name"/>
+                                            </td>
+                                            <td class="text-center" style="width:10%;border-right:1px solid black;">
+                                                <span t-field="l.installment_date"/>
+                                            </td>
+                                            <td class="text-right" style="width:15%;border-right:1px solid black;">
+                                                <span t-field="l.installment_value"/>
+                                            </td>
+                                            <td class="text-right" style="width:15%;border-right:1px solid black;">
+                                                <span t-field="l.amount"/>
+                                            </td>
+                                            <td class="text-right" style="width:15%;border-right:1px solid black;">
+                                                <span t-field="l.remaining_value"/>
+                                            </td>
+                                            <td class="text-center" style="width:5%;border-right:1px solid black;">
+                                                <span t-field="l.confirm"/>
+                                            </td>
+                                            <td class="text-center" style="width:15%;border-right:1px solid black;">
+                                                <span t-field="l.state"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+
+                            <!--<table border="1" style="width:100%;border: 1px solid gray;" t-if="o.account_comment">
+                                <thead style="background-color:#006495;border:1px solid gray;color:white">
+                                    <tr>
+                                        <th class="text-center"
+                                            style="width:100%;border:1px solid black;background-color:#006495">Financial
+                                            Comments
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="border:1px solid black">
+                                        <td style="width:100%;">
+                                            <span t-field="o.account_comment"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>-->
+                            <!--<table style="border:1px solid black;width:100%">
+                                <thead>
+                                    <tr style="border:1px solid black;width:100%;background-color:#e6e6ff">
+                                        <th class="text-center" style="width:10%;border-right:1px solid black"></th>
+                                        <th class="text-center" style="border-right:1px solid black;width:30%;">Name
+                                        </th>
+                                        <th class="text-center" style="border-right:1px solid black;width:30%;">
+                                            Signature
+                                        </th>
+                                        <th class="text-center" style="width:30%;">Date</th>
+                                    </tr>
+                                    <tr style="border:1px solid black;width:100%">
+                                        <th class="text-center"
+                                            style="width:10%;border-right:1px solid black;background-color:#e6e6ff">Financial
+                                            Manager
+                                        </th>
+                                        <th class="text-center" style="border-right:1px solid black;width:30%;">
+                                            <span t-field="o.account_manager_id.name"/>
+                                        </th>
+                                        <th class="text-center" style="border-right:1px solid black;width:30%;">
+                                            <span t-field="o.account_manager_note"/>
+                                        </th>
+                                        <th class="text-center" style="width:30%;">
+                                            <span t-field="o.account_manager_date"/>
+                                        </th>
+                                    </tr>
+                                    <tr style="border:1px solid black;width:100%">
+                                        <th class="text-center"
+                                            style="width:10%;border-right:1px solid black;background-color:#e6e6ff">CFO
+                                        </th>
+                                        <th class="text-center" style="border-right:1px solid black;width:30%;">
+                                            <span t-field="o.chief_financial_officer_id.name"/>
+                                        </th>
+                                        <th class="text-center" style="border-right:1px solid black;width:30%;">
+                                            <span t-field="o.chief_financial_officer_note"/>
+                                        </th>
+                                        <th class="text-center" style="width:30%;">
+                                            <span t-field="o.chief_financial_officer_date"/>
+                                        </th>
+                                    </tr>
+                                </thead>
+                            </table>-->
+                            <br></br>
+                            <h4 style="text-align:center;background-color:#893b74 !important;border: 1px solid black!important; border-style: solid black!important; border-color: black; color:#fff !important;">
+                                <strong>Approval From Responsibles</strong>
+                            </h4>
+                            <table style="width:100%;margin:0px auto;background:white;border:1px solid black;">
+                                <thead style="font-size:20px;border:1px solid black;">
+                                    <tr style="background-color:#006495;border:1px solid black;color:black;">
+                                        <!--<th class="text-center" style="border:1px solid gray;width:20%;">
+                                            <strong>Signature</strong>
+                                        </th>-->
+                                        <th class="text-center" style="width:65%;background-color:#893b74 !important;border: 1px !important; border-style: solid black!important; border-color: black; color:#fff !important;">
+                                            <strong>Responsibles Notes</strong>
+                                        </th>
+                                        <th class="text-center" style="background-color:#893b74 !important;border: 1px !important; border-style: solid black!important; border-color: black; color:#fff !important;width:35%;">
+                                            <strong>Responsible</strong>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="border:1px solid black;width:100%">
+                                        <!--<th class="text-center" style="border:1px solid gray;width:20%;"></th>-->
+                                        <th class="text-center" style="border:1px solid black;width:65%;">
+                                            <br></br>
+                                            <strong>
+                                                <span style="text-align:center;" t-esc="o.d_manager_note"/>
+                                            </strong>
+                                        </th>
+                                        <th class="text-center"
+                                            style="width:35%;border:1px solid black;background-color:#e6e6ff;">
+                                            <strong style="color:#A0A0A0;">Direct Manager</strong>
+                                            <br/>
+                                            <span t-field="o.d_manager"/>
+                                        </th>
+                                    </tr>
+                                    <tr style="border:1px solid black;width:100%">
+                                        <!--<th class="text-center" style="border:1px solid gray;width:20%;"></th>-->
+                                        <th class="text-center" style="border:1px solid black;width:65%;">
+                                            <br/>
+                                            <strong>
+                                                <span style="text-align:center;" t-esc="o.hr_manage_note"/>
+                                            </strong>
+                                        </th>
+                                        <th class="text-center"
+                                            style="width:35%;border:1px solid black;background-color:#e6e6ff">
+                                            <strong style="color:#A0A0A0;">HR Manager</strong>
+                                            <br/>
+                                            <span t-field="o.hr_manage_id"/>
+                                        </th>
+                                    </tr>
+                                    <tr style="border:1px solid black;width:100%">
+                                        <!--<th class="text-center" style="border:1px solid gray;width:20%;"></th>-->
+                                        <th class="text-center" style="border:1px solid black;width:65%;">
+                                            <br/>
+                                            <strong>
+                                                <span style="text-align:center;" t-esc="o.account_manage_note"/>
+                                            </strong>
+                                        </th>
+                                        <th class="text-center"
+                                            style="width:35%;border:1px solid black;background-color:#e6e6ff">
+                                            <strong style="color:#A0A0A0;">Accounting Manager</strong>
+                                            <br/>
+                                            <span t-field="o.account_manage_id"/>
+                                        </th>
+                                    </tr>
+                                    <tr style="border:1px solid black;width:100%">
+                                        <!--<th class="text-center" style="border:1px solid gray;width:20%;"></th>-->
+                                        <th class="text-center" style="border:1px solid black;width:65%;">
+                                            <br></br>
+                                            <strong>
+                                                <span style="text-align:center;" t-esc="o.admin_manager_note"/>
+                                            </strong>
+                                        </th>
+                                        <th class="text-center"
+                                            style="width:35%;border:1px solid black;background-color:#e6e6ff">
+                                            <strong style="color:#A0A0A0;">Admin Manager</strong>
+                                            <br/>
+                                            <span t-field="o.admin_manager_id"/>
+                                        </th>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </t>
+                </t>
+            </t>
+
+        </template>
+
+
+    </data>
+</odoo>

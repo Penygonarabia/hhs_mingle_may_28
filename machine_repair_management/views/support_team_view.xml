@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+
+		<record id ="search_machine_support_team_view" model ="ir.ui.view">
+			<field name = "name">Service team Search</field>
+			<field name = "model">machine.support.team</field>
+			<field name = "arch" type = "xml">
+				<search string = "Machine Support Team">
+					<field name = "name"/>
+				</search>
+			</field>
+		</record>
+
+        <record model="ir.ui.view" id="support_team_form_view">
+            <field name="name">Service Teams</field>
+            <field name="model">machine.support.team</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+
+                        <group col="2">
+                            <field name="name"/>
+                        </group>
+                        <group col="2">
+                            <field name="leader_id"/>
+                        </group>
+                        <group col="2">
+                            <field name="service_type_id" required="1"/>
+                        </group>
+                        <group col="2">
+                            <field name="work_center_id"/>
+                        </group>
+                        <group col="2">
+                            <field name="project_ids" widget="many2many_tags" readonly="0"/>
+                        </group>
+                        <group col="2">
+                            <field name="location_id" invisible="1"/>
+                        </group>
+                        <group col="2">
+                            <field name="is_team" invisible="1"/>
+                            <field name="team_member_ids" widget="many2many_tags" readonly="1" invisible="1"/>
+                        </group>
+                        <notebook>
+                            <page string ="Team Members">
+                            	<field name ="support_team_line_ids">
+                            		<tree editable ="bottom">
+                            			<field name ="support_team_user_id" />
+                            			<field name = "is_default_team_member" />
+                            		</tree>
+                            	</field>
+                            </page>
+                             <page string="Team Members" invisible ="1">
+                                <field name="team_ids" nolabel="1">
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="support_team_tree_view">
+            <field name="name">Service Teams</field>
+            <field name="model">machine.support.team</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="leader_id"/>
+                    <field name="is_team" column_invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_machine_support_team" model="ir.actions.act_window">
+            <field name="name">Service Teams</field>
+            <field name="res_model">machine.support.team</field>
+            <!--            <field name="view_type">form</field> odoo13-->
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <record id="view_res_users_tree_inherit_view" model="ir.ui.view">
+            <field name="name">View Users Tree Inherit View</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="base.view_users_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='login']" position="after">
+                    <field name="is_default_member"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

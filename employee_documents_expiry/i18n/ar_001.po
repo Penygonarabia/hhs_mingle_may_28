@@ -1,0 +1,375 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* employee_documents_expiry
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 15.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-29 11:31+0000\n"
+"PO-Revision-Date: 2024-07-29 11:31+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee__document_count
+msgid "# Documents"
+msgstr "وثائق"
+
+#. module: employee_documents_expiry
+#: code:addons/employee_documents_expiry/models/employee_documents.py:0
+#, python-format
+msgid ""
+"<p class=\"oe_view_nocontent_create\">\n"
+"                           Click to Create for New Documents\n"
+"                        </p>"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__message_needaction
+msgid "Action Needed"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__active
+msgid "Active"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__alert_no_days
+msgid "Alert - No.of Days To Expiry"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__alert_required
+msgid "Alert Required"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model_terms:ir.ui.view,arch_db:employee_documents_expiry.employee_check_list_search_view
+msgid "Archived"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model,name:employee_documents_expiry.model_ir_attachment
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__doc_attachment_id
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_ir_attachment__doc_attach_rel
+msgid "Attachment"
+msgstr "مرفق"
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__message_attachment_count
+msgid "Attachment Count"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model_terms:ir.ui.view,arch_db:employee_documents_expiry.employee_check_list_form_view
+msgid "Checklist"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__document_type
+msgid "Checklist Type"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model_terms:ir.actions.act_window,help:employee_documents_expiry.action_view_document_types_list
+#: model_terms:ir.actions.act_window,help:employee_documents_expiry.action_view_employee_check_list
+msgid "Create new record"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__create_uid
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__create_date
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__date_of_issue_req
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__date_of_issue_req
+#: model_terms:ir.ui.view,arch_db:employee_documents_expiry.employee_check_list_form_view
+msgid "Date of Issue Required"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__description
+#: model_terms:ir.ui.view,arch_db:employee_documents_expiry.employee_document_form_view
+msgid "Description"
+msgstr "وصف"
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__display_name
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: code:addons/employee_documents_expiry/models/employee_documents.py:0
+#, python-format
+msgid "Document Expired."
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__name
+msgid "Document Name"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__name
+msgid "Document Number"
+msgstr "رقم المستند"
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__document_name
+msgid "Document Type"
+msgstr "نوع الوثيقة"
+
+#. module: employee_documents_expiry
+#: model:ir.actions.act_window,name:employee_documents_expiry.action_view_employee_check_list
+#: model:ir.ui.menu,name:employee_documents_expiry.checklist_employee
+msgid "Document Types"
+msgstr "أنواع المستندات"
+
+#. module: employee_documents_expiry
+#: code:addons/employee_documents_expiry/models/employee_documents.py:0
+#, python-format
+msgid "Document-%s Expired On %s"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: code:addons/employee_documents_expiry/models/employee_documents.py:0
+#: model_terms:ir.ui.view,arch_db:employee_documents_expiry.hr_employee_document_inherit_form_view
+#, python-format
+msgid "Documents"
+msgstr "وثائق"
+
+#. module: employee_documents_expiry
+#: model:ir.ui.menu,name:employee_documents_expiry.menu_employee_documents
+msgid "Documents Record"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.actions.act_window,name:employee_documents_expiry.action_view_document_types_list
+#: model:ir.model,name:employee_documents_expiry.model_employee_checklist
+msgid "Employee Documents"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__employee_ref
+msgid "Employee Name"
+msgstr "اسم الموظف"
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields.selection,name:employee_documents_expiry.selection__employee_checklist__document_type__entry
+msgid "Entry Process"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields.selection,name:employee_documents_expiry.selection__employee_checklist__document_type__exit
+msgid "Exit Process"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__expiry_date
+msgid "Expiry Date"
+msgstr "تاريخ الانتهاء"
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__expiry_date_req
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__expiry_date_req
+#: model_terms:ir.ui.view,arch_db:employee_documents_expiry.employee_check_list_form_view
+msgid "Expiry Date Required"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__message_follower_ids
+msgid "Followers"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__message_partner_ids
+msgid "Followers (Partners)"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model,name:employee_documents_expiry.model_hr_employee
+msgid "HR Employee"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.actions.server,name:employee_documents_expiry.employee_data_reminder_ir_actions_server
+#: model:ir.cron,cron_name:employee_documents_expiry.employee_data_reminder
+#: model:ir.cron,name:employee_documents_expiry.employee_data_reminder
+msgid "HR Employee Data Expiration"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model,name:employee_documents_expiry.model_hr_employee_document
+msgid "HR Employee Documents"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__has_message
+msgid "Has Message"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__id
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__id
+msgid "ID"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,help:employee_documents_expiry.field_employee_checklist__message_needaction
+#: model:ir.model.fields,help:employee_documents_expiry.field_employee_checklist__message_unread
+msgid "If checked, new messages require your attention."
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,help:employee_documents_expiry.field_employee_checklist__message_has_error
+msgid "If checked, some messages have a delivery error."
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__message_is_follower
+msgid "Is Follower"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__issue_date
+msgid "Issue Date"
+msgstr "تاريخ الإصدار"
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist____last_update
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document____last_update
+msgid "Last Modified on"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__write_uid
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__write_date
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__mail_expiry_date
+#: model_terms:ir.ui.view,arch_db:employee_documents_expiry.employee_check_list_form_view
+msgid "Mail Expiry Date to Employee"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__message_main_attachment_id
+msgid "Main Attachment"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__message_has_error
+msgid "Message Delivery error"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__message_ids
+msgid "Messages"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields.selection,name:employee_documents_expiry.selection__hr_employee_document__notification_on__no
+msgid "No"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__notification_on
+msgid "Notification On"
+msgstr "الإخطار قيد التشغيل"
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__message_needaction_counter
+msgid "Number of Actions"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__message_has_error_counter
+msgid "Number of errors"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,help:employee_documents_expiry.field_employee_checklist__message_needaction_counter
+msgid "Number of messages which requires an action"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,help:employee_documents_expiry.field_employee_checklist__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,help:employee_documents_expiry.field_employee_checklist__message_unread_counter
+msgid "Number of unread messages"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields.selection,name:employee_documents_expiry.selection__employee_checklist__document_type__other
+msgid "Other"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__city_id
+msgid "Place of Issue"
+msgstr "مكان الإصدار"
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__place_of_issue_req
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_hr_employee_document__place_of_issue_req
+#: model_terms:ir.ui.view,arch_db:employee_documents_expiry.employee_check_list_form_view
+msgid "Place of Issue Required"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: code:addons/employee_documents_expiry/models/employee_documents.py:0
+#: code:addons/employee_documents_expiry/models/employee_documents.py:0
+#, python-format
+msgid "Sorry, you are not allowed to access this document."
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__message_unread
+msgid "Unread Messages"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,field_description:employee_documents_expiry.field_employee_checklist__message_unread_counter
+msgid "Unread Messages Counter"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields.selection,name:employee_documents_expiry.selection__hr_employee_document__notification_on__yes
+msgid "Yes"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: model:ir.model.fields,help:employee_documents_expiry.field_hr_employee_document__doc_attachment_id
+msgid "You can attach the copy of your document"
+msgstr ""
+
+#. module: employee_documents_expiry
+#: code:addons/employee_documents_expiry/models/employee_documents.py:0
+#, python-format
+msgid "Your Document Is Already Expired."
+msgstr ""

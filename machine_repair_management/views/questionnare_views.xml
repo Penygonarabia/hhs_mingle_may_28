@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_questionnare_tree" model="ir.ui.view">
+        <field name="name">questionnaire.tree</field>
+        <field name="model">questionnaire</field>
+        <field name="arch" type="xml">
+            <tree string="questionnare">
+                <field name='que_code'/>
+                <field name="que_desc"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View Definition -->
+    <record id="view_questionnare_form" model="ir.ui.view">
+        <field name="name">questionnaire.form</field>
+        <field name="model">questionnaire</field>
+        <field name="arch" type="xml">
+            <form string="questionnare">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name='que_code'/>
+                            <field name="que_desc"/>
+                        </group>
+                        <group>
+
+                        </group>
+                    </group>
+                </sheet>
+                <!-- <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="message_ids"/>
+                </div> -->
+            </form>
+        </field>
+    </record>
+
+    <!-- Action Definition to Show Views -->
+    <record id="action_questionnare" model="ir.actions.act_window">
+        <field name="name">Questionnaire</field>
+        <field name="res_model">questionnaire</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem name="Questionnaire" id="menu_item_questionnare" parent="machine_repair_management.menu_machine_repair_configuration" action="machine_repair_management.action_questionnare" sequence='20'/>
+</odoo>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+     <record model="ir.ui.view" id="view_pos_order_form_inherited_for_unit_price">
+        <field name="name">pos.order.inherited.unit.price.form</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+             <xpath expr="//field[@name='fiscal_position_id']" position="after">
+                <field name="is_pos_selling_price" invisible="1" nolabel="1"/>
+             </xpath>
+            <xpath expr="//notebook/page/field[@name='lines']/tree/field[@name='price_unit']" position="after">
+                <field name="is_pos_selling_price" invisible="1" nolabel="1"/>
+            </xpath>
+
+            <xpath expr="//notebook/page/field[@name='lines']/tree/field[@name='price_unit']" position="attributes">
+                <attribute name="readonly">is_pos_selling_price == False</attribute>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

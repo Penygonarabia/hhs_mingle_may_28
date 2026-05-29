@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<odoo>
+    <data>
+        <!-- HR Advance Type-->
+
+        <record id="open_hr_employee_advance_type_ps" model="ir.actions.act_window">
+            <field name="name">Advance Type</field>
+            <field name="res_model">hr.employee.advance.type.ps</field>
+
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+            <field name="view_id" eval="False"/>
+        </record>
+
+
+    </data>
+</odoo>

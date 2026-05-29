@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--    <menuitem-->
+<!--        id="menu_res_territory"-->
+<!--        name="Territories"-->
+<!--        action="action_res_territory"-->
+<!--        parent="base.menu_users"-->
+<!--        sequence="20"-->
+<!--    />-->
+<!--    <menuitem-->
+<!--        id="menu_res_branch"-->
+<!--        name="Branches"-->
+<!--        action="action_res_branch"-->
+<!--        parent="base.menu_users"-->
+<!--        sequence="30"-->
+<!--    />-->
+<!--    <menuitem-->
+<!--        id="menu_res_district"-->
+<!--        name="Districts"-->
+<!--        action="action_res_district"-->
+<!--        parent="base.menu_users"-->
+<!--        sequence="40"-->
+<!--    />-->
+<!--    <menuitem-->
+<!--        id="menu_res_region"-->
+<!--        name="Regions"-->
+<!--        action="action_res_region"-->
+<!--        parent="base.menu_users"-->
+<!--        sequence="50"-->
+<!--    />-->
+     <menuitem
+        id="menu_iqama_comapny"
+        name="Sponsors"
+        action="action_iqama_company"
+        parent="hr.menu_human_resources_configuration"
+        sequence="25"
+    />
+    <menuitem
+        id="menu_res_region"
+        name="Regions"
+        action="action_res_region"
+        parent="hr.menu_human_resources_configuration"
+        sequence="26"
+    />
+
+</odoo>

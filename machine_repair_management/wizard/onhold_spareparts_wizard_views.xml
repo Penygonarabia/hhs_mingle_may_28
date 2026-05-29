@@ -1,0 +1,22 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+<odoo>
+	<record id = "onhold_spare_parts_reason_wizard_form_view" model = "ir.ui.view">
+		<field name = "name">onhold.spareparts.reason.wizard.form.view</field>
+		<field name = "model">onhold.spareparts.reason.wizard</field>
+		<field name = "arch" type = "xml">
+			<form>
+				<group>
+					<field name = "job_card_id" readonly = "1" force_save = "1"/>
+				</group>
+				<group>
+					<field name = "onhold_spareparts_reason_id" options ="{'no_create':True,'no_open':True,'no_edit':True}"
+					/>
+				</group>
+				<footer>
+					<button name = "action_confirm_reason" string = "Confirm" type = "object" class ="oe_highlight"/>
+					<button name = "action_cancel" type = "object" string = "Cancel" class = "btn-secondary"/>
+				</footer>
+			</form>
+		</field>
+	</record>
+</odoo>

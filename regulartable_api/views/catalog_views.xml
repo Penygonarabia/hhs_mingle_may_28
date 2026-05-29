@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_catalog_custom_form" model="ir.ui.view">
+        <field name="name">catalog.form</field>
+        <field name="model">catalog</field>
+        <field name="arch" type="xml">
+            <form string="Custom Language">
+                <sheet>
+                    <group>
+                        <field name="cat_allzcost"/>
+                        <field name="cat_assembl"/>
+                        <field name="cat_associategrp"/>
+                        <field name="cat_associatepart"/>
+                        <field name="cat_avcost"/>
+                        <field name="cat_backward"/>
+                        <field name="cat_barcode"/>
+                        <field name="cat_bltncode"/>
+                        <field name="cat_bulletin"/>
+                        <field name="cat_cat"/>
+                        <field name="cat_comments"/>
+                        <field name="cat_comments2"/>
+                        <field name="cat_desc"/>
+                        <field name="cat_desc2"/>
+                        <field name="cat_discont"/>
+                        <field name="cat_discontdate"/>
+                        <field name="cat_dsiamount"/>
+                        <field name="cat_duty"/>
+                        <field name="cat_fccode"/>
+                        <field name="cat_fccost"/>
+                        <field name="cat_flag"/>
+                        <field name="cat_frac"/>
+                        <field name="cat_genorder"/>
+                        <field name="cat_grouppart"/>
+                        <field name="cat_grp"/>
+                        <field name="cat_image"/>
+                        <field name="cat_intrdate"/>
+                        <field name="cat_itemtype"/>
+                        <field name="cat_kit"/>
+                        <field name="cat_lastsprice"/>
+                        <field name="cat_lccost"/>
+                        <field name="cat_lrctdate"/>
+                        <field name="cat_mainpartno"/>
+                        <field name="cat_manu"/>
+                        <field name="cat_max"/>
+                        <field name="cat_mccode"/>
+                        <field name="cat_min"/>
+                        <field name="cat_mmcode"/>
+                        <field name="cat_model"/>
+                        <field name="cat_modelcode"/>
+                        <field name="cat_multispl"/>
+                        <field name="cat_nonstock"/>
+                        <field name="cat_obsolete"/>
+                        <field name="cat_oldbarcode"/>
+                        <field name="cat_oldpart"/>
+                        <field name="cat_ordflag"/>
+                        <field name="cat_pack"/>
+                        <field name="cat_packqty"/>
+                        <field name="cat_part"/>
+                        <field name="cat_parttype"/>
+                        <field name="cat_pcode"/>
+                        <field name="cat_pcount"/>
+                        <field name="cat_pgroup"/>
+                        <field name="cat_pgtype"/>
+                        <field name="cat_pointval"/>
+                        <field name="cat_ppack"/>
+                        <field name="cat_pqtydi"/>
+                        <field name="cat_priority"/>
+                        <field name="cat_psgroup"/>
+                        <field name="cat_qqtydi"/>
+                        <field name="cat_recsal"/>
+                        <field name="cat_royalty"/>
+                        <field name="cat_royaltyfc"/>
+                        <field name="cat_rptcode"/>
+                        <field name="cat_salestype"/>
+                        <field name="cat_sdesc"/>
+                        <field name="cat_sdesc2"/>
+                        <field name="cat_season"/>
+                        <field name="cat_service"/>
+                        <field name="cat_servicekit"/>
+                        <field name="cat_shortdesc"/>
+                        <field name="cat_shortdesc2"/>
+                        <field name="cat_slife"/>
+                        <field name="cat_slifef"/>
+                        <field name="cat_spack"/>
+                        <field name="cat_specs"/>
+                        <field name="cat_specs2"/>
+                        <field name="cat_splkit"/>
+                        <field name="cat_splname"/>
+                        <field name="cat_splname2"/>
+                        <field name="cat_splno"/>
+                        <field name="cat_splpart"/>
+                        <field name="cat_spricecdate"/>
+                        <field name="cat_stcost"/>
+                        <field name="cat_stock"/>
+                        <field name="cat_subpar"/>
+                        <field name="cat_substo"/>
+                        <field name="cat_supdat"/>
+                        <field name="cat_supdate"/>
+                        <field name="cat_supgrp"/>
+                        <field name="cat_suppar"/>
+                        <field name="cat_suppart"/>
+                        <field name="cat_supsto"/>
+                        <field name="cat_supstock"/>
+                        <field name="cat_type"/>
+                        <field name="cat_uh"/>
+                        <field name="cat_ul"/>
+                        <field name="cat_uom"/>
+                        <field name="cat_uvol"/>
+                        <field name="cat_uw"/>
+                        <field name="cat_uwt"/>
+                        <field name="cat_vat"/>
+                        <field name="cat_vuom"/>
+                        <field name="cat_wom"/>
+                        <field name="cat_wprd"/>
+                        <field name="cat_wprdf"/>
+                        <field name="detail1"/>
+                        <field name="detail2"/>
+                        <field name="detail3"/>
+                        <field name="lang_flag"/>
+                        <field name="lang_flag2"/>
+                        <field name="user_id"/>
+                        <field name="user_lmd"/>
+                        <field name="user_lmt"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_catalog_custom_tree" model="ir.ui.view">
+        <field name="name">catalog.custom.tree</field>
+        <field name="model">catalog</field>
+        <field name="arch" type="xml">
+            <tree string="Custom Language List">                
+                        <field name="cat_allzcost"/>
+                        <field name="cat_assembl"/>
+                        <field name="cat_associategrp"/>
+                        <field name="cat_associatepart"/>
+                        <field name="cat_avcost"/>
+                        <field name="cat_backward"/>
+                        <field name="cat_barcode"/>
+                        <field name="cat_bltncode"/>
+                        <field name="cat_bulletin"/>
+                        <field name="cat_cat"/>
+                        <field name="cat_comments"/>
+                        <field name="cat_comments2"/>
+                        <field name="cat_desc"/>
+                        <field name="cat_desc2"/>
+                        <field name="cat_discont"/>
+                        <field name="cat_discontdate"/>
+                        <field name="cat_dsiamount"/>
+                        <field name="cat_duty"/>
+                        <field name="cat_fccode"/>
+                        <field name="cat_fccost"/>
+                        <field name="cat_flag"/>
+                        <field name="cat_frac"/>
+                        <field name="cat_genorder"/>
+                        <field name="cat_grouppart"/>
+                        <field name="cat_grp"/>
+                        <field name="cat_image"/>
+                        <field name="cat_intrdate"/>
+                        <field name="cat_itemtype"/>
+                        <field name="cat_kit"/>
+                        <field name="cat_lastsprice"/>
+                        <field name="cat_lccost"/>
+                        <field name="cat_lrctdate"/>
+                        <field name="cat_mainpartno"/>
+                        <field name="cat_manu"/>
+                        <field name="cat_max"/>
+                        <field name="cat_mccode"/>
+                        <field name="cat_min"/>
+                        <field name="cat_mmcode"/>
+                        <field name="cat_model"/>
+                        <field name="cat_modelcode"/>
+                        <field name="cat_multispl"/>
+                        <field name="cat_nonstock"/>
+                        <field name="cat_obsolete"/>
+                        <field name="cat_oldbarcode"/>
+                        <field name="cat_oldpart"/>
+                        <field name="cat_ordflag"/>
+                        <field name="cat_pack"/>
+                        <field name="cat_packqty"/>
+                        <field name="cat_part"/>
+                        <field name="cat_parttype"/>
+                        <field name="cat_pcode"/>
+                        <field name="cat_pcount"/>
+                        <field name="cat_pgroup"/>
+                        <field name="cat_pgtype"/>
+                        <field name="cat_pointval"/>
+                        <field name="cat_ppack"/>
+                        <field name="cat_pqtydi"/>
+                        <field name="cat_priority"/>
+                        <field name="cat_psgroup"/>
+                        <field name="cat_qqtydi"/>
+                        <field name="cat_recsal"/>
+                        <field name="cat_royalty"/>
+                        <field name="cat_royaltyfc"/>
+                        <field name="cat_rptcode"/>
+                        <field name="cat_salestype"/>
+                        <field name="cat_sdesc"/>
+                        <field name="cat_sdesc2"/>
+                        <field name="cat_season"/>
+                        <field name="cat_service"/>
+                        <field name="cat_servicekit"/>
+                        <field name="cat_shortdesc"/>
+                        <field name="cat_shortdesc2"/>
+                        <field name="cat_slife"/>
+                        <field name="cat_slifef"/>
+                        <field name="cat_spack"/>
+                        <field name="cat_specs"/>
+                        <field name="cat_specs2"/>
+                        <field name="cat_splkit"/>
+                        <field name="cat_splname"/>
+                        <field name="cat_splname2"/>
+                        <field name="cat_splno"/>
+                        <field name="cat_splpart"/>
+                        <field name="cat_spricecdate"/>
+                        <field name="cat_stcost"/>
+                        <field name="cat_stock"/>
+                        <field name="cat_subpar"/>
+                        <field name="cat_substo"/>
+                        <field name="cat_supdat"/>
+                        <field name="cat_supdate"/>
+                        <field name="cat_supgrp"/>
+                        <field name="cat_suppar"/>
+                        <field name="cat_suppart"/>
+                        <field name="cat_supsto"/>
+                        <field name="cat_supstock"/>
+                        <field name="cat_type"/>
+                        <field name="cat_uh"/>
+                        <field name="cat_ul"/>
+                        <field name="cat_uom"/>
+                        <field name="cat_uvol"/>
+                        <field name="cat_uw"/>
+                        <field name="cat_uwt"/>
+                        <field name="cat_vat"/>
+                        <field name="cat_vuom"/>
+                        <field name="cat_wom"/>
+                        <field name="cat_wprd"/>
+                        <field name="cat_wprdf"/>
+                        <field name="detail1"/>
+                        <field name="detail2"/>
+                        <field name="detail3"/>
+                        <field name="lang_flag"/>
+                        <field name="lang_flag2"/>
+                        <field name="user_id"/>
+                        <field name="user_lmd"/>
+                        <field name="user_lmt"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom_main" name="Languages" sequence="10"/> -->
+
+    <record id="action_catalog_custom" model="ir.actions.act_window">
+        <field name="name">catalog Custom Languages</field>
+        <field name="res_model">catalog</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- <menuitem id="menu_res_lang_custom" name="Regular" action="action_res_lang_custom"  sequence="10"/> -->
+
+</odoo>

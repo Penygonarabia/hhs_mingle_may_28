@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_stock_picking_check_b_form" model="ir.ui.view">
+        <field name="name">stock.picking.form</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_assign']" position="replace">
+                <button class="oe_highlight" groups="stock.group_stock_manager" invisible="show_check_availability == False" name="action_assign" string="Check Availability" type="object"/>
+            </xpath>
+<!--            <xpath expr="//button[@name='action_set_quantities_to_reservation']" position="replace">-->
+<!--                <button class="o_btn_validate" data-hotkey="g" groups="stock.group_stock_manager" invisible="show_validate == False or immediate_transfer == True" name="action_set_quantities_to_reservation" string="Set quantities" type="object"/>-->
+<!--            </xpath>-->
+            <xpath expr="//field[@name='backorder_id']" position="after">
+                <field invisible="1" name="request_user"/>
+            </xpath></field>
+    </record>
+    <!-- <record id="view_picking_caption_changes_form" model="ir.ui.view">
+        <field name="name">stock.picking.form</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='product_uom_qty']" position="before">
+                <field name="order_qty"/>
+            </xpath>
+            <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='product_uom_qty']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='quantity']" position="attributes">
+                <attribute name="string">
+                    Issue Qty</attribute>
+            </xpath>
+            <xpath expr="//field[@name='move_ids_without_package']/tree/field[@name='quantity']" position="after">
+                <field invisible="state not in 'done'" name="back_order_qty"/>
+            </xpath>
+            </field>
+    </record> -->
+</odoo>

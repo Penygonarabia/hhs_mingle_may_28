@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_employee_form_inherited" model="ir.ui.view">
+            <field name="name">hr.employee.form.inherited</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/notebook/page[@name='hr_settings']" position="after">
+                    <page string="Leave" invisible="1">
+                        <group>
+                             <field name="allocated_leaves"/>
+                             <field name="taken_leaves"/>
+                             <field name="remaining_leaves"/>
+                             <field name="leave_ids"/>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,48 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+
+    <record model="ir.ui.view" id="machine_repair_request.list">
+      <field name="name">machine_repair_request list</field>
+      <field name="model">machine.repair.request</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="name"/>
+          <field name="partner_id"/>
+          <field name="value"/>
+        </tree>
+      </field>
+    </record>
+
+    <record model="ir.ui.view" id="machine_repair_request_from">
+      <field name="name">machine_repair_request_form</field>
+      <field name="model">machine.repair.request</field>
+      <field name="arch" type="xml">
+       <form>
+         <sheet>
+           <group>
+             <group>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="value"/>
+               </group>
+           </group>
+         </sheet>
+        </form>
+      </field>
+    </record>
+    <!-- actions opening views on models -->
+    <record model="ir.actions.act_window" id="action_machine_repair_request">
+      <field name="name">machine_repair_request window</field>
+      <field name="res_model">machine.repair.request</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+
+
+    <menuitem name="Machine Repair Request" id="machine_repair_request_id"
+              action="action_machine_repair_request"/>
+
+
+  </data>
+</odoo>

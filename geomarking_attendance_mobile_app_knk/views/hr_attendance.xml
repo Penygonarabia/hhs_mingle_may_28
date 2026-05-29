@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="geomarking_hr_attendance_tree_view_inherit" model="ir.ui.view">
+        <field name="name">geomarking.hr.attendance.tree.view.inherit</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="editable"/>
+            </xpath>
+            <xpath expr="//field[@name='check_out']" position="after">
+                <!--				<field name="date" readonly="1" invisible="0"/>-->
+                <field invisible="0" name="work_type" readonly="1"/>
+                <!-- <field name="check_in_location" readonly="1" invisible="1"/>
+                <field name="check_out_location" readonly="1" invisible="1"/> -->
+            </xpath></field>
+    </record>
+    <record id="geomarking_hr_attendance_form_view_inherit" model="ir.ui.view">
+        <field name="name">geomarking.hr.attendace.form.view.inherit</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group" position="after">
+                <group invisible="0" string="Location Information">
+                    <field name="work_type" readonly="1"/>
+                    <field invisible="1" name="manual"/>
+                    <!-- <field name="check_in_location" readonly="1" attrs="{'invisible': [('work_type','!=','wfo')]}"/>
+					<field name="check_out_location" readonly="1" attrs="{'invisible': [('work_type','!=','wfo')]}"/> -->
+                </group>
+                <group invisible="0" string="CheckIn/CheckOut Location Information">
+                    <group>
+                        <field name="check_in_latitude" readonly="1"/>
+                        <field name="check_in_longitude" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="check_out_latitude" readonly="1"/>
+                        <field name="check_out_longitude" readonly="1"/>
+                    </group>
+                </group>
+            </xpath>
+            <!--			<xpath expr="//field[@name='check_out']" position="after">-->
+            <!--				<field name="date"  invisible="1"/>-->
+            <!--			</xpath>-->
+            <xpath expr="//sheet" position="before">
+                <header invisible="0">
+                    <button class="oe_highlight" invisible="not check_in_latitude or not check_in_longitude" name="go_to_check_in_google_maps" string="CheckIn Google Maps" type="object"/>
+                    <button class="oe_highlight" invisible="not check_out_latitude or not check_out_longitude" name="go_to_check_out_google_maps" string="CheckOut Google Maps" type="object"/>
+                </header>
+            </xpath></field>
+    </record>
+</odoo>

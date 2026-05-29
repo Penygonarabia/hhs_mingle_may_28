@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="hr_end_service_benefit_search_view" model="ir.ui.view">
+            <field name="name">hr.end.service.benefit.search</field>
+            <field name="model">hr.end.service.benefit</field>
+            <field name="arch" type="xml">
+                <search string="ES Analysis">
+                    <group>
+                        <filter domain="[('state','=','draft')]" name="draft" string="Draft"/>
+                        <filter domain="[('state','=','confirmed')]" name="confirm" string="Confirm"/>
+                        <field name="date"/>
+                        <separator orientation="vertical"/>
+                        <field name="name"/>
+                        <field name="amount"/>
+                        <field name="employee_id"/>
+                        <field name="employee_number"/>
+                    </group>
+                    <newline/>
+                    <group expand="1" string="Group By">
+                        <filter context="{'group_by':'employee_id'}" name="employee" string="Employee"/>
+                        <filter context="{'group_by':'state'}" name="status" string="Status"/>
+                        <separator orientation="vertical"/>
+                        <filter context="{'group_by':'company_id'}" groups="base.group_multi_company" name="company" string="Company"/>
+                        <separator orientation="vertical"/>
+                        <filter context="{'group_by':'date'}" help="Date of Request" name="date" string="Date"/>
+                    </group>
+                </search></field>
+        </record>
+        <record id="hr_end_service_benefit_tree_view" model="ir.ui.view">
+            <field name="name">hr.end.service.benefit.tree</field>
+            <field name="model">hr.end.service.benefit</field>
+            <field name="arch" type="xml">
+                <tree string="End Of Service Reward">
+                    <field name="name"/>
+                    <field name="employee_number"/>
+                    <field name="employee_id"/>
+                    <field name="department_id"/>
+                    <field name="notes"/>
+                    <field name="date"/>
+                    <field groups="base.group_multi_company" name="company_id"/>
+                    <field name="total_deserved_amount"/>
+                    <field invisible="1" name="amount"/>
+                    <field name="state"/>
+                </tree></field>
+        </record>
+        <record id="hr_end_service_benefit_graph_view" model="ir.ui.view">
+            <field name="name">hr.end.service.benefit.graph</field>
+            <field name="model">hr.end.service.benefit</field>
+            <field name="arch" type="xml">
+                <graph string="ES Analysis">
+                    <field name="employee_id"/>
+                    <field name="department_id"/>
+                    <field name="amount" type="measure"/>
+                </graph></field>
+        </record>
+        <record id="hr_end_service_benefit_pivot_view" model="ir.ui.view">
+            <field name="name">hr.end.service.benefit.pivot</field>
+            <field name="model">hr.end.service.benefit</field>
+            <field name="arch" type="xml">
+                <pivot string="ES Analysis">
+                    <field name="employee_id" type="row"/>
+                    <field name="date" type="col"/>
+                    <field name="amount" type="measure"/>
+                </pivot></field>
+        </record>
+        <record id="hr_end_service_benefit_form_view" model="ir.ui.view">
+            <field name="name">hr.end.service.benefit.form</field>
+            <field name="model">hr.end.service.benefit</field>
+            <field name="arch" type="xml">
+                <form string="End Of Service Reward">
+                    <header>
+                        <field invisible="True" name="payment_button_invisible"/>
+                        <button class="oe_highlight" groups="hr.group_hr_user" invisible="state not in ['draft']" name="action_submit" string="Confirm" type="object"/>
+                        <button class="oe_highlight" groups="hr.group_hr_manager" invisible="state not in ['confirmed']" name="action_validate" string="Approve" type="object"/>
+                        <button class="oe_highlight" groups="hr.group_hr_user" invisible="state not in ['confirmed']" name="action_draft" string="Set to Draft" type="object"/>
+                        <button class="oe_highlight" groups="hr.group_hr_user" invisible="state == 'cancel'" name="action_cancel" string="Cancel" type="object"/>
+                        <button class="oe_highlight" groups="account.group_account_invoice" invisible="payment_button_invisible == False" name="%(hr_end_service_benefits.action_hr_end_services_benefits_settlement_view)d" string="Register Payment" type="action"/>
+                        <field name="state" statusbar_visible="draft,validated" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box"/>
+                        <div class="pull-left">
+                            <label class="oe_edit_only oe_inline" for="name"/>
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+<!--                                <field domain="[('state','=','exit')]" name="employee_id" options="{'no_create': True, 'no_create_edit':True}" readonly="state not in ('draft', 'confirm')" required="1"/>-->
+                                <field name="employee_id" options="{'no_create': True, 'no_create_edit':True}" readonly="state not in ('draft', 'confirm')" required="1"/>
+                                <field invisible="True" name="currency_id" options="{'no_create': True, 'no_open': True}" readonly="state != 'draft'"/>
+                                <field force_save="1" name="employee_number" readonly="1"/>
+                                <field name="department_id" readonly="True"/>
+                                <field invisible="1" name="hiring_date"/>
+                                <field force_save="1" name="joining_date" readonly="1"/>
+                                <field name="service_period" readonly="True"/>
+                                <field invisible="0" name="years" readonly="True"/>
+                                <field invisible="0" name="months" readonly="True"/>
+                                <field invisible="0" name="days" readonly="True"/>
+                                <field invisible="1" name="total_days"/>
+                                <!--                                <field name="company_id" readonly="True" domain="[('is_company','=',True)]"-->
+                                <field groups="base.group_multi_company" name="company_id" options="{'no_create': True, 'no_open': True}" readonly="True"/>
+                                <separator/>
+                                <field name="notes" readonly="state != 'draft'"/>
+                                <field name="termination_id" readonly="state != 'draft'"/>
+                                <field force_save="1" name="accured_ticket_amount" readonly="1"/>
+                                <field force_save="1" name="outstanding_loan_amount" readonly="1"/>
+                                <field force_save="1" name="outstanding_advance_amount" readonly="1"/>
+                                <field invisible="1" name="payslip_bool"/>
+                                <field invisible="1" name="payroll_draft_amount"/>
+                                <field invisible="1" name="total_accured_leave_end_of_days"/>
+                            </group>
+                            <group>
+                                <field name="date" readonly="state != 'draft'" required="True"/>
+                                <field name="termination_date"/>
+                                <field name="type" readonly="state != 'draft'" required="True"/>
+                                <field name="payment_type" readonly="state != 'draft'" required="True"/>
+                                <field name="end_service_benefit_type_id" options="{'no_create': True}" readonly="state != 'draft'" required="True"/>
+                                <field name="accrual_calculation_eos" invisible="1"/>
+                                <field name="accrual_calculation_eos_id" invisible="1"/>
+                                <label for="total_holiday_deserved_amount"/>
+                                <span class="o_row">
+                                    <field digits="[16,2]" force_save="1" invisible="type != 'ending_service'" name="total_holiday_deserved_amount"/>
+                                    (
+                                    <field force_save="1" name="total_accured_leave_end_of_days" nolabel="1" readonly="1"/>
+                                    days)
+                                </span>
+                                <!-- <span class="o_row" >	
+                                	<label for="total_holiday_deserved_amount" />
+                                		(<field name="total_accured_leave_end_of_days" readonly="1" nolabel="1"/>)	
+                                </span>
+                                <span class="o_row" >
+                             
+                               	 <field name="total_holiday_deserved_amount"  force_save="1"
+	                                       attrs="{'invisible':[('type','!=','ending_service')]}" digits="[16,2]"/>
+                                
+                                   
+                                     
+                                   </span>
+                                    -->
+                                <field digits="[16,2]" invisible="type != 'ending_service'" name="total_payslip_deserved_amount"/>
+                                <field digits="[16,2]" invisible="type != 'ending_service'" name="other_amount"/>
+                                <separator/>
+                                <!--                                <field name="total_sanction" readonly="1" force_save="1" attrs="{'invisible':[('type','!=','ending_service')]}"/>-->
+                                <field digits="[16,2]" name="total_deserved_amount"/>
+                                <field digits="[16,2]" force_save="1" invisible="1" name="total_allowance_new" readonly="1"/>
+                                <field digits="[16,2]" invisible="type != 'ending_service'" name="total_reward"/>
+                                <field digits="[16,2]" name="total_taken_amount"/>
+                                <field digits="[16,2]" invisible="1" name="available_amount"/>
+                                <field digits="[16,2]" invisible="1" name="amount" readonly="state not in ('draft', 'confirmed')"/>
+                                <!--                                <field name="total_advance_loan" digits="[16,5]"/>-->
+                                <!--                                <field name="total_ticket" digits="[16,5]" force_save="1"/>-->
+                                <field invisible="payment_id == False" name="payment_id" readonly="True"/>
+                                <field invisible="payment_id == False" name="payslip_payment_id" readonly="True"/>
+                                <field invisible="account_move_id == False" name="account_move_id" readonly="True"/>
+                            </group>
+                        </group>
+                        <notebook invisible="type != 'ending_service'">
+                            <page invisible="1" string="Holidays">
+                                <!--  <page string="Holidays"> -->
+                                <field name="holiday_line_ids" readonly="1">
+                                    <tree editable="bottom">
+                                        <field force_save="1" name="holiday_id"/>
+                                        <field force_save="1" name="remaining_leaves"/>
+                                        <field force_save="1" name="pay"/>
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <field force_save="1" name="holiday_id"/>
+                                            <field force_save="1" name="remaining_leaves"/>
+                                            <field force_save="1" name="pay"/>
+                                        </group>
+                                    </form></field>
+                            </page>
+                            <page string="Payroll">
+                                <group>
+                                    <group>
+                                        <field domain="[('state','=','draft'),('employee_id','=',employee_id)]" name="payslip_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                                        <field name="days_number" readonly="state != 'draft'" required="payslip_id != False"/>
+                                    </group>
+                                    <group/>
+                                </group>
+                            </page>
+                            <page invisible="1" string="Allowance">
+                                <field name="allowance_line_ids"><tree>
+                                        <field name="allowance_id" options="{'no_create': True, 'no_open': True}" required="1"/>
+                                        <field name="type" required="1"/>
+                                        <field name="percentage"/>
+                                        <field name="fix_amount" required="type in ['percentage', 'fix_amount']" sum="Total"/>
+                                        <!-- <field name="percentage" attrs="{'required':[('type','=','percentage')],'invisible':[('type','!=','percentage')]}"/> -->
+                                        <!-- <field name="fix_amount" attrs="{'required':[('type','=','fix_amount')],'invisible':[('type','!=','fix_amount')]}"/> -->
+                                    </tree>
+                                    <form>
+                                        <group>
+                                            <group>
+                                                <field name="allowance_id" options="{'no_create': True, 'no_open': True}"/>
+                                                <field name="type"/>
+                                                <field name="percentage"/>
+                                                <field name="fix_amount" required="type in ['percentage', 'fix_amount']"/>
+                                                <!-- <field name="percentage" attrs="{'required':[('type','=','percentage')],'invisible':[('type','!=','percentage')]}"/> -->
+                                                <!-- <field name="fix_amount" attrs="{'required':[('type','=','fix_amount')],'invisible':[('type','!=','fix_amount')]}"/> -->
+                                            </group>
+                                            <group/>
+                                        </group>
+                                    </form></field>
+                            </page>
+                            <!--                            <page string="Sanction">-->
+                            <!--                                <field name="sanction_line_ids">-->
+                            <!--                                    <tree>-->
+                            <!--                                        <field name="sanction_name" required="1"/>-->
+                            <!--                                        <field name="sanction_code" required="1"/>-->
+                            <!--                                        <field name="total" required="1"/>-->
+                            <!--                                        &lt;!&ndash;-->
+                            <!--                                        <field name="sanction_id" required="1" options="{'no_create': True, 'no_open': True}"/>-->
+                            <!--                                        <field name="type" required="1"/>-->
+                            <!--                                        <field name="percentage" attrs="{'required':[('type','=','percentage')],'invisible':[('type','!=','percentage')]}"/>-->
+                            <!--                                        <field name="fix_amount" attrs="{'required':[('type','=','fix_amount')],'invisible':[('type','!=','fix_amount')]}"/>&ndash;&gt;-->
+                            <!--                                    </tree>-->
+                            <!--                                    <form>-->
+                            <!--                                        <group>-->
+                            <!--                                            <group>-->
+                            <!--                                                <field name="sanction_name" />-->
+                            <!--                                                <field name="sanction_code" />-->
+                            <!--                                                <field name="total"/>-->
+                            <!--                                                &lt;!&ndash;-->
+                            <!--                                                <field name="sanction_id" required="1" options="{'no_create': True, 'no_open': True}"/>-->
+                            <!--                                                <field name="type" required="1" />-->
+                            <!--                                                <field name="percentage" attrs="{'required':[('type','=','percentage')],'invisible':[('type','!=','percentage')]}"/>-->
+                            <!--                                                <field name="fix_amount" attrs="{'required':[('type','=','fix_amount')],'invisible':[('type','!=','fix_amount')]}"/>&ndash;&gt;-->
+                            <!--                                            </group>-->
+                            <!--                                            <group/>-->
+                            <!--                                        </group>-->
+                            <!--                                    </form>-->
+                            <!--</field>-->
+                            <!--                            </page>-->
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter" groups="hr.group_hr_user">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form></field>
+        </record>
+        <record id="view_hr_end_service_benefit_action" model="ir.actions.act_window">
+            <field name="name">End Of Service Reward</field>
+            <field name="res_model">hr.end.service.benefit</field>
+            <!--<field name="vhr.menu_human_resources_configurationiew_type">form</field>-->
+            <field name="view_mode">tree,form,pivot,graph</field>
+            <field name="search_view_id" ref="hr_end_service_benefit_search_view"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Click to add new employee end service benefits.
+                </p></field>
+        </record>
+        <!-- <menuitem id="hr_end_service_benefit_category_menu_item" name="End Of Service Rewards"
+                  parent="hr.menu_hr_root"
+                  sequence="99" groups="hr.group_hr_user,account.group_account_invoice"/>-->
+        <menuitem action="view_hr_end_service_benefit_action" id="hr_end_service_benefit_action_menu_item" name="End Of Service Reward" parent="hr_exit_process.menu_open_exit" sequence="30"/>
+        <menuitem id="menu_resource_attendace" name="Resource" parent="hr.menu_human_resources_configuration" sequence="31"/>
+
+        <menuitem action="resource.action_resource_calendar_form" id="menu_resource_calendar_attendance" parent="menu_resource_attendace" sequence="1"/>
+        <menuitem id="resource.menu_resource_calendar_attendance"
+		        parent="hr_attendance.menu_hr_attendance_root"
+		        action="resource.action_resource_calendar_form"
+		        name="Working Hours"
+		        sequence="31"/>
+        <record id="resource.action_resource_calendar_form" model="ir.actions.act_window">
+        		<field name="name">Working Hours</field>
+                </record>
+    </data>
+</odoo>

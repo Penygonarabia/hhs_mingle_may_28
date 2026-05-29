@@ -1,0 +1,40 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+<odoo>
+
+	
+		<record id = "hyper_pay_line_inherit_project_task_form" model = "ir.ui.view">
+			
+			<field name = "name">hyper.pay.line.inherit.project.task.form</field>
+			<field name = "model">project.task</field>
+			<field name = "inherit_id" ref = "machine_repair_management.view_project_task_form"/>
+			<field name = "arch" type = "xml">
+			
+				<xpath expr = "//page[@name = 'other_tab']" position = "after">
+					<page name = "hyper_pay_line" string = "Payment Audit" readonly = "1">
+						<field name = "hyperpay_line_ids"  readonly = "1" force_save = "1" >
+							<tree create ="0" delete = "0" edit = "0" >
+								<field name="job_card_number" force_save = "1" readonly="1"/>
+				                <field name="hyper_pay_payment_for" force_save = "1" readonly="1"/>
+				                <field name="hyper_pay_payment_receipt_number" force_save = "1" readonly="1"/>
+				                <field name="hyper_pay_payment_reference" force_save = "1" readonly="1"/>
+				                <field name="hyper_pay_payment_received" force_save = "1" readonly="1"/>
+				                <field name="hyper_pay_received_datetime" force_save = "1"  readonly="1"/>
+				                <field name="hyper_pay_status" force_save = "1" readonly="1"/>
+				                <field name = "hyper_pay_audit_id" force_save = "1" readonly = "1" column_invisible = "1"/>
+								<field name = "hyper_pay_status_bool" column_invisible ="1"/>
+							</tree>
+						
+						
+						</field>
+					
+					</page>
+				</xpath>
+				<xpath expr="//form/header" position="inside">
+					<field name = "hyper_pay_line_create_bool" invisible = "1"/>
+				</xpath>
+			
+			</field>
+		</record>
+	
+	
+</odoo>

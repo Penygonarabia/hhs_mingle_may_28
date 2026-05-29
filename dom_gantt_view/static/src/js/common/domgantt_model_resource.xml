@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+
+    <t t-name="domGantt.ModelResource">
+        <Record resModel="props.model.resModel" resId="props.record.id" fields="props.model.fields" activeFields="props.model.activeFields" mode="'readonly'" values="props.record.rawRecord" t-slot-scope="slot">
+            <t t-set="fieldName" t-value="props.fieldName" />
+            <t t-set="fieldInfo" t-value="props.model.columnFields[fieldName]" />
+            <div t-att-class="fieldInfo.attrs.class">
+                <strong class="me-2" t-if="fieldInfo.options.icon">
+                    <i t-att-class="fieldInfo.options.icon" />
+                </strong>
+                <Field name="fieldName" record="slot.record" fieldInfo="fieldInfo" type="fieldInfo.widget" />
+            </div>
+        </Record>
+    </t>
+
+</templates>

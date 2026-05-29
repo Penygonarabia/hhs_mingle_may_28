@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="hr_attendence_report">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="row" style="padding:10px;margin-top:0px;">
+                    <div class='col-6 border'>
+                        <span style="margin-top:10px;"><b>Company Information</b></span>
+                    </div>
+                    <div class="col-6 border">
+                        <p style="font-family:Times New Roman;font-size:14px;margin-top:10px;">
+                            <t t-set="company" t-value="docs.employee_id.company_id" />
+                            <span t-field="company.name" /><br />
+                            <span t-field="company.street" /><br />
+                            <span t-field="company.city" /><br />
+                            <span t-field="company.state_id" /><br />
+                            <span t-field="company.zip" /><br />
+                            <span t-field="company.country_id" /><br />
+                        </p>
+                    </div>
+                </div>
+                <div class="page">
+                    <table class="table table-bordered">
+                        <tr>
+                            <td><strong>Name</strong></td>
+                            <td><span t-esc="docs.employee_id.name" /></td>
+                            <td><strong>Designation</strong></td>
+                            <td><span t-esc="docs.employee_id.job_title" /></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Address</strong></td>
+                            <td colspan="3">
+                                <div class="container text-center">
+                                    <p class="text-left">
+                                        <span t-field="docs.employee_id.address_id.street" /><br />
+                                        <span t-field="docs.employee_id.address_id.city" />
+                                        <span t-field="docs.employee_id.address_id.state_id" /><br />
+                                        <span t-field="docs.employee_id.address_id.zip" />
+                                        <span t-field="docs.employee_id.address_id.country_id" /><br />
+                                        <span t-field="docs.employee_id.address_id.email" />
+                                        <span t-field="docs.employee_id.address_id.phone" /><br />
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    <t t-set="lst" t-value="[]" />
+                    <t t-foreach="docs" t-as="rec">
+                        <t t-set="lst" t-value="lst+[rec.date]" />
+                    </t>
+                    <t t-foreach="set(lst)" t-as="datas">
+                        <t t-set="date" t-value="docs.search([('date' ,'=',datas)])" />
+                        <table class="table">
+                            <th><b>Date :</b> <b>
+                                    <t t-options='{"widget": "date", "time_only": True}' t-esc="datas" /></b></th>
+                            <tr style="background-color:#D3D3D3">
+                                <th><strong>Check In</strong></th>
+                                <th><strong>Check Out</strong></th>
+                                <th><strong>Work Hours</strong></th>
+                            </tr>
+                            <tr t-foreach="date" t-as="d">
+                                <td><span t-esc="docs.format_date(d.check_in)" /></td>
+                                <td><span t-esc="docs.format_date(d.check_out)" /></td>
+                                <td><span t-esc="'%.2f'%(d.worked_hours)" /></td>
+                            </tr>
+                        </table>
+                    </t>
+                </div>
+                <div class="footer o_standard_footer">
+                    <div class="text-left">
+                        <div class="text-left" style="border-top: 1px solid black;">
+                            <div class="row">
+                                <div class="container text-center">
+                                    <p class="text-center">
+                                        <t t-set="company" t-value="docs.employee_id.company_id" />
+                                        <span t-field="company.name" />
+                                        <span t-field="company.street" /><br />
+                                        <span t-field="company.city" />
+                                        <span t-field="company.state_id" /><br />
+                                        <span t-field="company.zip" />
+                                        <span t-field="company.country_id" /><br />
+                                        <span t-field="company.email" />
+                                        <span t-field="company.phone" /><br />
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+    <record id="print_attendance_report" model="ir.actions.report">
+        <field name="name">Attendance Report</field>
+        <field name="model">hr.attendance</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">geomarking_attendance_mobile_app_knk.hr_attendence_report</field>
+        <field name="report_file">geomarking_attendance_mobile_app_knk.hr_attendence_report</field>
+        <field name="binding_model_id" ref="hr_attendance.model_hr_attendance" />
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
