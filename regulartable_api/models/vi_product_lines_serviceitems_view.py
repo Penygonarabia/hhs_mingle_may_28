@@ -101,7 +101,7 @@ class VIProductLinesServiceItems(models.Model):
         WHEN pl.price_unit = 0 THEN '03'
         ELSE '15'
     END AS INV_VATCODE,
-    (tax_amount/qty) AS INV_VAT,
+    tax_amount AS INV_VAT,
     0 AS INV_RET,
     '' AS INV_PIDREF,
     CASE 

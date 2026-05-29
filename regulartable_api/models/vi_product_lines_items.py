@@ -119,3 +119,4 @@ class VIProductLinesItems(models.Model):
                 FROM product_lines  -- Replace 'product_lines' with the actual source table
             );
         """)
+

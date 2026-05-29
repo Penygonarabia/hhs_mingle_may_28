@@ -80,14 +80,6 @@ class VIProductTask(models.Model):
     inv_cstemail = fields.Char()
     inv_add2 = fields.Char()
     inv_idno = fields.Char()
-    mode_of_payment = fields.Char()
-    mode_of_payment_balance_amount = fields.Char()
-    contract_id = fields.Integer()
-    inspection_charges_amount = fields.Integer()
-    balance_paid = fields.Integer()
-    final_balance_amount =  fields.Integer()
-    inv_detrowscount = fields.Integer()
-
 
     def init(self):
         tools.drop_view_if_exists(self.env.cr, self._table)
@@ -103,20 +95,12 @@ class VIProductTask(models.Model):
                 WHERE ir_sequence.name = 'Job Card'
                   AND ir_sequence_date_range.date_from <= (date_trunc('month', CURRENT_DATE) + INTERVAL '1 month - 1 day')
                   AND ir_sequence_date_range.date_to >= date_trunc('month', CURRENT_DATE)
-            ),
-            pl_count AS (
-                            SELECT 
-                                project_task_id,
-                                COUNT(*) AS det_count
-                            FROM product_lines
-                            GROUP BY project_task_id
-                        )
+            )
             SELECT
                 pt.id,
                 invwh.inv_whouse,
                 COALESCE(seq_data.location_code, '') AS location_code,
                 COALESCE(seq_data.number_next, 0) AS number_next,
-                COALESCE(pl_count.det_count, 0) AS inv_detrowscount,
                 pt.work_center_id AS work_center_id,
                 COALESCE(seq_data.location_code, '') ||
                 COALESCE(sw.code, '') ||
@@ -125,7 +109,7 @@ class VIProductTask(models.Model):
                 LPAD(COALESCE(seq_data.number_next::text, ''), 2, '0') AS inv_no,
                 TO_CHAR(current_timestamp::date, 'YYYYMMDD')::int AS inv_date,
                 '' AS inv_batch,
-                (SELECT ru.user_code FROM res_users ru WHERE ru.id = pt.closed_jobcard_user_id LIMIT 1) AS inv_sman,
+                (SELECT ru.user_code FROM res_users ru WHERE ru.id = pt.write_uid LIMIT 1) AS inv_sman,
                 CASE WHEN (pt.parts_grand_total_amount + pt.service_grand_total_amount) = 0 THEN '004' ELSE '009' END AS inv_xface,
                 (
                     SELECT sw2.cst_no
@@ -144,7 +128,7 @@ class VIProductTask(models.Model):
                         COALESCE((SELECT name::json ->> 'en_US' FROM res_city WHERE id = pt.customer_city_id), '')
                     )
                 ) AS inv_cstadd,
-                pt.name AS inv_cstref,
+                '' AS inv_cstref,
                 '' AS inv_comm,
                 2 AS inv_mop,
                 '' AS inv_ccard,
@@ -196,15 +180,12 @@ class VIProductTask(models.Model):
                 pt.plot_identification AS inv_addno,
                 pt.zip_code AS inv_pobox,
                 (SELECT name FROM res_state_district WHERE id = pt.country_district_id) AS inv_district,
-                (select work_center_group.name from work_center_group where  work_center_group_id=work_center_group.id) AS inv_region,
+                '' AS inv_region,
                 '' AS inv_nearby,
                 (SELECT name::json ->> 'en_US' FROM res_city WHERE id = pt.customer_city_id) AS inv_city,
                 (SELECT code FROM res_country WHERE id = pt.country_id) AS inv_countrycode,
                 (SELECT name::json ->> 'en_US' FROM res_country WHERE id = pt.country_id) AS inv_countryname,
-                CASE 
-                    WHEN pt.customer_identification_scheme = 'TIN' THEN pt.customer_identification_number
-                    ELSE ''
-                END AS inv_vatgroup,
+                '' AS inv_vatgroup,
                 '' AS inv_uuid,
                 CASE 
                     WHEN pt.customer_identification_scheme = 'TIN' THEN pt.customer_identification_number
@@ -217,28 +198,20 @@ class VIProductTask(models.Model):
                     WHEN pt.customer_identification_scheme = 'TIN' THEN pt.customer_identification_number
                     ELSE ''
                 END AS inv_idno
-                ,pt.mode_of_payment
-				,pt.mode_of_payment_balance_amount
-				,0 as contract_id
-                ,pt.inspection_charges_amount
-                ,pt.balance_paid
-                ,pt.final_balance_amount
             FROM project_task pt
             LEFT JOIN seq_data ON seq_data.work_center_id = pt.work_center_id
             LEFT JOIN stock_warehouse sw ON sw.id = pt.warehouse_id
-            LEFT JOIN pl_count ON pl_count.project_task_id = pt.id
             LEFT JOIN res_partner rp ON rp.id = pt.partner_id
             LEFT JOIN LATERAL (
                 SELECT sw2.code AS inv_whouse
                 FROM stock_warehouse sw2
                 JOIN project_task pt2 ON pt2.warehouse_id = sw2.id
-                 WHERE (
-        (pt2.job_card_state = 'Closed' AND pt2.closed_datetime IS NOT NULL)
-        OR (pt2.job_card_state = 'Cancelled' AND pt2.inspection_charges_amount > 0)) 
-                    AND pt2.name = pt.name
+                WHERE pt2.job_card_state = 'Closed'
+                  AND pt2.name = pt.name
                 LIMIT 1
             ) invwh ON true
-            WHERE  ((pt.job_card_state = 'Closed' AND pt.closed_datetime IS NOT NULL)
-                    OR (pt.job_card_state = 'Cancelled' AND pt.inspection_charges_amount > 0)) AND pt.export_bool = false
+            WHERE pt.job_card_state = 'Closed'
+              AND pt.export_bool = false
+              AND pt.closed_datetime IS NOT NULL
             );
         """)

@@ -3,12 +3,22 @@ from odoo import models, fields, tools
 class TransactionHeader(models.Model):
     _name = 'transaction.header'
     _description = 'Transaction Header'
+    _rec_name = 'trnh_no'
     
 
     trnh_type = fields.Char()
     trnh_whouse = fields.Char()
     trnh_no = fields.Char()
     trnh_date = fields.Char()
+    formatted_invoice_date = fields.Char(string='Invoice Date', compute='_compute_formatted_invoice_date')
+
+    def _compute_formatted_invoice_date(self):
+        for rec in self:
+            if rec.trnh_date and len(rec.trnh_date) == 8:
+                rec.formatted_invoice_date = f"{rec.trnh_date[6:8]}-{rec.trnh_date[4:6]}-{rec.trnh_date[0:4]}"
+            else:
+                rec.formatted_invoice_date = rec.trnh_date
+
     trnh_batch = fields.Char()
     trnh_sman = fields.Char()
     trnh_referenceno = fields.Char()
@@ -127,6 +137,10 @@ class TransactionHeader(models.Model):
 
     def init(self):
         tools.drop_view_if_exists(self._cr, 'vi_transaction_header')
+
+        self._cr.execute("SELECT 1 FROM information_schema.tables WHERE table_name = 'transaction_header'")
+        if not self._cr.fetchone():
+            return
 
         self._cr.execute("""
             CREATE OR REPLACE VIEW vi_transaction_header AS (

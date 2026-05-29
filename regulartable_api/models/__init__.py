@@ -26,10 +26,5 @@ from . import vi_product_lines_serviceitems_view
 from . import vi_product_task_view
 from . import db_project_task
 from . import vi_product_task_view_name_list
-from . import vi_project_task_refname
 from . import vi_tranaction_header
 from . import vi_transaction_details
-from . import vi_customer_loyalty_points_history
-from . import t_products
-from . import t_mainproducts
-from . import t_mainproductsdesc

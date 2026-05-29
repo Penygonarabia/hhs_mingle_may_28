@@ -101,7 +101,7 @@ class VIProductLinesItems(models.Model):
                         WHEN pl.price_unit = 0 THEN '03'
                         ELSE '15'
                     END AS inv_vatcode,
-                    (tax_amount/qty) AS inv_vat,
+                    tax_amount AS inv_vat,
                     0 AS inv_ret,
                     '' AS inv_pidref,
                     CASE 
@@ -140,7 +140,7 @@ class VIProductLinesItems(models.Model):
                 JOIN project_task pt ON pt.id = pl.project_task_id
                 JOIN product_product pp ON pp.id = pl.product_id
                 JOIN product_template ptem ON ptem.id = pp.product_tmpl_id
-                JOIN product_category pc ON pc.id = ptem.product_category_id
+                JOIN product_category pc ON pc.id = ptem.categ_id
                 LEFT JOIN stock_warehouse sw ON pt.warehouse_id = sw.id
             );
         """)

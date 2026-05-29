@@ -90,6 +90,10 @@ class TransactionDetails(models.Model):
     def init(self):
         tools.drop_view_if_exists(self._cr, 'vi_transaction_details')
 
+        self._cr.execute("SELECT 1 FROM information_schema.tables WHERE table_name = 'transaction_details'")
+        if not self._cr.fetchone():
+            return
+
         self._cr.execute("""
             CREATE OR REPLACE VIEW vi_transaction_details AS (
                 SELECT
