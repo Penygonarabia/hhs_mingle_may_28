@@ -338,7 +338,10 @@ class SubscriptionContracts(models.Model):
                             "no_of_visits_per_year": line.no_of_visits_per_year,
                             "no_of_emergency_visit": line.no_of_emergency_visit,
                             "days_required_for_rpm": line.days_required_for_rpm,
-                            "days_require_rpm_round_off": line.days_require_rpm_round_off,
+                             #Code Commented on May 30 2026 by Vijaya Bhaskar client asked Total Preventive count is no of visits per year
+                            #"days_require_rpm_round_off": line.days_require_rpm_round_off,
+                            "days_require_rpm_round_off":line.no_of_visits_per_year,
+                            
                             "standard_hours": line.standard_hours,
                             "total_hr": line.total_hr,
                             "total_cost": line.total_cost,
@@ -369,8 +372,9 @@ class SubscriptionContracts(models.Model):
                     )
                 )
                 """code added on Mar 21 2026 by vijaya bhaskar"""
-                total_prevent += float_round(days_required, precision_digits=0)
-                # total_prevent += line.no_of_visits_per_year
+                #Code Commented on May 30 2026 by Vijaya Bhaskar client asked Total Preventive count is no of visits per year
+                # total_prevent += float_round(days_required, precision_digits=0)
+                total_prevent += line.no_of_visits_per_year
                 total_correct += line.no_of_emergency_visit
             self.entitlement_prevent = total_prevent
             self.entitlement_correct = total_correct

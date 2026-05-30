@@ -1883,8 +1883,38 @@ class MachineRepairSupport(models.Model):
                             lambda l: l.product_id == rec.service_products_code_id
                         )
                         for li in lines:
+                            '''Code Commented on May 30 2026 by Vijaya Bhaskar because client asked overall qty is over then only count was updated '''
+                            if (
+                                rec.task_id.planned_date_begin.date() > rec.contract_id.date_start
+                                and rec.task_id.planned_date_begin.date() < rec.contract_id.date_end
+                                and li.qty_ordered
+                            ):
+                                contract_search = self.env['machine.repair.support'].search_count([
+                                    ('id', '!=', rec.id),
+                                    ('contract_id', '=', rec.contract_id.id),
+                                    ('service_products_code_id', '=', rec.service_products_code_id.id),
+                                    ('service_request_state_code', '=', '126'),
+                                    ('maintenance_type', '=', 'preventive'),
+                                ])
+                    
+                                completed_jobs = contract_search + 1
+                                visit_count = completed_jobs // li.qty_ordered
+                    
+                                li.actual_prevent_count = min(
+                                    visit_count,
+                                    li.days_require_rpm_round_off
+                                )
+                            '''Code Commented on May 30 2026 by Vijaya Bhaskar because client asked overall qty is over then only count was updated
                             if li.actual_prevent_count < li.days_require_rpm_round_off:
                                 li.actual_prevent_count += 1
+                            '''
+                    # if rec.maintenance_type == "preventive":
+                    #     lines = rec.contract_id.contract_line_ids.filtered(
+                    #         lambda l: l.product_id == rec.service_products_code_id
+                    #     )
+                    #     for li in lines:
+                    #         if li.actual_prevent_count < li.days_require_rpm_round_off:
+                    #             li.actual_prevent_count += 1
 
                     if rec.paid_service_bool:
                         lines = rec.contract_id.contract_line_ids.filtered(
