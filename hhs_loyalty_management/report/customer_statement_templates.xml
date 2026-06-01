@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="customer_account_statement_print_document_template_internal_layout">
+        <div class="article">
+            <t t-out="0"/>
+        </div>
+    </template>
+    <template id="customer_statement_report">
+        <t t-call="web.html_container">
+            <t t-foreach="customers_data" t-as="c_data">
+                <t t-set="customer" t-value="c_data['customer']"/>
+                <t t-set="opening_balance" t-value="c_data['opening_balance']"/>
+                <t t-set="transactions" t-value="c_data['transactions']"/>
+                <t t-set="total_regular" t-value="c_data['total_regular']"/>
+                <t t-set="total_bonus" t-value="c_data['total_bonus']"/>
+                <t t-set="grand_total" t-value="c_data['grand_total']"/>
+                <t t-call="hhs_loyalty_management.customer_account_statement_print_document_template_internal_layout">
+                    <div class="header" t-att-style="report_header_style">
+                        <div class="row mt32 mb32">
+                            <div class="col-4 text-left">
+                                <img src="hhs_loyalty_management/static/src/img/HHS_Header_Left.png" alt="img"
+                                     style="height: 120px; width: 350px; "/>
+                            </div>
+                            <div class="col-4 text-center " style="vertical-align:text-top">
+                                <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)"
+                                     style="max-height: 100px; min-height:100px; min-width: 200px; max-width: 200px;"/>
+                            </div>
+                            <div class="col-4 text-right " style="vertical-align:text-top;text-align:right">
+                                <img src="hhs_loyalty_management/static/src/img/HHS_Header_Right.png" alt="img"
+                                     style="height: 120px; width: 350px;"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <style>
+                        .header {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        }
+
+                        .page {
+                        margin-top: 0 !important;
+                        padding-top: 0 !important;
+                        }
+                    </style>
+                    <p style="page-break-before:always;" t-if="not c_data_first"/>
+                    <div class="page">
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <h2>Customer Statement Account</h2>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <strong>Customer Code:</strong>
+                                <span t-field="customer.ref"/>
+                                <br/>
+                                <strong>Customer Details:</strong>
+                                <span t-field="customer.name"/>
+                                <br/>
+                                <strong>Customer Address:</strong>
+                                <br/>
+                                <span t-if="customer.state_id">
+                                    <span t-field="customer.state_id.name"/>
+                                    Region
+                                </span>
+                                <br/>
+                                <span t-if="customer.city">
+                                    <span t-field="customer.city"/>
+                                    City
+                                </span>
+                                <br/>
+                                <span t-field="customer.street"/>
+                                <br/>
+                                <br/>
+                                <strong>Email:</strong>
+                                <span t-field="customer.email"/>
+                                <br/>
+                                <strong>Mobile No:</strong>
+                                <span t-field="customer.mobile"/>
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong>Statement Date:</strong>
+                                <span t-esc="print_date.split(' ')[0]"/>
+                                <br/>
+                                <strong>Printed Date &amp; Time:</strong>
+                                <span t-esc="print_date"/>
+                                <br/>
+                                <strong>Period:</strong>
+                                <span t-esc="period_month"/>
+                                <br/>
+                                <strong>Salesman:</strong>
+                                <span t-field="customer.user_id.name"/>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <table class="table table-sm">
+                                    <thead style="background-color: #f2f2f2;">
+                                        <tr>
+                                            <th>Transaction Date</th>
+                                            <th>Transaction Reference</th>
+                                            <th>Type</th>
+                                            <th class="text-end">Regular Points</th>
+                                            <th class="text-end">Bonus Points</th>
+                                            <th class="text-end">Total Points</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Opening Balance -->
+                                        <tr style="background-color: #f9f9f9; font-weight: bold;">
+                                            <td colspan="3">Opening Balance</td>
+                                            <td class="text-end">
+                                                <span t-esc="opening_balance['regular']"
+                                                      t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-esc="opening_balance['bonus']"
+                                                      t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-esc="opening_balance['total']"
+                                                      t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Transaction Rows -->
+                                        <t t-foreach="transactions" t-as="line">
+                                            <tr>
+                                                <td>
+                                                    <span t-field="line.transaction_date"
+                                                          t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
+                                                </td>
+                                                <td>
+                                                    <span t-field="line.transaction_no"/>
+                                                </td>
+                                                <td>
+                                                    <!--                                                <span t-if="line.reason_type">-->
+                                                    <!--                                                    <span t-field="line.reason_type"/>-->
+                                                    <!--                                                </span>-->
+                                                    <span t-if="line.adjustment_type">
+                                                        <span t-field="line.adjustment_type"/>
+                                                    </span>
+                                                    <span t-else="">
+                                                        <span t-field="line.transaction_type"/>
+                                                    </span>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-if="line.transaction_type == 'redeem'">-</t>
+                                                    <span t-field="line.regular_points"
+                                                          t-options='{"widget": "float", "precision": 2}'/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-if="line.transaction_type == 'redeem'">-</t>
+                                                    <span t-field="line.bonus_points"
+                                                          t-options='{"widget": "float", "precision": 2}'/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <t t-if="line.transaction_type == 'redeem'">-</t>
+                                                    <span t-field="line.total_points"
+                                                          t-options='{"widget": "float", "precision": 2}'/>
+                                                </td>
+                                            </tr>
+                                        </t>
+
+                                        <!-- Totals -->
+                                        <tr style="font-weight: bold; background-color: #f2f2f2;">
+                                            <td colspan="3" class="text-end">Total:</td>
+                                            <td class="text-end">
+                                                <span t-esc="total_regular"
+                                                      t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-esc="total_bonus"
+                                                      t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                            <td class="text-end">
+                                                <span t-esc="grand_total"
+                                                      t-options='{"widget": "float", "precision": 2}'/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+                <div class="footer" style="margin:0; padding:0; border-top: 1px solid #002060;">
+                    <div class="row" style="margin:0; padding:0;">
+                        <div class="col-12" style="margin:0; padding:0;">
+                            <img src="hhs_loyalty_management/static/src/img/JobCard_Footer_img.png"
+                                 style="width:100%;"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

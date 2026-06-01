@@ -57,67 +57,6 @@
                 </p>
             </field>
         </record>
-        
-           <record id = "customer_loyalty_history_view_tree" model = "ir.ui.view">
-		<field name = "name">customer.loyalty.points.history.tree.view</field>   
-		<field name =  "model">customer.loyalty.points.history</field> 
-		<field name = "arch" type = "xml">
-		
-			<tree>
-				<field name  = "clph_cstid"/>
-				<field name  = "clph_docnumber"/>
-				<field name  = "clph_cstcode"/>
-				<field name  = "clph_date"/>
-				<field name  = "clph_doctype"/>
-				<field name  = "clph_whouse"/>
-				<field name  = "clph_adjtype"/>
-				<field name  = "clph_type"/>
-				<field name  = "clph_regpoints"/>
-				<field name  = "clph_totalpoints"/>
-			
-			</tree>
-		
-		</field>
-    </record>
-    <record id = "customer_loyalty_history_view_form" model = "ir.ui.view">
-		<field name = "name">customer.loyalty.points.history.form.view</field>   
-		<field name =  "model">customer.loyalty.points.history</field> 
-		<field name = "arch" type = "xml">
-		
-			<form>
-				<sheet>
-					
-					<field name  = "clph_cstid"/>
-					<field name  = "clph_docnumber"/>
-					<field name  = "clph_cstcode"/>
-					<field name  = "clph_date"/>
-					<field name  = "clph_doctype"/>
-					<field name  = "clph_whouse"/>
-					<field name  = "clph_adjtype"/>
-					<field name  = "clph_type"/>
-					<field name  = "clph_regpoints"/>
-					<field name  = "clph_totalpoints"/>
-					<field name = "clph_note" />
-					<field name = "clph_uid"/>
-					<field name = "clph_reasoncode"/>
-					<field name = "clph_promoref"/>
-					<field name = "clph_export"/>
-				
-				</sheet>
-				
-			
-			</form>
-		
-		</field>
-    </record>
-    
-    <record id = "action_customer_loyalty_history" model="ir.actions.act_window">
-    	<field name ="name">Customer Loyalty History</field>
-    	<field name = "res_model">customer.loyalty.points.history</field>
-    	<field name = "view_mode">tree,form</field>
-    
-    
-    </record>
 
         <!-- Customer Tier Submenu -->
         <menuitem

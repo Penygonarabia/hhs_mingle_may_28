@@ -72,7 +72,7 @@ class CustomerLoyaltyResPartner(models.Model):
     #     'partner_id',
     #     string='Loyalty Transaction History'
     # )
-    loyalty_transaction_ids=fields.One2many('customer.loyalty.points.history','clph_cstid',string='Loyalty Transactions')
+    loyalty_transaction_ids=fields.One2many('customer.loyalty.points.history','partner_id',string='Loyalty Transactions')
 
     loyalty_points = fields.Integer(
         string='Points'
@@ -119,122 +119,98 @@ class CustomerLoyaltyResPartner(models.Model):
         #rec._compute_tier_name()
      return res
 
-    # #@api.depends('loyalty_transaction_history_ids')
-    # def _compute_loyalty_points(self):
+    #@api.depends('loyalty_transaction_history_ids')
+    def _compute_loyalty_points(self):
 
-    #     for rec in self:
-    #         history = self.env['customer.loyalty.points.history'].search([
-    #             ('clph_cstid', '=', rec.id)
-    #         ])
+        for rec in self:
+            history = self.env['customer.loyalty.points.history'].search([
+                ('clph_cstid', '=', rec.id)
+            ])
 
-    #         # -----------------------------
-    #         # REGULAR
-    #         # -----------------------------
+            # -----------------------------
+            # REGULAR
+            # -----------------------------
 
-    #         # rec.collected_points_regular = sum(
-    #         #     history.filtered(
-    #         #         lambda x: str(x.clph_doctype) == '99'
-    #         #     ).mapped('clph_regpoints')
-    #         # )
-    #         regular_history = history.filtered(
-    #             lambda x: x.clph_doctype == 99
-    #         )
-    #         total_points = 0
-    #         for line in history:
+            # rec.collected_points_regular = sum(
+            #     history.filtered(
+            #         lambda x: str(x.clph_doctype) == '99'
+            #     ).mapped('clph_regpoints')
+            # )
+            regular_history = history.filtered(
+                lambda x: x.clph_doctype == 99
+            )
+            total_points = 0
+            for line in history:
 
-    #             # ADDITION
-    #             if line.clph_adjtype == '+':
-    #                 total_points += line.clph_regpoints
-    #             # DEDUCTION
-    #             elif line.clph_adjtype == '-':
-    #                 total_points -= line.clph_regpoints
-    #         #print("regular_history",line.clph_regpoints)
-    #         # FINAL VALUE
-    #         rec.collected_points_regular = total_points
-    #         rec.redeem_points_regular = sum(
-    #             history.filtered(
-    #                 lambda x: str(x.clph_doctype) == '98'
-    #             ).mapped('clph_regpoints')
-    #         )
+                # ADDITION
+                if line.clph_adjtype == '+':
+                    total_points += line.clph_regpoints
+                # DEDUCTION
+                elif line.clph_adjtype == '-':
+                    total_points -= line.clph_regpoints
+            #print("regular_history",line.clph_regpoints)
+            # FINAL VALUE
+            rec.collected_points_regular = total_points
+            rec.redeem_points_regular = sum(
+                history.filtered(
+                    lambda x: str(x.clph_doctype) == '98'
+                ).mapped('clph_regpoints')
+            )
 
-    #         rec.expired_points_regular = sum(
-    #             history.filtered(
-    #                 lambda x: str(x.clph_doctype) == '97'
-    #             ).mapped('clph_regpoints')
-    #         )
+            rec.expired_points_regular = sum(
+                history.filtered(
+                    lambda x: str(x.clph_doctype) == '97'
+                ).mapped('clph_regpoints')
+            )
 
-    #         rec.balance_points_regular = (
-    #                 rec.collected_points_regular
-    #                 - rec.redeem_points_regular
-    #                 - rec.expired_points_regular
-    #         )
+            rec.balance_points_regular = (
+                    rec.collected_points_regular
+                    - rec.redeem_points_regular
+                    - rec.expired_points_regular
+            )
 
-    #         # -----------------------------
-    #         # BONUS
-    #         # -----------------------------
+            # -----------------------------
+            # BONUS
+            # -----------------------------
 
-    #         rec.collected_points_bonus = sum(
-    #             history.filtered(
-    #                 lambda x: str(x.clph_doctype) == '99'
-    #             ).mapped('clph_bonuspoints')
-    #         )
+            rec.collected_points_bonus = sum(
+                history.filtered(
+                    lambda x: str(x.clph_doctype) == '99'
+                ).mapped('clph_bonuspoints')
+            )
 
-    #         rec.redeem_points_bonus = sum(
-    #             history.filtered(
-    #                 lambda x: str(x.clph_doctype) == '98'
-    #             ).mapped('clph_bonuspoints')
-    #         )
+            rec.redeem_points_bonus = sum(
+                history.filtered(
+                    lambda x: str(x.clph_doctype) == '98'
+                ).mapped('clph_bonuspoints')
+            )
 
-    #         rec.expired_points_bonus = sum(
-    #             history.filtered(
-    #                 lambda x: str(x.clph_doctype) == '97'
-    #             ).mapped('clph_bonuspoints')
-    #         )
+            rec.expired_points_bonus = sum(
+                history.filtered(
+                    lambda x: str(x.clph_doctype) == '97'
+                ).mapped('clph_bonuspoints')
+            )
 
-    #         rec.balance_points_bonus = (
-    #                 rec.collected_points_bonus
-    #                 - rec.redeem_points_bonus
-    #                 - rec.expired_points_bonus
-    #         )
-    
-    # @api.depends('loyalty_transaction_ids')
-    # def _compute_loyalty_points(self):
-    #     for rec in self:
-    #         history = rec.loyalty_transaction_ids or False
+            rec.balance_points_bonus = (
+                    rec.collected_points_bonus
+                    - rec.redeem_points_bonus
+                    - rec.expired_points_bonus
+            )
 
-    #         rec.collected_points_regular = sum(
-    #             history.filtered(lambda x: x.clph_adjtype == '+').mapped('clph_regpoints') if history else 0
-    #         )
-
-    #         rec.redeem_points_regular = sum(
-    #             history.filtered(lambda x: x.clph_doctype == '98').mapped('clph_regpoints')  if history else 0
-    #         )
-
-    #         rec.expired_points_regular = sum(
-    #             history.filtered(lambda x: x.clph_doctype == '97').mapped('clph_regpoints')  if history else 0
-    #         )
-
-    #         rec.balance_points_regular = (
-    #             rec.collected_points_regular
-    #             - rec.redeem_points_regular
-    #             - rec.expired_points_regular
-    #         )
-
-    @api.depends('loyalty_transaction_ids')
-    def generate_loyalty_transaction_history(self):
-        history_search=self.env['customer.loyalty.points.history'].search([('clph_cstid','=',self.id)],limit=1)
-        self.env['loyalty.transaction.history'].create({
-            'partner_id': history_search.id,
-            # 'loyalty_points': loyalty_points,
-            # 'redeemed_points': redeemed_points,
-            # 'balance_points': balance_points,
-            'clph_docnumber': history_search.clph_docnumber or '',
-            # 'clph_points': total_points,
-            'clph_whouse': '0',
-            'clph_note': history_search.clph_note or '',
-            'clph_datetime': fields.Datetime.now(),
-    
-        })
+    # def generate_loyalty_transaction_history(self):
+    #     history_search=self.env['customer.loyalty.points.history'].search([('clph_cstid','=',self.id)],limit=1)
+    #     self.env['loyalty.transaction.history'].create({
+    #         'partner_id': history_search.id,
+    #         # 'loyalty_points': loyalty_points,
+    #         # 'redeemed_points': redeemed_points,
+    #         # 'balance_points': balance_points,
+    #         'clph_docnumber': history_search.clph_docnumber or '',
+    #         # 'clph_points': total_points,
+    #         'clph_whouse': '0',
+    #         'clph_note': history_search.clph_note or '',
+    #         'clph_datetime': fields.Datetime.now(),
+    #
+    #     })
 
     @api.onchange('activate_loyalty_feature')
     def _onchange_activate_loyalty_feature(self):

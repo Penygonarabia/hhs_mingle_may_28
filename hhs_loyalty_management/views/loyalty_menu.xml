@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Reporting Menu Item -->
+    <menuitem
+        id="menu_loyalty_customer_statement_report_wizard"
+        name="Customer Statement Account"
+        parent="menu_print_promotion_report"
+        action="action_loyalty_customer_statement_wizard"
+        sequence="50"
+        groups="hhs_loyalty_management.group_loyalty_program_user"/>
+</odoo>

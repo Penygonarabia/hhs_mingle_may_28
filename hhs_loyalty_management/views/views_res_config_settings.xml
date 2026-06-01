@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    
+    <record id="group_loyalty_program_user" model="res.groups">
+        <field name="name">Loyalty Program User</field>
+        <field name="category_id" ref="base.module_category_hidden"/>
+    </record>
 
     <record id="loyalty_points_config_settings_form" model="ir.ui.view">
         <field name="name">res.config.settings.loyalty.managment.inherit</field>

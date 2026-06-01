@@ -2,13 +2,146 @@
 <odoo>
 
     <!-- Tree View -->
+    <!-- Tree View -->
+    <!--    <record id="view_process_tier_tree" model="ir.ui.view">-->
+    <!--        <field name="name">process.tier.tree</field>-->
+    <!--        <field name="model">process.tier</field>-->
+    <!--        <field name="arch" type="xml">-->
+    <!--            <tree string="Process Tier" open_form_view="True">-->
+
+    <!--                &lt;!&ndash; Hidden helper &ndash;&gt;-->
+    <!--                <field name="select_all_customers"-->
+    <!--                       column_invisible="True"/>-->
+
+    <!--                &lt;!&ndash; Single Customer &ndash;&gt;-->
+    <!--                <field name="process_customer_id"-->
+    <!--                       string="Customer"-->
+    <!--                       optional="show"-->
+    <!--                       invisible="select_all_customers"/>-->
+
+    <!--                &lt;!&ndash; Multiple Customers &ndash;&gt;-->
+    <!--                <field name="process_customer_ids"-->
+    <!--                       string="Customers"-->
+    <!--                       widget="many2many_tags"-->
+    <!--                       optional="show"-->
+    <!--                       invisible="not select_all_customers"/>-->
+
+    <!--                &lt;!&ndash; Process Date &ndash;&gt;-->
+    <!--                <field name="process_datetime"-->
+    <!--                       string="Process Date"/>-->
+
+    <!--                &lt;!&ndash; Boolean Toggle &ndash;&gt;-->
+    <!--                <field name="select_all_customers"-->
+    <!--                       widget="boolean_toggle"-->
+    <!--                       string="Select All"/>-->
+
+    <!--                &lt;!&ndash; State &ndash;&gt;-->
+    <!--                <field name="state"-->
+    <!--                       string="State"/>-->
+
+    <!--                &lt;!&ndash; Open Form Button &ndash;&gt;-->
+    <!--                <button name="action_run_tier_process"-->
+    <!--                        string="Run"-->
+    <!--                        type="object"-->
+    <!--                        class="btn-link"-->
+    <!--                        icon="fa-play"/>-->
+
+    <!--            </tree>-->
+    <!--        </field>-->
+    <!--    </record>-->
+    <!--    <record id="view_process_tier_tree" model="ir.ui.view">-->
+    <!--        <field name="name">process.tier.tree</field>-->
+    <!--        <field name="model">process.tier</field>-->
+    <!--        <field name="arch" type="xml">-->
+    <!--            <tree>-->
+    <!--                <field name="select_all_customers" column_invisible="1"/>-->
+
+    <!--&lt;!&ndash;                &lt;!&ndash; Code equivalent column &ndash;&gt;&ndash;&gt;-->
+    <!--&lt;!&ndash;                <field name="name" string="Code"/>&ndash;&gt;-->
+
+    <!--                &lt;!&ndash; Account Name equivalent: Single customer &ndash;&gt;-->
+    <!--                <field name="process_customer_id" string="Customer Name"/>-->
+
+    <!--                &lt;!&ndash; Multiple customers (like tags shown in a wide column) &ndash;&gt;-->
+    <!--                <field name="process_customer_ids"-->
+    <!--                       widget="many2many_tags"-->
+    <!--                       string="All Customers" />-->
+
+    <!--                &lt;!&ndash; Type equivalent &ndash;&gt;-->
+    <!--                <field name="process_datetime" string="Process Date"/>-->
+
+    <!--                &lt;!&ndash; Allow Reconciliation equivalent: toggle/boolean &ndash;&gt;-->
+    <!--                <field name="select_all_customers"-->
+    <!--                       widget="boolean_toggle"-->
+    <!--                       string="Select All"-->
+    <!--                       column_invisible="0"/>-->
+
+    <!--                &lt;!&ndash; State equivalent of Account Currency &ndash;&gt;-->
+    <!--                <field name="state" string="State"/>-->
+
+    <!--                &lt;!&ndash; View button on the right &ndash;&gt;-->
+    <!--                <button name="action_run_tier_process"-->
+    <!--                        string="View"-->
+    <!--                        type="object"-->
+    <!--                        class="btn-link"-->
+    <!--                        icon="fa-external-link"/>-->
+    <!--            </tree>-->
+    <!--        </field>-->
+    <!--    </record>-->
+
+    <!-- Form View -->
+    <!--    <record id="view_process_tier_form" model="ir.ui.view">-->
+    <!--        <field name="name">process.tier.form</field>-->
+    <!--        <field name="model">process.tier</field>-->
+    <!--        <field name="arch" type="xml">-->
+    <!--            <form string="Process Tier" delete="0">-->
+    <!--                <header>-->
+    <!--                    <button name="action_run_tier_process"-->
+    <!--                            string="Run Tier Process"-->
+    <!--                            type="object"-->
+    <!--                            class="btn-primary"-->
+    <!--                            invisible="state == 'processed'"/>-->
+    <!--                    <field name="state"-->
+    <!--                           widget="statusbar"-->
+    <!--                           statusbar_visible="draft,processed"/>-->
+    <!--                </header>-->
+    <!--                <sheet>-->
+    <!--                    <group>-->
+    <!--                        <field name="select_all_customers" readonly="state == 'processed'"/>-->
+    <!--                        <field name="process_customer_id"-->
+    <!--                               options="{'no_create': True,'no_create_edit': True,'no_open': True}"-->
+    <!--                               domain="[('activate_loyalty_feature', '=', True)]"-->
+    <!--                               readonly="state == 'processed'"/>-->
+    <!--                        <field name="process_customer_ids"-->
+    <!--                               widget="many2many_tags"/>-->
+    <!--                    </group>-->
+    <!--                </sheet>-->
+    <!--            </form>-->
+    <!--        </field>-->
+    <!--    </record>-->
+
+    <!-- Tree View -->
     <record id="view_process_tier_tree" model="ir.ui.view">
         <field name="name">process.tier.tree</field>
         <field name="model">process.tier</field>
         <field name="arch" type="xml">
             <tree>
-                <field name="process_customer_id"/>
+                <!-- Required for modifier condition -->
+                <field name="select_all_customers" column_invisible="1"/>
+
+                <!-- Single customer -->
+                <!--                <field name="process_customer_id"-->
+                <!--                       column_invisible="select_all_customers"/>-->
+
+                <!--                &lt;!&ndash; Multiple customers &ndash;&gt;-->
+                <!--                <field name="process_customer_ids"-->
+                <!--                       widget="many2many_tags"-->
+                <!--                       column_invisible="not select_all_customers"/>-->
+                <!--                        <field name="process_customer_id"/>-->
+                <!--                         <field name="process_customer_ids" widget="many2many_tags"/>-->
+                <field name="customer_names" widget="html"/>
                 <field name="process_datetime"/>
+                <!--                <field name="select_all_customers" readonly="state == 'processed'"/>-->
                 <field name="state"/>
             </tree>
         </field>
@@ -41,6 +174,8 @@
                         <field name="process_customer_id"
                                options="{'no_create': True,'no_create_edit': True,'no_open': True}"
                                domain="[('activate_loyalty_feature', '=', True)]" readonly="state == 'processed'"/>
+<!--                        <field name="process_customer_ids"-->
+<!--                               widget="many2many_tags"/>-->
                     </group>
 
                 </sheet>

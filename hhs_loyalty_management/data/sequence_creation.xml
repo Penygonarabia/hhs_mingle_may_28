@@ -11,15 +11,16 @@
             <field name="implementation">standard</field>
         </record>
 
-<!--        <record id="seq_lp_setup_promotions" model="ir.sequence">-->
-<!--            <field name="name">Setup Promotion Sequence</field>-->
-<!--            <field name="code">lp.setup.promotions.sequence</field>-->
-<!--            <field name="prefix"></field>-->
-<!--            <field name="padding">0</field>-->
-<!--            <field name="number_increment">1</field>-->
-<!--            <field name="implementation">no_gap</field>-->
-<!--        </record>-->
-         <record id="seq_lp_setup_promotions" model="ir.sequence">
+        <!--        <record id="seq_lp_setup_promotions" model="ir.sequence">-->
+        <!--            <field name="name">Setup Promotion Sequence</field>-->
+        <!--            <field name="code">lp.setup.promotions.sequence</field>-->
+        <!--            <field name="prefix"></field>-->
+        <!--            <field name="padding">0</field>-->
+        <!--            <field name="number_increment">1</field>-->
+        <!--            <field name="implementation">no_gap</field>-->
+        <!--        </record>-->
+
+        <record id="seq_lp_setup_promotions" model="ir.sequence">
             <field name="name">Setup Promotion Sequence</field>
             <field name="code">lp.setup.promotions.sequence</field>
             <field name="prefix">SP</field>

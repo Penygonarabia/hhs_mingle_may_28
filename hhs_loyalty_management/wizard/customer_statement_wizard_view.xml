@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_loyalty_customer_statement_wizard_form" model="ir.ui.view">
+        <field name="name">loyalty.customer.statement.wizard.form</field>
+        <field name="model">loyalty.customer.statement.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Customer Statement Account">
+                <group>
+<!--                    <group>-->
+<!--                        <field name="partner_id" options="{'no_create': True, 'no_open': True}"/>-->
+<!--                    </group>-->
+                    <group>
+                        <field name="from_date"/>
+                        <field name="to_date"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_print_pdf" string="Print PDF" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_loyalty_customer_statement_wizard" model="ir.actions.act_window">
+        <field name="name">Customer Statement Account</field>
+        <field name="res_model">loyalty.customer.statement.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem
+            id="menu_loyalty_customer_statement_report_wizard"
+            name="Customer Statement Account"
+            parent="menu_loyalty_reports_root"
+            action="action_loyalty_customer_statement_wizard"
+            sequence="50"
+            groups="hhs_loyalty_management.group_loyalty_program_user"/>
+
+    <!-- Menu Item (will be placed under Reports in loyalty_menu.xml or similar) -->
+</odoo>

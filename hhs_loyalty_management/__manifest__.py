@@ -17,7 +17,6 @@ Features:
     'data': [
         'data/sequence_creation.xml',
         'security/ir.model.access.csv',
-        'security/security_groups.xml',
         'views/views_res_config_settings.xml',
         'views/views_customer_tier.xml',
         'views/views_manual_promotion_reason_types.xml',
@@ -29,6 +28,12 @@ Features:
         'report/report_promotion.xml',
         'views/views_process_tier.xml',
         'views/loyalty_audit_view.xml',
+       # 'views/loyalty_menu.xml',
+        'wizard/promotion_report_wizard_views.xml',
+        'wizard/customer_statement_wizard_view.xml',
+        'report/customer_statement_report.xml',
+        'report/customer_statement_templates.xml',
+        'report/report_promotion.xml',
         # 'security/ir.model.access.csv',
         # 'views/res_config_settings_views.xml',
         # 'views/loyalty_points_views.xml',
@@ -38,6 +43,11 @@ Features:
         # 'views/promoter_showroom_sales_views.xml',
         # 'views/menus.xml',
     ],
+    # 'assets': {
+    #     'web.assets_backend': [
+    #         'hhs_loyalty_management/static/src/css/styles.css',
+    #         ]
+    # },
     'installable': True,
     'application': True,
 }
