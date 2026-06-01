@@ -182,10 +182,10 @@ class ProjectTask(models.Model):
         store=True,
     )
 
-    work_center_id = fields.Many2one("work.center.location", string="Work Center")
+    work_center_id = fields.Many2one("work.center.location", string="Work Center", index=True)
 
     work_center_group_id = fields.Many2one(
-        "work.center.group", string="Work Center Group"
+        "work.center.group", string="Work Center Group", index=True
     )
 
     invoice_date = fields.Date(string="Invoice Date")
@@ -201,15 +201,15 @@ class ProjectTask(models.Model):
     )
 
     service_charge_amount = fields.Float(
-        string="Service Charge Amount",
+        string="Inspection Charge Amount",
         compute="_compute_parts_total_amount",
         store=True,
     )
     service_vat_amount = fields.Float(
-        string="Service VAT Amount", compute="_compute_parts_total_amount", store=True
+        string="Inspection VAT Amount", compute="_compute_parts_total_amount", store=True
     )
     service_grand_total_amount = fields.Float(
-        string="Service Total", compute="_compute_parts_total_amount", store=True
+        string="Inspection Total", compute="_compute_parts_total_amount", store=True
     )
 
     region_id = fields.Many2one("res.region", string="Region")
@@ -229,7 +229,7 @@ class ProjectTask(models.Model):
         store=True,
     )
 
-    job_card_state = fields.Char(string="Job Card State", store=True)
+    job_card_state = fields.Char(string="Job Card State", store=True, index=True)
 
     technician_accepted_status_check = fields.Boolean(
         string="Technician Accepted Status",
@@ -259,6 +259,7 @@ class ProjectTask(models.Model):
         compute="_compute_technician_id",
         inverse="_inverse_technician_id",
         store=True,
+        index=True,
     )
 
     warehouse_code = fields.Char(string="Warehouse Code")
@@ -314,15 +315,15 @@ class ProjectTask(models.Model):
 
     technician_second_visit_datetime = fields.Datetime(string="Second Visit Datetime")
 
-    technician_second_visit_date = fields.Date(string="Second Visit Date")
+    technician_second_visit_date = fields.Date(string="Final Visit Date")
 
     technician_second_visit = fields.Char(string="Second Visit Name", store=True)
 
     technician_second_intime = fields.Char(
-        string="Second InTime", compute="_compute_technician_second_intime", store=True
+        string="Final Visit InTime", compute="_compute_technician_second_intime", store=True
     )
 
-    technician_second_outtime = fields.Char(string="Second OutTime")
+    technician_second_outtime = fields.Char(string="Final Visit OutTime")
 
     engineer_comments_second = fields.Text(string="Technician Comments")
 
@@ -331,7 +332,7 @@ class ProjectTask(models.Model):
     )
 
     technician_second_visit_id = fields.Many2one(
-        "res.users", string="Technician Second Visit name"
+        "res.users", string="Technician Final Visit name"
     )
 
     message_log_ids = fields.One2many(
@@ -474,7 +475,7 @@ class ProjectTask(models.Model):
         store=True,
     )
 
-    closed_jobcard_user_id = fields.Many2one("res.users", string="Closed JobCard User")
+    closed_jobcard_user_id = fields.Many2one("res.users", string="Closed JobCard User", index=True)
 
     closed_jobcard_check_bool = fields.Boolean(
         string="Closed JobCard Check",
@@ -9255,7 +9256,7 @@ class ProjectTask(models.Model):
     control_card_no = fields.Char(string="Control Card No")
     warehouse_id = fields.Many2one("stock.warehouse", string="Warehouse")
     # technician_id = fields.Many2one('res.users', string="Technician Name")
-    service_created_datetime = fields.Datetime(string="Service Created Date & Time")
+    service_created_datetime = fields.Datetime(string="Service Created Date & Time", index=True)
     service_requested_datetime = fields.Datetime(
         string="Service Requested Appt Date & Time"
     )
@@ -9487,7 +9488,7 @@ class ProjectTask(models.Model):
     )
 
     inspection_charges_bool = fields.Boolean(
-        string="Inspection Charges Bool", default=True
+        string="Inspection Charges Bool", default=False
     )
 
     final_inspection_charges_amount = fields.Float(
@@ -9545,7 +9546,7 @@ class ProjectTask(models.Model):
     import_bool = fields.Boolean(string="Import", default=False)
 
     img1 = fields.Binary(
-        string="Images1",
+        string="Images1",attachment=True
     )
     img2 = fields.Binary(
         string="Images2",
@@ -9604,13 +9605,13 @@ class ProjectTask(models.Model):
 
     building_number = fields.Char("Building Number")
 
-    plot_identification = fields.Char("Plot Identification")
+    plot_identification = fields.Char("Additional No")
 
     partner_latitude = fields.Float(string="Latitude", digits=(10, 7))
 
     partner_longitude = fields.Float(string="Longitude", digits=(10, 7))
 
-    address_one = fields.Char(string="Address 1")
+    address_one = fields.Char(string="Customer Address")
 
     address_two = fields.Char(string="Address 2")
 
@@ -9806,7 +9807,7 @@ class ProjectTask(models.Model):
     action_status = fields.Char(string="Job Card Action Status")
 
     """Code Added on March 17 2026"""
-    scheduled_uid = fields.Many2one("res.users", string="Scheduled User")
+    scheduled_uid = fields.Many2one("res.users", string="Scheduled User", index=True)
 
     """Code Added on March 18 2026"""
     type_of_property = fields.Selection(

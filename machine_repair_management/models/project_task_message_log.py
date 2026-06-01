@@ -205,128 +205,238 @@ class ProjectTaskMessageLog(models.Model):
     
     def init(self):
         drop_view_if_exists(self.env.cr, 'project_task_message_log')
-    
+
+        # Check if the relation tables and fields added by dashboard_user_rights_roles exist in the database.
+        # This is necessary because machine_repair_management is loaded before dashboard_user_rights_roles,
+        # so during installation these tables do not yet exist, which would otherwise crash with an UndefinedTable error.
         self.env.cr.execute("""
-            CREATE OR REPLACE VIEW project_task_message_log AS (
-    
-                SELECT
-                    ROW_NUMBER() OVER (ORDER BY combined.res_id, combined.date) AS id,
-    
-                    ROW_NUMBER() OVER (
-                        PARTITION BY combined.res_id
-                        ORDER BY combined.date
-                    )::text AS serial_no,
-    
-                    combined.date,
-                    combined.author,
-                    combined.author_id,
-                    combined.user_id,
-                    combined.old_value,
-                    combined.new_value,
-                    combined.model,
-                    combined.res_id,
-    
-                    -- ✅ Pull scalar field directly from res_users
-                    ru_full.dashboard_type_selection,
-    
-                    -- ✅ Pull Many2many IDs as arrays from relation tables
-                    COALESCE(wcg.work_center_group_ids, ARRAY[]::integer[]) AS work_center_group_ids,
-                    COALESCE(urr.user_rights_roles_ids, ARRAY[]::integer[]) AS user_rights_roles_ids
-    
-                FROM (
-    
-                    -- TASK CREATED LOG
-                    SELECT *
-                    FROM (
-                        SELECT DISTINCT ON (mm.res_id)
-                            mm.create_date  AS date,
-                            rp.name         AS author,
-                            mm.author_id    AS author_id,
-                            ru.id           AS user_id,
-                            NULL            AS old_value,
-                            'New'           AS new_value,
-                            mm.model,
-                            mm.res_id
-    
-                        FROM mail_message mm
-                        LEFT JOIN res_partner rp ON rp.id = mm.author_id
-                        LEFT JOIN res_users ru   ON ru.partner_id = rp.id
-    
-                        WHERE mm.model = 'project.task'
-                        ORDER BY mm.res_id, mm.create_date ASC
-                    ) created_logs
-    
-                    UNION ALL
-    
-                    -- STATUS TRACKING LOG
-                    SELECT
-                        log.create_date  AS date,
-                        rp.name          AS author,
-                        mm.author_id     AS author_id,
-                        ru.id            AS user_id,
-    
-                        COALESCE(
-                            log.old_value_char,
-                            log.old_value_text,
-                            log.old_value_datetime::text,
-                            CAST(log.old_value_integer AS text),
-                            CAST(log.old_value_float AS text)
-                        ) AS old_value,
-    
-                        COALESCE(
-                            log.new_value_char,
-                            log.new_value_text,
-                            log.new_value_datetime::text,
-                            CAST(log.new_value_integer AS text),
-                            CAST(log.new_value_float AS text)
-                        ) AS new_value,
-    
-                        mm.model,
-                        mm.res_id
-    
-                    FROM mail_tracking_value log
-                    JOIN mail_message mm         ON mm.id = log.mail_message_id
-                    LEFT JOIN res_partner rp     ON rp.id = mm.author_id
-                    LEFT JOIN res_users ru       ON ru.partner_id = rp.id
-                    LEFT JOIN ir_model_fields ff ON ff.id = log.field_id
-    
-                    WHERE mm.model = 'project.task'
-                    AND ff.name = 'job_state'
-                    AND (
-                        COALESCE(log.old_value_char, log.old_value_text, log.old_value_datetime::text,
-                                 CAST(log.old_value_integer AS text), CAST(log.old_value_float AS text))
-                        IS DISTINCT FROM
-                        COALESCE(log.new_value_char, log.new_value_text, log.new_value_datetime::text,
-                                 CAST(log.new_value_integer AS text), CAST(log.new_value_float AS text))
-                    )
-    
-                ) AS combined
-    
-                -- ✅ JOIN 1: Get dashboard_type_selection from res_users
-                LEFT JOIN res_users ru_full
-                    ON ru_full.id = combined.user_id
-    
-                -- ✅ JOIN 2: Aggregate work_center_group_ids for the user
-                LEFT JOIN (
-                    SELECT
-                        user_id,
-                        ARRAY_AGG(work_center_group_id) AS work_center_group_ids
-                    FROM user_work_center_group_rel
-                    GROUP BY user_id
-                ) wcg ON wcg.user_id = combined.user_id
-    
-                -- ✅ JOIN 3: Aggregate user_rights_roles_ids for the user
-                LEFT JOIN (
-                    SELECT
-                        user_id,
-                        ARRAY_AGG(dashboard_rights_id) AS user_rights_roles_ids
-                    FROM user_dashboard_rights_rel
-                    GROUP BY user_id
-                ) urr ON urr.user_id = combined.user_id
-    
-                ORDER BY combined.res_id, combined.date
+            SELECT EXISTS (
+                SELECT 1 FROM information_schema.tables 
+                WHERE table_name = 'user_work_center_group_rel'
+            ) AND EXISTS (
+                SELECT 1 FROM information_schema.tables 
+                WHERE table_name = 'user_dashboard_rights_rel'
+            ) AND EXISTS (
+                SELECT 1 FROM information_schema.columns 
+                WHERE table_name = 'res_users' AND column_name = 'dashboard_type_selection'
             )
         """)
+        has_relations = self.env.cr.fetchone()[0]
+
+        if has_relations:
+            self.env.cr.execute("""
+                CREATE OR REPLACE VIEW project_task_message_log AS (
+
+                    SELECT
+                        combined.id AS id,
+
+                        ROW_NUMBER() OVER (
+                            PARTITION BY combined.res_id
+                            ORDER BY combined.date
+                        )::text AS serial_no,
+
+                        combined.date,
+                        combined.author,
+                        combined.author_id,
+                        combined.user_id,
+                        combined.old_value,
+                        combined.new_value,
+                        combined.model,
+                        combined.res_id,
+
+                        ru_full.dashboard_type_selection,
+
+                        COALESCE(wcg.work_center_group_ids, ARRAY[]::integer[]) AS work_center_group_ids,
+                        COALESCE(urr.user_rights_roles_ids, ARRAY[]::integer[]) AS user_rights_roles_ids
+
+                    FROM (
+
+                        -- TASK CREATED LOG (id = mm.id * 2)
+                        SELECT *
+                        FROM (
+                            SELECT DISTINCT ON (mm.res_id)
+                                (mm.id * 2)     AS id,
+                                mm.create_date  AS date,
+                                rp.name         AS author,
+                                mm.author_id    AS author_id,
+                                ru.id           AS user_id,
+                                NULL            AS old_value,
+                                'New'           AS new_value,
+                                mm.model,
+                                mm.res_id
+
+                            FROM mail_message mm
+                            LEFT JOIN res_partner rp ON rp.id = mm.author_id
+                            LEFT JOIN res_users ru   ON ru.partner_id = rp.id
+
+                            WHERE mm.model = 'project.task'
+                            ORDER BY mm.res_id, mm.create_date ASC
+                        ) created_logs
+
+                        UNION ALL
+
+                        -- STATUS TRACKING LOG (id = log.id * 2 + 1)
+                        SELECT
+                            (log.id * 2 + 1) AS id,
+                            log.create_date  AS date,
+                            rp.name          AS author,
+                            mm.author_id     AS author_id,
+                            ru.id            AS user_id,
+
+                            COALESCE(
+                                log.old_value_char,
+                                log.old_value_text,
+                                log.old_value_datetime::text,
+                                CAST(log.old_value_integer AS text),
+                                CAST(log.old_value_float AS text)
+                            ) AS old_value,
+
+                            COALESCE(
+                                log.new_value_char,
+                                log.new_value_text,
+                                log.new_value_datetime::text,
+                                CAST(log.new_value_integer AS text),
+                                CAST(log.new_value_float AS text)
+                            ) AS new_value,
+
+                            mm.model,
+                            mm.res_id
+
+                        FROM mail_tracking_value log
+                        JOIN mail_message mm         ON mm.id = log.mail_message_id
+                        LEFT JOIN res_partner rp     ON rp.id = mm.author_id
+                        LEFT JOIN res_users ru       ON ru.partner_id = rp.id
+                        LEFT JOIN ir_model_fields ff ON ff.id = log.field_id
+
+                        WHERE mm.model = 'project.task'
+                        AND ff.name = 'job_state'
+                        AND (
+                            COALESCE(log.old_value_char, log.old_value_text, log.old_value_datetime::text,
+                                     CAST(log.old_value_integer AS text), CAST(log.old_value_float AS text))
+                            IS DISTINCT FROM
+                            COALESCE(log.new_value_char, log.new_value_text, log.new_value_datetime::text,
+                                     CAST(log.new_value_integer AS text), CAST(log.new_value_float AS text))
+                        )
+
+                    ) AS combined
+
+                    LEFT JOIN res_users ru_full
+                        ON ru_full.id = combined.user_id
+
+                    LEFT JOIN (
+                        SELECT
+                            user_id,
+                            ARRAY_AGG(work_center_group_id) AS work_center_group_ids
+                        FROM user_work_center_group_rel
+                        GROUP BY user_id
+                    ) wcg ON wcg.user_id = combined.user_id
+
+                    LEFT JOIN (
+                        SELECT
+                            user_id,
+                            ARRAY_AGG(dashboard_rights_id) AS user_rights_roles_ids
+                        FROM user_dashboard_rights_rel
+                        GROUP BY user_id
+                    ) urr ON urr.user_id = combined.user_id
+                )
+            """)
+        else:
+            self.env.cr.execute("""
+                CREATE OR REPLACE VIEW project_task_message_log AS (
+
+                    SELECT
+                        combined.id AS id,
+
+                        ROW_NUMBER() OVER (
+                            PARTITION BY combined.res_id
+                            ORDER BY combined.date
+                        )::text AS serial_no,
+
+                        combined.date,
+                        combined.author,
+                        combined.author_id,
+                        combined.user_id,
+                        combined.old_value,
+                        combined.new_value,
+                        combined.model,
+                        combined.res_id,
+
+                        NULL::varchar AS dashboard_type_selection,
+                        ARRAY[]::integer[] AS work_center_group_ids,
+                        ARRAY[]::integer[] AS user_rights_roles_ids
+
+                    FROM (
+
+                        -- TASK CREATED LOG (id = mm.id * 2)
+                        SELECT *
+                        FROM (
+                            SELECT DISTINCT ON (mm.res_id)
+                                (mm.id * 2)     AS id,
+                                mm.create_date  AS date,
+                                rp.name         AS author,
+                                mm.author_id    AS author_id,
+                                ru.id           AS user_id,
+                                NULL            AS old_value,
+                                'New'           AS new_value,
+                                mm.model,
+                                mm.res_id
+
+                            FROM mail_message mm
+                            LEFT JOIN res_partner rp ON rp.id = mm.author_id
+                            LEFT JOIN res_users ru   ON ru.partner_id = rp.id
+
+                            WHERE mm.model = 'project.task'
+                            ORDER BY mm.res_id, mm.create_date ASC
+                        ) created_logs
+
+                        UNION ALL
+
+                        -- STATUS TRACKING LOG (id = log.id * 2 + 1)
+                        SELECT
+                            (log.id * 2 + 1) AS id,
+                            log.create_date  AS date,
+                            rp.name          AS author,
+                            mm.author_id     AS author_id,
+                            ru.id            AS user_id,
+
+                            COALESCE(
+                                log.old_value_char,
+                                log.old_value_text,
+                                log.old_value_datetime::text,
+                                CAST(log.old_value_integer AS text),
+                                CAST(log.old_value_float AS text)
+                            ) AS old_value,
+
+                            COALESCE(
+                                log.new_value_char,
+                                log.new_value_text,
+                                log.new_value_datetime::text,
+                                CAST(log.new_value_integer AS text),
+                                CAST(log.new_value_float AS text)
+                            ) AS new_value,
+
+                            mm.model,
+                            mm.res_id
+
+                        FROM mail_tracking_value log
+                        JOIN mail_message mm         ON mm.id = log.mail_message_id
+                        LEFT JOIN res_partner rp     ON rp.id = mm.author_id
+                        LEFT JOIN res_users ru       ON ru.partner_id = rp.id
+                        LEFT JOIN ir_model_fields ff ON ff.id = log.field_id
+
+                        WHERE mm.model = 'project.task'
+                        AND ff.name = 'job_state'
+                        AND (
+                            COALESCE(log.old_value_char, log.old_value_text, log.old_value_datetime::text,
+                                     CAST(log.old_value_integer AS text), CAST(log.old_value_float AS text))
+                            IS DISTINCT FROM
+                            COALESCE(log.new_value_char, log.new_value_text, log.new_value_datetime::text,
+                                     CAST(log.new_value_integer AS text), CAST(log.new_value_float AS text))
+                        )
+
+                    ) AS combined
+                )
+            """)
        
     # def init(self):
     #     """Create SQL view showing only job_state changes with serial numbers starting from 1 for each project.task"""
@@ -382,4 +492,3 @@ class ProjectTaskMessageLog(models.Model):
             'model',
             'res_id'
         ])
-
