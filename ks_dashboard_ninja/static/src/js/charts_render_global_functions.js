@@ -117,6 +117,7 @@ export function ks_render_graphs(
             labelVal = labelVal.replace(/\]/g, "]]");
           }
           data2["category"] = labelVal;
+          data2["ksRowIndex"] = i;
           data2["ksDisplayLabel"] = (ksItemNameLower.includes("status analysis on weekly basis") && !item.isDrill)
             ? "Week# " + (i + 1)
             : labelVal;
@@ -2052,10 +2053,7 @@ export function ksrenderfunnelchart($ks_gridstack_container, item, view) {
     if (funnel_data["labels"] && funnel_data["datasets"].length) {
       var ks_labels = funnel_data["labels"];
       var ks_data = funnel_data.datasets[0].data;
-      const ks_sortobj = Object.fromEntries(
-        ks_labels.map((key, index) => [key, ks_data[index]]),
-      );
-      const keyValueArray = Object.entries(ks_sortobj);
+      const keyValueArray = ks_labels.map((key, index) => [key, ks_data[index], index]);
       keyValueArray.sort((a, b) => b[1] - a[1]);
 
       var data = [];
@@ -2076,6 +2074,7 @@ export function ksrenderfunnelchart($ks_gridstack_container, item, view) {
           data.push({
             stage: labelVal,
             applicants: keyValueArray[i][1],
+            ksRowIndex: keyValueArray[i][2],
           });
         }
         const root = am5.Root.new(funnelRender);

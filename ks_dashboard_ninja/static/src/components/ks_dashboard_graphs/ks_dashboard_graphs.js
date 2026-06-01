@@ -86,6 +86,18 @@ export class Ksdashboardgraph extends Component{
                 }
                 this.ks_dashboard_data.ks_item_data[item_id] = new_item_data[item_id];
                 this.item = this.ks_dashboard_data.ks_item_data[item_id] ;
+                // Reset drill state on re-fetch (date filter change, interval refresh) so
+                // stale breadcrumb / drill-up DOM from a prior drill doesn't leak into the
+                // fresh chart, and a subsequent breadcrumb click can't reuse stale domains.
+                this.item.isDrill = false;
+                this.item.sequnce = 0;
+                this.item.domains = {};
+                this.isDrill = false;
+                var $itemRoot = $(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + item_id + "]");
+                $itemRoot.find(".ks_chart_heading").removeClass("d-none");
+                $itemRoot.find(".ks_list_view_heading").removeClass("d-none");
+                $itemRoot.find(".ks_dashboard_item_drill_up").addClass('d-none');
+                $itemRoot.find(".ks_breadcrumb li").addClass('d-none');
                 // done this to render updated items on play button
                 this.__owl__.parent.component.ks_dashboard_data.ks_item_data[this.item.id] = new_item_data[item_id]
                 if (this.item.ks_dashboard_item_type =="ks_funnel_chart"){
@@ -435,7 +447,11 @@ export class Ksdashboardgraph extends Component{
         }
 
         if (activePoint) {
-            if (activePoint.category){
+            if (typeof activePoint.ksRowIndex === "number" && activePoint.ksRowIndex >= 0 && activePoint.ksRowIndex < labels.length) {
+                index = activePoint.ksRowIndex;
+                domain = domains[index];
+            }
+            else if (activePoint.category){
                 for (let i=0 ; i<labels.length ; i++){
                     if (labels[i] == activePoint.category){
                         index = i
@@ -451,7 +467,7 @@ export class Ksdashboardgraph extends Component{
                 }
                 domain = domains[index]
             }
-            if (item && item.name && item.name.toLowerCase().includes("status analysis on weekly basis") && index !== undefined) {
+            if (item && item.name && item.name.toLowerCase().includes("status analysis on weekly basis") && index !== undefined && !item.isDrill) {
                 selectedItemName = "Week# " + (index + 1);
             }
             if (item_data.max_sequnce != 0 && sequnce < item_data.max_sequnce) {
