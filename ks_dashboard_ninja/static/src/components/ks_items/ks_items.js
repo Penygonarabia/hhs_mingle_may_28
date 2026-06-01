@@ -30,14 +30,14 @@ export class KsItems extends Component {
         this.gridStackRootRef = useForwardRefToParent("gridStackRootRef")
         this.explain_ai_whole = true;
         this.gridstack_options = {
-            staticGrid:true,
+            staticGrid: true,
             float: false,
             cellHeight: 68,
-            styleInHead : true,
+            styleInHead: true,
             disableOneColumnMode: true,
         };
         if (isMobileOS()) {
-            this.gridstack_options.disableOneColumnMode = false
+            this.gridstack_options.disableOneColumnMode = false;
         }
         onMounted( () => this.onMount())
 

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Pivot view: Visits Estimated vs Actual (Preventive & Corrective) -->
+    <record id="view_subscription_contracts_visits_pivot" model="ir.ui.view">
+        <field name="name">subscription.contracts.visits.pivot</field>
+        <field name="model">subscription.contracts</field>
+        <field name="arch" type="xml">
+            <pivot string="Visits - Estimated vs Actual" sample="1">
+                <field name="region" type="row"/>
+                <field name="city" type="row"/>
+                <field name="preventive_estimated" type="measure"/>
+                <field name="preventive_actual" type="measure"/>
+                <field name="preventive_balance" type="measure"/>
+                <field name="corrective_estimated" type="measure"/>
+                <field name="corrective_actual" type="measure"/>
+                <field name="corrective_balance" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Search view with helpful filters / group-bys -->
+    <record id="view_subscription_contracts_visits_search" model="ir.ui.view">
+        <field name="name">subscription.contracts.visits.search</field>
+        <field name="model">subscription.contracts</field>
+        <field name="arch" type="xml">
+            <search string="Visits Analysis">
+                <field name="name" string="Contract"/>
+                <field name="partner_id"/>
+                <field name="region"/>
+                <field name="city"/>
+                <field name="sales_person_user_id"/>
+                <filter string="Maintenance" name="filter_maintenance"
+                        domain="[('contract_type','=','maintenance')]"/>
+                <filter string="Construction" name="filter_construction"
+                        domain="[('contract_type','=','construction')]"/>
+                <separator/>
+                <filter string="Ongoing" name="filter_ongoing"
+                        domain="[('state','=','Ongoing')]"/>
+                <separator/>
+                <filter string="Start Date" name="filter_date_start" date="date_start"/>
+                <group expand="0" string="Group By">
+                    <filter string="Region" name="group_region"
+                            context="{'group_by': 'region'}"/>
+                    <filter string="City" name="group_city"
+                            context="{'group_by': 'city'}"/>
+                    <filter string="Customer" name="group_customer"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter string="Salesman" name="group_salesman"
+                            context="{'group_by': 'sales_person_user_id'}"/>
+                    <filter string="Contract Type" name="group_contract_type"
+                            context="{'group_by': 'contract_type'}"/>
+                    <filter string="Start Month" name="group_start_month"
+                            context="{'group_by': 'date_start:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window action: opens directly to the Pivot view -->
+    <record id="action_subscription_contracts_visits_pivot" model="ir.actions.act_window">
+        <field name="name">Visits - Estimated vs Actual</field>
+        <field name="res_model">subscription.contracts</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="search_view_id" ref="view_subscription_contracts_visits_search"/>
+        <field name="context">{
+            'search_default_filter_maintenance': 1,
+            'search_default_group_region': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No contracts found.
+            </p>
+            <p>
+                This pivot compares estimated vs actual visits (preventive and corrective)
+                for each maintenance contract. Drag fields to rows / columns,
+                add or remove measures, expand groups, and export to spreadsheet.
+            </p>
+        </field>
+    </record>
+
+    <!-- Bind the pivot view explicitly to the action -->
+    <record id="action_subscription_contracts_visits_pivot_pivot_view" model="ir.actions.act_window.view">
+        <field name="sequence">1</field>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="view_subscription_contracts_visits_pivot"/>
+        <field name="act_window_id" ref="action_subscription_contracts_visits_pivot"/>
+    </record>
+
+    <!-- Menu under CRM > Reporting -->
+    <menuitem id="menu_contract_visits_pivot"
+              name="Contract Visits Analysis"
+              parent="crm.crm_menu_report"
+              action="action_subscription_contracts_visits_pivot"
+              sequence="50"/>
+
+</odoo>

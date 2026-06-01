@@ -1,66 +1,326 @@
 /**
- * ks_dashboard_print.css
- * Standalone print media query for the KPI Dashboard Ninja module.
- * This is a plain CSS file (not SCSS) to guarantee it is served as-is
- * without any compilation step that could introduce failures.
- *
- * Root causes addressed:
- *   1. `.ks_dashboard_icon_l5` has `position:absolute` which breaks print layout
- *   2. Text colours are set inline (often white) and become invisible on print
- *   3. `.grid-stack-item-content` has overflow:hidden + fixed heights that clip content
+ * ks_dashboard_print.css  –  Print layout for KS Dashboard Ninja
+ * Matches the on-screen 2-column chart + 6-tile KPI row layout.
  */
 
 @media print {
 
-    /* ── Page Setup ──────────────────────────────────────────────────────────── */
-    @page {
-        size: landscape;
-        margin: 10mm;
-    }
+    /* ── Page setup ────────────────────────────────────────────────────────── */
+    @page { size: landscape; margin: 8mm; }
 
-    /* Force colour-accurate printing for backgrounds and text */
     * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
         color-adjust: exact !important;
     }
 
-    /* ── Dashboard Container ─────────────────────────────────────────────────── */
+    /* ── Hide Odoo chrome ──────────────────────────────────────────────────── */
+    .o_main_navbar,
+    .o_navbar,
+    .ks_dashboard_ninja_top_area,
+    .ks_dashboard_top_menu-new,
+    .ks_dashboard_item_header_l6,
+    .select-btn,
+    .ks_img_display,
+    .screen-info,
+    .ks_dashboard_top_settings,
+    .ks_pro_print_hide,
+    .ks_date_apply_clear_print {
+        display: none !important;
+    }
+
+    /* ── Scroll containers: let content flow freely ────────────────────────── */
+    html, body,
+    .o_content,
     .ks_dashboard_main_content,
     .ks_dashboard_ninja,
-    .o_content {
+    .ks_dashboard_content {
         overflow: visible !important;
         height: auto !important;
         max-height: none !important;
         width: 100% !important;
     }
 
-    /* ── Grid / Chart Tiles ──────────────────────────────────────────────────── */
-    .grid-stack-item {
+    /* ── GridStack: convert absolute layout → flex wrap ───────────────────── */
+    .grid-stack {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        position: static !important;
         height: auto !important;
-        position: relative !important;
+        min-height: 0 !important;
+        gap: 6px !important;
+        padding: 4px !important;
+        align-items: flex-start !important;
     }
 
-    /* Generic grid-stack-item-content: allow height to grow */
-    .grid-stack-item-content {
+    /* Every grid item: reset absolute positioning injected by JS */
+    .grid-stack > .grid-stack-item {
+        position: static !important;
+        transform: none !important;
         height: auto !important;
-        min-height: 250px !important;
-        max-height: 280px !important;
-        overflow: hidden !important;
+        min-height: 0 !important;
+        /* Default: 2 columns for charts / list views */
+        width: calc(50% - 4px) !important;
+        flex: 0 0 calc(50% - 4px) !important;
+        margin: 2px 0 !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
     }
 
-    .ks_chart_card_body {
-        height: 200px !important;
-        max-height: 200px !important;
-        min-height: 120px !important;
+    /* KPI tiles: 6 per row  (JS adds .ks_print_tile to the outer item) */
+    .grid-stack > .grid-stack-item.ks_print_tile {
+        width: calc(16.6% - 5px) !important;
+        flex: 0 0 calc(16.6% - 5px) !important;
+        height: 130px !important;
+    }
+
+    /* Full-width list views (JS adds .ks_print_list) */
+    .grid-stack > .grid-stack-item.ks_print_list {
+        width: calc(50% - 4px) !important;
+        flex: 0 0 calc(50% - 4px) !important;
+    }
+
+    /* ── Item content wrapper ──────────────────────────────────────────────── */
+    .grid-stack-item-content {
+        position: static !important;
+        transform: none !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: hidden !important;
+    }
+
+    /* ── KPI Tile inner layout ─────────────────────────────────────────────── */
+    .ks_dashboard_kpi.grid-stack-item-content,
+    .encapsulated-kpi-tile.grid-stack-item-content,
+    .ks_dashboarditem_id.grid-stack-item-content {
+        height: 120px !important;
+        max-height: 130px !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        padding: 6px 4px !important;
+        border-radius: 8px !important;
+    }
+
+    /* Icon circle */
+    .ks_dashboard_kpi .ks_dashboard_icon_l5,
+    .encapsulated-kpi-tile .ks_dashboard_icon_l5 {
+        position: relative !important;
+        top: auto !important; left: auto !important;
+        right: auto !important; bottom: auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+        border-radius: 50% !important;
+        background-color: rgba(255,255,255,0.85) !important;
+        margin: 0 auto 4px auto !important;
+        flex-shrink: 0 !important;
+        overflow: visible !important;
+    }
+
+    .ks_dashboard_kpi .ks_dashboard_icon_l5 span,
+    .encapsulated-kpi-tile .ks_dashboard_icon_l5 span {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        font-size: 16px !important;
+        line-height: 1 !important;
+        font-family: "FontAwesome","Font Awesome 5 Free","Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+        color: #333 !important;
+    }
+
+    /* Count / Value */
+    .ks_dashboard_kpi .ks_dashboard_kpi_count_preview,
+    .encapsulated-kpi-tile .ks_dashboard_kpi_count_preview {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: #000 !important;
+        font-size: 1.2rem !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+        line-height: 1.1 !important;
+        margin: 1px 0 !important;
+    }
+
+    /* Label */
+    .ks_dashboard_kpi .ks_dashboard_kpi_name_preview,
+    .encapsulated-kpi-tile .ks_dashboard_kpi_name_preview {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        color: #000 !important;
+        font-size: 0.62rem !important;
+        text-align: center !important;
+        word-break: break-word !important;
+        line-height: 1.1 !important;
+        margin: 0 !important;
+    }
+
+    /* ── ks_tile Layout 1 (custom-layout-1): icon left · value+label right ── */
+    .custom-layout-1 .ks_dashboard_icon {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        border-radius: 50% !important;
+        background-color: rgba(255,255,255,0.9) !important;
+        margin-right: 6px !important;
+        overflow: visible !important;
+        flex-shrink: 0 !important;
+    }
+
+    .custom-layout-1 .ks_dashboard_icon span.fa,
+    .custom-layout-1 .ks_dashboard_icon i.fa {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        font-size: 18px !important;
+        line-height: 1 !important;
+        font-family: "FontAwesome","Font Awesome 5 Free","Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+    }
+
+    .custom-layout-1 .ks_dashboard_item_domain_count {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        line-height: 1.2 !important;
+    }
+
+    .custom-layout-1 .ks_dashboard_item_name {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        font-size: 0.6rem !important;
+        line-height: 1.1 !important;
+        word-break: break-word !important;
+        white-space: normal !important;
+        min-height: auto !important;
+    }
+
+    /* ── ks_tile Layout 3 (custom-layout-3): icon left · value+label right ── */
+    /* overview_main.scss sets icon as position:absolute — override to in-flow */
+    .custom-layout-3 .ks_dashboard_icon_l3 {
         position: relative !important;
         top: auto !important;
-        bottom: auto !important;
         left: auto !important;
-        right: auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        max-width: 44px !important;
+        border-radius: 50% !important;
+        background-color: rgba(255,255,255,0.9) !important;
+        margin-right: 6px !important;
+        overflow: visible !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* inner span is also position:absolute — reset to static */
+    .custom-layout-3 .ks_dashboard_icon_l3 span,
+    .custom-layout-3 .ks_dashboard_icon_l3 i {
+        position: static !important;
+        transform: none !important;
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        font-size: 18px !important;
+        line-height: 1 !important;
+        font-family: "FontAwesome","Font Awesome 5 Free","Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+    }
+
+    .custom-layout-3 .ks_dashboard_item_domain_count_l3 {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        line-height: 1.2 !important;
+        text-align: left !important;
+    }
+
+    .custom-layout-3 .ks_dashboard_item_name_l3 {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        font-size: 0.6rem !important;
+        line-height: 1.1 !important;
+        word-break: break-word !important;
+        white-space: normal !important;
+        text-align: left !important;
+    }
+
+    /* ── ks_tile Layout 2 (encap-layout-2-box): value+label left · icon right */
+    .encap-layout-2-box .ks_dashboard_icon_l2 {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        border-radius: 50% !important;
+        background-color: rgba(255,255,255,0.9) !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        flex-shrink: 0 !important;
+    }
+
+    .encap-layout-2-box .ks_dashboard_icon_l2 span,
+    .encap-layout-2-box .ks_dashboard_icon_l2 i {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        font-size: 18px !important;
+        line-height: 1 !important;
+        font-family: "FontAwesome","Font Awesome 5 Free","Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+    }
+
+    .encap-layout-2-box .ks_dashboard_item_domain_count_l2 {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        line-height: 1.2 !important;
+        margin: 0 !important;
+    }
+
+    .encap-layout-2-box .ks_dashboard_item_name_l2 {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        font-size: 0.6rem !important;
+        line-height: 1.1 !important;
+        word-break: break-word !important;
+        white-space: normal !important;
+        margin: 0 !important;
+    }
+
+    /* ── Chart containers ──────────────────────────────────────────────────── */
+    .ks_chart_card_body {
+        height: 210px !important;
+        max-height: 210px !important;
         overflow: hidden !important;
+        position: relative !important;
     }
 
     .ks_chart_card_body svg,
@@ -70,30 +330,7 @@
         height: 100% !important;
     }
 
-    .ks_funnel_chart_body,
-    .ks_funnel_view,
-    #ks_funnel_chart {
-        height: 180px !important;
-        max-height: 180px !important;
-    }
-
-    .ks_radial_chart_body,
-    #ks_radial_chart {
-        height: 180px !important;
-        max-height: 180px !important;
-    }
-
-    .ks_map_card_body,
-    #ks_map_chart {
-        height: 200px !important;
-        max-height: 200px !important;
-    }
-
-    .ks_bullet_chart_body {
-        height: 160px !important;
-        max-height: 160px !important;
-    }
-
+    /* ── List views ────────────────────────────────────────────────────────── */
     .ks_list_card_body,
     .ks_list_view_container {
         height: 220px !important;
@@ -101,183 +338,13 @@
         overflow: hidden !important;
     }
 
-    /* ── KPI Tile Wrapper ────────────────────────────────────────────────────── */
-    /*
-     * The KPI tile has these classes on the root element:
-     *   encapsulated-kpi-tile ks_dashboard_kpi ks_dashboard_kpi_dashboard
-     *   ks_dashboarditem_id ks_dashboard_item_hover ks_db_item_preview_color_picker
-     *   grid-stack-item-content
-     *
-     * We override grid-stack-item-content only when also a KPI tile.
-     */
-    .ks_dashboard_kpi.grid-stack-item-content,
-    .encapsulated-kpi-tile.grid-stack-item-content,
-    .ks_dashboarditem_id.grid-stack-item-content {
-        height: auto !important;
-        min-height: 120px !important;
-        max-height: none !important;
-        overflow: visible !important;
-        position: relative !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        align-items: center !important;
-        padding: 10px 8px !important;
-    }
-
-    /* ── Icon Container Fix ──────────────────────────────────────────────────── */
-    /*
-     * `.ks_dashboard_icon_l5` is `position: absolute` in normal view.
-     * In print, this causes it to float outside the tile's clipping box.
-     * We reset it to in-flow positioning.
-     */
-    .ks_dashboard_kpi .ks_dashboard_icon_l5,
-    .encapsulated-kpi-tile .ks_dashboard_icon_l5,
-    .ks_dashboarditem_id .ks_dashboard_icon_l5,
-    .ks_dashboard_kpi .dashboard-item-icon,
-    .encapsulated-kpi-tile .dashboard-item-icon {
-        position: relative !important;
-        top: auto !important;
-        left: auto !important;
-        right: auto !important;
-        bottom: auto !important;
-        z-index: auto !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: 52px !important;
-        height: 52px !important;
-        min-width: 52px !important;
-        min-height: 52px !important;
-        border-radius: 50% !important;
-        background-color: rgba(255, 255, 255, 0.9) !important;
-        margin: 4px auto 6px auto !important;
-        flex-shrink: 0 !important;
-        overflow: visible !important;
-    }
-
-    /* FontAwesome icon <span> inside the icon circle */
-    .ks_dashboard_kpi .ks_dashboard_icon_l5 span,
-    .encapsulated-kpi-tile .ks_dashboard_icon_l5 span,
-    .ks_dashboarditem_id .ks_dashboard_icon_l5 span,
-    .ks_dashboard_kpi .dashboard-item-icon span,
-    .encapsulated-kpi-tile .dashboard-item-icon span {
-        display: inline-block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        font-size: 20px !important;
-        line-height: 1 !important;
-        /* FontAwesome v4 / v5 / v6 – all via :before pseudo-element which the
-           browser will render when the font is loaded. We force the font family
-           name so the browser picks the already-loaded font. */
-        font-family: "FontAwesome", "Font Awesome 5 Free", "Font Awesome 6 Free", FontAwesome !important;
-        font-weight: 900 !important;
-    }
-
-    /* Custom image icon */
-    .ks_dashboard_kpi .ks_dashboard_icon_l5 img,
-    .encapsulated-kpi-tile .ks_dashboard_icon_l5 img,
-    .ks_dashboarditem_id .ks_dashboard_icon_l5 img,
-    .ks_dashboard_kpi .dashboard-item-icon img,
-    .encapsulated-kpi-tile .dashboard-item-icon img {
-        display: block !important;
-        visibility: visible !important;
-        width: 28px !important;
-        height: 28px !important;
-    }
-
-    /* ── KPI Count (the big number) ──────────────────────────────────────────── */
-    /*
-     * The inline style on the element sets `color` to white (for dark tiles).
-     * We MUST override inline styles — hence the specificity chain.
-     */
-    .ks_dashboard_kpi .ks_dashboard_kpi_count_preview,
-    .encapsulated-kpi-tile .ks_dashboard_kpi_count_preview,
-    .ks_dashboarditem_id .ks_dashboard_kpi_count_preview,
-    .ks_dashboard_kpi .dashboard-item-data,
-    .encapsulated-kpi-tile .dashboard-item-data {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        /* Black always prints on any background */
-        color: #000000 !important;
-        font-size: 1.3rem !important;
-        font-weight: 700 !important;
-        text-align: center !important;
-        line-height: 1.2 !important;
-        margin: 2px 0 !important;
-    }
-
-    /* ── KPI Name / Label ────────────────────────────────────────────────────── */
-    .ks_dashboard_kpi .ks_dashboard_kpi_name_preview,
-    .encapsulated-kpi-tile .ks_dashboard_kpi_name_preview,
-    .ks_dashboarditem_id .ks_dashboard_kpi_name_preview,
-    .ks_dashboard_kpi .dashboard-item-name,
-    .encapsulated-kpi-tile .dashboard-item-name {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        color: #000000 !important;
-        font-size: 0.72rem !important;
-        text-align: center !important;
-        word-break: break-word !important;
-        margin: 0 !important;
-    }
-
-    /* ── vs Prev / vs Target ─────────────────────────────────────────────────── */
-    .ks_dashboard_kpi .var-prev,
-    .encapsulated-kpi-tile .var-prev,
-    .ks_dashboarditem_id .var-prev,
-    .ks_dashboard_kpi .pre_deviation,
-    .encapsulated-kpi-tile .pre_deviation,
-    .ks_dashboarditem_id .pre_deviation,
-    .ks_dashboard_kpi .target_deviation,
-    .encapsulated-kpi-tile .target_deviation,
-    .ks_dashboarditem_id .target_deviation {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        color: #000000 !important;
-        font-size: 0.68rem !important;
-        text-align: center !important;
-    }
-
-    /* Override the inline rgba(0,0,0,0.61) "vs Prev" grey label to black */
-    .ks_dashboard_kpi .var-prev div,
-    .encapsulated-kpi-tile .var-prev div {
-        color: #000000 !important;
-    }
-
-    /* ── Flex Container (count + vs-prev side-by-side) ───────────────────────── */
-    .ks_dashboard_kpi .flex-container,
-    .encapsulated-kpi-tile .flex-container,
-    .ks_dashboarditem_id .flex-container {
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: center !important;
-        align-items: center !important;
-        gap: 8px !important;
-        flex-wrap: wrap !important;
-    }
-
-    /* ── Main Body Wrapper ───────────────────────────────────────────────────── */
-    .ks_dashboard_kpi .ks_dashboard_item_main_body_l5,
-    .encapsulated-kpi-tile .ks_dashboard_item_main_body_l5,
-    .ks_dashboarditem_id .ks_dashboard_item_main_body_l5 {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        width: 100% !important;
-    }
-
-    /* ── Hide UI-only Controls ───────────────────────────────────────────────── */
-    .ks_dashboard_item_header_l6,
-    .select-btn,
-    .ks_img_display,
-    .ks_dashboard_ninja_top_area,
-    .ks_dashboard_top_menu-new,
-    .screen-info,
-    .ks_dashboard_top_settings {
-        display: none !important;
+    /* Chart title */
+    .ks_chart_heading,
+    .ks_dashboard_item_heading,
+    .card-title {
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        color: #1a1a2e !important;
+        padding: 6px 8px 2px 8px !important;
     }
 }

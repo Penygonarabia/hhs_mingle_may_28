@@ -986,3 +986,77 @@ ul.nav li.dropdown:hover ul.dropdown-menu{ display: block; }
 
     /* ─── END KPI TILE PRINT FIX ──────────────────────────────────────────── */
 }
+
+/* ===================================================
+   RESPONSIVE LAYOUT — Dashboard Charts & KPI Cards
+   =================================================== */
+
+/* ---- Mobile (≤ 767px) ---- */
+@media (max-width: 767px) {
+    /* Header / filters stack vertically */
+    .ks_dashboard_ninja_header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 10px 8px;
+        margin-bottom: 12px;
+    }
+    .ks_dashboard_top_menu {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    .ks_dashboard_header_name {
+        font-size: 16px;
+        max-width: 100%;
+    }
+    /* KPI tiles: 2 per row on mobile */
+    .ks_dashboard_kpi_view,
+    .ks_dashboard_tile {
+        min-width: 45% !important;
+        font-size: 13px;
+    }
+    .ks_kpi_data_2 {
+        font-size: 18px;
+    }
+    /* Chart titles: keep consistent with full-width charts */
+    .ks_dashboard_item_chart_heading,
+    .ks_chart_heading {
+        font-size: 14px;
+    }
+    /* Ensure list view tables scroll horizontally */
+    .ks_list_view_table_div {
+        overflow-x: auto;
+    }
+}
+
+/* ---- Tablet (768px – 991px) ---- */
+@media (min-width: 768px) and (max-width: 991px) {
+    .ks_dashboard_ninja_header {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .ks_dashboard_header_name {
+        font-size: 18px;
+    }
+    .ks_dashboard_kpi_view,
+    .ks_dashboard_tile {
+        min-width: 30%;
+    }
+}
+
+/* ---- Large tablet / small desktop (992px – 1199px) ---- */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .ks_dashboard_ninja_header {
+        flex-wrap: wrap;
+    }
+}
+
+/* ---- Touch devices: ensure tap targets are usable ---- */
+@media (hover: none) and (pointer: coarse) {
+    .ks_dashboard_more_action,
+    .ks_dashboard_item_drill_up,
+    .ks_dashboard_item_button_container button {
+        min-height: 36px;
+        min-width: 36px;
+    }
+}

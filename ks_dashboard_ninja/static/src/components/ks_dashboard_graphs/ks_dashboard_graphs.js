@@ -451,6 +451,9 @@ export class Ksdashboardgraph extends Component{
                 }
                 domain = domains[index]
             }
+            if (item && item.name && item.name.toLowerCase().includes("status analysis on weekly basis") && index !== undefined) {
+                selectedItemName = "Week# " + (index + 1);
+            }
             if (item_data.max_sequnce != 0 && sequnce < item_data.max_sequnce) {
                 self._rpc("/web/dataset/call_kw/ks_dashboard_ninja.item/ks_fetch_drill_down_data",{
                     model: 'ks_dashboard_ninja.item',

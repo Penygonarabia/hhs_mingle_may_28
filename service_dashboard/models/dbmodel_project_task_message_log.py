@@ -2,6 +2,7 @@
 from odoo import models, fields, tools, api
 from lxml import etree
 
+
 class DbModelTaskMessageLogAnalysis(models.Model):
     _name = "dbmodel.task.message.log.analysis"
     _description = "DBM Task Message Log Analysis"
@@ -55,7 +56,8 @@ class DbModelTaskMessageLogAnalysis(models.Model):
     @api.model
     def _get_user_work_locations(self):
         self.env.cr.execute(
-            "SELECT work_center_location_id FROM res_users_work_center_location_rel WHERE res_users_id = %s" % (self.env.uid,)
+            "SELECT work_center_location_id FROM res_users_work_center_location_rel WHERE res_users_id = %s",
+            (self.env.uid,)
         )
         return [row[0] for row in self.env.cr.fetchall()]
 
@@ -95,7 +97,7 @@ class DbModelTaskMessageLogAnalysis(models.Model):
         domain = []
         for grp in my_groups:
             domain.append(('user_role.name', 'ilike', grp))
-            
+
         if (operator == '=' and value) or (operator == '!=' and not value):
             if len(domain) > 1:
                 return ['|'] * (len(domain) - 1) + domain
@@ -111,7 +113,7 @@ class DbModelTaskMessageLogAnalysis(models.Model):
         self.env.cr.execute(
             """
             SELECT DISTINCT
-                case 
+                case
                     when imd.name = 'group_parts_user' then 'Parts'
                     when imd.name = 'group_technical_allocation_user' then 'Coordinator'
                     when imd.name = 'group_call_center_user' then 'Call Center'
@@ -123,81 +125,57 @@ class DbModelTaskMessageLogAnalysis(models.Model):
             WHERE u.id = %s
               AND imd.module = 'machine_repair_management'
               AND imd.name IN ('group_parts_user', 'group_technical_allocation_user', 'group_call_center_user', 'group_job_card_mobile_user')
-            """ % (self.env.uid,)
+            """,
+            (self.env.uid,)
         )
         return [row[0] for row in self.env.cr.fetchall() if row[0]]
 
     @api.model
     def _get_default_tree_view(self):
         node = etree.Element("tree", string=self._description, action="action_open_task_list", type="object", create="0", edit="0", delete="0")
-        
-        # Get roles for current logged-in user
         roles = self._get_logged_user_role_groups()
-        
-        # Define specific field sets for each user group
         role_field_map = {
-            'Parts': [
-                'task_id', 'task_date', 'status_transition'
-            ],
+            'Parts': ['task_id', 'task_date', 'status_transition'],
             'Coordinator': [
-                'task_id', 'user_id', 'task_date', 'user_role', 'region', 'city', 
-                'status_transition', 'rtat_hours', 'technician_travel_hours', 
+                'task_id', 'user_id', 'task_date', 'user_role', 'region', 'city',
+                'status_transition', 'rtat_hours', 'technician_travel_hours',
                 'onhold_hours', 'total_worked_hours'
             ],
-            'Call Center': [
-                'task_id', 'task_date', 'region', 'city', 'status_transition'
-            ],
-            'Technician': [
-                'task_id', 'task_date', 'status_transition', 'technician_travel_hours', 'total_worked_hours'
-            ]
+            'Call Center': ['task_id', 'task_date', 'region', 'city', 'status_transition'],
+            'Technician': ['task_id', 'task_date', 'status_transition', 'technician_travel_hours', 'total_worked_hours'],
         }
-
-        # Combine fields if user has multiple roles
         visible_fields = set()
         for role in roles:
             if role in role_field_map:
                 visible_fields.update(role_field_map[role])
-
-        # Default fallback if no roles matched
         if not visible_fields:
             render_fields = [
-                "task_id", "user_id", "task_date", "user_role", "region", "city", 
+                "task_id", "user_id", "task_date", "user_role", "region", "city",
                 "status_transition", "rtat_hours"
             ]
         else:
-            # Maintain a specific order if possible, or just use the set
-            # For better UX, we can define a priority order or just use the model order
             all_possible_fields = [
-                "task_id", "user_id", "task_date", "user_role", "region", "city", 
-                "status_transition", "rtat_hours", "technician_travel_hours", 
+                "task_id", "user_id", "task_date", "user_role", "region", "city",
+                "status_transition", "rtat_hours", "technician_travel_hours",
                 "onhold_hours", "total_worked_hours"
             ]
             render_fields = [f for f in all_possible_fields if f in visible_fields]
-        
-        # Always append task_count and on_hold_task_count at the end of render_fields
         if not render_fields:
             render_fields = [
-                "task_id", "user_id", "task_date", "user_role", "region", "city", 
+                "task_id", "user_id", "task_date", "user_role", "region", "city",
                 "status_transition", "rtat_hours"
             ]
         render_fields.extend(['task_count', 'on_hold_task_count'])
-
         for field_name in render_fields:
             if field_name in self._fields:
                 field_node = etree.SubElement(node, "field", name=field_name)
-                # Disable hyperlink for all many2one except task_id
                 if field_name != "task_id" and self._fields[field_name].type == "many2one":
                     field_node.set("options", "{'no_open': True, 'no_create': True}")
-                # Apply float_time widget for hour fields
                 if field_name.endswith("_hours"):
                     field_node.set("widget", "float_time")
-                # Apply sum to task_count and on_hold_task_count
                 if field_name in ['task_count', 'on_hold_task_count']:
                     field_node.set("sum", "Total")
-        
-        # Add drilldown button at the end of the tree view
         etree.SubElement(node, "button", name="action_open_task_list", type="object", string="Drilldown", icon="fa-arrow-circle-right")
-        
         return node
 
     @api.model
@@ -219,96 +197,146 @@ class DbModelTaskMessageLogAnalysis(models.Model):
                 'target': 'current',
             }
 
-    def init(self):
-        tools.drop_view_if_exists(self.env.cr, self._table)
+    @api.model
+    def refresh_materialized(self):
+        """Refresh the materialized view. Called by an ir.cron on a schedule."""
         self.env.cr.execute(
-            """
-            CREATE OR REPLACE VIEW %s AS (
-                SELECT 
-                    row_number() OVER () AS id,
-                    /* user details */
-                    ru.id as user_id,
-                    ptml.author_id as partner_id,
-                    rp.name as user_name,
-                    ur.dashboard_rights_id as user_role,
-                    ru.dashboard_type_selection as dashboard_type,
-
-                    /* other master details */
-                    pt.active as active,
-                    wcr.work_center_group_id as region,
-                    um.work_center_location_id as city,
-
-                    /* task details */
-                    ptml.res_id as task_id,
-                    pt.name as task_description,
-                    pt.write_uid as write_uid,
-                    LPAD(FLOOR(COALESCE(pt.rtat_hours, 0) / 3600)::text, 2, '0') || ':' || LPAD(FLOOR(MOD(COALESCE(pt.rtat_hours, 0)::numeric, 3600) / 60)::text, 2, '0') as rtat_hours,
-                    ptml.old_value as ptml_initial_taskstatus,
-                    ptml.new_value as ptml_final_taskstatus,
-                    ptml.date as task_date,
-
-
-                    /* new analysis */
-                    COALESCE(ptml.old_value || ' >> ' || ptml.new_value, ptml.new_value) as status_transition,
-
-                    /* Safe Float Casting Helper Logic */
-                    COALESCE(CASE WHEN pt.technician_travel_hours::text ~ ':' THEN (NULLIF(split_part(pt.technician_travel_hours::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.technician_travel_hours::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.technician_travel_hours::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS technician_travel_hours,
-                    COALESCE(CASE WHEN pt.technician_travel_hours_min::text ~ ':' THEN (NULLIF(split_part(pt.technician_travel_hours_min::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.technician_travel_hours_min::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.technician_travel_hours_min::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS technician_travel_hours_min,
-                    COALESCE(CASE WHEN pt.onhold_hours::text ~ ':' THEN (NULLIF(split_part(pt.onhold_hours::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.onhold_hours::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.onhold_hours::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS onhold_hours,
-                    COALESCE(CASE WHEN pt.onhold_hours_min::text ~ ':' THEN (NULLIF(split_part(pt.onhold_hours_min::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.onhold_hours_min::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.onhold_hours_min::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS onhold_hours_min,
-                    COALESCE(CASE WHEN pt.cstneedquote_hours::text ~ ':' THEN (NULLIF(split_part(pt.cstneedquote_hours::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.cstneedquote_hours::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.cstneedquote_hours::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS cstneedquote_hours,
-                    COALESCE(CASE WHEN pt.cstneedquote_hours_min::text ~ ':' THEN (NULLIF(split_part(pt.cstneedquote_hours_min::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.cstneedquote_hours_min::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.cstneedquote_hours_min::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS cstneedquote_hours_min,
-                    COALESCE(CASE WHEN pt.sv_worked_hours::text ~ ':' THEN (NULLIF(split_part(pt.sv_worked_hours::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.sv_worked_hours::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.sv_worked_hours::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS sv_worked_hours,
-                    COALESCE(CASE WHEN pt.sv_worked_hours_min::text ~ ':' THEN (NULLIF(split_part(pt.sv_worked_hours_min::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.sv_worked_hours_min::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.sv_worked_hours_min::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS sv_worked_hours_min,
-                    COALESCE(CASE WHEN pt.sv_worked_withhold_hours::text ~ ':' THEN (NULLIF(split_part(pt.sv_worked_withhold_hours::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.sv_worked_withhold_hours::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.sv_worked_withhold_hours::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS sv_worked_withhold_hours,
-                    COALESCE(CASE WHEN pt.sv_worked_withhold_hours_min::text ~ ':' THEN (NULLIF(split_part(pt.sv_worked_withhold_hours_min::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.sv_worked_withhold_hours_min::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.sv_worked_withhold_hours_min::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS sv_worked_withhold_hours_min,
-                    COALESCE(CASE WHEN pt.sv_worked_hours2::text ~ ':' THEN (NULLIF(split_part(pt.sv_worked_hours2::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.sv_worked_hours2::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.sv_worked_hours2::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS sv_worked_hours2,
-                    COALESCE(CASE WHEN pt.sv_worked_hours2_min::text ~ ':' THEN (NULLIF(split_part(pt.sv_worked_hours2_min::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.sv_worked_hours2_min::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.sv_worked_hours2_min::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS sv_worked_hours2_min,
-                    COALESCE(CASE WHEN pt.total_worked_hours::text ~ ':' THEN (NULLIF(split_part(pt.total_worked_hours::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.total_worked_hours::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.total_worked_hours::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS total_worked_hours,
-                    COALESCE(CASE WHEN pt.total_worked_hours_min::text ~ ':' THEN (NULLIF(split_part(pt.total_worked_hours_min::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.total_worked_hours_min::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.total_worked_hours_min::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS total_worked_hours_min,
-                    COALESCE(CASE WHEN pt.expected_completion_mins::text ~ ':' THEN (NULLIF(split_part(pt.expected_completion_mins::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.expected_completion_mins::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.expected_completion_mins::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS expected_completion_mins,
-                    COALESCE(CASE WHEN pt.expected_completion_hours::text ~ ':' THEN (NULLIF(split_part(pt.expected_completion_hours::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.expected_completion_hours::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.expected_completion_hours::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS expected_completion_hours,
-                    COALESCE(CASE WHEN pt.expected_completion_hours_min::text ~ ':' THEN (NULLIF(split_part(pt.expected_completion_hours_min::text, ':', 1), '')::numeric + COALESCE(NULLIF(split_part(pt.expected_completion_hours_min::text, ':', 2), ''), '0')::numeric / 60.0)::float ELSE NULLIF(REGEXP_REPLACE(pt.expected_completion_hours_min::text, '[^0-9.]', '', 'g'), '')::float END, 0) AS expected_completion_hours_min,
-                    1 AS task_count,
-                    CASE WHEN ptml.new_value ILIKE '%%hold%%' OR ptml.new_value ILIKE '%%Hold%%' THEN 1 ELSE 0 END AS on_hold_task_count
-                FROM 
-                    project_task_message_log ptml
-                    INNER JOIN project_task pt
-                        ON pt.id = ptml.res_id
-                        AND pt.active = true
-                    LEFT JOIN res_partner rp
-                        ON rp.id = ptml.author_id
-                    LEFT JOIN res_users ru
-                        ON ru.partner_id = rp.id
-
-                    /* User Roles (NO duplication) */
-                    LEFT JOIN (
-                        SELECT DISTINCT ON (user_id)
-                            dashboard_rights_id,
-                            user_id
-                        FROM user_dashboard_rights_rel
-                    ) ur ON ur.user_id = ru.id
-					
-                    /* Region mapping (NO duplication) */
-                    LEFT JOIN (
-                        SELECT DISTINCT ON (user_id)
-                            work_center_group_id,
-                            user_id
-                        FROM user_work_center_group_rel
-                    ) wcr ON wcr.user_id = ru.id
- 
- 					/* City mapping (NO duplication) */
-                    LEFT JOIN (
-                        SELECT DISTINCT ON (work_center_location_id)
-                            work_center_location_id,
-                            res_users_id
-                        FROM res_users_work_center_location_rel
-                    ) um 
-                        ON pt.work_center_id = um.work_center_location_id
-                ORDER BY
-                    ptml.res_id,
-                    ptml.date
-            )
-            """
-            % (self._table,)
+            "REFRESH MATERIALIZED VIEW CONCURRENTLY dbmodel_task_message_log_analysis"
         )
+
+    def init(self):
+        cr = self.env.cr
+        # The view is a MATERIALIZED VIEW so dashboard queries hit indexed storage
+        # instead of recomputing 100k+ rows from mail_message and mail_tracking_value
+        # on every chart load. An ir.cron refreshes it on a schedule.
+        # Drop in either form — relkind may be 'v' (first install) or 'm' (re-run)
+        cr.execute("""
+            DO $$
+            DECLARE r record;
+            BEGIN
+                SELECT relkind INTO r FROM pg_class WHERE relname = 'dbmodel_task_message_log_analysis';
+                IF FOUND THEN
+                    IF r.relkind = 'm' THEN
+                        EXECUTE 'DROP MATERIALIZED VIEW dbmodel_task_message_log_analysis CASCADE';
+                    ELSE
+                        EXECUTE 'DROP VIEW dbmodel_task_message_log_analysis CASCADE';
+                    END IF;
+                END IF;
+            END $$;
+        """)
+
+        cr.execute("""
+            CREATE OR REPLACE FUNCTION _safe_hours(v anyelement) RETURNS float
+            LANGUAGE plpgsql IMMUTABLE AS $func$
+            DECLARE
+                s text := v::text;
+            BEGIN
+                IF s IS NULL OR s = '' THEN RETURN 0; END IF;
+                IF s ~ '^[0-9]+ days, [0-9]+:[0-9]+' THEN
+                    RETURN split_part(s, ' days, ', 1)::float * 24
+                         + split_part(split_part(s, ' days, ', 2), ':', 1)::float
+                         + split_part(split_part(s, ' days, ', 2), ':', 2)::float / 60.0;
+                END IF;
+                IF s ~ '^-?[0-9]+:[0-9]+$' THEN
+                    RETURN split_part(s, ':', 1)::float
+                         + split_part(s, ':', 2)::float / 60.0;
+                END IF;
+                IF s ~ '^-?[0-9]+(\\.[0-9]+)?$' THEN
+                    RETURN s::float;
+                END IF;
+                RETURN 0;
+            EXCEPTION WHEN others THEN
+                RETURN 0;
+            END;
+            $func$
+        """)
+
+        cr.execute("""
+            CREATE MATERIALIZED VIEW dbmodel_task_message_log_analysis AS
+            WITH src AS (
+                (SELECT DISTINCT ON (mm.res_id)
+                    (mm.id * 2) AS ptml_id,
+                    mm.create_date AS ptml_date,
+                    mm.author_id AS ptml_author_id,
+                    NULL::text AS ptml_old_value,
+                    'New'::text AS ptml_new_value,
+                    mm.res_id AS ptml_res_id
+                FROM mail_message mm
+                WHERE mm.model = 'project.task'
+                ORDER BY mm.res_id, mm.create_date ASC)
+                UNION ALL
+                SELECT
+                    (log.id * 2 + 1) AS ptml_id,
+                    log.create_date AS ptml_date,
+                    mm.author_id AS ptml_author_id,
+                    COALESCE(log.old_value_char, log.old_value_text, log.old_value_datetime::text,
+                             CAST(log.old_value_integer AS text), CAST(log.old_value_float AS text)) AS ptml_old_value,
+                    COALESCE(log.new_value_char, log.new_value_text, log.new_value_datetime::text,
+                             CAST(log.new_value_integer AS text), CAST(log.new_value_float AS text)) AS ptml_new_value,
+                    mm.res_id AS ptml_res_id
+                FROM mail_tracking_value log
+                JOIN mail_message mm ON mm.id = log.mail_message_id
+                JOIN ir_model_fields ff ON ff.id = log.field_id
+                WHERE mm.model = 'project.task'
+                  AND ff.name = 'job_state'
+                  AND (COALESCE(log.old_value_char, log.old_value_text, log.old_value_datetime::text,
+                                CAST(log.old_value_integer AS text), CAST(log.old_value_float AS text))
+                       IS DISTINCT FROM
+                       COALESCE(log.new_value_char, log.new_value_text, log.new_value_datetime::text,
+                                CAST(log.new_value_integer AS text), CAST(log.new_value_float AS text)))
+            )
+            SELECT
+                src.ptml_id AS id,
+                ru.id as user_id,
+                src.ptml_author_id as partner_id,
+                rp.name as user_name,
+                ur.dashboard_rights_id as user_role,
+                ru.dashboard_type_selection as dashboard_type,
+                pt.active as active,
+                wcr.work_center_group_id as region,
+                um.work_center_location_id as city,
+                src.ptml_res_id as task_id,
+                pt.name as task_description,
+                pt.write_uid as write_uid,
+                LPAD(FLOOR(COALESCE(pt.rtat_hours, 0) / 3600)::text, 2, '0') || ':' ||
+                LPAD(FLOOR(MOD(COALESCE(pt.rtat_hours, 0)::numeric, 3600) / 60)::text, 2, '0') as rtat_hours,
+                src.ptml_old_value as ptml_initial_taskstatus,
+                src.ptml_new_value as ptml_final_taskstatus,
+                src.ptml_date as task_date,
+                COALESCE(src.ptml_old_value || ' >> ' || src.ptml_new_value, src.ptml_new_value) as status_transition,
+                _safe_hours(pt.technician_travel_hours) AS technician_travel_hours,
+                _safe_hours(pt.technician_travel_hours_min) AS technician_travel_hours_min,
+                _safe_hours(pt.onhold_hours) AS onhold_hours,
+                _safe_hours(pt.onhold_hours_min) AS onhold_hours_min,
+                _safe_hours(pt.cstneedquote_hours) AS cstneedquote_hours,
+                _safe_hours(pt.cstneedquote_hours_min) AS cstneedquote_hours_min,
+                _safe_hours(pt.sv_worked_hours) AS sv_worked_hours,
+                _safe_hours(pt.sv_worked_hours_min) AS sv_worked_hours_min,
+                _safe_hours(pt.sv_worked_withhold_hours) AS sv_worked_withhold_hours,
+                _safe_hours(pt.sv_worked_withhold_hours_min) AS sv_worked_withhold_hours_min,
+                _safe_hours(pt.sv_worked_hours2) AS sv_worked_hours2,
+                _safe_hours(pt.sv_worked_hours2_min) AS sv_worked_hours2_min,
+                _safe_hours(pt.total_worked_hours) AS total_worked_hours,
+                _safe_hours(pt.total_worked_hours_min) AS total_worked_hours_min,
+                _safe_hours(pt.expected_completion_mins) AS expected_completion_mins,
+                _safe_hours(pt.expected_completion_hours) AS expected_completion_hours,
+                _safe_hours(pt.expected_completion_hours_min) AS expected_completion_hours_min,
+                1 AS task_count,
+                CASE WHEN src.ptml_new_value ILIKE '%%hold%%' THEN 1 ELSE 0 END AS on_hold_task_count
+            FROM src
+            INNER JOIN project_task pt ON pt.id = src.ptml_res_id AND pt.active = true
+            LEFT JOIN res_partner rp ON rp.id = src.ptml_author_id
+            LEFT JOIN res_users ru ON ru.partner_id = rp.id
+            LEFT JOIN (SELECT DISTINCT ON (user_id) dashboard_rights_id, user_id FROM user_dashboard_rights_rel) ur ON ur.user_id = ru.id
+            LEFT JOIN (SELECT DISTINCT ON (user_id) work_center_group_id, user_id FROM user_work_center_group_rel) wcr ON wcr.user_id = ru.id
+            LEFT JOIN (SELECT DISTINCT ON (work_center_location_id) work_center_location_id, res_users_id FROM res_users_work_center_location_rel) um ON pt.work_center_id = um.work_center_location_id
+            WITH DATA
+        """)
+
+        cr.execute("CREATE UNIQUE INDEX IF NOT EXISTS dbmodel_tml_analysis_id_idx ON dbmodel_task_message_log_analysis (id)")
+        cr.execute("CREATE INDEX IF NOT EXISTS dbmodel_tml_analysis_user_id_idx ON dbmodel_task_message_log_analysis (user_id)")
+        cr.execute("CREATE INDEX IF NOT EXISTS dbmodel_tml_analysis_status_idx ON dbmodel_task_message_log_analysis (ptml_final_taskstatus)")
+        cr.execute("CREATE INDEX IF NOT EXISTS dbmodel_tml_analysis_user_status_idx ON dbmodel_task_message_log_analysis (user_id, ptml_final_taskstatus)")
+        cr.execute("CREATE INDEX IF NOT EXISTS dbmodel_tml_analysis_task_id_idx ON dbmodel_task_message_log_analysis (task_id)")
+        cr.execute("CREATE INDEX IF NOT EXISTS dbmodel_tml_analysis_task_date_idx ON dbmodel_task_message_log_analysis (task_date)")
+        cr.execute("ANALYZE dbmodel_task_message_log_analysis")

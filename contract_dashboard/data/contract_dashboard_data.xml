@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Contract Dashboards parent menu under KS Dashboard root -->
+        <menuitem id="contract_dashboards_menu_root"
+                  name="Contract Dashboards"
+                  parent="ks_dashboard_ninja.board_menu_root"
+                  sequence="18"/>
+    </data>
+</odoo>

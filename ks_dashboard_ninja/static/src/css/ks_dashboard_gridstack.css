@@ -29,8 +29,64 @@
 
 
 .grid-stack > .grid-stack-item > .grid-stack-item-content {
-
+    overflow: hidden;
 }
 
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+
+/* Narrow viewports (≤ 991px): full-width stacked cards in same visual order */
+@media (max-width: 991px) {
+    .grid-stack {
+        height: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 20px;
+        padding: 8px 4px;
+    }
+    .grid-stack > .grid-stack-item {
+        position: relative !important;
+        width: 100% !important;
+        left: 0 !important;
+        top: auto !important;
+        transform: none !important;
+        margin-bottom: 0;
+        min-height: 280px;
+        /* Preserve full-screen visual order: rows top→bottom (gs-y), then columns left→right (gs-x) */
+        order: attr(gs-y number, 0);
+    }
+    /* Tie-breaker for items on the same row — keeps left-to-right order */
+    .grid-stack > .grid-stack-item[gs-x="0"]  { order: calc(attr(gs-y number, 0) * 100 + 0); }
+    .grid-stack > .grid-stack-item[gs-x="1"]  { order: calc(attr(gs-y number, 0) * 100 + 1); }
+    .grid-stack > .grid-stack-item[gs-x="2"]  { order: calc(attr(gs-y number, 0) * 100 + 2); }
+    .grid-stack > .grid-stack-item[gs-x="3"]  { order: calc(attr(gs-y number, 0) * 100 + 3); }
+    .grid-stack > .grid-stack-item[gs-x="4"]  { order: calc(attr(gs-y number, 0) * 100 + 4); }
+    .grid-stack > .grid-stack-item[gs-x="5"]  { order: calc(attr(gs-y number, 0) * 100 + 5); }
+    .grid-stack > .grid-stack-item[gs-x="6"]  { order: calc(attr(gs-y number, 0) * 100 + 6); }
+    .grid-stack > .grid-stack-item[gs-x="7"]  { order: calc(attr(gs-y number, 0) * 100 + 7); }
+    .grid-stack > .grid-stack-item[gs-x="8"]  { order: calc(attr(gs-y number, 0) * 100 + 8); }
+    .grid-stack > .grid-stack-item[gs-x="9"]  { order: calc(attr(gs-y number, 0) * 100 + 9); }
+    .grid-stack > .grid-stack-item[gs-x="10"] { order: calc(attr(gs-y number, 0) * 100 + 10); }
+    .grid-stack > .grid-stack-item[gs-x="11"] { order: calc(attr(gs-y number, 0) * 100 + 11); }
+    .grid-stack > .grid-stack-item > .grid-stack-item-content {
+        position: relative !important;
+        inset: auto !important;
+        width: 100% !important;
+        height: 280px !important;
+    }
+    .ks_o_graph_svg_container {
+        height: calc(100% - 25px);
+        width: 100%;
+    }
+    .ksChartTitle {
+        font-size: 12px;
+    }
+}
+
+/* Small desktop (1200px – 1440px) */
+@media (min-width: 1200px) and (max-width: 1440px) {
+    .grid-stack > .grid-stack-item > .grid-stack-item-content {
+        min-height: 200px;
+    }
+}
 
 /*rtl:end:ignore*/

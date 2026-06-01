@@ -1396,8 +1396,12 @@ body.ks_body_class {
 }
 
 .ks_body_class .ks_chart_heading {
-    width: 75% !important;
+    width: 100% !important;
     color: var(--color-black);
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    word-break: break-word;
 }
 
 // date-filter 

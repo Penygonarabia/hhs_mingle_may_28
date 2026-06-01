@@ -16,7 +16,9 @@ export function ks_render_graphs(
       "Employee Performance Analysis - Estimated vs Actual Hours",
       "Region Wise - RTAT (Avg)",
       "Technician Jobs - RTAT AVG",
-      "Technician Travel Hours"
+      "Technician Travel Hours",
+      "Waiting period from quotation to parts ready state",
+      "Waiting period from On hold to parts ready state"
     ].includes(item.name);
     const ksItemNameLower = (item.name || "").toLowerCase();
     const isSalesCostAnalysis = item.ks_dashboard_name && 
@@ -42,6 +44,18 @@ export function ks_render_graphs(
     const chart_data = JSON.parse(item.ks_chart_data);
     var ks_labels = chart_data["labels"];
     var ks_data = chart_data.datasets;
+
+    // Responsive font-size helper — reads container width at each redraw
+    // amCharts 5 redraws automatically on resize, so adapters always get the current value
+    const ksGetFontSz = (base) => {
+      const w = (graph_render && graph_render.offsetWidth) || 400;
+      return Math.max(8, Math.round(base * Math.min(1.0, Math.max(0.65, w / 520))));
+    };
+    const ksSetTooltipFont = (tooltip, base) => {
+      if (tooltip && tooltip.label) {
+        tooltip.label.adapters.add("fontSize", () => ksGetFontSz(base || 12));
+      }
+    };
 
     let hasNegativeValues = false;
     if (ks_data) {
@@ -103,6 +117,9 @@ export function ks_render_graphs(
             labelVal = labelVal.replace(/\]/g, "]]");
           }
           data2["category"] = labelVal;
+          data2["ksDisplayLabel"] = (ksItemNameLower.includes("status analysis on weekly basis") && !item.isDrill)
+            ? "Week# " + (i + 1)
+            : labelVal;
           data.push(data2);
         }
 
@@ -236,8 +253,9 @@ export function ks_render_graphs(
               interactive: true,
               pointerEvents: "auto",
             });
+            xRenderer.labels.template.adapters.add("fontSize", () => ksGetFontSz(13));
 
-            if (ksItemNameLower.includes("status analysis on weekly basis")) {
+            if (ksItemNameLower.includes("status analysis on weekly basis") && !item.isDrill) {
               xRenderer.labels.template.adapters.add("text", function(text, target) {
                 let category = target.dataItem ? target.dataItem.get("category") : undefined;
                 if (!category) {
@@ -303,7 +321,7 @@ export function ks_render_graphs(
                 ksActualTooltip.label.on("text", function() {
                   ksActualTooltip.label.setRaw("fill", am5.color(0xffffff));
                 });
-                if (!ksItemNameLower.includes("status analysis on weekly basis")) {
+                if (!ksItemNameLower.includes("status analysis on weekly basis") || item.isDrill) {
                   ksActualTooltip.label.adapters.add("text", function(text) {
                     if (text && !text.includes("[#ffffff]")) {
                       return "[#ffffff]" + text + "[/]";
@@ -314,7 +332,7 @@ export function ks_render_graphs(
               }
             }
 
-            if (ksItemNameLower.includes("status analysis on weekly basis")) {
+            if (ksItemNameLower.includes("status analysis on weekly basis") && !item.isDrill) {
               let axisTooltip = xAxis.get("tooltip");
               if (axisTooltip) {
                 let labelTemplate = axisTooltip.label || axisTooltip.get("label");
@@ -352,6 +370,7 @@ export function ks_render_graphs(
             yAxis.get("renderer").labels.template.setAll({
               text: "{value}"
             });
+            yAxis.get("renderer").labels.template.adapters.add("fontSize", () => ksGetFontSz(13));
             if (isSalesCostAnalysis) {
               yAxis.get("renderer").labels.template.adapters.add("text", function(text, target) {
                 if (target.dataItem) {
@@ -384,19 +403,20 @@ export function ks_render_graphs(
                   pointerOrientation: "horizontal",
                   textAlign: "center",
                   centerX: am5.percent(96),
-                  labelText: `[#ffffff]{categoryX}, {name}: ${label_format_text}[/]`,
+                  labelText: `[#ffffff]{ksDisplayLabel}, {name}: ${label_format_text}[/]`,
                 });
                 tooltip.label.setAll({
                   direction: "rtl",
                   fill: am5.color(0xffffff),
                 });
                 ksForceTooltipTextWhite(tooltip);
+                ksSetTooltipFont(tooltip);
                 if (isSalesCostAnalysis) {
                   tooltip.label.adapters.add("text", function(text, target) {
                     if (target.dataItem) {
                       let val = target.dataItem.get("valueY");
                       if (typeof val === "number") {
-                        let cat = target.dataItem.get("categoryX") || "";
+                        let cat = (target.dataItem.dataContext && target.dataItem.dataContext.ksDisplayLabel) || target.dataItem.get("categoryX") || "";
                         let name = ks_data[k].label || "";
                         let formattedVal = (val / 1000).toFixed(1) + "k";
                         return `[#ffffff]${cat}, ${name}: ${formattedVal}[/]`;
@@ -424,27 +444,10 @@ export function ks_render_graphs(
                         } else {
                           timeStr = `${sign}${hrs}:${mins.toString().padStart(2, '0')}`;
                         }
-                        let cat = target.dataItem.get("categoryX") || "";
+                        let cat = (target.dataItem.dataContext && target.dataItem.dataContext.ksDisplayLabel) || target.dataItem.get("categoryX") || "";
                         let name = ks_data[k].label || "";
                         return `[#ffffff]${cat}, ${name}: ${timeStr}[/]`;
                       }
-                    }
-                    return text;
-                  });
-                }
-
-                if (ksItemNameLower.includes("status analysis on weekly basis")) {
-                  tooltip.label.adapters.add("text", function(text, target) {
-                    if (target.dataItem && Array.isArray(data)) {
-                      let val = target.dataItem.get("valueY");
-                      let catX = target.dataItem.get("categoryX") || "";
-                      let idx = data.findIndex(d => d && d.category === catX);
-                      let weekStr = catX;
-                      if (idx >= 0) {
-                        weekStr = "Week# " + (idx + 1);
-                      }
-                      let name = ks_data[k].label || "";
-                      return `[#ffffff]${weekStr}, ${name}: ${val}[/]`;
                     }
                     return text;
                   });
@@ -479,19 +482,20 @@ export function ks_render_graphs(
                   textAlign: "center",
                   centerX: am5.percent(96),
                   pointerOrientation: "horizontal",
-                  labelText: "[#ffffff]{categoryX}, {name}: {valueY}[/]",
+                  labelText: `[#ffffff]{ksDisplayLabel}, {name}: ${label_format_text}[/]`,
                 });
                 tooltip.label.setAll({
                   direction: "rtl",
                   fill: am5.color(0xffffff),
                 });
                 ksForceTooltipTextWhite(tooltip);
+                ksSetTooltipFont(tooltip);
                 if (isSalesCostAnalysis) {
                   tooltip.label.adapters.add("text", function(text, target) {
                     if (target.dataItem) {
                       let val = target.dataItem.get("valueY");
                       if (typeof val === "number") {
-                        let cat = target.dataItem.get("categoryX") || "";
+                        let cat = (target.dataItem.dataContext && target.dataItem.dataContext.ksDisplayLabel) || target.dataItem.get("categoryX") || "";
                         let name = ks_data[k].label || "";
                         let formattedVal = (val / 1000).toFixed(1) + "k";
                         return `[#ffffff]${cat}, ${name}: ${formattedVal}[/]`;
@@ -519,27 +523,10 @@ export function ks_render_graphs(
                         } else {
                           timeStr = `${sign}${hrs}:${mins.toString().padStart(2, '0')}`;
                         }
-                        let cat = target.dataItem.get("categoryX") || "";
+                        let cat = (target.dataItem.dataContext && target.dataItem.dataContext.ksDisplayLabel) || target.dataItem.get("categoryX") || "";
                         let name = ks_data[k].label || "";
                         return `[#ffffff]${cat}, ${name}: ${timeStr}[/]`;
                       }
-                    }
-                    return text;
-                  });
-                }
-
-                if (ksItemNameLower.includes("status analysis on weekly basis")) {
-                  tooltip.label.adapters.add("text", function(text, target) {
-                    if (target.dataItem && Array.isArray(data)) {
-                      let val = target.dataItem.get("valueY");
-                      let catX = target.dataItem.get("categoryX") || "";
-                      let idx = data.findIndex(d => d && d.category === catX);
-                      let weekStr = catX;
-                      if (idx >= 0) {
-                        weekStr = "Week# " + (idx + 1);
-                      }
-                      let name = ks_data[k].label || "";
-                      return `[#ffffff]${weekStr}, ${name}: ${val}[/]`;
                     }
                     return text;
                   });
@@ -569,13 +556,14 @@ export function ks_render_graphs(
                 var tooltip = am5.Tooltip.new(root, {
                   textAlign: "center",
                   centerX: am5.percent(96),
-                  labelText: `[#ffffff]${ks_data[k].label}: {valueY}[/]`,
+                  labelText: `[#ffffff]${ks_data[k].label}: ${isSalesCostAnalysis ? "{valueY.formatNumber('#.00')}" : "{valueY.formatNumber('#')}"}[/]`,
                 });
                 tooltip.label.setAll({
                   direction: "rtl",
                   fill: am5.color(0xffffff),
                 });
                 ksForceTooltipTextWhite(tooltip);
+                ksSetTooltipFont(tooltip);
 
                 var series = chart.series.push(
                   am5xy.ColumnSeries.new(root, {
@@ -628,19 +616,19 @@ export function ks_render_graphs(
                   stroke: am5.color(0xD6BBFB),
                 });
               }
-              if (series && item.name === "Month wise - Jobs Count") {
+              if (series && item.name === "Month wise - Jobs Count" && !item.isDrill) {
                 series.columns.template.setAll({
                   fill: am5.color(0x69a4c2),
                   stroke: am5.color(0x69a4c2),
                 });
               }
-              if (series && ksItemNameLower.includes("status analysis on weekly basis") && !ksItemNameLower.includes("not closed")) {
+              if (series && ksItemNameLower.includes("status analysis on weekly basis") && !ksItemNameLower.includes("not closed") && !item.isDrill) {
                 series.columns.template.setAll({
                   fill: am5.color(0xa2c973),
                   stroke: am5.color(0xa2c973),
                 });
               }
-              if (series && ksItemNameLower.includes("not closed status analysis on weekly basis")) {
+              if (series && ksItemNameLower.includes("not closed status analysis on weekly basis") && !item.isDrill) {
                 series.columns.template.setAll({
                   fill: am5.color(0xb873c9),
                   stroke: am5.color(0xb873c9),
@@ -684,6 +672,7 @@ export function ks_render_graphs(
                     paddingLeft: isFormatChart ? 8 : 0,
                     ...(isRtl && { direction: "rtl" }),
                   });
+                  labelSprite.adapters.add("fontSize", () => ksGetFontSz(13));
                   if (isSalesCostAnalysis) {
                     labelSprite.adapters.add("text", function(text, target) {
                       if (target.dataItem) {
@@ -742,12 +731,13 @@ export function ks_render_graphs(
                   textAlign: "center",
                   centerX: am5.percent(96),
                   pointerOrientation: "horizontal",
-                  labelText: "[#ffffff]{categoryX}, {name}: {valueY}[/]",
+                  labelText: `[#ffffff]{ksDisplayLabel}, {name}: ${label_format_text}[/]`,
                 });
                 tooltip.label.setAll({
                   direction: "rtl",
                   fill: am5.color(0xffffff),
                 });
+                ksSetTooltipFont(tooltip);
 
                 var series2 = chart.series.push(
                   am5xy.LineSeries.new(root, {
@@ -828,6 +818,7 @@ export function ks_render_graphs(
               interactive: true,
               pointerEvents: "auto",
             });
+            yRenderer.labels.template.adapters.add("fontSize", () => ksGetFontSz(13));
 
             yRenderer.labels.template.events.on("click", function (ev) {
               if (
@@ -880,6 +871,7 @@ export function ks_render_graphs(
             xAxis.get("renderer").labels.template.setAll({
               text: "{value}"
             });
+            xAxis.get("renderer").labels.template.adapters.add("fontSize", () => ksGetFontSz(13));
             if (isSalesCostAnalysis) {
               xAxis.get("renderer").labels.template.adapters.add("text", function(text, target) {
                 if (target.dataItem) {
@@ -896,13 +888,14 @@ export function ks_render_graphs(
                 textAlign: "center",
                 centerX: am5.percent(96),
                 pointerOrientation: "horizontal",
-                labelText: "[#ffffff]{categoryY}, {name}: {valueX}[/]",
+                labelText: `[#ffffff]{categoryY}, {name}: ${isSalesCostAnalysis ? "{valueX.formatNumber('#.00')}" : "{valueX.formatNumber('#')}"}[/]`,
               });
 
               tooltip.label.setAll({
                 direction: "rtl",
                 fill: am5.color(0xffffff),
               });
+              ksSetTooltipFont(tooltip);
               if (isSalesCostAnalysis) {
                 tooltip.label.adapters.add("text", function(text, target) {
                   if (target.dataItem) {
@@ -912,6 +905,33 @@ export function ks_render_graphs(
                       let name = ks_data[k].label || "";
                       let formattedVal = (val / 1000).toFixed(1) + "k";
                       return `[#ffffff]${cat}, ${name}: ${formattedVal}[/]`;
+                    }
+                  }
+                  return text;
+                });
+              }
+              if (isFormatChart) {
+                tooltip.label.adapters.add("text", function(text, target) {
+                  if (target.dataItem) {
+                    let val = target.dataItem.get("valueX");
+                    if (typeof val === "number") {
+                      let sign = val < 0 ? "-" : "";
+                      let absVal = Math.abs(val);
+                      let totalMins = Math.round(absVal * 60);
+                      let days = Math.floor(totalMins / (24 * 60));
+                      let remainMins = totalMins % (24 * 60);
+                      let hrs = Math.floor(remainMins / 60);
+                      let mins = remainMins % 60;
+                      let timeStr;
+                      if (days > 0) {
+                        let dayLabel = days === 1 ? "day" : "days";
+                        timeStr = `${sign}${days} ${dayLabel}, ${hrs}:${mins.toString().padStart(2, '0')}`;
+                      } else {
+                        timeStr = `${sign}${hrs}:${mins.toString().padStart(2, '0')}`;
+                      }
+                      let cat = target.dataItem.get("categoryY") || "";
+                      let name = ks_data[k].label || "";
+                      return `[#ffffff]${cat}, ${name}: ${timeStr}[/]`;
                     }
                   }
                   return text;
@@ -995,7 +1015,7 @@ export function ks_render_graphs(
                   });
                 }
               }
-              if (item.ks_show_data_value == true && series) {
+              if ((item.ks_show_data_value == true || isFormatChart) && series) {
                 let label_format_text = isSalesCostAnalysis ? "{valueX.formatNumber('#.00')}" : "{valueX.formatNumber('#')}";
                 series.bullets.push(function () {
                   let labelSprite = am5.Label.new(root, {
@@ -1007,12 +1027,35 @@ export function ks_render_graphs(
                     dx: 5,
                     ...(isRtl && { direction: "rtl" }),
                   });
+                  labelSprite.adapters.add("fontSize", () => ksGetFontSz(13));
                   if (isSalesCostAnalysis) {
                     labelSprite.adapters.add("text", function(text, target) {
                       if (target.dataItem) {
                         let val = target.dataItem.get("valueX");
                         if (typeof val === "number") {
                           return (val / 1000).toFixed(1) + "k";
+                        }
+                      }
+                      return text;
+                    });
+                  }
+                  if (isFormatChart) {
+                    labelSprite.adapters.add("text", function(text, target) {
+                      if (target.dataItem) {
+                        let val = target.dataItem.get("valueX");
+                        if (typeof val === "number") {
+                          let sign = val < 0 ? "-" : "";
+                          let absVal = Math.abs(val);
+                          let totalMins = Math.round(absVal * 60);
+                          let days = Math.floor(totalMins / (24 * 60));
+                          let remainMins = totalMins % (24 * 60);
+                          let hrs = Math.floor(remainMins / 60);
+                          let mins = remainMins % 60;
+                          if (days > 0) {
+                            let dayLabel = days === 1 ? "day" : "days";
+                            return `${sign}${days} ${dayLabel}, ${hrs}:${mins.toString().padStart(2, '0')}`;
+                          }
+                          return `${sign}${hrs}:${mins.toString().padStart(2, '0')}`;
                         }
                       }
                       return text;
@@ -1044,7 +1087,7 @@ export function ks_render_graphs(
               ) {
                 var lineSeries2Tooltip = am5.Tooltip.new(root, {
                   pointerOrientation: "horizontal",
-                  labelText: "[#ffffff]{categoryY}, {name}: {valueX}[/]",
+                  labelText: `[#ffffff]{categoryY}, {name}: ${isSalesCostAnalysis ? "{valueX.formatNumber('#.00')}" : "{valueX.formatNumber('#')}"}[/]`,
                 });
                 lineSeries2Tooltip.label.setAll({
                   fill: am5.color(0xffffff),
@@ -1117,8 +1160,9 @@ export function ks_render_graphs(
               centerX: am5.p100,
               paddingRight: 10,
             });
+            xRenderer.labels.template.adapters.add("fontSize", () => ksGetFontSz(13));
 
-            if (ksItemNameLower.includes("status analysis on weekly basis")) {
+            if (ksItemNameLower.includes("status analysis on weekly basis") && !item.isDrill) {
               xRenderer.labels.template.adapters.add("text", function(text, target) {
                 let category = target.dataItem ? target.dataItem.get("category") : undefined;
                 if (!category) {
@@ -1159,7 +1203,7 @@ export function ks_render_graphs(
                   ksActualTooltip2.label.on("text", function() {
                     ksActualTooltip2.label.setRaw("fill", am5.color(0xffffff));
                   });
-                  if (!ksItemNameLower.includes("status analysis on weekly basis")) {
+                  if (!ksItemNameLower.includes("status analysis on weekly basis") || item.isDrill) {
                     ksActualTooltip2.label.adapters.add("text", function(text) {
                       if (text && !text.includes("[#ffffff]")) {
                         return "[#ffffff]" + text + "[/]";
@@ -1170,7 +1214,7 @@ export function ks_render_graphs(
                 }
               }
 
-            if (ksItemNameLower.includes("status analysis on weekly basis")) {
+            if (ksItemNameLower.includes("status analysis on weekly basis") && !item.isDrill) {
               let axisTooltip = xAxis.get("tooltip");
               if (axisTooltip) {
                 let labelTemplate = axisTooltip.label || axisTooltip.get("label");
@@ -1212,12 +1256,13 @@ export function ks_render_graphs(
               var tooltip = am5.Tooltip.new(root, {
                 textAlign: "center",
                 centerX: am5.percent(96),
-                labelText: "[#ffffff][bold]{categoryX}[/]\n{name}: {valueY}[/]",
+                labelText: `[#ffffff][bold]{ksDisplayLabel}[/]\n{name}: ${isSalesCostAnalysis ? "{valueY.formatNumber('#.00')}" : "{valueY.formatNumber('#')}"}[/]`,
               });
               tooltip.label.setAll({
                 direction: "rtl",
                 fill: am5.color(0xffffff),
               });
+              ksSetTooltipFont(tooltip);
 
               var series = chart.series.push(
                 am5xy.LineSeries.new(root, {
@@ -1470,6 +1515,7 @@ export function ks_render_graphs(
                   direction: "rtl",
                   fill: am5.color(0xffffff),
                 });
+                ksSetTooltipFont(tooltip);
                 rec.slices.template.setAll({
                   tooltipText: "[#ffffff][bold]{category}[/]\n{name}: {value}[/]",
                   tooltip: tooltip,
@@ -1619,6 +1665,7 @@ export function ks_render_graphs(
                     direction: "rtl",
                     fill: am5.color(0xffffff),
                   });
+                  ksSetTooltipFont(tooltip);
                   series.columns.template.setAll({
                     width: am5.p100,
                     strokeOpacity: 0.1,
@@ -1658,6 +1705,7 @@ export function ks_render_graphs(
                   direction: "rtl",
                   fill: am5.color(0xffffff),
                 });
+                ksSetTooltipFont(tooltip);
 
                 series.columns.template.setAll({
                   tooltip: tooltip,
@@ -1697,6 +1745,7 @@ export function ks_render_graphs(
                   direction: "rtl",
                   fill: am5.color(0xffffff),
                 });
+                ksSetTooltipFont(tooltip);
 
                 series.columns.template.setAll({
                   width: am5.p100,
@@ -1721,12 +1770,13 @@ export function ks_render_graphs(
                 var tooltip = am5.Tooltip.new(root, {
                   textAlign: "center",
                   centerX: am5.percent(96),
-                  labelText: "[#ffffff]{valueY}[/]",
+                  labelText: `[#ffffff]${isSalesCostAnalysis ? "{valueY.formatNumber('#.00')}" : "{valueY.formatNumber('#')}"}[/]`,
                 });
                 tooltip.label.setAll({
                   direction: "rtl",
                   fill: am5.color(0xffffff),
                 });
+                ksSetTooltipFont(tooltip);
                 var series = chart.series.push(
                   am5radar.RadarLineSeries.new(root, {
                     name: `${ks_data[k].label}`,
@@ -1825,6 +1875,7 @@ export function ks_render_graphs(
               direction: "rtl",
               fill: am5.color(0xffffff),
             });
+            ksSetTooltipFont(tooltip);
 
             for (let k = 0; k < ks_data.length; k++) {
               var series = chart.series.push(

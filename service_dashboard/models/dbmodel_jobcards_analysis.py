@@ -245,14 +245,53 @@ class DbModelJobCards(models.Model):
         return node
 
     def init(self):
+        # Supporting indexes that make the analysis view much cheaper to scan/aggregate.
+        # The ir_property index is the big win — the view does product_id -> standard_price
+        # lookups on every job-card row, and ir_property.res_id is "product.product,<id>",
+        # so a plain res_id btree wouldn't be selective enough without this partial index.
+        self.env.cr.execute(
+            """
+            CREATE INDEX IF NOT EXISTS ir_property_standard_price_res_id_idx
+                ON ir_property (res_id)
+                WHERE type = 'float' AND name = 'standard_price';
+
+            CREATE INDEX IF NOT EXISTS product_lines_task_product_idx
+                ON product_lines (project_task_id, product_id);
+            """
+        )
+
         tools.drop_view_if_exists(self.env.cr, self._table)
         self.env.cr.execute(
             """
             CREATE OR REPLACE VIEW %s AS (
             /* Final query for custome module */
+            WITH user_role_map AS (
+                SELECT
+                    u.id AS uid,
+                    STRING_AGG(DISTINCT
+                        CASE
+                            WHEN imd.name = 'group_parts_user' THEN 'Parts'
+                            WHEN imd.name = 'group_technical_allocation_user' THEN 'Coordinator'
+                            WHEN imd.name = 'group_call_center_user' THEN 'Call Center'
+                            WHEN imd.name = 'group_job_card_mobile_user' THEN 'Technician'
+                            ELSE NULL
+                        END, ', '
+                    ) AS user_role
+                FROM res_users u
+                JOIN res_groups_users_rel rel ON rel.uid = u.id
+                JOIN ir_model_data imd ON imd.res_id = rel.gid
+                WHERE imd.module = 'machine_repair_management'
+                  AND imd.name IN (
+                        'group_parts_user',
+                        'group_technical_allocation_user',
+                        'group_call_center_user',
+                        'group_job_card_mobile_user'
+                    )
+                GROUP BY u.id
+            )
             SELECT
                 pt.id AS id,
-                row_number() OVER (ORDER BY pt.id) AS row_no,
+                pt.id AS row_no,
 
                 pt.id AS task_id,
                 pt.name AS task_name,
@@ -281,9 +320,9 @@ class DbModelJobCards(models.Model):
                 COALESCE(CASE WHEN pt.technician_travel_hours::text LIKE '%%:%%' THEN (split_part(pt.technician_travel_hours::text, ':', 1)::float + split_part(pt.technician_travel_hours::text, ':', 2)::float / 60.0) ELSE NULLIF(pt.technician_travel_hours::text, '')::float END, 0) AS technician_travel_hours,
                 COALESCE(CASE WHEN pt.technician_travel_hours_min::text LIKE '%%:%%' THEN (split_part(pt.technician_travel_hours_min::text, ':', 1)::float + split_part(pt.technician_travel_hours_min::text, ':', 2)::float / 60.0) ELSE NULLIF(pt.technician_travel_hours_min::text, '')::float END, 0) AS technician_travel_hours_min,
                 COALESCE(CASE WHEN pt.onhold_hours::text LIKE '%%:%%' THEN (split_part(pt.onhold_hours::text, ':', 1)::float + split_part(pt.onhold_hours::text, ':', 2)::float / 60.0) ELSE NULLIF(pt.onhold_hours::text, '')::float END, 0) AS onhold_hours,
-                COALESCE(CASE WHEN pt.onhold_hours_min::text LIKE '%%:%%' THEN (split_part(pt.onhold_hours_min::text, ':', 1)::float + split_part(pt.onhold_hours_min::text, ':', 2)::float / 60.0) ELSE NULLIF(pt.onhold_hours_min::text, '')::float END, 0) AS onhold_hours_min,
+                COALESCE(CASE WHEN pt.onhold_hours_min::text ~ '^\d+ days, -?\d+:-?\d+' THEN (split_part(pt.onhold_hours_min::text, ' days, ', 1)::float * 24 + split_part(split_part(pt.onhold_hours_min::text, ' days, ', 2), ':', 1)::float + split_part(split_part(pt.onhold_hours_min::text, ' days, ', 2), ':', 2)::float / 60.0) WHEN pt.onhold_hours_min::text LIKE '%%:%%' THEN (split_part(pt.onhold_hours_min::text, ':', 1)::float + split_part(pt.onhold_hours_min::text, ':', 2)::float / 60.0) ELSE NULLIF(pt.onhold_hours_min::text, '')::float END, 0) AS onhold_hours_min,
                 COALESCE(CASE WHEN pt.cstneedquote_hours::text LIKE '%%:%%' THEN (split_part(pt.cstneedquote_hours::text, ':', 1)::float + split_part(pt.cstneedquote_hours::text, ':', 2)::float / 60.0) ELSE NULLIF(pt.cstneedquote_hours::text, '')::float END, 0) AS cstneedquote_hours,
-                COALESCE(CASE WHEN pt.cstneedquote_hours_min::text LIKE '%%:%%' THEN (split_part(pt.cstneedquote_hours_min::text, ':', 1)::float + split_part(pt.cstneedquote_hours_min::text, ':', 2)::float / 60.0) ELSE NULLIF(pt.cstneedquote_hours_min::text, '')::float END, 0) AS cstneedquote_hours_min,
+                COALESCE(CASE WHEN pt.cstneedquote_hours_min::text ~ '^\d+ days, -?\d+:-?\d+' THEN (split_part(pt.cstneedquote_hours_min::text, ' days, ', 1)::float * 24 + split_part(split_part(pt.cstneedquote_hours_min::text, ' days, ', 2), ':', 1)::float + split_part(split_part(pt.cstneedquote_hours_min::text, ' days, ', 2), ':', 2)::float / 60.0) WHEN pt.cstneedquote_hours_min::text LIKE '%%:%%' THEN (split_part(pt.cstneedquote_hours_min::text, ':', 1)::float + split_part(pt.cstneedquote_hours_min::text, ':', 2)::float / 60.0) ELSE NULLIF(pt.cstneedquote_hours_min::text, '')::float END, 0) AS cstneedquote_hours_min,
                 COALESCE(CASE WHEN pt.sv_worked_hours::text LIKE '%%:%%' THEN (split_part(pt.sv_worked_hours::text, ':', 1)::float + split_part(pt.sv_worked_hours::text, ':', 2)::float / 60.0) ELSE NULLIF(pt.sv_worked_hours::text, '')::float END, 0) AS sv_worked_hours,
                 COALESCE(CASE WHEN pt.sv_worked_hours_min::text LIKE '%%:%%' THEN (split_part(pt.sv_worked_hours_min::text, ':', 1)::float + split_part(pt.sv_worked_hours_min::text, ':', 2)::float / 60.0) ELSE NULLIF(pt.sv_worked_hours_min::text, '')::float END, 0) AS sv_worked_hours_min,
                 COALESCE(CASE WHEN pt.sv_worked_withhold_hours::text LIKE '%%:%%' THEN (split_part(pt.sv_worked_withhold_hours::text, ':', 1)::float + split_part(pt.sv_worked_withhold_hours::text, ':', 2)::float / 60.0) ELSE NULLIF(pt.sv_worked_withhold_hours::text, '')::float END, 0) AS sv_worked_withhold_hours,
@@ -334,16 +373,14 @@ class DbModelJobCards(models.Model):
                 JOIN product_product pp 
                     ON pp.id = pl.product_id
 
-                LEFT JOIN (
-                    
-                    SELECT DISTINCT ON (split_part(res_id, ',', 2))
-                        split_part(res_id, ',', 2)::int AS product_id,
-                        value_float
+                LEFT JOIN LATERAL (
+                    SELECT value_float
                     FROM ir_property
                     WHERE type = 'float'
                       AND name = 'standard_price'
-                ) ip 
-                    ON ip.product_id = pl.product_id and pl.under_warranty_bool = true
+                      AND res_id = 'product.product,' || pl.product_id
+                    LIMIT 1
+                ) ip ON pl.under_warranty_bool = true
 
                 GROUP BY pl.project_task_id
 
@@ -362,44 +399,13 @@ class DbModelJobCards(models.Model):
             LEFT JOIN res_users ru 
                 ON ru.id = um.res_users_id
 
-            /* Ultra-fast Subquery matches for all logical user pathways! */
-            LEFT JOIN (
-                SELECT u.id as uid, STRING_AGG(DISTINCT
-                    case when imd.name = 'group_parts_user' then 'Parts'
-                         when imd.name = 'group_technical_allocation_user' then 'Coordinator'
-                         when imd.name = 'group_call_center_user' then 'Call Center'
-                         when imd.name = 'group_job_card_mobile_user' then 'Technician' else null
-                    end, ', ') as user_role
-                FROM res_users u JOIN res_groups_users_rel rel ON rel.uid = u.id JOIN ir_model_data imd ON imd.res_id = rel.gid
-                WHERE imd.module = 'machine_repair_management' GROUP BY u.id
-            ) ug_tech ON ug_tech.uid = pt.technician_id
-
-            LEFT JOIN (
-                SELECT u.id as uid, STRING_AGG(DISTINCT
-                    case when imd.name = 'group_parts_user' then 'Parts'
-                         when imd.name = 'group_technical_allocation_user' then 'Coordinator'
-                         when imd.name = 'group_call_center_user' then 'Call Center'
-                         when imd.name = 'group_job_card_mobile_user' then 'Technician' else null
-                    end, ', ') as user_role
-                FROM res_users u JOIN res_groups_users_rel rel ON rel.uid = u.id JOIN ir_model_data imd ON imd.res_id = rel.gid
-                WHERE imd.module = 'machine_repair_management' GROUP BY u.id
-            ) ug_ru ON ug_ru.uid = ru.id
-
-            LEFT JOIN (
-                SELECT u.id as uid, STRING_AGG(DISTINCT
-                    case when imd.name = 'group_parts_user' then 'Parts'
-                         when imd.name = 'group_technical_allocation_user' then 'Coordinator'
-                         when imd.name = 'group_call_center_user' then 'Call Center'
-                         when imd.name = 'group_job_card_mobile_user' then 'Technician' else null
-                    end, ', ') as user_role
-                FROM res_users u JOIN res_groups_users_rel rel ON rel.uid = u.id JOIN ir_model_data imd ON imd.res_id = rel.gid
-                WHERE imd.module = 'machine_repair_management' GROUP BY u.id
-            ) ug_create ON ug_create.uid = pt.create_uid
+            /* Role lookup — computed once in user_role_map CTE, joined three ways */
+            LEFT JOIN user_role_map ug_tech   ON ug_tech.uid   = pt.technician_id
+            LEFT JOIN user_role_map ug_ru     ON ug_ru.uid     = ru.id
+            LEFT JOIN user_role_map ug_create ON ug_create.uid = pt.create_uid
 
             WHERE
                 pt.active = true
-                
-            ORDER BY pt.id
             )
         """
             % (self._table,)
