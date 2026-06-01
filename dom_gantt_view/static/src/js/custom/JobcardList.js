@@ -55,6 +55,12 @@ export class JobcardList extends Component {
       availableCities: [],
       combinedCities: [],
       loadedJobcardStates: [],
+      workCenterList: [],
+      selectedWorkcenterId: null,
+      contractList: [],
+      selectedContractId: null,
+      project_related_amc_bool: false,
+      isAmcProject: false,
       project_id: null,
     });
 
@@ -71,6 +77,8 @@ export class JobcardList extends Component {
       await this.loadJobCards();
       await this.loadCities();
       await this.loadedJobcardStates();
+      // await this.loadWorkCenters();
+      await this.loadContracts();
       this.attachHighlightHandler();
     });
 
@@ -114,9 +122,17 @@ export class JobcardList extends Component {
         const projectId = payload?.detail?.project_id || false;
         console.log("📌 Updated this.state.project_id:", projectId);
         this.state.project_id = projectId;
+
+        // await this.loadContracts();
+
+        // await this.loadContracts();
         await this.loadJobCards();
+        await this.loadedJobcardStates(); // 👈 ADD THIS
       });
     }
+  }
+  get isAmcProject() {
+    return this.state.project_id === 4;
   }
   resetSelectedJobCard() {
     this.state.selectedJobCardId = null;
@@ -193,6 +209,23 @@ export class JobcardList extends Component {
       });
     }
   }
+
+  // async loadWorkCenters() {
+  //   // may 28/2026
+  //   try {
+  //     const workCenters = await this.orm.searchRead(
+  //       "work.center.location",
+  //       [],
+  //       ["id", "name"],
+  //     );
+
+  //     this.state.workCenterList = workCenters || [];
+  //     console.log("this.state.workCenterList", this.state.workCenterList);
+  //   } catch (err) {
+  //     this.state.workCenterList = [];
+  //     console.error("Error loading work centers:", err);
+  //   }
+  // }
 
   async loadCities() {
     try {
@@ -304,17 +337,34 @@ export class JobcardList extends Component {
       //   ["job_card_state_code", "in", ALLOWED_JOB_CARD_STATES],
       // ];
 
-      // Added on Vengatesh - mar-21-2026
+      // // Added on Vengatesh - mar-21-2026
+      // const domain = [
+      //   "&",
+      //   ["work_center_id", "in", work_center_ids],
+      //   // Added on Vengatesh - mar-23-2026 amc_project_id ,project_related_amc_bool
+      //   "&",
+      //   // ["amc_project_id", "=", this.state.project_id],
+      //   // "&",
+      //   // ["project_related_amc_bool", "=", true],
+      //   // "|",
+      //   ["job_card_state_code", "in", ALLOWED_JOB_CARD_STATES],
+      //   "&",
+      //   ["job_card_state_code", "=", "127"],
+      //   ["balance_amount_received_bool", "=", true],
+      // ];
       const domain = [
-        "&",
         ["work_center_id", "in", work_center_ids],
-        // Added on Vengatesh - mar-23-2026 amc_project_id ,project_related_amc_bool
+
+        "|",
+        ["project_id", "=", this.state.project_id],
+
         "&",
         ["amc_project_id", "=", this.state.project_id],
-        "&",
         ["project_related_amc_bool", "=", true],
+
         "|",
         ["job_card_state_code", "in", ALLOWED_JOB_CARD_STATES],
+
         "&",
         ["job_card_state_code", "=", "127"],
         ["balance_amount_received_bool", "=", true],
@@ -381,6 +431,219 @@ export class JobcardList extends Component {
       this.state.loadedJobcardStates = [];
     }
   }
+  // async loadContracts() {
+  //   try {
+  //     // ---------------------------------------------------
+  //     // DOMAIN (JOB CARDS SOURCE)
+  //     // ---------------------------------------------------
+  //     const domain = [
+  //       ["contract_id", "!=", false],
+
+  //       "|",
+  //       ["job_card_state_code", "in", ALLOWED_JOB_CARD_STATES],
+  //       "&",
+  //       ["job_card_state_code", "=", "127"],
+  //       ["balance_amount_received_bool", "=", true],
+  //     ];
+
+  //     console.log("DOMAIN:", domain);
+
+  //     // ---------------------------------------------------
+  //     // LOAD TASKS
+  //     // ---------------------------------------------------
+  //     const tasks = await this.orm.searchRead(
+  //       "project.task",
+  //       domain,
+  //       ["contract_id", "work_center_id"],
+  //       // {
+  //       //   limit: 500,
+  //       //   order: "id desc",
+  //       // },
+  //     );
+
+  //     console.log("TASKS:", tasks);
+
+  //     // ---------------------------------------------------
+  //     // UNIQUE CONTRACT IDS
+  //     // ---------------------------------------------------
+  //     const contractIds = [
+  //       ...new Set(
+  //         tasks.map((t) => t.contract_id && t.contract_id[0]).filter(Boolean),
+  //       ),
+  //     ];
+
+  //     console.log("CONTRACT IDS:", contractIds);
+  //     // console.log("workCenterIds", workCenterIds);
+
+  //     // ---------------------------------------------------
+  //     // NO CONTRACTS
+  //     // ---------------------------------------------------
+  //     if (!contractIds.length) {
+  //       this.state.contractList = [];
+  //       return;
+  //     }
+
+  //     // ---------------------------------------------------
+  //     // LOAD CONTRACTS (CORRECT MODEL)
+  //     // ---------------------------------------------------
+  //     const contracts = await this.orm.searchRead(
+  //       "subscription.contracts", // ✅ FIXED
+  //       [["id", "in", contractIds]],
+
+  //       ["id", "name", "work_center_id"],
+  //     );
+  //     console.log("contracts", contracts);
+  //     const workCenters = [
+  //       ...new Set(contracts.map((c) => c.work_center_id?.[0]).filter(Boolean)),
+  //     ];
+  //     console.log("contractWorkcenters", workCenters);
+  //     const contractWorkcenters = await this.orm.searchRead(
+  //       "work.center.location",
+  //       [["id", "in", workCenters]],
+  //       ["id", "name"],
+  //     );
+  //     console.log("contractWorkcenters", contractWorkcenters);
+
+  //     this.state.contractList = contracts || [];
+  //     this.state.workCenterList = contractWorkcenters || [];
+  //   } catch (err) {
+  //     console.error("ERROR LOAD CONTRACTS:", err);
+  //     this.state.contractList = [];
+  //     this.state.workCenterList;
+  //   }
+  // }
+  async loadContracts() {
+    try {
+      // const tasks = await this.orm.searchRead(
+      //   "project.task",
+      //   [],
+      //   ["id", "name", "user_ids", "contract_id"],
+      //   { limit: 20 },
+      // );
+
+      // console.log("VISIBLE TASKS:", tasks);
+      // ---------------------------------------------------
+      // JOB CARD DOMAIN
+      // ---------------------------------------------------
+      const domain = [
+        ["contract_id", "!=", false],
+        "|",
+        ["job_card_state_code", "in", ALLOWED_JOB_CARD_STATES],
+        "&",
+        ["job_card_state_code", "=", "127"],
+        ["balance_amount_received_bool", "=", true],
+      ];
+
+      console.log("Contract Load Domain:", domain);
+
+      // ---------------------------------------------------
+      // LOAD TASKS
+      // ---------------------------------------------------
+      const tasks = await this.orm.searchRead("project.task", domain, [
+        "id",
+        "name",
+        "contract_id",
+        "user_ids",
+        "work_center_id",
+      ]);
+
+      console.log("Loaded Tasks:", tasks);
+
+      // ---------------------------------------------------
+      // GET UNIQUE CONTRACT IDS
+      // ---------------------------------------------------
+      const contractIds = [
+        ...new Set(tasks.map((task) => task.contract_id?.[0]).filter(Boolean)),
+      ];
+
+      console.log("Contract IDs:", contractIds);
+
+      if (!contractIds.length) {
+        this.state.contractList = [];
+        this.state.workCenterList = [];
+        return;
+      }
+
+      // ---------------------------------------------------
+      // LOAD CONTRACTS
+      // ---------------------------------------------------
+      // const contracts = await this.orm.searchRead(
+      //   "subscription.contracts",
+      //   [["id", "in", contractIds]],
+      //   ["id", "name", "work_center_id"],
+      // );
+
+      // console.log("Loaded Contracts:", contracts);
+      // Build contract list from task data
+      const contracts = [
+        ...new Map(
+          tasks
+            .filter((t) => t.contract_id)
+            .map((t) => [
+              t.contract_id[0],
+              {
+                id: t.contract_id[0],
+                name: t.contract_id[1],
+              },
+            ]),
+        ).values(),
+      ];
+
+      console.log("Contracts From Tasks:", contracts);
+
+      // ---------------------------------------------------
+      // GET UNIQUE WORK CENTER IDS
+      // ---------------------------------------------------
+      // const workCenterIds = [
+      //   ...new Set(
+      //     contracts
+      //       .map((contract) => contract.work_center_id?.[0])
+      //       .filter(Boolean),
+      //   ),
+      // ];
+      const workCenters = [
+        ...new Map(
+          tasks
+            .filter((t) => t.work_center_id)
+            .map((t) => [
+              t.work_center_id[0],
+              {
+                id: t.work_center_id[0],
+                name: t.work_center_id[1],
+              },
+            ]),
+        ).values(),
+      ];
+
+      console.log("Work Center IDs:", workCenters);
+
+      // let workCenters = [];
+
+      // if (workCenterIds.length) {
+      //   workCenters = await this.orm.searchRead(
+      //     "work.center.location",
+      //     [["id", "in", workCenterIds]],
+      //     ["id", "name"],
+      //   );
+      // }
+
+      console.log("Loaded Work Centers:", workCenters);
+
+      // ---------------------------------------------------
+      // UPDATE STATE
+      // ---------------------------------------------------
+      this.state.contractList = contracts || [];
+      this.state.workCenterList = workCenters || [];
+
+      console.log("Final Contract List:", this.state.contractList);
+      console.log("Final Work Center List:", this.state.workCenterList);
+    } catch (error) {
+      console.error("Error Loading Contracts:", error);
+
+      this.state.contractList = [];
+      this.state.workCenterList = [];
+    }
+  }
 
   async onCityFilterChange(ev) {
     const cityId = ev.target.value || null;
@@ -391,6 +654,20 @@ export class JobcardList extends Component {
   async onStatusFilterChange(ev) {
     const statusCode = ev.target.value || null;
     this.state.selectedStatusCode = statusCode;
+
+    await this.loadJobCards();
+  }
+  async onWorkcenterFilterChange(ev) {
+    // May 28 2026
+    const wprkcenterId = ev.target.value || null;
+    this.state.selectedWorkcenterId = wprkcenterId;
+
+    await this.loadJobCards();
+  }
+  async onContractFilterChange(ev) {
+    const contractId = ev.target.value || null;
+
+    this.state.selectedContractId = contractId;
 
     await this.loadJobCards();
   }
@@ -472,6 +749,8 @@ export class JobcardList extends Component {
 
       // Added on Vengatesh - mar-21-2026
       const domain = [
+        // "&",
+        // ["contract_id", "!=", false],
         "|",
         ["job_card_state_code", "in", ALLOWED_JOB_CARD_STATES],
         "&",
@@ -499,6 +778,21 @@ export class JobcardList extends Component {
         ]);
       }
 
+      if (this.state.selectedWorkcenterId) {
+        domain.push([
+          "work_center_id",
+          "=",
+          parseInt(this.state.selectedWorkcenterId),
+        ]);
+      }
+      if (this.state.selectedContractId) {
+        domain.push([
+          "contract_id",
+          "=",
+          parseInt(this.state.selectedContractId),
+        ]);
+      }
+
       // ---------------------------------------------------------
       // 4. Get base jobCards (no project filter yet)
       // ---------------------------------------------------------
@@ -516,6 +810,9 @@ export class JobcardList extends Component {
         "project_id",
         "amc_project_id",
         "project_related_amc_bool",
+        "used_location_equipment",
+        "work_center_id",
+        "contract_id",
       ]);
 
       console.log("jobCards (Base):", jobCards);
@@ -525,23 +822,6 @@ export class JobcardList extends Component {
       // ---------------------------------------------------------
       const pid = this.state.project_id;
       let finalJobCards = jobCards;
-
-      //        if (pid) {
-      //            finalJobCards = jobCards.filter((card) => {
-      //                const projectId = card.project_id?.[0] || null;
-      //                const amcId = card.amc_project_id?.[0] || null;
-      //
-      //                // NORMAL project
-      //                const isNormalMatch =
-      //                    projectId === pid && !amcId;
-      //
-      //                // AMC project
-      //                const isAmcMatch =
-      //                    projectId !== null && amcId === pid;
-      //
-      //                return isNormalMatch || isAmcMatch;
-      //            });
-      //        }
       if (pid) {
         finalJobCards = jobCards.filter((card) => {
           const projectId = card.project_id?.[0] || null;
@@ -556,8 +836,42 @@ export class JobcardList extends Component {
           return isNormalMatch || isAmcMatch;
         });
       }
+      // // ---------------------------------------------------------
+      // // 5. Apply project/amc filter
+      // // ---------------------------------------------------------
+      // const pid = this.state.project_id;
+      // let finalJobCards = jobCards;
 
-      console.log("✔ Filtered jobCards:", finalJobCards);
+      // if (pid) {
+      //   finalJobCards = jobCards.filter((card) => {
+      //     const projectId = card.project_id?.[0] || null;
+
+      //     const amcId = card.amc_project_id?.[0] || null;
+
+      //     const isAmcBool = card.project_related_amc_bool || false;
+
+      //     // -------------------------------------------------
+      //     // NORMAL PROJECT
+      //     // Example:
+      //     // project_id = HHS
+      //     // -------------------------------------------------
+      //     const isNormalMatch =
+      //       (projectId === pid) === amcId && isAmcBool === false;
+
+      //     // -------------------------------------------------
+      //     // AMC PROJECT
+      //     // Example:
+      //     // project_id = HHS AMC Project
+      //     // amc_project_id = HHS
+      //     // project_related_amc_bool = true
+      //     // -------------------------------------------------
+      //     const isAmcMatch = isAmcBool && amcId === pid;
+
+      //     return isNormalMatch || isAmcMatch;
+      //   });
+      // }
+
+      // console.log("✔ Filtered jobCards:", finalJobCards);
 
       // ---------------------------------------------------------
       // 6. Map values (apply to FILTERED LIST)

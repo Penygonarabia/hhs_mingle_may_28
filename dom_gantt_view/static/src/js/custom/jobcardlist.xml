@@ -49,6 +49,18 @@
                             <span class="job-card-count">
                                 <t t-esc="state.jobCards.length"/>
                             </span>
+                            <t t-if="state.project_id === 4">
+                                <div class="mb-2 mt-2 d-flex align-items-center gap-2" t-att-style="'position: sticky; top: 0; z-index: 1000; border-radius: 4px; padding: 5px; box-shadow: 0 2px 6px rgba(6,83,51,0.15); background: ' + (state.selectedWorkcenterId ? 'linear-gradient(to right, #cafac0 0%, #1e5f22 50%, #0fa528ff 100%)' : 'linear-gradient(to right, #ffe082, #ffb300)')">
+                                    <select id="sworkcenterFilter" t-on-change="onWorkcenterFilterChange" class="form-select form-select" style="position: sticky; top: 0;width: 200px;background: white;">
+                                        <option value="">Work Centers</option>
+                                        <t t-foreach="state.workCenterList" t-as="wclist" t-key="wclist.id">
+                                            <option t-att-value="wclist.id">
+                                                <t t-esc="wclist.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+                            </t>
 
                             <div class="mb-2 mt-2 d-flex align-items-center gap-2" t-att-style="'position: sticky; top: 0; z-index: 1000; border-radius: 4px; padding: 5px; box-shadow: 0 2px 6px rgba(6,83,51,0.15); background: ' + (state.selectedCityId ? 'linear-gradient(to right, #cafac0 0%, #1e5f22 50%, #0fa528ff 100%)' : 'linear-gradient(to right, #ffe082, #ffb300)')">
                                 <select id="cityFilter" t-on-change="onCityFilterChange" class="form-select form-select" style="position: sticky; top: 0;width: 200px;background: white;">
@@ -61,7 +73,18 @@
                                     </t>
                                 </select>
                             </div>
-
+                            <t t-if="state.project_id === 4">
+                                <div class="mb-2 mt-2 d-flex align-items-center gap-2" t-att-style="'position: sticky; top: 0; z-index: 1000; border-radius: 4px; padding: 5px; box-shadow: 0 2px 6px rgba(6,83,51,0.15); background: ' + (state.selectedContractId ? 'linear-gradient(to right, #cafac0 0%, #1e5f22 50%, #0fa528ff 100%)' : 'linear-gradient(to right, #ffe082, #ffb300)')">
+                                    <select id="contractFilter" t-on-change="onContractFilterChange" class="form-select form-select" style="position: sticky; top: 0;width: 200px;background: white;">
+                                        <option value="">Contract No</option>
+                                        <t t-foreach="state.contractList" t-as="contract" t-key="contract.id">
+                                            <option t-att-value="contract.id">
+                                                <t t-esc="contract.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+                            </t>
                             <div class="mb-2 mt-2 d-flex align-items-center gap-2" t-att-style="'position: sticky; top: 0; z-index: 1000; border-radius: 4px; padding: 5px; box-shadow: 0 2px 6px rgba(6,83,51,0.15); background: ' + (state.selectedStatusCode ? 'linear-gradient(to right, #cafac0 0%, #1e5f22 50%, #0fa528ff 100%)' : 'linear-gradient(to right, #ffe082, #ffb300)')">
                                 <select id="statusFilter" t-on-change="onStatusFilterChange" class="form-select form-select" style="position: sticky; top: 0;width: 200px;background: white;">
                                     <option value="">JobCard Status</option>
@@ -72,7 +95,10 @@
                                     </t>
                                 </select>
                             </div>
+
                         </div>
+
+
 
 
 
@@ -151,10 +177,12 @@
                                             <t t-esc="card.customer_district_name"/>
                                         </div>
                                     </t>
-
-
-
-
+                                    <t t-if="card.used_location_equipment">
+                                        <div style="display: flex; align-items: center; gap: 5px;" title="District">
+                                            <i class="fa fa-compass" aria-hidden="true" style="color: white; background-color: #006400; border-radius: 50%; padding: 5px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;"></i>
+                                            <t t-esc="card.used_location_equipment"/>
+                                        </div>
+                                    </t>
                                 </div>
                             </div>
                         </t>
