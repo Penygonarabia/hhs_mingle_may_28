@@ -199,7 +199,7 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
         this.resources = await this.mapRecordsToResources();
         this.listProjectTasks();
         this.scrollToTime();
-        await this.loadHolidays();
+        //await this.loadHolidays();
 
         // Refresh calendar after data is ready
         if (this.fc.api) {
