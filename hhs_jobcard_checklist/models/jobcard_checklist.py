@@ -44,6 +44,13 @@ class JobCardChecklistLine(models.Model):
     answer_display = fields.Char(string='Answer', compute='_compute_answer_display', inverse='_inverse_answer_display', readonly=False)
     option_labels_data = fields.Char(string='Option Labels Data', compute='_compute_option_labels_data')
 
+    '''Code Added on June 01 2026 by Vijaya Bhaskar because some of the state to be disabled'''
+    job_card_state_code = fields.Char(
+        related='task_id.job_card_state_code',
+        string='Job Card State Code',
+        store=False,
+    )
+    
     def _compute_answer_display(self):
         for line in self:
             line.answer_display = ''
@@ -102,7 +109,13 @@ class JobCardChecklistPhoto(models.Model):
     caption = fields.Char(string='Caption')
     photo = fields.Binary(string='Photo', attachment=True)
     photo_filename = fields.Char(string='Filename')
-
+    
+    '''Code Added on June 01 2026 by Vijaya Bhaskar because some of the state to be disabled'''
+    job_card_state_code = fields.Char(
+        related='task_id.job_card_state_code',
+        string='Job Card State Code',
+        store=False,
+    )
 
 # =============================================================
 # Inherit project.task (Job Card) to add checklist tabs

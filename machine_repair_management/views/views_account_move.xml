@@ -15,8 +15,16 @@
                  <field name = "work_center_id" invisible = "1"/>
                  <field name = "work_center_group_id" invisible = "1"/>
                  <field name = "sales_person_user_id" invisible = "1"/>
-                 
+                 <field name = "qr_image" invisible = "1"/>
+                 <field name = "invoice_no" invisible = "1"/>
+                 <field name = "inv_pvs_xmlhas" invisible = "1"/>
+                 <field name = "inv_xmlhas" invisible = "1"/>
+                 <field name = "inv_qrcode_has" invisible = "1"/>
             
+            </xpath>
+            
+            <xpath expr = "//group[@id = 'header_left_group']/field[@name = 'partner_shipping_id']" position = "after" >
+            	<field name = "invoice_txt"  widget="text"/>
             </xpath>
     
 		</field>

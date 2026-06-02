@@ -294,7 +294,8 @@ class SubscriptionContracts(models.Model):
             self.contact_person = self.amc_quotation_id.crm_id.contact_name
              # self.mobile_no = self.amc_quotation_id.crm_id.mobile
             #code added on May 25 2026 by Vijaya Bhaskar client asked the country calling code 
-            self.mobile_no =f"+{self.amc_quotation_id.crm_id.country_id.phone_code if self.amc_quotation_id.crm_id and self.amc_quotation_id.crm_id.country_id else ''}-{self.amc_quotation_id.crm_id.phone if self.amc_quotation_id.crm_id else ''}"
+            # self.mobile_no =f"+{self.amc_quotation_id.crm_id.country_id.phone_code if self.amc_quotation_id.crm_id and self.amc_quotation_id.crm_id.country_id else ''}-{self.amc_quotation_id.crm_id.phone if self.amc_quotation_id.crm_id else ''}"
+            self.mobile_no = self.amc_quotation_id.crm_id.phone or False
             self.email = self.amc_quotation_id.crm_id.email_from
             self.job_position = self.amc_quotation_id.crm_id.function
             self.contract_reminder = 30

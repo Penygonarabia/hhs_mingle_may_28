@@ -497,6 +497,7 @@ workshop machine repair
         
         "datas/data_service_product_cron.xml",
         "views/dashboard_rights_views.xml",
+        "report/contract_invoice_report_template.xml",
     ],
     "installable": True,
     "application": True,

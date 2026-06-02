@@ -28,7 +28,9 @@ export class ChecklistPhotoUpload extends Component {
             <!-- Upload Button -->
             <div class="mt-2">
                 <label class="btn btn-outline-primary btn-sm"
-                       style="cursor: pointer; padding: 8px 20px; font-size: 0.9rem;"
+					t-att-style="isReadonly
+				              ? 'pointer-events:none;opacity:0.6;padding:8px 20px;font-size:0.9rem;'
+				              : 'cursor:pointer;padding:8px 20px;font-size:0.9rem;'"
                        t-on-click.stop="">
 
                     <i class="fa fa-camera me-1"/> Upload Photo
@@ -42,6 +44,7 @@ export class ChecklistPhotoUpload extends Component {
                     <input type="file"
                            style="display: none;"
                            t-on-change="(ev) => this.onFileChange(ev)"
+						   t-att-disabled="isReadonly"
                            t-on-click.stop=""/>
                 </label>
             </div>
@@ -59,8 +62,18 @@ export class ChecklistPhotoUpload extends Component {
             preview: null,
         });
     }
+	
+	get isReadonly() {
+	     return ["101", "102", "103","104","107","108","109","110","111","154","126"].includes(
+	        String(this.props.record.data.job_card_state_code || "")
+	    );
+	}
 
     async onFileChange(ev) {
+		
+		if (this.isReadonly) {
+		        return;
+		    }
         const file = ev.target.files[0];
         if (!file) return;
 

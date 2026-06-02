@@ -1,4 +1,25 @@
 from odoo import api, fields, models, _
+from odoo.exceptions import UserError
+import base64
+import qrcode
+from io import BytesIO
+from num2words import num2words
+
+
+def generate_qr_code(value):
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=20,
+        border=4,
+    )
+    qr.add_data(value)
+    qr.make(fit=True)
+    img = qr.make_image()
+    stream = BytesIO()
+    img.save(stream, format="PNG")
+    qr_img = base64.b64encode(stream.getvalue())
+    return qr_img
 
 class AccountMove(models.Model):
     
@@ -17,4 +38,30 @@ class AccountMove(models.Model):
     '''Code Added on May 26 2026 by Vijaya Bhaskar '''
     
     sales_person_user_id = fields.Many2one('res.users', string  = "SalesPerson")
+    
+    
+    qr_image = fields.Binary(string="QR Code", compute="_generate_qr_code")
+
+    invoice_no = fields.Char("Invoice No")
+
+    inv_pvs_xmlhas = fields.Char(string="Invoice Previous XML Has")
+    inv_xmlhas = fields.Char(string="Invoice XMl Has")
+    inv_qrcode_has = fields.Char(string="Invoice QR Code Has")
+    
+    '''code Added on Jun 02 2026 by Vijaya Bhaskar'''
+    invoice_txt = fields.Text(string = "Invoice Text")
+
+    def _generate_qr_code(self):
+        for record in self:
+            qr_value = (
+                f"Previous XML Hash: {record.inv_pvs_xmlhas or ''}\n"
+                f"XML Hash: {record.inv_xmlhas or ''}\n"
+                f"QR Code Hash: {record.inv_qrcode_has or ''}"
+            )
+
+            qr_img = generate_qr_code(qr_value)
+            record.qr_image = qr_img
+
+        return True
+
     

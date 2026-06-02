@@ -20,7 +20,9 @@ export class ChecklistAnswerField extends Component {
                                    style="pointer-events: none; width: 1.4rem; height: 1.4rem;"
                                    type="radio" 
                                    t-att-name="'answer_' + props.record.id"
-                                   t-att-checked="isSelected(opt.id)"/>
+                                   t-att-checked="isSelected(opt.id)"
+								   t-att-disabled="isReadonly"
+								   />
                             <label class="form-check-label ms-2 me-2 mb-0 fw-bold" 
                                    style="pointer-events: none;">
                                 <t t-out="opt.name"/>
@@ -35,7 +37,7 @@ export class ChecklistAnswerField extends Component {
                            class="o_input form-control" 
                            style="max-width: 150px;"
                            t-att-value="props.record.data.answer_numeric || ''"
-                           t-att-disabled="props.record.data.field_type === 'calculated'"
+                           t-att-disabled="isReadonly || props.record.data.field_type === 'calculated'"
                            t-on-change="(ev) => this.onNumericChange(ev)"
                            t-on-click.stop=""/>
                 </div>
@@ -45,6 +47,7 @@ export class ChecklistAnswerField extends Component {
                     <input type="text" 
                            class="o_input form-control w-100"
                            t-att-value="props.record.data.answer_text || ''"
+						   t-att-disabled="isReadonly"
                            t-on-change="(ev) => this.onTextChange(ev)"
                            t-on-click.stop=""/>
                 </div>
@@ -64,6 +67,12 @@ export class ChecklistAnswerField extends Component {
         if (typeof val === 'object' && val.id) return val.id;
         return val;
     }
+	
+	get isReadonly() {
+	    return ["101", "102", "103","104","107","108","109","110","111","154","126"].includes(
+	        String(this.props.record.data.job_card_state_code || "")
+	    );
+	}
 
     isSelected(optionId) {
         // Use local state first for instant feedback, fall back to record data
@@ -77,6 +86,10 @@ export class ChecklistAnswerField extends Component {
         // NEVER check props.readonly here — Kanban always passes readonly=true
         // but we still need to allow selection for checklist answers.
         
+		
+		if (this.isReadonly) {
+		       return;
+		   }
         // Instant UI feedback via local state
         this.state.selectedId = optionId;
 
@@ -106,6 +119,11 @@ export class ChecklistAnswerField extends Component {
     }
 
     async onNumericChange(ev) {
+		
+		if (this.isReadonly) {
+		       return;
+		   }
+		
         const value = parseFloat(ev.target.value) || 0;
         const record = this.props.record;
         try {
@@ -125,6 +143,9 @@ export class ChecklistAnswerField extends Component {
     }
 
     async onTextChange(ev) {
+		if (this.isReadonly) {
+		        return;
+		    }
         const value = ev.target.value || "";
         const record = this.props.record;
         try {
