@@ -6,9 +6,9 @@
         <field name="arch" type="xml">
             <form string="Customer Statement Account">
                 <group>
-<!--                    <group>-->
-<!--                        <field name="partner_id" options="{'no_create': True, 'no_open': True}"/>-->
-<!--                    </group>-->
+                    <group>
+                        <field name="customer_id" options="{'no_create': True, 'no_open': True}"/>
+                    </group>
                     <group>
                         <field name="from_date"/>
                         <field name="to_date"/>
@@ -23,7 +23,7 @@
     </record>
 
     <record id="action_loyalty_customer_statement_wizard" model="ir.actions.act_window">
-        <field name="name">Customer Statement Account</field>
+        <field name="name">Customer Loyalty Point Statement</field>
         <field name="res_model">loyalty.customer.statement.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
@@ -31,7 +31,7 @@
 
     <menuitem
             id="menu_loyalty_customer_statement_report_wizard"
-            name="Customer Statement Account"
+            name="Customer Loyalty Point Statement"
             parent="menu_loyalty_reports_root"
             action="action_loyalty_customer_statement_wizard"
             sequence="50"

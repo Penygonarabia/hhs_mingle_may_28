@@ -31,11 +31,12 @@ class LoyaltyAuditView(models.Model):
     transaction_date = fields.Datetime(string='Transaction Date', readonly=True)
 
     # Points Information
-    regular_points = fields.Float(string='Regular', readonly=True)
-    bonus_points = fields.Float(string='Bonus', readonly=True)
-    total_points = fields.Float(string='Total Points', readonly=True)
-    redemption_points = fields.Float(string='Redemption', readonly=True)
-    expired_points = fields.Float(string='Expired', readonly=True)
+    regular_points = fields.Integer(string='Regular', readonly=True)
+    bonus_points = fields.Integer(string='Bonus', readonly=True)
+    total_points = fields.Integer(string='Total Points', readonly=True)
+    redemption_points = fields.Integer(string='Redemption', readonly=True)
+    expired_points = fields.Integer(string='Expired', readonly=True)
+    net_total_points = fields.Integer(string='Total', readonly=True)
 
     # Adjustment Information
     reason_type = fields.Char(string='Reason Type', readonly=True)
@@ -124,6 +125,11 @@ class LoyaltyAuditView(models.Model):
                         WHEN h.clph_doctype = '97' THEN COALESCE(h.clph_regpoints, 0)
                         ELSE 0
                     END AS expired_points,
+                    (
+                        COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0) -
+                        (CASE WHEN h.clph_doctype = '98' THEN COALESCE(h.clph_regpoints, 0) ELSE 0 END) -
+                        (CASE WHEN h.clph_doctype = '97' THEN COALESCE(h.clph_regpoints, 0) ELSE 0 END)
+                    ) AS net_total_points,
                     h.clph_reasoncode AS reason_type,
                     CASE
                         WHEN h.clph_adjtype = '+' THEN 'Addition'

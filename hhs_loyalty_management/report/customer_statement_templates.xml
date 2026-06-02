@@ -48,7 +48,7 @@
                     <div class="page">
                         <div class="row">
                             <div class="col-12 text-center">
-                                <h2>Customer Statement Account</h2>
+                                <h2>Customer Loyalty Point Statement</h2>
                             </div>
                         </div>
 
@@ -101,8 +101,8 @@
                                 <table class="table table-sm">
                                     <thead style="background-color: #f2f2f2;">
                                         <tr>
-                                            <th>Transaction Date</th>
-                                            <th>Transaction Reference</th>
+                                            <th>Trn Date</th>
+                                            <th>Trn Reference</th>
                                             <th>Type</th>
                                             <th class="text-end">Regular Points</th>
                                             <th class="text-end">Bonus Points</th>
@@ -115,15 +115,15 @@
                                             <td colspan="3">Opening Balance</td>
                                             <td class="text-end">
                                                 <span t-esc="opening_balance['regular']"
-                                                      t-options='{"widget": "float", "precision": 2}'/>
+                                                      t-options='{"widget": "float", "precision": 0}'/>
                                             </td>
                                             <td class="text-end">
                                                 <span t-esc="opening_balance['bonus']"
-                                                      t-options='{"widget": "float", "precision": 2}'/>
+                                                      t-options='{"widget": "float", "precision": 0}'/>
                                             </td>
                                             <td class="text-end">
                                                 <span t-esc="opening_balance['total']"
-                                                      t-options='{"widget": "float", "precision": 2}'/>
+                                                      t-options='{"widget": "float", "precision": 0}'/>
                                             </td>
                                         </tr>
 
@@ -151,17 +151,17 @@
                                                 <td class="text-end">
                                                     <t t-if="line.transaction_type == 'redeem'">-</t>
                                                     <span t-field="line.regular_points"
-                                                          t-options='{"widget": "float", "precision": 2}'/>
+                                                          t-options='{"widget": "float", "precision": 0}'/>
                                                 </td>
                                                 <td class="text-end">
                                                     <t t-if="line.transaction_type == 'redeem'">-</t>
                                                     <span t-field="line.bonus_points"
-                                                          t-options='{"widget": "float", "precision": 2}'/>
+                                                          t-options='{"widget": "float", "precision": 0}'/>
                                                 </td>
                                                 <td class="text-end">
                                                     <t t-if="line.transaction_type == 'redeem'">-</t>
                                                     <span t-field="line.total_points"
-                                                          t-options='{"widget": "float", "precision": 2}'/>
+                                                          t-options='{"widget": "float", "precision": 0}'/>
                                                 </td>
                                             </tr>
                                         </t>
@@ -171,15 +171,15 @@
                                             <td colspan="3" class="text-end">Total:</td>
                                             <td class="text-end">
                                                 <span t-esc="total_regular"
-                                                      t-options='{"widget": "float", "precision": 2}'/>
+                                                      t-options='{"widget": "float", "precision": 0}'/>
                                             </td>
                                             <td class="text-end">
                                                 <span t-esc="total_bonus"
-                                                      t-options='{"widget": "float", "precision": 2}'/>
+                                                      t-options='{"widget": "float", "precision": 0}'/>
                                             </td>
                                             <td class="text-end">
                                                 <span t-esc="grand_total"
-                                                      t-options='{"widget": "float", "precision": 2}'/>
+                                                      t-options='{"widget": "float", "precision": 0}'/>
                                             </td>
                                         </tr>
                                     </tbody>

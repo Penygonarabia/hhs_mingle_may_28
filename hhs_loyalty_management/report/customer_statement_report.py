@@ -14,6 +14,7 @@ class ReportCustomerStatement(models.AbstractModel):
 
         from_date = data.get('from_date')
         to_date = data.get('to_date')
+        customer_id = data.get('customer_id')
 
         period_month = ''
         if from_date:
@@ -24,6 +25,9 @@ class ReportCustomerStatement(models.AbstractModel):
             ('transaction_date', '>=', from_date),
             ('transaction_date', '<=', to_date),
         ]
+        if customer_id:
+            domain.append(('partner_id', '=', customer_id))
+
         all_transactions = self.env['loyalty.audit.view'].search(domain, order='transaction_date asc, id asc')
         customer_ids = all_transactions.mapped('partner_id')
         
@@ -63,6 +67,7 @@ class ReportCustomerStatement(models.AbstractModel):
             'doc_ids': docids,
             'doc_model': 'loyalty.customer.statement.wizard',
             'data': data,
+            'customer': customer,
             'from_date': from_date,
             'to_date': to_date,
             'period_month': period_month,
