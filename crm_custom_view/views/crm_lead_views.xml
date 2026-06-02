@@ -154,6 +154,10 @@
 			
 			</xpath>
 			
+			 <xpath expr="//field[@name='lead_properties']" position="attributes">
+            <attribute name="invisible">1</attribute>
+        </xpath>
+			
 		
 			
 			<!-- <xpath expr="//field[@name='partner_id']" position="attributes">
