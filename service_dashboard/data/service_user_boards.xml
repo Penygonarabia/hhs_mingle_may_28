@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ================================================================
+             HYBRID model strategy:
+               * Per-user STATUS-COUNT charts  -> dbmodel.task.message.log.analysis
+                 (message-log matview). One row per status transition, attributed
+                 to the user who made the change (user_id) + their role (user_role)
+                 + region/city. This is the only source that knows *which user was
+                 involved in each status* (creator -> New, coordinator -> Scheduled,
+                 parts -> Customer Need Quote, technician -> Rescheduled, etc.).
+               * HOURS / region SUM charts -> dbmodel.jobcards.analysis
+                 (one row per task, so hours are not multiplied across the many
+                 transition rows a task has).
+
+             Field refs:
+               message-log : service_dashboard.field_dbmodel_task_message_log_analysis__*
+                             (ptml_final_taskstatus, task_date, user_id, user_role,
+                              city, user_name, status_transition)
+               job-cards   : service_dashboard.field_dbmodel_jobcards_analysis__*
+                             (job_card_status, service_created_datetime,
+                              work_center_group_id, work_center_id)
+             ================================================================ -->
+
+        <record id="board_service_analysis_cc_users" model="ks_dashboard_ninja.board">
+            <field name="name">Service Analysis - CC Users</field>
+            <field name="ks_dashboard_menu_name">Service Analysis - CC Users</field>
+            <field name="ks_dashboard_top_menu_id" ref="ks_dashboard_ninja.services_dashboards_menu_root"/>
+            <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
+            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_dashboard_menu_sequence">40</field>
+        </record>
+
+        <record id="kpi_cc_new_tasks" model="ks_dashboard_ninja.item">
+            <field name="name">New Tasks</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_cc_users"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_task_message_log_analysis"/>
+            <field name="ks_dashboard_item_type">ks_kpi</field>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_domain">[&quot;&amp;&quot;, &quot;&amp;&quot;, (&quot;ptml_final_taskstatus&quot;, &quot;in&quot;, [&quot;New&quot;]), (&quot;user_id&quot;, &quot;in&quot;, [&quot;%UID&quot;]), (&quot;user_role&quot;, &quot;in&quot;, [6])]</field>
+            <field name="grid_corners">{'x': 0, 'y': 0, 'w': 2, 'h': 3}</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="bar_cc_tasks_monthwise" model="ks_dashboard_ninja.item">
+            <field name="name">Tasks - Month wise</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_cc_users"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_task_message_log_analysis"/>
+            <field name="ks_dashboard_item_type">ks_bar_chart</field>
+            <field name="ks_chart_data_count_type">count</field>
+            <field name="ks_chart_relation_groupby" ref="service_dashboard.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_chart_date_groupby">month_year</field>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_domain">[&quot;&amp;&quot;, (&quot;user_id&quot;, &quot;in&quot;, [&quot;%UID&quot;]), (&quot;user_role&quot;, &quot;in&quot;, [6])]</field>
+            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 12, 'h': 8}</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="drill_cc_monthwise_0_status" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="service_dashboard.bar_cc_tasks_monthwise"/>
+            <field name="ks_item_action_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__ptml_final_taskstatus"/>
+            <field name="ks_chart_type">ks_bar_chart</field>
+        </record>
+
+        <record id="drill_cc_monthwise_1_city" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="service_dashboard.bar_cc_tasks_monthwise"/>
+            <field name="ks_item_action_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__city"/>
+            <field name="sequence">1</field>
+            <field name="ks_chart_type">ks_bar_chart</field>
+        </record>
+
+        <record id="board_service_analysis_crd_users" model="ks_dashboard_ninja.board">
+            <field name="name">Service Analysis - CRD Users</field>
+            <field name="ks_dashboard_menu_name">Service Analysis - CRD Users</field>
+            <field name="ks_dashboard_top_menu_id" ref="ks_dashboard_ninja.services_dashboards_menu_root"/>
+            <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
+            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_dashboard_menu_sequence">41</field>
+        </record>
+
+        <record id="kpi_crd_scheduled_tasks" model="ks_dashboard_ninja.item">
+            <field name="name">Scheduled Tasks</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_crd_users"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_task_message_log_analysis"/>
+            <field name="ks_dashboard_item_type">ks_kpi</field>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_domain">[&quot;&amp;&quot;, (&quot;ptml_final_taskstatus&quot;, &quot;in&quot;, [&quot;Scheduled&quot;]), (&quot;user_id&quot;, &quot;in&quot;, [&quot;%UID&quot;])]</field>
+            <field name="grid_corners">{'x': 0, 'y': 0, 'w': 2, 'h': 3}</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="bar_crd_tasks_monthwise" model="ks_dashboard_ninja.item">
+            <field name="name">Tasks - Month wise</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_crd_users"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_task_message_log_analysis"/>
+            <field name="ks_dashboard_item_type">ks_bar_chart</field>
+            <field name="ks_chart_data_count_type">count</field>
+            <field name="ks_chart_relation_groupby" ref="service_dashboard.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_chart_date_groupby">month_year</field>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_domain">[(&quot;user_id&quot;, &quot;in&quot;, [&quot;%UID&quot;])]</field>
+            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 12, 'h': 8}</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="drill_crd_monthwise_0_status" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="service_dashboard.bar_crd_tasks_monthwise"/>
+            <field name="ks_item_action_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__ptml_final_taskstatus"/>
+            <field name="ks_chart_type">ks_bar_chart</field>
+        </record>
+
+        <record id="drill_crd_monthwise_1_city" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="service_dashboard.bar_crd_tasks_monthwise"/>
+            <field name="ks_item_action_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__city"/>
+            <field name="sequence">1</field>
+            <field name="ks_chart_type">ks_bar_chart</field>
+        </record>
+
+        <record id="kpi_crd_closed_tasks" model="ks_dashboard_ninja.item">
+            <field name="name">Closed Tasks</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_crd_users"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_task_message_log_analysis"/>
+            <field name="ks_dashboard_item_type">ks_kpi</field>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_domain">[&quot;&amp;&quot;, (&quot;ptml_final_taskstatus&quot;, &quot;in&quot;, [&quot;Closed&quot;]), (&quot;user_id&quot;, &quot;in&quot;, [&quot;%UID&quot;])]</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="bar_crd_tasks_userrole" model="ks_dashboard_ninja.item">
+            <field name="name">Tasks - User Role wise</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_crd_users"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_task_message_log_analysis"/>
+            <field name="ks_dashboard_item_type">ks_bar_chart</field>
+            <field name="ks_chart_data_count_type">count</field>
+            <field name="ks_record_count_type">sum</field>
+            <field name="ks_chart_relation_groupby" ref="service_dashboard.field_dbmodel_task_message_log_analysis__user_role"/>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_domain">[&quot;&amp;&quot;, (&quot;user_role&quot;, &quot;!=&quot;, False), (&quot;user_id&quot;, &quot;in&quot;, [&quot;%UID&quot;])]</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="drill_crd_userrole_0_user" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="service_dashboard.bar_crd_tasks_userrole"/>
+            <field name="ks_item_action_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__user_name"/>
+            <field name="ks_chart_type">ks_bar_chart</field>
+        </record>
+
+        <record id="drill_crd_userrole_2_status" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="service_dashboard.bar_crd_tasks_userrole"/>
+            <field name="ks_item_action_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__status_transition"/>
+            <field name="sequence">2</field>
+            <field name="ks_chart_type">ks_bar_chart</field>
+        </record>
+
+        <record id="board_service_analysis_parts_users" model="ks_dashboard_ninja.board">
+            <field name="name">Service Analysis - Parts Users</field>
+            <field name="ks_dashboard_menu_name">Service Analysis - Parts Users</field>
+            <field name="ks_dashboard_top_menu_id" ref="ks_dashboard_ninja.services_dashboards_menu_root"/>
+            <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
+            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_dashboard_menu_sequence">42</field>
+        </record>
+
+        <record id="kpi_parts_onhold_sp_req" model="ks_dashboard_ninja.item">
+            <field name="name">On Hold - SP Req Tasks</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_parts_users"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_jobcards_analysis"/>
+            <field name="ks_dashboard_item_type">ks_kpi</field>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_jobcards_analysis__service_created_datetime"/>
+            <field name="ks_domain">[&quot;&amp;&quot;, (&quot;is_user_work_location&quot;, &quot;=&quot;, True), (&quot;job_card_status&quot;, &quot;in&quot;, [&quot;On Hold -SP Req&quot;])]</field>
+            <field name="grid_corners">{'x': 0, 'y': 0, 'w': 2, 'h': 3}</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="bar_parts_tasks_monthwise" model="ks_dashboard_ninja.item">
+            <field name="name">Tasks - Month wise</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_parts_users"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_jobcards_analysis"/>
+            <field name="ks_dashboard_item_type">ks_bar_chart</field>
+            <field name="ks_chart_data_count_type">count</field>
+            <field name="ks_chart_relation_groupby" ref="service_dashboard.field_dbmodel_jobcards_analysis__service_created_datetime"/>
+            <field name="ks_chart_date_groupby">month_year</field>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_jobcards_analysis__service_created_datetime"/>
+            <field name="ks_domain">[&quot;&amp;&quot;, (&quot;is_user_work_location&quot;, &quot;=&quot;, True), (&quot;job_card_status&quot;, &quot;in&quot;, [&quot;On Hold -SP Req&quot;, &quot;Customer Need Quote&quot;])]</field>
+            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 12, 'h': 7}</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="drill_parts_monthwise_0_region" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="service_dashboard.bar_parts_tasks_monthwise"/>
+            <field name="ks_item_action_field" ref="service_dashboard.field_dbmodel_jobcards_analysis__work_center_group_id"/>
+            <field name="ks_chart_type">ks_bar_chart</field>
+        </record>
+
+        <record id="drill_parts_monthwise_1_workcenter" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="service_dashboard.bar_parts_tasks_monthwise"/>
+            <field name="ks_item_action_field" ref="service_dashboard.field_dbmodel_jobcards_analysis__work_center_id"/>
+            <field name="sequence">1</field>
+            <field name="ks_chart_type">ks_bar_chart</field>
+        </record>
+
+        <record id="kpi_parts_cust_need_quote" model="ks_dashboard_ninja.item">
+            <field name="name">Customer Need Quote Tasks</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_parts_users"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_jobcards_analysis"/>
+            <field name="ks_dashboard_item_type">ks_kpi</field>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_jobcards_analysis__service_created_datetime"/>
+            <field name="ks_domain">[&quot;&amp;&quot;, (&quot;is_user_work_location&quot;, &quot;=&quot;, True), (&quot;job_card_status&quot;, &quot;in&quot;, [&quot;Customer Need Quote&quot;])]</field>
+            <field name="grid_corners">{'x': 2, 'y': 0, 'w': 2, 'h': 3}</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="bar_parts_onhold_sp_req_hours" model="ks_dashboard_ninja.item">
+            <field name="name">On Hold -SP Req Hours</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_parts_users"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_jobcards_analysis"/>
+            <field name="ks_dashboard_item_type">ks_bar_chart</field>
+            <field name="ks_chart_relation_groupby" ref="service_dashboard.field_dbmodel_jobcards_analysis__work_center_group_id"/>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_jobcards_analysis__service_created_datetime"/>
+            <field name="ks_domain">[&quot;&amp;&quot;, (&quot;is_user_work_location&quot;, &quot;=&quot;, True), (&quot;job_card_status&quot;, &quot;in&quot;, [&quot;On Hold -SP Req&quot;])]</field>
+            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 12, 'h': 7}</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="drill_parts_onhold_0_workcenter" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="service_dashboard.bar_parts_onhold_sp_req_hours"/>
+            <field name="ks_item_action_field" ref="service_dashboard.field_dbmodel_jobcards_analysis__work_center_id"/>
+            <field name="ks_chart_type">ks_bar_chart</field>
+        </record>
+
+        <record id="bar_parts_cust_need_quote_hours" model="ks_dashboard_ninja.item">
+            <field name="name">Customer Need Quote Hours</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_parts_users"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_jobcards_analysis"/>
+            <field name="ks_dashboard_item_type">ks_bar_chart</field>
+            <field name="ks_chart_relation_groupby" ref="service_dashboard.field_dbmodel_jobcards_analysis__work_center_group_id"/>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_jobcards_analysis__service_created_datetime"/>
+            <field name="ks_domain">[&quot;&amp;&quot;, (&quot;is_user_work_location&quot;, &quot;=&quot;, True), (&quot;job_card_status&quot;, &quot;in&quot;, [&quot;Customer Need Quote&quot;])]</field>
+            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 12, 'h': 7}</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="drill_parts_cust_quote_0_workcenter" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="service_dashboard.bar_parts_cust_need_quote_hours"/>
+            <field name="ks_item_action_field" ref="service_dashboard.field_dbmodel_jobcards_analysis__work_center_id"/>
+            <field name="ks_chart_type">ks_bar_chart</field>
+        </record>
+
+        <record id="board_service_analysis_technicians" model="ks_dashboard_ninja.board">
+            <field name="name">Service Analysis - Technicians</field>
+            <field name="ks_dashboard_menu_name">Service Analysis - Technicians</field>
+            <field name="ks_dashboard_top_menu_id" ref="ks_dashboard_ninja.services_dashboards_menu_root"/>
+            <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
+            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_dashboard_menu_sequence">43</field>
+        </record>
+
+        <record id="kpi_tech_req_revisit" model="ks_dashboard_ninja.item">
+            <field name="name">Req. Revisit Tasks</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_technicians"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_task_message_log_analysis"/>
+            <field name="ks_dashboard_item_type">ks_kpi</field>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_domain">[&quot;&amp;&quot;, (&quot;ptml_final_taskstatus&quot;, &quot;in&quot;, [&quot;Req. Revisit&quot;]), (&quot;user_id&quot;, &quot;in&quot;, [&quot;%UID&quot;])]</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="kpi_tech_need_reschedule" model="ks_dashboard_ninja.item">
+            <field name="name">Need Reschedule Tasks</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_technicians"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_task_message_log_analysis"/>
+            <field name="ks_dashboard_item_type">ks_kpi</field>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_domain">[&quot;&amp;&quot;, (&quot;ptml_final_taskstatus&quot;, &quot;in&quot;, [&quot;Need Reschedule&quot;]), (&quot;user_id&quot;, &quot;in&quot;, [&quot;%UID&quot;])]</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="kpi_tech_parts_ready_reschedule" model="ks_dashboard_ninja.item">
+            <field name="name">Parts Ready &amp; Reschedule Tasks</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_technicians"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_task_message_log_analysis"/>
+            <field name="ks_dashboard_item_type">ks_kpi</field>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_domain">[&quot;&amp;&quot;, (&quot;ptml_final_taskstatus&quot;, &quot;in&quot;, [&quot;Parts Ready &amp; Reschedule&quot;]), (&quot;user_id&quot;, &quot;in&quot;, [&quot;%UID&quot;])]</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="kpi_tech_rescheduled" model="ks_dashboard_ninja.item">
+            <field name="name">Rescheduled Tasks</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_technicians"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_task_message_log_analysis"/>
+            <field name="ks_dashboard_item_type">ks_kpi</field>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_domain">[&quot;&amp;&quot;, (&quot;ptml_final_taskstatus&quot;, &quot;in&quot;, [&quot;Rescheduled&quot;]), (&quot;user_id&quot;, &quot;in&quot;, [&quot;%UID&quot;])]</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="bar_tech_tasks_monthwise" model="ks_dashboard_ninja.item">
+            <field name="name">Tasks - Month wise</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_technicians"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_task_message_log_analysis"/>
+            <field name="ks_dashboard_item_type">ks_bar_chart</field>
+            <field name="ks_chart_data_count_type">count</field>
+            <field name="ks_chart_relation_groupby" ref="service_dashboard.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_chart_date_groupby">month_year</field>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_domain">[(&quot;user_id&quot;, &quot;in&quot;, [&quot;%UID&quot;])]</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="drill_tech_monthwise_0_status" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="service_dashboard.bar_tech_tasks_monthwise"/>
+            <field name="ks_item_action_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__ptml_final_taskstatus"/>
+            <field name="ks_chart_type">ks_bar_chart</field>
+        </record>
+
+        <record id="drill_tech_monthwise_1_city" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="service_dashboard.bar_tech_tasks_monthwise"/>
+            <field name="ks_item_action_field" ref="service_dashboard.field_dbmodel_task_message_log_analysis__city"/>
+            <field name="sequence">1</field>
+            <field name="ks_chart_type">ks_bar_chart</field>
+        </record>
+
+        <record id="bar_tech_travel_hours" model="ks_dashboard_ninja.item">
+            <field name="name">Technician Travel Hours</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboard.board_service_analysis_technicians"/>
+            <field name="ks_model_id" ref="service_dashboard.model_dbmodel_jobcards_analysis"/>
+            <field name="ks_dashboard_item_type">ks_bar_chart</field>
+            <field name="ks_chart_relation_groupby" ref="service_dashboard.field_dbmodel_jobcards_analysis__work_center_group_id"/>
+            <field name="ks_date_filter_field" ref="service_dashboard.field_dbmodel_jobcards_analysis__service_created_datetime"/>
+            <field name="ks_domain">[(&quot;user_id&quot;, &quot;in&quot;, [&quot;%UID&quot;])]</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_precision_digits">2</field>
+        </record>
+
+        <record id="drill_tech_travel_0_workcenter" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="service_dashboard.bar_tech_travel_hours"/>
+            <field name="ks_item_action_field" ref="service_dashboard.field_dbmodel_jobcards_analysis__work_center_id"/>
+            <field name="ks_chart_type">ks_bar_chart</field>
+        </record>
+    </data>
+</odoo>

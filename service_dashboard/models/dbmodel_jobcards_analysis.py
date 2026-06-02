@@ -16,6 +16,10 @@ class DbModelJobCards(models.Model):
     task_name = fields.Char(string="Task Name", readonly=True)
     user_id = fields.Many2one("res.users", string="User", readonly=True)
     user_role = fields.Char(string="User Role", readonly=True)
+    user_role_id = fields.Many2one(
+        "dashboard.user.rights", string="User Role (Dashboard Rights)", readonly=True,
+        help="Dashboard role of the work-center user (ru). Drives Many2one groupby/filter on dashboards.",
+    )
     technician_id = fields.Many2one("res.users", string="Technician", readonly=True)
     scheduled_uid = fields.Many2one("res.users", string="Scheduled User", readonly=True)
     closed_jobcard_user_id = fields.Many2one("res.users", string="Closed Jobcard User", readonly=True)
@@ -298,6 +302,7 @@ class DbModelJobCards(models.Model):
 
                 ru.id AS user_id,
                 TRIM(BOTH ', ' FROM CONCAT_WS(', ', ug_tech.user_role, ug_ru.user_role, ug_create.user_role)) AS user_role,
+                udrr.dashboard_rights_id AS user_role_id,
                 um.work_center_location_id AS default_work_location,
 
                 pt.company_id AS company_id,
@@ -396,8 +401,14 @@ class DbModelJobCards(models.Model):
             ) um 
                 ON pt.work_center_id = um.work_center_location_id
 
-            LEFT JOIN res_users ru 
+            LEFT JOIN res_users ru
                 ON ru.id = um.res_users_id
+
+            /* Dashboard-rights role (Many2one) for the work-center user */
+            LEFT JOIN (
+                SELECT DISTINCT ON (user_id) dashboard_rights_id, user_id
+                FROM user_dashboard_rights_rel
+            ) udrr ON udrr.user_id = ru.id
 
             /* Role lookup — computed once in user_role_map CTE, joined three ways */
             LEFT JOIN user_role_map ug_tech   ON ug_tech.uid   = pt.technician_id

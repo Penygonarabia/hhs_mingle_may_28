@@ -13,7 +13,7 @@
     <!--    Dashboard Main Body Container -->
     <t t-name="ks_dashboard_ninja.ks_main_body_container" owl="1">
 
-        <div class="ks_dashboard_main_content explain-ai-main-content" t-att-class="ks_dashboard_item_length === 0 ? ' h-0' : ''" t-ref="ks_main_body">
+        <div class="ks_dashboard_main_content explain-ai-main-content" t-att-class="ks_dashboard_item_length === 0 ? ' h-0' : ''" t-att-data-ks-board-name="props.action.params.ks_dashboard_name" t-ref="ks_main_body">
             <t t-if="ks_dashboard_item_length != 0">
                 <t t-if="!state.should_loading">
                     <t t-call="ks_dashboard_item_template"/>

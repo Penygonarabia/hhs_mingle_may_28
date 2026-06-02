@@ -609,8 +609,18 @@ export class Ksdashboardgraph extends Component{
         if(item_data) {
 
             if ('domains' in item_data) {
-                domain = item_data['domains'][sequence+1] ? item_data['domains'][sequence+1] : []
                 var sequnce = sequence;
+                // PATCH: Only require a stored domain when re-drilling (sequnce >= 0).
+                // For sequnce < 0 (e.g., clicking the chart-title breadcrumb to go back
+                // to the original chart), no domain is needed — the else branch below
+                // just resets the chart via ksFetchChartItem.
+                // The original code's "domains[sequence+1] ? ... : []" fallback used an
+                // empty domain when re-drilling, which dropped the user/region/date
+                // filters and surfaced cross-region data.
+                if (sequnce >= 0 && !item_data['domains'][sequence+1]) {
+                    return;
+                }
+                domain = item_data['domains'][sequence+1]
                 if (sequnce >= 0) {
                     self._rpc("/web/dataset/call_kw/ks_dashboard_ninja.item/ks_fetch_drill_down_data",{
                         model: 'ks_dashboard_ninja.item',
@@ -709,7 +719,15 @@ export class Ksdashboardgraph extends Component{
         }).then((new_item_data) => {
             this.ks_dashboard_data.ks_item_data[id] = new_item_data[id];
             this.ks_dashboard_data.ks_item_data[id]['ks_dashboard_item_type'] = new_item_data[id].ks_dashboard_item_type
-            this.item.ks_dashboard_item_type = new_item_data[id].ks_dashboard_item_type
+            // PATCH: re-point this.item to the fresh object (mirrors the initial-fetch
+            // pattern at lines 87-94). Without this, this.item stays on the OLD stale
+            // reference that still carries sequnce=1, domains={...}, and the previous
+            // ks_chart_data — causing the second backward-then-forward cycle to read
+            // stale drill state and show No Data.
+            this.item = this.ks_dashboard_data.ks_item_data[id];
+            this.item.sequnce = 0;
+            this.item.isDrill = false;
+            this.item.domains = {};
             $($(".ks_dashboard_main_content").find(".grid-stack-item[gs-id=" + id + "]").children()[0]).find(".card-body").empty();
             var item_data = self.ks_dashboard_data.ks_item_data[id]
             if (item_data.ks_list_view_data) {

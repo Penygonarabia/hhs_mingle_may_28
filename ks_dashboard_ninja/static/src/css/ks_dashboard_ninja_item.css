@@ -92,6 +92,26 @@
     border-radius: 3px;
 }
 
+/* Horizontal scroll for many-bar charts: when the chart's inner wrapper
+   (.ks_chart_scroll_inner, set in charts_render_global_functions.js) is wider
+   than the card body, show a persistent horizontal scrollbar. Without this,
+   macOS overlay scrollbars stay hidden until you actually scroll, so it looked
+   like there was no scrollbar even though the bars overflowed. */
+.ks_chart_card_body {
+    scrollbar-width: thin;
+}
+.ks_chart_card_body::-webkit-scrollbar {
+    height: 9px;
+}
+.ks_chart_card_body::-webkit-scrollbar-thumb {
+    background: #b8c0cc;
+    border-radius: 5px;
+}
+.ks_chart_card_body::-webkit-scrollbar-track {
+    background: #eef0f3;
+    border-radius: 5px;
+}
+
 /* kpi css*/
 
 .ks_dashboard_kpi_name_preview {
@@ -100,6 +120,48 @@
     text-overflow: ellipsis;
     margin-top: 30px;
     overflow: hidden;
+}
+
+/* ====================================================================
+   SCOPED CUSTOMISATIONS for the Service Dashboards menu family.
+   The dashboard container carries data-ks-board-name (added in
+   components/ks_dashboard_ninja/ks_dashboard_ninja.xml).
+
+   (A) KPI heading: full text (no truncation) + left-align — applied to ALL
+       dashboards under the Service Dashboards menu, i.e. names beginning with
+       "Service Analysis", "Technician Analysis" or "Sales & Cost Analysis".
+   (B) Chart hover emboss: applies to the same Service Dashboards menu family
+       as the KPI emboss above — every "Service Analysis*", "Technician Analysis*"
+       and "Sales & Cost Analysis*" board. Other KS dashboards (e.g. Contract
+       Analysis) keep their default look.
+   ==================================================================== */
+
+/* (A) Full KPI heading (no truncation) — Service Dashboards menu family */
+.ks_dashboard_main_content[data-ks-board-name^="Service Analysis"] .ks_dashboard_kpi_name_preview,
+.ks_dashboard_main_content[data-ks-board-name^="Technician Analysis"] .ks_dashboard_kpi_name_preview,
+.ks_dashboard_main_content[data-ks-board-name^="Sales & Cost Analysis"] .ks_dashboard_kpi_name_preview {
+    white-space: normal;
+    word-break: break-word;
+    text-overflow: clip;
+    overflow: visible;
+}
+/* (A) Left-align the KPI heading — Service Dashboards menu family */
+.ks_dashboard_main_content[data-ks-board-name^="Service Analysis"] .encapsulated-kpi-tile .dashboard-item-name,
+.ks_dashboard_main_content[data-ks-board-name^="Technician Analysis"] .encapsulated-kpi-tile .dashboard-item-name,
+.ks_dashboard_main_content[data-ks-board-name^="Sales & Cost Analysis"] .encapsulated-kpi-tile .dashboard-item-name {
+    text-align: left !important;
+}
+
+/* (B) Chart hover emboss — Service Dashboards menu family */
+.ks_dashboard_main_content[data-ks-board-name^="Service Analysis"] .ks_dashboarditem_chart_container,
+.ks_dashboard_main_content[data-ks-board-name^="Technician Analysis"] .ks_dashboarditem_chart_container,
+.ks_dashboard_main_content[data-ks-board-name^="Sales & Cost Analysis"] .ks_dashboarditem_chart_container {
+    transition: box-shadow 0.2s ease;
+}
+.ks_dashboard_main_content[data-ks-board-name^="Service Analysis"] .ks_dashboarditem_chart_container:hover,
+.ks_dashboard_main_content[data-ks-board-name^="Technician Analysis"] .ks_dashboarditem_chart_container:hover,
+.ks_dashboard_main_content[data-ks-board-name^="Sales & Cost Analysis"] .ks_dashboarditem_chart_container:hover {
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22) !important;
 }
 
 .ks_kpi_main_body {

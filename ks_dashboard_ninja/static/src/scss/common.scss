@@ -1090,8 +1090,9 @@ body.ks_body_class {
 }
 
 
-/* Chart hover emboss is scoped to the 4 service_dashboard_user_boards
-   dashboards only — see scoped rules in css/ks_dashboard_ninja_item.css. */
+/* Chart hover emboss is scoped to the Service Dashboards menu family
+   (Service Analysis*, Technician Analysis*, Sales & Cost Analysis*) —
+   see scoped rules in css/ks_dashboard_ninja_item.css. */
 
 .ks_body_class .encapsulated-kpi-tile {
     &:hover {

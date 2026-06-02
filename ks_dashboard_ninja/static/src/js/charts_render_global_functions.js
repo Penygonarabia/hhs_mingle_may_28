@@ -144,7 +144,27 @@ export function ks_render_graphs(
           });
         }
 
-        const root = am5.Root.new(graph_render);
+        // Horizontal scroll for many-bar charts (Excel/PowerBI style): attach the
+        // chart to an inner wrapper that can be made wider than the (scrollable)
+        // card body. Bars and labels keep their standard size; when the bars exceed
+        // the chart width a horizontal scrollbar appears and you scroll to see the
+        // rest — instead of zooming, which would shrink the bars and text.
+        var ksRootEl = graph_render;
+        var ksScrollWrap = null;
+        var ksBarLike = (item.ks_dashboard_item_type === 'ks_bar_chart' ||
+                         item.ks_dashboard_item_type === 'ks_bullet_chart');
+        if (view === "dashboard_view" && ksBarLike && graph_render) {
+          $(graph_render).find('.ks_chart_scroll_inner').remove();
+          graph_render.style.overflowX = 'auto';
+          graph_render.style.overflowY = 'hidden';
+          ksScrollWrap = document.createElement('div');
+          ksScrollWrap.className = 'ks_chart_scroll_inner';
+          ksScrollWrap.style.height = '100%';
+          ksScrollWrap.style.minWidth = '100%';
+          graph_render.appendChild(ksScrollWrap);
+          ksRootEl = ksScrollWrap;
+        }
+        const root = am5.Root.new(ksRootEl);
         this.root = root;
 
         if (this.root._logo) {
@@ -280,11 +300,23 @@ export function ks_render_graphs(
               ) {
                 const categoryVal = ev.target.dataItem ? ev.target.dataItem.get("category") : false;
                 if (categoryVal) {
+                  // PATCH: include ksRowIndex so onChartCanvasClick_funnel uses the
+                  // fast ksRowIndex path instead of the label-match fallback.
+                  // The label-match fallback compares labels[i] (raw server label,
+                  // e.g. "[20] - Western Region") against categoryVal (stripped display
+                  // value, e.g. "Western Region") — they never match, so domain stays
+                  // undefined and the drill returns No Data.
+                  // data[] is built above in ks_render_graphs scope and preserves
+                  // the same ordering as ks_labels / domains[].
+                  const ksRowIndex = Array.isArray(data)
+                    ? data.findIndex(function(d) { return d.category === categoryVal; })
+                    : -1;
                   const mockEv = {
                     target: {
                       dataItem: {
                         dataContext: {
-                          category: categoryVal
+                          category: categoryVal,
+                          ksRowIndex: ksRowIndex >= 0 ? ksRowIndex : undefined
                         }
                       }
                     },
@@ -359,10 +391,35 @@ export function ks_render_graphs(
 
             xAxis.data.setAll(data);
 
+            // Give each bar a standard minimum width via the wrapper's min-width.
+            //   width: 100%  -> fills wide tiles, bars spread out (few-bar charts).
+            //   min-width: bars * standard px -> the wrapper never shrinks below the
+            //   bars' standard size, so when the tile is narrower than that the
+            //   wrapper overflows and the card body shows a horizontal scrollbar.
+            // This is pure CSS, so it stays correct when the chart is resized.
+            if (ksScrollWrap && Array.isArray(data)) {
+              var KS_PER_BAR_PX = 55;
+              ksScrollWrap.style.width = '100%';
+              ksScrollWrap.style.minWidth = (data.length * KS_PER_BAR_PX) + 'px';
+            }
+
             var yAxis = chart.yAxes.push(
               am5xy.ValueAxis.new(root, {
-                extraMin: (isFormatChart && hasNegativeValues) ? 0.2 : 0,
-                extraMax: isFormatChart ? 0.4 : 0.2,
+                extraMin: (isFormatChart && hasNegativeValues) ? 0.05 : 0,
+                // Extra headroom above the tallest bar so the value labels (which
+                // sit above the bars — and are long, rotated labels on isFormatChart
+                // charts) are never clipped at the top of the plot area.
+                //
+                // Diverging charts (both positive AND negative bars, e.g. "Estimated
+                // vs Actual Hours") need MUCH more top room: the labels on the
+                // negative/downward bars are anchored at the zero line and grow
+                // upward, so they need clear space above the zero line. A large
+                // extraMax scales with the data range and pushes the zero line down
+                // to ~70% of the plot height regardless of how tall the negative bar
+                // is, giving those upward labels consistent room. (extraMin is kept
+                // small so the negative bars don't waste bottom space — their labels
+                // grow up, not down, so they need no extra bottom headroom.)
+                extraMax: isFormatChart ? (hasNegativeValues ? 2.5 : 0.6) : 0.3,
                 renderer: am5xy.AxisRendererY.new(root, { strokeOpacity: 0.1 }),
                 maxPrecision: isSalesCostAnalysis ? 2 : 0,
                 numberFormat: isSalesCostAnalysis ? "#.00" : "#",
@@ -829,11 +886,16 @@ export function ks_render_graphs(
               ) {
                 const categoryVal = ev.target.dataItem ? ev.target.dataItem.get("category") : false;
                 if (categoryVal) {
+                  // PATCH: same ksRowIndex fix as xRenderer.labels above.
+                  const ksRowIndex = Array.isArray(data)
+                    ? data.findIndex(function(d) { return d.category === categoryVal; })
+                    : -1;
                   const mockEv = {
                     target: {
                       dataItem: {
                         dataContext: {
-                          category: categoryVal
+                          category: categoryVal,
+                          ksRowIndex: ksRowIndex >= 0 ? ksRowIndex : undefined
                         }
                       }
                     },
