@@ -1319,6 +1319,60 @@ body.o_web_client {
 }
 //accordion end here
 
+// Date / DateTime picker popup — ensure header, weekday labels and
+// date cells stay legible. The theme's white-on-light overrides bleed
+// into the Owl portal-rendered popup, making numbers invisible.
+.o_datetime_picker,
+.o_datetime_picker_popover .o_datetime_picker {
+    color: #282828 !important;
+    background-color: #ffffff !important;
+
+    .o_datetime_picker_header,
+    .o_datetime_picker_header button,
+    .o_datetime_picker_header .o_zoom_out {
+        color: #282828 !important;
+        background-color: transparent !important;
+    }
+
+    table,
+    thead,
+    tbody,
+    tr,
+    th,
+    td {
+        color: #282828 !important;
+        background-color: transparent !important;
+    }
+
+    .o_date_item_cell,
+    .o_datetime_button {
+        color: #282828 !important;
+        background-color: transparent !important;
+        opacity: 1 !important;
+
+        &.o_out_of_range,
+        &.o_other_month {
+            color: #9aa0a6 !important;
+        }
+
+        &.o_today {
+            color: #282828 !important;
+            font-weight: 600;
+        }
+
+        &.o_selected {
+            color: #ffffff !important;
+            background-color: #3f9ea2 !important;
+        }
+
+        &:hover:not(.o_selected) {
+            background-color: #dff1f3 !important;
+            color: #282828 !important;
+        }
+    }
+}
+
+
 
 // :root {
 //   --body-fcolor: #000000;

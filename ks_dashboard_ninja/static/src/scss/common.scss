@@ -1090,6 +1090,9 @@ body.ks_body_class {
 }
 
 
+/* Chart hover emboss is scoped to the 4 service_dashboard_user_boards
+   dashboards only — see scoped rules in css/ks_dashboard_ninja_item.css. */
+
 .ks_body_class .encapsulated-kpi-tile {
     &:hover {
         box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22) !important;
@@ -1497,7 +1500,9 @@ body.ks_body_class {
     max-width: 130px !important;
 }
 
-/* Force all amCharts 5 tooltips (including series and axis tooltips) to have white text for legibility */
+/* Force all amCharts 5 tooltips (including series and axis tooltips) to have white text for legibility.
+   Scoped to SVG <g role="tooltip"> and the amCharts container so we don't hit Bootstrap popovers
+   (e.g. Odoo's date picker popover, which also uses div[role="tooltip"]). */
 g[role="tooltip"] text,
 g[role="tooltip"] tspan,
 g[role="tooltip"] span,
@@ -1505,9 +1510,7 @@ g[role="tooltip"] div,
 .am5-tooltip-container,
 .am5-tooltip-container *,
 .am5-tooltip-container [role="tooltip"],
-.am5-tooltip-container [role="tooltip"] *,
-div[role="tooltip"],
-div[role="tooltip"] * {
+.am5-tooltip-container [role="tooltip"] * {
     fill: #ffffff !important;
     color: #ffffff !important;
 }
