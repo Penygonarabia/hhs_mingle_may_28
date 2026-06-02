@@ -11,7 +11,7 @@ class ResUsers(models.Model):
     default_work_center_id = fields.Many2many(
         "work.center.location", string="Default Work Center"
     )
-    user_code = fields.Char(string="Interface Code")
+    user_code = fields.Char(string="Interface Code", copy=False)
     project_ids = fields.Many2many("project.project", string="Project")
     discount_limit = fields.Float(string="Maximum Allowed Margin Discount %")
     warehouse_category_user_line_ids = fields.One2many(
