@@ -59,7 +59,7 @@ class AccountMove(models.Model):
                 f"QR Code Hash: {record.inv_qrcode_has or ''}"
             )
 
-            qr_img = generate_qr_code(qr_value)
+            qr_img = generate_qr_code(record.inv_qrcode_has)
             record.qr_image = qr_img
 
         return True
