@@ -11,6 +11,8 @@
                 <field name="dealer_salesman"/>
                 <field name="dealer_city_id"
                        readonly="not dealer_salesman" required="dealer_salesman"/>
+                <field name="floor_sales_approval_auth"/>
+                <field name="default_authority"/>
             </group>
         </xpath>
     </field>

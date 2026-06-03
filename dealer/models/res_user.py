@@ -24,3 +24,20 @@ class ResUsers(models.Model):
         if not self.dealer_salesman:
             self.dealer_city_id = False
 
+    floor_sales_approval_auth = fields.Boolean(
+        string="Floor Sales Invoice Approval Authority",
+        default=False
+    )
+
+    default_authority = fields.Boolean(
+        string="Default Authority",
+        default=False
+    )
+
+    @api.constrains('default_authority')
+    def _check_default_authority(self):
+        for rec in self:
+            if rec.default_authority:
+                existing = self.search([('default_authority', '=', True), ('id', '!=', rec.id)])
+                if existing:
+                    raise ValidationError(_("Only one user in the entire system can be marked as Default Authority."))

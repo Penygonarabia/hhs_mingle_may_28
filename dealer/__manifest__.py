@@ -41,6 +41,7 @@ This module allows you to:
     # 'views/res_partner_hide_fields.xml',
     'views/dealer_assignment_views.xml',
     'views/dealer_showroom_sales_views.xml',
+    'views/dsales_showroom_invoice_views.xml',
     'views/dealer_shop_status_views.xml',    
     'views/size_master_view.xml',
     'views/sales_target_views.xml',

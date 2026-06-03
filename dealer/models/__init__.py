@@ -9,7 +9,8 @@ from . import dealer_shop_status
 from . import dealer_showroom_sales
 # from . import hr_employee
 from . import size_master
-# # from . import product_category
+from . import hr_attendance
+from . import dsales_showroom_invoice
 # # from . import t_productsdesc
 # from . import vi_product_subgroup
 # # from . import t_groupsdesc

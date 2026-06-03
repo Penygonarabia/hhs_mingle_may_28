@@ -32,6 +32,65 @@ class ResConfigSettings(models.TransientModel):
         config_parameter='dealer.make_interface_code_mandatory'
     )
 
+    # General Promotion Settings
+    gen_promo_required = fields.Boolean(
+        string="General Promotion Multiplier Required",
+        config_parameter="dealer.gen_promo_required"
+    )
+    gen_promo_from = fields.Char(
+        string="Promotion From Date (YYYY-MM-DD)",
+        config_parameter="dealer.gen_promo_from"
+    )
+    gen_promo_to = fields.Char(
+        string="Promotion To Date (YYYY-MM-DD)",
+        config_parameter="dealer.gen_promo_to"
+    )
+    gen_promo_multiplier = fields.Float(
+        string="General Multiplier Value",
+        config_parameter="dealer.gen_promo_multiplier",
+        default=1.0
+    )
+
+    # Dealer Promotion Settings
+    dealer_promo_required = fields.Boolean(
+        string="Dealer Promotion Multiplier Required",
+        config_parameter="dealer.dealer_promo_required"
+    )
+    dealer_promo_from = fields.Char(
+        string="Dealer Promotion From Date (YYYY-MM-DD)",
+        config_parameter="dealer.dealer_promo_from"
+    )
+    dealer_promo_to = fields.Char(
+        string="Dealer Promotion To Date (YYYY-MM-DD)",
+        config_parameter="dealer.dealer_promo_to"
+    )
+    dealer_promo_min_qty = fields.Integer(
+        string="Minimum Quantity",
+        config_parameter="dealer.dealer_promo_min_qty",
+        default=1
+    )
+    dealer_promo_multiplier = fields.Float(
+        string="Dealer Multiplier Value",
+        config_parameter="dealer.dealer_promo_multiplier",
+        default=1.0
+    )
+
+    filter_dealer_purchases = fields.Boolean(
+        string="Filter Items Based on Dealer Purchases",
+        config_parameter="dealer.filter_dealer_purchases"
+    )
+
+    retailer_sales_limit = fields.Integer(
+        string="Retailer Sales Limit",
+        config_parameter="dealer.retailer_sales_limit",
+        default=25
+    )
+
+    dealer_sales_limit = fields.Integer(
+        string="Dealer Sales Limit",
+        config_parameter="dealer.dealer_sales_limit",
+        default=100
+    )
 
     def set_values(self):
         super().set_values()

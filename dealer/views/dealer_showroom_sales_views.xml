@@ -22,9 +22,13 @@
                         <field name="size_id" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
                         <field name="is_sales_return"/>
                         <field name="qty"/>   
+                        <field name="invoice_id" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="approval_state" readonly="1"/>
+                        <field name="calculated_points" readonly="1"/>
+                        <field name="multiplier_applied" readonly="1"/>
+                        <field name="final_points" readonly="1"/>
                         <field name="fsm_loyalty_points" readonly="1"/>                     
                         <field name="notes" colspan="2"/>
-                        <field name="attachment_ids" widget="many2many_binary"/>
                         <field name="user_id" invisible="1" force_save="1"/>
                         <field name="dealer_mobile_user_bool" invisible="1"/>
                         <field name="dealer_access_bool" invisible="1"/> 
@@ -48,7 +52,6 @@
                         </div>
                         <div style="font-size:15px;font-weight:bold;color: #070808ff;">Attachments</div>
                         <div  width="70%" height="400px">
-                           <field name="attachment_ids" widget="many2many_binary"/>
                        </div>
                         <field name="user_id" invisible="1" force_save="1"/>
                         <field name="dealer_mobile_user_bool" invisible="1"/>
@@ -86,6 +89,11 @@
                 <field name="product_id"/>
                 <field name="size_id"/>
                 <field name="qty"/>
+                <field name="invoice_id"/>
+                <field name="approval_state"/>
+                <field name="calculated_points"/>
+                <field name="multiplier_applied"/>
+                <field name="final_points"/>
                 <field name="fsm_loyalty_points"/>
             </tree>
         </field>
@@ -209,10 +217,11 @@
     <!-- Mobile: Update Sales -->
     <record id="action_dealer_sales_mobile" model="ir.actions.act_window">
         <field name="name">Update Sales</field>
-        <field name="res_model">dsales.showroom.sales</field>
-        <field name="view_mode">form,kanban</field>
-        <field name="view_id" ref="view_kanban_dealer_showroom_sales_mobile"/>
-        <field name="domain"> [('user_id', '=', uid)]</field>
+        <field name="res_model">dsales.showroom.invoice</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="view_id" ref="dealer.view_kanban_dealer_showroom_invoice_mobile"/>
+        <field name="domain">[('salesman_id', '=', uid)]</field>
+        <field name="context">{'default_salesman_id': uid}</field>
     </record>
 
 

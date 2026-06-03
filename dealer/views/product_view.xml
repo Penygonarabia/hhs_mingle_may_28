@@ -12,6 +12,9 @@
             </xpath>
             <xpath expr="//field[@name='uom_po_id']" position="before">
                 <field name="fsm_loyalty_points" invisible="not show_dealer_menu"/>
+                <field name="show_in_dealer_app" invisible="not show_dealer_menu"/>
+                <field name="is_outdoor_unit" invisible="not show_dealer_menu"/>
+                <field name="is_midea_brand" invisible="not show_dealer_menu"/>
             </xpath>
 
         </field>
@@ -30,6 +33,9 @@
             </xpath>
             <xpath expr="//field[@name='uom_po_id']" position="before">
                 <field name="fsm_loyalty_points" invisible="not show_dealer_menu"/>
+                <field name="show_in_dealer_app" invisible="not show_dealer_menu"/>
+                <field name="is_outdoor_unit" invisible="not show_dealer_menu"/>
+                <field name="is_midea_brand" invisible="not show_dealer_menu"/>
             </xpath>
 
         </field>

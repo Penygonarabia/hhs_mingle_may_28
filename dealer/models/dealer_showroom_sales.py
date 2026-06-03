@@ -66,6 +66,55 @@ class dealerShowroomSales(models.Model):
         required=True
     )
 
+    invoice_id = fields.Many2one('dsales.showroom.invoice', string='Invoice Reference', ondelete='cascade')
+    approval_state = fields.Selection(related='invoice_id.state', store=True, string='Approval Status')
+    
+    calculated_points = fields.Float(string='Calculated Points', compute='_compute_points', store=True)
+    multiplier_applied = fields.Float(string='Multiplier Applied', compute='_compute_points', store=True)
+    final_points = fields.Float(string='Final Points', compute='_compute_points', store=True)
+
+    @api.depends('qty', 'product_id', 'date_time', 'dealer_id')
+    def _compute_points(self):
+        params = self.env['ir.config_parameter'].sudo()
+        gen_req = params.get_param('dealer.gen_promo_required')
+        dealer_req = params.get_param('dealer.dealer_promo_required')
+        
+        for rec in self:
+            calc = (abs(rec.qty) * rec.product_id.fsm_loyalty_points) if (rec.product_id and rec.qty) else 0.0
+            if rec.is_sales_return:
+                calc = -calc
+                
+            rec.calculated_points = calc
+            multiplier = 1.0
+            
+            rec_date = rec.date_time.date() if rec.date_time else fields.Date.context_today(self)
+            
+            # check general
+            if gen_req:
+                f_date = params.get_param('dealer.gen_promo_from')
+                t_date = params.get_param('dealer.gen_promo_to')
+                if f_date and t_date and str(rec_date) >= f_date and str(rec_date) <= t_date:
+                    val = params.get_param('dealer.gen_promo_multiplier')
+                    if val:
+                        multiplier *= float(val)
+            
+            # check dealer
+            if dealer_req:
+                f_date = params.get_param('dealer.dealer_promo_from')
+                t_date = params.get_param('dealer.dealer_promo_to')
+                min_qty = int(params.get_param('dealer.dealer_promo_min_qty') or 1)
+                if f_date and t_date and str(rec_date) >= f_date and str(rec_date) <= t_date:
+                    if abs(rec.qty) >= min_qty:
+                        val = params.get_param('dealer.dealer_promo_multiplier')
+                        if val:
+                            multiplier *= float(val)
+                            
+            rec.multiplier_applied = multiplier
+            rec.final_points = rec.calculated_points * multiplier
+
+    # limits are now checked on the invoice header level
+
+
     # product_category_id = fields.Many2one('t.groupsdesc', string='Category',required=True)
     # group_id = fields.Many2one('t.productsdesc', string='Group',required=True) 
     # subgroup_id = fields.Many2one('vi.product.subgroup', string='Sub Group', required=True)
@@ -128,6 +177,31 @@ class dealerShowroomSales(models.Model):
                                         context=lambda self: {'show_only_name': True})
                                         
     product_id = fields.Many2one('product.product', string="Model",required=True)
+    product_description = fields.Char(related='product_id.name', string='Description', readonly=True)
+
+    @api.onchange('subgroup_id', 'invoice_id')
+    def _onchange_product_filtering(self):
+        domain = [
+            ('show_in_dealer_app', '=', True),
+            ('is_outdoor_unit', '=', False),
+            ('is_midea_brand', '=', True)
+        ]
+        if self.subgroup_id:
+            domain.append(('product_tmpl_id.categ_id', 'child_of', self.subgroup_id.id))
+            
+        params = self.env['ir.config_parameter'].sudo()
+        if params.get_param('dealer.filter_dealer_purchases') and self.invoice_id and self.invoice_id.dealer_id:
+            sales = self.env['sale.order'].search([
+                ('partner_id', '=', self.invoice_id.dealer_id.id),
+                ('state', 'in', ['sale', 'done'])
+            ])
+            purchased_products = sales.mapped('order_line.product_id').ids
+            if purchased_products:
+                domain.append(('id', 'in', purchased_products))
+            else:
+                domain.append(('id', 'in', []))
+                
+        return {'domain': {'product_id': domain}}
     
 
     size_id = fields.Many2one('product.size', string='Capacity', compute="_compute_capacity")
@@ -166,13 +240,7 @@ class dealerShowroomSales(models.Model):
                 rec.year = 0
                 rec.month = 0
 
-    attachment_ids = fields.Many2many(
-        'ir.attachment',
-        'dealer_shop_sales_attachment_rel',
-        'sales_id',
-        'attachment_id',
-        string='Attachments'
-    )
+    # Attachment moved to header
 
     def _default_dealer_mobile_user_bool(self): 
         return bool(self.env.user.has_group('dealer.group_dealer_user'))    
@@ -484,7 +552,7 @@ class dealerShowroomSales(models.Model):
                 'location_id': record.dealer_showroom_id.id if record.dealer_showroom_id else False,
                 'type': trans_type,
                 'qty': record.qty,
-                'loyalty_points': loyalty_points,
+                'loyalty_points': record.final_points if record.final_points else loyalty_points,
                 'amount_paid': 0,
                 'reference': self.env['ir.sequence'].next_by_code('dsales.showroom.sales'),
                 'notes': record.notes,
