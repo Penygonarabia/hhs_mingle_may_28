@@ -181,7 +181,10 @@ class LoyaltyInvoiceProcessor(models.TransientModel):
                     Items_loyalty_point_promovr = promotional_value
 
             # Calculate line totals
-            qty = detail.trnd_qtyiss or 0.0
+            if doc_type_str == '01':
+                qty = detail.trnd_qtyiss or 0.0
+            else:
+                qty = getattr(detail, 'trnd_ret', 0.0) or 0.0
             Total_item_points_vr = Items_loyalty_point_vr * qty
             Total_item_points_promovr = Items_loyalty_point_promovr * qty
 
