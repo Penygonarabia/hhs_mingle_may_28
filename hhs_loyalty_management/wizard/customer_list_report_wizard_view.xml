@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         Wizard Form View
+    ============================================================ -->
+    <record id="view_customer_list_report_wizard_form" model="ir.ui.view">
+        <field name="name">customer.list.report.wizard.form</field>
+        <field name="model">customer.list.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Customer List Report">
+                <button name="action_send_customer_list_email"
+                        string="Send Email"
+                        type="object"
+                        class="btn-primary" invisible="1"/>
+
+
+                <!-- Customer multi-select -->
+                <group>
+                    <field name="customer_ids"
+                           widget="many2many_tags"
+                           options="{'no_create': True, 'no_open': True}"
+                           string="Customers"
+                           colspan="2"/>
+                </group>
+
+                <footer>
+                    <button name="action_print_pdf"
+                            string="Print PDF"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Close"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================================
+         Window Action — opens wizard as popup
+    ============================================================ -->
+    <record id="action_customer_list_report_wizard" model="ir.actions.act_window">
+        <field name="name">Customer List Report</field>
+        <field name="res_model">customer.list.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- ============================================================
+         Menu Item — after Loyalty Points Summary (sequence 70)
+    ============================================================ -->
+    <menuitem
+            id="menu_customer_list_report"
+            name="Customer List Report"
+            parent="menu_loyalty_reports_root"
+            action="action_customer_list_report_wizard"
+            sequence="70"
+            groups="hhs_loyalty_management.group_loyalty_program_user"/>
+
+</odoo>

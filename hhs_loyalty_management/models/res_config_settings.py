@@ -17,6 +17,21 @@ class ResConfigSettings(models.TransientModel):
         config_parameter='hhs_loyalty_management.tier_downgrade_waiting_days',
         default=90
     )
+    customer_list_email_ids = fields.Char(
+        string="Customer List Email IDs",
+        config_parameter='hhs_loyalty_management.customer_list_email_ids'
+    )
+
+    customer_list_cc_email_ids = fields.Char(
+        string="CC Email IDs",
+        config_parameter='hhs_loyalty_management.customer_list_cc_email_ids'
+    )
+
+    customer_list_mail_content = fields.Char(
+        string="Mail Content",
+        config_parameter='hhs_loyalty_management.customer_list_mail_content',
+        default='Please find below the list of not active customers salesman wise.'
+    )
 
     # product_loyalty_point_limit = fields.Integer(
     #     string="Product Loyalty Point Limit",

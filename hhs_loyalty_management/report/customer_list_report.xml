@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         ir.actions.report — registers the PDF action
+    ============================================================ -->
+    <record id="action_report_customer_list" model="ir.actions.report">
+        <field name="name">Customer List Report</field>
+        <field name="model">customer.list.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">hhs_loyalty_management.report_customer_list</field>
+        <field name="report_file">hhs_loyalty_management.report_customer_list</field>
+        <field name="binding_model_id" eval="False"/>
+    </record>
+
+    <!-- ============================================================
+         QWeb Template
+    ============================================================ -->
+    <template id="customer_list_report_print_document_template_internal_layout">
+        <div class="article">
+            <t t-out="0"/>
+        </div>
+    </template>
+
+    <template id="report_customer_list">
+        <t t-call="web.html_container">
+            <t t-call="hhs_loyalty_management.customer_list_report_print_document_template_internal_layout">
+                <div class="header" t-att-style="report_header_style">
+                    <div class="row mt32 mb32">
+                        <div class="col-4 text-left">
+                            <img src="hhs_loyalty_management/static/src/img/HHS_Header_Left.png" alt="img"
+                                 style="height: 120px; width: 350px; "/>
+                        </div>
+                        <div class="col-4 text-center " style="vertical-align:text-top">
+                            <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)"
+                                 style="max-height: 100px; min-height:100px; min-width: 200px; max-width: 200px;"/>
+                        </div>
+                        <div class="col-4 text-right " style="vertical-align:text-top;text-align:right">
+                            <img src="hhs_loyalty_management/static/src/img/HHS_Header_Right.png" alt="img"
+                                 style="height: 120px; width: 350px;"/>
+                        </div>
+                    </div>
+                </div>
+
+                <style>
+                    .header {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    }
+
+                    .page {
+                    margin-top: 0 !important;
+                    padding-top: 0 !important;
+                    }
+                </style>
+                <div class="page">
+                    <!-- ── SALESMAN GROUPS ───────────────────────── -->
+                    <t t-foreach="grouped.items()" t-as="sm_item">
+                        <p style="page-break-before: always;"></p>
+                        <t t-set="sm_code" t-value="sm_item[0]"/>
+                        <t t-set="sm_data" t-value="sm_item[1]"/>
+
+                        <!-- Salesman Header -->
+                        <div style="background:#1F497D; color:#fff; padding:4px 8px;
+                                    font-weight:bold; font-size:9.5pt;
+                                    margin-bottom:2px; border-radius:2px;">
+                            Salesman Code :&#160;<t t-esc="sm_code"/>
+                            &#160;&#160;|&#160;&#160;
+                            Salesman Name :&#160;<t t-esc="sm_data.get('sm_name')"/>
+                            &#160;&#160;|&#160;&#160;
+                            Type :&#160;<t t-esc="sm_data.get('sm_stype')"/>
+                        </div>
+
+                        <!-- Customer Table -->
+                        <table class="table table-sm" style="width:100%; font-size:8pt;
+                               border-collapse:collapse; margin-bottom:12px;">
+                            <thead>
+                                <tr style="background:#C5D9F1; font-weight:bold; text-align:center;">
+                                    <th style="width:5%; border:1px solid #aaa; padding:3px 4px;">S.No</th>
+                                    <th style="width:15%; border:1px solid #aaa; padding:3px 4px;">Customer Code</th>
+                                    <th style="width:35%; border:1px solid #aaa; padding:3px 4px;">Customer Name</th>
+                                    <th style="width:15%; border:1px solid #aaa; padding:3px 4px;">Classification</th>
+                                    <th style="width:15%; border:1px solid #aaa; padding:3px 4px;">Region</th>
+                                    <th style="width:10%; border:1px solid #aaa; padding:3px 4px;">City</th>
+                                    <th style="width:10%; border:1px solid #aaa; padding:3px 4px;">Last Purchase</th>
+                                </tr>
+                            </thead>
+                            <t t-set="counter" t-value="1"/>
+                            <tbody>
+                                <t t-foreach="sm_data.get('customers', [])" t-as="cust">
+                                    <tr t-att-style="'background:#F5F8FC;' if cust_index % 2 == 0 else 'background:#FFFFFF;'">
+                                        <td style="border:1px solid #ddd; padding:2px 4px; text-align:center;">
+                                            <t t-esc="counter"/>
+                                        </td>
+                                        <td style="border:1px solid #ddd; padding:2px 4px;">
+                                            <t t-esc="cust.get('customer_code')"/>
+                                        </td>
+                                        <td style="border:1px solid #ddd; padding:2px 4px;">
+                                            <t t-esc="cust.get('customer_name')"/>
+                                        </td>
+                                        <td style="border:1px solid #ddd; padding:2px 4px;">
+                                            <t t-esc="cust.get('classification')"/>
+                                        </td>
+                                        <td style="border:1px solid #ddd; padding:2px 4px;">
+                                            <t t-esc="cust.get('region')"/>
+                                        </td>
+                                        <td style="border:1px solid #ddd; padding:2px 4px;">
+                                            <t t-esc="cust.get('city')"/>
+                                        </td>
+                                        <td style="border:1px solid #ddd; padding:2px 4px;">
+                                            <t t-if="cust.get('last_purchase_date')">
+                                                <t t-esc="cust['last_purchase_date']"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <t t-set="counter" t-value="counter + 1"/>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+
+                </div>
+                <div class="footer" style="margin:0; padding:0; border-top: 1px solid #002060;">
+                    <div class="row" style="margin:0; padding:0;">
+                        <div class="col-12" style="margin:0; padding:0;">
+                            <img src="hhs_loyalty_management/static/src/img/JobCard_Footer_img.png"
+                                 style="width:100%;"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>
