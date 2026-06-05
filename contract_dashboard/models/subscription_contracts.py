@@ -1,20 +1,9 @@
 # -*- coding: utf-8 -*-
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class SubscriptionContracts(models.Model):
     _inherit = 'subscription.contracts'
-
-    region_id = fields.Many2one(
-        'res.region',
-        string='Region',
-        store=True,
-    )
-    customer_city_id = fields.Many2one(
-        'res.city',
-        string='City',
-        store=True,
-    )
 
     service_amount = fields.Float(
         string='Contract Value (Excl. VAT)',
@@ -40,15 +29,57 @@ class SubscriptionContracts(models.Model):
         store=True,
     )
 
-    preventive_estimated = fields.Integer(
-        string='Preventive Est', related='entitlement_prevent', store=True)
-    preventive_actual = fields.Integer(
-        string='Preventive Actual', related='actual_prevent_count', store=True)
+    # Visit metrics — declared as compute (not related=) so the module installs
+    # cleanly even if the source fields on the target server were declared with
+    # a slightly different type (e.g. Integer vs Float).
+    preventive_estimated = fields.Float(
+        string='Preventive Est',
+        compute='_compute_visit_metrics',
+        store=True,
+    )
+    preventive_actual = fields.Float(
+        string='Preventive Actual',
+        compute='_compute_visit_metrics',
+        store=True,
+    )
     preventive_balance = fields.Float(
-        string='Preventive Balance', related='balance_prevent', store=True)
-    corrective_estimated = fields.Integer(
-        string='Corrective Est', related='entitlement_correct', store=True)
-    corrective_actual = fields.Integer(
-        string='Corrective Actual', related='actual_correct_count', store=True)
+        string='Preventive Balance',
+        compute='_compute_visit_metrics',
+        store=True,
+    )
+    corrective_estimated = fields.Float(
+        string='Corrective Est',
+        compute='_compute_visit_metrics',
+        store=True,
+    )
+    corrective_actual = fields.Float(
+        string='Corrective Actual',
+        compute='_compute_visit_metrics',
+        store=True,
+    )
     corrective_balance = fields.Float(
-        string='Corrective Balance', related='balance_correct', store=True)
+        string='Corrective Balance',
+        compute='_compute_visit_metrics',
+        store=True,
+    )
+
+    @api.depends(
+        'entitlement_prevent', 'entitlement_correct',
+        'actual_prevent_count', 'actual_correct_count',
+        'balance_prevent', 'balance_correct',
+    )
+    def _compute_visit_metrics(self):
+        for rec in self:
+            rec.preventive_estimated = _safe_float(rec, 'entitlement_prevent')
+            rec.preventive_actual = _safe_float(rec, 'actual_prevent_count')
+            rec.preventive_balance = _safe_float(rec, 'balance_prevent')
+            rec.corrective_estimated = _safe_float(rec, 'entitlement_correct')
+            rec.corrective_actual = _safe_float(rec, 'actual_correct_count')
+            rec.corrective_balance = _safe_float(rec, 'balance_correct')
+
+
+def _safe_float(record, field_name):
+    try:
+        return float(getattr(record, field_name, 0) or 0)
+    except (TypeError, ValueError):
+        return 0.0
