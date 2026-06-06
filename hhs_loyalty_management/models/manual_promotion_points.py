@@ -242,7 +242,8 @@ class EnterManualPromotionPoints(models.Model):
                 'customer.loyalty.points.history'
             ].create({
 
-                'partner_id': rec.customer_id.id,
+                #'partner_id': rec.customer_id.id,
+                'clph_cstid': rec.customer_id.id,
                 'loyalty_points': loyalty_points,
                 'redeemed_points': redeemed_points,
                 'balance_points': balance_points,
