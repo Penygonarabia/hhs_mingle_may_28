@@ -211,7 +211,11 @@
                             </div>
                         </div>
                     </div>
-                    <div>
+                    <div style="font-size:28px; line-height:2.1;">
+                        <div>
+                            <strong>Ref no. : </strong>
+                            <span t-esc="quotation_no"/>
+                        </div>
                         <div>
                             <strong>Date</strong>
                             :
@@ -219,7 +223,8 @@
                         </div>
                         <div>
                             <strong>Company</strong>
-                            : CIELO
+                            :
+                            <span t-esc="customer_name"/>
                         </div>
                         <div>
                             <strong>Attn. To</strong>
@@ -238,7 +243,7 @@
                         </div>
                         <div>
                             <strong>Subject</strong>
-                            : Non Comprehensive Annual Maintenance Contract Quotation
+                            : Annual Maintenance Contract
                         </div>
                     </div>
                     <h2>
@@ -344,28 +349,33 @@
                     <!--                    <p>-->
                     <!--                        We are pleased to submit our best offer for below mentioned work.-->
                     <!--                    </p>-->
-                    <table class="table table-bordered" style="width:100%; border-collapse:collapse;">
-                        <thead style="background-color:#dddddd;">
+                    <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:28px;">
+                        <thead style="background-color:#1e5ca8; color:#ffffff;">
                             <tr>
-                                <th style="text-align:center;">S.No</th>
-                                <th style="text-align:center;">
+                                <th style="text-align:center; font-size:28px; padding:14px;">S.No</th>
+                                <th style="text-align:center; font-size:28px; padding:14px;">
                                     <span>الوصف</span>
                                     <br/>
                                     Brand
                                 </th>
-                                <th style="text-align:center;">Unit Type</th>
-                                <th style="text-align:center;">
+                                <th style="text-align:center; font-size:28px; padding:14px;">نوع الوحدة<br/>Unit Type</th>
+                                <th style="text-align:center; font-size:28px; padding:14px;">
                                     <span>الوصف</span>
                                     <br/>
-                                    Description
+                                    Contract Type
                                 </th>
-                                <th style="text-align:center;">
+                                <th style="text-align:center; font-size:28px; padding:14px;">
+                                    <span>سعر البيع/الوحدة</span>
+                                    <br/>
+                                    Per Unit Selling Price
+                                </th>
+                                <th style="text-align:center; font-size:28px; padding:14px;">
                                     <span>الكمية</span>
                                     <br/>
                                     Qty
                                 </th>
-                                <th style="text-align:center;">No. of Visits / Yr</th>
-                                <th style="text-align:center;">
+                                <th style="text-align:center; font-size:28px; padding:14px;">عدد الزيارات / السنة<br/>No. of Visits / Yr</th>
+                                <th style="text-align:center; font-size:28px; padding:14px;">
                                     <span>سعر</span>
                                     <br/>
                                     Price
@@ -375,27 +385,29 @@
                         <tbody>
                             <t t-foreach="quotations" t-as="quotation">
                                 <tr>
-                                    <td style="text-align:center;">
-                                        <span>1</span>
-                                        <span/>
+                                    <td style="text-align:center; font-size:28px; padding:14px;">
+                                        <span t-esc="quotation_index + 1"/>
                                     </td>
-                                    <td style="text-align:left;">
+                                    <td style="text-align:left; font-size:28px; padding:14px;">
                                         <span t-if="quotation['brand']" t-esc="quotation['brand']"></span>
                                     </td>
-                                    <td style="text-align:left;">
+                                    <td style="text-align:left; font-size:28px; padding:14px;">
                                         <span t-if="quotation['unit_type']" t-esc="quotation['unit_type']"/>
                                     </td>
-                                    <td style="text-align:left;">
+                                    <td style="text-align:left; font-size:28px; padding:14px;">
                                         <span t-if="quotation['description']" t-esc="quotation['description']"/>
                                     </td>
-                                    <td style="text-align:right;">
+                                    <td style="text-align:right; font-size:28px; padding:14px;">
+                                        <span t-if="quotation['per_unit_selling_price']" t-esc="quotation['per_unit_selling_price']" t-options="{'widget': 'float', 'precision': 2}"/>
+                                    </td>
+                                    <td style="text-align:right; font-size:28px; padding:14px;">
                                         <span t-if="quotation['Qty']" t-esc="int(quotation['Qty'])"/>
                                     </td>
-                                    <td style="text-align:right;">
+                                    <td style="text-align:right; font-size:28px; padding:14px;">
                                         <span t-if="quotation['no_of_visits']"
                                               t-esc="quotation['no_of_visits']"/>
                                     </td>
-                                    <td style="text-align:right;">
+                                    <td style="text-align:right; font-size:28px; padding:14px;">
                                         <span t-esc="company_symbol"></span>
                                         <span t-esc="quotation['total']"
                                               t-options="{'widget': 'float', 'precision': 2}"/>
@@ -410,12 +422,12 @@
                                 <td colspan="3"></td>
 
                                 <!-- Label -->
-                                <td style="text-align:right;">
-                                    <strong>Sub Total</strong>
+                                <td colspan="2" style="text-align:right; font-size:28px; padding:14px;">
+                                    <strong>Sub Total (Qty)</strong>
                                 </td>
 
                                 <!-- Total Qty -->
-                                <td style="text-align:right;">
+                                <td style="text-align:right; font-size:28px; padding:14px;">
                                     <strong>
                                         <span t-esc="total_qty"/>
                                     </strong>
@@ -425,7 +437,7 @@
                                 <td></td>
 
                                 <!-- Subtotal Amount -->
-                                <td style="text-align:right;">
+                                <td style="text-align:right; font-size:28px; padding:14px;">
                                     <strong>
                                         <span t-esc="company_symbol"/>
                                         <span t-esc="sub_total" t-options="{'widget': 'float', 'precision': 2}"/>
@@ -436,10 +448,10 @@
 
                             <!-- VAT Row -->
                             <tr>
-                                <td colspan="6" style="text-align:right;">
+                                <td colspan="7" style="text-align:right; font-size:28px; padding:14px;">
                                     <strong>VAT - 15%</strong>
                                 </td>
-                                <td style="text-align:right;">
+                                <td style="text-align:right; font-size:28px; padding:14px;">
                                     <strong>
                                         <span t-esc="company_symbol"/>
                                         <span t-esc="total_vat" t-options="{'widget': 'float', 'precision': 2}"/>
@@ -449,10 +461,10 @@
 
                             <!-- Grand Total Row -->
                             <tr>
-                                <td colspan="6" style="text-align:right;">
+                                <td colspan="7" style="text-align:right; font-size:28px; padding:14px;">
                                     <strong>Grand Total</strong>
                                 </td>
-                                <td style="text-align:right;">
+                                <td style="text-align:right; font-size:28px; padding:14px;">
                                     <strong>
                                         <span t-esc="company_symbol"/>
                                         <span t-esc="grand_total" t-options="{'widget': 'float', 'precision': 2}"/>
@@ -467,12 +479,12 @@
                     <div class="mt-3">
                         <table style="width:100%; border-collapse:collapse; border:1px solid #ccc;">
                             <tr style="border:0;">
-                                <td style="width:25%; padding:3px;border:0;">
+                                <td style="width:20%; padding:5px; border:0; font-size:28px;">
                                     <strong>In Words:</strong>
                                 </td>
-                                <td style="width:75%; text-align:left; padding:3px;border:0;">
-                                    <span t-esc="docs[0].company_id.currency_id.amount_to_text(grand_total)"/>
-                                    Only
+                                <td style="width:80%; text-align:left; padding:5px; border:0; font-size:28px;">
+                                    <strong><span t-esc="docs[0].company_id.currency_id.amount_to_text(grand_total)"/>
+                                    Only</strong>
                                 </td>
                             </tr>
                         </table>
@@ -492,16 +504,22 @@
                     <!--                            </tr>-->
                     <!--                        </table>-->
                     <!--                    </div>-->
+                    <!-- Call Out / Free Visits -->
+                    <div class="mt-3" style="font-size:28px;">
+                        <strong>Call Out : </strong>
+                        <span style="color:red; font-weight:bold;" t-if="call_out_visits" t-esc="call_out_visits"/>
+                        <span style="color:red; font-weight:bold;"> Free Visits</span>
+                    </div>
                     <!-- Scope of Work : -->
                     <div class="mt-3" style="page-break-inside: avoid; break-inside: avoid;">
                         <table style="width:100%; border-collapse:collapse; border:1px solid #ccc; page-break-inside: avoid;">
                             <tr style="border:0;">
-                                <td style="width:25%; padding:3px;border:0;">
+                                <td style="width:25%; padding:5px; border:0; font-size:28px;">
                                     <strong>Scope of Work :</strong>
                                 </td>
                             </tr>
                             <tr style="border:0;">
-                                <td style="width:75%; text-align:left; padding:3px;border:0;">
+                                <td style="width:75%; text-align:left; padding:5px; border:0; font-size:28px;">
                                     <t t-if="scope_of_work">
                                         <ul style="margin:0; padding-left:25px;">
                                             <t t-foreach="scope_of_work" t-as="scope">
@@ -520,12 +538,12 @@
                     <div class="mt-3" style="page-break-inside: avoid; break-inside: avoid;">
                         <table style="width:100%; border-collapse:collapse; border:1px solid #ccc; page-break-inside: avoid;">
                             <tr style="border:0;">
-                                <td style="width:25%; padding:3px;border:0;">
+                                <td style="width:25%; padding:5px; border:0; font-size:28px;">
                                     <strong>Terms of Execution :</strong>
                                 </td>
                             </tr>
                             <tr style="border:0;">
-                                <td style="width:25%; text-align:left; padding:3px;border:0;">
+                                <td style="width:100%; text-align:left; padding:5px; border:0; font-size:28px;">
                                     <p t-raw="terms_of_execution"/>
                                 </td>
                             </tr>
@@ -536,12 +554,12 @@
                     <div class="mt-3" style="page-break-inside: avoid; break-inside: avoid;">
                         <table style="width:100%; border-collapse:collapse; border:1px solid #ccc; page-break-inside: avoid;">
                             <tr style="border:0;">
-                                <td style="width:25%; padding:3px;border:0;">
+                                <td style="width:25%; padding:5px; border:0; font-size:28px;">
                                     <strong>Terms of Payment : Advance</strong>
                                 </td>
                             </tr>
                             <tr style="border:0;">
-                                <td style="width:75%; text-align:left; padding:3px;border:0;">
+                                <td style="width:75%; text-align:left; padding:5px; border:0; font-size:28px;">
                                     <t t-if="payment_advance">
                                         <ul>
                                             <t t-foreach="payment_advance" t-as="payadv">
@@ -561,12 +579,12 @@
                     <div class="mt-3" style="page-break-inside: avoid; break-inside: avoid;">
                         <table style="width:100%; border-collapse:collapse; border:1px solid #ccc; page-break-inside: avoid;">
                             <tr style="border:0;">
-                                <td style="width:25%; padding:3px;border:0;">
+                                <td style="width:25%; padding:5px; border:0; font-size:28px;">
                                     <strong>Exclusions :</strong>
                                 </td>
                             </tr>
                             <tr style="border:0;">
-                                <td style="width:75%; text-align:left; padding:3px;border:0;">
+                                <td style="width:100%; text-align:left; padding:5px; border:0; font-size:28px;">
                                     <p t-raw="exclusions_text"/>
                                 </td>
                             </tr>
@@ -575,12 +593,12 @@
                     <div class="mt-3" style="page-break-inside: avoid; break-inside: avoid;">
                         <table style="width:100%; border-collapse:collapse; border:1px solid #ccc; page-break-inside: avoid;">
                             <tr style="border:0;">
-                                <td style="width:25%; padding:3px;border:0;">
+                                <td style="width:25%; padding:5px; border:0; font-size:28px;">
                                     <strong>Notes :</strong>
                                 </td>
                             </tr>
                             <tr style="border:0;">
-                                <td style="width:75%; text-align:left; padding:3px;border:0;">
+                                <td style="width:100%; text-align:left; padding:5px; border:0; font-size:28px;">
                                     <p t-raw="others_text"/>
                                 </td>
                             </tr>
@@ -590,17 +608,17 @@
                     <div class="mt-3" style="page-break-inside: avoid;">
                         <table style="width:100%; border-collapse:collapse; border:1px solid #ccc; page-break-inside: avoid;">
                             <tr style="border:0;">
-                                <td style="width:25%; padding:3px;border:0;">
+                                <td style="width:25%; padding:5px; border:0; font-size:28px;">
                                     <strong>Best Regards,</strong>
                                 </td>
                             </tr>
                             <tr style="border:0;">
-                                <td style="width:75%; text-align:left; padding:3px;border:0;">
+                                <td style="width:75%; text-align:left; padding:5px; border:0; font-size:28px;">
                                     <p style="margin:0;" t-esc="user_name"/>
                                 </td>
                             </tr>
                             <tr style="border:0;">
-                                <td style="width:75%; text-align:left; padding:3px;border:0;">
+                                <td style="width:75%; text-align:left; padding:5px; border:0; font-size:28px;">
                                     <p style="margin:0;" t-esc="signature"/>
                                 </td>
                             </tr>

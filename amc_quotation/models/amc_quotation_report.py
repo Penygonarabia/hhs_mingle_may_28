@@ -17,6 +17,7 @@ class ReportAMCQuotation(models.AbstractModel):
 
         total_qty = 0.0
         emergency_visit = 0.0
+        call_out_visits = 0.0
 
         for rec in docs:
 
@@ -32,8 +33,9 @@ class ReportAMCQuotation(models.AbstractModel):
                         line.contract_type_id.contract_category, ''
                     ),
                     'no_of_visits_per_year': visits,
-                    'no_of_visits': line.no_of_emergency_visit or 0.0,
+                    'no_of_visits': visits,
                     'Qty': qty,
+                    'per_unit_selling_price': per_unit,
                     'unit_selling_price': per_unit,
                     'total': line.total_selling_price or 0.0,
                     'vat': line.vat or 0.0,
@@ -45,6 +47,7 @@ class ReportAMCQuotation(models.AbstractModel):
 
                 total_qty += line.product_qty or 0.0
                 emergency_visit += line.no_of_emergency_visit or 0.0
+                call_out_visits += line.no_of_emergency_visit or 0.0
 
             # ------------------ SCOPE OF WORK (SQL BASED) ------------------
             doc_scopes = []
@@ -151,6 +154,7 @@ class ReportAMCQuotation(models.AbstractModel):
             'company_symbol': rec.company_id.currency_id.symbol if rec else '',
             'address': rec.customer_address if rec else '',
             'emergency_visit': int(emergency_visit),
+            'call_out_visits': int(call_out_visits),
             'att_to': rec.crm_id.contact_name if rec and rec.crm_id else '',
             'contact_no': rec.crm_id.mobile if rec and rec.crm_id else '',
             'scope_of_work': scopes_of_work,
