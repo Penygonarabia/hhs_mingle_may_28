@@ -368,7 +368,9 @@
                   parent="ks_dashboard_ninja.board_menu_root" sequence="16"
                   action="ks_dashboard_ninja.dashboard_action_window"/>
 
-
+        <menuitem name="Beta Dashboards" id="ks_dashboard_ninja.beta_dashboards_menu_root"
+                  parent="ks_dashboard_ninja.board_menu_root" sequence="18"
+                  action="ks_dashboard_ninja.dashboard_action_window"/>
 
         <menuitem name="My Dashboards" id="ks_dashboard_ninja.dashboards_menu_root"
                   parent="ks_dashboard_ninja.board_menu_root" sequence="15"/>

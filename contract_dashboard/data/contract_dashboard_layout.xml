@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Grid positions for the Contract Analysis dashboard.
+             noupdate="0" so positions re-apply on every -u contract_dashboard;
+             the trailing <function/> call rebuilds the per-board
+             ks_gridstack_config so the UI actually renders in the
+             refreshed order. -->
+
+        <!-- KPI row (six tiles, 2 wide x 3 tall each, y=0) -->
+        <record id="ca_kpi_total_contracts" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 0, 'w': 2, 'h': 3}</field>
+        </record>
+        <record id="ca_kpi_total_contract_value" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 2, 'y': 0, 'w': 2, 'h': 3}</field>
+        </record>
+        <record id="ca_kpi_ongoing_contracts" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 4, 'y': 0, 'w': 2, 'h': 3}</field>
+        </record>
+        <record id="ca_kpi_maintenance_contracts" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 6, 'y': 0, 'w': 2, 'h': 3}</field>
+        </record>
+        <record id="ca_kpi_construction_contracts" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 8, 'y': 0, 'w': 2, 'h': 3}</field>
+        </record>
+        <record id="ca_kpi_avg_contract_value" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 10, 'y': 0, 'w': 2, 'h': 3}</field>
+        </record>
+
+        <!-- Charts (full width, 12 x 7 each, stacked below the KPI row) -->
+        <record id="ca_chart_amount_by_region" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 12, 'h': 7}</field>
+        </record>
+        <record id="ca_chart_qty_by_region" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 10, 'w': 12, 'h': 7}</field>
+        </record>
+        <record id="ca_chart_amount_by_month" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 17, 'w': 12, 'h': 7}</field>
+        </record>
+        <record id="ca_chart_qty_by_month" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 24, 'w': 12, 'h': 7}</field>
+        </record>
+        <record id="sa_chart_amount_by_salesman" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 31, 'w': 12, 'h': 7}</field>
+        </record>
+        <record id="ca_chart_maint_service_vs_contract_value" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 38, 'w': 12, 'h': 7}</field>
+        </record>
+        <record id="ca_chart_visits_estimated_vs_actual" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 45, 'w': 12, 'h': 10}</field>
+        </record>
+
+        <!-- Rebuild per-board ks_gridstack_config so the new grid_corners
+             actually drive render order. -->
+        <function model="ks_dashboard_ninja.board" name="contract_dashboard_rebuild_layouts"/>
+
+    </data>
+</odoo>

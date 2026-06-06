@@ -131,15 +131,15 @@
        dashboards under the Service Dashboards menu, i.e. names beginning with
        "Service Analysis", "Technician Analysis" or "Sales & Cost Analysis".
    (B) Chart hover emboss: applies to the same Service Dashboards menu family
-       as the KPI emboss above — every "Service Analysis*", "Technician Analysis*"
-       and "Sales & Cost Analysis*" board. Other KS dashboards (e.g. Contract
-       Analysis) keep their default look.
+       as the KPI emboss above — every "Service Analysis*", "Technician Analysis*",
+       "Sales & Cost Analysis*" and "Contract Analysis*" board.
    ==================================================================== */
 
 /* (A) Full KPI heading (no truncation) — Service Dashboards menu family */
 .ks_dashboard_main_content[data-ks-board-name^="Service Analysis"] .ks_dashboard_kpi_name_preview,
 .ks_dashboard_main_content[data-ks-board-name^="Technician Analysis"] .ks_dashboard_kpi_name_preview,
-.ks_dashboard_main_content[data-ks-board-name^="Sales & Cost Analysis"] .ks_dashboard_kpi_name_preview {
+.ks_dashboard_main_content[data-ks-board-name^="Sales & Cost Analysis"] .ks_dashboard_kpi_name_preview,
+.ks_dashboard_main_content[data-ks-board-name^="Contract"] .ks_dashboard_kpi_name_preview {
     white-space: normal;
     word-break: break-word;
     text-overflow: clip;
@@ -148,19 +148,22 @@
 /* (A) Left-align the KPI heading — Service Dashboards menu family */
 .ks_dashboard_main_content[data-ks-board-name^="Service Analysis"] .encapsulated-kpi-tile .dashboard-item-name,
 .ks_dashboard_main_content[data-ks-board-name^="Technician Analysis"] .encapsulated-kpi-tile .dashboard-item-name,
-.ks_dashboard_main_content[data-ks-board-name^="Sales & Cost Analysis"] .encapsulated-kpi-tile .dashboard-item-name {
+.ks_dashboard_main_content[data-ks-board-name^="Sales & Cost Analysis"] .encapsulated-kpi-tile .dashboard-item-name,
+.ks_dashboard_main_content[data-ks-board-name^="Contract"] .encapsulated-kpi-tile .dashboard-item-name {
     text-align: left !important;
 }
 
 /* (B) Chart hover emboss — Service Dashboards menu family */
 .ks_dashboard_main_content[data-ks-board-name^="Service Analysis"] .ks_dashboarditem_chart_container,
 .ks_dashboard_main_content[data-ks-board-name^="Technician Analysis"] .ks_dashboarditem_chart_container,
-.ks_dashboard_main_content[data-ks-board-name^="Sales & Cost Analysis"] .ks_dashboarditem_chart_container {
+.ks_dashboard_main_content[data-ks-board-name^="Sales & Cost Analysis"] .ks_dashboarditem_chart_container,
+.ks_dashboard_main_content[data-ks-board-name^="Contract"] .ks_dashboarditem_chart_container {
     transition: box-shadow 0.2s ease;
 }
 .ks_dashboard_main_content[data-ks-board-name^="Service Analysis"] .ks_dashboarditem_chart_container:hover,
 .ks_dashboard_main_content[data-ks-board-name^="Technician Analysis"] .ks_dashboarditem_chart_container:hover,
-.ks_dashboard_main_content[data-ks-board-name^="Sales & Cost Analysis"] .ks_dashboarditem_chart_container:hover {
+.ks_dashboard_main_content[data-ks-board-name^="Sales & Cost Analysis"] .ks_dashboarditem_chart_container:hover,
+.ks_dashboard_main_content[data-ks-board-name^="Contract"] .ks_dashboarditem_chart_container:hover {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22) !important;
 }
 

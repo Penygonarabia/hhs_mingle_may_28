@@ -16,6 +16,188 @@
         </record>
 
         <!-- ============================================================
+             KPI Tiles: top-of-dashboard summary numbers
+             ============================================================ -->
+        <record id="ca_kpi_total_contracts" model="ks_dashboard_ninja.item">
+            <field name="name">Total Contracts</field>
+            <field name="ks_dashboard_ninja_board_id" ref="contracts_analysis_dashboard_board"/>
+            <field name="ks_model_id" ref="sales_contract_and_recurring_invoices.model_subscription_contracts"/>
+            <field name="ks_date_filter_field" ref="sales_contract_and_recurring_invoices.field_subscription_contracts__date_start"/>
+            <field name="ks_dashboard_item_type">ks_kpi</field>
+            <field name="ks_record_count_type">count</field>
+            <field name="ks_chart_data_count_type">sum</field>
+            <field name="ks_record_data_limit">0</field>
+            <field name="ks_data_calculation_type">custom</field>
+            <field name="data_source">odoo</field>
+            <field name="ks_date_filter_selection">l_none</field>
+            <field name="ks_date_filter_selection_2">l_none</field>
+            <field name="ks_layout">layout5</field>
+            <field name="ks_background_color">#7219d2,0.99</field>
+            <field name="ks_font_color">#ffffff,0.99</field>
+            <field name="ks_header_bg_color">#8e24aa,0.99</field>
+            <field name="ks_default_icon">file-text-o</field>
+            <field name="ks_default_icon_color">#731cd3,0.99</field>
+            <field name="ks_icon_select">Default</field>
+            <field name="ks_dashboard_item_theme">white</field>
+            <field name="ks_chart_item_color">custom-1</field>
+            <field name="ks_data_label_type">percent</field>
+            <field name="ks_data_format">global</field>
+            <field name="ks_precision_digits">0</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_list_view_type">ungrouped</field>
+        </record>
+
+        <record id="ca_kpi_total_contract_value" model="ks_dashboard_ninja.item">
+            <field name="name">Total Contract Value</field>
+            <field name="ks_dashboard_ninja_board_id" ref="contracts_analysis_dashboard_board"/>
+            <field name="ks_model_id" ref="sales_contract_and_recurring_invoices.model_subscription_contracts"/>
+            <field name="ks_record_field" ref="sales_contract_and_recurring_invoices.field_subscription_contracts__amount_total"/>
+            <field name="ks_date_filter_field" ref="sales_contract_and_recurring_invoices.field_subscription_contracts__date_start"/>
+            <field name="ks_dashboard_item_type">ks_kpi</field>
+            <field name="ks_record_count_type">sum</field>
+            <field name="ks_chart_data_count_type">sum</field>
+            <field name="ks_record_data_limit">0</field>
+            <field name="ks_data_calculation_type">custom</field>
+            <field name="data_source">odoo</field>
+            <field name="ks_date_filter_selection">l_none</field>
+            <field name="ks_date_filter_selection_2">l_none</field>
+            <field name="ks_layout">layout5</field>
+            <field name="ks_background_color">#0e8136,0.99</field>
+            <field name="ks_font_color">#ffffff,0.99</field>
+            <field name="ks_header_bg_color">#8e24aa,0.99</field>
+            <field name="ks_default_icon">money</field>
+            <field name="ks_default_icon_color">#0e8136,0.99</field>
+            <field name="ks_icon_select">Default</field>
+            <field name="ks_dashboard_item_theme">white</field>
+            <field name="ks_chart_item_color">custom-1</field>
+            <field name="ks_data_label_type">percent</field>
+            <field name="ks_data_format">global</field>
+            <field name="ks_precision_digits">2</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_list_view_type">ungrouped</field>
+        </record>
+
+        <record id="ca_kpi_ongoing_contracts" model="ks_dashboard_ninja.item">
+            <field name="name">Ongoing Contracts</field>
+            <field name="ks_dashboard_ninja_board_id" ref="contracts_analysis_dashboard_board"/>
+            <field name="ks_model_id" ref="sales_contract_and_recurring_invoices.model_subscription_contracts"/>
+            <field name="ks_date_filter_field" ref="sales_contract_and_recurring_invoices.field_subscription_contracts__date_start"/>
+            <field name="ks_dashboard_item_type">ks_kpi</field>
+            <field name="ks_record_count_type">count</field>
+            <field name="ks_chart_data_count_type">sum</field>
+            <field name="ks_record_data_limit">0</field>
+            <field name="ks_data_calculation_type">custom</field>
+            <field name="data_source">odoo</field>
+            <field name="ks_date_filter_selection">l_none</field>
+            <field name="ks_date_filter_selection_2">l_none</field>
+            <field name="ks_layout">layout5</field>
+            <field name="ks_background_color">#1976d2,0.99</field>
+            <field name="ks_font_color">#ffffff,0.99</field>
+            <field name="ks_header_bg_color">#8e24aa,0.99</field>
+            <field name="ks_default_icon">play-circle</field>
+            <field name="ks_default_icon_color">#1976d2,0.99</field>
+            <field name="ks_icon_select">Default</field>
+            <field name="ks_dashboard_item_theme">white</field>
+            <field name="ks_chart_item_color">custom-1</field>
+            <field name="ks_data_label_type">percent</field>
+            <field name="ks_data_format">global</field>
+            <field name="ks_precision_digits">0</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_list_view_type">ungrouped</field>
+            <field name="ks_domain">[("state", "=", "Ongoing")]</field>
+        </record>
+
+        <record id="ca_kpi_maintenance_contracts" model="ks_dashboard_ninja.item">
+            <field name="name">Maintenance Contracts</field>
+            <field name="ks_dashboard_ninja_board_id" ref="contracts_analysis_dashboard_board"/>
+            <field name="ks_model_id" ref="sales_contract_and_recurring_invoices.model_subscription_contracts"/>
+            <field name="ks_date_filter_field" ref="sales_contract_and_recurring_invoices.field_subscription_contracts__date_start"/>
+            <field name="ks_dashboard_item_type">ks_kpi</field>
+            <field name="ks_record_count_type">count</field>
+            <field name="ks_chart_data_count_type">sum</field>
+            <field name="ks_record_data_limit">0</field>
+            <field name="ks_data_calculation_type">custom</field>
+            <field name="data_source">odoo</field>
+            <field name="ks_date_filter_selection">l_none</field>
+            <field name="ks_date_filter_selection_2">l_none</field>
+            <field name="ks_layout">layout5</field>
+            <field name="ks_background_color">#e65100,0.99</field>
+            <field name="ks_font_color">#ffffff,0.99</field>
+            <field name="ks_header_bg_color">#8e24aa,0.99</field>
+            <field name="ks_default_icon">wrench</field>
+            <field name="ks_default_icon_color">#e65100,0.99</field>
+            <field name="ks_icon_select">Default</field>
+            <field name="ks_dashboard_item_theme">white</field>
+            <field name="ks_chart_item_color">custom-1</field>
+            <field name="ks_data_label_type">percent</field>
+            <field name="ks_data_format">global</field>
+            <field name="ks_precision_digits">0</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_list_view_type">ungrouped</field>
+            <field name="ks_domain">[("contract_type", "=", "maintenance")]</field>
+        </record>
+
+        <record id="ca_kpi_construction_contracts" model="ks_dashboard_ninja.item">
+            <field name="name">Construction Contracts</field>
+            <field name="ks_dashboard_ninja_board_id" ref="contracts_analysis_dashboard_board"/>
+            <field name="ks_model_id" ref="sales_contract_and_recurring_invoices.model_subscription_contracts"/>
+            <field name="ks_date_filter_field" ref="sales_contract_and_recurring_invoices.field_subscription_contracts__date_start"/>
+            <field name="ks_dashboard_item_type">ks_kpi</field>
+            <field name="ks_record_count_type">count</field>
+            <field name="ks_chart_data_count_type">sum</field>
+            <field name="ks_record_data_limit">0</field>
+            <field name="ks_data_calculation_type">custom</field>
+            <field name="data_source">odoo</field>
+            <field name="ks_date_filter_selection">l_none</field>
+            <field name="ks_date_filter_selection_2">l_none</field>
+            <field name="ks_layout">layout5</field>
+            <field name="ks_background_color">#455a64,0.99</field>
+            <field name="ks_font_color">#ffffff,0.99</field>
+            <field name="ks_header_bg_color">#8e24aa,0.99</field>
+            <field name="ks_default_icon">building</field>
+            <field name="ks_default_icon_color">#455a64,0.99</field>
+            <field name="ks_icon_select">Default</field>
+            <field name="ks_dashboard_item_theme">white</field>
+            <field name="ks_chart_item_color">custom-1</field>
+            <field name="ks_data_label_type">percent</field>
+            <field name="ks_data_format">global</field>
+            <field name="ks_precision_digits">0</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_list_view_type">ungrouped</field>
+            <field name="ks_domain">[("contract_type", "=", "construction")]</field>
+        </record>
+
+        <record id="ca_kpi_avg_contract_value" model="ks_dashboard_ninja.item">
+            <field name="name">Avg. Contract Value</field>
+            <field name="ks_dashboard_ninja_board_id" ref="contracts_analysis_dashboard_board"/>
+            <field name="ks_model_id" ref="sales_contract_and_recurring_invoices.model_subscription_contracts"/>
+            <field name="ks_record_field" ref="sales_contract_and_recurring_invoices.field_subscription_contracts__amount_total"/>
+            <field name="ks_date_filter_field" ref="sales_contract_and_recurring_invoices.field_subscription_contracts__date_start"/>
+            <field name="ks_dashboard_item_type">ks_kpi</field>
+            <field name="ks_record_count_type">average</field>
+            <field name="ks_chart_data_count_type">sum</field>
+            <field name="ks_record_data_limit">0</field>
+            <field name="ks_data_calculation_type">custom</field>
+            <field name="data_source">odoo</field>
+            <field name="ks_date_filter_selection">l_none</field>
+            <field name="ks_date_filter_selection_2">l_none</field>
+            <field name="ks_layout">layout5</field>
+            <field name="ks_background_color">#00838f,0.99</field>
+            <field name="ks_font_color">#ffffff,0.99</field>
+            <field name="ks_header_bg_color">#8e24aa,0.99</field>
+            <field name="ks_default_icon">line-chart</field>
+            <field name="ks_default_icon_color">#00838f,0.99</field>
+            <field name="ks_icon_select">Default</field>
+            <field name="ks_dashboard_item_theme">white</field>
+            <field name="ks_chart_item_color">custom-1</field>
+            <field name="ks_data_label_type">percent</field>
+            <field name="ks_data_format">global</field>
+            <field name="ks_precision_digits">2</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_list_view_type">ungrouped</field>
+        </record>
+
+        <!-- ============================================================
              Chart 1: Contract Analysis - Amount (Region wise)
              Main groupby: Region (work_center_group_id)
              Drill Level-1: City (work_center_id)
