@@ -1062,14 +1062,14 @@ export class JobcardList extends Component {
     console.log("jobcardAmcId", jobcardAmcId);
 
     // Added on Vengatesh - mar-21-2026
-    if (!jobcardAmcId) {
+    // if (!jobcardAmcId) {
       const warehouse = await this.workCenterlocationMatch();
       if (!warehouse) {
         this.hasSlotClicked = false;
         console.log("Warehouse not selected, stopping update.");
         return; // ✅ stops here
       }
-    }
+    // }
     try {
       await this.updateJobCard();
       await this.loadJobCards();
