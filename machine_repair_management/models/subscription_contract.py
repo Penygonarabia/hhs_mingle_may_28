@@ -52,6 +52,18 @@ class SubscriptionContracts(models.Model):
     invoice_txt = fields.Text(string = "Invoice Text", default = lambda self:self.env['ir.config_parameter'].sudo().get_param('machine_repair_management.invoice_txt_contract'))
     warehouse_lst_ids = fields.Many2many('stock.warehouse',string = "Warehouse List ids", compute="_compute_warehouse_lst_ids")
     
+    @api.depends('amc_quotation_id')
+    def _compute_warehouse_lst_ids(self):
+        
+        user = self.env.user
+    
+        for rec in self:
+            if user.has_group('warehouse_restrictions_app.group_restrict_stock_warehouse'):
+                warehouse_ids = user.available_warehouse_ids.ids if user.available_warehouse_ids and user.restrict_stock_warehouse_operation  else self.env['stock.warehouse'].search([]).ids
+            else:
+                warehouse_ids = self.env['stock.warehouse'].search([]).ids
+    
+            rec.warehouse_lst_ids = [(6, 0, warehouse_ids)]  
     
 
     # 20260415 gokul
