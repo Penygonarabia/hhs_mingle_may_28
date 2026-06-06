@@ -179,6 +179,11 @@ class ResConfigSettings(models.TransientModel):
 
     asset_tag_sequence_creation_bool=fields.Boolean(string="Asset Tag Sequence Creation", default=False, help = "Sequence Creation Based on the Machine Repair Management",config_parameter = "machine_repair_management.asset_tag_sequence_creation_bool")
 
+    '''Code Added on June 05 2026 by Vijaya Bhaskar '''
+    
+    invoice_txt_contract = fields.Char(string = "Invoice Text Contract", config_parameter = "machine_repair_management.invoice_txt_contract")
+    
+    
 
     @api.model
     def get_values(self):
@@ -275,6 +280,8 @@ class ResConfigSettings(models.TransientModel):
             ),
             installment_product_id=installment_product_id,
             asset_tag_sequence_creation_bool=params.get_param('machine_repair_management.asset_tag_sequence_creation_bool'),
+            invoice_txt_contract = params.get_param('machine_repair_management.invoice_txt_contract'),
+
         )
         return res
 
@@ -401,5 +408,7 @@ class ResConfigSettings(models.TransientModel):
             installment_product_id_str,
         )
         self.env['ir.config_parameter'].sudo().set_param('machine_repair_management.asset_tag_sequence_creation_bool', self.asset_tag_sequence_creation_bool)
+        
+        self.env['ir.config_parameter'].sudo().set_param('machine_repair_management.invoice_txt_contract',self.invoice_txt_contract)
 
         return res

@@ -2883,6 +2883,8 @@ class ServiceSaleOrder(models.Model):
             order.state = "sale"
             contract.onchange_amc_quotation_id()
             contract.onchange_partner_id_set_identification()
+            '''Code Added on June 05 2026 by Vijaya Bhaskar'''
+            contract._onchange_invoice_interval()
 
             ContractLine = self.env["subscription.contracts.line"]
 

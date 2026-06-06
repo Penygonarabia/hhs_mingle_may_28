@@ -1,6 +1,8 @@
 from odoo import api, fields, models, _, re
 from odoo.exceptions import ValidationError
 from odoo.tools import float_round
+from dateutil.relativedelta import relativedelta
+
 
 class SubscriptionContracts(models.Model):
     """Model for subscription contracts"""
@@ -45,27 +47,29 @@ class SubscriptionContracts(models.Model):
     
     sales_person_user_id = fields.Many2one('res.users', string  = "SalesPerson")
     
+    '''Code Added on June 05 2026 by Vijaya Bhaskar'''
+    
+    invoice_txt = fields.Text(string = "Invoice Text", default = lambda self:self.env['ir.config_parameter'].sudo().get_param('machine_repair_management.invoice_txt_contract'))
+    warehouse_lst_ids = fields.Many2many('stock.warehouse',string = "Warehouse List ids", compute="_compute_warehouse_lst_ids")
+    
+    
 
     # 20260415 gokul
     @api.onchange('partner_id', 'amc_quotation_id')
     def onchange_partner_id_set_identification(self):
-        print("_____________________________________", self.partner_id.additional_identification_scheme)
+       
         if self.partner_id:
-            print("{{{{{{{{{{{{{{{{{{{{{{{{{{{", self.partner_id.name)
             if self.partner_id.additional_identification_scheme == 'TIN':
                 self.customer_identification_scheme = self.partner_id.additional_identification_scheme or False
                 # Show VAT
                 self.customer_identification_number = self.partner_id.vat or False
-                print("++++++++++++++++++++++++++++++gokulkarthi", self.customer_identification_scheme)
             else:
                 # Show other identification
                 self.customer_identification_scheme = self.partner_id.additional_identification_scheme or False
                 self.customer_identification_number = self.partner_id.additional_identification_number or False
-                print("///////////////////////////elser.......", self.partner_id.additional_identification_scheme, )
             self.building_number = self.partner_id.building_number or False
             self.plot_identification = self.partner_id.plot_identification or False
             # self.invoice_interval_duration = self.amc_quotation_id.invoice_interval_duration or False
-            print("++++++++++++++++++++++++++++++gokul", self.partner_id.name)
 
     # 20260415 gokul
     @api.model
@@ -401,5 +405,63 @@ class SubscriptionContracts(models.Model):
     #     if "amc_quotation_id" in vals:
     #         self.onchange_amc_quotation_id()
     #     return res
+    
+    
+    '''Code Added on June 05 2026 by Vijaya Bhaskar'''
+    @api.onchange('invoice_interval_duration','date_start')
+    def _onchange_invoice_interval(self):
+        for rec in self:
+            invoice_txt = self.env['ir.config_parameter'].sudo().get_param('machine_repair_management.invoice_txt_contract')
+            if rec.invoice_interval_duration:
+                if rec.invoice_interval_duration == 'annual':
+                    end_date = rec.date_start + relativedelta(years=1, days=-1) 
+                    rec.invoice_txt = (
+                        f"{invoice_txt} Annual Period : "
+                        f"{rec.date_start.strftime('%d-%m-%Y')} to "
+                        f"{end_date.strftime('%d-%m-%Y')}"
+                    )
+                elif rec.invoice_interval_duration == 'semi_annual':
+                    end_date = rec.date_start + relativedelta(months=6, days=-1) 
+                    rec.invoice_txt = (
+                        f"{invoice_txt} Semi-Annual Period : "
+                        f"{rec.date_start.strftime('%d-%m-%Y')} to "
+                        f"{end_date.strftime('%d-%m-%Y')}"
+                    )
+                
+                elif rec.invoice_interval_duration == 'quarterly':
+                    end_date = rec.date_start + relativedelta(months=3, days=-1) 
+
+                    rec.invoice_txt = (
+                            f"{invoice_txt} Quarterly Period : "
+                            f"{rec.date_start.strftime('%d-%m-%Y')} to "
+                            f"{end_date.strftime('%d-%m-%Y')}"
+                        )
+                
+                
+                elif rec.invoice_interval_duration == 'monthly':
+                    end_date = rec.date_start + relativedelta(months=1, days=-1) 
+                    rec.invoice_txt = (
+                            f"{invoice_txt} Monthly Period : "
+                            f"{rec.date_start.strftime('%d-%m-%Y')} to "
+                            f"{end_date.strftime('%d-%m-%Y')}"
+                        )
+                
+                # period_names = {
+                #
+                #     'annual':'Annual',
+                #     'semi_annual' : 'Semi-Annual',
+                #     'quarterly' :'Quarterly',
+                #     'monthly' : 'Monthly'
+                #
+                #     }
+                #
+                # if rec.invoice_interval_duration:
+                #     rec.invoice_txt = (
+                #         f"{invoice_txt}{period_names[rec.invoice_interval_duration]} Period : "
+                #         f"{rec.date_start.strftime('%d-%m-%Y')} to " 
+                #         f"{end_date.strftime('%d-%m-%Y')}"
+                #
+                #         )
+                #
 
 
