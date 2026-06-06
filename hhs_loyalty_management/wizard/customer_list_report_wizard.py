@@ -239,13 +239,13 @@ class CustomerListReportWizard(models.TransientModel):
         string='Classification'
     )
 
-    last_purchase_from = fields.Date(
-        string='Last Purchase From'
-    )
-
-    last_purchase_to = fields.Date(
-        string='Last Purchase To'
-    )
+    # last_purchase_from = fields.Date(
+    #     string='Last Purchase From'
+    # )
+    #
+    # last_purchase_to = fields.Date(
+    #     string='Last Purchase To'
+    # )
 
     company_id = fields.Many2one(
         'res.company',

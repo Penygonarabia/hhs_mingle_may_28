@@ -4,12 +4,12 @@ from odoo import _
 
 
 class EnterManualPromotionPoints(models.Model):
-    _name='manual.promotional.points'
-    _description='Manual Promotion Points'
+    _name = 'manual.promotional.points'
+    _description = 'Manual Promotion Points'
     _rec_name = 'reference'
     _order = 'transaction_date desc'
 
-    #name = fields.Char(string="Name", required=True)
+    # name = fields.Char(string="Name", required=True)
 
     reference = fields.Char(
         string='Reference',
@@ -21,7 +21,6 @@ class EnterManualPromotionPoints(models.Model):
         string='Reason Type',
         required=True
     )
-
 
     adjustment_types = fields.Selection([
         ('addition', 'Addition'),
@@ -179,7 +178,7 @@ class EnterManualPromotionPoints(models.Model):
                 'clph_cstcode': rec.customer_id.ref or '',
                 'clph_date': rec.transaction_date,
                 # 99 = Adjustment / Collected
-                'clph_doctype': 99,
+                'clph_doctype': '99',
                 'clph_docnumber': rec.reference or '',
                 'clph_adjtype': adj_type,
                 'clph_type': clph_type,
@@ -190,7 +189,7 @@ class EnterManualPromotionPoints(models.Model):
                 'clph_note': '',
                 'clph_uid': self.env.user.id,
                 'clph_datetime': fields.Datetime.now(),
-                'clph_reasoncode':rec.reason_type_id.reason_code or '',
+                'clph_reasoncode': rec.reason_type_id.reason_code or '',
                 'clph_promoref': rec.reference or '',
                 'clph_export': False,
             })
@@ -200,7 +199,7 @@ class EnterManualPromotionPoints(models.Model):
             # -------------------------------------------------
 
             last_transaction = self.env[
-                #'loyalty.transaction.history'
+                # 'loyalty.transaction.history'
                 'customer.loyalty.points.history'
             ].search(
                 [('partner_id', '=', rec.customer_id.id)],
@@ -239,7 +238,7 @@ class EnterManualPromotionPoints(models.Model):
             # -------------------------------------------------
 
             self.env[
-                #'loyalty.transaction.history'
+                # 'loyalty.transaction.history'
                 'customer.loyalty.points.history'
             ].create({
 
@@ -250,7 +249,7 @@ class EnterManualPromotionPoints(models.Model):
                 'clph_docnumber': rec.reference or '',
                 'clph_points': rec.number_of_points,
                 'clph_whouse': '',
-                'clph_note':'',
+                'clph_note': '',
                 'clph_datetime': fields.Datetime.now(),
                 'clph_bonuspoint': 0,
                 'type': 'Adjustments',
@@ -352,7 +351,6 @@ class EnterManualPromotionPoints(models.Model):
     #         rec.state = 'processed'
 
 
-
 class CustomerLoyaltyPointsHistory(models.Model):
     _name = 'customer.loyalty.points.history'
     _description = 'Customer Loyalty Points History'
@@ -365,7 +363,11 @@ class CustomerLoyaltyPointsHistory(models.Model):
     clph_docnumber = fields.Char(string='Reference')
     clph_cstcode = fields.Char()
     clph_date = fields.Date()
-    clph_doctype = fields.Char()
+    # clph_doctype = fields.Char()
+    clph_doctype = fields.Selection([
+        ('99', 'Adjustments'), ('98', 'Redeem'), ('97', 'Expiry'),
+        ('01', 'Invoice'), ('02', 'Credit Note')
+    ])
     clph_adjtype = fields.Char()
     clph_type = fields.Char()
     clph_whouse = fields.Char(string='W/H')
@@ -390,9 +392,59 @@ class CustomerLoyaltyPointsHistory(models.Model):
     redeemed_points = fields.Integer(
         string='Redeemed'
     )
-    clph_bonuspoint=fields.Integer(string='Bonus Points')
-    type=fields.Char(string='Type')
+    balance_points_regular = fields.Integer(
+        string="Balance"
+    )
+    clph_bonuspoint = fields.Integer(string='Bonus Points')
+    type = fields.Char(string='Type')
+    # collected_points_regular = fields.Integer(
+    #     string="Collected",
+    #     compute="_compute_loyalty_points",
+    #     store=True
+    # )
 
+    def read(self, fields=None, load='_classic_read'):
+        res = super(CustomerLoyaltyPointsHistory, self).read(fields, load)
+        for rec in self:
+            rec._compute_loyalty_points()
+            # rec._compute_tier_name()
+        return res
+
+    # @api.depends('loyalty_transaction_history_ids')
+    def _compute_loyalty_points(self):
+
+        for rec in self:
+            history = self.env['customer.loyalty.points.history'].search([
+                ('clph_cstid', '=', rec.id)
+            ])
+            total_points = 0
+
+            for line in history:
+
+                # Invoice
+                if line.clph_doctype == '01':
+                    total_points += line.clph_regpoints
+
+                # Redeem
+                elif line.clph_doctype == '98':
+                    total_points -= line.clph_regpoints
+
+                # Expiry
+                elif line.clph_doctype == '97':
+                    total_points -= line.clph_regpoints
+
+                # Credit Note
+                elif line.clph_doctype == '02':
+                    total_points -= line.clph_regpoints
+
+                # Adjustment
+                elif line.clph_doctype == '99':
+                    if line.clph_adjtype == '+':
+                        total_points += line.clph_regpoints
+                    elif line.clph_adjtype == '-':
+                        total_points -= line.clph_regpoints
+
+            rec.balance_points_regular = total_points
 
     # ---------------------------------------------------------
     # MIGRATE OLD HISTORY
@@ -451,6 +503,3 @@ class CustomerLoyaltyPointsHistory(models.Model):
     #             'clph_datetime': rec.CLPH_DATETIME,
     #
     #         })
-
-
-

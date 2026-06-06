@@ -4,8 +4,8 @@ from odoo.exceptions import ValidationError
 from datetime import date, timedelta
 from markupsafe import Markup
 import logging
-
 _logger = logging.getLogger(__name__)
+
 
 
 class ProcessTier(models.Model):
@@ -93,7 +93,6 @@ class ProcessTier(models.Model):
                         """
 
             rec.customer_names = Markup(badges)
-
     # customer_names = fields.Html(
     #     string="Customers",
     #     compute="_compute_customer_names",
@@ -485,7 +484,7 @@ class ProcessTier(models.Model):
         # -------------------------------------------------
         # UPDATE CUSTOMER
         # -------------------------------------------------
-
+        
         matched_id = matched_tier.id if matched_tier else False
         matched_name = matched_tier.name if matched_tier else False
 
@@ -496,7 +495,7 @@ class ProcessTier(models.Model):
         _logger.info("matched_tier.id: %s", matched_id)
         _logger.info("matched_tier.name: %s", matched_name)
         _logger.info("loyalty_points: %s", loyalty_points)
-
+        
         customer.write({
             'customer_tier_id': matched_id,
             'tier_name': matched_name,
@@ -582,7 +581,7 @@ class ProcessTier(models.Model):
                 import logging
                 _logger = logging.getLogger(__name__)
                 _logger.info("--------- ANALYZING CUSTOMER: %s ---------", customer.name)
-
+                
                 customer._compute_loyalty_points()
 
                 loyalty_points = max(
@@ -616,9 +615,7 @@ class ProcessTier(models.Model):
                     if not current_tier:
                         continue  # Already has no tier.
 
-                    _logger.info(
-                        "Customer %s points are lower than the lowest tier (ZERO MATCH). Checking downgrade grace period.",
-                        customer.name)
+                    _logger.info("Customer %s points are lower than the lowest tier (ZERO MATCH). Checking downgrade grace period.", customer.name)
 
                     if not customer.res_maxinvoicedate:
                         continue
@@ -637,7 +634,7 @@ class ProcessTier(models.Model):
                             date.today()
                             - timedelta(days=waiting_days)
                     )
-
+                    
                     if customer.res_maxinvoicedate <= allowed_date:
                         _logger.info("Customer %s triggers STRIP DOWNGRADE. Removing tier.", customer.name)
                         rec._update_customer_tier(
@@ -671,14 +668,12 @@ class ProcessTier(models.Model):
                 # -------------------------------------------------
 
                 if current_tier.id == matched_tier.id:
-                    _logger.info("Customer %s matched tier is same as current tier (%s). Skipping.", customer.name,
-                                 matched_tier.name)
+                    _logger.info("Customer %s matched tier is same as current tier (%s). Skipping.", customer.name, matched_tier.name)
                     continue
 
                 matched_sort = matched_tier.sort_order or 0
                 current_sort = current_tier.sort_order or 0
-                _logger.info("Customer %s logic evaluation: matched_sort=%s vs current_sort=%s", customer.name,
-                             matched_sort, current_sort)
+                _logger.info("Customer %s logic evaluation: matched_sort=%s vs current_sort=%s", customer.name, matched_sort, current_sort)
 
                 # -------------------------------------------------
                 # UPGRADE

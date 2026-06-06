@@ -77,12 +77,12 @@
                             <thead>
                                 <tr style="background:#C5D9F1; font-weight:bold; text-align:center;">
                                     <th style="width:5%; border:1px solid #aaa; padding:3px 4px;">S.No</th>
-                                    <th style="width:15%; border:1px solid #aaa; padding:3px 4px;">Customer Code</th>
+                                    <th style="width:10%; border:1px solid #aaa; padding:3px 4px;">Customer Code</th>
                                     <th style="width:35%; border:1px solid #aaa; padding:3px 4px;">Customer Name</th>
                                     <th style="width:15%; border:1px solid #aaa; padding:3px 4px;">Classification</th>
                                     <th style="width:15%; border:1px solid #aaa; padding:3px 4px;">Region</th>
                                     <th style="width:10%; border:1px solid #aaa; padding:3px 4px;">City</th>
-                                    <th style="width:10%; border:1px solid #aaa; padding:3px 4px;">Last Purchase</th>
+                                    <th style="width:15%; border:1px solid #aaa; padding:3px 4px;">Last Purchase</th>
                                 </tr>
                             </thead>
                             <t t-set="counter" t-value="1"/>
@@ -109,7 +109,8 @@
                                         </td>
                                         <td style="border:1px solid #ddd; padding:2px 4px;">
                                             <t t-if="cust.get('last_purchase_date')">
-                                                <t t-esc="cust['last_purchase_date']"/>
+                                                <t t-set="dt" t-value="cust.get('last_purchase_date')"/>
+                                                <t t-esc="'%s-%s-%s' % (dt[8:10], dt[5:7], dt[0:4])"/>
                                             </t>
                                         </td>
                                     </tr>

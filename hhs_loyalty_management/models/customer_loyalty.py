@@ -9,7 +9,7 @@ class CustomerLoyaltyResPartner(models.Model):
         string="Activate Loyalty Feature"
     )
     tier_movement_history_ids = fields.One2many(
-        'customer.tier.movement.history','customer_id' )
+        'customer.tier.movement.history', 'customer_id')
 
     activation_date = fields.Date(
         string="Activation Date"
@@ -26,12 +26,12 @@ class CustomerLoyaltyResPartner(models.Model):
     )
     tier_name = fields.Char(
         string="Tier",
-        #compute="_compute_tier_name",
+        # compute="_compute_tier_name",
         store=True,
-        #related='customer_tier_id.name',
+        # related='customer_tier_id.name',
     )
-    salesman_code=fields.Char(string="Salesman Code")
-    salesman_name=fields.Char(string="Salesman Name")
+    salesman_code = fields.Char(string="Salesman Code")
+    salesman_name = fields.Char(string="Salesman Name")
 
     collected_points_regular = fields.Integer(
         string="Collected",
@@ -72,7 +72,8 @@ class CustomerLoyaltyResPartner(models.Model):
     #     'partner_id',
     #     string='Loyalty Transaction History'
     # )
-    loyalty_transaction_ids=fields.One2many('customer.loyalty.points.history','partner_id',string='Loyalty Transactions')
+    loyalty_transaction_ids = fields.One2many('customer.loyalty.points.history', 'partner_id',
+                                              string='Loyalty Transactions')
 
     loyalty_points = fields.Integer(
         string='Points'
@@ -85,6 +86,10 @@ class CustomerLoyaltyResPartner(models.Model):
     balance_points = fields.Integer(
         string='Balance'
     )
+    invoice_points_bonus = fields.Integer(string='Invoice Points')
+    credit_note_points_bonus = fields.Integer(string='Credit Note Points')
+    invoice_points_regular=fields.Integer(string='Invoice Points Regular')
+    credit_note_points_regular=fields.Integer(sting='Credit Note Points Regular')
 
     # @api.depends('balance_points_regular','collected_points_regular','expired_points_bonus','redeem_points_regular')
     # def _compute_tier_name(self):
@@ -100,7 +105,6 @@ class CustomerLoyaltyResPartner(models.Model):
     #                 break
     #             print("tier_name",tier.name)
 
-
     # @api.depends('balance_points')
     # def _compute_tier_name(self):
     #     for rec in self:
@@ -110,16 +114,16 @@ class CustomerLoyaltyResPartner(models.Model):
     #
     #                 if rec.balance_points > line.min_loyalty_points and rec.balance_points < line.min_loyalty_points:
     #                     rec.tier_name = line.name
-            #print("tier_nameeeeeeeeeeeeeeeeeeee",rec.tier_name)
+    # print("tier_nameeeeeeeeeeeeeeeeeeee",rec.tier_name)
 
     def read(self, fields=None, load='_classic_read'):
-     res = super(CustomerLoyaltyResPartner, self).read(fields, load)
-     for rec in self:
-        rec._compute_loyalty_points()
-        #rec._compute_tier_name()
-     return res
+        res = super(CustomerLoyaltyResPartner, self).read(fields, load)
+        for rec in self:
+            rec._compute_loyalty_points()
+            # rec._compute_tier_name()
+        return res
 
-    #@api.depends('loyalty_transaction_history_ids')
+    # @api.depends('loyalty_transaction_history_ids')
     def _compute_loyalty_points(self):
 
         for rec in self:
@@ -131,13 +135,8 @@ class CustomerLoyaltyResPartner(models.Model):
             # REGULAR
             # -----------------------------
 
-            # rec.collected_points_regular = sum(
-            #     history.filtered(
-            #         lambda x: str(x.clph_doctype) == '99'
-            #     ).mapped('clph_regpoints')
-            # )
             regular_history = history.filtered(
-                lambda x: x.clph_doctype == 99
+                lambda x: x.clph_doctype == '99'
             )
             total_points = 0
             for line in history:
@@ -148,7 +147,7 @@ class CustomerLoyaltyResPartner(models.Model):
                 # DEDUCTION
                 elif line.clph_adjtype == '-':
                     total_points -= line.clph_regpoints
-            #print("regular_history",line.clph_regpoints)
+            # print("regular_history",line.clph_regpoints)
             # FINAL VALUE
             rec.collected_points_regular = total_points
             rec.redeem_points_regular = sum(
@@ -162,9 +161,22 @@ class CustomerLoyaltyResPartner(models.Model):
                     lambda x: str(x.clph_doctype) == '97'
                 ).mapped('clph_regpoints')
             )
+            rec.invoice_points_regular = sum(
+                history.filtered(
+                    lambda x: x.clph_doctype == '01'
+                ).mapped('clph_regpoints')
+            )
+
+            rec.credit_note_points_regular = sum(
+                history.filtered(
+                    lambda x: x.clph_doctype == '02'
+                ).mapped('clph_regpoints')
+            )
 
             rec.balance_points_regular = (
                     rec.collected_points_regular
+                    + rec.invoice_points_regular
+                    - rec.credit_note_points_regular
                     - rec.redeem_points_regular
                     - rec.expired_points_regular
             )
@@ -191,8 +203,22 @@ class CustomerLoyaltyResPartner(models.Model):
                 ).mapped('clph_bonuspoints')
             )
 
+            rec.invoice_points_bonus = sum(
+                history.filtered(
+                    lambda x: x.clph_doctype == '01'
+                ).mapped('clph_bonuspoints')
+            )
+
+            rec.credit_note_points_bonus = sum(
+                history.filtered(
+                    lambda x: x.clph_doctype == '02'
+                ).mapped('clph_bonuspoints')
+            )
+
             rec.balance_points_bonus = (
                     rec.collected_points_bonus
+                    + rec.invoice_points_bonus
+                    - rec.credit_note_points_bonus
                     - rec.redeem_points_bonus
                     - rec.expired_points_bonus
             )
@@ -273,7 +299,6 @@ class CustomerLoyaltyLine(models.Model):
                     "Duplicate Product are not allowed for this Customer."
                 )
 
-
 # class LoyaltyTransactionHistory(models.Model):
 #     _name = 'loyalty.transaction.history'
 #     _description = 'Loyalty Transaction History'
@@ -318,4 +343,3 @@ class CustomerLoyaltyLine(models.Model):
 #     # clph_bonuspoints=fields.Char(string='Bonus Points')
 #     clph_bonuspoint=fields.Integer(string='Bonus Points')
 #     type=fields.Char(string='Type')
-
