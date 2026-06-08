@@ -6,14 +6,14 @@
             <field name="format">A4</field>
             <field name="page_height">0</field>
             <field name="page_width">0</field>
-            <field name="orientation">Portrait</field>
+            <field name="orientation">Landscape</field>
             <field name="margin_top">30</field>
             <field name="margin_bottom">20</field>
             <field name="margin_left">5</field>
             <field name="margin_right">5</field>
             <field name="header_line" eval="False"/>
             <field name="header_spacing">25</field>
-            <field name="dpi">125</field>
+            <field name="dpi">130</field>
         </record>
         <record id="sale_order_amc_quotation_report_details" model="ir.actions.report">
             <field name="name">AMC Quotation</field>
@@ -48,30 +48,29 @@
         <template id="report_saleorder_amcquotation">
             <t t-call="web.html_container">
                 <t t-call="machine_repair_management.service_amc_quotation_internal_layout_service_amc_header_pager">
-                    <div class="header" style="border-bottom:2px solid #002060;font-family:'Arial Unicode MS', Arial, sans-serif; font-size:40px !important; padding:5px 0;">
+                    <div class="header" style="border-bottom:2px solid #002060;font-family:'Arial Unicode MS', Arial, sans-serif; font-size:17pt !important; padding:5px 0;">
                         <div class="row">
                             <div class="col-5 text-left">
                                 <strong>
-                                    <span style="color:#002060; font-size:18px;">Hussein and Al Hassan G. Shaker Bros.</span>
+                                    <span style="color:#002060; font-size:17pt !important;">Hussein and Al Hassan G. Shaker Bros.</span>
                                 </strong>
                                 <br/>
                                 <strong>
-                                    <span style="color:#002060; font-size:18px;">For Modern Trading Co. Ltd.</span>
+                                    <span style="color:#002060; font-size:17pt !important;">For Modern Trading Co. Ltd.</span>
                                 </strong>
                             </div>
                             <div class="col-2 text-center" style="margin:0; padding:0;">
-                                <img src="sales_contract_and_recurring_invoices/static/src/img/HHS_Header_Middle.png"
-                                     style="max-height:100px; max-width:175px; margin:0; padding:0;"/>
+                                <img src="sales_contract_and_recurring_invoices/static/src/img/HHS_Header_Middle.png" style="max-height:100px; max-width:175px; margin:0; padding:0;"/>
                             </div>
                             <div class="col-5 text-right" dir="rtl">
                                 <strong>
                                     <!--                                    <span style="color:#002060;">شركة الإخوان حسين والحسن غازي شاكر</span>-->
-                                    <span style="color:#002060; font-size:18px;">شركة الأخوان حسين و الحسن غازي شاكر</span>
+                                    <span style="color:#002060; font-size:17pt !important;">شركة الأخوان حسين و الحسن غازي شاكر</span>
                                 </strong>
                                 <br/>
                                 <strong>
                                     <!--                                    <span style="color:#002060;">للتجارة الحديثة المحدودة</span>-->
-                                    <span style="color:#002060; font-size:18px;">للتجارة الحديثة المحدودة</span>
+                                    <span style="color:#002060; font-size:17pt !important;">للتجارة الحديثة المحدودة</span>
                                 </strong>
                             </div>
                         </div>
@@ -116,7 +115,7 @@
                         <div class="row">
                             <div class="col-3">
                                 <strong>
-                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                    <span style="font-weight:bold !important; font-size:17pt !important; margin:0; padding:0; color:#002060;">
                                         Date
                                     </span>
                                 </strong>
@@ -124,7 +123,7 @@
                             </div>
                             <div class="col-6 text-center">
                                 <strong>
-                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                    <span style="font-weight:bold !important; font-size:17pt !important; margin:0; padding:0; color:#002060;">
                                         <!--                                        <t t-esc="datetime.datetime.today().strftime('%d/%m/%Y')"/>-->
                                         <t t-esc="quotation_date"/>
                                     </span>
@@ -133,7 +132,7 @@
                             </div>
                             <div class="col-3 text-right" dir="rtl">
                                 <strong>
-                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                    <span style="font-weight:bold !important; font-size:17pt !important; margin:0; padding:0; color:#002060;">
                                         التاريخ
                                     </span>
                                 </strong>
@@ -143,7 +142,7 @@
                         <div class="row">
                             <div class="col-3">
                                 <strong>
-                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                    <span style="font-weight:bold !important; font-size:17pt !important; margin:0; padding:0; color:#002060;">
                                         Reference No.
                                     </span>
                                 </strong>
@@ -152,7 +151,7 @@
 
                             <div class="col-6 text-center">
                                 <strong>
-                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                    <span style="font-weight:bold !important; font-size:17pt !important; margin:0; padding:0; color:#002060;">
                                         <t t-esc="quotation_no"/>
                                     </span>
                                 </strong>
@@ -161,7 +160,7 @@
 
                             <div class="col-3 text-right" dir="rtl">
                                 <strong>
-                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                    <span style="font-weight:bold !important; font-size:17pt !important; margin:0; padding:0; color:#002060;">
                                         الرقم المرجعي
                                     </span>
                                 </strong>
@@ -171,7 +170,7 @@
                         <!--                        <div class="row">-->
                         <!--                            <div class="col-3">-->
                         <!--                                <strong>-->
-                        <!--                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">-->
+                        <!--                                    <span style="font-weight:bold !important; font-size:17pt !important; margin:0; padding:0; color:#002060;">-->
                         <!--                                        Company Name-->
                         <!--                                    </span>-->
                         <!--                                </strong>-->
@@ -179,7 +178,7 @@
 
                         <!--                            <div class="col-6 text-center">-->
                         <!--                                <strong>-->
-                        <!--                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">-->
+                        <!--                                    <span style="font-weight:bold !important; font-size:17pt !important; margin:0; padding:0; color:#002060;">-->
                         <!--                                        <t t-esc="company_name"/>-->
                         <!--                                    </span>-->
                         <!--                                </strong>-->
@@ -187,7 +186,7 @@
 
                         <!--                            <div class="col-3 text-right" dir="rtl">-->
                         <!--                                <strong>-->
-                        <!--                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">-->
+                        <!--                                    <span style="font-weight:bold !important; font-size:17pt !important; margin:0; padding:0; color:#002060;">-->
                         <!--                                        الاسم العميل-->
                         <!--                                    </span>-->
                         <!--                                </strong>-->
@@ -196,7 +195,7 @@
                         <div class="row">
                             <div class="col-3">
                                 <strong>
-                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                    <span style="font-weight:bold !important; font-size:17pt !important; margin:0; padding:0; color:#002060;">
                                         Customer Name
                                     </span>
                                 </strong>
@@ -204,7 +203,7 @@
 
                             <div class="col-6 text-center">
                                 <strong>
-                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                    <span style="font-weight:bold !important; font-size:17pt !important; margin:0; padding:0; color:#002060;">
                                         <t t-esc="customer_name"/>
                                     </span>
                                 </strong>
@@ -212,7 +211,7 @@
 
                             <div class="col-3 text-right" dir="rtl">
                                 <strong>
-                                    <span style="font-weight:600; font-size:30px; margin:0; padding:0; color:#002060;">
+                                    <span style="font-weight:bold !important; font-size:17pt !important; margin:0; padding:0; color:#002060;">
                                         الاسم العميل
                                     </span>
                                 </strong>
@@ -224,33 +223,27 @@
                         <br/>
                         <div class="row" style="margin-top:10px;">
                             <div class="col-12 text-center" style="margin:0; padding:0;">
-                                <img src="sales_contract_and_recurring_invoices/static/src/img/image_cn.png"
-                                     style="border: none !important; box-shadow: none !important; background: transparent !important;"
-                                     border="none" height="auto" width="1250"
-                                />
+                                <img src="sales_contract_and_recurring_invoices/static/src/img/image_cn.png" style="border: none !important; box-shadow: none !important; background: transparent !important;" border="none" height="auto" width="1250"/>
                             </div>
                         </div>
 
                         <div style="margin-top:400px;">
                             <div class="col-12" style="margin-bottom:15px;">
                                 <strong>
-                                    <img src="sales_contract_and_recurring_invoices/static/src/img/phone.png"
-                                         height="38"/>
-                                    <span style="margin:20px; font-size:20px; color:#002060;">8002440247</span>
+                                    <img src="sales_contract_and_recurring_invoices/static/src/img/phone.png" height="38"/>
+                                    <span style="margin:20px; font-size:17pt !important; color:#002060;">8002440247</span>
                                 </strong>
                             </div>
                             <div class="col-12" style="margin-bottom:20px;">
                                 <strong>
-                                    <img src="sales_contract_and_recurring_invoices/static/src/img/world.png"
-                                         height="38"/>
-                                    <span style="margin:20px; font-size:20px; color:#002060;">HH-SHAKER.COM.SA</span>
+                                    <img src="sales_contract_and_recurring_invoices/static/src/img/world.png" height="38"/>
+                                    <span style="margin:20px; font-size:17pt !important; color:#002060;">HH-SHAKER.COM.SA</span>
                                 </strong>
                             </div>
                             <div class="col-12">
                                 <strong>
-                                    <img src="sales_contract_and_recurring_invoices/static/src/img/facebook.png"
-                                         height="40"/>
-                                    <span style="margin:20px; font-size:20px; color:#002060;">HHSHAKERCO</span>
+                                    <img src="sales_contract_and_recurring_invoices/static/src/img/facebook.png" height="40"/>
+                                    <span style="margin:20px; font-size:17pt !important; color:#002060;">HHSHAKERCO</span>
                                 </strong>
                             </div>
                         </div>
@@ -258,38 +251,36 @@
                     <div class="footer" style="margin:0; padding:0;">
                         <div class="row" style="margin:0; padding:0;">
                             <div class="col-12" style="margin:0; padding:0;">
-                                <img src="/sales_contract_and_recurring_invoices/static/src/img/ContractDocument_1stPage_Footer.png"
-                                     style="width:100%; height:auto; display:block; margin:0; padding:0;"/>
+                                <img src="/sales_contract_and_recurring_invoices/static/src/img/ContractDocument_1stPage_Footer.png" style="width:100%; height:auto; display:block; margin:0; padding:0;"/>
                             </div>
                         </div>
                     </div>
                 </t>
 
                 <t t-call="machine_repair_management.service_amc_quotation_internal_layout_service_amc_first_page">
-                    <div class="header" style="border-bottom:2px solid #002060;font-family:'Arial Unicode MS', Arial, sans-serif; font-size:40px; padding:5px 0;">
+                    <div class="header" style="border-bottom:2px solid #002060;font-family:'Arial Unicode MS', Arial, sans-serif; font-size:17pt !important; padding:5px 0;">
                         <div class="row">
                             <div class="col-5 text-left">
                                 <strong>
-                                    <span style="color:#002060; font-size:18px;">Hussein and Al Hassan G. Shaker Bros.</span>
+                                    <span style="color:#002060; font-size:17pt !important;">Hussein and Al Hassan G. Shaker Bros.</span>
                                 </strong>
                                 <br/>
                                 <strong>
-                                    <span style="color:#002060; font-size:18px;">For Modern Trading Co. Ltd.</span>
+                                    <span style="color:#002060; font-size:17pt !important;">For Modern Trading Co. Ltd.</span>
                                 </strong>
                             </div>
                             <div class="col-2 text-center" style="margin:0; padding:0;">
-                                <img src="sales_contract_and_recurring_invoices/static/src/img/HHS_Header_Middle.png"
-                                     style="max-height:100px; max-width:175px; margin:0; padding:0;"/>
+                                <img src="sales_contract_and_recurring_invoices/static/src/img/HHS_Header_Middle.png" style="max-height:100px; max-width:175px; margin:0; padding:0;"/>
                             </div>
                             <div class="col-5 text-right" dir="rtl">
                                 <strong>
                                     <!--                                    <span style="color:#002060;">شركة الإخوان حسين والحسن غازي شاكر</span>-->
-                                    <span style="color:#002060; font-size:18px;">شركة الأخوان حسين و الحسن غازي شاكر</span>
+                                    <span style="color:#002060; font-size:17pt !important;">شركة الأخوان حسين و الحسن غازي شاكر</span>
                                 </strong>
                                 <br/>
                                 <strong>
                                     <!--                                    <span style="color:#002060;">للتجارة الحديثة المحدودة</span>-->
-                                    <span style="color:#002060; font-size:18px;">للتجارة الحديثة المحدودة</span>
+                                    <span style="color:#002060; font-size:17pt !important;">للتجارة الحديثة المحدودة</span>
                                 </strong>
                             </div>
                         </div>
@@ -298,25 +289,27 @@
                         <!--                        </div>-->
                     </div>
                     <div class="page" style="font-family:'Arial Unicode MS', Arial, sans-serif;page-break-before: always;">
-                        <div>
+<style id="hhs-sig-style">.hhs-sig, .hhs-sig *, .hhs-sig p, .hhs-sig span { font-size:17pt !important; }</style>
+
+                        <div style="font-size:17pt !important; line-height:2.1;">
                             <div>
-                                <strong>Ref no.</strong>
+                                <strong style="font-size:17pt !important;">Ref no.</strong>
                                 :
-                                <span t-esc="name"/>
+                                <span style="font-size:17pt !important;" t-esc="name"/>
                             </div>
                             <div>
-                                <strong>Date</strong>
+                                <strong style="font-size:17pt !important;">Date</strong>
                                 :
-                                <span t-esc="quotation_date"/>
+                                <span style="font-size:17pt !important;" t-esc="quotation_date"/>
                             </div>
                             <div>
-                                <strong t-esc="'Company' if (property_type or '') == 'commercial' else 'Villa'"/>
+                                <strong style="font-size:17pt !important;" t-esc="'Company' if (property_type or '') == 'commercial' else 'Villa'"/>
                                 <!--                                <strong t-esc="'Company' if property_type == 'Commercial' else 'Villa'"/>-->
                                 <!--                                strong t-if="property_type == 'Commercial'">Company</strong>-->
                                 <!--                                <strong t-elif="property_type == 'Residential'">Villa</strong><-->
                                 <!--                                <strong t-else="">Property</strong>-->
                                 :
-                                <span t-esc="company_name"/>
+                                <span style="font-size:17pt !important;" t-esc="company_name"/>
                                 <!--                                <span t-esc="customer_name"/>-->
                             </div>
 
@@ -326,35 +319,35 @@
                             <!--                                <span t-esc="customer_name"/>-->
                             <!--                            </div>-->
                             <div>
-                                <strong>Attn. To</strong>
+                                <strong style="font-size:17pt !important;">Attn. To</strong>
                                 :
-                                <span t-esc="att_to"/>
+                                <span style="font-size:17pt !important;" t-esc="att_to"/>
                             </div>
                             <div>
-                                <strong>Contact No.</strong>
+                                <strong style="font-size:17pt !important;">Contact No.</strong>
                                 :
-                                <span t-esc="contact_no"/>
+                                <span style="font-size:17pt !important;" t-esc="contact_no"/>
                             </div>
                             <div>
-                                <strong>Address</strong>
+                                <strong style="font-size:17pt !important;">Address</strong>
                                 :
-                                <span t-esc="address"/>
+                                <span style="font-size:17pt !important;" t-esc="address"/>
                             </div>
                             <div>
-                                <strong>Subject</strong>
+                                <strong style="font-size:17pt !important;">Subject</strong>
                                 :
-                                <span t-esc="subject"/>
+                                <span style="font-size:17pt !important; font-weight:bold !important;" t-esc="subject"/>
                             </div>
                         </div>
-                        <table style="width:100%; margin-bottom:0; border-collapse:collapse;">
+                        <table style="width:100%; margin-top:48px; margin-bottom:0; border-collapse:collapse;">
                             <tr>
-                                <td style="width:100%; text-align:center; background-color:#D9D9D9; border:1px solid #000;">
+                                <td style="width:100%; text-align:center; background-color:#D9D9D9; border:1px solid #000; padding:16px; font-size:20pt !important;">
                                     <strong>QUOTATION</strong>
                                 </td>
                             </tr>
                         </table>
-                        <div style="white-space: pre-line;margin:0; padding:0;line-height:1.2;">
-                            <strong>
+                        <div class="hhs-sig" style="white-space: pre-line;margin:0; padding:0;line-height:1.2; font-size:17pt !important;">
+                            <strong style="font-size:17pt !important;">
                                 <t t-raw="others"/>
                             </strong>
                         </div>
@@ -365,110 +358,103 @@
                         <!--                            </strong>-->
                         <!--                        </div>-->
 
-                        <table class="table table-bordered" style="width:100%; border-collapse:collapse;">
+                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:17pt !important;">
                             <thead style="background-color:#1F6FAE; color:white;">
                                 <tr>
-                                    <th style="text-align:center;">S.No</th>
-                                    <th style="text-align:center;">
-                                        <span>الوصف</span>
+                                    <th style="text-align:center; padding:8px; font-size:17pt !important;">S.No</th>
+                                    <th style="text-align:center; padding:8px; font-size:17pt !important;">
+                                        <span style="font-size:17pt !important;">الوصف</span>
                                         <br/>
                                         Brand
                                     </th>
-                                    <th style="text-align:center; font-size:14px; font-family:'Noto Naskh Arabic','Amiri','DejaVu Sans',sans-serif;">
-                                        <span>نوع الوحدة</span>
+                                    <th style="text-align:center; font-size:17pt !important; font-family:'Noto Naskh Arabic','Amiri','DejaVu Sans',sans-serif; padding:8px;">
+                                        <span style="font-size:17pt !important;">نوع الوحدة</span>
                                         <br/>
                                         Unit Type
                                     </th>
-                                    <th style="text-align:center;">
-                                        <span>الوصف</span>
+                                    <th style="text-align:center; padding:8px; font-size:17pt !important;">
+                                        <span style="font-size:17pt !important;">الوصف</span>
                                         <br/>
                                         Contract Type
                                     </th>
-                                    <th style="text-align:center; font-size:14px; font-family:'Noto Naskh Arabic','Amiri','DejaVu Sans',sans-serif;">
-                                        <span>سعر البيع للوحدة</span>
+                                    <th style="text-align:center; font-size:17pt !important; font-family:'Noto Naskh Arabic','Amiri','DejaVu Sans',sans-serif; padding:8px;">
+                                        <span style="font-size:17pt !important;">سعر البيع للوحدة</span>
                                         <br/>
                                         Per Unit Selling Price
                                     </th>
-                                    <th style="text-align:center;">
-                                        <span>الكمية</span>
+                                    <th style="text-align:center; padding:8px; font-size:17pt !important;">
+                                        <span style="font-size:17pt !important;">الكمية</span>
                                         <br/>
                                         Qty
                                     </th>
-                                    <th style="text-align:center; font-size:14px; font-family:'Noto Naskh Arabic','Amiri','DejaVu Sans',sans-serif;">
-                                        <span>عدد الزيارات / السنة</span>
+                                    <th style="text-align:center; font-size:17pt !important; font-family:'Noto Naskh Arabic','Amiri','DejaVu Sans',sans-serif; padding:8px;">
+                                        <span style="font-size:17pt !important;">عدد الزيارات / السنة</span>
                                         <br/>
                                         No. of Visits / Yr
                                     </th>
-                                    <th style="text-align:center;">
-                                        <span>سعر</span>
+                                    <th style="text-align:center; padding:8px; font-size:17pt !important;">
+                                        <span style="font-size:17pt !important;">سعر</span>
                                         <br/>
                                         Price
                                     </th>
                                 </tr>
                             </thead>
                             <t t-set="counter" t-value="1"/>
-                            <tbody>
+                            <tbody style="font-size:17pt !important;">
                                 <t t-foreach="quotations" t-as="quotation">
                                     <tr>
-                                        <td style="text-align:center;">
-                                            <span t-esc="counter"/>
+                                        <td style="text-align:center; padding:16px;">
+                                            <span style="font-size:17pt !important;" t-esc="counter"/>
                                             <span/>
                                         </td>
-                                        <td style="text-align:center;">
-                                            <span t-if="quotation['brand']" t-esc="quotation['brand']"></span>
+                                        <td style="text-align:center; padding:16px;">
+                                            <span style="font-size:17pt !important;" t-if="quotation['brand']" t-esc="quotation['brand']"/>
                                         </td>
-                                        <td style="text-align:left;">
-                                            <span t-if="quotation['unit_type']" t-esc="quotation['unit_type']"/>
+                                        <td style="text-align:left; padding:16px;">
+                                            <span style="font-size:17pt !important;" t-if="quotation['unit_type']" t-esc="quotation['unit_type']"/>
                                         </td>
-                                        <td style="text-align:center;">
-                                            <span t-if="quotation['description']" t-esc="quotation['description']"/>
+                                        <td style="text-align:center; padding:16px;">
+                                            <span style="font-size:17pt !important;" t-if="quotation['description']" t-esc="quotation['description']"/>
                                         </td>
-                                        <td style="text-align:center;">
-                                            <span t-esc="quotation['unit_selling_price']"
-                                                  t-options="{'widget': 'float', 'precision': 0}"/>
+                                        <td style="text-align:center; padding:16px;">
+                                            <span style="font-size:17pt !important;" t-esc="quotation['unit_selling_price']" t-options="{'widget': 'float', 'precision': 0}"/>
                                         </td>
-                                        <td style="text-align:center;">
-                                            <span t-if="quotation['Qty']" t-esc="int(quotation['Qty'])"/>
+                                        <td style="text-align:center; padding:16px;">
+                                            <span style="font-size:17pt !important;" t-if="quotation['Qty']" t-esc="int(quotation['Qty'])"/>
                                         </td>
-                                        <td style="text-align:center;">
-                                            <span t-if="quotation['no_of_visits_per_year']"
-                                                  t-esc="quotation['no_of_visits_per_year']"/>
+                                        <td style="text-align:center; padding:16px;">
+                                            <span style="font-size:17pt !important;" t-if="quotation['no_of_visits_per_year']" t-esc="quotation['no_of_visits_per_year']"/>
                                         </td>
-                                        <td style="text-align:right;">
-                                            <span t-esc="company_symbol"></span>
-                                            <span t-esc="quotation['total']"
-                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        <td style="text-align:right; padding:16px;">
+                                            <span style="font-size:17pt !important;" t-esc="company_symbol"/>
+                                            <span style="font-size:17pt !important;" t-esc="quotation['total']" t-options="{'widget': 'float', 'precision': 2}"/>
                                         </td>
                                     </tr>
                                     <t t-set="counter" t-value="counter + 1"/>
                                 </t>
                             </tbody>
-                            <tfoot>
+                            <tfoot style="font-size:17pt !important;">
 
                                 <!-- Subtotal Row -->
                                 <tr>
                                     <!-- Col 1 -->
-                                    <td>
-                                        <strong>Sub Total (Qty)</strong>
+                                    <td colspan="5" style="padding:16px;">
+                                        <strong style="font-size:17pt !important;">Sub Total (Qty)</strong>
                                     </td>
 
-                                    <!-- Col 2-5 -->
-                                    <td colspan="4"></td>
-
                                     <!-- ✅ Col 6 (Qty total) -->
-                                    <td style="text-align:center;">
-                                        <span t-esc="total_qty"/>
+                                    <td style="text-align:center; padding:16px;">
+                                        <span style="font-size:17pt !important;" t-esc="total_qty"/>
                                     </td>
 
                                     <!-- Col 7 -->
-                                    <td></td>
+                                    <td style="padding:16px;"/>
 
                                     <!-- Col 8 (Amount) -->
-                                    <td style="text-align:right;">
+                                    <td style="text-align:right; padding:16px;">
                                         <strong>
-                                            <span t-esc="company_symbol"/>
-                                            <span t-esc="sub_total"
-                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                            <span style="font-size:17pt !important;" t-esc="company_symbol"/>
+                                            <span style="font-size:17pt !important;" t-esc="sub_total" t-options="{'widget': 'float', 'precision': 2}"/>
                                         </strong>
                                     </td>
                                 </tr>
@@ -476,22 +462,18 @@
                                 <!-- VAT Row -->
                                 <tr>
                                     <!-- Col 1 -->
-                                    <td>
-                                        <strong>VAT - 15%</strong>
+                                    <td colspan="6" style="padding:16px;">
+                                        <strong style="font-size:17pt !important;">VAT - 15%</strong>
                                     </td>
 
-                                    <!-- Col 2-6 -->
-                                    <td colspan="5"></td>
-
                                     <!-- Col 7 -->
-                                    <td></td>
+                                    <td style="padding:16px;"/>
 
                                     <!-- Col 8 -->
-                                    <td style="text-align:right;">
+                                    <td style="text-align:right; padding:16px;">
                                         <strong>
-                                            <span t-esc="company_symbol"/>
-                                            <span t-esc="total_vat"
-                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                            <span style="font-size:17pt !important;" t-esc="company_symbol"/>
+                                            <span style="font-size:17pt !important;" t-esc="total_vat" t-options="{'widget': 'float', 'precision': 2}"/>
                                         </strong>
                                     </td>
                                 </tr>
@@ -499,35 +481,30 @@
                                 <!-- Grand Total Row -->
                                 <tr>
                                     <!-- Col 1 -->
-                                    <td>
-                                        <strong>Grand Total</strong>
+                                    <td colspan="6" style="padding:16px;">
+                                        <strong style="font-size:17pt !important;">Grand Total</strong>
                                     </td>
 
-                                    <!-- Col 2-6 -->
-                                    <td colspan="5"></td>
-
                                     <!-- Col 7 -->
-                                    <td></td>
+                                    <td style="padding:16px;"/>
 
                                     <!-- Col 8 -->
-                                    <td style="text-align:right;">
+                                    <td style="text-align:right; padding:16px;">
                                         <strong>
-                                            <span t-esc="company_symbol"/>
-                                            <span t-esc="grand_total"
-                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                            <span style="font-size:17pt !important;" t-esc="company_symbol"/>
+                                            <span style="font-size:17pt !important;" t-esc="grand_total" t-options="{'widget': 'float', 'precision': 2}"/>
                                         </strong>
                                     </td>
                                 </tr>
 
                                 <!-- In Words -->
                                 <tr>
-                                    <td colspan="8" style="padding:8px;">
-                                        <strong>In Words:</strong>
+                                    <td colspan="8" style="padding:8px; padding:16px;">
+                                        <strong style="font-size:17pt !important;">In Words:</strong>
 
-                                        <t t-set="amount_words"
-                                           t-value="docs[0].company_id.currency_id.amount_to_text(grand_total)"/>
+                                        <t t-set="amount_words" t-value="docs[0].company_id.currency_id.amount_to_text(grand_total)"/>
 
-                                        <span t-esc="amount_words.replace('Riyal', 'Saudi Riyal') + ' Only'"/>
+                                        <span style="font-size:17pt !important;" t-esc="amount_words.replace('Riyal', 'Saudi Riyal') + ' Only'"/>
                                     </td>
                                 </tr>
 
@@ -535,59 +512,59 @@
                         </table>
 
                         <div class="mt-3">
-                            <div style="font-family:'Lato','Helvetica','Arial',sans-serif; font-size:16px; line-height:1.4;">
+                            <div style="font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
                                 <strong>
-                                    <span>Call Out :</span>
+                                    <span style="font-size:17pt !important;">Call Out :</span>
                                 </strong>
-                                <strong style="color:red;">
-                                    <span t-esc="emergency_visit"/>
+                                <strong style="color:red; font-size:17pt !important;">
+                                    <span style="font-size:17pt !important;" t-esc="emergency_visit"/>
                                     Free Visits
                                 </strong>
                             </div>
                         </div>
                         <div class="mt-3" style="page-break-inside: avoid; display:flex;">
-                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:16px; line-height:1.4;">
+                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
                                 <strong>Scope of Work :</strong>
                             </div>
-                            <div style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:16px; line-height:1.4;">
+                            <div style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
                                 <t t-raw="scope_work"/>
                             </div>
                         </div>
 
                         <!--                        <div class="mt-3">-->
-                        <!--                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:16px; line-height:1.4;">-->
+                        <!--                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">-->
                         <!--                                <strong>Scope of Work :</strong>-->
                         <!--                            </div>-->
-                        <!--                            <div style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:16px; line-height:1.4;">-->
+                        <!--                            <div style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">-->
                         <!--                                &lt;!&ndash;                                <t t-if="scope_work">&ndash;&gt;-->
                         <!--                                <t t-raw="scope_work"/>-->
                         <!--                                &lt;!&ndash;                                </t>&ndash;&gt;-->
                         <!--                            </div>-->
                         <!--                        </div>-->
                         <div class="mt-3" style="page-break-inside: avoid; display:flex;">
-                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:16px; line-height:1.4;">
+                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
                                 <strong>Terms of Execution :</strong>
                             </div>
-                            <div style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:16px; line-height:1.4;">
+                            <div style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
                                 <t t-raw="terms_of_execution"/>
                             </div>
                         </div>
                         <div class="mt-3" style="page-break-inside: avoid; display:flex;">
-                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:16px; line-height:1.4;">
+                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
                                 <strong>Terms of Payment : Advance</strong>
                             </div>
-                            <div style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:16px; line-height:1.4;">
+                            <div style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
                                 <t t-if="payment_advance">
-                                    <ul style="margin:0; padding-left:20px;">
+                                    <ul style="margin:0; padding-left:20px; font-size:17pt !important;">
                                         <t t-foreach="payment_advance" t-as="payadv">
-                                            <li>
-                                                <span style="display:inline-block; width:20%;">
+                                            <li style="font-size:17pt !important;">
+                                                <span style="display:inline-block; width:20%; font-size:17pt !important;">
                                                     <t t-esc="payadv['name']"/>
                                                 </span>
-                                                <span style="display:inline-block; width:20%;">
+                                                <span style="display:inline-block; width:20%; font-size:17pt !important;">
                                                     <t t-esc="payadv['date']"/>
                                                 </span>
-                                                <span style="display:inline-block; width:20%;">
+                                                <span style="display:inline-block; width:20%; font-size:17pt !important;">
                                                     <t t-esc="payadv['amount']"/>
                                                 </span>
                                             </li>
@@ -597,10 +574,10 @@
                             </div>
                         </div>
                         <div class="mt-3" style="page-break-inside: avoid; display:flex;">
-                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:16px; line-height:1.4;">
+                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
                                 <strong>Exclusions :</strong>
                             </div>
-                            <div style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:16px; line-height:1.4;">
+                            <div style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
                                 <t t-raw="exclusions_text"/>
                                 <br/>
                                 <t t-raw="others_text"/>
@@ -608,32 +585,32 @@
                         </div>	
                         
                        <!--  <div class="mt-3"
-                             style="page-break-inside: avoid;font-family:'Lato','Helvetica','Arial',sans-serif;font-size:14px;line-height:1.4;">
+                             style="page-break-inside: avoid;font-family:'Lato','Helvetica','Arial',sans-serif;font-size:17pt !important;line-height:1.4;">
                             <div style="display:flex; justify-content:space-between; width:100%;">
 						        <strong>Quotation Validity:</strong>
 						        <strong dir="rtl">صلاحية عرض السعر</strong>
 						    </div>
 						
 						    <div style="display:flex; justify-content:space-between; width:100%;">
-						        <strong>This quotation is valid for 2 weeks from the date of issuance.</strong>
-						        <strong dir="rtl">صلاحية عرض السعر سارية لمدة أسبوعين من تاريخ إصدار عرض السعر.</strong>
+						        <strong style="font-size:17pt !important;">This quotation is valid for 2 weeks from the date of issuance.</strong>
+						        <strong dir="rtl" style="font-size:17pt !important;">صلاحية عرض السعر سارية لمدة أسبوعين من تاريخ إصدار عرض السعر.</strong>
 						    </div>
                            
                         </div> -->
                         
-                        <table style="width:100%; border:none !important; border-spacing:0 !important; border-collapse:separate !important; font-size:14px;">
+                        <table style="width:100%; border:none !important; border-spacing:0 !important; border-collapse:separate !important; font-size:17pt !important;">
 						    <tbody style="border:none !important;">
 						
 						        <!-- <tr style="border:none !important;">
 						
 						           
-						            <td style="width:50%; text-align:left; border:none !important;">
+						            <td style="width:50%; text-align:left; border:none !important; padding:16px;">
 						                <strong>Quotation Validity:</strong>
 						                <span t-esc="quotation_expiry_date"/>
 						            </td>
 						
 						           
-						            <td style="width:50%; text-align:right; border:none !important;" dir="rtl">
+						            <td style="width:50%; text-align:right; border:none !important; padding:16px;" dir="rtl">
 						                <strong>صلاحية عرض السعر :</strong>
 						
 						                <span dir="ltr" style="display:inline-block;">
@@ -645,14 +622,14 @@
 						
 						        <tr style="border:none !important;">
 						
-						            <td style="width:50%; text-align:left; border:none !important;">
-						                <strong>
+						            <td style="width:50%; text-align:left; border:none !important; padding:16px;">
+						                <strong style="font-size:17pt !important;">
 						                    This quotation is valid for 2 weeks from the date of issuance.
 						                </strong>
 						            </td>
 						
-						            <td style="width:50%; text-align:right; border:none !important;" dir="rtl">
-						                <strong>
+						            <td style="width:50%; text-align:right; border:none !important; padding:16px;" dir="rtl">
+						                <strong style="font-size:17pt !important;">
 						                    صلاحية عرض السعر سارية لمدة أسبوعين من تاريخ إصدار عرض السعر.
 						                </strong>
 						            </td>
@@ -661,31 +638,30 @@
 						
 						    </tbody>
 						</table>
-                        <div class="mt-3"
-                             style="page-break-inside: avoid;font-family:'Lato','Helvetica','Arial',sans-serif;font-size:14px;line-height:1.4;">
+                        <div class="mt-3" style="page-break-inside: avoid;font-family:'Lato','Helvetica','Arial',sans-serif;font-size:17pt !important;line-height:1.4;">
                             <div>
-                                <strong>Best Regards,</strong>
+                                <strong style="font-size:17pt !important;">Best Regards,</strong>
                             </div>
-                            <div t-esc="user_name"></div>
-                            <div t-esc="signature"></div>
+                            <div class="hhs-sig" style="font-size:17pt !important;" t-esc="user_name"/>
+                            <div class="hhs-sig" style="font-size:17pt !important;" t-esc="signature"/>
                         </div>
 
 
                         <!--                        <div class="mt-3"-->
-                        <!--                             style="page-break-inside: avoid;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:16px; line-height:1.4;">-->
-                        <!--                            <table style="width:100%; border-collapse:collapse; border:none !important;; page-break-inside: avoid;">-->
+                        <!--                             style="page-break-inside: avoid;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">-->
+                        <!--                            <table style="width:100%; border-collapse:collapse; border:none !important; page-break-inside: avoid;">-->
                         <!--                                <tr style="border:none !important;">-->
-                        <!--                                    <td style="width:25%; padding:3px;border:0;">-->
-                        <!--                                        <strong>Best Regards,</strong>-->
+                        <!--                                    <td style="width:25%; padding:3px;border:0; padding:16px;">-->
+                        <!--                                        <strong style="font-size:17pt !important;">Best Regards,</strong>-->
                         <!--                                    </td>-->
                         <!--                                </tr>-->
                         <!--                                <tr style="border:none !important;">-->
-                        <!--                                    <td style="width:75%; text-align:left; padding:3px;border:0;">-->
+                        <!--                                    <td style="width:75%; text-align:left; padding:3px;border:0; padding:16px;">-->
                         <!--                                        <p style="margin:0;" t-esc="user_name"/>-->
                         <!--                                    </td>-->
                         <!--                                </tr>-->
                         <!--                                <tr style="border:none !important;">-->
-                        <!--                                    <td style="width:75%; text-align:left; padding:3px;border:0;">-->
+                        <!--                                    <td style="width:75%; text-align:left; padding:3px;border:0; padding:16px;">-->
                         <!--                                        <p style="margin:0;" t-esc="signature"/>-->
                         <!--                                    </td>-->
                         <!--                                </tr>-->
@@ -698,30 +674,29 @@
                 </t>
 
                 <t t-call="machine_repair_management.service_amc_quotation_internal_layout_service_amc_second_page">
-                    <div class="header" style="border-bottom:2px solid #002060;font-family:'Arial Unicode MS', Arial, sans-serif; font-size:40px; padding:5px 0;">
+                    <div class="header" style="border-bottom:2px solid #002060;font-family:'Arial Unicode MS', Arial, sans-serif; font-size:17pt !important; padding:5px 0;">
                         <div class="row">
                             <div class="col-5 text-left">
                                 <strong>
-                                    <span style="color:#002060;">Hussein and Al Hassan G. Shaker Bros.</span>
+                                    <span style="color:#002060; font-size:17pt !important;">Hussein and Al Hassan G. Shaker Bros.</span>
                                 </strong>
                                 <br/>
                                 <strong>
-                                    <span style="color:#002060;">For Modern Trading Co. Ltd.</span>
+                                    <span style="color:#002060; font-size:17pt !important;">For Modern Trading Co. Ltd.</span>
                                 </strong>
                             </div>
                             <div class="col-2 text-center" style="margin:0; padding:0;">
-                                <img src="sales_contract_and_recurring_invoices/static/src/img/HHS_Header_Middle.png"
-                                     style="max-height:100px; max-width:175px; margin:0; padding:0;"/>
+                                <img src="sales_contract_and_recurring_invoices/static/src/img/HHS_Header_Middle.png" style="max-height:100px; max-width:175px; margin:0; padding:0;"/>
                             </div>
                             <div class="col-5 text-right" dir="rtl">
                                 <strong>
-                                    <!--                                    <span style="color:#002060;">شركة الإخوان حسين والحسن غازي شاكر</span>-->
-                                    <span style="color:#002060;">شركة الأخوان حسين و الحسن غازي شاكر</span>
+                                    <!--                                    <span style="color:#002060; font-size:17pt !important;">شركة الإخوان حسين والحسن غازي شاكر</span>-->
+                                    <span style="color:#002060; font-size:17pt !important;">شركة الأخوان حسين و الحسن غازي شاكر</span>
                                 </strong>
                                 <br/>
                                 <strong>
-                                    <!--                                    <span style="color:#002060;">للتجارة الحديثة المحدودة</span>-->
-                                    <span style="color:#002060;">للتجارة الحديثة المحدودة</span>
+                                    <!--                                    <span style="color:#002060; font-size:17pt !important;">للتجارة الحديثة المحدودة</span>-->
+                                    <span style="color:#002060; font-size:17pt !important;">للتجارة الحديثة المحدودة</span>
                                 </strong>
                             </div>
                         </div>
@@ -729,7 +704,7 @@
                         <!--                            <div style="height:6px; background-color:#002060;"></div>-->
                         <!--                        </div>-->
                     </div>
-                    <div style="margin-top:0;font-family:'Arial Unicode MS', Arial, sans-serif; font-size:16px; line-height:1.4;">
+                    <div style="margin-top:0;font-family:'Arial Unicode MS', Arial, sans-serif; font-size:17pt !important; line-height:1.4;">
                         <t t-if="scope_of_work">
                             <t t-foreach="scope_of_work" t-as="unit">
 
@@ -737,7 +712,7 @@
                                 <t t-foreach="unit.get('services', [])" t-as="service">
 
                                     <!-- NEW PAGE PER SERVICE -->
-                                    <div class="page" style="page-break-before: always; margin:0; padding:0;">
+                                    <div class="page hhs-sig" style="page-break-before: always; margin:0; padding:0; font-size:17pt !important;">
 
                                         <div style="display:table; width:100%; table-layout:fixed;">
 
@@ -747,11 +722,11 @@
                                                 <!-- LEFT -->
                                                 <div style="display:table-cell; width:50%; padding:6px 15px 6px 0; border-right:1px solid #c0c0c0; vertical-align:top;">
 
-                                                    <div style="margin-bottom:6px;">
+                                                    <div style="margin-bottom:6px; font-size:17pt !important;">
 
-                                                        <strong>Unit Type:</strong>
+                                                        <strong style="font-size:17pt !important;">Unit Type:</strong>
 
-                                                        <span style="margin-left:6px;">
+                                                        <span style="margin-left:6px; font-size:17pt !important;">
 
                                                             <!-- IF PRINT_ALWAYS_DEFAULT -->
                                                             <t t-if="unit.get('hide_unit_name')">
@@ -768,9 +743,9 @@
                                                     </div>
 
                                                     <div>
-                                                        <strong>Service Type:</strong>
+                                                        <strong style="font-size:17pt !important;">Service Type:</strong>
 
-                                                        <span style="margin-left:6px;">
+                                                        <span style="margin-left:6px; font-size:17pt !important;">
                                                             <t t-esc="service.get('service_en', '')"/>
                                                         </span>
                                                     </div>
@@ -780,11 +755,11 @@
                                                 <!-- RIGHT -->
                                                 <div style="display:table-cell; width:50%; padding:6px 0 6px 15px; direction:rtl; vertical-align:top;">
 
-                                                    <div style="text-align:right; margin-bottom:6px;">
+                                                    <div style="text-align:right; margin-bottom:6px; font-size:17pt !important;">
 
-                                                        <strong>نوع الوحدة:</strong>
+                                                        <strong style="font-size:17pt !important;">نوع الوحدة:</strong>
 
-                                                        <span style="margin-right:6px;">
+                                                        <span style="margin-right:6px; font-size:17pt !important;">
 
                                                             <!-- IF PRINT_ALWAYS_DEFAULT -->
                                                             <t t-if="unit.get('hide_unit_name')">
@@ -800,11 +775,11 @@
 
                                                     </div>
 
-                                                    <div style="text-align:right;">
+                                                    <div style="text-align:right; font-size:17pt !important;">
 
-                                                        <strong>نوع الخدمة:</strong>
+                                                        <strong style="font-size:17pt !important;">نوع الخدمة:</strong>
 
-                                                        <span style="margin-right:6px;">
+                                                        <span style="margin-right:6px; font-size:17pt !important;">
                                                             <t t-esc="service.get('service_ar', '')"/>
                                                         </span>
 
@@ -821,10 +796,10 @@
                                             <!--                                                    &lt;!&ndash; HIDE UNIT TYPE &ndash;&gt;-->
                                             <!--                                                    <t t-if="not unit.get('hide_unit_name')">-->
 
-                                            <!--                                                        <div style="margin-bottom:6px;">-->
-                                            <!--                                                            <strong>Unit Type:</strong>-->
+                                            <!--                                                        <div style="margin-bottom:6px; font-size:17pt !important;">-->
+                                            <!--                                                            <strong style="font-size:17pt !important;">Unit Type:</strong>-->
 
-                                            <!--                                                            <span style="margin-left:6px;">-->
+                                            <!--                                                            <span style="margin-left:6px; font-size:17pt !important;">-->
                                             <!--                                                                <t t-esc="unit.get('unit_type', '')"/>-->
                                             <!--                                                            </span>-->
                                             <!--                                                        </div>-->
@@ -832,9 +807,9 @@
                                             <!--                                                    </t>-->
 
                                             <!--                                                    <div>-->
-                                            <!--                                                        <strong>Service Type:</strong>-->
+                                            <!--                                                        <strong style="font-size:17pt !important;">Service Type:</strong>-->
 
-                                            <!--                                                        <span style="margin-left:6px;">-->
+                                            <!--                                                        <span style="margin-left:6px; font-size:17pt !important;">-->
                                             <!--                                                            <t t-esc="service.get('service_en', '')"/>-->
                                             <!--                                                        </span>-->
                                             <!--                                                    </div>-->
@@ -847,20 +822,20 @@
                                             <!--                                                    &lt;!&ndash; HIDE UNIT TYPE &ndash;&gt;-->
                                             <!--                                                    <t t-if="not unit.get('hide_unit_name')">-->
 
-                                            <!--                                                        <div style="text-align:right; margin-bottom:6px;">-->
-                                            <!--                                                            <strong>نوع الوحدة:</strong>-->
+                                            <!--                                                        <div style="text-align:right; margin-bottom:6px; font-size:17pt !important;">-->
+                                            <!--                                                            <strong style="font-size:17pt !important;">نوع الوحدة:</strong>-->
 
-                                            <!--                                                            <span style="margin-right:6px;">-->
+                                            <!--                                                            <span style="margin-right:6px; font-size:17pt !important;">-->
                                             <!--                                                                <t t-esc="unit.get('unit_type_ar', '')"/>-->
                                             <!--                                                            </span>-->
                                             <!--                                                        </div>-->
 
                                             <!--                                                    </t>-->
 
-                                            <!--                                                    <div style="text-align:right;">-->
-                                            <!--                                                        <strong>نوع الخدمة:</strong>-->
+                                            <!--                                                    <div style="text-align:right; font-size:17pt !important;">-->
+                                            <!--                                                        <strong style="font-size:17pt !important;">نوع الخدمة:</strong>-->
 
-                                            <!--                                                        <span style="margin-right:6px;">-->
+                                            <!--                                                        <span style="margin-right:6px; font-size:17pt !important;">-->
                                             <!--                                                            <t t-esc="service.get('service_ar', '')"/>-->
                                             <!--                                                        </span>-->
                                             <!--                                                    </div>-->
@@ -877,15 +852,15 @@
                                                     <!-- LEFT -->
                                                     <div style="display:table-cell; padding-right:15px; border-right:1px solid #c0c0c0;">
 
-                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold;">
+                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold; font-size:17pt !important;">
                                                             <t t-esc="param.get('param_en', '')"/>
                                                         </div>
 
-                                                        <ol style="margin:8px 0 18px 18px;">
+                                                        <ol style="font-size:17pt !important;">
 
                                                             <t t-foreach="param.get('lines', [])" t-as="line">
 
-                                                                <li style="margin-bottom:10px;">
+                                                                <li style="margin-bottom:10px; font-size:17pt !important;">
                                                                     <t t-esc="(line.get('en') or '').strip()"/>
                                                                 </li>
 
@@ -896,17 +871,17 @@
                                                     </div>
 
                                                     <!-- RIGHT -->
-                                                    <div style="display:table-cell; padding-left:15px; direction:rtl; text-align:right;">
+                                                    <div style="display:table-cell; padding-left:15px; direction:rtl; text-align:right; font-size:17pt !important;">
 
-                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold;">
+                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold; font-size:17pt !important;">
                                                             <t t-esc="param.get('param_ar', '')"/>
                                                         </div>
 
-                                                        <ol style="margin:8px 18px 18px 0;">
+                                                        <ol style="font-size:17pt !important;">
 
                                                             <t t-foreach="param.get('lines', [])" t-as="line">
 
-                                                                <li style="margin-bottom:10px;">
+                                                                <li style="margin-bottom:10px; font-size:17pt !important;">
                                                                     <t t-esc="line.get('ar', '')"/>
                                                                 </li>
 
@@ -945,16 +920,16 @@
                         <!--                                                &lt;!&ndash; LEFT &ndash;&gt;-->
                         <!--                                                <div style="display:table-cell; width:50%; padding:6px 15px 6px 0; border-right:1px solid #c0c0c0; vertical-align:top;">-->
 
-                        <!--                                                    <div style="margin-bottom:6px;">-->
-                        <!--                                                        <strong>Unit Type:</strong>-->
-                        <!--                                                        <span style="margin-left:6px;">-->
+                        <!--                                                    <div style="margin-bottom:6px; font-size:17pt !important;">-->
+                        <!--                                                        <strong style="font-size:17pt !important;">Unit Type:</strong>-->
+                        <!--                                                        <span style="margin-left:6px; font-size:17pt !important;">-->
                         <!--                                                            <t t-esc="unit.get('unit_type', '')"/>-->
                         <!--                                                        </span>-->
                         <!--                                                    </div>-->
 
                         <!--                                                    <div>-->
-                        <!--                                                        <strong>Service Type:</strong>-->
-                        <!--                                                        <span style="margin-left:6px;">-->
+                        <!--                                                        <strong style="font-size:17pt !important;">Service Type:</strong>-->
+                        <!--                                                        <span style="margin-left:6px; font-size:17pt !important;">-->
                         <!--                                                            <t t-esc="service.get('service_en', '')"/>-->
                         <!--                                                        </span>-->
                         <!--                                                    </div>-->
@@ -964,16 +939,16 @@
                         <!--                                                &lt;!&ndash; RIGHT &ndash;&gt;-->
                         <!--                                                <div style="display:table-cell; width:50%; padding:6px 0 6px 15px; direction:rtl; vertical-align:top;">-->
 
-                        <!--                                                    <div style="text-align:right; margin-bottom:6px;">-->
-                        <!--                                                        <strong>نوع الوحدة:</strong>-->
-                        <!--                                                        <span style="margin-right:6px;">-->
+                        <!--                                                    <div style="text-align:right; margin-bottom:6px; font-size:17pt !important;">-->
+                        <!--                                                        <strong style="font-size:17pt !important;">نوع الوحدة:</strong>-->
+                        <!--                                                        <span style="margin-right:6px; font-size:17pt !important;">-->
                         <!--                                                            <t t-esc="unit.get('unit_type_ar', '')"/>-->
                         <!--                                                        </span>-->
                         <!--                                                    </div>-->
 
-                        <!--                                                    <div style="text-align:right;">-->
-                        <!--                                                        <strong>نوع الخدمة:</strong>-->
-                        <!--                                                        <span style="margin-right:6px;">-->
+                        <!--                                                    <div style="text-align:right; font-size:17pt !important;">-->
+                        <!--                                                        <strong style="font-size:17pt !important;">نوع الخدمة:</strong>-->
+                        <!--                                                        <span style="margin-right:6px; font-size:17pt !important;">-->
                         <!--                                                            <t t-esc="service.get('service_ar', '')"/>-->
                         <!--                                                        </span>-->
                         <!--                                                    </div>-->
@@ -986,19 +961,19 @@
 
                         <!--                                            &lt;!&ndash;                                                &lt;!&ndash; LEFT &ndash;&gt;&ndash;&gt;-->
                         <!--                                            &lt;!&ndash;                                                <div style="display:table-cell; width:50%; padding:6px 15px 6px 0; border-right:1px solid #c0c0c0; vertical-align:top;">&ndash;&gt;-->
-                        <!--                                            &lt;!&ndash;                                                    <strong>Unit Type:</strong>&ndash;&gt;-->
+                        <!--                                            &lt;!&ndash;                                                    <strong style="font-size:17pt !important;">Unit Type:</strong>&ndash;&gt;-->
                         <!--                                            &lt;!&ndash;                                                    <t t-esc="unit.get('unit_type', '')"/>&ndash;&gt;-->
                         <!--                                            &lt;!&ndash;                                                    <br/>&ndash;&gt;-->
-                        <!--                                            &lt;!&ndash;                                                    <strong>Service Type:</strong>&ndash;&gt;-->
+                        <!--                                            &lt;!&ndash;                                                    <strong style="font-size:17pt !important;">Service Type:</strong>&ndash;&gt;-->
                         <!--                                            &lt;!&ndash;                                                    <t t-esc="service.get('service_en', '')"/>&ndash;&gt;-->
                         <!--                                            &lt;!&ndash;                                                </div>&ndash;&gt;-->
 
                         <!--                                            &lt;!&ndash;                                                &lt;!&ndash; RIGHT &ndash;&gt;&ndash;&gt;-->
                         <!--                                            &lt;!&ndash;                                                <div style="display:table-cell; width:50%; padding:6px 0 6px 15px; direction:rtl; text-align:right; vertical-align:top;">&ndash;&gt;-->
-                        <!--                                            &lt;!&ndash;                                                    <strong>نوع الوحدة:</strong>&ndash;&gt;-->
+                        <!--                                            &lt;!&ndash;                                                    <strong style="font-size:17pt !important;">نوع الوحدة:</strong>&ndash;&gt;-->
                         <!--                                            &lt;!&ndash;                                                    <t t-esc="unit.get('unit_type_ar', '')"/>&ndash;&gt;-->
                         <!--                                            &lt;!&ndash;                                                    <br/>&ndash;&gt;-->
-                        <!--                                            &lt;!&ndash;                                                    <strong>نوع الخدمة:</strong>&ndash;&gt;-->
+                        <!--                                            &lt;!&ndash;                                                    <strong style="font-size:17pt !important;">نوع الخدمة:</strong>&ndash;&gt;-->
                         <!--                                            &lt;!&ndash;                                                    <t t-esc="service.get('service_ar', '')"/>&ndash;&gt;-->
                         <!--                                            &lt;!&ndash;                                                </div>&ndash;&gt;-->
 
@@ -1011,13 +986,13 @@
 
                         <!--                                                    &lt;!&ndash; LEFT &ndash;&gt;-->
                         <!--                                                    <div style="display:table-cell; padding-right:15px; border-right:1px solid #c0c0c0;">-->
-                        <!--                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold;">-->
+                        <!--                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold; font-size:17pt !important;">-->
                         <!--                                                            <t t-esc="param.get('param_en', '')"/>-->
                         <!--                                                        </div>-->
 
-                        <!--                                                        <ol style="margin:8px 0 18px 18px;">-->
+                        <!--                                                        <ol style="font-size:17pt !important;" style="margin:8px 0 18px 18px;">-->
                         <!--                                                            <t t-foreach="param.get('lines', [])" t-as="line">-->
-                        <!--                                                                <li style="margin-bottom:10px;">-->
+                        <!--                                                                <li style="margin-bottom:10px; font-size:17pt !important;">-->
                         <!--                                                                    <t t-esc="(line.get('en') or '').strip()"/>-->
                         <!--                                                                </li>-->
                         <!--                                                            </t>-->
@@ -1025,14 +1000,14 @@
                         <!--                                                    </div>-->
 
                         <!--                                                    &lt;!&ndash; RIGHT &ndash;&gt;-->
-                        <!--                                                    <div style="display:table-cell; padding-left:15px; direction:rtl; text-align:right;">-->
-                        <!--                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold;">-->
+                        <!--                                                    <div style="display:table-cell; padding-left:15px; direction:rtl; text-align:right; font-size:17pt !important;">-->
+                        <!--                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold; font-size:17pt !important;">-->
                         <!--                                                            <t t-esc="param.get('param_ar', '')"/>-->
                         <!--                                                        </div>-->
 
-                        <!--                                                        <ol style="margin:8px 18px 18px 0;">-->
+                        <!--                                                        <ol style="font-size:17pt !important;" style="margin:8px 18px 18px 0;">-->
                         <!--                                                            <t t-foreach="param.get('lines', [])" t-as="line">-->
-                        <!--                                                                <li style="margin-bottom:10px;">-->
+                        <!--                                                                <li style="margin-bottom:10px; font-size:17pt !important;">-->
                         <!--                                                                    <t t-esc="line.get('ar', '')"/>-->
                         <!--                                                                </li>-->
                         <!--                                                            </t>-->
@@ -1063,19 +1038,19 @@
 
                         <!--                                            &lt;!&ndash; LEFT &ndash;&gt;-->
                         <!--                                            <div style="display:table-cell; width:50%; padding:6px 15px 6px 0; border-right:1px solid #c0c0c0; vertical-align:top; line-height:1.3;">-->
-                        <!--                                                <strong>Unit Type:</strong>-->
+                        <!--                                                <strong style="font-size:17pt !important;">Unit Type:</strong>-->
                         <!--                                                <t t-esc="unit.get('unit_type', '')"/>-->
                         <!--                                                <br/>-->
-                        <!--                                                <strong>Service Type:</strong>-->
+                        <!--                                                <strong style="font-size:17pt !important;">Service Type:</strong>-->
                         <!--                                                <t t-esc="(unit.get('services') and unit.get('services')[0].get('service_en')) or ''"/>-->
                         <!--                                            </div>-->
 
                         <!--                                            &lt;!&ndash; RIGHT &ndash;&gt;-->
                         <!--                                            <div style="display:table-cell; width:50%; padding:6px 0 6px 15px; direction:rtl; text-align:right; vertical-align:top; line-height:1.3;">-->
-                        <!--                                                <strong>نوع الوحدة:</strong>-->
+                        <!--                                                <strong style="font-size:17pt !important;">نوع الوحدة:</strong>-->
                         <!--                                                <t t-esc="unit.get('unit_type_ar', '')"/>-->
                         <!--                                                <br/>-->
-                        <!--                                                <strong>نوع الخدمة:</strong>-->
+                        <!--                                                <strong style="font-size:17pt !important;">نوع الخدمة:</strong>-->
                         <!--                                                <t t-esc="(unit.get('services') and unit.get('services')[0].get('service_ar')) or ''"/>-->
                         <!--                                            </div>-->
 
@@ -1090,11 +1065,11 @@
 
                         <!--                                                    &lt;!&ndash; LEFT &ndash;&gt;-->
                         <!--                                                    <div style="display:table-cell; padding-right:15px; border-right:1px solid #c0c0c0; vertical-align:top;">-->
-                        <!--                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold;">-->
+                        <!--                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold; font-size:17pt !important;">-->
                         <!--                                                            <t t-esc="param.get('param_en', '')"/>-->
                         <!--                                                        </div>-->
 
-                        <!--                                                        <ol style="margin:8px 0 18px 18px;">-->
+                        <!--                                                        <ol style="font-size:17pt !important;" style="margin:8px 0 18px 18px;">-->
                         <!--                                                            <t t-foreach="param.get('lines', [])" t-as="line">-->
                         <!--                                                                <li style="margin-bottom:6px;">-->
                         <!--                                                                    <t t-esc="(line.get('en') or '').strip()"/>-->
@@ -1105,11 +1080,11 @@
 
                         <!--                                                    &lt;!&ndash; RIGHT &ndash;&gt;-->
                         <!--                                                    <div style="display:table-cell; padding-left:15px; direction:rtl; text-align:right; vertical-align:top;">-->
-                        <!--                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold;">-->
+                        <!--                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold; font-size:17pt !important;">-->
                         <!--                                                            <t t-esc="param.get('param_ar', '')"/>-->
                         <!--                                                        </div>-->
 
-                        <!--                                                        <ol style="margin:8px 18px 18px 0;">-->
+                        <!--                                                        <ol style="font-size:17pt !important;" style="margin:8px 18px 18px 0;">-->
                         <!--                                                            <t t-foreach="param.get('lines', [])" t-as="line">-->
                         <!--                                                                <li style="margin-bottom:6px;">-->
                         <!--                                                                    <t t-esc="line.get('ar', '')"/>-->
@@ -1133,21 +1108,21 @@
 
                         <!--                                    &lt;!&ndash;                                            &lt;!&ndash; SAFE ACCESS &ndash;&gt;&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                            <div>&ndash;&gt;-->
-                        <!--                                    &lt;!&ndash;                                                <strong>Unit Type:</strong>&ndash;&gt;-->
+                        <!--                                    &lt;!&ndash;                                                <strong style="font-size:17pt !important;">Unit Type:</strong>&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                <t t-esc="unit.get('unit_type', '')"/>&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                <br/>&ndash;&gt;-->
 
-                        <!--                                    &lt;!&ndash;                                                <strong>Service Type:</strong>&ndash;&gt;-->
+                        <!--                                    &lt;!&ndash;                                                <strong style="font-size:17pt !important;">Service Type:</strong>&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                <t t-esc="(unit.get('services') and unit.get('services')[0].get('service_en')) or ''"/>&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                            </div>&ndash;&gt;-->
 
                         <!--                                    &lt;!&ndash;                                            <t t-foreach="unit.get('services', [])" t-as="service">&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                <t t-foreach="service.get('params', [])" t-as="param">&ndash;&gt;-->
 
-                        <!--                                    &lt;!&ndash;                                                    <div style="background:#d9e1f2; padding:6px; font-weight:bold;">&ndash;&gt;-->
+                        <!--                                    &lt;!&ndash;                                                    <div style="background:#d9e1f2; padding:6px; font-weight:bold; font-size:17pt !important;">&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                        <t t-esc="param.get('param_en', '')"/>&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                    </div>&ndash;&gt;-->
-                        <!--                                    &lt;!&ndash;                                                    <ol style="margin:8px 0 18px 18px;">&ndash;&gt;-->
+                        <!--                                    &lt;!&ndash;                                                    <ol style="font-size:17pt !important;" style="margin:8px 0 18px 18px;">&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                        <t t-foreach="param.get('lines', [])" t-as="line">&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                            <li style="margin-bottom:6px;">&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                                <t t-esc="(line.get('en') or '').strip()"/>&ndash;&gt;-->
@@ -1155,9 +1130,9 @@
                         <!--                                    &lt;!&ndash;                                                        </t>&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                    </ol>&ndash;&gt;-->
 
-                        <!--                                    &lt;!&ndash;                                                    &lt;!&ndash;                                                <ol style="margin:8px 0 15px 18px;">&ndash;&gt;&ndash;&gt;-->
+                        <!--                                    &lt;!&ndash;                                                    &lt;!&ndash;                                                <ol style="font-size:17pt !important;" style="margin:8px 0 15px 18px;">&ndash;&gt;&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                    &lt;!&ndash;                                                    <t t-foreach="param.get('lines', [])" t-as="line">&ndash;&gt;&ndash;&gt;-->
-                        <!--                                    &lt;!&ndash;                                                    &lt;!&ndash;                                                        <li>&ndash;&gt;&ndash;&gt;-->
+                        <!--                                    &lt;!&ndash;                                                    &lt;!&ndash;                                                        <li style="font-size:17pt !important;">&ndash;&gt;&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                    &lt;!&ndash;                                                            <t t-esc="(line.get('en') or '').strip()"/>&ndash;&gt;&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                    &lt;!&ndash;                                                        </li>&ndash;&gt;&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                    &lt;!&ndash;                                                    </t>&ndash;&gt;&ndash;&gt;-->
@@ -1172,21 +1147,21 @@
                         <!--                                    &lt;!&ndash;                                        <div style="display:table-cell; width:50%; padding-left:15px; direction:rtl; text-align:right; vertical-align:top;">&ndash;&gt;-->
 
                         <!--                                    &lt;!&ndash;                                            <div>&ndash;&gt;-->
-                        <!--                                    &lt;!&ndash;                                                <strong>نوع الوحدة:</strong>&ndash;&gt;-->
+                        <!--                                    &lt;!&ndash;                                                <strong style="font-size:17pt !important;">نوع الوحدة:</strong>&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                <t t-esc="unit.get('unit_type_ar', '')"/>&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                <br/>&ndash;&gt;-->
 
-                        <!--                                    &lt;!&ndash;                                                <strong>نوع الخدمة:</strong>&ndash;&gt;-->
+                        <!--                                    &lt;!&ndash;                                                <strong style="font-size:17pt !important;">نوع الخدمة:</strong>&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                <t t-esc="(unit.get('services') and unit.get('services')[0].get('service_ar')) or ''"/>&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                            </div>&ndash;&gt;-->
 
                         <!--                                    &lt;!&ndash;                                            <t t-foreach="unit.get('services', [])" t-as="service">&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                <t t-foreach="service.get('params', [])" t-as="param">&ndash;&gt;-->
 
-                        <!--                                    &lt;!&ndash;                                                    <div style="background:#d9e1f2; padding:6px; font-weight:bold;">&ndash;&gt;-->
+                        <!--                                    &lt;!&ndash;                                                    <div style="background:#d9e1f2; padding:6px; font-weight:bold; font-size:17pt !important;">&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                        <t t-esc="param.get('param_ar', '')"/>&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                    </div>&ndash;&gt;-->
-                        <!--                                    &lt;!&ndash;                                                    <ol style="margin:8px 18px 18px 0;">&ndash;&gt;-->
+                        <!--                                    &lt;!&ndash;                                                    <ol style="font-size:17pt !important;" style="margin:8px 18px 18px 0;">&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                        <t t-foreach="param.get('lines', [])" t-as="line">&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                            <li style="margin-bottom:6px;">&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                                <t t-esc="line.get('ar', '')"/>&ndash;&gt;-->
@@ -1194,9 +1169,9 @@
                         <!--                                    &lt;!&ndash;                                                        </t>&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                    </ol>&ndash;&gt;-->
 
-                        <!--                                    &lt;!&ndash;                                                    &lt;!&ndash;                                                <ol style="margin:8px 0 15px 18px;">&ndash;&gt;&ndash;&gt;-->
+                        <!--                                    &lt;!&ndash;                                                    &lt;!&ndash;                                                <ol style="font-size:17pt !important;" style="margin:8px 0 15px 18px;">&ndash;&gt;&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                    &lt;!&ndash;                                                    <t t-foreach="param.get('lines', [])" t-as="line">&ndash;&gt;&ndash;&gt;-->
-                        <!--                                    &lt;!&ndash;                                                    &lt;!&ndash;                                                        <li>&ndash;&gt;&ndash;&gt;-->
+                        <!--                                    &lt;!&ndash;                                                    &lt;!&ndash;                                                        <li style="font-size:17pt !important;">&ndash;&gt;&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                    &lt;!&ndash;                                                            <t t-esc="line.get('ar', '')"/>&ndash;&gt;&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                    &lt;!&ndash;                                                        </li>&ndash;&gt;&ndash;&gt;-->
                         <!--                                    &lt;!&ndash;                                                    &lt;!&ndash;                                                    </t>&ndash;&gt;&ndash;&gt;-->
@@ -1221,19 +1196,19 @@
                     <!--                                &lt;!&ndash; UNIT HEADER &ndash;&gt;-->
                     <!--                                <table style="width:100%; margin-bottom:15px; border:none; border-collapse:collapse;">-->
                     <!--                                    <tr>-->
-                    <!--                                        <td style="width:50%; border:none;">-->
-                    <!--                                            <strong>Unit Type:</strong>-->
+                    <!--                                        <td style="font-size:17pt !important;" style="width:50%; border:none; padding:16px;">-->
+                    <!--                                            <strong style="font-size:17pt !important;">Unit Type:</strong>-->
                     <!--                                            <t t-esc="unit.get('unit_type', '')"/>-->
                     <!--                                            <br/>-->
-                    <!--                                            <strong>Service Type:</strong>-->
+                    <!--                                            <strong style="font-size:17pt !important;">Service Type:</strong>-->
                     <!--                                            <t t-esc="unit.get('services')[0].get('service_en', '')"/>-->
                     <!--                                        </td>-->
 
-                    <!--                                        <td style="width:50%; text-align:right; direction:rtl; border:none;">-->
-                    <!--                                            <strong>نوع الوحدة:</strong>-->
+                    <!--                                        <td style="font-size:17pt !important;" style="width:50%; text-align:right; direction:rtl; border:none; padding:16px;">-->
+                    <!--                                            <strong style="font-size:17pt !important;">نوع الوحدة:</strong>-->
                     <!--                                            <t t-esc="unit.get('unit_type_ar', '')"/>-->
                     <!--                                            <br/>-->
-                    <!--                                            <strong>نوع الخدمة:</strong>-->
+                    <!--                                            <strong style="font-size:17pt !important;">نوع الخدمة:</strong>-->
                     <!--                                            <t t-esc="unit.get('services')[0].get('service_ar', '')"/>-->
                     <!--                                        </td>-->
                     <!--                                    </tr>-->
@@ -1247,10 +1222,10 @@
 
                     <!--                                            &lt;!&ndash; SECTION HEADER &ndash;&gt;-->
                     <!--                                            <tr style="background-color:#d9e1f2; font-weight:bold;">-->
-                    <!--                                                <td style="width:50%; padding:6px; border:none;">-->
+                    <!--                                                <td style="font-size:17pt !important;" style="width:50%; padding:6px; border:none; padding:16px;">-->
                     <!--                                                    <t t-esc="param.get('param_en', '')"/>-->
                     <!--                                                </td>-->
-                    <!--                                                <td style="width:50%; padding:6px; text-align:right; direction:rtl; border:none;">-->
+                    <!--                                                <td style="font-size:17pt !important;" style="width:50%; padding:6px; text-align:right; direction:rtl; border:none; padding:16px;">-->
                     <!--                                                    <t t-esc="param.get('param_ar', '')"/>-->
                     <!--                                                </td>-->
                     <!--                                            </tr>-->
@@ -1258,10 +1233,10 @@
                     <!--                                            &lt;!&ndash; CONTENT &ndash;&gt;-->
                     <!--                                            <tr>-->
                     <!--                                                &lt;!&ndash; ENGLISH &ndash;&gt;-->
-                    <!--                                                <td style="vertical-align:top; padding:8px; border:none;">-->
-                    <!--                                                    <ol style="margin:0; padding-left:18px;">-->
+                    <!--                                                <td style="font-size:17pt !important;" style="vertical-align:top; padding:8px; border:none; padding:16px;">-->
+                    <!--                                                    <ol style="font-size:17pt !important;" style="margin:0; padding-left:18px;">-->
                     <!--                                                        <t t-foreach="param.get('lines', [])" t-as="line">-->
-                    <!--                                                            <li style="margin-bottom:4px;">-->
+                    <!--                                                            <li style="margin-bottom:4px; font-size:17pt !important;">-->
                     <!--                                                                <t t-esc="(line.get('en') or '').strip()"/>-->
                     <!--                                                            </li>-->
                     <!--                                                        </t>-->
@@ -1269,10 +1244,10 @@
                     <!--                                                </td>-->
 
                     <!--                                                &lt;!&ndash; ARABIC &ndash;&gt;-->
-                    <!--                                                <td style="vertical-align:top; padding:8px; direction:rtl; text-align:right; border:none;">-->
-                    <!--                                                    <ol style="margin:0; padding-right:18px;">-->
+                    <!--                                                <td style="font-size:17pt !important;" style="vertical-align:top; padding:8px; direction:rtl; text-align:right; border:none; padding:16px;">-->
+                    <!--                                                    <ol style="font-size:17pt !important;" style="margin:0; padding-right:18px;">-->
                     <!--                                                        <t t-foreach="param.get('lines', [])" t-as="line">-->
-                    <!--                                                            <li style="margin-bottom:4px;">-->
+                    <!--                                                            <li style="margin-bottom:4px; font-size:17pt !important;">-->
                     <!--                                                                <t t-esc="line.get('ar', '')"/>-->
                     <!--                                                            </li>-->
                     <!--                                                        </t>-->
@@ -1297,19 +1272,19 @@
                     <!--                                &lt;!&ndash; HEADER &ndash;&gt;-->
                     <!--                                <table style="width:100%; margin-bottom:10px;">-->
                     <!--                                    <tr>-->
-                    <!--                                        <td style="width:50%;">-->
-                    <!--                                            <strong>Unit Type:</strong>-->
+                    <!--                                        <td style="font-size:17pt !important;" style="width:50%; padding:16px;">-->
+                    <!--                                            <strong style="font-size:17pt !important;">Unit Type:</strong>-->
                     <!--                                            <t t-esc="unit.get('unit_type', '')"/>-->
                     <!--                                            <br/>-->
-                    <!--                                            <strong>Service Type:</strong>-->
+                    <!--                                            <strong style="font-size:17pt !important;">Service Type:</strong>-->
                     <!--                                            <t t-esc="unit.get('services')[0].get('service_en', '')"/>-->
                     <!--                                        </td>-->
 
-                    <!--                                        <td style="width:50%; text-align:right; direction:rtl;">-->
-                    <!--                                            <strong>نوع الوحدة:</strong>-->
+                    <!--                                        <td style="font-size:17pt !important;" style="width:50%; text-align:right; direction:rtl; padding:16px;">-->
+                    <!--                                            <strong style="font-size:17pt !important;">نوع الوحدة:</strong>-->
                     <!--                                            <t t-esc="unit.get('unit_type_ar', '')"/>-->
                     <!--                                            <br/>-->
-                    <!--                                            <strong>نوع الخدمة:</strong>-->
+                    <!--                                            <strong style="font-size:17pt !important;">نوع الخدمة:</strong>-->
                     <!--                                            <t t-esc="unit.get('services')[0].get('service_ar', '')"/>-->
                     <!--                                        </td>-->
                     <!--                                    </tr>-->
@@ -1325,21 +1300,21 @@
 
                     <!--                                            &lt;!&ndash; SECTION HEADER &ndash;&gt;-->
                     <!--                                            <tr style="background-color:#d9e1f2; font-weight:bold;">-->
-                    <!--                                                <td style="width:50%; padding:5px;">-->
+                    <!--                                                <td style="font-size:17pt !important;" style="width:50%; padding:5px; padding:16px;">-->
                     <!--                                                    <t t-esc="param.get('param_en', '')"/>-->
                     <!--                                                </td>-->
-                    <!--                                                <td style="width:50%; padding:5px; text-align:right; direction:rtl;">-->
+                    <!--                                                <td style="font-size:17pt !important;" style="width:50%; padding:5px; text-align:right; direction:rtl; padding:16px;">-->
                     <!--                                                    <t t-esc="param.get('param_ar', '')"/>-->
                     <!--                                                </td>-->
                     <!--                                            </tr>-->
 
                     <!--                                            &lt;!&ndash; LINES &ndash;&gt;-->
                     <!--                                            <tr>-->
-                    <!--                                                <td style="vertical-align:top; padding:8px;">-->
-                    <!--                                                    <ol style="margin:0; padding-left:20px;">-->
+                    <!--                                                <td style="font-size:17pt !important;" style="vertical-align:top; padding:8px; padding:16px;">-->
+                    <!--                                                    <ol style="font-size:17pt !important;" style="margin:0; padding-left:20px;">-->
 
                     <!--                                                        <t t-foreach="param.get('lines', [])" t-as="line">-->
-                    <!--                                                            <li>-->
+                    <!--                                                            <li style="font-size:17pt !important;">-->
                     <!--                                                                <t t-esc="(line.get('en') or '').strip()"/>-->
                     <!--                                                            </li>-->
                     <!--                                                        </t>-->
@@ -1347,11 +1322,11 @@
                     <!--                                                    </ol>-->
                     <!--                                                </td>-->
 
-                    <!--                                                <td style="vertical-align:top; padding:8px; direction:rtl; text-align:right;">-->
-                    <!--                                                    <ol style="margin:0; padding-right:20px;">-->
+                    <!--                                                <td style="font-size:17pt !important;" style="vertical-align:top; padding:8px; direction:rtl; text-align:right; padding:16px;">-->
+                    <!--                                                    <ol style="font-size:17pt !important;" style="margin:0; padding-right:20px;">-->
 
                     <!--                                                        <t t-foreach="param.get('lines', [])" t-as="line">-->
-                    <!--                                                            <li>-->
+                    <!--                                                            <li style="font-size:17pt !important;">-->
                     <!--                                                                <t t-esc="line.get('ar', '')"/>-->
                     <!--                                                            </li>-->
                     <!--                                                        </t>-->
