@@ -525,6 +525,64 @@ class CustomerListReportWizard(models.TransientModel):
 
         return True
 
+    @api.model
+    def cron_send_customer_list_email(self):
+
+        wizard = self.create({
+            'company_id': self.env.company.id,
+        })
+
+        report = self.env.ref(
+            'hhs_loyalty_management.action_report_customer_list'
+        )
+
+        pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
+            report.report_name,
+            [wizard.id]
+        )
+
+        attachment = self.env['ir.attachment'].create({
+            'name': 'Customer_List_Report.pdf',
+            'type': 'binary',
+            'datas': base64.b64encode(pdf_content),
+            'mimetype': 'application/pdf',
+        })
+
+        params = self.env['ir.config_parameter'].sudo()
+
+        email_to = params.get_param(
+            'hhs_loyalty_management.customer_list_email_ids'
+        )
+
+        email_cc = params.get_param(
+            'hhs_loyalty_management.customer_list_cc_email_ids'
+        )
+
+        mail_content = params.get_param(
+            'hhs_loyalty_management.customer_list_mail_content'
+        ) or ''
+
+        body_html = f"""
+                <p>Dear Sir/Madam,</p>
+
+                <p>{mail_content}</p>
+
+                <p>Please find attached the latest Customer List Report.</p>
+
+                <p>Regards,<br/>
+                System Generated Mail</p>
+            """
+
+        self.env['mail.mail'].create({
+            'subject': 'Customer List Report',
+            'body_html': body_html,
+            'email_to': email_to,
+            'email_cc': email_cc,
+            'attachment_ids': [(4, attachment.id)],
+        }).send()
+
+        return True
+
     # def action_send_customer_list_email(self):
     #     self.ensure_one()
     #
