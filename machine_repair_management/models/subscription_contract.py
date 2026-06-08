@@ -290,12 +290,16 @@ class SubscriptionContracts(models.Model):
         total_prevent = 0
         total_correct = 0
         if self.amc_quotation_id:
-            if self.amc_quotation_id.customer_name:
-                partner = self.env["res.partner"].search(
-                    [("name", "=", self.amc_quotation_id.customer_name)], limit=1
-                )
-                if partner:
-                    self.partner_id = partner.id if partner else False
+            '''Code added on June 07 2026 by vijaya bhaskar'''
+            if self.amc_quotation_id.crm_id.partner_id:
+                self.partner_id = self.amc_quotation_id.crm_id.partner_id.id if self.amc_quotation_id.crm_id.partner_id else False
+
+            # if self.amc_quotation_id.customer_name:
+            #     partner = self.env["res.partner"].search(
+            #         [("name", "=", self.amc_quotation_id.customer_name)], limit=1
+            #     )
+            #     if partner:
+            #         self.partner_id = partner.id if partner else False
             # self.reference = f"{self.amc_quotation_id.name} - {self.partner_id.name}"
             self.reference = self.amc_quotation_id.crm_id.name
             self.recurring_period = self.amc_quotation_id.contract_period
