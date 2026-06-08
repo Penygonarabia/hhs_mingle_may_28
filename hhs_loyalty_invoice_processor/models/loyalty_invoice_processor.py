@@ -234,6 +234,7 @@ class LoyaltyInvoiceProcessor(models.TransientModel):
                 'clph_promoref': promo_ref,
                 'clph_export': 'False',
                 'clph_redemptionprice': 0.0,
+                'type': type,
             })
 
         # Calculate and update partner loyalty balance
