@@ -73,7 +73,7 @@ class CustomerLoyaltyResPartner(models.Model):
     #     string='Loyalty Transaction History'
     # )
     loyalty_transaction_ids = fields.One2many('customer.loyalty.points.history', 'partner_id',
-                                              string='Loyalty Transactions')
+                                              string='Loyalty Transactions',compute = "_load_loyalty_transactions")
 
     loyalty_points = fields.Integer(
         string='Points'
@@ -91,26 +91,80 @@ class CustomerLoyaltyResPartner(models.Model):
     invoice_points_regular=fields.Integer(string='Invoice Points Regular')
     credit_note_points_regular=fields.Integer(sting='Credit Note Points Regular')
 
+    # @api.onchange('partner_type_hhs')
+    # def _prepare_loyalty_transactions(self):
+    #     vals_list = [(5, 0, 0)]
+    #     print(".111111111111111111")
+    #     history_records = self.env['customer.loyalty.points.history'].sudo().search([
+    #         ('clph_cstcode', '=', self.ref)
+    #     ])
+    #     print(".2222222222222222222")
+    #
+    #     for history in history_records:
+    #         print("..........history",history.clph_cstcode)
+    #         vals_list.append((0, 0, {
+    #             'type': history.type,
+    #             'clph_whouse': history.clph_whouse,
+    #             'clph_docnumber': history.clph_docnumber,
+    #             'clph_datetime': history.clph_datetime,
+    #             'clph_points': history.clph_points,
+    #             'clph_bonuspoints': history.clph_bonuspoints,
+    #             'clph_note': history.clph_note,
+    #         }))
+    #
+    #     self.loyalty_transaction_ids = vals_list
+
+    def _load_loyalty_transactions(self):
+        for rec in self:
+            history_ids = self.env['customer.loyalty.points.history'].sudo().search([
+                ('clph_cstcode', '=', rec.ref)
+            ])
+
+            rec.loyalty_transaction_ids = [(6, 0, history_ids.ids)]
+
     @api.onchange('partner_type_hhs')
     def _on_change_partner_type(self):
         for rec in self:
+            print(".........11111111111111111111")
+            customer_loyalty_points_search = self.env['customer.loyalty.points.history'].sudo().search([
+                ('clph_cstcode', '=', rec.ref)
+            ])
+            print("....................cust")
+            customer_lst = [(5, 0, 0)]
+            for customer in customer_loyalty_points_search:
 
-            self.env.cr.execute("""
-                SELECT id, sm_code, sm_name, user_id
-                FROM sl_salesman
-            """)
+                print(".................customer",customer.clph_cstid,customer.clph_cstcode)
+                history_vals = {
 
-            salesmen = self.env.cr.dictfetchall()
+                    'type': customer.type,
+                    'clph_whouse': customer.clph_whouse,
+                    'clph_docnumber': customer.clph_docnumber,
+                    'clph_datetime': customer.clph_datetime,
+                    'clph_points': customer.clph_points,
+                    'clph_bonuspoints': customer.clph_bonuspoints,
+                    'clph_note': customer.clph_note
 
-            for salesman in salesmen:
-                if rec.ref == salesman.get('sm_code'):
-                    print("Match Found")
-                    print("Partner Ref:", rec.ref)
-                    print("Salesman:", salesman)
+                }
+                customer_lst.append((0, 0, history_vals))
+            rec.loyalty_transaction_ids = customer_lst
 
-                    rec.salesman_code = salesman.get('sm_code')
-                    rec.salesman_name = salesman.get('sm_name')
-                    break
+
+            # self.env.cr.execute("""
+            #     SELECT id, sm_code, sm_name, user_id
+            #     FROM sl_salesman
+            # """)
+            #
+            # salesmen = self.env.cr.dictfetchall()
+            #
+            # for salesman in salesmen:
+            #     if rec.ref == salesman.get('sm_code'):
+            #         print("Match Found")
+            #         print("Partner Ref:", rec.ref)
+            #         print("Salesman:", salesman)
+            #
+            #         rec.salesman_code = salesman.get('sm_code')
+            #         rec.salesman_name = salesman.get('sm_name')
+            #         break
 
     # @api.depends('balance_points_regular','collected_points_regular','expired_points_bonus','redeem_points_regular')
     # def _compute_tier_name(self):
@@ -141,6 +195,9 @@ class CustomerLoyaltyResPartner(models.Model):
         res = super(CustomerLoyaltyResPartner, self).read(fields, load)
         for rec in self:
             rec._compute_loyalty_points()
+            rec._load_loyalty_transactions()
+
+            # rec._on_change_partner_type()
             # rec._compute_tier_name()
         return res
 
