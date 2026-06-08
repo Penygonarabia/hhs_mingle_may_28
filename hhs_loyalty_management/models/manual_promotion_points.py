@@ -137,7 +137,9 @@ class EnterManualPromotionPoints(models.Model):
 
         return super().write(vals)
 
+
     def action_process(self):
+        print("customerid111111111111111111111",'1')
         for rec in self:
             # -------------------------------------------------
             # PREVENT DUPLICATE PROCESSING
@@ -166,6 +168,36 @@ class EnterManualPromotionPoints(models.Model):
                 rec.adjustment_types,
                 adj_type
             )
+
+            last_transaction = self.env[
+                # 'loyalty.transaction.history'
+                'customer.loyalty.points.history'
+            ].search(
+                [('clph_cstid', '=', rec.customer_id.id)],
+                order='clph_datetime desc',
+                limit=1
+            )
+            previous_balance = (
+                    last_transaction.balance_points or 0
+            )
+            print("PREVIOUS BALANCE :", previous_balance)
+            if rec.adjustment_types == 'addition':
+                loyalty_points = rec.number_of_points
+                redeemed_points = 0
+
+                balance_points = (
+                        previous_balance
+                        + rec.number_of_points
+                )
+            else:
+                loyalty_points = 0
+                redeemed_points = rec.number_of_points
+                balance_points = (
+                        previous_balance
+                        - rec.number_of_points
+                )
+
+
             # -------------------------------------------------
             # CREATE CUSTOMER LOYALTY POINTS HISTORY
             # -------------------------------------------------
@@ -175,6 +207,7 @@ class EnterManualPromotionPoints(models.Model):
             ].create({
 
                 'clph_cstid': rec.customer_id.id,
+                'partner_id': rec.customer_id.id,
                 'clph_cstcode': rec.customer_id.ref or '',
                 'clph_date': rec.transaction_date,
                 # 99 = Adjustment / Collected
@@ -192,44 +225,51 @@ class EnterManualPromotionPoints(models.Model):
                 'clph_reasoncode': rec.reason_type_id.reason_code or '',
                 'clph_promoref': rec.reference or '',
                 'clph_export': False,
+
+                'loyalty_points': loyalty_points,
+                'redeemed_points': redeemed_points,
+                'balance_points': balance_points,
+                'clph_points': rec.number_of_points,
+                'type': 'Adjustments',
+
             })
 
             # -------------------------------------------------
             # GET PREVIOUS BALANCE
             # -------------------------------------------------
 
-            last_transaction = self.env[
-                # 'loyalty.transaction.history'
-                'customer.loyalty.points.history'
-            ].search(
-                [('partner_id', '=', rec.customer_id.id)],
-                order='clph_datetime desc',
-                limit=1
-            )
-            previous_balance = (
-                    last_transaction.balance_points or 0
-            )
-            print("PREVIOUS BALANCE :", previous_balance)
+            # last_transaction = self.env[
+            #     # 'loyalty.transaction.history'
+            #     'customer.loyalty.points.history'
+            # ].search(
+            #     [('clph_cstid', '=', rec.customer_id.id)],
+            #     order='clph_datetime desc',
+            #     limit=1
+            # )
+            # previous_balance = (
+            #         last_transaction.balance_points or 0
+            # )
+            # print("PREVIOUS BALANCE :", previous_balance)
 
             # -------------------------------------------------
             # CALCULATE NEW BALANCE
             # -------------------------------------------------
 
-            if rec.adjustment_types == 'addition':
-                loyalty_points = rec.number_of_points
-                redeemed_points = 0
-
-                balance_points = (
-                        previous_balance
-                        + rec.number_of_points
-                )
-            else:
-                loyalty_points = 0
-                redeemed_points = rec.number_of_points
-                balance_points = (
-                        previous_balance
-                        - rec.number_of_points
-                )
+            # if rec.adjustment_types == 'addition':
+            #     loyalty_points = rec.number_of_points
+            #     redeemed_points = 0
+            #
+            #     balance_points = (
+            #             previous_balance
+            #             + rec.number_of_points
+            #     )
+            # else:
+            #     loyalty_points = 0
+            #     redeemed_points = rec.number_of_points
+            #     balance_points = (
+            #             previous_balance
+            #             - rec.number_of_points
+            #     )
 
             print("NEW BALANCE :", balance_points)
 
@@ -237,24 +277,25 @@ class EnterManualPromotionPoints(models.Model):
             # CREATE LOYALTY TRANSACTION HISTORY
             # -------------------------------------------------
 
-            self.env[
-                # 'loyalty.transaction.history'
-                'customer.loyalty.points.history'
-            ].create({
-
-                #'partner_id': rec.customer_id.id,
-                'clph_cstid': rec.customer_id.id,
-                'loyalty_points': loyalty_points,
-                'redeemed_points': redeemed_points,
-                'balance_points': balance_points,
-                'clph_docnumber': rec.reference or '',
-                'clph_points': rec.number_of_points,
-                'clph_whouse': '',
-                'clph_note': '',
-                'clph_datetime': fields.Datetime.now(),
-                'clph_bonuspoint': 0,
-                'type': 'Adjustments',
-            })
+            # self.env[
+            #     # 'loyalty.transaction.history'
+            #     'customer.loyalty.points.history'
+            # ].create({
+            #
+            #     'partner_id': rec.customer_id.id,
+            #     'clph_cstid':rec.customer_id.id,
+            #     'loyalty_points': loyalty_points,
+            #     'redeemed_points': redeemed_points,
+            #     'balance_points': balance_points,
+            #     'clph_docnumber': rec.reference or '',
+            #     'clph_points': rec.number_of_points,
+            #     'clph_whouse': '',
+            #     'clph_note': '',
+            #     'clph_datetime': fields.Datetime.now(),
+            #     'clph_bonuspoint': 0,
+            #     'type': 'Adjustments',
+            # })
+            print('customeridddddddddddddddddddddddd',rec.customer_id.id)
             # -------------------------------------------------
             # UPDATE CUSTOMER CURRENT BALANCE
             # -------------------------------------------------

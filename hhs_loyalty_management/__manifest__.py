@@ -34,7 +34,7 @@ Features:
        # 'views/loyalty_menu.xml',
         'wizard/promotion_report_wizard_views.xml',
         'wizard/customer_statement_wizard_view.xml',
-        #'report/customer_statement_report.xml',
+        'report/customer_statement_report.xml',
         'report/customer_statement_templates.xml',
         'report/report_promotion.xml',
         #'report/loyalty_points_summary_report.xml',

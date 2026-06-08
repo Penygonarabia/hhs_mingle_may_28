@@ -257,8 +257,8 @@ class LoyaltyPointsSummaryWizard(models.TransientModel):
         # ---- Title rows ----------------------------------------------
         company  = self.env.company.name
         user     = self.env.user.name
-        from_str = str(self.from_date)
-        to_str   = str(self.to_date)
+        from_str = self.from_date.strftime('%d-%m-%Y') if self.from_date else ''
+        to_str = self.to_date.strftime('%d-%m-%Y') if self.to_date else ''
 
         ws.merge_cells('A1:O1')
         t = ws['A1']
@@ -277,21 +277,21 @@ class LoyaltyPointsSummaryWizard(models.TransientModel):
 
         # ---- Column headers ------------------------------------------
         columns = [
-            ('#',              6),
+            ('Sl #',              6),
             ('Region',        16),
             ('City',          14),
             ('Salesman',      18),
             ('Customer Code', 16),
             ('Customer Name', 26),
-            ('Mobile',        14),
-            ('Tier',          12),
+            ('Mobile #',        14),
+            ('Tier Name',          12),
             ('Opening\nBalance',   14),
             ('Regular\nPoints',    14),
             ('Bonus\nPoints',      14),
             ('Redeemed',          13),
             ('Expired',           12),
             ('Available\nPoints', 15),
-            ('Total\nPurchase',   14),
+            ('Total Purchase\nPrice',   14),
         ]
 
         header_row = 4

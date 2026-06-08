@@ -7,7 +7,8 @@
             <form string="Customer Statement Account">
                 <group>
                     <group>
-                        <field name="customer_id" options="{'no_create': True, 'no_open': True}"/>
+<!--                        <field name="customer_id" options="{'no_create': True, 'no_open': True}"/>-->
+                        <field name="customers_ids" widget="many2many_tags" options="{'no_create': True, 'no_open': True}"/>
                     </group>
                     <group>
                         <field name="from_date"/>

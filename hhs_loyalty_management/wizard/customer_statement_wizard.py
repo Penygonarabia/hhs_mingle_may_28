@@ -9,7 +9,12 @@ class LoyaltyCustomerStatementWizard(models.TransientModel):
     _name = 'loyalty.customer.statement.wizard'
     _description = 'Customer Statement Wizard'
 
-    customer_id = fields.Many2one(
+    # customer_id = fields.Many2one(
+    #     'res.partner',
+    #     string='Customer',
+    #     domain=[('activate_loyalty_feature', '=', True)]
+    # )
+    customers_ids=fields.Many2many(
         'res.partner',
         string='Customer',
         domain=[('activate_loyalty_feature', '=', True)]

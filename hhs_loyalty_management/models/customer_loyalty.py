@@ -91,6 +91,27 @@ class CustomerLoyaltyResPartner(models.Model):
     invoice_points_regular=fields.Integer(string='Invoice Points Regular')
     credit_note_points_regular=fields.Integer(sting='Credit Note Points Regular')
 
+    @api.onchange('partner_type_hhs')
+    def _on_change_partner_type(self):
+        for rec in self:
+
+            self.env.cr.execute("""
+                SELECT id, sm_code, sm_name, user_id
+                FROM sl_salesman
+            """)
+
+            salesmen = self.env.cr.dictfetchall()
+
+            for salesman in salesmen:
+                if rec.ref == salesman.get('sm_code'):
+                    print("Match Found")
+                    print("Partner Ref:", rec.ref)
+                    print("Salesman:", salesman)
+
+                    rec.salesman_code = salesman.get('sm_code')
+                    rec.salesman_name = salesman.get('sm_name')
+                    break
+
     # @api.depends('balance_points_regular','collected_points_regular','expired_points_bonus','redeem_points_regular')
     # def _compute_tier_name(self):
     #     for rec in self:
