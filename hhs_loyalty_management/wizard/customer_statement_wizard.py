@@ -49,8 +49,8 @@ class LoyaltyCustomerStatementWizard(models.TransientModel):
         ]
 
         # Customer filter only when selected
-        if self.customer_id:
-            domain.append(('partner_id', '=', self.customer_id.id))
+        if self.customers_ids:
+            domain.append(('partner_id', '=', self.customers_ids.ids))
 
         transactions = self.env['loyalty.audit.view'].search(domain)
 
@@ -59,7 +59,7 @@ class LoyaltyCustomerStatementWizard(models.TransientModel):
 
         data = {
             'wizard_id': self.id,
-            'customer_id': self.customer_id.id if self.customer_id else False,
+            'customer_id': self.customers_ids.ids if self.customers_ids else False,
             'from_date': self.from_date,
             'to_date': self.to_date,
         }
