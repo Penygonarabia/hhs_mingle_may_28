@@ -37,6 +37,7 @@ Features:
         'report/customer_statement_report.xml',
         'report/customer_statement_templates.xml',
         'report/report_promotion.xml',
+        'views/views_sales_table_view.xml',
         #'report/loyalty_points_summary_report.xml',
         #'report/loyalty_points_summary_template.xml',
         # 'security/ir.model.access.csv',

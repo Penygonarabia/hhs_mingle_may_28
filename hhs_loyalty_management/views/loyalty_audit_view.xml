@@ -148,9 +148,9 @@
         <field name="search_view_id" ref="view_loyalty_audit_view_search"/>
         <field name="context">
             'pivot_measures': ['tier_name','work_center_group_name','city','customer_name'],
-            'disable_pivot_expand': True,
-            'disable_pivot_filters': True,
-            'disable_pivot_download': True
+<!--            'disable_pivot_expand': True,-->
+            <!--'disable_pivot_filters': True,
+            'disable_pivot_download': True-->
         </field>
         <!--        <field name="context">{'search_default_group_by_transaction_date': 1}</field>-->
     </record>

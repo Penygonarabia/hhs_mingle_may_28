@@ -7,3 +7,4 @@ from . import manual_promotion_points
 from . import promotion_setup
 from . import process_tier
 from . import loyalty_audit_view
+from . import sales_table_view

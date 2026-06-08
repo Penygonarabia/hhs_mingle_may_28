@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- List View -->
+    <record id="view_loyalty_sales_table_tree" model="ir.ui.view">
+        <field name="name">loyalty.sales.table.view.tree</field>
+        <field name="model">loyalty.sales.table.view</field>
+        <field name="arch" type="xml">
+            <tree string="Sales Table View" create="0" edit="0" delete="0">
+                <field name="trnh_region"/>
+                <field name="trnh_city"/>
+                <field name="trnh_sman"/>
+                <field name="trnh_cstno"/>
+                <field name="trnh_cstname"/>
+                <field name="trnh_cstmobile"/>
+                <field name="tier_name"/>
+                <field name="trnh_type"/>
+                <field name="trnh_whouse"/>
+                <field name="trnh_no"/>
+                <field name="trnh_date"/>
+                <field name="trnd_slno"/>
+                <field name="trnd_group"/>
+                <field name="trnd_part"/>
+                <field name="trnd_desc"/>
+                <field name="qty" sum="Total Qty"/>
+                <field name="net_sales" sum="Total Net Sales"/>
+                <field name="net_sales_with_vat" sum="Total Net Sales (VAT)"/>
+                <field name="clph_promoref"/>
+                <field name="clph_points" sum="Total Regular Points"/>
+                <field name="clph_bonuspoint" sum="Total Bonus Points"/>
+                <field name="total_points" sum="Total Points"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Pivot View -->
+    <record id="view_loyalty_sales_table_pivot" model="ir.ui.view">
+        <field name="name">loyalty.sales.table.view.pivot</field>
+        <field name="model">loyalty.sales.table.view</field>
+        <field name="arch" type="xml">
+            <pivot string="Sales Table View" sample="1">
+                <field name="trnh_date" type="row" interval="month"/>
+                <field name="trnh_type" type="col"/>
+                <field name="net_sales" type="measure"/>
+                <field name="total_points" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_loyalty_sales_table_search" model="ir.ui.view">
+        <field name="name">loyalty.sales.table.view.search</field>
+        <field name="model">loyalty.sales.table.view</field>
+        <field name="arch" type="xml">
+            <search string="Search Sales Table View">
+                <field name="trnh_no"/>
+                <field name="trnh_cstno"/>
+                <field name="trnh_cstname"/>
+                <field name="trnh_sman"/>
+                <field name="trnd_part"/>
+                <group expand="1" string="Group By">
+                    <filter string="Date" name="group_by_date" context="{'group_by':'trnh_date'}"/>
+                    <filter string="Transaction Type" name="group_by_type" context="{'group_by':'trnh_type'}"/>
+                    <filter string="Warehouse" name="group_by_warehouse" context="{'group_by':'trnh_whouse'}"/>
+                    <filter string="Customer" name="group_by_customer" context="{'group_by':'trnh_cstname'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_loyalty_sales_table_view" model="ir.actions.act_window">
+        <field name="name">Sales Table View</field>
+        <field name="res_model">loyalty.sales.table.view</field>
+        <field name="view_mode">tree,pivot</field>
+        <field name="search_view_id" ref="view_loyalty_sales_table_search"/>
+    </record>
+
+    <!-- Menu Item under Loyalty Points -> Reports -->
+    <!-- Assuming parent menu id is 'menu_loyalty_points_reports' or similar. We need to check __manifest__ or views for exact menu id. -->
+    <menuitem id="menu_loyalty_sales_table_view"
+              name="Sales Table View"
+              parent="hhs_loyalty_management.menu_loyalty_reports_root" 
+              action="action_loyalty_sales_table_view"
+              sequence="50"/>
+
+</odoo>
