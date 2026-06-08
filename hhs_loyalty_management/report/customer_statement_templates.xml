@@ -85,11 +85,11 @@
                                 <strong>Statement Date:</strong>
                                 <span t-esc="print_date.split(' ')[0]"/>
                                 <br/>
-                                <strong>Printed Date &amp; Time:</strong>
-                                <span t-esc="print_date"/>
-                                <br/>
-                                <strong>Period:</strong>
-                                <span t-esc="period_month"/>
+<!--                                <strong>Printed Date &amp; Time:</strong>-->
+<!--                                <span t-esc="print_date"/>-->
+<!--                                <br/>-->
+                                <strong>Printed Date:</strong>
+                                <t t-esc="period_display"/>
                                 <br/>
                                 <strong>Salesman:</strong>
                                 <span t-field="customer.user_id.name"/>
