@@ -239,22 +239,22 @@ class CustomerLoyaltyResPartner(models.Model):
                     lambda x: str(x.clph_doctype) == '97'
                 ).mapped('clph_regpoints')
             )
-            rec.invoice_points_regular = sum(
-                history.filtered(
-                    lambda x: x.clph_doctype == '01'
-                ).mapped('clph_regpoints')
-            )
-
-            rec.credit_note_points_regular = sum(
-                history.filtered(
-                    lambda x: x.clph_doctype == '02'
-                ).mapped('clph_regpoints')
-            )
+            # rec.invoice_points_regular = sum(
+            #     history.filtered(
+            #         lambda x: x.clph_doctype == '01'
+            #     ).mapped('clph_regpoints')
+            # )
+            #
+            # rec.credit_note_points_regular = sum(
+            #     history.filtered(
+            #         lambda x: x.clph_doctype == '02'
+            #     ).mapped('clph_regpoints')
+            # )
 
             rec.balance_points_regular = (
                     rec.collected_points_regular
-                    + rec.invoice_points_regular
-                    - rec.credit_note_points_regular
+                    # + rec.invoice_points_regular
+                    # - rec.credit_note_points_regular
                     - rec.redeem_points_regular
                     - rec.expired_points_regular
             )
@@ -281,22 +281,22 @@ class CustomerLoyaltyResPartner(models.Model):
                 ).mapped('clph_bonuspoints')
             )
 
-            rec.invoice_points_bonus = sum(
-                history.filtered(
-                    lambda x: x.clph_doctype == '01'
-                ).mapped('clph_bonuspoints')
-            )
-
-            rec.credit_note_points_bonus = sum(
-                history.filtered(
-                    lambda x: x.clph_doctype == '02'
-                ).mapped('clph_bonuspoints')
-            )
+            # rec.invoice_points_bonus = sum(
+            #     history.filtered(
+            #         lambda x: x.clph_doctype == '01'
+            #     ).mapped('clph_bonuspoints')
+            # )
+            #
+            # rec.credit_note_points_bonus = sum(
+            #     history.filtered(
+            #         lambda x: x.clph_doctype == '02'
+            #     ).mapped('clph_bonuspoints')
+            # )
 
             rec.balance_points_bonus = (
                     rec.collected_points_bonus
-                    + rec.invoice_points_bonus
-                    - rec.credit_note_points_bonus
+                    # + rec.invoice_points_bonus
+                    # - rec.credit_note_points_bonus
                     - rec.redeem_points_bonus
                     - rec.expired_points_bonus
             )
