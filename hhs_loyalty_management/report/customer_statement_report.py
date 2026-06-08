@@ -41,18 +41,38 @@ class ReportCustomerStatement(models.AbstractModel):
         
         customers_data = []
         for customer in customer_ids:
-            cust_transactions = all_transactions.filtered(lambda t: t.partner_id.id == customer.id)
-            
-            # Opening Balance for this customer
+            cust_transactions = all_transactions.filtered(
+                lambda t: t.partner_id.id == customer.id
+            )
+
             opening_domain = [
                 ('partner_id', '=', customer.id),
                 ('transaction_date', '<', from_date),
             ]
+
             opening_transactions = self.env['loyalty.audit.view'].search(opening_domain)
-            
+
+            print("================================")
+            print("Customer:", customer.name)
+            print("From Date:", from_date)
+
+            for rec in opening_transactions:
+                print(
+                    rec.transaction_date,
+                    rec.transaction_no,
+                    rec.regular_points,
+                    rec.bonus_points,
+                    rec.total_points
+                )
+
+                # existing opening balance calculation
             opening_regular = sum(opening_transactions.mapped('regular_points'))
             opening_bonus = sum(opening_transactions.mapped('bonus_points'))
             opening_total = sum(opening_transactions.mapped('total_points'))
+
+            print("Opening Regular:", opening_regular)
+            print("Opening Bonus:", opening_bonus)
+            print("Opening Total:", opening_total)
             
             total_regular = sum(cust_transactions.mapped('regular_points'))
             total_bonus = sum(cust_transactions.mapped('bonus_points'))
@@ -75,7 +95,7 @@ class ReportCustomerStatement(models.AbstractModel):
             'doc_ids': docids,
             'doc_model': 'loyalty.customer.statement.wizard',
             'data': data,
-            'customer': customer,
+            #'customer': customer,
             'from_date': from_date,
             'to_date': to_date,
             'period_month': period_month,
