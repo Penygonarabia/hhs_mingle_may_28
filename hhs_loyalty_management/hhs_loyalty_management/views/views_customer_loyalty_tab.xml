@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_crm_partner_loyalty_form" model="ir.ui.view">
+        <field name="name">res.partner.loyalty.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <!-- Add Loyalty tab after Partner Assignment -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Loyalty" name="loyalty_tab" groups="hhs_loyalty_management.group_loyalty_program_user">
+                    <group>
+                        <group string="Loyalty Details">
+                            <field name="activate_loyalty_feature"/>
+                            <field name="activation_date"/>
+                            <field name="redemption_deadline"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+            <!--Applicabel Loyalt Point Setup tab-->
+            <xpath expr="//notebook" position="inside">
+                <page string="Loyalty Point Setup"
+                      name="applicable_loyalty"
+                      groups="hhs_loyalty_management.group_loyalty_program_user">
+
+                    <field name="applicable_loyalty_line_ids">
+                        <tree editable="bottom">
+                            <!--                            <field name="product_category_id"/>-->
+
+                            <!--                            <field name="product_group_id"-->
+                            <!--                                   domain="[('parent_id', '=', product_category_id)]"/>-->
+
+                            <!--                            <field name="product_sub_group_id"-->
+                            <!--                                   domain="[('parent_id', '=', product_group_id)]"/>-->
+
+                            <!--                            <field name="product_id"-->
+                            <!--                                   domain="[-->
+                            <!--                           ('categ_id', 'child_of', product_category_id),-->
+                            <!--                           ('categ_id', 'child_of', product_group_id),-->
+                            <!--                           ('categ_id', 'child_of', product_sub_group_id)-->
+                            <!--                       ]"/>-->
+                            <field name="product_id"
+                                   domain="[('detailed_type','=','consu')]"
+                                   options="{'no_create': True,'no_create_edit': True,'no_open': True}"/>
+
+                            <field name="loyalty_points"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+            <!--             Tier Tab-->
+            <xpath expr="//page[@name='applicable_loyalty']" position="after">
+                <page string="Tier"
+                      name="tier_tab"
+                      groups="hhs_loyalty_management.group_loyalty_program_user">
+                    <group>
+                        <field name="tier_name"/>
+                    </group>
+                    <group col="2">
+                        <group string="Regular">
+                            <field name="collected_points_regular" readonly="1"/>
+                            <field name="redeem_points_regular" readonly="1"/>
+                            <field name="expired_points_regular" readonly="1"/>
+                            <field name="balance_points_regular" readonly="1"/>
+                        </group>
+                        <group string="Bonus">
+                            <div class="o_form_label"/>
+                            <field name="collected_points_bonus" nolabel="1" readonly="1"/>
+                            <div class="o_form_label"/>
+                            <field name="redeem_points_bonus" nolabel="1" readonly="1"/>
+                            <div class="o_form_label"/>
+                            <field name="expired_points_bonus" nolabel="1" readonly="1"/>
+                            <div class="o_form_label"/>
+                            <field name="balance_points_bonus" nolabel="1" readonly="1"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+
+            <!-- Loyalty Transaction History -->
+            <xpath expr="//page[@name='tier_tab']" position="after">
+
+                <page string="Loyalty Transaction History"
+                      name="loyalty_transaction_history_tab"
+                      groups="hhs_loyalty_management.group_loyalty_program_user">
+                    <!--                    <header>-->
+                    <!--                        <button name="generate_loyalty_transaction_history" type="object"-->
+                    <!--                                class="btn-primary"></button>-->
+                    <!--                    </header>-->
+
+                    <!--                    <group col="3">-->
+
+                    <!--                        <field name="loyalty_points" readonly="1"/>-->
+                    <!--                        <field name="redeemed_points" readonly="1"/>-->
+                    <!--                        <field name="balance_points" readonly="1"/>-->
+
+                    <!--                    </group>-->
+
+                    <field name="loyalty_transaction_history_ids"
+                           readonly="1"
+                           create="0"
+                           edit="0"
+                           delete="0">
+                        <tree string="Transaction History" style="table-layout:fixed;">
+                            <field name="type" style="width:140px;"/>
+                            <field name="clph_whouse" style="width:140px;"/>
+                            <field name="clph_docnumber" style="width:60px;"/>
+                            <field name="clph_datetime"
+                                   options="{'no_create': True,'no_create_edit': True,'no_open': True}"
+                                   style="width:140px;"/>
+                            <field name="clph_points" class="text-right" style="width:140px;"/>
+                            <field name="clph_bonuspoint" style="width:140px;"/>
+                            <field name="clph_note" style="width:140px;"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+            <xpath expr="//page[@name='loyalty_transaction_history_tab']" position="before">
+                <page string="Tier Movement History"
+                      name="tier_movement_history_tab"
+                      groups="hhs_loyalty_management.group_loyalty_program_user">
+                    <field name="tier_movement_history_ids"
+                           readonly="1"
+                           create="0"
+                           edit="0"
+                           delete="0">
+                        <tree string="Tier Movement History">
+                            <field name="customer_id"/>
+                            <field name="movement_date"/>
+                            <field name="old_tier_id"/>
+                            <field name="new_tier_id"/>
+                            <!--                            <field name="movement_type"/>-->
+                            <!--                            <field name="movement_type"/>-->
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+            <!--            <xpath expr="//field[@name='tier_movement_history_ids']/tree/field[@name='movement_date']" position="attributes">-->
+            <!--                <attribute name="width">400px</attribute>-->
+            <!--            </xpath>-->
+            <!--             <xpath expr="//field[@name='tier_movement_history_ids']/tree/field[@name='old_tier_id']" position="attributes">-->
+            <!--                <attribute name="width">400px</attribute>-->
+            <!--            </xpath>-->
+            <!--             <xpath expr="//field[@name='tier_movement_history_ids']/tree/field[@name='new_tier_id']" position="attributes">-->
+            <!--                <attribute name="width">400px</attribute>-->
+            <!--            </xpath>-->
+            <!--             <xpath expr="//field[@name='tier_movement_history_ids']/tree/field[@name='movement_type']" position="attributes">-->
+            <!--                <attribute name="width">400px</attribute>-->
+            <!--            </xpath>-->
+            <!--             <xpath expr="//field[@name='tier_movement_history_ids']/tree/field[@name='movement_type']" position="attributes">-->
+            <!--                <attribute name="width">400px</attribute>-->
+            <!--            </xpath>-->
+        </field>
+    </record>
+    
+    <record id = "customer_loyalty_history_view_tree" model = "ir.ui.view">
+		<field name = "name">customer.loyalty.points.history.tree.view</field>   
+		<field name =  "model">customer.loyalty.points.history</field> 
+		<field name = "arch" type = "xml">
+		
+			<tree>
+				<field name  = "clph_cstid"/>
+				<field name  = "clph_docnumber"/>
+				<field name  = "clph_cstcode"/>
+				<field name  = "clph_date"/>
+				<field name  = "clph_doctype"/>
+				<field name  = "clph_whouse"/>
+				<field name  = "clph_adjtype"/>
+				<field name  = "clph_type"/>
+				<field name  = "clph_regpoints"/>
+				<field name  = "clph_totalpoints"/>
+			
+			</tree>
+		
+		</field>
+    </record>
+    <record id = "customer_loyalty_history_view_form" model = "ir.ui.view">
+		<field name = "name">customer.loyalty.points.history.form.view</field>   
+		<field name =  "model">customer.loyalty.points.history</field> 
+		<field name = "arch" type = "xml">
+		
+			<form>
+				<sheet>
+					
+					<field name  = "clph_cstid"/>
+					<field name  = "clph_docnumber"/>
+					<field name  = "clph_cstcode"/>
+					<field name  = "clph_date"/>
+					<field name  = "clph_doctype"/>
+					<field name  = "clph_whouse"/>
+					<field name  = "clph_adjtype"/>
+					<field name  = "clph_type"/>
+					<field name  = "clph_regpoints"/>
+					<field name  = "clph_totalpoints"/>
+					<field name = "clph_note" />
+					<field name = "clph_uid"/>
+					<field name = "clph_reasoncode"/>
+					<field name = "clph_promoref"/>
+					<field name = "clph_export"/>
+				
+				</sheet>
+				
+			
+			</form>
+		
+		</field>
+    </record>
+    
+    <record id = "action_customer_loyalty_history" model="ir.actions.act_window">
+    	<field name ="name">Customer Loyalty History</field>
+    	<field name = "res_model">customer.loyalty.points.history</field>
+    	<field name = "view_mode">tree,form</field>
+    
+    
+    </record>
+    
+    
+</odoo>

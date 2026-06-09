@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_promotion_report_wizard_form" model="ir.ui.view">
+        <field name="name">promotion.report.wizard.form</field>
+        <field name="model">promotion.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Promotion Report">
+                <group>
+                    <field name="from_date"/>
+                    <field name="to_date"/>
+                </group>
+                <footer>
+                    <button name="action_print_report" string="Print Report" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_promotion_report_wizard" model="ir.actions.act_window">
+        <field name="name">Print Promotion Report</field>
+        <field name="res_model">promotion.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Main Menu Reports -->
+    <menuitem id="menu_loyalty_reports_root"
+              name="Reports"
+              parent="menu_loyalty_points_root"
+              sequence="3"/>
+
+    <!-- Submenu Print Promotion Report -->
+    <menuitem id="menu_print_promotion_report"
+              name="Print Promotion"
+              parent="menu_loyalty_reports_root"
+              action="action_promotion_report_wizard"
+              sequence="10"/>
+</odoo>

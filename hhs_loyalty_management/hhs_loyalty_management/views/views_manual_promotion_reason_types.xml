@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Tree View -->
+        <record id="view_manual_promotion_reason_type_tree" model="ir.ui.view">
+            <field name="name">manual.promotion.tree</field>
+            <field name="model">manual.promotion.reason.types</field>
+            <field name="arch" type="xml">
+                <tree string="Loyalty Points Adjustment Reason Types">
+                    <field name="reason_code"/>
+                    <field name="reason_name"/>
+                    <field name="note"/>
+                    <field name="active"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Form View -->
+        <record id="view_manual_promotion_form" model="ir.ui.view">
+            <field name="name">manual.promotion.form</field>
+            <field name="model">manual.promotion.reason.types</field>
+            <field name="arch" type="xml">
+                <form string="Loyalty Points Adjustment Reason Types">
+                    <sheet>
+                        <group>
+                            <field name="reason_code"/>
+                            <field name="reason_name"/>
+                            <field name="note"/>
+                            <field name="active"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="view_manual_promotion_search" model="ir.ui.view">
+            <field name="name">manual.promotion.search</field>
+            <field name="model">manual.promotion.reason.types</field>
+            <field name="arch" type="xml">
+                <search string="Search Loyalty Points Adjustment Reason Types">
+                    <field name="reason_code"/>
+                    <field name="reason_name"/>
+                    <field name="active"/>
+                    <field name="create_date"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action window -->
+        <record id="action_manual_promotion_reason_type" model="ir.actions.act_window">
+            <field name="name">Loyalty Points Adjustment Reason Types</field>
+            <field name="res_model">manual.promotion.reason.types</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a new Customer Tier
+                </p>
+                <p>
+                    Manage tiers based on loyalty points to categorize your customers.
+                </p>
+            </field>
+        </record>
+
+        <!-- Customer Tier Submenu -->
+        <menuitem
+                id="menu_manual_promotion"
+                name="Loyalty Points Adjustment Reason Types"
+                parent="menu_loyalty_points_configuration"
+                action="action_manual_promotion_reason_type"
+                sequence="25"/>
+    </data>
+</odoo>

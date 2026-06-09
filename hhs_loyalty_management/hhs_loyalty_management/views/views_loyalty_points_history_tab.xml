@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Product Template Form View Modification -->
+    <record id="view_product_template_form_loyalty" model="ir.ui.view">
+        <field name="name">product.template.form.loyalty</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Add Loyalty Points Field -->
+            <xpath expr="//field[@name='uom_po_id']"
+                   position="after">
+                <field name="cst_loyalty_points" groups="hhs_loyalty_management.group_loyalty_program_user"
+                       string="Customer Loyalty Points"/>
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                <page string="Loyalty Points Setup History" groups="hhs_loyalty_management.group_loyalty_program_user">
+                    <field name="loyalty_history_ids" readonly="1"  create="0" edit="0" delete="0">
+                        <tree string="History" default_order="changed_date desc">
+                            <field name="changed_date"/>
+                            <field name="changed_by"/>
+                            <field name="old_points"/>
+                            <field name="new_points"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Product Variant Form View Modification -->
+    <record id="view_product_product_form_loyalty" model="ir.ui.view">
+        <field name="name">product.product.form.loyalty</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='uom_po_id']"
+                   position="after">
+                <field name="cst_loyalty_points"
+                       string="Customer Loyalty Points" groups="hhs_loyalty_management.group_loyalty_program_user"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Loyalty Points Setup History" groups="hhs_loyalty_management.group_loyalty_program_user">
+                    <field name="loyalty_history_ids" readonly="1">
+                        <tree string="History" default_order="changed_date desc">
+                            <field name="changed_date"/>
+                            <field name="changed_by"/>
+                            <field name="old_points"/>
+                            <field name="new_points"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Product Template Kanban View -->
+    <record id="product_template_kanban_view_loyalty" model="ir.ui.view">
+        <field name="name">product.template.kanban.loyalty</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_kanban_details')]/div[1]" position="after">
+                <div t-if="record.cst_loyalty_points and record.cst_loyalty_points.value">
+                    <strong>Customer Loyalty Points:</strong>
+                    <field name="cst_loyalty_points" groups="hhs_loyalty_management.group_loyalty_program_user"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Product Product Kanban View -->
+    <record id="product_product_kanban_view_loyalty" model="ir.ui.view">
+        <field name="name">product.product.kanban.loyalty</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_kanban_details')]/div[1]" position="after">
+                <div t-if="record.cst_loyalty_points and record.cst_loyalty_points.value">
+                    <strong>Customer Loyalty Points:</strong>
+                    <field name="cst_loyalty_points" groups="hhs_loyalty_management.group_loyalty_program_user"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+
+    <!-- Product Product tree view -->
+    <record id="product_product_tree_view_loyalty" model="ir.ui.view">
+        <field name="name">product.product.tree.loyalty</field>
+        <field name="model">product.product</field>
+        <!-- FIX HERE -->
+        <field name="inherit_id" ref="product.product_product_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="cst_loyalty_points" groups="hhs_loyalty_management.group_loyalty_program_user"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Product Template Tree View -->
+    <record id="product_template_tree_view_loyalty" model="ir.ui.view">
+        <field name="name">product.template.tree.loyalty</field>
+        <field name="model">product.template</field>
+        <!-- FIX -->
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='list_price']" position="after">
+                <field name="cst_loyalty_points" groups="hhs_loyalty_management.group_loyalty_program_user"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Product Search View -->
+    <record id="product_template_search_view_loyalty" model="ir.ui.view">
+        <field name="name">product.template.search.loyalty</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="Loyalty Points" name="loyalty_points" domain="[('cst_loyalty_points', '!=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Loyalty Points" name="group_by_loyalty_points"
+                            context="{'group_by': 'cst_loyalty_points'}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

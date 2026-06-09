@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_lp_setup_promotions_form" model="ir.ui.view">
+        <field name="name">lp.setup.promotions.form</field>
+        <field name="model">lp.setup.promotions</field>
+        <field name="arch" type="xml">
+            <form string="Setup Promotion">
+                <sheet>
+                    <group>
+                        <field name="promotion_reference"/>
+                        <field name="promotion_name"/>
+                        <field name="promotion_start_date"/>
+                        <field name="promotion_end_date"/>
+                        <field name="sort_order"/>
+                        <!-- Select All Customers -->
+                        <field name="select_all_customers"/>
+                    </group>
+                    <notebook>
+                        <!-- Applicable Products -->
+                        <page string="Products">
+                            <field name="applicable_product_ids">
+
+                                <tree editable="bottom">
+                                    <field name="product_category_id" domain="[('parent_id', '=', False)]"/>
+                                    <field name="product_name_id"
+                                           domain="[('detailed_type','=','consu'),('categ_id','child_of',product_category_id)]"/>
+                                    <field name="promotion_type"/>
+                                    <field name="promotional_value_per_qty"/>
+                                </tree>
+                                <form string="Applicable Product">
+
+                                    <group>
+                                        <group>
+                                            <field name="product_category_id" domain="[('parent_id', '=', False)]"/>
+                                            <field name="product_name_id"
+                                                   domain="[('detailed_type','=','consu'),('categ_id','child_of',product_category_id)]"/>
+                                        </group>
+
+                                        <group>
+                                            <field name="promotion_type"/>
+                                            <field name="promotional_value_per_qty"/>
+                                        </group>
+                                    </group>
+
+                                </form>
+
+                            </field>
+
+                        </page>
+                        <!-- Tiers Tab -->
+                        <page string="Tiers" invisible="select_all_customers == True">
+
+                            <field name="tier_line_ids">
+                                <tree editable="bottom">
+                                    <field name="tier_id"/>
+                                </tree>
+                                <form string="Tier">
+                                    <group>
+                                        <field name="tier_id"/>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+
+                        <!-- Customers Tab -->
+                        <page string="Customers" invisible="select_all_customers == True">
+                            <field name="customer_line_ids">
+                                <tree editable="bottom">
+                                    <field name="customer_id"/>
+                                </tree>
+                                <form string="Customer">
+                                    <group>
+                                        <field name="customer_id"/>
+                                        <field name="is_selected" invisible="1"/>
+                                    </group>
+                                </form>
+                            </field>
+
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_lp_setup_promotions_tree" model="ir.ui.view">
+        <field name="name">lp.setup.promotions.tree</field>
+        <field name="model">lp.setup.promotions</field>
+        <field name="arch" type="xml">
+
+            <tree string="Setup Promotions">
+                <field name="promotion_reference"/>
+                <field name="promotion_name"/>
+                <field name="promotion_start_date"/>
+                <field name="promotion_end_date"/>
+                <field name="sort_order"/>
+                <!--                <field name="state"/>-->
+                <!--                <field name="active"/>-->
+            </tree>
+
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_lp_setup_promotions_search" model="ir.ui.view">
+        <field name="name">lp.setup.promotions.search</field>
+        <field name="model">lp.setup.promotions</field>
+        <field name="arch" type="xml">
+            <search string="Search Promotions">
+                <!-- Search Fields -->
+                <field name="promotion_reference"/>
+                <field name="promotion_name"/>
+                <field name="promotion_start_date"/>
+                <field name="promotion_end_date"/>
+                <!-- Filters -->
+                <filter string="Active"
+                        name="filter_active"
+                        domain="[('active', '=', True)]"/>
+                <filter string="Inactive"
+                        name="filter_inactive"
+                        domain="[('active', '=', False)]"/>
+                <!-- Group By -->
+                <group expand="0" string="Group By">
+                    <filter string="Start Date"
+                            name="group_start_date"
+                            context="{'group_by':'promotion_start_date'}"/>
+                    <filter string="End Date"
+                            name="group_end_date"
+                            context="{'group_by':'promotion_end_date'}"/>
+
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- Action window -->
+    <record id="action_enter_promotion_setup" model="ir.actions.act_window">
+        <field name="name">Promotion Setup</field>
+        <field name="res_model">lp.setup.promotions</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Customer Tier
+            </p>
+            <p>
+                Manage tiers based on loyalty points to categorize your customers.
+            </p>
+        </field>
+    </record>
+
+    <menuitem
+            id="menu_promotion_set"
+            name="Promotion Setup"
+            parent="menu_loyalty_points_enters"
+            action="action_enter_promotion_setup"
+            sequence="20"/>
+
+    <record id="seq_lp_setup_promotions" model="ir.sequence">
+        <field name="name">Setup Promotion Sequence</field>
+        <field name="code">lp.setup.promotions.sequence</field>
+        <field name="prefix"></field>
+        <field name="padding">0</field>
+        <field name="number_increment">1</field>
+    </record>
+
+</odoo>

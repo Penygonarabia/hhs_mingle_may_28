@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Tree View -->
+        <record id="view_customer_tier_tree" model="ir.ui.view">
+            <field name="name">customer.tier.tree</field>
+            <field name="model">customer.tier</field>
+            <field name="arch" type="xml">
+                <tree string="Customer Tiers">
+                    <field name="name"/>
+                    <field name="min_loyalty_points"/>
+                    <field name="sort_order"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Form View -->
+        <record id="view_customer_tier_form" model="ir.ui.view">
+            <field name="name">customer.tier.form</field>
+            <field name="model">customer.tier</field>
+            <field name="arch" type="xml">
+                <form string="Customer Tier">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="min_loyalty_points"/>
+                            <field name="sort_order"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="view_customer_tier_search" model="ir.ui.view">
+            <field name="name">customer.tier.search</field>
+            <field name="model">customer.tier</field>
+            <field name="arch" type="xml">
+                <search string="Search Customer Tier">
+                    <field name="name"/>
+                    <field name="min_loyalty_points"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action window -->
+        <record id="action_customer_tier" model="ir.actions.act_window">
+            <field name="name">Customer Tier</field>
+            <field name="res_model">customer.tier</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a new Customer Tier
+                </p>
+                <p>
+                    Manage tiers based on loyalty points to categorize your customers.
+                </p>
+            </field>
+        </record>
+
+        <!-- Customer Tier Submenu -->
+        <menuitem
+                id="menu_customer_tier"
+                name="Customer Tier"
+                parent="menu_loyalty_points_configuration"
+                action="action_customer_tier"
+                sequence="25"/>
+
+
+    </data>
+</odoo>

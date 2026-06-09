@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_promotion" model="ir.actions.report">
+        <field name="name">Promotion Report</field>
+        <field name="model">promotion.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">hhs_loyalty_management.report_promotion_template</field>
+        <field name="report_file">hhs_loyalty_management.report_promotion_template</field>
+        <field name="binding_model_id" eval="False"/>
+    </record>
+
+    <template id="promotion_report_print_document_template_internal_layout">
+        <div class="article">
+          <t t-out="0"/>
+        </div>
+    </template>
+
+    <template id="report_promotion_template">
+        <t t-call="web.html_container">
+            <t t-call="hhs_loyalty_management.promotion_report_print_document_template_internal_layout">
+                <div class="header" t-att-style="report_header_style">
+                        <div class="row mt32 mb32">
+                            <div class="col-4 text-left">
+                                <img src="hhs_loyalty_management/static/src/img/HHS_Header_Left.png" alt="img"
+                                     style="height: 120px; width: 350px; "/>
+                            </div>
+                            <div class="col-4 text-center " style="vertical-align:text-top">
+                                <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)"
+                                     style="max-height: 100px; min-height:100px; min-width: 200px; max-width: 200px;"/>
+                            </div>
+                            <div class="col-4 text-right " style="vertical-align:text-top;text-align:right">
+                                <img src="hhs_loyalty_management/static/src/img/HHS_Header_Right.png" alt="img"
+                                     style="height: 120px; width: 350px;"/>
+                            </div>
+                        </div>
+                </div>
+
+<style>
+    .header {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .page {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+</style>
+
+<div class="page" style="margin:0 !important; padding:0 !important;">
+
+    <h2 class="text-center" style="margin:0; padding:0;">
+        Promotion
+    </h2>
+
+    <div class="row" style="margin-top:10px;">
+        <div class="col-auto">
+            <strong>From Date: <span t-esc="from_date" style="font-weight:bold;"/></strong>         
+        </div>
+        <div class="col-auto">
+            <strong>To Date: <span t-esc="to_date" style="font-weight:bold;"/></strong>            
+        </div>
+    </div>
+                    
+                    <table class="table table-sm o_main_table" style="margin-top: 20px;">
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Name</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Priority Order</th>
+                                <th>Active</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="docs" t-as="doc">
+                                <tr>
+                                    <td><span t-field="doc.promotion_reference"/></td>
+                                    <td style="width: 35%;"><span t-field="doc.promotion_name"/></td>
+                                    <td><span t-field="doc.promotion_start_date"/></td>
+                                    <td><span t-field="doc.promotion_end_date"/></td>
+                                    <td><span t-field="doc.sort_order"/></td>
+                                    <td>
+                                        <span t-if="doc.active">Yes</span>
+                                        <span t-else="">No</span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+</div>
+                <div class="footer" style="margin:0; padding:0; border-top: 1px solid #002060;">
+                    <div class="row" style="margin:0; padding:0;">
+                        <div class="col-12" style="margin:0; padding:0;">
+                            <img src="hhs_loyalty_management/static/src/img/JobCard_Footer_img.png"
+                             style="width:100%;"/>
+                        </div>                          
+                    </div>
+                </div>
+                  
+            </t>
+        </t>
+    </template>
+</odoo>

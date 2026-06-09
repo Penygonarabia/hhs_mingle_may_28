@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="group_loyalty_program_user" model="res.groups">
+        <field name="name">Loyalty Program User</field>
+        <field name="category_id" ref="base.module_category_hidden"/>
+    </record>
+
+    <record id="loyalty_points_config_settings_form" model="ir.ui.view">
+        <field name="name">res.config.settings.loyalty.managment.inherit</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <h2>Loyalty Management</h2>
+                <app name="loyalty_points"
+                     string="Loyalty"
+                     logo="/hhs_loyalty_management/static/description/loyalty_9541432.png">
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <div class="d-flex align-items-center" style="gap: 4px;">
+                                <field name="loyalty_points_hide_show"
+                                       style="margin: 0; padding: 0;"/>
+                                <label for="loyalty_points_hide_show" style="margin: 0; padding: 0;"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Loyalty Limit -->
+                    <div class="col-xs-12 col-md-6 o_setting_box">
+                        <div class="o_setting_right_pane">
+                            <label for="customer_loyalty_point_limit"/>
+<!--                            <div class="text-muted">-->
+<!--                                Set maximum loyalty points allowed for a customer.-->
+<!--                            </div>-->
+                            <field name="customer_loyalty_point_limit"/>
+                        </div>
+                    </div>
+                     <!-- Tier Downgrade Waiting Days -->
+                <div class="col-12 col-lg-6 o_setting_box">
+                    <div class="o_setting_left_pane"/>
+                    <div class="o_setting_right_pane">
+                        <label for="tier_downgrade_waiting_days"/>
+                        <div class="text-muted">
+                            Waiting period before customer tier downgrade.
+                        </div>
+                        <field name="tier_downgrade_waiting_days"/>
+
+                    </div>
+
+                </div>
+
+
+<!--                    &lt;!&ndash; Product Loyalty Limit &ndash;&gt;-->
+<!--                    <div class="col-xs-12 col-md-6 o_setting_box">-->
+<!--                        <div class="o_setting_right_pane">-->
+<!--                            <label for="product_loyalty_point_limit"/>-->
+<!--                            <div class="text-muted">-->
+<!--                                Set maximum loyalty points allowed for a product.-->
+<!--                            </div>-->
+<!--                            <field name="product_loyalty_point_limit"/>-->
+<!--                        </div>-->
+<!--                    </div>-->
+                </app>
+
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="loyalty_points_config_settings_action" model="ir.actions.act_window">
+        <field name="name">Loyalty Points Management</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'hhs_loyalty_management'}</field>
+    </record>
+
+
+    <!-- Main Menu -->
+    <menuitem
+            id="menu_loyalty_points_root"
+            name="Loyalty Points"
+            sequence="100"
+            groups="hhs_loyalty_management.group_loyalty_program_user"/>
+
+    <!-- Configuration Menu -->
+    <menuitem
+            id="menu_loyalty_points_configuration"
+            name="Configuration"
+            parent="menu_loyalty_points_root"
+            sequence="4"
+            groups="hhs_loyalty_management.group_loyalty_program_user"/>
+
+</odoo>
