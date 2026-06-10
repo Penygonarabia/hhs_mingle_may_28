@@ -1,19 +1,22 @@
 /** @odoo-module **/
-import { useService, useState} from "@web/core/utils/hooks";
+import { useService, useBus } from "@web/core/utils/hooks";
 import { WebClient } from "@web/webclient/webclient";
 import { patch } from "@web/core/utils/patch";
-import { useRef } from "@odoo/owl";
+import { useRef, useState, onMounted } from "@odoo/owl";
 import { SidebarBottom } from "./SidebarBottom";
-import { onMounted } from "@odoo/owl";
 
 patch(WebClient.prototype, {
     setup() {
-        super.setup(); 
+        super.setup();
         this.root = useRef("root");
         this.rpc = useService('rpc');
         this.companyService = useService("company");
-        this.menuService = useService("menu");  
-        this.currentCompany = this.companyService.currentCompany;  
+        this.menuService = useService("menu");
+        this.currentCompany = this.companyService.currentCompany;
+        this.navState = useState({ menuId: new URLSearchParams(window.location.hash.substring(1)).get('menu_id') });
+        useBus(this.env.bus, 'ACTION_MANAGER:UI-UPDATED', () => {
+            this.navState.menuId = new URLSearchParams(window.location.hash.substring(1)).get('menu_id');
+        });
         this.fetch_menu_data();
 
         onMounted(() => {
@@ -106,12 +109,41 @@ patch(WebClient.prototype, {
     BackMenuToggle(ev){  
         $(ev.currentTarget).parent().removeClass('show');
     },
-    get currentMenuId() {  
-        var actionParams = window.location.hash;
-        var menu_id = new URLSearchParams(actionParams.substring(1)).get('menu_id');
-        return menu_id;
-    }
-}); 
+    get currentMenuId() {
+        return this.navState.menuId;
+    },
+    hasActiveDescendant(menuId) {
+        const currentId = parseInt(this.currentMenuId);
+        if (!currentId) return false;
+        const check = (id) => {
+            if (id === currentId) return true;
+            const menu = this.menuService.getMenu(id);
+            return (menu?.children || []).some(c => check(c));
+        };
+        const menu = this.menuService.getMenu(parseInt(menuId));
+        return (menu?.children || []).some(c => check(c));
+    },
+    getBreadcrumbPath() {
+        const currentId = parseInt(this.currentMenuId);
+        if (!currentId) return [];
+        const allMenus = this.menuService.getAll();
+        const parentMap = new Map();
+        for (const menu of allMenus) {
+            for (const childId of (menu.children || [])) {
+                parentMap.set(childId, menu.id);
+            }
+        }
+        const path = [];
+        let id = currentId;
+        while (id && id !== 'root') {
+            const menu = this.menuService.getMenu(id);
+            if (!menu || menu.id === 'root') break;
+            path.unshift({ id: menu.id, name: menu.name });
+            id = parentMap.get(id);
+        }
+        return path;
+    },
+});
 patch(WebClient, {
     components: { ...WebClient.components, SidebarBottom },
 });

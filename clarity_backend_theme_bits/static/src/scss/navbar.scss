@@ -78,7 +78,7 @@ opacity: 100 !important;
     }
   }
 
-.o_main_navbar {
+.o_main_navbar:not(.primary-nav) {
   --o-navbar-height: 46px;
   --Dropdown_menu-margin-y: 0;
   display: -webkit-box; display: -webkit-flex; display: flex;
@@ -91,13 +91,14 @@ opacity: 100 !important;
   font-size: 0.875rem;
 }
 
-  header.o_navbar{ 
-    nav{
-      //background-color: transparent !important;
-      background-color: #4bc2c6 ;
-      background: linear-gradient(90deg, #1a4893 0%, #40c1af 50%, #40c174 100%) !important;
+  header.o_navbar{
+    nav.o_main_navbar:not(.primary-nav) {
       border-bottom: none !important;
-      min-height:73px;
+      min-height: unset;
+    }
+    nav.primary-nav {
+      background: transparent !important;
+      min-height: unset;
     }
     .o_company_logo{
       padding: 8px 20px !important;
@@ -298,14 +299,49 @@ font-weight:400 !important;
 
 @media (max-width: 420px) {
 
-body.o_web_client header.o_navbar nav{
-   //background-color: transparent !important;
-      background-color: #0a4d84 !important;
-      background: linear-gradient(90deg, #1a4893 0%, #40c1af 50%, #40c174 100%);
+body.o_web_client header.o_navbar nav.o_main_navbar:not(.primary-nav) {
       border-bottom: none !important;
-      min-height:73px;
 }
 
+}
 
+// ── Active menu item highlighting ──────────────────────────────────────────
+.overflow-container {
+  .child_menus.active {
+    background-color: rgba(0, 194, 146, 0.15) !important;
+    color: #00c292 !important;
+    border-left: 3px solid #00c292;
+    font-weight: 600;
+    .app_name { color: #00c292 !important; }
+  }
+
+  .sub-main-menu.active {
+    color: #00c292 !important;
+    font-weight: 600;
+    > span:first-child { color: #00c292 !important; }
+  }
+}
+
+// ── Breadcrumb in top navbar ────────────────────────────────────────────────
+.cl-navbar-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  max-width: 60vw;
+
+  .cl-bc-sep {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .cl-bc-item {
+    color: rgba(255, 255, 255, 0.80);
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 

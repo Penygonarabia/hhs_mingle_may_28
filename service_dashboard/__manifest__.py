@@ -1,6 +1,6 @@
 {
-    "name": "Service Dashboard",
-    "version": "17.0.1.0.2",
+    "name": "Service Dashboards - Custom Theme",
+    "version": "17.0.1.0.9",
     "category": "Services",
     "summary": "Service Dashboard View",
     "description": """
@@ -8,7 +8,7 @@
     """,
     "author": "Your Company",
     "website": "https://www.yourcompany.com",
-    "depends": ["base", "project", "product", "machine_repair_management","dashboard_user_rights_roles", "ks_dashboard_ninja", "ks_dn_advance", "hr_timesheet"],
+    "depends": ["base", "project", "product", "machine_repair_management", "dashboard_user_rights_roles", "ks_dashboard_ninja", "ks_dn_advance", "hr_timesheet", "service_dashboards"],
     "data": [
         "security/ir.model.access.csv",
         "security/service_dashboard_rules.xml",
@@ -26,6 +26,10 @@
         # Technician Analysis, Sales & Cost Analysis) — every styling + functional field
         # captured so a fresh DB rebuilds them identically.
         "data/legacy_service_boards.xml",
+        # Chart positions only. noupdate=0 so a `-u service_dashboard` on any
+        # server re-applies the latest grid_corners and rebuilds each board's
+        # ks_gridstack_config — so the visual chart order matches local exactly.
+        "data/service_dashboard_layout.xml",
     ],
     "installable": True,
     "application": False,

@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dashboard_rights_admin,dashboard.rights admin,model_dashboard_rights,dashboard_rights.group_dashboard_rights_admin,1,1,1,1
+access_dashboard_rights_user,dashboard.rights user,model_dashboard_rights,base.group_user,1,0,0,0
+access_dashboard_rights_matrix_admin,dashboard.rights.matrix admin,model_dashboard_rights_matrix,dashboard_rights.group_dashboard_rights_admin,1,1,1,1
+access_dashboard_rights_matrix_line_admin,dashboard.rights.matrix.line admin,model_dashboard_rights_matrix_line,dashboard_rights.group_dashboard_rights_admin,1,1,1,1
+access_dashboard_rights_matrix_user_admin,dashboard.rights.matrix.user admin,model_dashboard_rights_matrix_user,dashboard_rights.group_dashboard_rights_admin,1,1,1,1

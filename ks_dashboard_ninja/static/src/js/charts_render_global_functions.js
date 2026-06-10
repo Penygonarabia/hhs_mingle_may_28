@@ -680,18 +680,6 @@ export function ks_render_graphs(
                   stroke: am5.color(0x69a4c2),
                 });
               }
-              if (series && ksItemNameLower.includes("status analysis on weekly basis") && !ksItemNameLower.includes("not closed") && !item.isDrill) {
-                series.columns.template.setAll({
-                  fill: am5.color(0xa2c973),
-                  stroke: am5.color(0xa2c973),
-                });
-              }
-              if (series && ksItemNameLower.includes("not closed status analysis on weekly basis") && !item.isDrill) {
-                series.columns.template.setAll({
-                  fill: am5.color(0xb873c9),
-                  stroke: am5.color(0xb873c9),
-                });
-              }
               if (series && item.ks_dashboard_item_type === "ks_bar_chart" && item.ks_chart_item_color === "custom-1") {
                 let isSubGroup = (item.isDrill === true) || (item.sequnce > 0);
                 let barColor;

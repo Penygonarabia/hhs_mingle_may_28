@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ======================================================
+         LIST (tree) VIEW — main surface for Dashboard Rights
+         ====================================================== -->
+    <record id="view_dashboard_rights_list" model="ir.ui.view">
+        <field name="name">dashboard.rights.list</field>
+        <field name="model">dashboard.rights</field>
+        <field name="arch" type="xml">
+            <tree string="Dashboard Rights"
+                  js_class="dashboard_rights_list"
+                  delete="false"
+                  default_order="user_id, dashboard_id">
+                <field name="user_id" readonly="1"/>
+                <field name="user_role" readonly="1"/>
+                <field name="dashboard_top_menu_id"
+                       string="Category"
+                       optional="show"
+                       readonly="1"/>
+                <field name="dashboard_id" readonly="1"/>
+                <field name="has_access" widget="boolean_toggle"/>
+                <field name="has_access_int" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ======================================================
+         FORM VIEW — editing a single dashboard right record
+         ====================================================== -->
+    <record id="view_dashboard_rights_form" model="ir.ui.view">
+        <field name="name">dashboard.rights.form</field>
+        <field name="model">dashboard.rights</field>
+        <field name="arch" type="xml">
+            <form string="Dashboard Right">
+                <sheet>
+                    <!-- Screen usage hint — shown only in new mode (creating a record) -->
+                    <div class="alert alert-info d-flex align-items-start gap-2 mb-3 py-2 px-3" role="alert" style="font-size:0.9rem;" invisible="id">
+                        <i class="fa fa-info-circle mt-1" style="flex-shrink:0;"/>
+                        <span>
+                            Pick a <strong>User</strong> and a <strong>Dashboard</strong>, then toggle <strong>Has Access</strong>
+                            to grant or revoke that user's access to the selected dashboard. For bulk updates across many
+                            dashboards, use <strong>Manage User Rights</strong> instead.
+                        </span>
+                    </div>
+
+                    <group>
+                        <group string="User">
+                            <field name="user_id"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="user_role" readonly="1"/>
+                        </group>
+                        <group string="Dashboard">
+                            <field name="dashboard_id"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="dashboard_top_menu_id"
+                                   string="Category"
+                                   readonly="1"/>
+                            <field name="has_access"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ======================================================
+         SEARCH VIEW
+         ====================================================== -->
+    <record id="view_dashboard_rights_search" model="ir.ui.view">
+        <field name="name">dashboard.rights.search</field>
+        <field name="model">dashboard.rights</field>
+        <field name="arch" type="xml">
+            <search string="Dashboard Rights">
+                <field name="user_id"/>
+                <field name="dashboard_id"/>
+                <field name="dashboard_top_menu_id" string="Category"/>
+                <filter name="filter_granted"
+                        string="Granted"
+                        domain="[('has_access', '=', True)]"/>
+                <filter name="filter_revoked"
+                        string="Revoked"
+                        domain="[('has_access', '=', False)]"/>
+                <separator/>
+                <group expand="1" string="Group By">
+                    <filter name="group_user_role"
+                            string="User Role"
+                            context="{'group_by': 'user_role'}"/>
+                    <filter name="group_user"
+                            string="User"
+                            context="{'group_by': 'user_id'}"/>
+                    <filter name="group_category"
+                            string="Category"
+                            context="{'group_by': 'dashboard_top_menu_id'}"/>
+                    <filter name="group_dashboard"
+                            string="Dashboard"
+                            context="{'group_by': 'dashboard_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ======================================================
+         MAIN ACTION — tree + form, grouped by role by default
+         ====================================================== -->
+    <record id="action_dashboard_rights_list" model="ir.actions.act_window">
+        <field name="name">Dashboard Rights</field>
+        <field name="res_model">dashboard.rights</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_dashboard_rights_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_dashboard_rights_form')})]"/>
+        <field name="search_view_id" ref="view_dashboard_rights_search"/>
+        <field name="context">{'search_default_group_user_role': 1}</field>
+    </record>
+
+    <!-- Legacy aliases kept so existing references still resolve -->
+    <record id="action_dashboard_rights_grid" model="ir.actions.act_window">
+        <field name="name">Dashboard Rights</field>
+        <field name="res_model">dashboard.rights</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_dashboard_rights_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_dashboard_rights_form')})]"/>
+        <field name="search_view_id" ref="view_dashboard_rights_search"/>
+        <field name="context">{'search_default_group_user': 1}</field>
+    </record>
+
+    <record id="action_dashboard_rights_raw" model="ir.actions.act_window">
+        <field name="name">Dashboard Rights (Raw)</field>
+        <field name="res_model">dashboard.rights</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_dashboard_rights_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_dashboard_rights_form')})]"/>
+        <field name="search_view_id" ref="view_dashboard_rights_search"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="dashboard_rights.BulkButtons">
+        <div class="d-flex gap-2">
+            <button class="btn btn-success" t-on-click="onGrantAll">
+                Grant Access to All
+            </button>
+            <button class="btn btn-danger" t-on-click="onRevokeAll">
+                Revoke Access from All
+            </button>
+        </div>
+    </t>
+
+    <t t-name="dashboard_rights.UsersTabRefresh">
+        <span t-ref="root" class="d-none"/>
+    </t>
+</templates>

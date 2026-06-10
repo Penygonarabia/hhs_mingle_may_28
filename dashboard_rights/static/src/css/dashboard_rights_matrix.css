@@ -1,0 +1,107 @@
+/* ── Hide the form's save/refresh status indicator until dashboards are loaded.
+   Header-only edits (picking a user) shouldn't surface the icons; the
+   header_status_gate widget toggles this body class via lines_loaded. ── */
+body.dr_matrix_pre_load .o_form_status_indicator_buttons {
+    display: none !important;
+}
+
+/* ── Email CopyClipboardChar — no border, left-aligned value ─────────── */
+.o_field_CopyClipboardChar[name='user_email'] > div {
+    border: none !important;
+    box-shadow: none !important;
+}
+.o_field_CopyClipboardChar[name='user_email'] .o_input,
+.o_field_CopyClipboardChar[name='user_email'] input {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding-left: 4px !important;
+    text-align: left !important;
+}
+.o_field_CopyClipboardChar[name='user_email'] > div > span:first-child,
+.o_field_CopyClipboardChar[name='user_email'] > div > a {
+    text-align: left !important;
+    justify-self: start !important;
+    margin-left: 4px !important;
+}
+
+/* ── Notebook tabs — align left edge with the "Load Dashboards" button ── */
+.dr_matrix_form .o_notebook,
+.dr_matrix_form .o_notebook .o_notebook_headers,
+.dr_matrix_form .o_notebook .nav,
+.dr_matrix_form .o_notebook .nav-tabs {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+.dr_matrix_form .o_notebook .nav-tabs .nav-item:first-child {
+    margin-left: 0 !important;
+}
+.dr_matrix_form .o_notebook .nav-tabs .nav-item:first-child .nav-link {
+    margin-left: 0 !important;
+}
+
+/* ── Grouped user list widget ───────────────────────────────────────── */
+
+.dr_grouped_user_list {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.dr_group_header {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #e8f4f4;
+    border-bottom: 1px solid #dee2e6;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.95rem;
+}
+
+.dr_group_header:hover {
+    background-color: #d4ecec;
+}
+
+.dr_group_header .fa-caret-down,
+.dr_group_header .fa-caret-right {
+    color: #5a7a7a;
+    width: 14px;
+}
+
+.dr_group_count {
+    font-size: 0.85rem;
+}
+
+.dr_group_table {
+    width: 100%;
+    margin-bottom: 0 !important;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.dr_col_header th {
+    font-size: 0.8rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 4px 8px;
+    background-color: #f8fafb;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.dr_user_row td {
+    padding: 6px 8px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.9rem;
+}
+
+.dr_user_row:last-child td {
+    border-bottom: none;
+}
+
+.dr_user_select {
+    width: 50px;
+    text-align: center;
+}
+

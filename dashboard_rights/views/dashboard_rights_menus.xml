@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- All menus gated by group_dashboard_rights_admin (bootstrap Admin only).
+         Other system administrators need to be added to that group explicitly. -->
+
+    <!-- Settings ▸ Dashboard Rights  →  list view (main surface) -->
+    <menuitem id="menu_dashboard_rights_root"
+              name="Dashboard Rights"
+              parent="base.menu_administration"
+              action="dashboard_rights.action_dashboard_rights_list"
+              sequence="50"
+              groups="dashboard_rights.group_dashboard_rights_admin"/>
+
+    <!-- Settings ▸ Technical ▸ Dashboard Rights  →  same list view -->
+    <menuitem id="menu_dashboard_rights_technical"
+              name="Dashboard Rights"
+              parent="base.menu_custom"
+              action="dashboard_rights.action_dashboard_rights_list"
+              sequence="60"
+              groups="dashboard_rights.group_dashboard_rights_admin"/>
+
+    <!-- Settings ▸ Technical ▸ Manage User Rights  →  wizard form -->
+    <menuitem id="menu_dashboard_rights_wizard"
+              name="Manage User Rights"
+              parent="base.menu_custom"
+              action="dashboard_rights.action_dashboard_rights_matrix"
+              sequence="61"
+              groups="dashboard_rights.group_dashboard_rights_admin"/>
+
+</odoo>

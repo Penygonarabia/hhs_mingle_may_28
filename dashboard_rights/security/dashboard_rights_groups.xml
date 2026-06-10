@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="0">
+
+    <!-- Dedicated group that gates the Dashboard Rights menu.
+         Membership is intentionally limited to the bootstrap admin user
+         (``base.user_admin``). Other system administrators are NOT given
+         access — only this single user can open the page. -->
+    <record id="group_dashboard_rights_admin" model="res.groups">
+        <field name="name">Dashboard Rights Admin</field>
+        <field name="category_id" ref="base.module_category_administration"/>
+        <field name="users" eval="[(6, 0, [ref('base.user_admin')])]"/>
+        <field name="comment">Only members of this group can open the
+            Settings ▸ Dashboard Rights page. By default only the
+            built-in Administrator user is a member.
+        </field>
+    </record>
+
+</odoo>

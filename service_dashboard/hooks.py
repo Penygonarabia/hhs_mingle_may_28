@@ -103,7 +103,12 @@ def ks_rebuild_board_layouts(env):
 
 
 def post_init_hook(env):
-    """Set the chart colour palette and rebuild board layouts from grid_corners."""
+    """Set the chart colour palette and rebuild board layouts from grid_corners.
+
+    The "Service Dashboards - Custom Theme" boards (xmlids prefixed `ct_`) are
+    excluded from the palette reset — their per-item palettes come from the
+    reference JSON dashboards and must not be flattened back to custom-1.
+    """
     chart_types = [
         'ks_bar_chart',
         'ks_horizontalBar_chart',
@@ -114,6 +119,14 @@ def post_init_hook(env):
         ('ks_dashboard_item_type', 'in', chart_types),
     ])
     if items:
-        items.write({'ks_chart_item_color': 'custom-1'})
+        custom_theme_xmlids = env['ir.model.data'].search([
+            ('module', '=', 'service_dashboard'),
+            ('model', '=', 'ks_dashboard_ninja.item'),
+            ('name', '=like', 'ct_%'),
+        ])
+        custom_theme_ids = set(custom_theme_xmlids.mapped('res_id'))
+        items = items.filtered(lambda i: i.id not in custom_theme_ids)
+        if items:
+            items.write({'ks_chart_item_color': 'custom-1'})
 
     ks_rebuild_board_layouts(env)
