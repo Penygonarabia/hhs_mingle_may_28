@@ -250,11 +250,11 @@
                                                 <strong style="font-size:20px;">Additional No</strong>
                                             </td>
                                             
-                                             <td style="text-align:center !important;">
-											   <!--  <span style="font-size:14px !important;">
-											        <t t-esc="move.company_id."/>
-											    </span> -->
-											</td>
+                                              <td style="text-align:center !important;">
+						                             <span style="font-size:14px !important;">
+						                                <t t-esc="move.company_id.partner_id.plot_identification"/>
+						                            </span>
+						                    </td>
                                             <!-- <td>
 											    <span style="border: 0px transparent !important; text-align:center;font-size:14px !important;">
 											        <t t-esc="move.partner_id.plot_identification"/>
@@ -793,7 +793,7 @@
                                                 </td>
                                                 <td style="border: 0px transparent !important;text-align:center;">
                                                     <span style="font-size:14px !important;">
-	                                                         <t t-esc="move.partner_id.additional_identification_number" />
+	                                                         <t t-esc="move.partner_id.plot_identification" />
 	                                                    </span>
                                                     
                                                 </td>

@@ -15,8 +15,14 @@ class PMServiceChecklistLine(models.Model):
         'product.product',
         string="Service Unit Type",
         domain="[('detailed_type', '=', 'service')]",
-        required=True
+     
     )
+    # service_unit_type_id = fields.Many2one(
+    #     'product.product',
+    #     string="Service Unit Type",
+    #     domain="[('detailed_type', '=', 'service')]",
+    #     required=True
+    # )
     unit_sub_type_id = fields.Selection([
         ('indoor', 'Indoor'),
         ('outdoor', 'Outdoor')

@@ -74,7 +74,9 @@ class ServiceSaleOrder(models.Model):
     subject = fields.Char(string="Subject", default=lambda self: self.env['ir.config_parameter'].sudo().get_param(
         'crm_custom_view.subject'))
     scope_of_work = fields.Char(string="Scope of Work", default = lambda self : self.env['ir.config_parameter'].sudo().get_param('crm_custom_view.scope_of_work'))
-    others = fields.Char(string="Others", )
+    
+    others = fields.Char(string="Others",default = lambda self : self.env['ir.config_parameter'].sudo().get_param('crm_custom_view.others_txt'))
+
 
     @api.depends('grand_total_amount')
     def _compute_annual_quotation_value(self):

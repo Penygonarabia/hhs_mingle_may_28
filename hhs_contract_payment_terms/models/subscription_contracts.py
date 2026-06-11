@@ -4,10 +4,49 @@ from dateutil.relativedelta import relativedelta
 
 # Payment label mapping (ordinal names)
 _ORDINAL_LABELS = [
-    'First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth',
-    'Seventh', 'Eighth', 'Ninth', 'Tenth', 'Eleventh', 'Twelfth',
+    'الدفعة الأولى — First Payment',
+    'الدفعة الثانية — Second Payment',
+    'الدفعة الثالثة — Third Payment',
+    'الدفعة الرابعة — Fourth Payment',
+    'الدفعة الخامسة — Fifth Payment',
+    'الدفعة السادسة — Sixth Payment',
+    'الدفعة السابعة — Seventh Payment',
+    'الدفعة الثامنة — Eighth Payment',
+    'الدفعة التاسعة — Ninth Payment',
+    'الدفعة العاشرة — Tenth Payment',
+    'الدفعة الحادية عشرة — Eleventh Payment',
+    'الدفعة الثانية عشرة — Twelfth Payment',
 ]
 
+_ORDINAL_LABELS_EN = [
+    "First Payment",
+    "Second Payment",
+    "Third Payment",
+    "Fourth Payment",
+    "Fifth Payment",
+    "Sixth Payment",
+    "Seventh Payment",
+    "Eighth Payment",
+    "Ninth Payment",
+    "Tenth Payment",
+    "Eleventh Payment",
+    "Twelfth Payment",
+]
+
+_ORDINAL_LABELS_AR = [
+    "الدفعة الأولى",
+    "الدفعة الثانية",
+    "الدفعة الثالثة",
+    "الدفعة الرابعة",
+    "الدفعة الخامسة",
+    "الدفعة السادسة",
+    "الدفعة السابعة",
+    "الدفعة الثامنة",
+    "الدفعة التاسعة",
+    "الدفعة العاشرة",
+    "الدفعة الحادية عشرة",
+    "الدفعة الثانية عشرة",
+]
 
 class SubscriptionContracts(models.Model):
     _inherit = 'subscription.contracts'
@@ -166,21 +205,23 @@ class SubscriptionContracts(models.Model):
             for i in range(num_installments):
                 payment_date = start_date + (delta * i)
 
-                # ✅ Fix rounding
                 if i == num_installments - 1:
-                    amount = remaining
+                    amount = round(remaining, 2)
                 else:
-                    amount = installment_amount
+                    amount = round(installment_amount, 2)
                     remaining -= amount
 
-                amount = round(amount, 2)
-
-                label = f"{_ORDINAL_LABELS[i]} Payment" if i < len(_ORDINAL_LABELS) else f"Payment #{i+1}"
+                if i < len(_ORDINAL_LABELS_EN):
+                    label_en = _ORDINAL_LABELS_EN[i]
+                    label_ar = _ORDINAL_LABELS_AR[i]
+                else:
+                    label_en = f"Payment {i + 1}"
+                    label_ar = f"الدفعة {i + 1}"
 
                 lines_vals.append((0, 0, {
                     'sequence': (i + 1) * 10,
-                    'name': label,
-                    'name_ara': f"دفعة {i+1}",
+                    'name': label_en,
+                    'name_ara': label_ar,
                     'payment_date': payment_date,
                     'amount': amount,
                     'state': 'pending',

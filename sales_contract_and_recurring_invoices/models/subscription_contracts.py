@@ -386,7 +386,12 @@ class SubscriptionContracts(models.Model):
         """ Confirm the Contract """
         if not self.contract_line_ids:
             raise ValidationError("Cannot generate an invoice for a contract without contract lines.")
-
+        
+        '''Code Added on June 09 2026 by Vijaya Bhaskar'''
+        if not self.customer_code:
+            raise ValidationError(_("Please create the customer in the Penygon Application and enter the same customer code here  "))
+        
+        
         self.write({'state': 'Ongoing'})
 
     def action_to_cancel(self):
@@ -415,7 +420,12 @@ class SubscriptionContracts(models.Model):
 
         if self.number_of_installments <= 0:
             raise ValidationError(_("Number of installments must be greater than zero."))
-
+        
+        '''Code Added on June 09 2026 by Vijaya Bhaskar'''
+        if not self.customer_code:
+            raise ValidationError(_("Please create the customer in the Penygon Application and enter the same customer code here"))
+        
+        
         # Prevent duplicate invoice
         existing_invoice = self.env['account.move'].search([
             ('contract_origin', '=', self.id),

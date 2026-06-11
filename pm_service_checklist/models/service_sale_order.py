@@ -163,6 +163,7 @@ class ServiceSaleOrder(models.Model):
 
                     commands.append((0, 0, {
                         'service_unit_type_id': master.service_unit_type_id.id,
+                        # 'service_unit_type_id': master.service_unit_type_id.id if not master.print_always_default else '',
                         'unit_sub_type_id': master.service_unit_sub_type_id,
                         'service_type_id': master.service_type_id,
 

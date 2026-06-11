@@ -23,6 +23,8 @@ class ResConfigSettings(models.TransientModel):
     
     notes = fields.Char(string = "Notes", config_parameter = "crm_custom_view.notes")
     
+    others_txt = fields.Char(string = "Others", config_parameter = "crm_custom_view.others_txt")
+
     
     
 
@@ -38,7 +40,9 @@ class ResConfigSettings(models.TransientModel):
             scope_of_work = params.get_param('crm_custom_view.scope_of_work'),
             terms_of_execution = params.get_param('crm_custom_view.terms_of_execution'),
             exclusions = params.get_param('crm_custom_view.exclusions'),
-            notes = params.get_param('crm_custom_view.notes')
+            notes = params.get_param('crm_custom_view.notes'),
+            others_txt = params.get_param('crm_custom_view.others_txt'),
+
         )
         return res
     
@@ -56,6 +60,9 @@ class ResConfigSettings(models.TransientModel):
         IrConfigParameter.set_param('crm_custom_view.exclusions', self.exclusions)
         
         IrConfigParameter.set_param('crm_custom_view.notes',self.notes)
+        
+        IrConfigParameter.set_param('crm_custom_view.others_txt',self.others_txt)
+
      
      
         

@@ -8,8 +8,12 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name = 'partner_ref']" position="after">
                 <field name="brand" required="1"/>
-                <field name="service_products_code_id" domain="[('id','in',product_unit_type_ids)]" options="{'no_create': True, 'no_open': True,'no_edit':True}" required="1"/>
-                <field name="product_unit_type_ids" invisible="1" widget="many2many_tags"/>
+                <field name = "items_from_own_company_bool" />
+ 				<field name = "service_products_code_id" domain="[('id','in',product_unit_type_ids)]" options="{'no_create': True, 'no_open': True,'no_edit':True}" required="1"/>
+                <field name = "product_unit_type_ids" invisible="1" widget="many2many_tags"/>
+                <field name = "product_product_model_id" string = "Model" invisible = "not items_from_own_company_bool" domain ="[('id','in',product_search_ids)]"/>
+                <field name = "product_search_ids" widget = "many2many_tags" invisible = "1"/>
+                
                 <!--                <field name="unit_type" required="1"/>-->
             </xpath>
             <xpath expr="//field[@name='category_id']" position="after">

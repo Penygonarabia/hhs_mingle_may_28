@@ -3252,7 +3252,18 @@ class ProjectTask(models.Model):
                         "129",
                         "117",
                     ]
-    
+            
+            '''Code Added on June 09 2026 by Vijaya Bhaskar client asked when the Job type is preventive and after inspection started then ready to invoice only shown not all other'''        
+            if (
+                rec.job_card_state_code == "113"
+                and rec.project_related_amc_bool and 
+                rec.maintenance_type == 'preventive'
+            ):
+                current_transitions["113"][group_mobile] = [
+                        "113",
+                        "125",
+                    ]
+            
             # -------------------------------------------------
             # CURRENT TRANSITIONS
             # -------------------------------------------------

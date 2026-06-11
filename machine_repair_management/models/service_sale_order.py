@@ -2873,7 +2873,7 @@ class ServiceSaleOrder(models.Model):
                     'work_center_id' :order.work_center_id.id or False,
                     'work_center_group_id' : order.work_center_group_id.id or False,
                     'district' :order.district.id or False,
-                    "mobile_no": f"+{order.crm_id.country_id.phone_code if order.crm_id and order.crm_id.country_id else ''}-{order.crm_id.phone if order.crm_id else ''}",
+                    # "mobile_no": f"+{order.crm_id.country_id.phone_code if order.crm_id and order.crm_id.country_id else ''}-{order.crm_id.phone if order.crm_id else ''}",
                     "sales_person_user_id" :   order.sales_person_user_id.id or False          
                 
 

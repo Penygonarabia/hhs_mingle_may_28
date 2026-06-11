@@ -4,6 +4,7 @@ from odoo.tools import float_round
 from dateutil.relativedelta import relativedelta
 
 
+
 class SubscriptionContracts(models.Model):
     """Model for subscription contracts"""
 
@@ -310,14 +311,14 @@ class SubscriptionContracts(models.Model):
             self.travel_hours = self.amc_quotation_id.travel_hours
             self.gross_profit = self.amc_quotation_id.gross_profit
             self.payment_term_id = self.amc_quotation_id.payment_term_id
-            self.customer_name = self.amc_quotation_id.customer_name
-            self.contact_person = self.amc_quotation_id.crm_id.contact_name
-             # self.mobile_no = self.amc_quotation_id.crm_id.mobile
-            #code added on May 25 2026 by Vijaya Bhaskar client asked the country calling code 
-            # self.mobile_no =f"+{self.amc_quotation_id.crm_id.country_id.phone_code if self.amc_quotation_id.crm_id and self.amc_quotation_id.crm_id.country_id else ''}-{self.amc_quotation_id.crm_id.phone if self.amc_quotation_id.crm_id else ''}"
-            self.mobile_no = self.amc_quotation_id.crm_id.phone or False
-            self.email = self.amc_quotation_id.crm_id.email_from
-            self.job_position = self.amc_quotation_id.crm_id.function
+            # self.customer_name = self.amc_quotation_id.customer_name
+            # self.contact_person = self.amc_quotation_id.crm_id.contact_name
+            #  # self.mobile_no = self.amc_quotation_id.crm_id.mobile
+            # #code added on May 25 2026 by Vijaya Bhaskar client asked the country calling code 
+            # # self.mobile_no =f"+{self.amc_quotation_id.crm_id.country_id.phone_code if self.amc_quotation_id.crm_id and self.amc_quotation_id.crm_id.country_id else ''}-{self.amc_quotation_id.crm_id.phone if self.amc_quotation_id.crm_id else ''}"
+            # self.mobile_no = self.amc_quotation_id.crm_id.phone or False
+            # self.email = self.amc_quotation_id.crm_id.email_from
+            # self.job_position = self.amc_quotation_id.crm_id.function
             self.contract_reminder = 30
             self.date = fields.Date.today()
             self.add_paid_service_price = self.amc_quotation_id.add_paid_service_price
