@@ -16,6 +16,7 @@ patch(NavBar.prototype, {
         this.menuService = useService("menu");
         this.navState = useState({ menuId: new URLSearchParams(window.location.hash.substring(1)).get('menu_id') });
         useBus(this.env.bus, 'ACTION_MANAGER:UI-UPDATED', () => {
+
             this.navState.menuId = new URLSearchParams(window.location.hash.substring(1)).get('menu_id');
         });
     },
@@ -28,6 +29,7 @@ patch(NavBar.prototype, {
     },
     hasActiveDescendant(menuId) {
         const currentId = parseInt(this.currentMenuId);
+
         if (!currentId) return false;
         const check = (id) => {
             if (id === currentId) return true;
