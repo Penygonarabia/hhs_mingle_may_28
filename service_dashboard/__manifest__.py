@@ -8,7 +8,7 @@
     """,
     "author": "Your Company",
     "website": "https://www.yourcompany.com",
-    "depends": ["base", "project", "product", "machine_repair_management", "dashboard_user_rights_roles", "ks_dashboard_ninja", "ks_dn_advance", "hr_timesheet", "service_dashboards"],
+    "depends": ["base", "project", "product", "machine_repair_management", "dashboard_user_rights_roles", "ks_dashboard_ninja", "ks_dn_advance", "hr_timesheet","service_dashboards"],
     "data": [
         "security/ir.model.access.csv",
         "security/service_dashboard_rules.xml",

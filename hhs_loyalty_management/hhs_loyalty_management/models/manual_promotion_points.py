@@ -355,23 +355,103 @@ class CustomerLoyaltyPointsHistory(models.Model):
     _name = 'customer.loyalty.points.history'
     _description = 'Customer Loyalty Points History'
 
+    partner_id = fields.Many2one(
+        'res.partner',
+        string='Customer'
+    )
     clph_cstid = fields.Many2one('res.partner')
-    clph_docnumber = fields.Char()
+    clph_docnumber = fields.Char(string='Reference')
     clph_cstcode = fields.Char()
     clph_date = fields.Date()
-    clph_doctype = fields.Char()
+    # clph_doctype = fields.Char()
+    clph_doctype = fields.Selection([
+        ('99', 'Adjustments'), ('98', 'Redeem'), ('97', 'Expiry'),
+        ('01', 'Invoice'), ('02', 'Credit Note')
+    ])
     clph_adjtype = fields.Char()
     clph_type = fields.Char()
-    clph_whouse = fields.Char()
+    clph_whouse = fields.Char(string='W/H')
     clph_regpoints = fields.Integer()
     clph_bonuspoints = fields.Integer()
     clph_totalpoints = fields.Integer()
-    clph_note = fields.Char()
+    clph_note = fields.Char(string='Note')
     clph_uid = fields.Char()
-    clph_datetime = fields.Datetime()
+    clph_datetime = fields.Datetime(string='Date')
     clph_reasoncode = fields.Char()
     clph_promoref = fields.Char()
     clph_export = fields.Char()
+    clph_points = fields.Integer(
+        string='Regular Points'
+    )
+    balance_points = fields.Integer(
+        string='Balance'
+    )
+    loyalty_points = fields.Integer(
+        string='Regular Points'
+    )
+    redeemed_points = fields.Integer(
+        string='Redeemed'
+    )
+    balance_points_regular = fields.Integer(
+        string="Balance"
+    )
+    clph_bonuspoint = fields.Integer(string='Bonus Points')
+    type = fields.Char(string='Type')
+    
+    display_regpoints = fields.Integer(string='Regular Points', compute='_compute_display_points')
+    display_bonuspoints = fields.Integer(string='Bonus Points', compute='_compute_display_points')
+
+    @api.depends('clph_regpoints', 'clph_bonuspoints', 'clph_doctype', 'clph_adjtype')
+    def _compute_display_points(self):
+        for rec in self:
+            sign = -1 if (rec.clph_doctype in ['02', '98', '97'] or (rec.clph_doctype == '99' and rec.clph_adjtype == '-')) else 1
+            rec.display_regpoints = (rec.clph_regpoints or 0) * sign
+            rec.display_bonuspoints = (rec.clph_bonuspoints or 0) * sign
+
+    # collected_points_regular = fields.Integer(
+
+    def read(self, fields=None, load='_classic_read'):
+        res = super(CustomerLoyaltyPointsHistory, self).read(fields, load)
+        for rec in self:
+            rec._compute_loyalty_points()
+            # rec._compute_tier_name()
+        return res
+
+    # @api.depends('loyalty_transaction_history_ids')
+    def _compute_loyalty_points(self):
+
+        for rec in self:
+            history = self.env['customer.loyalty.points.history'].search([
+                ('clph_cstid', '=', rec.id)
+            ])
+            total_points = 0
+
+            for line in history:
+
+                # Invoice
+                if line.clph_doctype == '01':
+                    total_points += line.clph_regpoints
+
+                # Redeem
+                elif line.clph_doctype == '98':
+                    total_points -= line.clph_regpoints
+
+                # Expiry
+                elif line.clph_doctype == '97':
+                    total_points -= line.clph_regpoints
+
+                # Credit Note
+                elif line.clph_doctype == '02':
+                    total_points -= line.clph_regpoints
+
+                # Adjustment
+                elif line.clph_doctype == '99':
+                    if line.clph_adjtype == '+':
+                        total_points += line.clph_regpoints
+                    elif line.clph_adjtype == '-':
+                        total_points -= line.clph_regpoints
+
+            rec.balance_points_regular = total_points
 
     # ---------------------------------------------------------
     # MIGRATE OLD HISTORY
