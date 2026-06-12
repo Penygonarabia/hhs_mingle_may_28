@@ -26,9 +26,9 @@ class CrmLead(models.Model):
     
     warehouse_id = fields.Many2one('stock.warehouse',string = "Warehouse")
     
-    work_center_id = fields.Many2one('work.center.location', string = "Work center")
+    work_center_id = fields.Many2one('work.center.location', string = "Work Center")
     
-    work_center_group_id = fields.Many2one('work.center.group', string = "Work Center  Group")
+    work_center_group_id = fields.Many2one('work.center.group', string = "Work Center Group")
     
     district = fields.Many2one('res.state.district',string = "District")
 

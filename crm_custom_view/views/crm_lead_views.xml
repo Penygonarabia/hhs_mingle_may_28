@@ -98,8 +98,8 @@
                            options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
                 </div>
                 
-                <field name = "work_center_id" readonly = "1" force_save = "1" invisible = "1"/>
-                <field name = "work_center_group_id" readonly = "1" force_save = "1" invisible = "1"/>
+                <field name = "work_center_id" readonly = "1" force_save = "1" invisible = "0" string = "Work Center"/>
+                <field name = "work_center_group_id" readonly = "1" force_save = "1" invisible = "0" string = "Work Center Group"/>
                 
                 <field name="website" widget="url"/>
             </xpath>

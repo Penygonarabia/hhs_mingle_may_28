@@ -12,10 +12,11 @@
                     <!-- MUST WRAP IN pm_checklist_ids -->
                     <field name="pm_checklist_ids" nolabel="1">
                         <tree editable="bottom" create="0" delete="0" edit="1" default_order="service_type_id asc">
-                            <field name="service_unit_type_id" readonly="1" force_save="1"/>
+                            <field name="service_unit_type_id" readonly="1" force_save="1" invisible = "print_always_default"/>
                             <field name="unit_sub_type_id" readonly="1" force_save="1"/>
                             <field name="service_type_id" readonly="1" force_save="1"/>
                             <field name="is_selected" string="Yes/No"/>
+                            <field name = "print_always_default"  column_invisible = "1"/>
                         </tree>
                     </field>
                 </page>

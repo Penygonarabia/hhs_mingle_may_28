@@ -424,7 +424,7 @@
                         </div>
                     </div>
                     
-                     <h2>Invoice Text Contract</h2>
+                    <!--  <h2>Invoice Text Contract</h2>
                     <div class="text-muted mb-2 ms-3">
 	                    Invoice text Contract
                     </div>
@@ -440,7 +440,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+                         -->
 
 
                     <!-- <div class="col-xs-12 col-md-6 o_setting_box">
@@ -468,6 +468,36 @@
             </xpath>
         </field>
     </record>
+    
+    <record id="res_config_settings_service_invoice_txt_module_form" model="ir.ui.view">
+        <field name="name">res.config.settings.form.invoice.inherit</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="10"/>
+        <field name="inherit_id" ref="crm.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+        		
+        		<xpath expr= "//app[@name='crm']" position="inside">
+        				<h2>Invoice Text Contract</h2>
+	                    <div class="text-muted mb-2 ms-3">
+		                          Invoice text Contract
+	                    </div>
+	
+	                    <div class="col-12 col-lg-6 o_setting_box">
+	                         <div class="o_setting_left_pane"/>
+	                            <div class="o_setting_right_pane">
+	                              <!--   <label for="invoice_txt_contract"/> -->
+	                                <div class="content-group">
+	                                    <div class="mt16">
+	                                        <field name="invoice_txt_contract" class="oe_inline" />
+	                                    </div>
+	                                </div>
+	                            </div>
+	                        </div>
+        		</xpath>
+        
+        </field>
+     </record>
+        
 
 
     <record id="machine_repair_management_config_settings_action" model="ir.actions.act_window">

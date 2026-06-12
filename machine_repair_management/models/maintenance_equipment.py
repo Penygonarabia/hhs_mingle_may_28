@@ -160,7 +160,11 @@ class MaintenanceEquipmentViews(models.Model):
                     if equipment_search >=ordered_count :
                         raise ValidationError(_("Already all Contracts are created"))
                     
+                    '''Code Added on June 09 2026 by Vijaya Bhaskar client asked the instead of Contract name they need customer code of the contract in the equipment screen
                     seq = f"{contract_name}/{product_code}-{equipment_search+1:03d}"
+                    '''
+                    seq = f"{contract_search.customer_code}/{product_code}-{equipment_search+1:03d}"
+
                     # seq = f"{contract_name}/{product_code}-{seq_no}"
 
                   
