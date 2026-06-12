@@ -316,11 +316,16 @@
                             <field name="spare_parts_amount_discount" invisible="amc_quotation == False"
                                    groups="selling_cost_price_restrict.group_product_price_user"
                                    readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
-                            <button name="action_print_excel"
-                                    string="Print Costing Sheet"
-                                    type="object"
-                                    icon="fa-file-excel-o"
-                                    class="oe_highlight"/>
+                            <div style="width:250px !important; display:inline-block;">
+                                <button name="action_print_excel"
+                                        string="Print Costing Sheet"
+                                        type="object"
+                                        icon="fa-file-excel-o"
+                                        class="oe_highlight btn-lg"
+                                        style="width:100% !important;
+                                        min-height:80px !important;
+                                font-size:15px !important;"/>
+                            </div>
 
                             <field name="customer_code" invisible="1"/>
 
