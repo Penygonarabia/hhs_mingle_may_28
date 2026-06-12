@@ -348,15 +348,10 @@
                         </table>
                         <div class="hhs-sig" style="white-space: pre-line;margin:0; padding:0;line-height:1.2; font-size:17pt !important;">
                             <strong style="font-size:17pt !important;">
-                                <t t-raw="others"/>
+                                <t t-raw="subject"/>
                             </strong>
                         </div>
 
-                        <!--                        <div style="white-space: pre-line; margin:0; padding:0; line-height:1.2; display:block;">-->
-                        <!--                            <strong>-->
-                        <!--                                <span t-esc="others"></span>-->
-                        <!--                            </strong>-->
-                        <!--                        </div>-->
 
                         <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:17pt !important;">
                             <thead style="background-color:#1F6FAE; color:white;">
@@ -583,7 +578,14 @@
                                 <t t-raw="others_text"/>
                             </div>
                         </div>	
-                        
+                        <div class="mt-3" style="page-break-inside: avoid; display:flex;">
+                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
+                                <strong>Others :</strong>
+                            </div>
+                            <div class="hhs-sig" style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
+                                <t t-raw="others"/>                             
+                            </div>
+                        </div>	
                        <!--  <div class="mt-3"
                              style="page-break-inside: avoid;font-family:'Lato','Helvetica','Arial',sans-serif;font-size:17pt !important;line-height:1.4;">
                             <div style="display:flex; justify-content:space-between; width:100%;">
@@ -856,7 +858,7 @@
                                                             <t t-esc="param.get('param_en', '')"/>
                                                         </div>
 
-                                                        <ol style="font-size:17pt !important; padding-left: 25px; margin: 0;">
+                                                        <ol style="font-size:17pt !important; padding-left: 40px; margin: 0;">
 
                                                             <t t-foreach="param.get('lines', [])" t-as="line">
 
@@ -877,7 +879,7 @@
                                                             <t t-esc="param.get('param_ar', '')"/>
                                                         </div>
 
-                                                        <ol style="font-size:17pt !important; padding-right: 25px; margin: 0;">
+                                                        <ol style="font-size:17pt !important; padding-right: 40px; margin: 0;">
 
                                                             <t t-foreach="param.get('lines', [])" t-as="line">
 
