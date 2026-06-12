@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
+    <!-- Report Definition -->
     <record id="action_report_preventive_job_card" model="ir.actions.report">
         <field name="name">Print Preventive Job Card</field>
         <field name="model">project.task</field>
@@ -7,8 +9,28 @@
         <field name="report_name">machine_repair_management.report_preventive_job_card</field>
         <field name="report_file">machine_repair_management.report_preventive_job_card</field>
         <field name="print_report_name">'Preventive Job Card - %s' % (object.name)</field>
-        <field name="binding_model_id" ref="project.model_project_task"/>
-        <field name="binding_type">report</field>
+        <!-- Prevent automatic menu creation -->
+        <field name="binding_model_id" eval="False"/>
         <field name="paperformat_id" ref="machine_repair_management.paperformat_preventive_job_card"/>
     </record>
+
+    <!-- Print Menu Action -->
+    <record id="action_server_preventive_job_card" model="ir.actions.server">
+        <field name="name">Print Preventive Job Card</field>
+
+        <field name="model_id" ref="project.model_project_task"/>
+        <field name="binding_model_id" ref="project.model_project_task"/>
+
+        <field name="state">code</field>
+
+        <field name="code">
+            action = env.ref('machine_repair_management.action_report_preventive_job_card').report_action(records)
+        </field>
+
+        <field name="binding_view_types">form</field>
+
+        <!-- This controls order -->
+        <field name="sequence">6</field>
+    </record>
+
 </odoo>
