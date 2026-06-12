@@ -10,7 +10,7 @@
                 <page name="scope_of_work" string="Scope of Work / Subject">
                     <group>
                         <group>
-                            <field name="subject" readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
+                            <field name="subject" widget="text"  readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
                         </group>
 
                         <group>
