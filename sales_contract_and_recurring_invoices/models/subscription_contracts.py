@@ -166,11 +166,11 @@ class SubscriptionContracts(models.Model):
     service_coordinator_mobile = fields.Char(string="Service Coordinator Mobile Number")
     service_coordinator_person = fields.Char(string="Service Coordinator Contact Person")
 
-    attachment_image_ids = fields.One2many(
-        'subscription.contract.image',
-        'contract_id',
-        string='Attachment Images'
-    )
+    # attachment_image_ids = fields.One2many(
+    #     'subscription.contract.image',
+    #     'contract_id',
+    #     string='Attachment Images'
+    # )
 
     img1 = fields.Image("img1")
     img1_text = fields.Char("")
