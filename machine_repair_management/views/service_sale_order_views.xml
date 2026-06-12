@@ -314,17 +314,23 @@
                             <field name="sp_gross_margin" invisible="1"
                                    readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
                             <field name="spare_parts_amount_discount" invisible="amc_quotation == False"
-                             groups="selling_cost_price_restrict.group_product_price_user"
+                                   groups="selling_cost_price_restrict.group_product_price_user"
                                    readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
-							
-							  <field name  = "customer_code" invisible = "1"/>
-							
-							 <field name = "work_center_id" invisible = "1"/>
-                			 <field name = "work_center_group_id" invisible = "1"/>
-                			 <field name = "sales_person_user_id" invisible = "1"/>
-							
+                            <button name="action_print_excel"
+                                    string="Print Excel"
+                                    type="object"
+                                    icon="fa-file-excel-o"
+                                    class="oe_highlight"/>
+
+                            <field name="customer_code" invisible="1"/>
+
+                            <field name="work_center_id" invisible="1"/>
+                            <field name="work_center_group_id" invisible="1"/>
+                            <field name="sales_person_user_id" invisible="1"/>
+
                             <field name="job_task_id" invisible="1"/>
-                            <field name="warehouse_id" invisible="1" readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
+                            <field name="warehouse_id" invisible="1"
+                                   readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
                             <field name="rejection_reason" invisible="1"/>
                             <field name="whatsapp_button_click_bool" invisible="1"/>
                             <field name="company_id" invisible="1"/>

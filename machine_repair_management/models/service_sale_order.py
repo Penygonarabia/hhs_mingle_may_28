@@ -1519,6 +1519,9 @@ class ServiceSaleOrder(models.Model):
     ]
     _order = "name desc"
 
+    excel_file = fields.Binary("Excel File")
+    excel_filename = fields.Char("Excel Filename")
+
     name = fields.Char(string="Quotation No.", default="New", store=True)
 
     customer_name = fields.Char(string="Customer Name")
@@ -3047,6 +3050,24 @@ class ServiceSaleOrderLine(models.Model):
         for rec in self:
             if rec.product_id:
                 rec.standard_hours = rec.product_id.standard_hours
+
+    @api.constrains('product_id', 'standard_hours')
+    def _check_standard_hours(self):
+        for rec in self:
+            if rec.product_id:
+                product_standard_hours = rec.product_id.standard_hours or 0.0
+
+                if rec.standard_hours < product_standard_hours:
+                    raise ValidationError(_(
+                        "Standard Hours must be greater than or equal to the Product Standard Hours.\n\n"
+                        "Product: %s\n"
+                        "Product Standard Hours: %.2f\n"
+                        "Entered Standard Hours: %.2f"
+                    ) % (
+                                              rec.product_id.display_name,
+                                              product_standard_hours,
+                                              rec.standard_hours
+                                          ))
 
     @api.onchange("product_id")
     def _onchange_description(self):
