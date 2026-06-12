@@ -227,7 +227,7 @@
                             </div>
                         </div>
 
-                        <div style="margin-top:400px;">
+                        <div style="margin-top:20px;">
                             <div class="col-12" style="margin-bottom:15px;">
                                 <strong>
                                     <img src="sales_contract_and_recurring_invoices/static/src/img/phone.png" height="38"/>
@@ -526,7 +526,7 @@
                             <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
                                 <strong>Scope of Work :</strong>
                             </div>
-                            <div style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
+                            <div class="hhs-sig" style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
                                 <t t-raw="scope_work"/>
                             </div>
                         </div>
@@ -545,7 +545,7 @@
                             <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
                                 <strong>Terms of Execution :</strong>
                             </div>
-                            <div style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
+                            <div class="hhs-sig" style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
                                 <t t-raw="terms_of_execution"/>
                             </div>
                         </div>
@@ -577,21 +577,12 @@
                             <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
                                 <strong>Exclusions :</strong>
                             </div>
-                            <div style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
+                            <div class="hhs-sig" style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
                                 <t t-raw="exclusions_text"/>
                                 <br/>
                                 <t t-raw="others_text"/>
                             </div>
                         </div>	
-                        
-                        <div class="mt-3" style="page-break-inside: avoid; display:flex;">
-                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:16px; line-height:1.4;">
-                                <strong>Others:</strong>
-                            </div>
-                            <div style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:16px; line-height:1.4;">
-                                <t t-raw="others"/>
-                            </div>
-                        </div>
                         
                        <!--  <div class="mt-3"
                              style="page-break-inside: avoid;font-family:'Lato','Helvetica','Arial',sans-serif;font-size:17pt !important;line-height:1.4;">
@@ -865,7 +856,7 @@
                                                             <t t-esc="param.get('param_en', '')"/>
                                                         </div>
 
-                                                        <ol style="font-size:17pt !important; list-style-type: none; padding: 0; margin: 0;">
+                                                        <ol style="font-size:17pt !important; padding-left: 25px; margin: 0;">
 
                                                             <t t-foreach="param.get('lines', [])" t-as="line">
 
@@ -886,12 +877,12 @@
                                                             <t t-esc="param.get('param_ar', '')"/>
                                                         </div>
 
-                                                        <ol style="font-size:17pt !important; list-style-type: none; padding: 0; margin: 0;">
+                                                        <ol style="font-size:17pt !important; padding-right: 25px; margin: 0;">
 
                                                             <t t-foreach="param.get('lines', [])" t-as="line">
 
                                                                 <li style="margin-bottom:10px; font-size:17pt !important;">
-                                                                    <span t-esc="line_index + 1"/>. <t t-esc="line.get('ar', '')"/>
+                                                                    <t t-esc="line.get('ar', '')"/>
                                                                 </li>
 
                                                             </t>
