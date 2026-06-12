@@ -15,17 +15,17 @@
                  transition rows a task has).
 
              Field refs:
-               message-log : service_dashboards_ot.field_dbmodel_task_message_log_analysis__*
+               message-log : service_dashboards_ct.field_dbmodel_task_message_log_analysis_ct__*
                              (ptml_final_taskstatus, task_date, user_id, user_role,
                               city, user_name, status_transition)
-               jobcards    : service_dashboards_ot.field_dbmodel_jobcards_analysis__*
+               jobcards    : service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__*
                              (work_center_group_id, total_worked_hours, ...)
              ================================================================ -->
 
         <record id="board_service_analysis_cc_users" model="ks_dashboard_ninja.board">
             <field name="name">Service Analysis - CC Users</field>
             <field name="ks_dashboard_menu_name">Service Analysis - CC Users</field>
-            <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ot.menu_root"/>
+            <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
             <field name="ks_date_filter_selection">t_year</field>
             <field name="ks_dashboard_menu_sequence">40</field>
@@ -34,9 +34,9 @@
 
         <record id="kpi_cc_new_tasks" model="ks_dashboard_ninja.item">
             <field name="name">New Tasks</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_cc_users"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_task_message_log_analysis"/>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_cc_users"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_task_message_log_analysis_ct"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_task_message_log_analysis_ct__task_date"/>
             <field name="ks_dashboard_item_type">ks_kpi</field>
             <field name="ks_record_count_type">count</field>
             <field name="ks_chart_data_count_type">sum</field>
@@ -53,7 +53,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">moonrise</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -64,11 +64,11 @@
 
         <record id="bar_cc_tasks_monthwise" model="ks_dashboard_ninja.item">
             <field name="name">Tasks - Month wise</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_cc_users"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_task_message_log_analysis"/>
-            <field name="ks_chart_relation_groupby" ref="service_dashboards_ot.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_cc_users"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_task_message_log_analysis_ct"/>
+            <field name="ks_chart_relation_groupby" ref="service_dashboards_ct.field_dbmodel_task_message_log_analysis_ct__task_date"/>
             <field name="ks_chart_date_groupby">month_year</field>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_task_message_log_analysis_ct__task_date"/>
             <field name="ks_dashboard_item_type">ks_bar_chart</field>
             <field name="ks_record_count_type">count</field>
             <field name="ks_chart_data_count_type">count</field>
@@ -85,7 +85,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">moonrise</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -94,18 +94,18 @@
             <field name="ks_domain">["&amp;", ("user_id", "in", ["%UID"]), ("user_role", "in", [6])]</field>
         </record>
         <record id="drill_cc_monthwise_0_status" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ot.bar_cc_tasks_monthwise"/>
+            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_cc_tasks_monthwise"/>
             <field name="sequence">0</field>
         </record>
         <record id="drill_cc_monthwise_1_city" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ot.bar_cc_tasks_monthwise"/>
+            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_cc_tasks_monthwise"/>
             <field name="sequence">1</field>
         </record>
 
         <record id="board_service_analysis_crd_users" model="ks_dashboard_ninja.board">
             <field name="name">Service Analysis - CRD Users</field>
             <field name="ks_dashboard_menu_name">Service Analysis - CRD Users</field>
-            <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ot.menu_root"/>
+            <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
             <field name="ks_date_filter_selection">t_year</field>
             <field name="ks_dashboard_menu_sequence">41</field>
@@ -114,9 +114,9 @@
 
         <record id="kpi_crd_scheduled_tasks" model="ks_dashboard_ninja.item">
             <field name="name">Scheduled Tasks</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_crd_users"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_task_message_log_analysis"/>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_crd_users"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_task_message_log_analysis_ct"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_task_message_log_analysis_ct__task_date"/>
             <field name="ks_dashboard_item_type">ks_kpi</field>
             <field name="ks_record_count_type">count</field>
             <field name="ks_chart_data_count_type">sum</field>
@@ -133,7 +133,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">moonrise</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -144,11 +144,11 @@
 
         <record id="bar_crd_tasks_monthwise" model="ks_dashboard_ninja.item">
             <field name="name">Tasks - Month wise</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_crd_users"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_task_message_log_analysis"/>
-            <field name="ks_chart_relation_groupby" ref="service_dashboards_ot.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_crd_users"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_task_message_log_analysis_ct"/>
+            <field name="ks_chart_relation_groupby" ref="service_dashboards_ct.field_dbmodel_task_message_log_analysis_ct__task_date"/>
             <field name="ks_chart_date_groupby">month_year</field>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_task_message_log_analysis_ct__task_date"/>
             <field name="ks_dashboard_item_type">ks_bar_chart</field>
             <field name="ks_record_count_type">count</field>
             <field name="ks_chart_data_count_type">count</field>
@@ -165,7 +165,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">moonrise</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -174,19 +174,19 @@
             <field name="ks_domain">[("user_id", "in", ["%UID"])]</field>
         </record>
         <record id="drill_crd_monthwise_0_status" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ot.bar_crd_tasks_monthwise"/>
+            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_crd_tasks_monthwise"/>
             <field name="sequence">0</field>
         </record>
         <record id="drill_crd_monthwise_1_city" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ot.bar_crd_tasks_monthwise"/>
+            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_crd_tasks_monthwise"/>
             <field name="sequence">1</field>
         </record>
 
         <record id="kpi_crd_closed_tasks" model="ks_dashboard_ninja.item">
             <field name="name">Closed Tasks</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_crd_users"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_task_message_log_analysis"/>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_crd_users"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_task_message_log_analysis_ct"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_task_message_log_analysis_ct__task_date"/>
             <field name="ks_dashboard_item_type">ks_kpi</field>
             <field name="ks_record_count_type">count</field>
             <field name="ks_chart_data_count_type">sum</field>
@@ -203,7 +203,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">moonrise</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -214,10 +214,10 @@
 
         <record id="bar_crd_tasks_userrole" model="ks_dashboard_ninja.item">
             <field name="name">Tasks - User Role wise</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_crd_users"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_task_message_log_analysis"/>
-            <field name="ks_chart_relation_groupby" ref="service_dashboards_ot.field_dbmodel_task_message_log_analysis__user_role"/>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_crd_users"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_task_message_log_analysis_ct"/>
+            <field name="ks_chart_relation_groupby" ref="service_dashboards_ct.field_dbmodel_task_message_log_analysis_ct__user_role"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_task_message_log_analysis_ct__task_date"/>
             <field name="ks_dashboard_item_type">ks_bar_chart</field>
             <field name="ks_record_count_type">sum</field>
             <field name="ks_chart_data_count_type">count</field>
@@ -234,7 +234,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">moonrise</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -243,18 +243,18 @@
             <field name="ks_domain">["&amp;", ("user_role", "!=", False), ("user_id", "in", ["%UID"])]</field>
         </record>
         <record id="drill_crd_userrole_0_user" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ot.bar_crd_tasks_userrole"/>
+            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_crd_tasks_userrole"/>
             <field name="sequence">0</field>
         </record>
         <record id="drill_crd_userrole_2_status" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ot.bar_crd_tasks_userrole"/>
+            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_crd_tasks_userrole"/>
             <field name="sequence">2</field>
         </record>
 
         <record id="board_service_analysis_parts_users" model="ks_dashboard_ninja.board">
             <field name="name">Service Analysis - Parts Users</field>
             <field name="ks_dashboard_menu_name">Service Analysis - Parts Users</field>
-            <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ot.menu_root"/>
+            <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
             <field name="ks_date_filter_selection">t_year</field>
             <field name="ks_dashboard_menu_sequence">42</field>
@@ -263,9 +263,9 @@
 
         <record id="kpi_parts_onhold_sp_req" model="ks_dashboard_ninja.item">
             <field name="name">On Hold - SP Req Tasks</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_parts_users"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_jobcards_analysis"/>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_jobcards_analysis__service_created_datetime"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_parts_users"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
             <field name="ks_dashboard_item_type">ks_kpi</field>
             <field name="ks_record_count_type">count</field>
             <field name="ks_chart_data_count_type">sum</field>
@@ -282,7 +282,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">moonrise</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -293,11 +293,11 @@
 
         <record id="bar_parts_tasks_monthwise" model="ks_dashboard_ninja.item">
             <field name="name">Tasks - Month wise</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_parts_users"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_jobcards_analysis"/>
-            <field name="ks_chart_relation_groupby" ref="service_dashboards_ot.field_dbmodel_jobcards_analysis__service_created_datetime"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_parts_users"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_chart_relation_groupby" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
             <field name="ks_chart_date_groupby">month_year</field>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_jobcards_analysis__service_created_datetime"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
             <field name="ks_dashboard_item_type">ks_bar_chart</field>
             <field name="ks_record_count_type">count</field>
             <field name="ks_chart_data_count_type">count</field>
@@ -314,7 +314,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">default</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -323,19 +323,19 @@
             <field name="ks_domain">["&amp;", ("is_user_work_location", "=", True), ("job_card_status", "in", ["On Hold -SP Req", "Customer Need Quote"])]</field>
         </record>
         <record id="drill_parts_monthwise_0_region" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ot.bar_parts_tasks_monthwise"/>
+            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_parts_tasks_monthwise"/>
             <field name="sequence">0</field>
         </record>
         <record id="drill_parts_monthwise_1_workcenter" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ot.bar_parts_tasks_monthwise"/>
+            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_parts_tasks_monthwise"/>
             <field name="sequence">1</field>
         </record>
 
         <record id="kpi_parts_cust_need_quote" model="ks_dashboard_ninja.item">
             <field name="name">Customer Need Quote Tasks</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_parts_users"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_jobcards_analysis"/>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_jobcards_analysis__service_created_datetime"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_parts_users"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
             <field name="ks_dashboard_item_type">ks_kpi</field>
             <field name="ks_record_count_type">count</field>
             <field name="ks_chart_data_count_type">sum</field>
@@ -352,7 +352,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">moonrise</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -363,11 +363,11 @@
 
         <record id="bar_parts_onhold_sp_req_hours" model="ks_dashboard_ninja.item">
             <field name="name">On Hold -SP Req Hours</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_parts_users"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_jobcards_analysis"/>
-            <field name="ks_chart_relation_groupby" ref="service_dashboards_ot.field_dbmodel_jobcards_analysis__work_center_group_id"/>
-            <field name="ks_chart_measure_field" eval="[(6,0,[ref('service_dashboards_ot.field_dbmodel_jobcards_analysis__onhold_hours')])]"/>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_jobcards_analysis__service_created_datetime"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_parts_users"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_chart_relation_groupby" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__work_center_group_id"/>
+            <field name="ks_chart_measure_field" eval="[(6,0,[ref('service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__onhold_hours')])]"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
             <field name="ks_dashboard_item_type">ks_bar_chart</field>
             <field name="ks_record_count_type">count</field>
             <field name="ks_chart_data_count_type">sum</field>
@@ -384,7 +384,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">default</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -393,17 +393,17 @@
             <field name="ks_domain">["&amp;", ("is_user_work_location", "=", True), ("job_card_status", "in", ["On Hold -SP Req"])]</field>
         </record>
         <record id="drill_parts_onhold_0_workcenter" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ot.bar_parts_onhold_sp_req_hours"/>
+            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_parts_onhold_sp_req_hours"/>
             <field name="sequence">0</field>
         </record>
 
         <record id="bar_parts_cust_need_quote_hours" model="ks_dashboard_ninja.item">
             <field name="name">Customer Need Quote Hours</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_parts_users"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_jobcards_analysis"/>
-            <field name="ks_chart_relation_groupby" ref="service_dashboards_ot.field_dbmodel_jobcards_analysis__work_center_group_id"/>
-            <field name="ks_chart_measure_field" eval="[(6,0,[ref('service_dashboards_ot.field_dbmodel_jobcards_analysis__cstneedquote_hours')])]"/>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_jobcards_analysis__service_created_datetime"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_parts_users"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_chart_relation_groupby" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__work_center_group_id"/>
+            <field name="ks_chart_measure_field" eval="[(6,0,[ref('service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__cstneedquote_hours')])]"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
             <field name="ks_dashboard_item_type">ks_bar_chart</field>
             <field name="ks_record_count_type">count</field>
             <field name="ks_chart_data_count_type">sum</field>
@@ -420,7 +420,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">default</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -429,14 +429,14 @@
             <field name="ks_domain">["&amp;", ("is_user_work_location", "=", True), ("job_card_status", "in", ["Customer Need Quote"])]</field>
         </record>
         <record id="drill_parts_cust_quote_0_workcenter" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ot.bar_parts_cust_need_quote_hours"/>
+            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_parts_cust_need_quote_hours"/>
             <field name="sequence">0</field>
         </record>
 
         <record id="board_service_analysis_technicians" model="ks_dashboard_ninja.board">
             <field name="name">Service Analysis - Technicians</field>
             <field name="ks_dashboard_menu_name">Service Analysis - Technicians</field>
-            <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ot.menu_root"/>
+            <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
             <field name="ks_date_filter_selection">t_year</field>
             <field name="ks_dashboard_menu_sequence">43</field>
@@ -445,9 +445,9 @@
 
         <record id="kpi_tech_req_revisit" model="ks_dashboard_ninja.item">
             <field name="name">Req. Revisit Tasks</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_technicians"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_task_message_log_analysis"/>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_technicians"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_task_message_log_analysis_ct"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_task_message_log_analysis_ct__task_date"/>
             <field name="ks_dashboard_item_type">ks_kpi</field>
             <field name="ks_record_count_type">count</field>
             <field name="ks_chart_data_count_type">sum</field>
@@ -464,7 +464,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">moonrise</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -475,9 +475,9 @@
 
         <record id="kpi_tech_need_reschedule" model="ks_dashboard_ninja.item">
             <field name="name">Need Reschedule Tasks</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_technicians"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_task_message_log_analysis"/>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_technicians"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_task_message_log_analysis_ct"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_task_message_log_analysis_ct__task_date"/>
             <field name="ks_dashboard_item_type">ks_kpi</field>
             <field name="ks_record_count_type">count</field>
             <field name="ks_chart_data_count_type">sum</field>
@@ -494,7 +494,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">moonrise</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -505,9 +505,9 @@
 
         <record id="kpi_tech_parts_ready_reschedule" model="ks_dashboard_ninja.item">
             <field name="name">Parts Ready &amp; Reschedule Tasks</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_technicians"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_task_message_log_analysis"/>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_technicians"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_task_message_log_analysis_ct"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_task_message_log_analysis_ct__task_date"/>
             <field name="ks_dashboard_item_type">ks_kpi</field>
             <field name="ks_record_count_type">count</field>
             <field name="ks_chart_data_count_type">sum</field>
@@ -524,7 +524,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">moonrise</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -535,9 +535,9 @@
 
         <record id="kpi_tech_rescheduled" model="ks_dashboard_ninja.item">
             <field name="name">Rescheduled Tasks</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_technicians"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_task_message_log_analysis"/>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_technicians"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_task_message_log_analysis_ct"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_task_message_log_analysis_ct__task_date"/>
             <field name="ks_dashboard_item_type">ks_kpi</field>
             <field name="ks_record_count_type">count</field>
             <field name="ks_chart_data_count_type">sum</field>
@@ -554,7 +554,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">moonrise</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -565,11 +565,11 @@
 
         <record id="bar_tech_tasks_monthwise" model="ks_dashboard_ninja.item">
             <field name="name">Tasks - Month wise</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_technicians"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_task_message_log_analysis"/>
-            <field name="ks_chart_relation_groupby" ref="service_dashboards_ot.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_technicians"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_task_message_log_analysis_ct"/>
+            <field name="ks_chart_relation_groupby" ref="service_dashboards_ct.field_dbmodel_task_message_log_analysis_ct__task_date"/>
             <field name="ks_chart_date_groupby">month_year</field>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_task_message_log_analysis__task_date"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_task_message_log_analysis_ct__task_date"/>
             <field name="ks_dashboard_item_type">ks_bar_chart</field>
             <field name="ks_record_count_type">count</field>
             <field name="ks_chart_data_count_type">count</field>
@@ -586,7 +586,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">moonrise</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -595,21 +595,21 @@
             <field name="ks_domain">[("user_id", "in", ["%UID"])]</field>
         </record>
         <record id="drill_tech_monthwise_0_status" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ot.bar_tech_tasks_monthwise"/>
+            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_tech_tasks_monthwise"/>
             <field name="sequence">0</field>
         </record>
         <record id="drill_tech_monthwise_1_city" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ot.bar_tech_tasks_monthwise"/>
+            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_tech_tasks_monthwise"/>
             <field name="sequence">1</field>
         </record>
 
         <record id="bar_tech_travel_hours" model="ks_dashboard_ninja.item">
             <field name="name">Technician Travel Hours</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ot.board_service_analysis_technicians"/>
-            <field name="ks_model_id" ref="service_dashboards_ot.model_dbmodel_jobcards_analysis"/>
-            <field name="ks_chart_relation_groupby" ref="service_dashboards_ot.field_dbmodel_jobcards_analysis__work_center_group_id"/>
-            <field name="ks_chart_measure_field" eval="[(6,0,[ref('service_dashboards_ot.field_dbmodel_jobcards_analysis__technician_travel_hours')])]"/>
-            <field name="ks_date_filter_field" ref="service_dashboards_ot.field_dbmodel_jobcards_analysis__service_created_datetime"/>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_technicians"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_chart_relation_groupby" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__work_center_group_id"/>
+            <field name="ks_chart_measure_field" eval="[(6,0,[ref('service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__technician_travel_hours')])]"/>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
             <field name="ks_dashboard_item_type">ks_bar_chart</field>
             <field name="ks_record_count_type">count</field>
             <field name="ks_chart_data_count_type">sum</field>
@@ -626,7 +626,7 @@
             <field name="ks_default_icon_color">#6789C6,0.99</field>
             <field name="ks_icon_select">Default</field>
             <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">default</field>
+            <field name="ks_chart_item_color">custom-1</field>
             <field name="ks_data_label_type">percent</field>
             <field name="ks_data_format">global</field>
             <field name="ks_precision_digits">2</field>
@@ -635,7 +635,7 @@
             <field name="ks_domain">[("user_id", "in", ["%UID"])]</field>
         </record>
         <record id="drill_tech_travel_0_workcenter" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ot.bar_tech_travel_hours"/>
+            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_tech_travel_hours"/>
             <field name="sequence">0</field>
         </record>
 

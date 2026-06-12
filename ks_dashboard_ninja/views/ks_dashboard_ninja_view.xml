@@ -364,20 +364,22 @@
                   web_icon="ks_dashboard_ninja,static/description/icon.png"
                   action="ks_dashboard_ninja.dashboard_action_window"/>
 
-        <menuitem name="Service Dashboards - Custom Theme" id="ks_dashboard_ninja.services_dashboards_menu_root"
-                  parent="ks_dashboard_ninja.board_menu_root" sequence="16"
-                  action="ks_dashboard_ninja.dashboard_action_window"/>
-
-        <menuitem name="Beta Dashboards" id="ks_dashboard_ninja.beta_dashboards_menu_root"
-                  parent="ks_dashboard_ninja.board_menu_root" sequence="18"
-                  action="ks_dashboard_ninja.dashboard_action_window"/>
-
         <menuitem name="My Dashboards" id="ks_dashboard_ninja.dashboards_menu_root"
                   parent="ks_dashboard_ninja.board_menu_root" sequence="15"/>
 
-        <menuitem name="Promoter Dashboards" id="ks_dashboard_ninja.promoter_dashboards_menu_root"
-                  parent="ks_dashboard_ninja.board_menu_root" sequence="20"
-                  action="ks_dashboard_ninja.dashboard_action_window"/>
+        <!-- The following parent menus used to live here, but were moved into
+             their respective dashboard modules so each dashboard surface
+             installs independently — no orphan empty parents appear when a
+             particular dashboard module is not installed:
+
+               * beta_dashboards.beta_dashboards_menu_root              (Beta Dashboards)
+               * service_dashboards_ot.services_dashboards_menu_root    (Service Dashboards - CT)
+               * promoter_dashboards.promoter_dashboards_menu_root      (Promoter Dashboards)
+
+             Other modules that referenced the old ks_dashboard_ninja.* xmlids
+             have been updated to the new owning-module xmlids.
+        -->
+
 
 
         <menuitem name="Quick Access" id="ks_dashboard_ninja.quick_access_menu"
@@ -414,6 +416,22 @@
         <!--        <menuitem name="Dashboard Templates" id="ks_dashboard_ninja.dashboard_template_menu"-->
         <!--                  parent="ks_dashboard_ninja.configuration_menu"-->
         <!--                  action="ks_dashboard_ninja.template_tree_action_window" groups="ks_dashboard_ninja_group_manager"/>-->
+
+    </data>
+
+    <!-- Boards under the Beta Dashboards menu. noupdate so live edits survive upgrades.
+         The board's create() override auto-builds the child ir.ui.menu + client action
+         under ks_dashboard_ninja.beta_dashboards_menu_root. -->
+    <data noupdate="1">
+
+        <record id="ks_dashboard_ninja.beta1_board" model="ks_dashboard_ninja.board">
+            <field name="name">beta1</field>
+            <field name="ks_dashboard_menu_name">beta1</field>
+            <field name="ks_dashboard_top_menu_id" ref="ks_dashboard_ninja.beta_dashboards_menu_root"/>
+            <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
+            <field name="ks_dashboard_menu_sequence">10</field>
+            <field name="ks_dashboard_active" eval="True"/>
+        </record>
 
     </data>
 </odoo>

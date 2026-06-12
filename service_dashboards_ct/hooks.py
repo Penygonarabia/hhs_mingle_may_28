@@ -2,15 +2,15 @@ import ast
 import json
 
 
-# KS grid is 12 columns wide.
 GRID_W = 12
 KPI_W, KPI_H = 2, 3
 CHART_W, CHART_H = 12, 7
 
+CT_MODULE = 'service_dashboards_ct'
+CT_PALETTE = 'custom-1'
+
 
 def _clean_layout(items, start_y=0):
-    """Deterministic, non-overlapping layout: KPIs as small tiles in a
-    left-aligned row (w=2, h=3, six per row), charts full-width stacked below."""
     cfg = {}
     kpis = [i for i in items if i.ks_dashboard_item_type == 'ks_kpi']
     charts = [i for i in items if i.ks_dashboard_item_type != 'ks_kpi']
@@ -31,24 +31,12 @@ def _clean_layout(items, start_y=0):
 
 
 def _board_layout_from_items(env, board):
-    """Build a gridstack config {str(item_id): {x, y, w, h}}.
-
-    Use each item's stored grid_corners as-is when present — this preserves the
-    board's original arrangement and order (including multi-column layouts where
-    e.g. a count chart sits beside its percentage chart). Items with no stored
-    position get a sensible default (KPIs as small tiles, charts full-width)
-    appended below.
-
-    Only when a board's stored positions are *degenerate* — every positioned
-    chart piled on the exact same spot (a few legacy boards stored stale /
-    duplicated grid_corners) — do we discard them and re-flow that board cleanly,
-    so KPIs don't float mid-row and charts don't sit on top of each other."""
     items = env['ks_dashboard_ninja.item'].search(
         [('ks_dashboard_ninja_board_id', '=', board.id)], order='id')
     cfg = {}
     max_y = 0
     unpositioned = []
-    chart_positions = []  # (x, y) of positioned non-KPI items
+    chart_positions = []
     for item in items:
         gc = None
         if item.grid_corners:
@@ -70,43 +58,52 @@ def _board_layout_from_items(env, board):
         else:
             unpositioned.append(item)
 
-    # Degenerate layout: 2+ charts all stored at the exact same position.
     degenerate = len(chart_positions) >= 2 and len(set(chart_positions)) == 1
     if degenerate:
         return _clean_layout(items, start_y=0)
 
-    # Otherwise keep the original positions and append any position-less items.
     cfg.update(_clean_layout(unpositioned, start_y=max_y))
     return cfg
 
 
 def ks_rebuild_board_layouts(env):
-    """Restore chart size/position for the Service Dashboards.
-
-    KS Dashboard Ninja renders a board's layout from the (per-company) child
-    board's ks_gridstack_config, which is seeded from board.ks_gridstack_config.
-    On a fresh data-XML install both are empty, so charts auto-stack and lose
-    their size/position. Here we rebuild the gridstack config from each item's
-    grid_corners (captured in the data XML) so the layout is reproduced
-    deterministically on every install."""
+    """Rebuild gridstack_config for boards owned by service_dashboards_ct only."""
     xmlids = env['ir.model.data'].search([
-        ('module', '=', 'service_dashboards_ot'),
+        ('module', '=', CT_MODULE),
         ('model', '=', 'ks_dashboard_ninja.board'),
     ])
     boards = env['ks_dashboard_ninja.board'].browse(xmlids.mapped('res_id')).exists()
     for board in boards:
         cfg_json = json.dumps(_board_layout_from_items(env, board))
         board.ks_gridstack_config = cfg_json
-        # Update any already-created per-company child boards too.
         for child in board.ks_child_dashboard_ids:
             child.ks_gridstack_config = cfg_json
 
 
 def post_init_hook(env):
-    """Rebuild gridstack layouts after a fresh install.
+    """Apply the CT palette to CT-owned chart items, then rebuild layouts.
 
-    Per-item chart palettes are set by each <field name="ks_chart_item_color">
-    in the data XML (mirroring the Ninja_Themes_Dashboards reference JSONs),
-    so we no longer overwrite them here.
+    Scoped strictly to items owned by service_dashboards_ct so the sibling
+    service_dashboards_ot module's items (which use the moonrise palette) are
+    not touched.
     """
+    chart_types = [
+        'ks_bar_chart',
+        'ks_horizontalBar_chart',
+        'ks_pie_chart',
+        'ks_doughnut_chart',
+    ]
+    own_item_xmlids = env['ir.model.data'].search([
+        ('module', '=', CT_MODULE),
+        ('model', '=', 'ks_dashboard_ninja.item'),
+    ])
+    own_item_ids = own_item_xmlids.mapped('res_id')
+    if own_item_ids:
+        items = env['ks_dashboard_ninja.item'].search([
+            ('id', 'in', own_item_ids),
+            ('ks_dashboard_item_type', 'in', chart_types),
+        ])
+        if items:
+            items.write({'ks_chart_item_color': CT_PALETTE})
+
     ks_rebuild_board_layouts(env)
