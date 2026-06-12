@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--
+            Parent menu "Beta Dashboards" under My Dashboard. Sequence 16
+            slots it between "Beta Dashboards" siblings — adjust if you want
+            a different order in the sidebar.
+
+            Child menus (per board) are NOT created here. Beta boards are
+            imported live via KS Dashboard Ninja's Import wizard, which
+            auto-creates a menu entry under whatever top-menu is selected at
+            import time. Selecting "Beta Dashboards" as the top-menu when
+            importing parents the new menu under this xmlid.
+
+            noupdate="1" so this module's `-u` does not rewrite the menu's
+            name/sequence if the operator customised them in the UI.
+        -->
+        <menuitem id="beta_dashboards_menu_root"
+                  name="Beta Dashboards"
+                  parent="ks_dashboard_ninja.board_menu_root"
+                  sequence="16"/>
+
+    </data>
+</odoo>

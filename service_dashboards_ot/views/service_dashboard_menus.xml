@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--
+            Parent menu "Service Dashboards - OT" under My Dashboard.
+            Owned by service_dashboards_ot so the menu only appears when
+            that module is installed (and disappears cleanly on uninstall).
+            noupdate="1" preserves any UI customisations on subsequent -u.
+        -->
+        <menuitem name="Service Dashboards - OT"
+                  id="menu_root"
+                  parent="ks_dashboard_ninja.board_menu_root"
+                  sequence="17"
+                  action="ks_dashboard_ninja.dashboard_action_window"/>
+
+    </data>
+</odoo>

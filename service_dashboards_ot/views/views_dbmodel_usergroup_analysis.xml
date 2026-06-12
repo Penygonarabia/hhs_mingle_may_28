@@ -1,0 +1,30 @@
+<?xml version = "1.0" encoding =  "utf-8" ?>
+<odoo>
+
+		<record id = "dashboard_analysis_tree_view" model = "ir.ui.view">
+			
+			<field name = "name">Dashboard User group Analysis</field>
+			<field name = "model">dbmodel.usergroup.analysis</field>
+			<field name = "arch" type = "xml">
+			
+				<tree string = "User Group Analysis">
+					<field name = "task_name"/>
+					<field name = "service_request_state" />
+					<field name = "team_id"/>
+					<field name = "team_name"/>
+					<field name = "work_center_group_id"/>
+				</tree>
+			
+			</field>
+		
+		</record>
+		
+	
+	<record id="action_db_user_group_analysis" model="ir.actions.act_window">
+        <field name="name">Dashboard User Group Analysis</field>
+        <field name="res_model">dbmodel.usergroup.analysis</field>
+        <field name="view_mode">tree</field>
+       
+    </record>
+	
+</odoo>

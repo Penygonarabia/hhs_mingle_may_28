@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Menu shell under "My Dashboard > Promoter Dashboards" for the two KS
+        Dashboard Ninja boards: "Promoters" and "Promoter - Sales Comparison".
+
+        The boards themselves are NOT defined here. They are imported as live
+        ks_dashboard_ninja.board records from the JSON files under
+        11_Dashboards/, which also create their own ir.actions.client
+        records. The menu items below are placeholders with a no-op parent
+        action; the live records get adopted via ir_model_data so that
+        re-running this module's upgrade does not detach them.
+
+        noupdate="1" ensures the live action assignments survive `-u`.
+    -->
+    <data noupdate="1">
+
+        <!--
+            Parent menu "Promoter Dashboards" under My Dashboard.
+            Used to live in ks_dashboard_ninja but was moved here so the menu
+            only appears when promoter_dashboards is installed.
+        -->
+        <menuitem id="promoter_dashboards_menu_root"
+                  name="Promoter Dashboards"
+                  parent="ks_dashboard_ninja.board_menu_root"
+                  sequence="20"
+                  action="ks_dashboard_ninja.dashboard_action_window"/>
+
+        <menuitem id="menu_promoter_dashboard_promoters"
+                  name="Promoters"
+                  parent="promoter_dashboards.promoter_dashboards_menu_root"
+                  sequence="10"/>
+
+        <menuitem id="menu_promoter_dashboard_sales_comparison"
+                  name="Promoter - Sales Comparison"
+                  parent="promoter_dashboards.promoter_dashboards_menu_root"
+                  sequence="20"/>
+
+    </data>
+</odoo>
