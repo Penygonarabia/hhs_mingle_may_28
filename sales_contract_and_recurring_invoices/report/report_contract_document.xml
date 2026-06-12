@@ -965,14 +965,11 @@ td {
                                                         Payment shall be made
                                                         <strong><t t-esc="doc.get_payment_term_text()"/></strong>.
                                                     </t>
-                          <ul style="padding-left:90px; margin:0;">
+                          <ul style="padding-left:10px; margin:0;">
                             <t t-foreach="o.payment_schedule_line_ids" t-as="line">
-                              <li style="word-break:break-word;"><strong><t t-esc="line.name"/></strong>
-                                                                –
-                                                                <strong><t t-esc="line.payment_date.strftime('%d-%m-%Y')"/></strong>
-                                                                –
-                                                                <strong><span t-field="line.amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></strong>
-                                                            </li>
+                              <li style="white-space: nowrap; word-break: keep-all;">
+                                <strong><t t-esc="line.name"/></strong> – <strong><t t-esc="line.payment_date.strftime('%d-%m-%Y')"/></strong> – <strong><span t-field="line.amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></strong>
+                              </li>
                             </t>
                           </ul>
                         </li>
@@ -994,22 +991,11 @@ td {
                                                         يتم الدفع
                                                         <strong><t t-esc="doc.get_payment_term_text_ar()"/></strong>.
                                                     </t>
-                          <ul dir="rtl" style="padding-right:90px; margin:0; text-align:right;">
+                          <ul dir="rtl" style="padding-right:10px; margin:0; text-align:right;">
                             <t t-foreach="o.payment_schedule_line_ids" t-as="line">
-                              <li style="direction:rtl; text-align:right;"><!-- Payment --><strong><t t-esc="line.name_ara"/></strong>
-                                                                –
-
-                                                                <!-- Date -->
-                                                                <span style="direction:ltr;"><span style="direction:ltr; display:inline-block;"><strong><t t-esc="line.payment_date.strftime('%d-%m-%Y')"/></strong></span></span>
-
-                                                                –
-
-                                                                <!-- Amount in Arabic format -->
-                                                                <span style="direction:ltr;"><strong><t t-esc="'{0:,.2f}'.format(line.amount)"/></strong>
-                                                                   س.ر
-                                                                </span>
-
-                                                            </li>
+                              <li style="direction:rtl; text-align:right; white-space: nowrap; word-break: keep-all;">
+                                <strong><t t-esc="line.name_ara"/></strong> – <span style="direction:ltr; display:inline-block;"><strong><t t-esc="line.payment_date.strftime('%d-%m-%Y')"/></strong></span> – <span style="direction:ltr;"><strong><t t-esc="'{0:,.2f}'.format(line.amount)"/></strong> س.ر</span>
+                              </li>
                             </t>
                           </ul>
                         </li>
