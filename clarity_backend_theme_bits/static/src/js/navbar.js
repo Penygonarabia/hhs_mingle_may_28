@@ -16,7 +16,6 @@ patch(NavBar.prototype, {
         this.menuService = useService("menu");
         this.navState = useState({ menuId: new URLSearchParams(window.location.hash.substring(1)).get('menu_id') });
         useBus(this.env.bus, 'ACTION_MANAGER:UI-UPDATED', () => {
-
             this.navState.menuId = new URLSearchParams(window.location.hash.substring(1)).get('menu_id');
         });
     },

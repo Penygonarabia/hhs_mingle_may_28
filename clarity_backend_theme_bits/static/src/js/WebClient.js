@@ -77,7 +77,6 @@ patch(WebClient.prototype, {
                 } else if (pr_record.icon_img) {
                     var icon_image = "<img class='img img-fluid' src='/web/image/ir.ui.menu/"+pr_record.id+"/icon_img' />"
                 } else if (pr_record.web_icon != false) {
-
                     var icon_data = pr_record.web_icon.split('/icon.')
                     if (icon_data[1] == 'svg'){
                         var web_svg_icon = pr_record.web_icon.replace(',', '/')
