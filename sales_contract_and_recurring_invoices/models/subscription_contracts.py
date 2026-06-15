@@ -166,6 +166,27 @@ class SubscriptionContracts(models.Model):
     service_coordinator_mobile = fields.Char(string="Service Coordinator Mobile Number")
     service_coordinator_person = fields.Char(string="Service Coordinator Contact Person")
 
+    # attachment_image_ids = fields.One2many(
+    #     'subscription.contract.image',
+    #     'contract_id',
+    #     string='Attachment Images'
+    # )
+
+    img1 = fields.Image("img1")
+    img1_text = fields.Char("")
+
+    img2 = fields.Image("img2")
+    img2_text = fields.Char("")
+
+    img3 = fields.Image("img3")
+    img3_text = fields.Char("")
+
+    img4 = fields.Image("img4")
+    img4_text = fields.Char("")
+
+    img5 = fields.Image("img5")
+    img5_text = fields.Char("")
+
     # Link to service sale order
     amc_quotation_id = fields.Many2one(
         'service.sale.order',
@@ -1088,3 +1109,21 @@ class SubscriptionContracts(models.Model):
     #     string='Contract payment details',
     #     help='Products to be added in the contract payment'
     # )
+
+
+
+class SubscriptionContractImage(models.Model):
+    _name = 'subscription.contract.image'
+    _description = 'Subscription Contract Images'
+
+    contract_id = fields.Many2one(
+        'subscription.contracts',
+        string='Contract',
+        ondelete='cascade'
+    )
+
+    name = fields.Char("Description")
+    image = fields.Image(
+        string="Image",
+        attachment=True
+    )

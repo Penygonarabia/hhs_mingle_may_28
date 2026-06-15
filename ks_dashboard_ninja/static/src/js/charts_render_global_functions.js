@@ -244,9 +244,24 @@ export function ks_render_graphs(
             );
             //            chart.set("autoFit", true);
             //            root.rtl = true
+            // For bar charts: enforce a wide minimum per-category cell width so
+            // bars stay visually fat regardless of how many categories the
+            // groupby produces. The physical cell width is forced by the
+            // wrapper's CSS min-width (KS_PER_BAR_PX = 110, see below) which
+            // gives Target+Actual two ~38px-wide bars per cell — matching
+            // the Region chart's thickness. minGridDistance here is the
+            // threshold amCharts uses to decide whether a label fits; if it's
+            // set as high as the cell width (110), amCharts auto-HIDES every
+            // other label whenever the actual canvas (before scrolling) is
+            // narrower than ncats*110. So we keep minGridDistance low (30) so
+            // amCharts always renders every category label, while the wrapper
+            // CSS guarantees the bars themselves stay fat with horizontal
+            // scrolling kicking in for dense breakdowns.
             var xRenderer = am5xy.AxisRendererX.new(root, {
-              minGridDistance: 15,
+              minGridDistance: chart_type == "ks_bar_chart" ? 30 : 15,
               minorGridEnabled: true,
+              cellStartLocation: 0.1,
+              cellEndLocation: 0.9,
             });
 
             if (chart_type == "ks_bar_chart") {
@@ -273,6 +288,18 @@ export function ks_render_graphs(
               paddingRight: 10,
               interactive: true,
               pointerEvents: "auto",
+              // oversizedBehavior:"none" keeps a long label from being
+              // suppressed even if its bounding box exceeds the cell — combined
+              // with the forceHidden adapter below, this guarantees every
+              // category gets its label (no auto-skipping of every other one).
+              oversizedBehavior: "none",
+            });
+            // amCharts 5 auto-hides axis labels when it detects they would
+            // overlap or fall too close to a neighbour — that's what was
+            // skipping Week# 2/4/6/... on weekly-status bar charts. Force the
+            // engine to render every label regardless of its overlap heuristic.
+            xRenderer.labels.template.adapters.add("forceHidden", function () {
+              return false;
             });
             xRenderer.labels.template.adapters.add("fontSize", () => ksGetFontSz(13));
 
@@ -391,14 +418,21 @@ export function ks_render_graphs(
 
             xAxis.data.setAll(data);
 
-            // Give each bar a standard minimum width via the wrapper's min-width.
+            // Give each category a standard minimum cell width via the
+            // wrapper's min-width. This MUST match the axis renderer's
+            // minGridDistance so labels and bars line up; otherwise the
+            // wrapper is narrower than what amCharts wants and the chart
+            // squishes labels together horizontally.
             //   width: 100%  -> fills wide tiles, bars spread out (few-bar charts).
-            //   min-width: bars * standard px -> the wrapper never shrinks below the
-            //   bars' standard size, so when the tile is narrower than that the
-            //   wrapper overflows and the card body shows a horizontal scrollbar.
-            // This is pure CSS, so it stays correct when the chart is resized.
+            //   min-width: cats * standard px -> wrapper never shrinks below
+            //   that, so when the tile is narrower the card body shows a
+            //   horizontal scrollbar. Pure CSS — stays correct on resize.
             if (ksScrollWrap && Array.isArray(data)) {
-              var KS_PER_BAR_PX = 55;
+              // Bar charts: 110px per category (matches minGridDistance set
+              // above) — gives Target+Actual two ~38px-wide bars per cell with
+              // 10% padding, so 4-5 digit value labels (~30px wide at
+              // fontSize 10) fit cleanly side-by-side without colliding.
+              var KS_PER_BAR_PX = chart_type == "ks_bar_chart" ? 110 : 55;
               ksScrollWrap.style.width = '100%';
               ksScrollWrap.style.minWidth = (data.length * KS_PER_BAR_PX) + 'px';
             }
@@ -706,19 +740,25 @@ export function ks_render_graphs(
                   });
                 }
               }
-              if ((item.ks_show_data_value == true || isFormatChart) && series) {
+              if (item.ks_show_data_value == true && series) {
+                // Smaller font keeps the value labels readable while letting
+                // Target+Actual sit side-by-side in 110px-wide bar-chart cells
+                // without colliding. Five-digit numbers at fontSize 10 are
+                // ~32px wide — comfortably under the 55px slot each bar gets.
                 series.bullets.push(function () {
                   let labelSprite = am5.Label.new(root, {
                     text: label_format_text,
                     centerY: isFormatChart ? am5.p50 : am5.p100,
                     centerX: isFormatChart ? am5.p0 : am5.p50,
                     populateText: true,
-                    dy: isFormatChart ? 0 : -5,
+                    dy: isFormatChart ? 0 : -3,
                     rotation: isFormatChart ? -90 : 0,
                     paddingLeft: isFormatChart ? 8 : 0,
                     ...(isRtl && { direction: "rtl" }),
                   });
-                  labelSprite.adapters.add("fontSize", () => ksGetFontSz(13));
+                  labelSprite.adapters.add("fontSize", () =>
+                    chart_type == "ks_bar_chart" ? ksGetFontSz(12) : ksGetFontSz(13)
+                  );
                   if (isSalesCostAnalysis) {
                     labelSprite.adapters.add("text", function(text, target) {
                       if (target.dataItem) {
@@ -1066,7 +1106,7 @@ export function ks_render_graphs(
                   });
                 }
               }
-              if ((item.ks_show_data_value == true || isFormatChart) && series) {
+              if (item.ks_show_data_value == true && series) {
                 let label_format_text = isSalesCostAnalysis ? "{valueX.formatNumber('#.00')}" : "{valueX.formatNumber('#')}";
                 series.bullets.push(function () {
                   let labelSprite = am5.Label.new(root, {
@@ -1572,7 +1612,7 @@ export function ks_render_graphs(
                   tooltip: tooltip,
                 });
               }
-              if (item.ks_show_data_value == true || item.name === "Stage-wise Tasks") {
+              if (item.ks_show_data_value == true) {
                 rec.labels.template.setAll({
                   text:
                     item.ks_data_label_type == "value" || item.name === "Stage-wise Tasks"

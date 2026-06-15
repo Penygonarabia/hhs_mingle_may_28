@@ -1,18 +1,19 @@
 """promoter_dashboards / hooks.
 
-post_init_hook imports the three KS Dashboard Ninja boards
-("Promoters", "Promoter - Sales Comparison", "Sales Target") from JSON
-snapshots in data/, then reparents each board's auto-created menu under
-"My Dashboard > Promoter Dashboards" and adopts those menus into this
-module so subsequent module upgrades don't blow them away.
-
-The JSON files are produced by the standard "Export Dashboard" button
-inside KS Dashboard Ninja and re-imported here through the same
-`ks_import_dashboard()` API the wizard uses — so the format is identical.
+post_init_hook imports the two KS Dashboard Ninja boards
+("Promoters", "Promoter - Sales Comparison") from JSON snapshots in
+data/, then attaches the imported boards' actions onto the XML-declared
+placeholder menus under "My Dashboard > Promoter Dashboards".
 
 Re-running this hook (e.g. via `-i promoter_dashboards` after the first
 install) is safe: if a board with the same `ks_dashboard_menu_name`
-already exists, the import is skipped.
+already exists, the import is skipped and we just (re)wire the menu.
+
+The XML in views/promoter_dashboard_menus.xml creates the placeholder
+menus with stable xmlids but no action; this hook is what makes them
+actually open something. If the hook does not run (or aborts), Odoo
+hides those leaf menus and "Promoter Dashboards" renders as an empty
+parent.
 """
 
 import json
@@ -23,39 +24,100 @@ _logger = logging.getLogger(__name__)
 
 
 # Each tuple: (json file in data/, sequence under Promoter Dashboards menu,
-# xmlid suffix to register the menu under in ir_model_data).
-#
-# The Sales Target board was renamed in-place to "Promoter - Sales Comparison"
-# and the original 4-item "Sales Comparison (Actual vs Target)" board was
-# removed — so only TWO dashboards are shipped here now, despite three menus
-# being declared in views/promoter_dashboard_menus.xml. (That XML is kept as
-# placeholder shell only; the post_init_hook adopts whichever live menus the
-# imports create.)
+# xmlid suffix of the placeholder menu declared in
+# views/promoter_dashboard_menus.xml).
 DASHBOARDS = [
     ("promoters_analysis.json",        10, "menu_promoter_dashboard_promoters"),
     ("promoter_sales_comparison.json", 20, "menu_promoter_dashboard_sales_comparison"),
 ]
 
 
-def post_init_hook(env):
-    """Import the 3 JSON dashboards and place their menus under Promoter Dashboards."""
-    Board = env["ks_dashboard_ninja.board"]
+def _read_menu_name(payload):
+    try:
+        decoded = json.loads(payload)
+        return decoded["ks_dashboard_data"][0]["ks_dashboard_menu_name"]
+    except (ValueError, KeyError, IndexError):
+        return None
+
+
+def _resolve_placeholder(env, xmlid_suffix):
+    """Return the placeholder ir.ui.menu, healing a stale ir.model.data row
+    that points to a deleted menu by deleting the orphan row."""
+    ModelData = env["ir.model.data"]
     Menu = env["ir.ui.menu"]
+    md = ModelData.search([
+        ("module", "=", "promoter_dashboards"),
+        ("name", "=", xmlid_suffix),
+    ], limit=1)
+    if not md:
+        return None, None
+    menu = Menu.browse(md.res_id).exists()
+    if not menu:
+        _logger.warning(
+            "promoter_dashboards: xmlid %s points to deleted menu id=%s; pruning.",
+            xmlid_suffix, md.res_id,
+        )
+        md.unlink()
+        return None, None
+    return md, menu
+
+
+def _ensure_client_action(env, board, live_menu):
+    """Return a usable ir.actions.client for the board, creating one if the
+    board has no client action and we cannot recover it from the live menu."""
+    ClientAction = env["ir.actions.client"].sudo()
+
+    action = board.ks_dashboard_client_action_id
+    if action:
+        return action
+
+    if live_menu and live_menu.action:
+        # menu.action is a Reference field "ir.actions.client,<id>"
+        try:
+            model_name, action_id = live_menu.action.split(",")
+            recovered = env[model_name].browse(int(action_id)).exists()
+            if recovered:
+                board.ks_dashboard_client_action_id = recovered
+                return recovered
+        except (ValueError, KeyError):
+            pass
+
+    action = ClientAction.create({
+        "name": board.ks_dashboard_menu_name + " Action",
+        "res_model": "ks_dashboard_ninja.board",
+        "tag": "ks_dashboard_ninja",
+        "params": {
+            "ks_dashboard_id": board.id,
+            "ks_dashboard_name": board.ks_dashboard_menu_name,
+        },
+    })
+    board.ks_dashboard_client_action_id = action
+    return action
+
+
+def post_init_hook(env):
+    """Import the 2 JSON dashboards and wire their actions onto the
+    placeholder menus under "My Dashboard > Promoter Dashboards"."""
+    Board = env["ks_dashboard_ninja.board"]
     ModelData = env["ir.model.data"]
 
-    # Parent menu under which the imported boards' menus must live.
-    # board_menu_root = "My Dashboard" — used as `menu_id` for the import call.
     my_dashboard = env.ref("ks_dashboard_ninja.board_menu_root", raise_if_not_found=False)
     if not my_dashboard:
-        _logger.warning("promoter_dashboards: ks_dashboard_ninja.board_menu_root not found; skipping import.")
+        _logger.warning(
+            "promoter_dashboards: ks_dashboard_ninja.board_menu_root not found; "
+            "skipping import."
+        )
         return
+
     promoter_dashboards_menu = env.ref(
         "promoter_dashboards.promoter_dashboards_menu_root", raise_if_not_found=False
     )
     if not promoter_dashboards_menu:
-        _logger.warning(
-            "promoter_dashboards: promoter_dashboards_menu_root not found; menus will stay at root."
+        _logger.error(
+            "promoter_dashboards: promoter_dashboards_menu_root xmlid missing — "
+            "views/promoter_dashboard_menus.xml did not load. Aborting hook."
         )
+        return
 
     data_dir = os.path.join(os.path.dirname(__file__), "data")
 
@@ -68,56 +130,102 @@ def post_init_hook(env):
         with open(path, "rb") as fh:
             payload = fh.read()
 
-        # Skip if a board with the same menu_name is already present —
-        # this hook is idempotent so `-i promoter_dashboards` after the
-        # first install doesn't duplicate the boards.
-        try:
-            decoded = json.loads(payload)
-            menu_name = decoded["ks_dashboard_data"][0]["ks_dashboard_menu_name"]
-        except (ValueError, KeyError, IndexError):
-            menu_name = None
-        if menu_name and Board.search_count([("ks_dashboard_menu_name", "=", menu_name)]):
-            _logger.info("promoter_dashboards: '%s' already imported; skipping %s.", menu_name, fname)
-            board = Board.search([("ks_dashboard_menu_name", "=", menu_name)], limit=1)
+        menu_name = _read_menu_name(payload)
+        if not menu_name:
+            _logger.warning(
+                "promoter_dashboards: cannot read ks_dashboard_menu_name from %s; "
+                "skipping.", fname,
+            )
+            continue
+
+        # Find-or-import the board. Idempotent: a second install reuses
+        # the existing board instead of duplicating it.
+        board = Board.search([("ks_dashboard_menu_name", "=", menu_name)], limit=1)
+        if board:
+            _logger.info("promoter_dashboards: '%s' already present; reusing.", menu_name)
         else:
             _logger.info("promoter_dashboards: importing %s ...", fname)
-            Board.ks_import_dashboard(payload, my_dashboard)
+            try:
+                Board.ks_import_dashboard(payload, my_dashboard)
+            except Exception:
+                _logger.exception(
+                    "promoter_dashboards: ks_import_dashboard failed for %s; skipping.",
+                    fname,
+                )
+                continue
             board = Board.search([("ks_dashboard_menu_name", "=", menu_name)], limit=1)
 
-        # Now consolidate menus. The XML placeholders (created by
-        # views/promoter_dashboard_menus.xml with the xmlid we own) have NO
-        # action; the auto-created menus from ks_import_dashboard have the
-        # action but no xmlid. We want ONE menu per board: the placeholder
-        # (keeps the stable xmlid) WITH the action attached.
-        if board and board.ks_dashboard_menu_id and promoter_dashboards_menu:
-            new_menu = board.ks_dashboard_menu_id   # has action, no xmlid
-            placeholder = ModelData.search([
-                ("module", "=", "promoter_dashboards"),
-                ("name", "=", xmlid_suffix),
-            ], limit=1)
-            if placeholder and placeholder.res_id != new_menu.id:
-                # Copy the action onto the placeholder, reparent + sequence,
-                # delete the duplicate new menu, and point the board at the
-                # placeholder so future upgrades stay consistent.
-                placeholder_menu = Menu.browse(placeholder.res_id)
-                placeholder_menu.write({
-                    "parent_id": promoter_dashboards_menu.id,
-                    "sequence": sequence,
-                    "action": new_menu.action,
-                })
+        if not board:
+            _logger.warning(
+                "promoter_dashboards: board '%s' not found after import; skipping.",
+                menu_name,
+            )
+            continue
+
+        live_menu = board.ks_dashboard_menu_id  # auto-created by Board.create()
+        md, placeholder_menu = _resolve_placeholder(env, xmlid_suffix)
+
+        # Ensure we have a client action to attach to whichever menu wins.
+        client_action = _ensure_client_action(env, board, live_menu)
+        action_ref = "ir.actions.client,%d" % client_action.id
+
+        if placeholder_menu:
+            # Wire the placeholder: correct parent, sequence, action, active.
+            placeholder_menu.write({
+                "parent_id": promoter_dashboards_menu.id,
+                "sequence": sequence,
+                "active": True,
+                "action": action_ref,
+            })
+            # Point the board at the placeholder so subsequent board edits
+            # (rename, group-access, etc.) keep flowing onto the stable xmlid.
+            if board.ks_dashboard_menu_id.id != placeholder_menu.id:
                 board.write({"ks_dashboard_menu_id": placeholder_menu.id})
-                new_menu.unlink()
-            else:
-                # No placeholder existed — just reparent the new menu and
-                # adopt it into this module's xmlids.
-                new_menu.write({
-                    "parent_id": promoter_dashboards_menu.id,
-                    "sequence": sequence,
-                })
-                ModelData.create({
-                    "module": "promoter_dashboards",
-                    "name": xmlid_suffix,
-                    "model": "ir.ui.menu",
-                    "res_id": new_menu.id,
-                    "noupdate": True,
-                })
+                if live_menu and live_menu.id != placeholder_menu.id:
+                    try:
+                        live_menu.unlink()
+                    except Exception:
+                        _logger.warning(
+                            "promoter_dashboards: could not unlink duplicate menu %s.",
+                            live_menu.id,
+                        )
+            _logger.info(
+                "promoter_dashboards: wired placeholder %s -> board %s (menu=%s, action=%s).",
+                xmlid_suffix, board.id, placeholder_menu.id, client_action.id,
+            )
+            continue
+
+        # No placeholder (XML somehow skipped, or stale row pruned).
+        # Fall back to adopting the live menu under our xmlid namespace so
+        # the user still gets a working menu.
+        if not live_menu:
+            _logger.warning(
+                "promoter_dashboards: no placeholder and no live menu for '%s'; "
+                "creating one.", menu_name,
+            )
+            live_menu = env["ir.ui.menu"].sudo().create({
+                "name": menu_name,
+                "parent_id": promoter_dashboards_menu.id,
+                "sequence": sequence,
+                "action": action_ref,
+            })
+            board.write({"ks_dashboard_menu_id": live_menu.id})
+        else:
+            live_menu.write({
+                "parent_id": promoter_dashboards_menu.id,
+                "sequence": sequence,
+                "active": True,
+                "action": action_ref,
+            })
+
+        ModelData.create({
+            "module": "promoter_dashboards",
+            "name": xmlid_suffix,
+            "model": "ir.ui.menu",
+            "res_id": live_menu.id,
+            "noupdate": True,
+        })
+        _logger.info(
+            "promoter_dashboards: adopted live menu %s under xmlid %s.",
+            live_menu.id, xmlid_suffix,
+        )

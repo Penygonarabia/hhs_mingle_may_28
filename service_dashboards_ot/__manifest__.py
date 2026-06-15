@@ -1,6 +1,6 @@
 {
     "name": "Service Dashboards - OT",
-    "version": "17.0.1.1.0",
+    "version": "17.0.1.3.0",
     "category": "Services",
     "summary": "Service Dashboard View",
     "description": """
@@ -8,7 +8,7 @@
     """,
     "author": "Your Company",
     "website": "https://www.yourcompany.com",
-    "depends": ["base", "project", "product", "machine_repair_management", "dashboard_user_rights_roles", "ks_dashboard_ninja", "ks_dn_advance", "hr_timesheet", "service_dashboards_ct"],
+    "depends": ["base", "project", "product", "machine_repair_management", "dashboard_user_rights_roles", "ks_dashboard_ninja", "ks_dn_advance", "hr_timesheet"],
     "data": [
         "security/ir.model.access.csv",
         "security/service_dashboard_rules.xml",

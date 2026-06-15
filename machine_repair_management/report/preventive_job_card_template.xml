@@ -80,6 +80,7 @@
                 }
                 .section-header-table {
                 width: 100%;
+                margin-top:10
                 }
                 .section-header-en {
                 float: left;
@@ -164,7 +165,7 @@
 
             <div class="report-container">
 
-                <div class="header" style="border-bottom:1px solid #002060; font-size:17pt !important; padding:5px 0;">
+                <div class="header" style="border-bottom:1px solid #002060; font-size:17pt !important; padding:5px 0;margin-bottom:10%">
                     <div class="row" style="font-size:17pt !important;">
                         <div class="col-5 text-left" style="font-size:17pt !important; line-height: 1.3 !important;">
                             <strong>
@@ -197,7 +198,7 @@
                     </div>
                 </div>
                 <!-- BLUE HEADER BAR -->
-                <div style="background-color: #0070C0; color: white; text-align: center; font-weight: bold; font-size: 16px; padding: 5px; margin-bottom: 10px; width: 100%;margin-top:10%">
+                <div style="background-color: #0070C0; color: white; text-align: center; font-weight: bold; font-size: 16px; padding: 5px; margin-bottom: 10px; width: 100%;">
                     Preventive Job Card
                 </div>
 
@@ -451,12 +452,12 @@
                 <!-- (Supports any section_group: General, Unit, Indoor, Outdoor, etc.) -->
                 <t t-set="all_checklist_lines" t-value="doc.checklist_line_ids"/>
 
-                <t t-if="all_checklist_lines">
+                <t t-if="all_checklist_lines"  >
                     <div class="section-header clearfix">
                         <span class="section-header-en">POST SERVICE CHECKLIST</span>
                         <span class="section-header-ar">قائمة فحص ما بعد الخدمة</span>
                     </div>
-                    <table class="data-table">
+                    <table class="data-table" style="margin-top:10%">
                         <thead>
                             <tr>
                                 <th style="width: 6%;" class="text-center">
@@ -548,13 +549,13 @@
                    t-value="doc.checklist_photo_ids.filtered(lambda p: (p.section or '').lower() not in ('before', 'after'))"/>
 
                 <!-- Before Photos Grid -->
-                <t t-if="before_photos">
+                <t t-if="before_photos"  >
                     <div class="section-header clearfix" style="page-break-before: always;">
                         <span class="section-header-en">BEFORE MAINTENANCE PHOTOS</span>
                         <span class="section-header-ar">صور العمل قبل الصيانة</span>
                     </div>
                     <table class="photo-grid-table"
-                           style="width: 100%; border-collapse: collapse; border: 1px solid black;">
+                           style="width: 100%; border-collapse: collapse; border: 1px solid black;margin-top:10%">
                         <t t-foreach="before_photos" t-as="photo">
                             <tr>
                                 <td style="width: 50%; border: 1px solid black; padding: 10px; vertical-align: middle; text-align: center;">
