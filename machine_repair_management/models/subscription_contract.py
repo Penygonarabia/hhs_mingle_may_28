@@ -15,7 +15,7 @@ class SubscriptionContracts(models.Model):
     partner_name = fields.Char(string="Company Name")
 
     #20260616 Gokul for visit count pivot
-    city = fields.Many2one('res.city', string="City" )
+    #city = fields.Many2one('res.city', string="City" )
     # region = fields.Char(string="Region")
 
     # @api.depends('partner_id')
