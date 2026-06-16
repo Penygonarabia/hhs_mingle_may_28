@@ -263,43 +263,12 @@ class CustomerLoyaltyResPartner(models.Model):
             # BONUS
             # -----------------------------
 
-            rec.collected_points_bonus = sum(
-                history.filtered(
-                    lambda x: str(x.clph_doctype) == '99'
-                ).mapped('clph_bonuspoints')
+            rec.balance_points_bonus = sum(
+                history.mapped('clph_bonuspoints')
             )
-
-            rec.redeem_points_bonus = sum(
-                history.filtered(
-                    lambda x: str(x.clph_doctype) == '98'
-                ).mapped('clph_bonuspoints')
-            )
-
-            rec.expired_points_bonus = sum(
-                history.filtered(
-                    lambda x: str(x.clph_doctype) == '97'
-                ).mapped('clph_bonuspoints')
-            )
-
-            # rec.invoice_points_bonus = sum(
-            #     history.filtered(
-            #         lambda x: x.clph_doctype == '01'
-            #     ).mapped('clph_bonuspoints')
-            # )
-            #
-            # rec.credit_note_points_bonus = sum(
-            #     history.filtered(
-            #         lambda x: x.clph_doctype == '02'
-            #     ).mapped('clph_bonuspoints')
-            # )
-
-            rec.balance_points_bonus = (
-                    rec.collected_points_bonus
-                    # + rec.invoice_points_bonus
-                    # - rec.credit_note_points_bonus
-                    - rec.redeem_points_bonus
-                    - rec.expired_points_bonus
-            )
+            rec.collected_points_bonus = 0
+            rec.redeem_points_bonus = 0
+            rec.expired_points_bonus = 0
 
     # def generate_loyalty_transaction_history(self):
     #     history_search=self.env['customer.loyalty.points.history'].search([('clph_cstid','=',self.id)],limit=1)

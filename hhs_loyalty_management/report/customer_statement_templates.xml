@@ -48,71 +48,74 @@
                     <div class="page">
                         <div class="row">
                             <div class="col-12 text-center">
-                                <h2>Customer Loyalty Point Statement</h2>
+                                <h2><strong>Customer Loyalty Point Statement</strong></h2>
                             </div>
                         </div>
 
                         <div class="row mt-4">
                             <div class="col-6">
-                                <strong>Customer Code:</strong>
-                                <span t-field="customer.ref"/>
-                                <br/>
-                                <strong>Customer Details:</strong>
-                                <span t-field="customer.name"/>
-                                <br/>
-                                <strong>Customer Address:</strong>
-                                <br/>
-                                <span t-if="customer.state_id">
-                                    <span t-field="customer.state_id.name"/>
-                                    Region
-                                </span>
-                                <br/>
-                                <span t-if="customer.city">
-                                    <span t-field="customer.city"/>
-                                    City
-                                </span>
-                                <br/>
-                                <span t-field="customer.street"/>
-                                <br/>
-                                <br/>
-                                <strong>Email:</strong>
-                                <span t-field="customer.email"/>
-                                <br/>
-                                <strong>Mobile No:</strong>
-                                <span t-field="customer.mobile"/>
+                                <div class="row">
+                                    <div class="col-4"><strong>Customer Code:</strong></div>
+                                    <div class="col-8"><span t-field="customer.ref"/></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4"><strong>Customer Details:</strong></div>
+                                    <div class="col-8"><span t-field="customer.name"/></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4"><strong>Customer Address:</strong></div>
+                                    <div class="col-8">
+                                        <span t-if="customer.state_id">
+                                            <span t-field="customer.state_id.name"/> Region<br/>
+                                        </span>
+                                        <span t-if="customer.city">
+                                            <span t-field="customer.city"/> City<br/>
+                                        </span>
+                                        <span t-field="customer.street"/>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-4"><strong>Email:</strong></div>
+                                    <div class="col-8"><span t-field="customer.email"/></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4"><strong>Mobile No:</strong></div>
+                                    <div class="col-8"><span t-field="customer.mobile"/></div>
+                                </div>
                             </div>
-                            <div class="col-6 text-end">
-                                <strong>Statement Date:</strong>
-                                <span t-esc="print_date.split(' ')[0]"/>
-                                <br/>
-<!--                                <strong>Printed Date &amp; Time:</strong>-->
-<!--                                <span t-esc="print_date"/>-->
-<!--                                <br/>-->
-                                <strong>Printed Date:</strong>
-                                <t t-esc="period_display"/>
-                                <br/>
-                                <strong>Salesman:</strong>
-                                <span t-field="customer.user_id.name"/>
+                            <div class="col-6">
+                                <div class="row">
+                                    <div class="col-4"><strong>Statement Date:</strong></div>
+                                    <div class="col-8"><span t-esc="print_date.split(' ')[0]"/></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4"><strong>Period:</strong></div>
+                                    <div class="col-8"><t t-esc="period_display"/></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-4"><strong>Salesman:</strong></div>
+                                    <div class="col-8"><span t-field="customer.user_id.name"/></div>
+                                </div>
                             </div>
                         </div>
 
                         <div class="row mt-4">
                             <div class="col-12">
-                                <table class="table table-sm">
+                                <table class="table table-sm table-bordered border-dark">
                                     <thead style="background-color: #f2f2f2;">
                                         <tr>
-                                            <th>Trn Date</th>
-                                            <th>Trn Reference</th>
-                                            <th>Type</th>
-                                            <th class="text-end">Regular Points</th>
-                                            <th class="text-end">Bonus Points</th>
-                                            <th class="text-end">Total Points</th>
+                                            <th class="text-center align-middle"><strong>Date</strong></th>
+                                            <th class="text-center align-middle"><strong>Reference</strong></th>
+                                            <th class="text-center align-middle"><strong>Type</strong></th>
+                                            <th class="text-center align-middle"><strong>Regular Points</strong></th>
+                                            <th class="text-center align-middle"><strong>Bonus Points</strong></th>
+                                            <th class="text-center align-middle"><strong>Total Points</strong></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <!-- Opening Balance -->
-                                        <tr style="background-color: #f9f9f9; font-weight: bold;">
-                                            <td colspan="3">Opening Balance</td>
+                                        <tr style="background-color: #f9f9f9; font-weight: normal;">
+                                            <td colspan="3" class="text-end">Opening Balance</td>
                                             <td class="text-end">
                                                 <span t-esc="opening_balance['regular']"
                                                       t-options='{"widget": "float", "precision": 0}'/>
@@ -129,7 +132,7 @@
 
                                         <!-- Transaction Rows -->
                                         <t t-foreach="transactions" t-as="line">
-                                            <tr>
+                                            <tr style="font-weight: normal;">
                                                 <td>
                                                     <span t-field="line.transaction_date"
                                                           t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
@@ -167,8 +170,8 @@
                                         </t>
 
                                         <!-- Totals -->
-                                        <tr style="font-weight: bold; background-color: #f2f2f2;">
-                                            <td colspan="3" class="text-end">Total:</td>
+                                        <tr style="background-color: #f2f2f2; font-weight: normal;">
+                                            <td colspan="3" class="text-end">Closing Balance:</td>
                                             <td class="text-end">
                                                 <span t-esc="total_regular"
                                                       t-options='{"widget": "float", "precision": 0}'/>

@@ -12,11 +12,12 @@ class LoyaltySalesTableView(models.Model):
     trnh_cstname = fields.Char(string='Customer Name', readonly=True)
     trnh_cstmobile = fields.Char(string='Mobile #', readonly=True)
     tier_name = fields.Char(string='Tier Name', readonly=True)
+    activate_loyalty_feature = fields.Boolean(string="Activate Loyalty Feature", readonly=True)
     trnh_type = fields.Char(string='Transaction Type', readonly=True)
     trnh_whouse = fields.Char(string='Warehouse', readonly=True)
     trnh_no = fields.Char(string='Transaction No', readonly=True)
     trnh_date = fields.Date(string='Transaction Date', readonly=True)
-    trnd_slno = fields.Integer(string='SL #', readonly=True)
+    trnd_slno = fields.Char(string='SL #', readonly=True)
     trnd_group = fields.Char(string='Product Category', readonly=True)
     trnd_part = fields.Char(string='Product #', readonly=True)
     trnd_desc = fields.Char(string='Product Name', readonly=True)
@@ -37,23 +38,24 @@ class LoyaltySalesTableView(models.Model):
                     row_number() OVER () as id,
                     th.trnh_region,
                     th.trnh_city,
-                    th.trnh_sman,
+                    rp.salesman_name as trnh_sman,
                     th.trnh_cstno,
                     th.trnh_cstname,
                     th.trnh_cstmobile,
                     rp.tier_name,
+                    rp.activate_loyalty_feature as activate_loyalty_feature,
                     CASE 
-                        WHEN th.trnh_type = '99' THEN '99 Adjustments'
-                        WHEN th.trnh_type = '98' THEN '98 Redeem'
-                        WHEN th.trnh_type = '97' THEN '97 Expiry'
-                        WHEN th.trnh_type = '01' THEN '01 Invoice'
-                        WHEN th.trnh_type = '02' THEN '02 Credit Note'
+                        WHEN th.trnh_type = '99' THEN 'Adjustments'
+                        WHEN th.trnh_type = '98' THEN 'Redeem'
+                        WHEN th.trnh_type = '97' THEN 'Expiry'
+                        WHEN th.trnh_type = '01' THEN 'Invoice'
+                        WHEN th.trnh_type = '02' THEN 'Credit Note'
                         ELSE th.trnh_type
                     END as trnh_type,
                     th.trnh_whouse,
                     th.trnh_no,
                     TO_DATE(th.trnh_date, 'YYYYMMDD') as trnh_date,
-                    CAST(td.trnd_slno AS INTEGER) as trnd_slno,
+                    CAST(td.trnd_slno AS VARCHAR) as trnd_slno,
                     td.trnd_group,
                     td.trnd_part,
                     td.trnd_desc,

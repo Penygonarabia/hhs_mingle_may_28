@@ -64,14 +64,7 @@
                             <field name="balance_points_regular" readonly="1"/>
                         </group>
                         <group string="Bonus">
-                            <div class="o_form_label"/>
-                            <field name="collected_points_bonus" nolabel="1" readonly="1"/>
-                            <div class="o_form_label"/>
-                            <field name="redeem_points_bonus" nolabel="1" readonly="1"/>
-                            <div class="o_form_label"/>
-                            <field name="expired_points_bonus" nolabel="1" readonly="1"/>
-                            <div class="o_form_label"/>
-                            <field name="balance_points_bonus" nolabel="1" readonly="1"/>
+                            <field name="balance_points_bonus" string="Bonus Points" readonly="1"/>
                         </group>
                     </group>
                 </page>
@@ -115,14 +108,15 @@
                            edit="0"
                            delete="0">
                         <tree string="Transaction History" style="table-layout:fixed;">
-                            <field name="type" style="width:140px;"/>
+                            <field name="clph_doctype" string="Type" style="width:140px;"/>
                             <field name="clph_whouse" style="width:140px;"/>
                             <field name="clph_docnumber" style="width:60px;"/>
-                            <field name="clph_datetime"
+                            <field name="clph_date" string="Date"
                                    options="{'no_create': True,'no_create_edit': True,'no_open': True}"
                                    style="width:140px;"/>
-                            <field name="clph_regpoints" class="text-right" style="width:140px;"/>
-                            <field name="clph_bonuspoint" style="width:140px;"/>
+                            <field name="display_regpoints" string="Regular Points" class="text-right" style="width:140px;"/>
+                            <field name="display_bonuspoints" string="Bonus Points" style="width:140px;"/>
+                            <field name="reason_type_id" style="width:140px;"/>
                             <field name="clph_note" style="width:140px;"/>
                         </tree>
                     </field>

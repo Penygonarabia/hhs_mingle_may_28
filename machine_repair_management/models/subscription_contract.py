@@ -15,23 +15,23 @@ class SubscriptionContracts(models.Model):
     partner_name = fields.Char(string="Company Name")
 
     #20260616 Gokul for visit count pivot
-    city = fields.Many2one('res.city', string="City", compute="_compute_partner_details", store=True, readonly=False)
-    region = fields.Char(string="Region", compute="_compute_partner_details", store=True, readonly=False)
+    city = fields.Many2one('res.city', string="City" )
+    # region = fields.Char(string="Region")
 
-    @api.depends('partner_id')
-    def _compute_partner_details(self):
-        for rec in self:
-            partner = rec.partner_id.commercial_partner_id
-            if partner:
-                if not rec.city:
-                    rec.city = partner.customer_city_id.id
-                if not rec.region:
-                    rec.region = partner.customer_city_id.def_work_center_id.work_center_group_id.name
-                if not rec.work_center_group_id:
-                    rec.work_center_group_id = partner.customer_city_id.def_work_center_id.work_center_group_id.id
-            else:
-                # Optionally clear them if no partner
-                pass
+    # @api.depends('partner_id')
+    # def _compute_partner_details(self):
+    #     for rec in self:
+    #         partner = rec.partner_id.commercial_partner_id
+    #         if partner:
+    #             if not rec.city:
+    #                 rec.city = partner.customer_city_id.id
+    #             if not rec.region:
+    #                 rec.region = partner.customer_city_id.def_work_center_id.work_center_group_id.name
+    #             if not rec.work_center_group_id:
+    #                 rec.work_center_group_id = partner.customer_city_id.def_work_center_id.work_center_group_id.id
+    #         else:
+    #             # Optionally clear them if no partner
+    #             pass
 
 
     # 20260415 gokul

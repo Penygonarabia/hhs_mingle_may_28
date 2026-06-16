@@ -74,9 +74,9 @@ class ReportCustomerStatement(models.AbstractModel):
             print("Opening Bonus:", opening_bonus)
             print("Opening Total:", opening_total)
             
-            total_regular = sum(cust_transactions.mapped('regular_points'))
-            total_bonus = sum(cust_transactions.mapped('bonus_points'))
-            grand_total = sum(cust_transactions.mapped('total_points'))
+            total_regular = opening_regular + sum(cust_transactions.mapped('regular_points'))
+            total_bonus = opening_bonus + sum(cust_transactions.mapped('bonus_points'))
+            grand_total = opening_total + sum(cust_transactions.mapped('total_points'))
             
             customers_data.append({
                 'customer': customer,

@@ -23,6 +23,7 @@ class LoyaltyAuditView(models.Model):
     customer_name = fields.Char(string='Customer Name', readonly=True)
     mobile = fields.Char(string='Mobile #', readonly=True)
     tier_name = fields.Char(string='Tier Name', readonly=True)
+    activate_loyalty_feature = fields.Boolean(string="Activate Loyalty Feature", readonly=True)
 
     # Transaction Information
     transaction_type = fields.Char( string='Transaction Type', readonly=True)
@@ -102,6 +103,7 @@ class LoyaltyAuditView(models.Model):
                     p.name AS customer_name,
                     p.mobile AS mobile,
                     p.tier_name AS tier_name,
+                    p.activate_loyalty_feature AS activate_loyalty_feature,
             
                     CASE
                         WHEN h.clph_doctype = '99' THEN 'adjustment'
@@ -118,30 +120,27 @@ class LoyaltyAuditView(models.Model):
                     END AS warehouse,
             
                     h.clph_docnumber AS transaction_no,
-                    h.clph_datetime AS transaction_date,
+                    h.clph_date AS transaction_date,
             
                     -- Regular Points
                     CASE
-                        WHEN h.clph_doctype = '02'
-                            THEN -COALESCE(h.clph_regpoints, 0)
-                        ELSE
-                            COALESCE(h.clph_regpoints, 0)
+                        WHEN h.clph_doctype IN ('02', '98', '97') THEN -COALESCE(h.clph_regpoints, 0)
+                        WHEN h.clph_doctype = '99' AND h.clph_adjtype = '-' THEN -COALESCE(h.clph_regpoints, 0)
+                        ELSE COALESCE(h.clph_regpoints, 0)
                     END AS regular_points,
             
                     -- Bonus Points
                     CASE
-                        WHEN h.clph_doctype = '02'
-                            THEN -COALESCE(h.clph_bonuspoints, 0)
-                        ELSE
-                            COALESCE(h.clph_bonuspoints, 0)
+                        WHEN h.clph_doctype IN ('02', '98', '97') THEN -COALESCE(h.clph_bonuspoints, 0)
+                        WHEN h.clph_doctype = '99' AND h.clph_adjtype = '-' THEN -COALESCE(h.clph_bonuspoints, 0)
+                        ELSE COALESCE(h.clph_bonuspoints, 0)
                     END AS bonus_points,
             
                     -- Total Points
                     CASE
-                        WHEN h.clph_doctype = '02'
-                            THEN -(COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0))
-                        ELSE
-                            COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0)
+                        WHEN h.clph_doctype IN ('02', '98', '97') THEN -(COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0))
+                        WHEN h.clph_doctype = '99' AND h.clph_adjtype = '-' THEN -(COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0))
+                        ELSE COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0)
                     END AS total_points,
             
                     -- Redemption
@@ -220,9 +219,7 @@ class LoyaltyAuditView(models.Model):
                 LEFT JOIN work_center_group wcg
                     ON wcg.id = wcl.work_center_group_id
             
-                WHERE p.activate_loyalty_feature = TRUE
-            
-                ORDER BY h.clph_datetime DESC
+                ORDER BY h.clph_date DESC
             )
         """ % self._table)
         # self.env.cr.execute("""

@@ -15,7 +15,13 @@
                         <field name="to_date"/>
                     </group>
                     <group string="Filters">
-                        <field name="customer_status" widget="radio"/>
+                        <label for="status_active" string="Customer Status"/>
+                        <div class="o_row">
+                            <field name="status_active"/>
+                            <label for="status_active" string="Active"/>
+                            <field name="status_inactive"/>
+                            <label for="status_inactive" string="Inactive"/>
+                        </div>
                         <field name="show_redeemed_only"/>
                     </group>
                 </group>

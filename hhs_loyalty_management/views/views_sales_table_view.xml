@@ -58,6 +58,10 @@
                 <field name="trnh_cstname"/>
                 <field name="trnh_sman"/>
                 <field name="trnd_part"/>
+                <field name="activate_loyalty_feature"/>
+                <separator/>
+                <filter string="Loyalty Active (Yes)" name="loyalty_active" domain="[('activate_loyalty_feature', '=', True)]"/>
+                <filter string="Loyalty Active (No)" name="loyalty_inactive" domain="[('activate_loyalty_feature', '=', False)]"/>
                 <group expand="1" string="Group By">
                     <filter string="Date" name="group_by_date" context="{'group_by':'trnh_date'}"/>
                     <filter string="Transaction Type" name="group_by_type" context="{'group_by':'trnh_type'}"/>

@@ -97,6 +97,11 @@
                 <field name="mobile"/>
                 <field name="region_id"/>
                 <field name="salesman_id"/>
+                <field name="activate_loyalty_feature"/>
+
+                <separator/>
+                <filter string="Loyalty Active (Yes)" name="loyalty_active" domain="[('activate_loyalty_feature', '=', True)]"/>
+                <filter string="Loyalty Active (No)" name="loyalty_inactive" domain="[('activate_loyalty_feature', '=', False)]"/>
 
                 <filter string="Today" name="today"
                         domain="[('transaction_date', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0))), ('transaction_date', '&lt;=', datetime.datetime.combine(context_today(), datetime.time(23,59,59)))]"/>

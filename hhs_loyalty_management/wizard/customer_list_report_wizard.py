@@ -405,6 +405,8 @@ class CustomerListReportWizard(models.TransientModel):
         grouped = OrderedDict()
 
         for row in rows:
+            if row.get('last_purchase_date'):
+                row['last_purchase_date'] = str(row['last_purchase_date'])
 
             sm_code = row.get('sm_code') or ''
 
@@ -471,6 +473,157 @@ class CustomerListReportWizard(models.TransientModel):
             data=data
         )
 
+    # ==========================================================
+    # EXCEL REPORT
+    # ==========================================================
+
+    def action_generate_excel(self):
+        """Generate and download a styled XLSX report."""
+        self.ensure_one()
+
+        try:
+            import openpyxl
+            from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+            from openpyxl.utils import get_column_letter
+        except ImportError:
+            raise UserError(
+                _("openpyxl is not installed. Please install it to generate Excel reports.")
+            )
+
+        grouped, flat_rows = self._build_report_data()
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = 'Customer List Report'
+
+        # -- Styles --
+        header_font = Font(name='Calibri', bold=True, size=14, color='FFFFFF')
+        header_fill = PatternFill('solid', fgColor='2E86C1')
+        header_align = Alignment(horizontal='center', vertical='center')
+
+        col_header_font = Font(name='Calibri', bold=True, size=11, color='FFFFFF')
+        col_header_fill = PatternFill('solid', fgColor='34495E')
+        col_header_align = Alignment(horizontal='center', vertical='center', wrap_text=True)
+
+        group_font = Font(name='Calibri', bold=True, size=11, color='1B4F72')
+        group_fill = PatternFill('solid', fgColor='D6EAF8')
+
+        data_font = Font(name='Calibri', size=10)
+        data_align = Alignment(vertical='center')
+
+        thin_border = Border(
+            left=Side(style='thin'),
+            right=Side(style='thin'),
+            top=Side(style='thin'),
+            bottom=Side(style='thin'),
+        )
+
+        columns = [
+            ('S.No', 8),
+            ('Customer Code', 18),
+            ('Customer Name', 35),
+            ('Classification', 18),
+            ('Region', 18),
+            ('City', 18),
+            ('Last Purchase Date', 20),
+            ('Salesman Type', 15),
+        ]
+
+        # -- Report Title --
+        ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(columns))
+        title_cell = ws.cell(row=1, column=1, value='Customer List Report')
+        title_cell.font = header_font
+        title_cell.fill = header_fill
+        title_cell.alignment = header_align
+        ws.row_dimensions[1].height = 30
+
+        # -- Company Info --
+        company = self.env.company
+        ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=len(columns))
+        ws.cell(row=2, column=1, value=company.name or '').font = Font(bold=True, size=11)
+
+        row_num = 4
+
+        for sm_code, group_data in grouped.items():
+            # -- Salesman Group Header --
+            sm_name = group_data.get('sm_name', '')
+            sm_stype = group_data.get('sm_stype', '')
+            group_label = f"Salesman: {sm_code} - {sm_name}"
+            if sm_stype:
+                group_label += f" ({sm_stype})"
+
+            ws.merge_cells(start_row=row_num, start_column=1, end_row=row_num, end_column=len(columns))
+            group_cell = ws.cell(row=row_num, column=1, value=group_label)
+            group_cell.font = group_font
+            group_cell.fill = group_fill
+            group_cell.alignment = Alignment(vertical='center')
+            ws.row_dimensions[row_num].height = 22
+            row_num += 1
+
+            # -- Column Headers --
+            for col_idx, (col_name, col_width) in enumerate(columns, 1):
+                cell = ws.cell(row=row_num, column=col_idx, value=col_name)
+                cell.font = col_header_font
+                cell.fill = col_header_fill
+                cell.alignment = col_header_align
+                cell.border = thin_border
+                ws.column_dimensions[get_column_letter(col_idx)].width = col_width
+            row_num += 1
+
+            # -- Data Rows --
+            for idx, cust in enumerate(group_data['customers'], 1):
+                values = [
+                    idx,
+                    cust.get('customer_code', ''),
+                    cust.get('customer_name', ''),
+                    cust.get('classification', ''),
+                    cust.get('region', ''),
+                    cust.get('city', ''),
+                    cust.get('last_purchase_date', ''),
+                    cust.get('sm_stype', ''),
+                ]
+                for col_idx, val in enumerate(values, 1):
+                    cell = ws.cell(row=row_num, column=col_idx, value=val)
+                    cell.font = data_font
+                    cell.alignment = data_align
+                    cell.border = thin_border
+                row_num += 1
+
+            # -- Group Count --
+            count_label = f"Total Customers: {len(group_data['customers'])}"
+            ws.merge_cells(start_row=row_num, start_column=1, end_row=row_num, end_column=len(columns))
+            count_cell = ws.cell(row=row_num, column=1, value=count_label)
+            count_cell.font = Font(bold=True, size=10, italic=True)
+            count_cell.alignment = Alignment(horizontal='right')
+            row_num += 2  # blank row between groups
+
+        # -- Grand Total --
+        ws.merge_cells(start_row=row_num, start_column=1, end_row=row_num, end_column=len(columns))
+        grand_cell = ws.cell(row=row_num, column=1, value=f"Grand Total Customers: {len(flat_rows)}")
+        grand_cell.font = Font(bold=True, size=12, color='FFFFFF')
+        grand_cell.fill = PatternFill('solid', fgColor='2E86C1')
+        grand_cell.alignment = Alignment(horizontal='center', vertical='center')
+
+        # -- Save to binary --
+        import io
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        xlsx_data = base64.b64encode(output.read())
+
+        attachment = self.env['ir.attachment'].create({
+            'name': 'Customer_List_Report.xlsx',
+            'type': 'binary',
+            'datas': xlsx_data,
+            'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        })
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/web/content/{attachment.id}?download=true',
+            'target': 'new',
+        }
+
     def action_send_customer_list_email(self):
         self.ensure_one()
 
@@ -514,10 +667,17 @@ class CustomerListReportWizard(models.TransientModel):
               {self.env.user.name}</p>
           """
 
-        self.env['mail.mail'].create({
+        email_from = (
+            self.env.user.email
+            or self.env.company.email
+            or self.env['ir.mail_server'].sudo().search([], limit=1).smtp_user
+            or 'noreply@hhs.com.sa'
+        )
+
+        self.env['mail.mail'].sudo().create({
             'subject': 'Customer List Report',
             'body_html': body_html,
-            'email_from': self.env.user.email,
+            'email_from': email_from,
             'email_to': email_to,
             'email_cc': email_cc,
             'attachment_ids': [(4, attachment.id)],
@@ -532,13 +692,33 @@ class CustomerListReportWizard(models.TransientModel):
             'company_id': self.env.company.id,
         })
 
+        grouped, flat_rows = wizard._build_report_data()
+        filters = wizard._get_filter_labels()
+
+        data = {
+            'grouped': grouped,
+            'flat_rows': flat_rows,
+            'filters': filters,
+            'wizard_id': wizard.id,
+            'company_dict': {
+                'name': self.env.company.name,
+                'street': self.env.company.street or '',
+                'city': self.env.company.city or '',
+                'phone': self.env.company.phone or '',
+                'logo': self.env.company.logo,
+            },
+            'user_name': self.env.user.name,
+            'printed_at': fields.Datetime.now().strftime('%d-%m-%Y %H:%M'),
+        }
+
         report = self.env.ref(
             'hhs_loyalty_management.action_report_customer_list'
         )
 
         pdf_content, _ = self.env['ir.actions.report']._render_qweb_pdf(
             report.report_name,
-            [wizard.id]
+            [wizard.id],
+            data=data
         )
 
         attachment = self.env['ir.attachment'].create({
@@ -553,6 +733,10 @@ class CustomerListReportWizard(models.TransientModel):
         email_to = params.get_param(
             'hhs_loyalty_management.customer_list_email_ids'
         )
+        
+        if not email_to:
+            _logger.warning("Customer List Report Cron: No email_to configured in Settings. Skipping.")
+            return False
 
         email_cc = params.get_param(
             'hhs_loyalty_management.customer_list_cc_email_ids'
@@ -573,9 +757,17 @@ class CustomerListReportWizard(models.TransientModel):
                 System Generated Mail</p>
             """
 
+        email_from = (
+            self.env.user.email
+            or self.env.company.email
+            or self.env['ir.mail_server'].sudo().search([], limit=1).smtp_user
+            or 'noreply@hhs.com.sa'
+        )
+
         self.env['mail.mail'].create({
             'subject': 'Customer List Report',
             'body_html': body_html,
+            'email_from': email_from,
             'email_to': email_to,
             'email_cc': email_cc,
             'attachment_ids': [(4, attachment.id)],

@@ -439,11 +439,34 @@ class CustomerLoyaltyPointsHistory(models.Model):
     )
     clph_bonuspoint = fields.Integer(string='Bonus Points')
     type = fields.Char(string='Type')
+    
+    display_regpoints = fields.Integer(string='Regular Points', compute='_compute_display_points')
+    display_bonuspoints = fields.Integer(string='Bonus Points', compute='_compute_display_points')
+
+    reason_type_id = fields.Many2one(
+        'manual.promotion.reason.types',
+        string='Reason Type',
+        compute='_compute_reason_type',
+        store=True
+    )
+
+    @api.depends('clph_reasoncode')
+    def _compute_reason_type(self):
+        for rec in self:
+            if rec.clph_reasoncode:
+                reason = self.env['manual.promotion.reason.types'].search([('reason_code', '=', rec.clph_reasoncode)], limit=1)
+                rec.reason_type_id = reason.id
+            else:
+                rec.reason_type_id = False
+
+    @api.depends('clph_regpoints', 'clph_bonuspoints', 'clph_doctype', 'clph_adjtype')
+    def _compute_display_points(self):
+        for rec in self:
+            sign = -1 if (rec.clph_doctype in ['02', '98', '97'] or (rec.clph_doctype == '99' and rec.clph_adjtype == '-')) else 1
+            rec.display_regpoints = (rec.clph_regpoints or 0) * sign
+            rec.display_bonuspoints = (rec.clph_bonuspoints or 0) * sign
+
     # collected_points_regular = fields.Integer(
-    #     string="Collected",
-    #     compute="_compute_loyalty_points",
-    #     store=True
-    # )
 
     def read(self, fields=None, load='_classic_read'):
         res = super(CustomerLoyaltyPointsHistory, self).read(fields, load)

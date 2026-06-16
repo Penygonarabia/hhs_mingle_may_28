@@ -16,7 +16,7 @@ class VisitCountReport(models.Model):
         'project.project',
         string='Project'
     )
-    city=fields.Char(string='City')
+    # city=fields.Char(string='City')
     city=fields.Many2one('res.city',string='City')
 
     #customer_city_id = fields.Many2one('res.city', string='City')
@@ -24,10 +24,10 @@ class VisitCountReport(models.Model):
 
     work_center_group_id = fields.Many2one(
         'work.center.group',
-        string='Region_id',
+        string='Region',
         # compute='_compute_work_center_name'
     )
-    region=fields.Char(string='Region')
+    # region=fields.Char(string='Region')
 
 
 
@@ -59,7 +59,7 @@ class VisitCountReport(models.Model):
                 
                     COALESCE(rp.customer_city_id, cp.customer_city_id) AS city,
                     
-                    wcg.name AS region,
+                  
                 
                     COALESCE(sc.entitlement_prevent, 0) AS entitlement_prevent,
                     COALESCE(sc.actual_prevent_count, 0) AS actual_prevent_count,

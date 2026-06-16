@@ -7,6 +7,7 @@ from dateutil.relativedelta import relativedelta
 
 import io
 import base64
+import re
 
 try:
     import openpyxl
@@ -55,14 +56,13 @@ class LoyaltyPointsSummaryWizard(models.TransientModel):
         domain=[('activate_loyalty_feature', '=', True)],
     )
 
-    customer_status = fields.Selection(
-        selection=[
-            ('active', 'Active'),
-            ('inactive', 'Inactive'),
-        ],
-        string='Customer Status',
-        required=True,
-        default='active',
+    status_active = fields.Boolean(
+        string='Active',
+        default=True,
+    )
+    status_inactive = fields.Boolean(
+        string='Inactive',
+        default=False,
     )
 
     show_redeemed_only = fields.Boolean(
@@ -104,8 +104,11 @@ class LoyaltyPointsSummaryWizard(models.TransientModel):
             partner_ids = self.customer_ids.ids
         else:
             domain = []
-            if self.customer_status == 'active':
+            if self.status_active and not self.status_inactive:
                 domain = [('activate_loyalty_feature', '=', True)]
+            elif self.status_inactive and not self.status_active:
+                domain = [('activate_loyalty_feature', '=', False)]
+            # If both or neither are checked, no filter is applied (show all)
             partners = self.env['res.partner'].sudo().search(domain)
             partner_ids = partners.ids
 
@@ -126,51 +129,55 @@ class LoyaltyPointsSummaryWizard(models.TransientModel):
 
                 -- OPENING BALANCE: net points before from_date
                 COALESCE(SUM(
-                    CASE WHEN h.clph_datetime::date < %(from_date)s THEN
-                        COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0)
-                        - CASE WHEN h.clph_doctype = '98'
-                               THEN COALESCE(h.clph_regpoints, 0) ELSE 0 END
-                        - CASE WHEN h.clph_doctype = '97'
-                               THEN COALESCE(h.clph_regpoints, 0) ELSE 0 END
+                    CASE WHEN h.clph_date < %(from_date)s THEN
+                        CASE WHEN h.clph_doctype = '02' THEN -(COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0))
+                             WHEN h.clph_doctype IN ('98', '97') THEN -(COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0))
+                             WHEN h.clph_doctype = '99' AND h.clph_adjtype = '-' THEN -(COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0))
+                             ELSE COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0)
+                        END
                     ELSE 0 END
                 ), 0)                                           AS opening_balance,
 
                 -- REGULAR POINTS earned in range
                 COALESCE(SUM(
-                    CASE WHEN h.clph_datetime::date BETWEEN %(from_date)s AND %(to_date)s
-                              AND h.clph_doctype = '99'
-                              AND h.clph_adjtype = '+'
-                         THEN COALESCE(h.clph_regpoints, 0) ELSE 0 END
+                    CASE WHEN h.clph_date BETWEEN %(from_date)s AND %(to_date)s THEN
+                        CASE WHEN h.clph_doctype = '01' THEN COALESCE(h.clph_regpoints, 0)
+                             WHEN h.clph_doctype = '99' AND h.clph_adjtype = '+' THEN COALESCE(h.clph_regpoints, 0)
+                             WHEN h.clph_doctype = '99' AND h.clph_adjtype = '-' THEN -COALESCE(h.clph_regpoints, 0)
+                             WHEN h.clph_doctype = '02' THEN -COALESCE(h.clph_regpoints, 0)
+                             ELSE 0
+                        END
+                    ELSE 0 END
                 ), 0)                                           AS regular_points,
 
                 -- BONUS POINTS earned in range
                 COALESCE(SUM(
-                    CASE WHEN h.clph_datetime::date BETWEEN %(from_date)s AND %(to_date)s
-                              AND h.clph_doctype = '99'
-                         THEN COALESCE(h.clph_bonuspoints, 0) ELSE 0 END
+                    CASE WHEN h.clph_date BETWEEN %(from_date)s AND %(to_date)s THEN
+                        CASE WHEN h.clph_doctype = '01' THEN COALESCE(h.clph_bonuspoints, 0)
+                             WHEN h.clph_doctype = '99' AND h.clph_adjtype = '+' THEN COALESCE(h.clph_bonuspoints, 0)
+                             WHEN h.clph_doctype = '99' AND h.clph_adjtype = '-' THEN -COALESCE(h.clph_bonuspoints, 0)
+                             WHEN h.clph_doctype = '02' THEN -COALESCE(h.clph_bonuspoints, 0)
+                             ELSE 0
+                        END
+                    ELSE 0 END
                 ), 0)                                           AS bonus_points,
 
                 -- REDEEMED in range
                 COALESCE(SUM(
-                    CASE WHEN h.clph_datetime::date BETWEEN %(from_date)s AND %(to_date)s
+                    CASE WHEN h.clph_date BETWEEN %(from_date)s AND %(to_date)s
                               AND h.clph_doctype = '98'
                          THEN COALESCE(h.clph_regpoints, 0) ELSE 0 END
                 ), 0)                                           AS redeemed_points,
 
                 -- EXPIRED in range
                 COALESCE(SUM(
-                    CASE WHEN h.clph_datetime::date BETWEEN %(from_date)s AND %(to_date)s
+                    CASE WHEN h.clph_date BETWEEN %(from_date)s AND %(to_date)s
                               AND h.clph_doctype = '97'
                          THEN COALESCE(h.clph_regpoints, 0) ELSE 0 END
                 ), 0)                                           AS expired_points,
 
-                -- TOTAL PURCHASE
-                COALESCE(SUM(
-                    CASE WHEN h.clph_datetime::date BETWEEN %(from_date)s AND %(to_date)s
-                              AND h.clph_adjtype = '+'
-                         THEN COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0)
-                         ELSE 0 END
-                ), 0)                                           AS total_purchase
+                -- TOTAL PURCHASE (set to 0 - purchase price not stored in loyalty history)
+                0                                               AS total_purchase
 
             FROM res_partner p
             LEFT JOIN customer_loyalty_points_history h
@@ -199,7 +206,8 @@ class LoyaltyPointsSummaryWizard(models.TransientModel):
         report_lines = []
         for row in rows:
             row['available_points'] = (
-                row['regular_points']
+                row.get('opening_balance', 0)
+                + row['regular_points']
                 + row['bonus_points']
                 - row['redeemed_points']
                 - row['expired_points']
@@ -308,6 +316,13 @@ class LoyaltyPointsSummaryWizard(models.TransientModel):
         # ---- Data rows -----------------------------------------------
         numeric_cols = {9, 10, 11, 12, 13, 14, 15}  # 1-based col indices
 
+        # Helper to strip illegal XML/Excel control characters from strings
+        def _clean(val):
+            if not isinstance(val, str):
+                return val
+            # Remove characters that openpyxl/Excel cannot handle
+            return re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F]', '', val)
+
         for row_idx, line in enumerate(report_lines, start=1):
             excel_row = header_row + row_idx
             fill = sub_fill_even if row_idx % 2 == 0 else sub_fill_odd
@@ -315,13 +330,13 @@ class LoyaltyPointsSummaryWizard(models.TransientModel):
 
             values = [
                 row_idx,
-                line.get('region') or '',
-                line.get('city') or '',
-                line.get('salesman') or '',
-                line.get('customer_code') or '',
-                line.get('customer_name') or '',
-                line.get('mobile') or '',
-                line.get('tier_name') or '',
+                _clean(line.get('region') or ''),
+                _clean(line.get('city') or ''),
+                _clean(line.get('salesman') or ''),
+                _clean(line.get('customer_code') or ''),
+                _clean(line.get('customer_name') or ''),
+                _clean(line.get('mobile') or ''),
+                _clean(line.get('tier_name') or ''),
                 line.get('opening_balance', 0),
                 line.get('regular_points', 0),
                 line.get('bonus_points', 0),

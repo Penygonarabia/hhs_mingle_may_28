@@ -39,6 +39,8 @@ Features:
         'report/report_promotion.xml',
         'views/views_sales_table_view.xml',
         'data/cron_job_customer_list.xml',
+        'data/customer_statement_cron.xml',
+        'views/customer_notification_views.xml',
         # 'report/loyalty_points_summary_report.xml',
         # 'report/loyalty_points_summary_template.xml',
         # 'security/ir.model.access.csv',
