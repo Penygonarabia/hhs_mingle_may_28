@@ -180,7 +180,8 @@
                     }
                     .header {
                         position: fixed;
-                        margin-top:10px ;
+                        top:10px !important;
+                        margin-bottom:50px;
                         left: 0px;
                         right: 0px;
                         height: 170px;
@@ -205,8 +206,9 @@
 
                     <!-- HEADER -->
                     <div class="header"
-                         style="border-bottom:1px solid #002060; font-size:17pt !important; padding:5px 0;">
-                        <div class="row" style="font-size:17pt !important;">
+                             style="border-bottom:1px solid #002060;font-size:17pt;padding:5px 0; width:100%;">
+                        
+                         <div class="row" style="font-size:17pt !important;">
                             <div class="col-5 text-left"
                                  style="font-size:17pt !important; line-height: 1.3 !important;">
                                 <strong>
@@ -239,7 +241,7 @@
                                     </span>
                                 </strong>
                             </div>
-                        </div>
+                        </div> 
                     </div>
 
                     <!-- BLUE HEADER BAR -->

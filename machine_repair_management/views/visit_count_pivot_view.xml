@@ -71,10 +71,10 @@
         <field name="model">visit.count.report</field>
         <field name="arch" type="xml">
             <tree>
-
+                <field name="partner_id"/>
                 <field name="work_center_group_id"/>
                 <field name="city"/>
-                <field name="partner_id"/>
+               
                 <field name="sales_person_user_id"/>
 
                 <field name="entitlement_prevent"/>
@@ -88,7 +88,7 @@
             </tree>
         </field>
     </record>
-    <record id="view_subscription_contract_graph" model="ir.ui.view">
+    <!-- <record id="view_subscription_contract_graph" model="ir.ui.view">
         <field name="name">visit.count.report.graph</field>
         <field name="model">visit.count.report</field>
         <field name="arch" type="xml">
@@ -106,12 +106,12 @@
 
             </graph>
         </field>
-    </record>
+    </record> -->
     <record id="action_subscription_contract_visit_analysis"
             model="ir.actions.act_window">
         <field name="name">Visit Count Analysis</field>
         <field name="res_model">visit.count.report</field>
-        <field name="view_mode">pivot,graph,tree</field>
+        <field name="view_mode">pivot,tree</field>
         <field name="search_view_id" ref="view_subscription_contract_search"/>
     </record>
     <menuitem id="menu_visit_count_report"
