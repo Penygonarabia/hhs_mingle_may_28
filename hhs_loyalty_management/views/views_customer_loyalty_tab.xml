@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <!-- Add Loyalty tab after Partner Assignment -->
             <xpath expr="//notebook" position="inside">
-                <page string="Loyalty" name="loyalty_tab" groups="hhs_loyalty_management.group_loyalty_program_user">
+                <page string="Loyalty" name="loyalty_tab" groups="hhs_loyalty_management.group_loyalty_program_user" invisible="context.get('hide_loyalty_tabs')">
                     <group>
                         <group string="Loyalty Details">
                             <field name="activate_loyalty_feature"/>
@@ -21,7 +21,9 @@
             <xpath expr="//notebook" position="inside">
                 <page string="Loyalty Point Setup"
                       name="applicable_loyalty"
-                      groups="hhs_loyalty_management.group_loyalty_program_user">
+                      groups="hhs_loyalty_management.group_loyalty_program_user"
+                      invisible="context.get('hide_loyalty_tabs')"
+                      >
 
                     <field name="applicable_loyalty_line_ids">
                         <tree editable="bottom">
@@ -52,7 +54,9 @@
             <xpath expr="//page[@name='applicable_loyalty']" position="after">
                 <page string="Tier"
                       name="tier_tab"
-                      groups="hhs_loyalty_management.group_loyalty_program_user">
+                      groups="hhs_loyalty_management.group_loyalty_program_user"
+                      invisible="context.get('hide_loyalty_tabs')"
+                      >
                     <group>
                         <field name="tier_name"/>
                     </group>
@@ -74,7 +78,9 @@
             <xpath expr="//page[@name='tier_tab']" position="after">
                 <page string="Loyalty Transaction History"
                       name="loyalty_transaction_history_tab"
-                      groups="hhs_loyalty_management.group_loyalty_program_user">
+                      groups="hhs_loyalty_management.group_loyalty_program_user"
+                       invisible="context.get('hide_loyalty_tabs')"
+                      >
                     <!--                    <header>-->
                     <!--                        <button name="generate_loyalty_transaction_history" type="object"-->
                     <!--                                class="btn-primary"></button>-->
@@ -125,7 +131,9 @@
             <xpath expr="//page[@name='loyalty_transaction_history_tab']" position="before">
                 <page string="Tier Movement History"
                       name="tier_movement_history_tab"
-                      groups="hhs_loyalty_management.group_loyalty_program_user">
+                      groups="hhs_loyalty_management.group_loyalty_program_user"
+                      invisible="context.get('hide_loyalty_tabs')"
+                      >
                     <field name="tier_movement_history_ids"
                            readonly="1"
                            create="0"
