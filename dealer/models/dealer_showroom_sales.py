@@ -223,6 +223,11 @@ class dealerShowroomSales(models.Model):
                     is_dealer = True
 
             if is_dealer:
+                # Check Dealer Limit unconditionally
+                base_dealer_limit = float(params.get_param('dealer.dealer_sales_limit', default=100.0))
+                if total_qty >= base_dealer_limit:
+                    rec.requires_approval = True
+
                 dealer_required = params.get_param('dealer.dealer_promotion_multiplier_required')
                 if dealer_required and dealer_required != 'False':
                     from_date = _parse_date(params.get_param('dealer.dealer_promotion_from_date', ''))
@@ -237,6 +242,11 @@ class dealerShowroomSales(models.Model):
                         if total_qty >= dealer_sales_limit:
                             rec.requires_approval = True
             else:
+                # Check Retailer Limit unconditionally
+                base_retailer_limit = float(params.get_param('dealer.retailer_sales_limit', default=25.0))
+                if total_qty >= base_retailer_limit:
+                    rec.requires_approval = True
+
                 gen_required = params.get_param('dealer.general_promotion_multiplier_required')
                 if gen_required and gen_required != 'False':
                     from_date = _parse_date(params.get_param('dealer.general_promotion_from_date', ''))
@@ -479,11 +489,8 @@ class dealerShowroomSales(models.Model):
                     min_qty = float(params.get_param('dealer.dealer_promotion_minimum_quantity', default=0.0))
                     total_qty = sum(abs(line.qty) for line in self.line_ids) if self.line_ids else abs(self.qty or 0)
                     
-                    # Step 4 & 5: Apply appropriate sales limit (Dealer -> Dealer Sales Limit)
-                    dealer_sales_limit = float(params.get_param('dealer.dealer_sales_limit', default=100.0))
-                    
-                    # Step 6: Grant promotion only if validations pass (quantity >= limit)
-                    if total_qty >= min_qty and total_qty >= dealer_sales_limit:
+                    # Grant promotion if minimum quantity is met
+                    if total_qty >= min_qty:
                         return float(params.get_param('dealer.dealer_promotion_multiplier_value', default=1.0))
 
         # Check General Multiplier
@@ -500,14 +507,8 @@ class dealerShowroomSales(models.Model):
                 valid_date = False
             
             if valid_date:
-                total_qty = sum(abs(line.qty) for line in self.line_ids) if self.line_ids else abs(self.qty or 0)
-                
-                # Step 4 & 5: Apply appropriate sales limit (General/Retailer -> Retailer Sales Limit)
-                retailer_sales_limit = float(params.get_param('dealer.retailer_sales_limit', default=25.0))
-                
-                # Step 6: Grant promotion only if validations pass (quantity >= limit)
-                if total_qty >= retailer_sales_limit:
-                    return float(params.get_param('dealer.general_promotion_multiplier_value', default=1.0))
+                # Grant promotion as long as the date is valid
+                return float(params.get_param('dealer.general_promotion_multiplier_value', default=1.0))
                 
         return 1.0
 
