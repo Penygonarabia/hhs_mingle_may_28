@@ -50,4 +50,6 @@ from . import project_task
 from . import account_move
 from . import dashboard_user_rights
 
+from . import visit_count_pivot
+
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

@@ -296,8 +296,9 @@ workshop machine repair
     "support": "contact@probuse.com",
     "images": ["static/description/image.png"],
     # 'live_test_url': 'https://youtu.be/SlbnxqauQss',
-    #'live_test_url':'https://youtu.be/WWsLMNKipjY',
-    "live_test_url": "https://probuseappdemo.com/probuse_apps/machine_repair_management/408",  #'https://youtu.be/rZZxMm6L3Ew',
+    # 'live_test_url':'https://youtu.be/WWsLMNKipjY',
+    "live_test_url": "https://probuseappdemo.com/probuse_apps/machine_repair_management/408",
+    # 'https://youtu.be/rZZxMm6L3Ew',
     "version": "7.8.2",
     "category": "Services/Project",
     "depends": [
@@ -306,7 +307,7 @@ workshop machine repair
         #                 'hr_timesheet_sheet',
         "project",
         "hr_timesheet",
-        #'website_portal',
+        # 'website_portal',
         "portal",
         "sales_team",
         "stock",
@@ -494,10 +495,11 @@ workshop machine repair
         "views/subscription_contract_views.xml",
         "views/project_task_views.xml",
         "views/views_account_move.xml",
-        
+
         "datas/data_service_product_cron.xml",
         "views/dashboard_rights_views.xml",
         "report/contract_invoice_report_template.xml",
+        "views/visit_count_pivot_view.xml",
     ],
     "installable": True,
     "application": True,
