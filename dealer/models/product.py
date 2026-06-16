@@ -45,12 +45,15 @@ class ProductProduct(models.Model):
         compute='_compute_show_dealer_menu'
     )
 
+    @api.depends_context('show_only_default_code')
     def _compute_display_name(self):
         super()._compute_display_name()
         if self._context.get('show_only_default_code'):
-            for record in self:
-                if record.default_code:
-                    record.display_name = record.default_code
+            is_mobile_only = self.env.user.has_group('dealer.group_dealer_user') and not self.env.user.has_group('dealer.group_dealer_backoffice_user')
+            if is_mobile_only:
+                for record in self:
+                    if record.default_code:
+                        record.display_name = record.default_code
 
     @api.depends()
     def _compute_show_dealer_menu(self):

@@ -1,5 +1,5 @@
 from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError,AccessError
+from odoo.exceptions import ValidationError, UserError,AccessError
 from datetime import datetime, date,time, timezone,timedelta
 from math import radians, sin, cos, sqrt, atan2
 import re 
@@ -169,7 +169,7 @@ class dealerShowroomSales(models.Model):
                 rec.month = 0
 
     
-    invoice_no = fields.Char(string='Invoice No', required=True, readonly=True, copy=False, default=lambda self: self._get_default_invoice_no())
+    invoice_no = fields.Char(string='Invoice No', required=True, copy=False)
 
     @api.model
     def _get_default_invoice_no(self):
@@ -191,6 +191,66 @@ class dealerShowroomSales(models.Model):
         ('approved', 'Approved'),
         ('rejected', 'Rejected')
     ], string='Status', default='draft', tracking=True)
+    
+    requires_approval = fields.Boolean(
+        string='Requires Approval',
+        compute='_compute_requires_approval',
+        store=True
+    )
+
+    @api.depends('dealer_id', 'line_ids.qty', 'date_time')
+    def _compute_requires_approval(self):
+        for rec in self:
+            rec.requires_approval = False
+            params = self.env['ir.config_parameter'].sudo()
+            
+            from odoo.fields import Date as FieldDate
+            def _parse_date(val):
+                if val and val != 'False':
+                    try: return FieldDate.to_date(val)
+                    except Exception: return False
+                return False
+
+            current_date = (rec.date_time or fields.Datetime.now()).date()
+            total_qty = sum(abs(line.qty) for line in rec.line_ids) if rec.line_ids else abs(rec.qty or 0)
+
+            is_dealer = False
+            if rec.dealer_id:
+                is_cust = getattr(rec.dealer_id, 'partner_type_hhs', False) == 'customer'
+                is_sub_dealer = getattr(rec.dealer_id, 'sub_partner_type', False) == 'dealer'
+                is_req = getattr(rec.dealer_id, 'dealersalesman_required', False)
+                if is_cust and is_sub_dealer and is_req:
+                    is_dealer = True
+
+            if is_dealer:
+                dealer_required = params.get_param('dealer.dealer_promotion_multiplier_required')
+                if dealer_required and dealer_required != 'False':
+                    from_date = _parse_date(params.get_param('dealer.dealer_promotion_from_date', ''))
+                    to_date = _parse_date(params.get_param('dealer.dealer_promotion_to_date', ''))
+                    
+                    valid_date = True
+                    if from_date and current_date < from_date: valid_date = False
+                    if to_date and current_date > to_date: valid_date = False
+                    
+                    if valid_date:
+                        dealer_sales_limit = float(params.get_param('dealer.dealer_sales_limit', default=100.0))
+                        if total_qty >= dealer_sales_limit:
+                            rec.requires_approval = True
+            else:
+                gen_required = params.get_param('dealer.general_promotion_multiplier_required')
+                if gen_required and gen_required != 'False':
+                    from_date = _parse_date(params.get_param('dealer.general_promotion_from_date', ''))
+                    to_date = _parse_date(params.get_param('dealer.general_promotion_to_date', ''))
+                    
+                    valid_date = True
+                    if from_date and current_date < from_date: valid_date = False
+                    if to_date and current_date > to_date: valid_date = False
+                    
+                    if valid_date:
+                        retailer_sales_limit = float(params.get_param('dealer.retailer_sales_limit', default=25.0))
+                        if total_qty >= retailer_sales_limit:
+                            rec.requires_approval = True
+
     invoice_attachment = fields.Binary(string='Invoice Attachment')
     invoice_attachment_name = fields.Char(string='Attachment Name')
     
@@ -205,9 +265,9 @@ class dealerShowroomSales(models.Model):
         for rec in self:
             if rec.state != 'draft':
                 if not rec.line_ids:
-                    raise ValidationError(_("At least one sales entry (line) is required!"))
+                    raise UserError(_("At least one sales entry (line) is required!"))
                 if not any(line.product_id for line in rec.line_ids):
-                    raise ValidationError(_("At least one product entry must be selected in the sales lines!"))
+                    raise UserError(_("At least one product entry must be selected in the sales lines!"))
 
     attachment_ids = fields.Many2many(
         'ir.attachment',
@@ -220,10 +280,13 @@ class dealerShowroomSales(models.Model):
     def action_submit(self):
         for rec in self:
             if not rec.line_ids:
-                raise ValidationError("At least one sales line is required.")
+                raise UserError("At least one sales line is required.")
             if not any(line.product_id for line in rec.line_ids):
-                raise ValidationError("At least one product entry must be selected in the sales lines.")
-            rec.state = 'submitted'
+                raise UserError("At least one product entry must be selected in the sales lines.")
+            if rec.requires_approval:
+                rec.state = 'submitted'
+            else:
+                rec.state = 'approved'
 
     def action_open_add_item_wizard(self):
         self.ensure_one()
@@ -390,7 +453,7 @@ class dealerShowroomSales(models.Model):
 
         current_date = (self.date_time or fields.Datetime.now()).date()
 
-        # 1. Check Dealer Multiplier
+        # Step 1 & 2: Identify promotion type (Dealer vs General)
         is_dealer = False
         if self.dealer_id:
             is_cust = getattr(self.dealer_id, 'partner_type_hhs', False) == 'customer'
@@ -404,6 +467,8 @@ class dealerShowroomSales(models.Model):
             if dealer_required and dealer_required != 'False':
                 from_date = _parse_date(params.get_param('dealer.dealer_promotion_from_date', ''))
                 to_date = _parse_date(params.get_param('dealer.dealer_promotion_to_date', ''))
+                
+                # Step 1: Check promotion validity date
                 valid_date = True
                 if from_date and current_date < from_date:
                     valid_date = False
@@ -413,14 +478,21 @@ class dealerShowroomSales(models.Model):
                 if valid_date:
                     min_qty = float(params.get_param('dealer.dealer_promotion_minimum_quantity', default=0.0))
                     total_qty = sum(abs(line.qty) for line in self.line_ids) if self.line_ids else abs(self.qty or 0)
-                    if total_qty >= min_qty:
+                    
+                    # Step 4 & 5: Apply appropriate sales limit (Dealer -> Dealer Sales Limit)
+                    dealer_sales_limit = float(params.get_param('dealer.dealer_sales_limit', default=100.0))
+                    
+                    # Step 6: Grant promotion only if validations pass (quantity >= limit)
+                    if total_qty >= min_qty and total_qty >= dealer_sales_limit:
                         return float(params.get_param('dealer.dealer_promotion_multiplier_value', default=1.0))
 
-        # 2. Check General Multiplier
+        # Check General Multiplier
         gen_required = params.get_param('dealer.general_promotion_multiplier_required')
         if gen_required and gen_required != 'False':
             from_date = _parse_date(params.get_param('dealer.general_promotion_from_date', ''))
             to_date = _parse_date(params.get_param('dealer.general_promotion_to_date', ''))
+            
+            # Step 1: Check promotion validity date
             valid_date = True
             if from_date and current_date < from_date:
                 valid_date = False
@@ -428,7 +500,14 @@ class dealerShowroomSales(models.Model):
                 valid_date = False
             
             if valid_date:
-                return float(params.get_param('dealer.general_promotion_multiplier_value', default=1.0))
+                total_qty = sum(abs(line.qty) for line in self.line_ids) if self.line_ids else abs(self.qty or 0)
+                
+                # Step 4 & 5: Apply appropriate sales limit (General/Retailer -> Retailer Sales Limit)
+                retailer_sales_limit = float(params.get_param('dealer.retailer_sales_limit', default=25.0))
+                
+                # Step 6: Grant promotion only if validations pass (quantity >= limit)
+                if total_qty >= retailer_sales_limit:
+                    return float(params.get_param('dealer.general_promotion_multiplier_value', default=1.0))
                 
         return 1.0
 

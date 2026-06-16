@@ -7,7 +7,9 @@
         <field name="arch" type="xml">
             <form >
                 <header>
-                    <button name="action_submit" string="Submit" type="object" class="oe_highlight" invisible="state != 'draft'" />
+                    <field name="requires_approval" invisible="1"/>
+                    <button name="action_submit" string="Send to Approve" type="object" class="oe_highlight" invisible="state != 'draft' or not requires_approval" />
+                    <button name="action_submit" string="Submit" type="object" class="oe_highlight" invisible="state != 'draft' or requires_approval" />
                     <field name="state" widget="statusbar" statusbar_visible="draft,submitted"/>
                 </header>
                 <sheet>
@@ -57,16 +59,16 @@
                             <div style="text-align: center; width: 100%; padding-bottom: 10px;">
                                 <button name="action_open_add_item_wizard" string="Add Item" type="object" class="mobile-full-btn mobvw" icon="fa-plus" invisible="state != 'draft'"/>
                             </div>
-                            <field name="line_ids" readonly="state != 'draft' or dealer_mobile_user_bool">
+                            <field name="line_ids" readonly="state != 'draft'">
                                 <tree editable="bottom">
                                     <field name="product_category_id" width="150px" domain="[('parent_id','=', False), ('name', '!=', 'All')]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
                                     <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
                                     <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
-                                    <field name="product_id" width="150px" context="{'show_only_default_code': True}" domain="[('product_sub_group_id', '=', product_subgroup_id), ('show_in_dealer_app', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
+                                    <field name="product_id" width="150px" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" domain="[('product_sub_group_id', '=', product_subgroup_id), ('show_in_dealer_app', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
                                     <field name="product_name" width="200px"/>
                                     <field name="capacity" width="80px"/>
                                     <field name="qty" width="80px"/>
-                                    <field name="fsm_loyalty_points" width="100px" readonly="1"/>
+                                    <field name="fsm_loyalty_points" width="100px" readonly="1" widget="integer"/>
                                 </tree>
                             </field>
                         </page>
@@ -89,7 +91,7 @@
         <field name="name">dsales.showroom.sales.tree</field>
         <field name="model">dsales.showroom.sales</field>
         <field name="arch" type="xml">
-            <tree string="Showroom Sales" js_class="dealer_showroom_sales_list_controller">
+            <tree string="Showroom Sales">
                 <field name="invoice_no"/>
                 <field name="dealer_id"/>
                 <field name="dealer_showroom_id"/>
@@ -135,6 +137,7 @@
     <field name="arch" type="xml">
         <kanban class="o_kanban_small_column">
             <!-- Declare all fields used in the template -->
+            <field name="invoice_no"/>
             <field name="dealer_id"/>
             <field name="date_time"/>
 
@@ -151,11 +154,13 @@
                             </span>
                         </t> -->
 
-                        <div style="display:flex; justify-content:space-between; font-weight:bold; margin-top:2px;">
-                            <div t-if="record.date_time">
+                        <div style="display:flex; flex-direction:column; font-weight:bold; margin-top:2px;">
+                            <div t-if="record.invoice_no">
+                                <t t-esc="record.invoice_no.value"/>
+                            </div>
+                            <div t-if="record.date_time" style="margin-top:2px; font-weight:normal;">
                                 <t t-esc="record.date_time.value"/>
                             </div>
-
                         </div>
 
                         <!-- Date & Time -->

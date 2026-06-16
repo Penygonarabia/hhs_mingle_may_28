@@ -155,8 +155,8 @@ class DealerShowroomInvoice(models.Model):
         except Exception:
             has_auth = False
         try:
-            # Check if current user is selected as default authority by someone who has the primary auth
-            is_delegate = bool(self.env['res.users'].sudo().search([('default_authority_id', '=', user.id)]))
+            # Check if current user has default_authority checked
+            is_delegate = bool(user.default_authority)
         except Exception:
             is_delegate = False
         return has_auth or is_delegate

@@ -12,9 +12,9 @@
                 <field name="dealer_city_id"
                        readonly="not dealer_salesman" required="dealer_salesman"/>
                 <field name="floor_sales_approval_auth" string="Floor Sales Invoice Approval Authority"/>
-                <field name="default_authority_id" readonly="not floor_sales_approval_auth" force_save="1"/>
+                <field name="default_authority"/>
             </group>
-            <group string="Dealer Roles">
+            <group string="Dealer Roles" groups="base.group_no_one">
                 <field name="groups_id" widget="many2many_tags" options="{'no_create': True}"
                        domain="[('category_id', '=', %(dealer.module_category_dealer)d)]"
                        string="Dealer Groups"/>

@@ -1,5 +1,5 @@
 from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, UserError
 
 class ResUsers(models.Model):
     _inherit = "res.users"
@@ -14,21 +14,39 @@ class ResUsers(models.Model):
         default=False
     )
 
-    @api.constrains('floor_sales_approval_auth')
-    def _check_single_floor_sales_auth(self):
+    @api.model_create_multi
+    def create(self, vals_list):
+        users = super().create(vals_list)
+        group = self.env.ref('dealer.group_floor_sales_approval', raise_if_not_found=False)
+        if group:
+            for user in users:
+                if user.floor_sales_approval_auth:
+                    group.sudo().write({'users': [(4, user.id)]})
+        return users
+
+    def write(self, vals):
+        res = super().write(vals)
+        if 'floor_sales_approval_auth' in vals:
+            group = self.env.ref('dealer.group_floor_sales_approval', raise_if_not_found=False)
+            if group:
+                for user in self:
+                    if user.floor_sales_approval_auth:
+                        group.sudo().write({'users': [(4, user.id)]})
+                    else:
+                        group.sudo().write({'users': [(3, user.id)]})
+        return res
+
+    default_authority = fields.Boolean(string="Default Authority", default=False)
+    
+    # Legacy field kept to prevent parse errors during module upgrade
+    default_authority_id = fields.Many2one('res.users', string="Legacy Authority (Do Not Use)")
+
+    @api.constrains('default_authority')
+    def _check_single_default_authority(self):
         for record in self:
-            if record.floor_sales_approval_auth:
-                if self.search_count([('floor_sales_approval_auth', '=', True)]) > 1:
-                    raise ValidationError(_("Only one Floor Sales Invoice Approval Authority user is allowed for the whole project."))
-
-    default_authority = fields.Boolean(string="Legacy Dummy Field")
-
-    default_authority_id = fields.Many2one('res.users', string="Default Authority")
-
-    @api.onchange('floor_sales_approval_auth')
-    def _onchange_floor_sales_approval_auth(self):
-        if not self.floor_sales_approval_auth:
-            self.default_authority_id = False
+            if record.default_authority:
+                if self.search_count([('default_authority', '=', True)]) > 1:
+                    raise UserError(_("Only one Default Authority user is allowed for the whole project."))
 
 
     dealer_city_id = fields.Many2one(
