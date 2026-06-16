@@ -56,6 +56,7 @@ This module allows you to:
     # ✅ Add this line to load the new pivot view
     'views/vi_monthly_sales_target_views.xml',
     'views/res_config_settings_view.xml',
+    'views/dealer_sales_line_wizard.xml',
     'report/fsm_loyalty_redemption_report.xml',
 ],
 

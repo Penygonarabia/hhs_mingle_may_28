@@ -19,9 +19,11 @@ def haversine(lat1, lon1, lat2, lon2):
 class dealerShowroomSales(models.Model):
     _name = 'dsales.showroom.sales'
     _description = 'Review Showroom Sales'
-    _rec_name = 'name'
+    _rec_name = 'invoice_no'
     _order = 'date_time desc'
     _inherit = ['mail.thread', 'mail.activity.mixin']
+
+    # Using python constrains instead of _sql_constraints so it works even if old duplicate records exist
 
     name = fields.Char(
         string="Redemption Reference",
@@ -65,55 +67,6 @@ class dealerShowroomSales(models.Model):
         default=fields.Datetime.now,
         required=True
     )
-
-    invoice_id = fields.Many2one('dsales.showroom.invoice', string='Invoice Reference', ondelete='cascade')
-    approval_state = fields.Selection(related='invoice_id.state', store=True, string='Approval Status')
-    
-    calculated_points = fields.Float(string='Calculated Points', compute='_compute_points', store=True)
-    multiplier_applied = fields.Float(string='Multiplier Applied', compute='_compute_points', store=True)
-    final_points = fields.Float(string='Final Points', compute='_compute_points', store=True)
-
-    @api.depends('qty', 'product_id', 'date_time', 'dealer_id')
-    def _compute_points(self):
-        params = self.env['ir.config_parameter'].sudo()
-        gen_req = params.get_param('dealer.gen_promo_required')
-        dealer_req = params.get_param('dealer.dealer_promo_required')
-        
-        for rec in self:
-            calc = (abs(rec.qty) * rec.product_id.fsm_loyalty_points) if (rec.product_id and rec.qty) else 0.0
-            if rec.is_sales_return:
-                calc = -calc
-                
-            rec.calculated_points = calc
-            multiplier = 1.0
-            
-            rec_date = rec.date_time.date() if rec.date_time else fields.Date.context_today(self)
-            
-            # check general
-            if gen_req:
-                f_date = params.get_param('dealer.gen_promo_from')
-                t_date = params.get_param('dealer.gen_promo_to')
-                if f_date and t_date and str(rec_date) >= f_date and str(rec_date) <= t_date:
-                    val = params.get_param('dealer.gen_promo_multiplier')
-                    if val:
-                        multiplier *= float(val)
-            
-            # check dealer
-            if dealer_req:
-                f_date = params.get_param('dealer.dealer_promo_from')
-                t_date = params.get_param('dealer.dealer_promo_to')
-                min_qty = int(params.get_param('dealer.dealer_promo_min_qty') or 1)
-                if f_date and t_date and str(rec_date) >= f_date and str(rec_date) <= t_date:
-                    if abs(rec.qty) >= min_qty:
-                        val = params.get_param('dealer.dealer_promo_multiplier')
-                        if val:
-                            multiplier *= float(val)
-                            
-            rec.multiplier_applied = multiplier
-            rec.final_points = rec.calculated_points * multiplier
-
-    # limits are now checked on the invoice header level
-
 
     # product_category_id = fields.Many2one('t.groupsdesc', string='Category',required=True)
     # group_id = fields.Many2one('t.productsdesc', string='Group',required=True) 
@@ -176,39 +129,14 @@ class dealerShowroomSales(models.Model):
     subgroup_id = fields.Many2one('product.category',string="Product Sub Group",
                                         context=lambda self: {'show_only_name': True})
                                         
-    product_id = fields.Many2one('product.product', string="Model",required=True)
-    product_description = fields.Char(related='product_id.name', string='Description', readonly=True)
-
-    @api.onchange('subgroup_id', 'invoice_id')
-    def _onchange_product_filtering(self):
-        domain = [
-            ('show_in_dealer_app', '=', True),
-            ('is_outdoor_unit', '=', False),
-            ('is_midea_brand', '=', True)
-        ]
-        if self.subgroup_id:
-            domain.append(('product_tmpl_id.categ_id', 'child_of', self.subgroup_id.id))
-            
-        params = self.env['ir.config_parameter'].sudo()
-        if params.get_param('dealer.filter_dealer_purchases') and self.invoice_id and self.invoice_id.dealer_id:
-            sales = self.env['sale.order'].search([
-                ('partner_id', '=', self.invoice_id.dealer_id.id),
-                ('state', 'in', ['sale', 'done'])
-            ])
-            purchased_products = sales.mapped('order_line.product_id').ids
-            if purchased_products:
-                domain.append(('id', 'in', purchased_products))
-            else:
-                domain.append(('id', 'in', []))
-                
-        return {'domain': {'product_id': domain}}
+    product_id = fields.Many2one('product.product', string="Model",required=False)
     
 
     size_id = fields.Many2one('product.size', string='Capacity', compute="_compute_capacity")
     
     is_sales_return = fields.Boolean(string="Sales Return", help="Enable this option to record a sales return. "
          "This will allow negative quantities, and Notes will be mandatory.")
-    qty = fields.Integer(string='Quantity',required=True)
+    qty = fields.Integer(string='Quantity',required=False)
     notes = fields.Text(string='Notes')
 
     @api.onchange('is_sales_return')
@@ -240,7 +168,85 @@ class dealerShowroomSales(models.Model):
                 rec.year = 0
                 rec.month = 0
 
-    # Attachment moved to header
+    
+    invoice_no = fields.Char(string='Invoice No', required=True, readonly=True, copy=False, default=lambda self: self._get_default_invoice_no())
+
+    @api.model
+    def _get_default_invoice_no(self):
+        seq = self.env['ir.sequence'].search([('name', '=', 'SALES_ENTRY')], limit=1)
+        if seq:
+            return seq.next_by_id()
+        return self.env['ir.sequence'].next_by_code('SALES_ENTRY') or 'New'
+
+    @api.constrains('invoice_no')
+    def _check_unique_invoice_no(self):
+        for rec in self:
+            if rec.invoice_no:
+                if self.search_count([('invoice_no', '=', rec.invoice_no)]) > 1:
+                    raise ValidationError(_("Invoice Number must be unique! Duplicate found: %s") % rec.invoice_no)
+
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('submitted', 'Submitted'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected')
+    ], string='Status', default='draft', tracking=True)
+    invoice_attachment = fields.Binary(string='Invoice Attachment')
+    invoice_attachment_name = fields.Char(string='Attachment Name')
+    
+    line_ids = fields.One2many(
+        'dsales.showroom.sales.line',
+        'sales_id',
+        string="Sales Lines"
+    )
+
+    @api.constrains('line_ids', 'state')
+    def _check_at_least_one_line(self):
+        for rec in self:
+            if rec.state != 'draft':
+                if not rec.line_ids:
+                    raise ValidationError(_("At least one sales entry (line) is required!"))
+                if not any(line.product_id for line in rec.line_ids):
+                    raise ValidationError(_("At least one product entry must be selected in the sales lines!"))
+
+    attachment_ids = fields.Many2many(
+        'ir.attachment',
+        'dealer_shop_sales_attachment_rel',
+        'sales_id',
+        'attachment_id',
+        string='Attachments'
+    )
+
+    def action_submit(self):
+        for rec in self:
+            if not rec.line_ids:
+                raise ValidationError("At least one sales line is required.")
+            if not any(line.product_id for line in rec.line_ids):
+                raise ValidationError("At least one product entry must be selected in the sales lines.")
+            rec.state = 'submitted'
+
+    def action_open_add_item_wizard(self):
+        self.ensure_one()
+        return {
+            'name': _('Add Item'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'dealer.sales.line.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_sales_id': self.id}
+        }
+
+    def action_approve(self):
+        for rec in self:
+            rec.state = 'approved'
+
+    def action_reject(self):
+        for rec in self:
+            rec.state = 'rejected'
+            self._send_whatsapp_notification(rec)
+
+    def _send_whatsapp_notification(self, rec):
+        _logger.info(f"WhatsApp Notification: Sales record {rec.invoice_no} rejected for Salesman {rec.user_id.name if rec.user_id else ''}")
 
     def _default_dealer_mobile_user_bool(self): 
         return bool(self.env.user.has_group('dealer.group_dealer_user'))    
@@ -355,16 +361,90 @@ class dealerShowroomSales(models.Model):
 
     fsm_loyalty_points = fields.Float("Loyalty Points", compute='_compute_fsm_loyalty_points', store=True)
 
+    applied_multiplier = fields.Float(
+        string="Applied Multiplier",
+        compute="_compute_applied_multiplier",
+        store=True,
+        help="The final multiplier applied to loyalty points for this invoice."
+    )
 
-    @api.depends('product_id', 'qty', 'is_sales_return')
+    @api.depends('dealer_id', 'line_ids.qty', 'date_time')
+    def _compute_applied_multiplier(self):
+        for rec in self:
+            raw_multiplier = rec._get_raw_multiplier()
+            total_qty = sum(abs(line.qty) for line in rec.line_ids) if rec.line_ids else abs(rec.qty or 0)
+            rec.applied_multiplier = total_qty * raw_multiplier
+
+    def _get_raw_multiplier(self):
+        self.ensure_one()
+        params = self.env['ir.config_parameter'].sudo()
+        
+        from odoo.fields import Date as FieldDate
+        def _parse_date(val):
+            if val and val != 'False':
+                try:
+                    return FieldDate.to_date(val)
+                except Exception:
+                    return False
+            return False
+
+        current_date = (self.date_time or fields.Datetime.now()).date()
+
+        # 1. Check Dealer Multiplier
+        is_dealer = False
+        if self.dealer_id:
+            is_cust = getattr(self.dealer_id, 'partner_type_hhs', False) == 'customer'
+            is_sub_dealer = getattr(self.dealer_id, 'sub_partner_type', False) == 'dealer'
+            is_req = getattr(self.dealer_id, 'dealersalesman_required', False)
+            if is_cust and is_sub_dealer and is_req:
+                is_dealer = True
+
+        if is_dealer:
+            dealer_required = params.get_param('dealer.dealer_promotion_multiplier_required')
+            if dealer_required and dealer_required != 'False':
+                from_date = _parse_date(params.get_param('dealer.dealer_promotion_from_date', ''))
+                to_date = _parse_date(params.get_param('dealer.dealer_promotion_to_date', ''))
+                valid_date = True
+                if from_date and current_date < from_date:
+                    valid_date = False
+                if to_date and current_date > to_date:
+                    valid_date = False
+                
+                if valid_date:
+                    min_qty = float(params.get_param('dealer.dealer_promotion_minimum_quantity', default=0.0))
+                    total_qty = sum(abs(line.qty) for line in self.line_ids) if self.line_ids else abs(self.qty or 0)
+                    if total_qty >= min_qty:
+                        return float(params.get_param('dealer.dealer_promotion_multiplier_value', default=1.0))
+
+        # 2. Check General Multiplier
+        gen_required = params.get_param('dealer.general_promotion_multiplier_required')
+        if gen_required and gen_required != 'False':
+            from_date = _parse_date(params.get_param('dealer.general_promotion_from_date', ''))
+            to_date = _parse_date(params.get_param('dealer.general_promotion_to_date', ''))
+            valid_date = True
+            if from_date and current_date < from_date:
+                valid_date = False
+            if to_date and current_date > to_date:
+                valid_date = False
+            
+            if valid_date:
+                return float(params.get_param('dealer.general_promotion_multiplier_value', default=1.0))
+                
+        return 1.0
+
+    @api.depends('product_id', 'qty', 'is_sales_return', 'line_ids.qty', 'dealer_id')
     def _compute_fsm_loyalty_points(self):
         for rec in self:
             if rec.product_id and rec.qty:
+                multiplier = rec._get_applicable_multiplier()
                 qty = abs(rec.qty)
+                points = qty * rec.product_id.fsm_loyalty_points * multiplier
                 if rec.is_sales_return:
-                    rec.fsm_loyalty_points = -1 * qty * rec.product_id.fsm_loyalty_points
+                    rec.fsm_loyalty_points = -1 * points
                 else:
-                    rec.fsm_loyalty_points = qty * rec.product_id.fsm_loyalty_points
+                    rec.fsm_loyalty_points = points
+            else:
+                rec.fsm_loyalty_points = 0.0
 
 
     @api.constrains("current_latitude", "current_longitude", "dealer_showroom_id", "city_id", "district_id")
@@ -529,34 +609,32 @@ class dealerShowroomSales(models.Model):
         # -------------------------------------------------
         # FSM LOYALTY AUDIT CREATION
         # -------------------------------------------------
-        if record.product_id and record.qty:
+        for line in record.line_ids:
+            if line.product_id and line.qty:
+                loyalty_points = line.fsm_loyalty_points
+                trans_type = '2' if record.is_sales_return else '1'
 
-            # Always control sign safely
-            base_points = record.qty * record.product_id.fsm_loyalty_points
-            loyalty_points = -abs(base_points) if record.is_sales_return else abs(base_points)
-            trans_type = '2' if record.is_sales_return else '1'
+                salesman_id = (
+                    record.dealer_assignment_id.sale_dealer_id.id
+                    if record.dealer_assignment_id and record.dealer_assignment_id.sale_dealer_id
+                    else self.env.user.id
+                )
 
-            salesman_id = (
-                record.dealer_assignment_id.sale_dealer_id.id
-                if record.dealer_assignment_id and record.dealer_assignment_id.sale_dealer_id
-                else self.env.user.id
-            )
+                if not record.dealer_id:
+                    raise ValidationError(_("Dealer is required for Loyalty Audit."))
 
-            if not record.dealer_id:
-                raise ValidationError(_("Dealer is required for Loyalty Audit."))
-
-            self.env['fsm.loyalty.audit'].create({
-                'date_time': record.date_time or fields.Datetime.now(),
-                'dealer_id': record.dealer_id.id,
-                'salesman_id': salesman_id,
-                'location_id': record.dealer_showroom_id.id if record.dealer_showroom_id else False,
-                'type': trans_type,
-                'qty': record.qty,
-                'loyalty_points': record.final_points if record.final_points else loyalty_points,
-                'amount_paid': 0,
-                'reference': self.env['ir.sequence'].next_by_code('dsales.showroom.sales'),
-                'notes': record.notes,
-            })
+                self.env['fsm.loyalty.audit'].create({
+                    'date_time': record.date_time or fields.Datetime.now(),
+                    'dealer_id': record.dealer_id.id,
+                    'salesman_id': salesman_id,
+                    'location_id': record.dealer_showroom_id.id if record.dealer_showroom_id else False,
+                    'type': trans_type,
+                    'qty': line.qty,
+                    'loyalty_points': loyalty_points,
+                    'amount_paid': 0,
+                    'reference': record.invoice_no or self.env['ir.sequence'].next_by_code('dsales.showroom.sales'),
+                    'notes': record.notes,
+                })
 
                 # except Exception as e:
                 #     _logger.error("FSM Loyalty Audit creation failed: %s", str(e))
@@ -607,11 +685,21 @@ class dealerShowroomSales(models.Model):
 
         # Save old target keys and quantities
         for record in self:
-            old_data.append({
-                'record': record,
-                'key': self._get_target_key(record),
-                'qty': int(record.qty or 0),
-            })
+            for line in record.line_ids:
+                old_data.append({
+                    'record': record,
+                    'line': line,
+                    'key': self._get_target_key(record, line),
+                    'qty': int(line.qty or 0),
+                })
+            # Also keep old header qty in case old records without lines are edited
+            if record.qty:
+                old_data.append({
+                    'record': record,
+                    'line': None,
+                    'key': self._get_target_key(record),
+                    'qty': int(record.qty),
+                })
 
         res = super().write(vals)
 
@@ -619,22 +707,33 @@ class dealerShowroomSales(models.Model):
             record = data['record']
             old_key = data['key']
             old_qty = data['qty']
+            line = data.get('line')
 
             # Subtract old quantity from old target
             old_target = target_obj.search(old_key, limit=1)
             if old_target:
                 old_target.actual_qty = max(0, old_target.actual_qty - old_qty)
 
-            # Add new quantity to new target
-            new_key = self._get_target_key(record)
-            new_qty = int(record.qty or 0)
-            new_target = target_obj.search(new_key, limit=1)
+        # After super().write, process new quantities.
+        for record in self:
+            for line in record.line_ids:
+                new_key = self._get_target_key(record, line)
+                new_qty = int(line.qty or 0)
+                new_target = target_obj.search(new_key, limit=1)
 
-            # ✅ Allow both mobile & back-office to create if missing
-            if new_target:
-                new_target.actual_qty += new_qty
-            else:
-                self._create_target(record)
+                if new_target:
+                    new_target.actual_qty += new_qty
+                else:
+                    self._create_target(record, line)
+            
+            if record.qty:
+                new_key = self._get_target_key(record)
+                new_qty = int(record.qty or 0)
+                new_target = target_obj.search(new_key, limit=1)
+                if new_target:
+                    new_target.actual_qty += new_qty
+                else:
+                    self._create_target(record)
 
         return res
 
@@ -655,26 +754,24 @@ class dealerShowroomSales(models.Model):
                     )
 
             # Adjust actual_qty before deleting
-            old_qty = int(record.qty or 0)
-            if old_qty:
+            for line in record.line_ids:
+                old_qty = int(line.qty or 0)
+                if old_qty:
+                    target_domain = record._get_target_key(record, line)
+                    old_target = target_obj.search(target_domain, limit=1)
+                    if old_target:
+                        old_target.actual_qty = max(0, old_target.actual_qty - old_qty)
+            if record.qty:
+                old_qty = int(record.qty)
                 target_domain = record._get_target_key(record)
                 old_target = target_obj.search(target_domain, limit=1)
                 if old_target:
                     old_target.actual_qty = max(0, old_target.actual_qty - old_qty)
-                    _logger.info(
-                        "Sales target %s adjusted: -%s (new actual_qty=%s)",
-                        old_target.id, old_qty, old_target.actual_qty
-                    )
-                else:
-                    _logger.warning(
-                        "No matching sales.target found for record %s with key %s",
-                        record.id, target_domain
-                    )
 
         return super().unlink()
 
 
-    def _get_target_key(self, record):
+    def _get_target_key(self, record, line=None):
         """Returns the search domain for the corresponding sales.target record."""
         
         # Helper to safely get related field
@@ -692,9 +789,9 @@ class dealerShowroomSales(models.Model):
             ('dealer_id', '=', safe(record.dealer_id)),
             ('dealer_showroom_id', '=', safe(record.dealer_showroom_id)),
             ('sale_dealer_id', '=', record.dealer_assignment_id.sale_dealer_id.id if record.dealer_assignment_id and record.dealer_assignment_id.sale_dealer_id else False),
-            ('franchise_id', '=', record.product_category_id.id if record.product_category_id else False),
-            ('group_id', '=', safe(record.group_id)),
-            ('subgroup_id', '=', safe(record.subgroup_id)),
+            ('franchise_id', '=', line.product_category_id.id if line and line.product_category_id else (record.product_category_id.id if record.product_category_id else False)),
+            ('group_id', '=', safe(line.product_group_id) if line else safe(record.group_id)),
+            ('subgroup_id', '=', safe(line.product_subgroup_id) if line else safe(record.subgroup_id)),
             ('year', '=', year_str),
             ('month', '=', month_str),
         ]
@@ -702,32 +799,22 @@ class dealerShowroomSales(models.Model):
     def _update_target_on_create(self, record, create_if_missing=True):
         """
         Update sales.target when a sales record is created.
-        - If target exists: increment actual_qty
-        - If not exists:
-            * Back-office: create a new one
-            * Mobile: skip creation (only update allowed)
         """
         target_obj = self.env['dealer.sales.target']
-        key = self._get_target_key(record)
-        qty = int(record.qty or 0)
+        lines_to_process = record.line_ids if record.line_ids else [None]
+        for line in lines_to_process:
+            if not line and not record.qty:
+                continue
+            key = self._get_target_key(record, line)
+            qty = int(line.qty or 0) if line else int(record.qty or 0)
 
-        target_record = target_obj.search(key, limit=1)
-        if target_record:
-            _logger.info(
-                "Updating sales.target ID %s | Old actual_qty=%s | Adding qty=%s | New actual_qty=%s",
-                target_record.id, target_record.actual_qty, qty, target_record.actual_qty + qty
-            )
-            target_record.actual_qty += qty
-        elif create_if_missing:
-            _logger.info("No sales.target found → Creating new one")
-            self._create_target(record)
-        else:
-            _logger.warning(
-                "Mobile user tried to create sales.target → skipped | key=%s | qty=%s",
-                key, qty
-            )
+            target_record = target_obj.search(key, limit=1)
+            if target_record:
+                target_record.actual_qty += qty
+            elif create_if_missing:
+                self._create_target(record, line)
 
-    def _create_target(self, record):
+    def _create_target(self, record, line=None):
         """Create a new sales.target record from a sales record."""
         
         # Helper to safely get id or fallback
@@ -742,11 +829,14 @@ class dealerShowroomSales(models.Model):
         salesman_name = salesman.name if salesman else ""
 
         # Extract franchise info
-        franchise = record.product_category_id
+        franchise = line.product_category_id if line else record.product_category_id
         franchise_id = safe_id(franchise)
         franchise_code = getattr(franchise, 'code', "")
         franchise_name = getattr(franchise, 'name', "")
-        capacity = record.size_id.display_name if record.size_id else False
+        capacity = line.capacity if line else (record.size_id.display_name if record.size_id else False)
+        actual_qty = int(line.qty or 0) if line else int(record.qty or 0)
+        group_id = safe_id(line.product_group_id) if line else safe_id(record.group_id)
+        subgroup_id = safe_id(line.product_subgroup_id) if line else safe_id(record.subgroup_id)
 
         # Extract region/city/showroom
         region_name = record.region_id.with_context(lang='en_US').name if record.region_id else ""
@@ -765,12 +855,12 @@ class dealerShowroomSales(models.Model):
             'dealer_showroom_id': showroom_id,
             'sale_dealer_id': sale_dealer_id,
             'franchise_id': franchise_id,
-            'group_id': safe_id(record.group_id),
-            'subgroup_id': safe_id(record.subgroup_id),
+            'group_id': group_id,
+            'subgroup_id': subgroup_id,
             'year': year_str,
             'month': month_str,
             'target_qty': 0,
-            'actual_qty': int(record.qty or 0),
+            'actual_qty': actual_qty,
             'capacity': capacity,
             'franchise_code': franchise_code,
             'franchise_name': franchise_name,
@@ -795,19 +885,18 @@ class dealerShowroomSales(models.Model):
                             f"Hi {rec.user_id.name}, you can only edit sales entries for today."
                         )
 
-    @api.constrains('qty', 'is_sales_return', 'notes')
+    @api.constrains('is_sales_return', 'notes', 'line_ids')
     def _check_sales_return(self):
-        for line in self:
-            # Rule 1: For normal sales (not a return) → qty must be > 0
-            if not line.is_sales_return and line.qty <= 0:
-                raise ValidationError("Quantity must be greater than zero.")
-
-            # Rule 2: For sales return → notes must be provided
-            if line.is_sales_return and (not line.notes or not line.notes.strip()):
+        for record in self:
+            if not record.line_ids:
+                pass # Or raise error if mandatory, but wait until submission
+            for line in record.line_ids:
+                if not record.is_sales_return and line.qty <= 0:
+                    raise ValidationError("Quantity must be greater than zero.")
+                if record.is_sales_return and line.qty >= 0:
+                    raise ValidationError("For Sales Return, Quantity must be negative and cannot be zero.")
+            if record.is_sales_return and (not record.notes or not record.notes.strip()):
                 raise ValidationError("Notes are mandatory for Sales Return.")
-             # Rule 3: Quantity cannot be zero
-            if line.is_sales_return and line.qty >= 0:
-                raise ValidationError("For Sales Return, Quantity must be negative and cannot be zero.")
 
     @api.onchange('product_category_id')
     def _onchange_product_category_id(self):
@@ -948,3 +1037,85 @@ class dealerShowroomSales(models.Model):
         return super(dealerShowroomSales, self).search_fetch(
             domain, field_names, offset, limit, order
         )
+class DealerShowroomSalesLine(models.Model):
+    _name = 'dsales.showroom.sales.line'
+    _description = 'Showroom Sales Line'
+
+    sales_id = fields.Many2one('dsales.showroom.sales', string='Sales', required=True, ondelete='cascade')
+
+    product_category_id = fields.Many2one('product.category', string="Product Category", domain="[('parent_id','=',False),('name', '!=', 'All')]")
+    product_group_id = fields.Many2one('product.category', string="Product Group", context={'show_only_name': True})
+    product_subgroup_id = fields.Many2one('product.category', string="Product Sub Group", context={'show_only_name': True})
+    product_id = fields.Many2one('product.product', string="Model")
+
+    product_name = fields.Char(related='product_id.name', string='Name', readonly=True)
+    capacity = fields.Char(string='Capacity', compute="_compute_capacity", store=True)
+    fsm_loyalty_points = fields.Float("Loyalty Points", compute='_compute_fsm_loyalty_points', store=True)
+    qty = fields.Integer(string='Qty', required=True, default=1)
+
+    @api.depends('product_id')
+    def _compute_capacity(self):
+        for rec in self:
+            rec.capacity = False
+            if rec.product_id and rec.product_id.name:
+                text = rec.product_id.name
+                match = re.search(r'\b\d+[A-Z]\b', text)
+                if match:
+                    rec.capacity = match.group()
+
+    @api.depends('product_id', 'qty', 'sales_id.is_sales_return', 'sales_id.line_ids.qty', 'sales_id.dealer_id')
+    def _compute_fsm_loyalty_points(self):
+        for rec in self:
+            if rec.product_id and rec.qty:
+                raw_multiplier = rec.sales_id._get_raw_multiplier() if rec.sales_id else 1.0
+                qty = abs(rec.qty)
+                points = qty * rec.product_id.fsm_loyalty_points * raw_multiplier
+                if rec.sales_id and rec.sales_id.is_sales_return:
+                    rec.fsm_loyalty_points = -1 * points
+                else:
+                    rec.fsm_loyalty_points = points
+            else:
+                rec.fsm_loyalty_points = 0.0
+
+    @api.onchange('product_category_id')
+    def _onchange_product_category_id(self):
+        for rec in self:
+            rec.product_group_id = False
+            rec.product_subgroup_id = False
+            rec.product_id = False
+            domain = []
+            if rec.product_category_id:
+                domain = [('parent_id', '=', rec.product_category_id.id)]
+            return {'domain': {'product_group_id': domain}}
+
+    @api.onchange('product_group_id')
+    def _onchange_product_group_id(self):
+        for rec in self:
+            rec.product_subgroup_id = False
+            rec.product_id = False
+            domain = []
+            if rec.product_group_id:
+                domain = [('parent_id', '=', rec.product_group_id.id)]
+            return {'domain': {'product_subgroup_id': domain}}
+
+    @api.onchange('product_subgroup_id')
+    def _onchange_product_subgroup_id(self):
+        for rec in self:
+            rec.product_id = False
+            domain = []
+            if rec.product_subgroup_id:
+                domain.append(('product_tmpl_id.categ_id', 'child_of', rec.product_subgroup_id.id))
+            return {'domain': {'product_id': domain}}
+
+    @api.onchange('product_id')
+    def _onchange_product_id(self):
+        for rec in self:
+            if not rec.product_id or not rec.product_id.categ_id:
+                continue
+            categ = rec.product_id.categ_id
+            if not rec.product_subgroup_id:
+                rec.product_subgroup_id = categ
+            if not rec.product_group_id and categ.parent_id:
+                rec.product_group_id = categ.parent_id
+            if not rec.product_category_id and categ.parent_id and categ.parent_id.parent_id:
+                rec.product_category_id = categ.parent_id.parent_id

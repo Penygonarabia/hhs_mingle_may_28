@@ -1,160 +1,117 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- Form View -->
+
+    <!-- ================================================================
+         FORM VIEW (Back-office Approval)
+    ================================================================ -->
     <record id="view_dsales_showroom_invoice_form" model="ir.ui.view">
         <field name="name">dsales.showroom.invoice.form</field>
         <field name="model">dsales.showroom.invoice</field>
         <field name="arch" type="xml">
             <form string="Approve Shop Sales">
                 <header>
-                    <button name="action_submit" type="object" string="Submit" invisible="state != 'draft'" class="oe_highlight"/>
-                    <button name="action_approve" type="object" string="Approve" invisible="state not in ('submitted', 'pending')" class="oe_highlight" groups="dealer.group_dealer_backoffice_user"/>
-                    <button name="action_reject" type="object" string="Reject" invisible="state not in ('submitted', 'pending')" groups="dealer.group_dealer_backoffice_user"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,pending,approved,rejected"/>
+                    <button name="action_approve" type="object" string="Approve"
+                            invisible="state in ('approved','rejected')" class="oe_highlight"
+                            groups="dealer.group_dealer_backoffice_user"/>
+                    <button name="action_reject"  type="object" string="Reject"
+                            invisible="state in ('approved','rejected')"
+                            groups="dealer.group_dealer_backoffice_user"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="approved,rejected"/>
                 </header>
                 <sheet>
                     <group>
-                        <group>
-                            <field name="invoice_number" readonly="state != 'draft'"/>
-                            <field name="dealer_id" readonly="state != 'draft'"/>
-                            <field name="dealer_showroom_id" readonly="state != 'draft'"/>
-                            <field name="salesman_id" readonly="state != 'draft'"/>
-                        </group>
-                        <group>
-                            <field name="date_time" readonly="state != 'draft'"/>
-                            <field name="reject_reason" invisible="state != 'rejected'"/>
-                        </group>
+                        <field name="dealer_id"          readonly="state != 'draft'"/>
+                        <field name="dealer_showroom_id" readonly="state != 'draft'"/>
+                        <field name="salesman_id"        readonly="state != 'draft'"/>
+                        <field name="invoice_number"     readonly="state != 'draft'"/>
+                        <field name="date_time"          readonly="state != 'draft'"/>
                     </group>
+
+                    <!-- Reject Reason: shown for backoffice when approving/rejecting -->
+                    <group 
+                           groups="dealer.group_dealer_backoffice_user">
+                        <field name="reject_reason" colspan="2"
+                               placeholder="Enter rejection reason here (required for Reject)..."
+                               readonly="state == 'rejected'"/>
+                    </group>
+
                     <notebook>
-                        <page string="Product Details">
-                            <field name="sale_line_ids" readonly="state != 'draft'">
-                                <tree>
-                                    <field name="product_id"/>
-                                    <field name="qty"/>
-                                    <field name="calculated_points"/>
-                                    <field name="multiplier_applied"/>
-                                    <field name="final_points"/>
-                                </tree>
-                            </field>
-                        </page>
-                        <page string="Invoice Scan Copy">
-                            <field name="attachment_ids" widget="many2many_binary" readonly="state != 'draft'"/>
+                        <page string="Item Details">
+                            <div class="row w-100 m-0">
+                                <div class="col-12 col-md-8 p-0 pe-md-4">
+                                    <field name="sale_line_ids" readonly="1" nolabel="1" class="w-100">
+                                        <tree create="0" edit="0" delete="0">
+                                            <field name="product_category_id" string="Category"/>
+                                            <field name="product_group_id"    string="Group"/>
+                                            <field name="product_subgroup_id" string="Sub Group"/>
+                                            <field name="product_id"          string="Model"/>
+                                            <field name="product_name"        string="Name"/>
+                                            <field name="capacity"/>
+                                            <field name="qty"/>
+                                        </tree>
+                                    </field>
+                                </div>
+                                <div class="col-12 col-md-4 p-0">
+                                    <div style="font-size:15px;font-weight:bold;color: #070808ff;margin-top: 0px;margin-bottom: 10px;">Invoice Scan Copy</div>
+                                    <field name="invoice_attachment"
+                                           nolabel="1"
+                                           widget="image"
+                                           options="{'size': [512, 512]}"
+                                           readonly="1"
+                                           class="w-100"/>
+                                </div>
+                            </div>
                         </page>
                     </notebook>
+
                 </sheet>
                 <div class="oe_chatter">
                     <field name="message_follower_ids" widget="mail_followers"/>
-                    <field name="activity_ids" widget="mail_activity"/>
-                    <field name="message_ids" widget="mail_thread"/>
+                    <field name="activity_ids"         widget="mail_activity"/>
+                    <field name="message_ids"          widget="mail_thread"/>
                 </div>
             </form>
         </field>
     </record>
 
-    <!-- Tree View -->
-    <record id="view_dsales_showroom_invoice_tree" model="ir.ui.view">
-        <field name="name">dsales.showroom.invoice.tree</field>
-        <field name="model">dsales.showroom.invoice</field>
-        <field name="arch" type="xml">
-            <tree string="Approve Shop Sales" decoration-info="state == 'draft'" decoration-warning="state in ('submitted','pending')" decoration-success="state == 'approved'" decoration-danger="state == 'rejected'">
-                <field name="invoice_number"/>
-                <field name="dealer_id"/>
-                <field name="dealer_showroom_id"/>
-                <field name="salesman_id"/>
-                <field name="date_time"/>
-                <field name="state"/>
-            </tree>
-        </field>
-    </record>
+    <!-- ================================================================
+         TREE VIEW
+    ================================================================ -->
+<record id="view_dsales_showroom_invoice_tree" model="ir.ui.view">
+    <field name="name">dsales.showroom.invoice.tree</field>
+    <field name="model">dsales.showroom.invoice</field>
+    <field name="arch" type="xml">
+        <tree string="Approve Shop Sales">
+            <field name="dealer_id"/>
+            <field name="dealer_showroom_id"/>
+            <field name="salesman_id"/>
+            <field name="invoice_number"/>
+            <field name="date_time"/>
+            <field name="state"/>
+        </tree>
+    </field>
+</record>
 
-    <!-- Mobile Kanban View -->
-    <record id="view_kanban_dealer_showroom_invoice_mobile" model="ir.ui.view">
-        <field name="name">dsales.showroom.invoice.kanban.mobile</field>
-        <field name="model">dsales.showroom.invoice</field>
-        <field name="arch" type="xml">
-            <kanban class="o_kanban_small_column" default_group_by="" sample="0">
-                <field name="invoice_number"/>
-                <field name="dealer_id"/>
-                <field name="date_time"/>
-                <field name="state"/>
-                <templates>
-                    <t t-name="kanban-box">
-                        <div class="o_kanban_card oe_kanban_global_click" style="padding:10px;">
-                            <div style="display:flex; justify-content:space-between; font-weight:bold; margin-top:2px;">
-                                <span><t t-esc="record.invoice_number.value"/></span>
-                                <span style="text-align:right;"><t t-esc="record.state.value"/></span>
-                            </div>
-                            <div style="margin-top:4px; color:#666;">
-                                <t t-esc="record.dealer_id.value"/>
-                            </div>
-                            <div style="margin-top:2px; color:#999; font-size:12px;">
-                                <t t-esc="record.date_time.value"/>
-                            </div>
-                        </div>
-                    </t>
-                </templates>
-            </kanban>
-        </field>
-    </record>
-
-    <!-- Mobile Form View -->
-    <record id="view_form_dealer_showroom_invoice_mobile" model="ir.ui.view">
-        <field name="name">dsales.showroom.invoice.form.mobile</field>
-        <field name="model">dsales.showroom.invoice</field>
-        <field name="arch" type="xml">
-            <form string="Update Sales">
-                <header>
-                    <button name="action_submit" type="object" string="Submit" invisible="state != 'draft'" class="oe_highlight"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,pending,approved,rejected"/>
-                </header>
-                <sheet>
-                    <group>
-                        <field name="dealer_id" readonly="state != 'draft'" options="{'no_create_edit':True}"/>
-                        <field name="dealer_showroom_id" readonly="state != 'draft'" domain="[('dealer_id', '=', dealer_id)]" options="{'no_create_edit':True}"/>
-                        <field name="invoice_number" readonly="state != 'draft'"/>
-                        <field name="date_time" readonly="state != 'draft'"/>
-                        <field name="salesman_id" invisible="1"/>
-                    </group>
-                    
-                    <div style="font-size:15px;font-weight:bold;color: #070808ff;">Products</div>
-                    <field name="sale_line_ids" readonly="state != 'draft'">
-                        <tree editable="bottom">
-                            <field name="product_category_id" options="{'no_create_edit':True}"/>
-                            <field name="group_id" options="{'no_create_edit':True}"/>
-                            <field name="subgroup_id" options="{'no_create_edit':True}"/>
-                            <field name="product_id" options="{'no_create_edit':True}" context="{'filter_by_default_code': True}"/>
-                            <field name="product_description"/>
-                            <field name="size_id" readonly="1" force_save="1"/>
-                            <field name="qty"/>
-                            <field name="is_sales_return"/>
-                            <field name="notes" invisible="not is_sales_return"/>
-                        </tree>
-                    </field>
-                    
-                    <div style="font-size:15px;font-weight:bold;color: #070808ff; margin-top:10px;">Invoice Attachment</div>
-                    <field name="attachment_ids" widget="many2many_binary" readonly="state != 'draft'"/>
-                </sheet>
-                <div class="oe_chatter">
-                    <field name="message_follower_ids" widget="mail_followers"/>
-                    <field name="message_ids" widget="mail_thread"/>
-                </div>
-            </form>
-        </field>
-    </record>
-
-    <!-- Action -->
+    <!-- ================================================================
+         ACTION
+    ================================================================ -->
     <record id="action_dsales_showroom_invoice_approve" model="ir.actions.act_window">
         <field name="name">Approve Shop Sales</field>
         <field name="res_model">dsales.showroom.invoice</field>
         <field name="view_mode">tree,form</field>
-        <field name="domain">[('state', 'in', ['submitted', 'pending'])]</field>
+        <field name="view_id" ref="view_dsales_showroom_invoice_tree"/>
+        <!-- <field name="domain">[('state','in',['submitted','pending'])]</field> -->
     </record>
 
-    <!-- Menu -->
+    <!-- ================================================================
+         MENU
+    ================================================================ -->
     <menuitem id="menu_dsales_showroom_invoice_approve"
               name="Approve Shop Sales"
-              parent="menu_dealer_root"
+              parent="dealer.menu_dealer_root"
               action="action_dsales_showroom_invoice_approve"
               sequence="25"
               groups="dealer.group_dealer_backoffice_user"/>
+
 </odoo>

@@ -13110,7 +13110,7 @@ class ProjectTask(models.Model):
             )
 
             # Generate QR code
-            qr_img = generate_qr_code(invoice)
+            qr_img = generate_qr_code(self.inv_qrcode_has)
             order.write({"qr_image": qr_img})
         return True
 

@@ -1,4 +1,5 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
 
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
@@ -32,65 +33,81 @@ class ResConfigSettings(models.TransientModel):
         config_parameter='dealer.make_interface_code_mandatory'
     )
 
-    # General Promotion Settings
-    gen_promo_required = fields.Boolean(
+    # --- General Promotion Multiplier ---
+    general_promotion_multiplier_required = fields.Boolean(
         string="General Promotion Multiplier Required",
-        config_parameter="dealer.gen_promo_required"
+        config_parameter='dealer.general_promotion_multiplier_required',
+        help="Enable this to apply a general promotion multiplier on loyalty points for a selected date range."
     )
-    gen_promo_from = fields.Char(
-        string="Promotion From Date (YYYY-MM-DD)",
-        config_parameter="dealer.gen_promo_from"
+    general_promotion_from_date = fields.Date(
+        string="From Date"
     )
-    gen_promo_to = fields.Char(
-        string="Promotion To Date (YYYY-MM-DD)",
-        config_parameter="dealer.gen_promo_to"
+    general_promotion_to_date = fields.Date(
+        string="To Date"
     )
-    gen_promo_multiplier = fields.Float(
-        string="General Multiplier Value",
-        config_parameter="dealer.gen_promo_multiplier",
+    general_promotion_multiplier_value = fields.Float(
+        string="Multiplier Value",
+        config_parameter='dealer.general_promotion_multiplier_value',
         default=1.0
     )
 
-    # Dealer Promotion Settings
-    dealer_promo_required = fields.Boolean(
+    # --- Dealer Promotion Multiplier ---
+    dealer_promotion_multiplier_required = fields.Boolean(
         string="Dealer Promotion Multiplier Required",
-        config_parameter="dealer.dealer_promo_required"
+        config_parameter='dealer.dealer_promotion_multiplier_required',
+        help="Enable this to apply additional multiplier when sales qty in a single invoice crosses the minimum quantity."
     )
-    dealer_promo_from = fields.Char(
-        string="Dealer Promotion From Date (YYYY-MM-DD)",
-        config_parameter="dealer.dealer_promo_from"
+    dealer_promotion_from_date = fields.Date(
+        string="From Date"
     )
-    dealer_promo_to = fields.Char(
-        string="Dealer Promotion To Date (YYYY-MM-DD)",
-        config_parameter="dealer.dealer_promo_to"
+    dealer_promotion_to_date = fields.Date(
+        string="To Date"
     )
-    dealer_promo_min_qty = fields.Integer(
-        string="Minimum Quantity",
-        config_parameter="dealer.dealer_promo_min_qty",
-        default=1
+    dealer_promotion_min_qty = fields.Integer(
+        string="Min Qty",
+        config_parameter='dealer.dealer_promotion_min_qty',
+        default=0,
+        help="Minimum quantity threshold in a single invoice to trigger the dealer multiplier."
     )
-    dealer_promo_multiplier = fields.Float(
-        string="Dealer Multiplier Value",
-        config_parameter="dealer.dealer_promo_multiplier",
+    dealer_promotion_multiplier_value = fields.Float(
+        string="Multiplier Value",
+        config_parameter='dealer.dealer_promotion_multiplier_value',
         default=1.0
     )
 
-    filter_dealer_purchases = fields.Boolean(
-        string="Filter Items Based on Dealer Purchases",
-        config_parameter="dealer.filter_dealer_purchases"
+    # --- Filter Items / Sales Limits ---
+    filter_items_by_dealer_purchases = fields.Boolean(
+        string="Filter items based on the dealer's purchases",
+        config_parameter='dealer.filter_items_by_dealer_purchases',
+        help="Enable to filter product items based on what the dealer has previously purchased."
     )
-
     retailer_sales_limit = fields.Integer(
         string="Retailer Sales Limit",
-        config_parameter="dealer.retailer_sales_limit",
-        default=25
+        config_parameter='dealer.retailer_sales_limit',
+        default=25,
+        help="Maximum sales limit for retailer customers (e.g. 25)."
     )
-
     dealer_sales_limit = fields.Integer(
         string="Dealer Sales Limit",
-        config_parameter="dealer.dealer_sales_limit",
-        default=100
+        config_parameter='dealer.dealer_sales_limit',
+        default=100,
+        help="Maximum sales limit for dealer customers (e.g. 100)."
     )
+
+    @api.constrains('general_promotion_from_date', 'general_promotion_to_date')
+    def _check_general_promotion_dates(self):
+        for rec in self:
+            if rec.general_promotion_from_date and rec.general_promotion_to_date:
+                if rec.general_promotion_from_date > rec.general_promotion_to_date:
+                    raise ValidationError(_("General Promotion: 'From Date' must be less than or equal to 'To Date'."))
+
+    @api.constrains('dealer_promotion_from_date', 'dealer_promotion_to_date')
+    def _check_dealer_promotion_dates(self):
+        for rec in self:
+            if rec.dealer_promotion_from_date and rec.dealer_promotion_to_date:
+                if rec.dealer_promotion_from_date > rec.dealer_promotion_to_date:
+                    raise ValidationError(_("Dealer Promotion: 'From Date' must be less than or equal to 'To Date'."))
+
 
     def set_values(self):
         super().set_values()
@@ -100,6 +117,12 @@ class ResConfigSettings(models.TransientModel):
         params.set_param('dealer.dealer_wfo_radius', int(self.dealer_wfo_radius or 0))
         params.set_param('dealer.show_dealer_menu', self.show_dealer_menu)
         params.set_param('dealer.validate_geo_location', self.validate_geo_location)
+
+        # Save date fields as strings
+        params.set_param('dealer.general_promotion_from_date', str(self.general_promotion_from_date or ''))
+        params.set_param('dealer.general_promotion_to_date', str(self.general_promotion_to_date or ''))
+        params.set_param('dealer.dealer_promotion_from_date', str(self.dealer_promotion_from_date or ''))
+        params.set_param('dealer.dealer_promotion_to_date', str(self.dealer_promotion_to_date or ''))
 
         group = self.env.ref('dealer.group_dealer_module_user', raise_if_not_found=False)
         user = self.env.user
@@ -124,9 +147,23 @@ class ResConfigSettings(models.TransientModel):
         except ValueError:
             dealer_wfo_radius = 0
 
+        # Load date fields from string params
+        from odoo.fields import Date as FieldDate
+        def _parse_date(val):
+            if val and val != 'False':
+                try:
+                    return FieldDate.to_date(val)
+                except Exception:
+                    return False
+            return False
+
         res.update({
             'dealer_wfo_radius': dealer_wfo_radius,
             'show_dealer_menu': params.get_param('dealer.show_dealer_menu', False),
             'validate_geo_location': params.get_param('dealer.validate_geo_location', False),
+            'general_promotion_from_date': _parse_date(params.get_param('dealer.general_promotion_from_date', '')),
+            'general_promotion_to_date': _parse_date(params.get_param('dealer.general_promotion_to_date', '')),
+            'dealer_promotion_from_date': _parse_date(params.get_param('dealer.dealer_promotion_from_date', '')),
+            'dealer_promotion_to_date': _parse_date(params.get_param('dealer.dealer_promotion_to_date', '')),
         })
         return res

@@ -13,8 +13,14 @@
             <xpath expr="//field[@name='uom_po_id']" position="before">
                 <field name="fsm_loyalty_points" invisible="not show_dealer_menu"/>
                 <field name="show_in_dealer_app" invisible="not show_dealer_menu"/>
-                <field name="is_outdoor_unit" invisible="not show_dealer_menu"/>
-                <field name="is_midea_brand" invisible="not show_dealer_menu"/>
+            </xpath>
+
+            <!-- Move Purchase UoM after Unit of Measure -->
+            <xpath expr="//field[@name='uom_po_id']" position="replace">
+                <!-- removed from original position -->
+            </xpath>
+            <xpath expr="//field[@name='uom_id']" position="after">
+                <field name="uom_po_id" groups="uom.group_uom"/>
             </xpath>
 
         </field>
@@ -34,10 +40,40 @@
             <xpath expr="//field[@name='uom_po_id']" position="before">
                 <field name="fsm_loyalty_points" invisible="not show_dealer_menu"/>
                 <field name="show_in_dealer_app" invisible="not show_dealer_menu"/>
-                <field name="is_outdoor_unit" invisible="not show_dealer_menu"/>
-                <field name="is_midea_brand" invisible="not show_dealer_menu"/>
             </xpath>
 
+            <!-- Move Purchase UoM after Unit of Measure -->
+            <xpath expr="//field[@name='uom_po_id']" position="replace">
+                <!-- removed from original position -->
+            </xpath>
+            <xpath expr="//field[@name='uom_id']" position="after">
+                <field name="uom_po_id" groups="uom.group_uom"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Product Template Search View -->
+    <record id="view_product_template_search_fsm_loyalty" model="ir.ui.view">
+        <field name="name">product.template.search.fsm.loyalty</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_to_sell']" position="after">
+                <filter string="Show in Dealer salesman app" name="filter_show_in_dealer_app" domain="[('show_in_dealer_app', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Product Product Search View -->
+    <record id="view_product_product_search_fsm_loyalty" model="ir.ui.view">
+        <field name="name">product.product.search.fsm.loyalty</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_search_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_to_sell']" position="after">
+                <filter string="Show in Dealer salesman app" name="filter_show_in_dealer_app" domain="[('show_in_dealer_app', '=', True)]"/>
+            </xpath>
         </field>
     </record>
 

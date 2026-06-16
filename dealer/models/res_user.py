@@ -9,6 +9,28 @@ class ResUsers(models.Model):
         default=False
     )
 
+    floor_sales_approval_auth = fields.Boolean(
+        string="Floor Sales Approval Auth",
+        default=False
+    )
+
+    @api.constrains('floor_sales_approval_auth')
+    def _check_single_floor_sales_auth(self):
+        for record in self:
+            if record.floor_sales_approval_auth:
+                if self.search_count([('floor_sales_approval_auth', '=', True)]) > 1:
+                    raise ValidationError(_("Only one Floor Sales Invoice Approval Authority user is allowed for the whole project."))
+
+    default_authority = fields.Boolean(string="Legacy Dummy Field")
+
+    default_authority_id = fields.Many2one('res.users', string="Default Authority")
+
+    @api.onchange('floor_sales_approval_auth')
+    def _onchange_floor_sales_approval_auth(self):
+        if not self.floor_sales_approval_auth:
+            self.default_authority_id = False
+
+
     dealer_city_id = fields.Many2one(
         'res.city',
         string="Working City"
@@ -24,20 +46,3 @@ class ResUsers(models.Model):
         if not self.dealer_salesman:
             self.dealer_city_id = False
 
-    floor_sales_approval_auth = fields.Boolean(
-        string="Floor Sales Invoice Approval Authority",
-        default=False
-    )
-
-    default_authority = fields.Boolean(
-        string="Default Authority",
-        default=False
-    )
-
-    @api.constrains('default_authority')
-    def _check_default_authority(self):
-        for rec in self:
-            if rec.default_authority:
-                existing = self.search([('default_authority', '=', True), ('id', '!=', rec.id)])
-                if existing:
-                    raise ValidationError(_("Only one user in the entire system can be marked as Default Authority."))

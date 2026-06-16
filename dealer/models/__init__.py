@@ -7,10 +7,10 @@ from . import res_region
 from . import dealer_assignment
 from . import dealer_shop_status
 from . import dealer_showroom_sales
+from . import dsales_showroom_invoice
 # from . import hr_employee
 from . import size_master
-from . import hr_attendance
-from . import dsales_showroom_invoice
+from . import product_category
 # # from . import t_productsdesc
 # from . import vi_product_subgroup
 # # from . import t_groupsdesc
@@ -25,3 +25,4 @@ from . import fsm_loyalty_audit
 from . import fsm_loyalty_redemption
 from . import fsm_loyalty_audit_stmt_filter_wizard
 from . import fsm_loyalty_audit_filter_summary_wizard
+from . import dealer_sales_line_wizard

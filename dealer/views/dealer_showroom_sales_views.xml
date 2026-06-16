@@ -6,59 +6,71 @@
         <field name="model">dsales.showroom.sales</field>
         <field name="arch" type="xml">
             <form >
+                <header>
+                    <button name="action_submit" string="Submit" type="object" class="oe_highlight" invisible="state != 'draft'" />
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted"/>
+                </header>
                 <sheet>
                     <group class="deskvw">
-                        <field name="dealer_id" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
-                        <field name="dealer_showroom_id" domain="[('dealer_id', '=', dealer_id),('sale_dealer_required','=',True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="dealer_id" readonly="state != 'draft'" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="dealer_showroom_id" domain="[('dealer_id', '=', dealer_id),('sale_dealer_required','=',True)]" readonly="state != 'draft'" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
                         <field name="dealer_assignment_id"
-                               domain="[('dealer_id', '=', dealer_id), ('dealer_showroom_id', '=', dealer_showroom_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                               domain="[('dealer_id', '=', dealer_id), ('dealer_showroom_id', '=', dealer_showroom_id)]" readonly="state != 'draft'" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
+                        <field name="invoice_no" readonly="state != 'draft'"/>
                     </group>
                     <group  class="deskvw">
-                        <field name="date_time"/>
-                        <field name="product_category_id" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
-                        <field name="group_id" domain="[('parent_id','=',product_category_id),('allowed_group_is_promoter','=',True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
-                        <field name="subgroup_id" domain="[('parent_id','=',group_id),('allowed_group_is_promoter','=',True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
-                        <field name="product_id" domain="[('product_sub_grouping_id', 'child_of', subgroup_id), ('use_for_promoter', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
-                        <field name="size_id" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
-                        <field name="is_sales_return"/>
-                        <field name="qty"/>   
-                        <field name="invoice_id" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
-                        <field name="approval_state" readonly="1"/>
-                        <field name="calculated_points" readonly="1"/>
-                        <field name="multiplier_applied" readonly="1"/>
-                        <field name="final_points" readonly="1"/>
-                        <field name="fsm_loyalty_points" readonly="1"/>                     
-                        <field name="notes" colspan="2"/>
+                        <field name="date_time" readonly="state != 'draft'"/>
+                        <field name="is_sales_return" readonly="state != 'draft'"/>
+                        <field name="notes" colspan="2" readonly="state != 'draft'"/>
+                        <field name="invoice_attachment_name" invisible="1"/>
+                        <field name="invoice_attachment" filename="invoice_attachment_name" readonly="state != 'draft'"/>
                         <field name="user_id" invisible="1" force_save="1"/>
                         <field name="dealer_mobile_user_bool" invisible="1"/>
                         <field name="dealer_access_bool" invisible="1"/> 
                         <field name="current_latitude" invisible="1"/>
                         <field name="current_longitude" invisible="1"/>  
-                        <field name = "work_center_location_id" invisible ="1"/>                     
+                        <field name="work_center_location_id" invisible="1"/>                     
                     </group>
                     <group class="mobvw">
-                        <field name="date_time"/>
-                        <field name="product_category_id" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
-                        <field name="group_id" domain="[('parent_id','=',product_category_id),('allowed_group_is_promoter','=',True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
-                        <field name="subgroup_id" domain="[('parent_id','=',group_id),('allowed_group_is_promoter','=',True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
-                        <field name="product_id" domain="[('product_sub_grouping_id', 'child_of', subgroup_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
-                        <field name="size_id" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
-                        <field name="is_sales_return"/>
-                        <field name="qty"/>
+                        <field name="invoice_no" readonly="state != 'draft'"/>
+                        <field name="date_time" readonly="state != 'draft'"/>
+                        <field name="is_sales_return" readonly="state != 'draft'"/>
 
                         <div style="font-size:15px;font-weight:bold;color: #070808ff;">Notes</div>
                         <div class="col-12" width="100%">
-                            <field name="notes" class="o_field_text w-100" style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
+                            <field name="notes" readonly="state != 'draft'" class="o_field_text w-100" style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
                         </div>
-                        <div style="font-size:15px;font-weight:bold;color: #070808ff;">Attachments</div>
-                        <div  width="70%" height="400px">
-                       </div>
+                        <div style="font-size:15px;font-weight:bold;color: #070808ff;">Invoice Attachment</div>
+                        <div style="width: 80%; padding: 5px 0;">
+                           <field name="invoice_attachment_name" invisible="1"/>
+                           <field name="invoice_attachment" filename="invoice_attachment_name" readonly="state != 'draft'" class="w-100" style="max-width: 100% !important; box-sizing: border-box;"/>
+                        </div>
                         <field name="user_id" invisible="1" force_save="1"/>
                         <field name="dealer_mobile_user_bool" invisible="1"/>
                         <field name="dealer_access_bool" invisible="1"/>
                         <field name="current_latitude" invisible="1"/>
                         <field name="current_longitude" invisible="1"/> 
                     </group>
+
+                    <notebook>
+                        <page string="Item Details">
+                            <div style="text-align: center; width: 100%; padding-bottom: 10px;">
+                                <button name="action_open_add_item_wizard" string="Add Item" type="object" class="mobile-full-btn mobvw" icon="fa-plus" invisible="state != 'draft'"/>
+                            </div>
+                            <field name="line_ids" readonly="state != 'draft' or dealer_mobile_user_bool">
+                                <tree editable="bottom">
+                                    <field name="product_category_id" width="150px" domain="[('parent_id','=', False), ('name', '!=', 'All')]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
+                                    <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
+                                    <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
+                                    <field name="product_id" width="150px" context="{'show_only_default_code': True}" domain="[('product_sub_group_id', '=', product_subgroup_id), ('show_in_dealer_app', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
+                                    <field name="product_name" width="200px"/>
+                                    <field name="capacity" width="80px"/>
+                                    <field name="qty" width="80px"/>
+                                    <field name="fsm_loyalty_points" width="100px" readonly="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
                 <div class="oe_chatter">
                     <field name="message_follower_ids" widget="mail_followers"/>
@@ -76,25 +88,14 @@
     <record id="view_tree_dealer_showroom_sales" model="ir.ui.view">
         <field name="name">dsales.showroom.sales.tree</field>
         <field name="model">dsales.showroom.sales</field>
-        <!-- <field name="groups_id" eval="[(4, ref('dealer.group_dealer_backoffice_user')),(4, ref('dealer.group_dealer_user'))]"/> -->
         <field name="arch" type="xml">
             <tree string="Showroom Sales" js_class="dealer_showroom_sales_list_controller">
+                <field name="invoice_no"/>
                 <field name="dealer_id"/>
                 <field name="dealer_showroom_id"/>
                 <field name="user_id"/>
                 <field name="date_time"/>
-                <field name="product_category_id"/>
-                <field name="group_id"/>
-                <field name="subgroup_id"/>
-                <field name="product_id"/>
-                <field name="size_id"/>
-                <field name="qty"/>
-                <field name="invoice_id"/>
-                <field name="approval_state"/>
-                <field name="calculated_points"/>
-                <field name="multiplier_applied"/>
-                <field name="final_points"/>
-                <field name="fsm_loyalty_points"/>
+                <field name="state"/>
             </tree>
         </field>
     </record>
@@ -136,12 +137,7 @@
             <!-- Declare all fields used in the template -->
             <field name="dealer_id"/>
             <field name="date_time"/>
-            <field name="product_category_id"/>
-            <field name="group_id"/>
-            <field name="subgroup_id"/>
-            <field name="product_id"/>
-            <field name="size_id"/>
-            <field name="qty"/>
+
             <field name="notes"/>
 
             <templates>
@@ -159,9 +155,7 @@
                             <div t-if="record.date_time">
                                 <t t-esc="record.date_time.value"/>
                             </div>
-                            <div t-if="record.qty" style="text-align:right;">
-                                Qty: <t t-esc="record.qty.value"/>
-                            </div>
+
                         </div>
 
                         <!-- Date & Time -->
@@ -169,14 +163,8 @@
                             <t t-esc="record.date_time.value"/>
                         </div> -->
 
-                        <!-- Product Details -->
-                        <div style="display:flex; flex-wrap: wrap; margin-top: 2px;">
-                            <t t-if="record.product_category_id"><t t-esc="record.product_category_id.value"/></t>
-                            <t t-if="record.group_id"> - <t t-esc="record.group_id.value"/></t>
-                            <t t-if="record.subgroup_id"> - <t t-esc="record.subgroup_id.value"/></t>
-                            <t t-if="record.product_id"> - <t t-esc="record.product_id.value"/></t>
-                            <t t-if="record.size_id"> - <t t-esc="record.size_id.value"/></t>
-                        </div>
+                        <!-- Product Details Removed for multiple lines -->
+                        <div><field name="state"/></div>
                         <!-- Quantity -->
                         <!-- <div style="font-weight:bold; text-align:right; margin-top: 2px;" t-if="record.qty">
                             Qty: <t t-esc="record.qty.value"/>
@@ -217,11 +205,10 @@
     <!-- Mobile: Update Sales -->
     <record id="action_dealer_sales_mobile" model="ir.actions.act_window">
         <field name="name">Update Sales</field>
-        <field name="res_model">dsales.showroom.invoice</field>
-        <field name="view_mode">kanban,form</field>
-        <field name="view_id" ref="dealer.view_kanban_dealer_showroom_invoice_mobile"/>
-        <field name="domain">[('salesman_id', '=', uid)]</field>
-        <field name="context">{'default_salesman_id': uid}</field>
+        <field name="res_model">dsales.showroom.sales</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_id" ref="view_kanban_dealer_showroom_sales_mobile"/>
+        <field name="domain">['|', ('user_id', '=', uid), ('create_uid', '=', uid)]</field>
     </record>
 
 

@@ -8,23 +8,13 @@ class ProductTemplate(models.Model):
         help="Loyalty points earned per unit sale"
     )
 
+    show_in_dealer_app = fields.Boolean(
+        string="Show in Dealer salesman app",
+        default=False,
+    )
+
     show_dealer_menu = fields.Boolean(
         compute='_compute_show_dealer_menu'
-    )
-
-    show_in_dealer_app = fields.Boolean(
-        string="Show in Dealer Salesman App",
-        default=True
-    )
-
-    is_outdoor_unit = fields.Boolean(
-        string="Is Outdoor Unit",
-        default=False
-    )
-
-    is_midea_brand = fields.Boolean(
-        string="Is Midea Brand",
-        default=True
     )
 
     @api.depends()
@@ -45,27 +35,22 @@ class ProductProduct(models.Model):
         store=True,
         readonly=False
     )
-    show_dealer_menu = fields.Boolean(
-        compute='_compute_show_dealer_menu'
-    )
-
+    
     show_in_dealer_app = fields.Boolean(
         related='product_tmpl_id.show_in_dealer_app',
         store=True,
         readonly=False
     )
-
-    is_outdoor_unit = fields.Boolean(
-        related='product_tmpl_id.is_outdoor_unit',
-        store=True,
-        readonly=False
+    show_dealer_menu = fields.Boolean(
+        compute='_compute_show_dealer_menu'
     )
 
-    is_midea_brand = fields.Boolean(
-        related='product_tmpl_id.is_midea_brand',
-        store=True,
-        readonly=False
-    )
+    def _compute_display_name(self):
+        super()._compute_display_name()
+        if self._context.get('show_only_default_code'):
+            for record in self:
+                if record.default_code:
+                    record.display_name = record.default_code
 
     @api.depends()
     def _compute_show_dealer_menu(self):

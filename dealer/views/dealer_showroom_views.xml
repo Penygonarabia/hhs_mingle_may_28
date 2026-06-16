@@ -173,6 +173,7 @@
         <field name="res_model">res.partner</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('dealersalesman_required', '=', True)]</field>
+        <field name="context">{'hide_loyalty_tabs': True}</field>
     </record> 
 
     <!-- Root Menu: dealer -->

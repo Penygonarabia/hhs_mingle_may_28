@@ -7,7 +7,7 @@
         <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//form" position="inside">
-                <app data-string="Dealer" string="Dealer" name="dealer_settings"
+                <app data-string="Dealer" string="Floor Salesman" name="dealer_settings"
                      data-key="dealer" logo="/dealer/static/description/location_maker.png" >
         <!-- <field name="inherit_id" ref="machine_repair_management.res_config_settings_service_module_form"/>
         <field name="arch" type="xml">
@@ -49,84 +49,108 @@
                                </div>   
                         </div>
                     </div>
-                    <h2>Floor Sales Configuration</h2>
+
+                    <!-- ===== General Promotion Multiplier ===== -->
+                    <h2>General Promotion Multiplier</h2>
                     <div class="row mt16 o_settings_container">
-                        <!-- General Promotion -->
-                        <div class="col-12 col-lg-6 o_setting_box">
+                        <div class="col-12 col-lg-12 o_setting_box">
                             <div class="o_setting_left_pane">
-                                <field name="gen_promo_required"/>
+                                <field name="general_promotion_multiplier_required"/>
                             </div>
                             <div class="o_setting_right_pane">
-                                <label for="gen_promo_required"/>
-                                <div class="text-muted">Enable General Promotion Multiplier</div>
-                                <div class="content-group" invisible="not gen_promo_required">
-                                    <div class="row mt16">
-                                        <label for="gen_promo_from" class="col-4 o_light_label"/>
-                                        <field name="gen_promo_from" class="col-8"/>
+                                <label for="general_promotion_multiplier_required"/>
+                                <div class="text-muted">
+                                    Enable to apply a general promotion multiplier on loyalty points for a selected date range.
+                                </div>
+                                <div invisible="not general_promotion_multiplier_required" class="mt8">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <label for="general_promotion_from_date"/>
+                                            <field name="general_promotion_from_date"/>
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="general_promotion_to_date"/>
+                                            <field name="general_promotion_to_date"/>
+                                        </div>
                                     </div>
-                                    <div class="row mt16">
-                                        <label for="gen_promo_to" class="col-4 o_light_label"/>
-                                        <field name="gen_promo_to" class="col-8"/>
-                                    </div>
-                                    <div class="row mt16">
-                                        <label for="gen_promo_multiplier" class="col-4 o_light_label"/>
-                                        <field name="gen_promo_multiplier" class="col-8"/>
+                                    <div class="row mt8">
+                                        <div class="col-6">
+                                            <label for="general_promotion_multiplier_value"/>
+                                            <field name="general_promotion_multiplier_value"/>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <!-- Dealer Promotion -->
-                        <div class="col-12 col-lg-6 o_setting_box">
+                    </div>
+
+                    <!-- ===== Dealer Promotion Multiplier ===== -->
+                    <h2>Dealer Promotion Multiplier</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-12 o_setting_box">
                             <div class="o_setting_left_pane">
-                                <field name="dealer_promo_required"/>
+                                <field name="dealer_promotion_multiplier_required"/>
                             </div>
                             <div class="o_setting_right_pane">
-                                <label for="dealer_promo_required"/>
-                                <div class="text-muted">Enable Dealer Promotion Multiplier</div>
-                                <div class="content-group" invisible="not dealer_promo_required">
-                                    <div class="row mt16">
-                                        <label for="dealer_promo_from" class="col-4 o_light_label"/>
-                                        <field name="dealer_promo_from" class="col-8"/>
+                                <label for="dealer_promotion_multiplier_required"/>
+                                <div class="text-muted">
+                                    Enable to apply additional multiplier when sales qty in a single invoice crosses the minimum quantity.
+                                </div>
+                                <div invisible="not dealer_promotion_multiplier_required" class="mt8">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <label for="dealer_promotion_from_date"/>
+                                            <field name="dealer_promotion_from_date"/>
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="dealer_promotion_to_date"/>
+                                            <field name="dealer_promotion_to_date"/>
+                                        </div>
                                     </div>
-                                    <div class="row mt16">
-                                        <label for="dealer_promo_to" class="col-4 o_light_label"/>
-                                        <field name="dealer_promo_to" class="col-8"/>
-                                    </div>
-                                    <div class="row mt16">
-                                        <label for="dealer_promo_min_qty" class="col-4 o_light_label"/>
-                                        <field name="dealer_promo_min_qty" class="col-8"/>
-                                    </div>
-                                    <div class="row mt16">
-                                        <label for="dealer_promo_multiplier" class="col-4 o_light_label"/>
-                                        <field name="dealer_promo_multiplier" class="col-8"/>
+                                    <div class="row mt8">
+                                        <div class="col-6">
+                                            <label for="dealer_promotion_min_qty"/>
+                                            <field name="dealer_promotion_min_qty"/>
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="dealer_promotion_multiplier_value"/>
+                                            <field name="dealer_promotion_multiplier_value"/>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <!-- Filtering and Limits -->
-                        <div class="col-12 col-lg-6 o_setting_box">
+                    </div>
+
+                    <!-- ===== Filter Items / Sales Limits ===== -->
+                    <h2>Sales Filters &amp; Limits</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-12 o_setting_box">
                             <div class="o_setting_left_pane">
-                                <field name="filter_dealer_purchases"/>
+                                <field name="filter_items_by_dealer_purchases"/>
                             </div>
                             <div class="o_setting_right_pane">
-                                <label for="filter_dealer_purchases"/>
-                                <div class="text-muted">Filter Items Based on Dealer Purchases</div>
+                                <label for="filter_items_by_dealer_purchases"/>
+                                <div class="text-muted">
+                                    Filter product items based on the dealer's purchases.
+                                </div>
                             </div>
                         </div>
                         <div class="col-12 col-lg-6 o_setting_box">
-                            <div class="o_setting_left_pane"/>
                             <div class="o_setting_right_pane">
-                                <span class="o_form_label">Sales Limits</span>
-                                <div class="text-muted">Limits for retail and dealer sales</div>
-                                <div class="content-group">
-                                    <div class="row mt16">
-                                        <label for="retailer_sales_limit" class="col-4 o_light_label"/>
-                                        <field name="retailer_sales_limit" class="col-8"/>
-                                    </div>
-                                    <div class="row mt16">
-                                        <label for="dealer_sales_limit" class="col-4 o_light_label"/>
-                                        <field name="dealer_sales_limit" class="col-8"/>
-                                    </div>
+                                <label for="retailer_sales_limit"/>
+                                <field name="retailer_sales_limit"/>
+                                <div class="text-muted">
+                                    Maximum sales limit for retailer customers (e.g. 25).
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="dealer_sales_limit"/>
+                                <field name="dealer_sales_limit"/>
+                                <div class="text-muted">
+                                    Maximum sales limit for dealer customers (e.g. 100).
                                 </div>
                             </div>
                         </div>
