@@ -122,17 +122,15 @@ class DashboardRights(models.Model):
     # ------------------------------------------------------------------
     @api.model
     def _is_admin_user(self, user):
-        """Admin = the single bootstrap Administrator (``base.user_admin``)
-        or the superuser. Other system administrators are NOT treated
-        as admin — they need an explicit ``has_access=True`` row in
-        :class:`dashboard.rights` to see a dashboard.
+        """Admin = the superuser only. Every other user — including the
+        bootstrap Administrator (``base.user_admin``) — must have an
+        explicit ``has_access=True`` row in :class:`dashboard.rights` to
+        see a dashboard, so their toggles in the matrix wizard are fully
+        configurable.
         """
         if not user:
             return False
-        if user._is_superuser():
-            return True
-        admin = self.env.ref("base.user_admin", raise_if_not_found=False)
-        return bool(admin and user.id == admin.id)
+        return user._is_superuser()
 
     @api.model
     def user_has_dashboard_access(self, user, dashboard):

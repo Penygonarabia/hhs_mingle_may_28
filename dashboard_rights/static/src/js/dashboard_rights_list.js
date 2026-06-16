@@ -39,6 +39,11 @@ class DashboardRightsListRenderer extends ListRenderer {
         if (ev.target.closest(".o_boolean_toggle") || ev.target.closest(".o_field_boolean")) {
             return super.onCellClicked(record, column, ev);
         }
+        // Let the Dashboard column be edited inline (m2o picker) instead of
+        // hijacking the click to open the matrix wizard.
+        if (column && column.name === "dashboard_id") {
+            return super.onCellClicked(record, column, ev);
+        }
         // Any other row click → open the matrix wizard for this user
         const action = await this.orm.call(
             "dashboard.rights",

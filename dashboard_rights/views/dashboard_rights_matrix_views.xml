@@ -93,8 +93,7 @@
                                     <field name="dashboard_name" string="Dashboard Name" readonly="1"/>
                                     <field name="has_access"
                                            string="Has Access"
-                                           widget="boolean_toggle"
-                                           readonly="is_user_admin"/>
+                                           widget="boolean_toggle"/>
                                 </tree>
                             </field>
                         </page>

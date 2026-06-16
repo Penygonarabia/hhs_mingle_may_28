@@ -12,9 +12,7 @@ class DashboardBulkButtons extends Component {
 
     async _applyBulk(value) {
         for (const line of this.lines) {
-            if (!line.data.is_user_admin) {
-                await line.update({ has_access: value });
-            }
+            await line.update({ has_access: value });
         }
     }
 

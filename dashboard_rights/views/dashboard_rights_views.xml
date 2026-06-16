@@ -18,7 +18,8 @@
                        string="Category"
                        optional="show"
                        readonly="1"/>
-                <field name="dashboard_id" readonly="1"/>
+                <field name="dashboard_id"
+                       options="{'no_create': True, 'no_open': True}"/>
                 <field name="has_access" widget="boolean_toggle"/>
                 <field name="has_access_int" column_invisible="1"/>
             </tree>

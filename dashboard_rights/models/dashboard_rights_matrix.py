@@ -323,17 +323,9 @@ class DashboardRightsMatrixLine(models.TransientModel):
     # ------------------------------------------------------------------
     def write(self, vals):
         if "has_access" in vals:
-            # Admin rows: always keep True.
-            admin_rows = self.filtered(lambda l: l.is_user_admin)
-            other_rows = self - admin_rows
-            if admin_rows:
-                super(DashboardRightsMatrixLine, admin_rows).write(
-                    dict(vals, has_access=True)
-                )
-            if other_rows:
-                super(DashboardRightsMatrixLine, other_rows).write(vals)
+            res = super().write(vals)
             self._propagate_to_dashboard_rights()
-            return True
+            return res
         return super().write(vals)
 
     @api.model_create_multi
@@ -349,7 +341,7 @@ class DashboardRightsMatrixLine(models.TransientModel):
             if not rec.dashboard_id or not rec.matrix_id.user_id:
                 continue
             user = rec.matrix_id.user_id
-            val = True if rec.is_user_admin else bool(rec.has_access)
+            val = bool(rec.has_access)
             existing = Rights.search(
                 [("user_id", "=", user.id),
                  ("dashboard_id", "=", rec.dashboard_id.id)],
