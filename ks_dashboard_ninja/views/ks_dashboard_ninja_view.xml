@@ -166,20 +166,21 @@
             <field name="name">ks_dashboard_ninja View</field>
             <field name="model">ks_dashboard_ninja.board</field>
             <field name="arch" type="xml">
-                <tree import="0" string="My Dashboard" class="encapsulated-dn-listview">
+                <tree import="0" string="My Dashboard" class="encapsulated-dn-listview"
+                      default_order="ks_dashboard_top_menu_id,ks_dashboard_menu_sequence,ks_dashboard_menu_name">
                     <field name="ks_dashboard_state" column_invisible="True"/>
                     <!--                           invisible="1" nolabel="1"/>-->
                     <field name="id" column_invisible="True"/>
                     <!--                           invisible="1" nolabel="1"/>-->
 
-                    <field name="name"/>
-                    <field name="ks_dashboard_menu_name"
-                           required="(ks_dashboard_state != 'Locked')"/>
-                    <field name="ks_dashboard_menu_sequence"/>
                     <field name="ks_dashboard_top_menu_id"
                            options="{'no_create': True, 'no_create_edit':True, 'no_open': True}"
                            readonly="(ks_dashboard_state == 'Locked')"
                            required="(ks_dashboard_state != 'Locked')"/>
+                    <field name="name"/>
+                    <field name="ks_dashboard_menu_name"
+                           required="(ks_dashboard_state != 'Locked')"/>
+                    <field name="ks_dashboard_menu_sequence"/>
                     <field name="ks_dashboard_active" readonly="(ks_dashboard_state == 'Locked')"/>
                     <field name="ks_dashboard_default_template"
                            readonly="(id > 0)" required="(id &lt;= 1)"
@@ -364,23 +365,12 @@
                   web_icon="ks_dashboard_ninja,static/description/icon.png"
                   action="ks_dashboard_ninja.dashboard_action_window"/>
 
+        <menuitem name="Beta Dashboards" id="ks_dashboard_ninja.beta_dashboards_menu_root"
+                  parent="ks_dashboard_ninja.board_menu_root" sequence="16"
+                  action="ks_dashboard_ninja.dashboard_action_window"/>
+
         <menuitem name="My Dashboards" id="ks_dashboard_ninja.dashboards_menu_root"
                   parent="ks_dashboard_ninja.board_menu_root" sequence="15"/>
-
-        <!-- The following parent menus used to live here, but were moved into
-             their respective dashboard modules so each dashboard surface
-             installs independently — no orphan empty parents appear when a
-             particular dashboard module is not installed:
-
-               * beta_dashboards.beta_dashboards_menu_root              (Beta Dashboards)
-               * service_dashboards_ot.services_dashboards_menu_root    (Service Dashboards - CT)
-               * promoter_dashboards.promoter_dashboards_menu_root      (Promoter Dashboards)
-
-             Other modules that referenced the old ks_dashboard_ninja.* xmlids
-             have been updated to the new owning-module xmlids.
-        -->
-
-
 
         <menuitem name="Quick Access" id="ks_dashboard_ninja.quick_access_menu"
                   parent="ks_dashboard_ninja.board_menu_root" sequence="99"/>

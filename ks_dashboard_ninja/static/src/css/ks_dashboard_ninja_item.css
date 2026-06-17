@@ -139,7 +139,9 @@
 .ks_dashboard_main_content[data-ks-board-name^="Service Analysis"] .ks_dashboard_kpi_name_preview,
 .ks_dashboard_main_content[data-ks-board-name^="Technician Analysis"] .ks_dashboard_kpi_name_preview,
 .ks_dashboard_main_content[data-ks-board-name^="Sales & Cost Analysis"] .ks_dashboard_kpi_name_preview,
-.ks_dashboard_main_content[data-ks-board-name^="Contract"] .ks_dashboard_kpi_name_preview {
+.ks_dashboard_main_content[data-ks-board-name^="Contract"] .ks_dashboard_kpi_name_preview,
+.ks_dashboard_main_content[data-ks-board-name^="Promoter"] .ks_dashboard_kpi_name_preview,
+.ks_dashboard_main_content[data-ks-board-name^="Loyalty"] .ks_dashboard_kpi_name_preview {
     white-space: normal;
     word-break: break-word;
     text-overflow: clip;
@@ -149,21 +151,28 @@
 .ks_dashboard_main_content[data-ks-board-name^="Service Analysis"] .encapsulated-kpi-tile .dashboard-item-name,
 .ks_dashboard_main_content[data-ks-board-name^="Technician Analysis"] .encapsulated-kpi-tile .dashboard-item-name,
 .ks_dashboard_main_content[data-ks-board-name^="Sales & Cost Analysis"] .encapsulated-kpi-tile .dashboard-item-name,
-.ks_dashboard_main_content[data-ks-board-name^="Contract"] .encapsulated-kpi-tile .dashboard-item-name {
+.ks_dashboard_main_content[data-ks-board-name^="Contract"] .encapsulated-kpi-tile .dashboard-item-name,
+.ks_dashboard_main_content[data-ks-board-name^="Promoter"] .encapsulated-kpi-tile .dashboard-item-name,
+.ks_dashboard_main_content[data-ks-board-name^="Loyalty"] .encapsulated-kpi-tile .dashboard-item-name {
     text-align: left !important;
 }
 
-/* (B) Chart hover emboss — Service Dashboards menu family */
+/* (B) Chart hover emboss — Service Dashboards menu family
+   (Promoter* matches both "Promoters Analysis" and "Promoter - Sales Comparison".) */
 .ks_dashboard_main_content[data-ks-board-name^="Service Analysis"] .ks_dashboarditem_chart_container,
 .ks_dashboard_main_content[data-ks-board-name^="Technician Analysis"] .ks_dashboarditem_chart_container,
 .ks_dashboard_main_content[data-ks-board-name^="Sales & Cost Analysis"] .ks_dashboarditem_chart_container,
-.ks_dashboard_main_content[data-ks-board-name^="Contract"] .ks_dashboarditem_chart_container {
+.ks_dashboard_main_content[data-ks-board-name^="Contract"] .ks_dashboarditem_chart_container,
+.ks_dashboard_main_content[data-ks-board-name^="Promoter"] .ks_dashboarditem_chart_container,
+.ks_dashboard_main_content[data-ks-board-name^="Loyalty"] .ks_dashboarditem_chart_container {
     transition: box-shadow 0.2s ease;
 }
 .ks_dashboard_main_content[data-ks-board-name^="Service Analysis"] .ks_dashboarditem_chart_container:hover,
 .ks_dashboard_main_content[data-ks-board-name^="Technician Analysis"] .ks_dashboarditem_chart_container:hover,
 .ks_dashboard_main_content[data-ks-board-name^="Sales & Cost Analysis"] .ks_dashboarditem_chart_container:hover,
-.ks_dashboard_main_content[data-ks-board-name^="Contract"] .ks_dashboarditem_chart_container:hover {
+.ks_dashboard_main_content[data-ks-board-name^="Contract"] .ks_dashboarditem_chart_container:hover,
+.ks_dashboard_main_content[data-ks-board-name^="Promoter"] .ks_dashboarditem_chart_container:hover,
+.ks_dashboard_main_content[data-ks-board-name^="Loyalty"] .ks_dashboarditem_chart_container:hover {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22) !important;
 }
 

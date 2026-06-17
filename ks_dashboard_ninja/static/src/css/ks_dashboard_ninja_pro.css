@@ -98,7 +98,50 @@ table#ksListViewTable {
   /*background: #333;*/ /*color: #fff;*/
   text-rendering: optimizeLegibility;
   border-radius: 5px;
-  width: -webkit-fill-available;
+  width: auto;
+  table-layout: auto;
+}
+
+table#ksListViewTable th,
+table#ksListViewTable td {
+  white-space: nowrap;
+  width: 1%;
+}
+
+/* Auto-size columns to content in Dashboard config list views */
+.o_list_renderer.encapsulated-dn-listview,
+.encapsulated-dn-listview .o_list_renderer {
+  overflow-x: auto;
+}
+.encapsulated-dn-listview table.o_list_table,
+.o_list_renderer.encapsulated-dn-listview table.o_list_table {
+  table-layout: auto !important;
+  width: auto !important;
+  min-width: 100%;
+}
+.encapsulated-dn-listview table.o_list_table colgroup col,
+.o_list_renderer.encapsulated-dn-listview table.o_list_table colgroup col {
+  width: auto !important;
+}
+.encapsulated-dn-listview table.o_list_table th,
+.encapsulated-dn-listview table.o_list_table td,
+.o_list_renderer.encapsulated-dn-listview table.o_list_table th,
+.o_list_renderer.encapsulated-dn-listview table.o_list_table td {
+  white-space: nowrap !important;
+  width: auto !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+.encapsulated-dn-listview table.o_list_table th *,
+.encapsulated-dn-listview table.o_list_table td *,
+.o_list_renderer.encapsulated-dn-listview table.o_list_table th *,
+.o_list_renderer.encapsulated-dn-listview table.o_list_table td * {
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  max-width: none !important;
 }
 
 
