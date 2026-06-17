@@ -40,6 +40,11 @@ class IrUiMenu(models.Model):
         forbidden_menu_ids = set()
         all_top_menu_ids = set()
         allowed_top_menu_ids = set()
+        # Leaf menus of boards the user IS allowed to see. We use these
+        # later to mark every ancestor menu as "must keep visible", so a
+        # missing/misconfigured ks_dashboard_top_menu_id can't cause the
+        # whole "My Dashboards" tree to disappear after access is granted.
+        allowed_leaf_menu_ids = set()
 
         for b in Boards:
             if b.ks_dashboard_top_menu_id:
@@ -47,6 +52,8 @@ class IrUiMenu(models.Model):
             if b.id in allowed_ids:
                 if b.ks_dashboard_top_menu_id:
                     allowed_top_menu_ids.add(b.ks_dashboard_top_menu_id.id)
+                if b.ks_dashboard_menu_id:
+                    allowed_leaf_menu_ids.add(b.ks_dashboard_menu_id.id)
                 continue
             if b.ks_dashboard_menu_id:
                 forbidden_menu_ids.add(b.ks_dashboard_menu_id.id)
@@ -76,9 +83,6 @@ class IrUiMenu(models.Model):
         # Step 2: forbid dashboard-category menus with no accessible boards
         forbidden_menu_ids.update(all_top_menu_ids - allowed_top_menu_ids)
 
-        if not forbidden_menu_ids:
-            return forbidden_menu_ids
-
         # Load full menu parent/child map via raw SQL to avoid any ORM
         # re-entry through our own search() / _visible_menu_ids() overrides.
         self.env.cr.execute(
@@ -89,6 +93,23 @@ class IrUiMenu(models.Model):
         for row_id, row_pid in self.env.cr.fetchall():
             parent_of[row_id] = row_pid
             children_of.setdefault(row_pid, set()).add(row_id)
+
+        # Build the "must keep visible" set by walking up from every allowed
+        # leaf menu to the root. This guarantees the "My Dashboards" subtree
+        # stays visible even when ks_dashboard_top_menu_id is unset on the
+        # boards (which happens on servers where boards were created via
+        # import rather than through the Ninja UI).
+        must_keep_menu_ids = set()
+        for leaf_id in allowed_leaf_menu_ids:
+            mid = leaf_id
+            while mid and mid not in must_keep_menu_ids:
+                must_keep_menu_ids.add(mid)
+                mid = parent_of.get(mid)
+
+        forbidden_menu_ids -= must_keep_menu_ids
+
+        if not forbidden_menu_ids:
+            return forbidden_menu_ids
 
         # Step 3: when ALL dashboard-category children of a parent are
         # forbidden, also forbid every other child in that subtree so that
@@ -109,14 +130,19 @@ class IrUiMenu(models.Model):
                 # At least one dashboard category is still accessible — keep
                 # the sibling menus (Quick Access, Configuration…) visible.
                 continue
-            # All dashboard categories gone — forbid the whole subtree.
-            queue = list(children_of.get(pid, set()) - forbidden_menu_ids)
+            # All dashboard categories gone — forbid the whole subtree,
+            # except anything in the must-keep set (an allowed board's
+            # ancestor chain).
+            queue = list(
+                children_of.get(pid, set()) - forbidden_menu_ids - must_keep_menu_ids
+            )
             while queue:
                 mid = queue.pop()
                 forbidden_menu_ids.add(mid)
                 queue.extend(
                     c for c in children_of.get(mid, set())
                     if c not in forbidden_menu_ids
+                    and c not in must_keep_menu_ids
                 )
 
         # Step 4: walk up — hide any ancestor whose every child is now forbidden.
@@ -126,6 +152,8 @@ class IrUiMenu(models.Model):
             for mid in list(forbidden_menu_ids):
                 pid = parent_of.get(mid)
                 if not pid or pid in forbidden_menu_ids:
+                    continue
+                if pid in must_keep_menu_ids:
                     continue
                 if children_of.get(pid, set()) <= forbidden_menu_ids:
                     forbidden_menu_ids.add(pid)
