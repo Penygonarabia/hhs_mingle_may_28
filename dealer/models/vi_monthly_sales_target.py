@@ -110,7 +110,7 @@ sales_data AS (
             h.current_longitude
         FROM dsales_showroom_sales_line l
         JOIN dsales_showroom_sales h ON l.sales_id = h.id
-        WHERE l.qty IS NOT NULL AND l.qty != 0
+        WHERE l.qty IS NOT NULL AND l.qty != 0 AND h.state = 'approved'
     ) combined_sales
     GROUP BY dealer_id, dealer_showroom_id, user_id,
              group_id, subgroup_id, product_category_id,

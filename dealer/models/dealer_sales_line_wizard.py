@@ -6,6 +6,7 @@ class DealerSalesLineWizard(models.TransientModel):
     _description = 'Add Item'
 
     sales_id = fields.Many2one('dsales.showroom.sales')
+    line_id = fields.Many2one('dsales.showroom.sales.line')
 
     product_category_id = fields.Many2one(
         'product.category',
@@ -52,9 +53,13 @@ class DealerSalesLineWizard(models.TransientModel):
 
     @api.onchange('product_category_id')
     def _onchange_product_category_id(self):
-        self.product_group_id = False
-        self.product_subgroup_id = False
-        self.product_id = False
+        if self.product_group_id and self.product_group_id.parent_id != self.product_category_id:
+            self.product_group_id = False
+        if not self.product_category_id:
+            self.product_group_id = False
+            self.product_subgroup_id = False
+            self.product_id = False
+        
         domain = []
         if self.product_category_id:
             domain = [('parent_id', '=', self.product_category_id.id)]
@@ -62,8 +67,12 @@ class DealerSalesLineWizard(models.TransientModel):
 
     @api.onchange('product_group_id')
     def _onchange_product_group_id(self):
-        self.product_subgroup_id = False
-        self.product_id = False
+        if self.product_subgroup_id and self.product_subgroup_id.parent_id != self.product_group_id:
+            self.product_subgroup_id = False
+        if not self.product_group_id:
+            self.product_subgroup_id = False
+            self.product_id = False
+            
         domain = []
         if self.product_group_id:
             domain = [('parent_id', '=', self.product_group_id.id)]
@@ -71,7 +80,11 @@ class DealerSalesLineWizard(models.TransientModel):
 
     @api.onchange('product_subgroup_id')
     def _onchange_product_subgroup_id(self):
-        self.product_id = False
+        if self.product_id and self.product_id.product_sub_group_id != self.product_subgroup_id:
+            self.product_id = False
+        if not self.product_subgroup_id:
+            self.product_id = False
+            
         domain = []
         if self.product_subgroup_id:
             domain.append(('product_sub_group_id', '=', self.product_subgroup_id.id))
@@ -110,13 +123,16 @@ class DealerSalesLineWizard(models.TransientModel):
 
     def action_add(self):
         self.ensure_one()
-        self.env['dsales.showroom.sales.line'].create({
+        vals = {
             'sales_id': self.sales_id.id,
             'product_category_id': self.product_category_id.id,
             'product_group_id': self.product_group_id.id,
             'product_subgroup_id': self.product_subgroup_id.id,
             'product_id': self.product_id.id,
             'qty': self.qty,
-            # Calculated and final points are automatically computed on the line model
-        })
+        }
+        if self.line_id:
+            self.line_id.write(vals)
+        else:
+            self.env['dsales.showroom.sales.line'].create(vals)
         return {'type': 'ir.actions.act_window_close'}

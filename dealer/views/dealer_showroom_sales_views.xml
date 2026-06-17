@@ -64,25 +64,26 @@
                             </div>
                             <!-- Mobile View -->
                             <field name="line_ids" readonly="state != 'draft'" invisible="not dealer_mobile_user_bool">
-                                <tree create="0">
-                                    <field name="product_category_id" width="150px" domain="[('parent_id','=', False), ('name', '!=', 'All')]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
-                                    <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
-                                    <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
-                                    <field name="product_id" width="150px" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" domain="[('product_sub_group_id', '=', product_subgroup_id), ('show_in_dealer_app', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
+                                <tree create="0" edit="0" delete="1">
+                                    <field name="product_category_id" width="150px" domain="[('parent_id','=', False), ('name', '!=', 'All')]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
+                                    <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
+                                    <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
+                                    <field name="product_id" width="150px" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" domain="[('show_in_dealer_app', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
                                     <field name="product_name" width="200px"/>
                                     <field name="capacity" width="80px"/>
                                     <field name="qty" width="80px"/>
                                     <field name="fsm_loyalty_points" width="100px" readonly="1" widget="integer"/>
+                                    <button name="action_edit_wizard" type="object" icon="fa-pencil" title="Edit Item"/>
                                 </tree>
                             </field>
                             
                             <!-- Back Office View -->
                             <field name="line_ids" readonly="state not in ['draft', 'submitted']" invisible="dealer_mobile_user_bool">
                                 <tree editable="bottom">
-                                    <field name="product_category_id" width="150px" domain="[('parent_id','=', False), ('name', '!=', 'All')]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
-                                    <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
-                                    <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
-                                    <field name="product_id" width="150px" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" domain="[('product_sub_group_id', '=', product_subgroup_id), ('show_in_dealer_app', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
+                                    <field name="product_category_id" width="150px" domain="[('parent_id','=', False), ('name', '!=', 'All')]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
+                                    <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
+                                    <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
+                                    <field name="product_id" width="150px" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" domain="[('show_in_dealer_app', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
                                     <field name="product_name" width="200px"/>
                                     <field name="capacity" width="80px"/>
                                     <field name="qty" width="80px"/>
@@ -318,23 +319,23 @@
                     </group>
                     
                     <div class="row mt-4">
-                        <div class="col-8">
+                        <div class="col-3">
                             <div style="background-color: #ff987c; color: white; padding: 5px 15px; border-radius: 5px 5px 0 0; font-weight: bold; display: inline-block;">
                                 Item Details
                             </div>
                             <field name="line_ids" readonly="1" nolabel="1" style="width: 100%;">
                                 <tree>
-                                    <field name="product_category_id" string="Category"/>
-                                    <field name="product_group_id" string="Group"/>
-                                    <field name="product_subgroup_id" string="Sub Group"/>
+                                    <field name="product_category_id" string="Category" column_invisible="True"/>
+                                    <field name="product_group_id" string="Group" column_invisible="True"/>
+                                    <field name="product_subgroup_id" string="Sub Group" column_invisible="True"/>
                                     <field name="product_id" string="Model"/>
-                                    <field name="product_name" string="Name"/>
-                                    <field name="capacity"/>
                                     <field name="qty"/>
+                                    <field name="product_name" string="Name"/>
+                                    <field name="capacity" column_invisible="True"/>
                                 </tree>
                             </field>
                         </div>
-                        <div class="col-4">
+                        <div class="col-9">
                             <div style="font-weight: bold; padding: 5px 0;">Invoice Scan Copy</div>
                             <field name="invoice_attachment" widget="image" nolabel="1" readonly="1" class="w-100"/>
                         </div>
@@ -344,14 +345,27 @@
         </field>
     </record>
 
+    <!-- Approve Shop Sales Action -->
     <record id="action_approve_shop_sales" model="ir.actions.act_window">
         <field name="name">Approve Shop Sales</field>
         <field name="res_model">dsales.showroom.sales</field>
         <field name="view_mode">tree,form</field>
-        <field name="domain">[('state', '=', 'submitted'), ('requires_approval', '=', True)]</field>
-        <field name="view_ids" eval="[(5, 0, 0),
-            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_tree_dealer_showroom_sales_approval')}),
-            (0, 0, {'view_mode': 'form', 'view_id': ref('view_form_dealer_showroom_sales_approval')})]"/>
+        <field name="domain">[]</field>
+        <field name="context">{'create': False, 'edit': False}</field>
+    </record>
+
+    <record id="action_approve_shop_sales_tree" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_tree_dealer_showroom_sales_approval"/>
+        <field name="act_window_id" ref="action_approve_shop_sales"/>
+    </record>
+
+    <record id="action_approve_shop_sales_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_form_dealer_showroom_sales_approval"/>
+        <field name="act_window_id" ref="action_approve_shop_sales"/>
     </record>
 
     <record id="action_mass_approve_sales" model="ir.actions.server">

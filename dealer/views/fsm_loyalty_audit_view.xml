@@ -25,9 +25,9 @@
         <field name="arch" type="xml">
             <tree create="false" edit="false" delete="false">
                 <field name="date_time"/>
-                <field name="qty"/>
+                <field name="loyalty_points"/>                
                 <field name="type"/>
-                <field name="loyalty_points"/>
+                <field name="qty"/>                
                 <field name="amount_paid"/>
                 <field name="notes"/>
                 <field name="dealer_id"/>

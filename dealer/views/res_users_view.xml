@@ -12,7 +12,7 @@
                 <field name="dealer_city_id"
                        readonly="not dealer_salesman" required="dealer_salesman"/>
                 <field name="floor_sales_approval_auth" string="Floor Sales Invoice Approval Authority"/>
-                <field name="default_authority"/>
+                <field name="default_authority" invisible="1"/>
             </group>
             <group string="Dealer Roles" groups="base.group_no_one">
                 <field name="groups_id" widget="many2many_tags" options="{'no_create': True}"

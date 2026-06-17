@@ -757,6 +757,7 @@ class dealerShowroomSales(models.Model):
                     'amount_paid': 0,
                     'reference': record.invoice_no or self.env['ir.sequence'].next_by_code('dsales.showroom.sales'),
                     'notes': record.notes,
+                    'sales_id': record.id,
                 })
 
                 # except Exception as e:
@@ -893,6 +894,7 @@ class dealerShowroomSales(models.Model):
                             'amount_paid': 0,
                             'reference': record.invoice_no,
                             'notes': record.notes,
+                            'sales_id': record.id,
                         })
 
         return res
@@ -1330,3 +1332,49 @@ class DealerShowroomSalesLine(models.Model):
                 rec.product_group_id = categ.parent_id
             if not rec.product_category_id and categ.parent_id and categ.parent_id.parent_id:
                 rec.product_category_id = categ.parent_id.parent_id
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('product_id'):
+                product = self.env['product.product'].browse(vals['product_id'])
+                if product.categ_id:
+                    categ = product.categ_id
+                    if not vals.get('product_subgroup_id'):
+                        vals['product_subgroup_id'] = categ.id
+                    if not vals.get('product_group_id') and categ.parent_id:
+                        vals['product_group_id'] = categ.parent_id.id
+                    if not vals.get('product_category_id') and categ.parent_id and categ.parent_id.parent_id:
+                        vals['product_category_id'] = categ.parent_id.parent_id.id
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if vals.get('product_id'):
+            product = self.env['product.product'].browse(vals['product_id'])
+            if product.categ_id:
+                categ = product.categ_id
+                if not vals.get('product_subgroup_id'):
+                    vals['product_subgroup_id'] = categ.id
+                if not vals.get('product_group_id') and categ.parent_id:
+                    vals['product_group_id'] = categ.parent_id.id
+                if not vals.get('product_category_id') and categ.parent_id and categ.parent_id.parent_id:
+                    vals['product_category_id'] = categ.parent_id.parent_id.id
+        return super().write(vals)
+    def action_edit_wizard(self):
+        self.ensure_one()
+        return {
+            'name': 'Edit Item',
+            'type': 'ir.actions.act_window',
+            'res_model': 'dealer.sales.line.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_line_id': self.id,
+                'default_sales_id': self.sales_id.id,
+                'default_product_category_id': self.product_category_id.id if self.product_category_id else False,
+                'default_product_group_id': self.product_group_id.id if self.product_group_id else False,
+                'default_product_subgroup_id': self.product_subgroup_id.id if self.product_subgroup_id else False,
+                'default_product_id': self.product_id.id if self.product_id else False,
+                'default_qty': self.qty,
+            }
+        }

@@ -48,6 +48,7 @@
         <field name="res_model">fsm.loyalty.audit</field>
         <field name="view_mode">pivot,tree</field>
         <field name="view_id" ref="view_fsm_loyalty_audit_pivot"/>
+        <field name="domain">[('|', ('sales_id', '=', False), ('sales_id.state', '=', 'approved'))]</field>
     </record>
 
 

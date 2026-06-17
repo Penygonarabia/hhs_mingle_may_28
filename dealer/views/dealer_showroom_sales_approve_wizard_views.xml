@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_form_dsales_showroom_sales_approve_wizard" model="ir.ui.view">
+        <field name="name">dsales.showroom.sales.approve.wizard.form</field>
+        <field name="model">dsales.showroom.sales.approve.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Approve Shop Sales" create="false" edit="false">
+                <header>
+                    <button string="Approve" name="action_approve" type="object" class="btn-success" invisible="not invoice_id or state != 'submitted'"/>
+                    <button string="Reject" name="action_open_reject_wizard" type="object" class="btn-danger" invisible="not invoice_id or state != 'submitted'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,rejected"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="dealer_id" readonly="1" invisible="not invoice_id"/>
+                            <field name="dealer_showroom_id" readonly="1" invisible="not invoice_id"/>
+                            <field name="user_id" readonly="1" invisible="not invoice_id"/>
+                            <field name="invoice_id" string="Invoice No" options="{'no_create': True, 'no_create_edit':True}"/>
+                            <field name="date_time" readonly="1" invisible="not invoice_id"/>
+                            <field name="reject_reason" readonly="1" invisible="not reject_reason"/>
+                        </group>
+                        <group>
+                            <field name="invoice_attachment" widget="image" class="oe_avatar" style="max-width: 150px; max-height: 150px;" readonly="1" invisible="not invoice_id"/>
+                            <field name="invoice_attachment_name" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook invisible="not invoice_id">
+                        <page string="Item Details" name="item_details">
+                            <field name="line_ids" readonly="1">
+                                <tree>
+                                    <field name="product_category_id" width="150px"/>
+                                    <field name="product_group_id" width="150px"/>
+                                    <field name="product_subgroup_id" width="150px"/>
+                                    <field name="product_id" width="150px"/>
+                                    <field name="product_name" width="200px"/>
+                                    <field name="capacity" width="80px"/>
+                                    <field name="qty" width="80px"/>
+                                    <field name="fsm_loyalty_points" width="100px" widget="integer"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>
