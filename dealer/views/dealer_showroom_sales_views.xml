@@ -352,20 +352,9 @@
         <field name="view_mode">tree,form</field>
         <field name="domain">[]</field>
         <field name="context">{'create': False, 'edit': False}</field>
-    </record>
-
-    <record id="action_approve_shop_sales_tree" model="ir.actions.act_window.view">
-        <field name="sequence" eval="1"/>
-        <field name="view_mode">tree</field>
-        <field name="view_id" ref="view_tree_dealer_showroom_sales_approval"/>
-        <field name="act_window_id" ref="action_approve_shop_sales"/>
-    </record>
-
-    <record id="action_approve_shop_sales_form" model="ir.actions.act_window.view">
-        <field name="sequence" eval="2"/>
-        <field name="view_mode">form</field>
-        <field name="view_id" ref="view_form_dealer_showroom_sales_approval"/>
-        <field name="act_window_id" ref="action_approve_shop_sales"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_tree_dealer_showroom_sales_approval')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_form_dealer_showroom_sales_approval')})]"/>
     </record>
 
     <record id="action_mass_approve_sales" model="ir.actions.server">
