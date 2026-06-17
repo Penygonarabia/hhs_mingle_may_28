@@ -31,7 +31,36 @@ class CrmLead(models.Model):
     work_center_group_id = fields.Many2one('work.center.group', string = "Work Center Group")
     
     district = fields.Many2one('res.state.district',string = "District")
+    
+    '''Code Added on June 12 2026 by Vijaya Bhaskar client asked site address similar to address'''
+    site_street = fields.Char(string = "Street")
+    
+    site_street2 = fields.Char(string = "Street2")
+    
+    site_customer_city_id = fields.Many2one('res.city', string = "Customer City")
+    
+    site_district_id  = fields.Many2one('res.state.district',string = "District")
+    
+    site_state_id = fields.Many2one('res.country.state', string = "State")
+    
+    site_country_id = fields.Many2one('res.country', string = "Country")
+    
+    site_zip = fields.Char(string = "Zip")
+    
+    
+    '''Code Added on June 12 2026 by Vijaya Bhaskar client asked site address similar to address'''
 
+    @api.onchange('street','street2','state_id','country_id','district','zip','customer_city_id')
+    def _onchange_address_customer(self):
+        for rec in self:
+            rec.site_street = rec.street or ''
+            rec.site_street2 = rec.street2 or ''
+            rec.site_state_id = rec.state_id.id or ''
+            rec.site_customer_city_id = rec.customer_city_id.id or ''
+            rec.site_district_id = rec.district.id or ''
+            rec.site_country_id = rec.country_id.id or ''
+            rec.site_zip = rec.zip or ''
+    
     @api.onchange('phone', 'country_id', 'company_id')
     def _onchange_phone_validation(self):
         pass
