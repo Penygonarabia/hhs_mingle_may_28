@@ -93,15 +93,7 @@ class DealerSalesLineWizard(models.TransientModel):
 
     @api.onchange('product_id')
     def _onchange_product_id(self):
-        if not self.product_id or not self.product_id.categ_id:
-            return
-        categ = self.product_id.categ_id
-        if not self.product_subgroup_id:
-            self.product_subgroup_id = categ
-        if not self.product_group_id and categ.parent_id:
-            self.product_group_id = categ.parent_id
-        if not self.product_category_id and categ.parent_id and categ.parent_id.parent_id:
-            self.product_category_id = categ.parent_id.parent_id
+        pass
 
     @api.depends('product_id')
     def _compute_capacity(self):

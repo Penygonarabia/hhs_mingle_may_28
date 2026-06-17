@@ -329,25 +329,32 @@ class dealerShowroomSales(models.Model):
     )
 
     def action_submit(self):
+        notification = False
         for rec in self:
             if not rec.line_ids:
                 raise UserError("At least one sales line is required.")
             if not any(line.product_id for line in rec.line_ids):
                 raise UserError("At least one product entry must be selected in the sales lines.")
+            rec.write({
+                'state': 'submitted',
+                'submitted_by': self.env.user.id,
+                'submitted_date': fields.Datetime.now()
+            })
+            
             if rec.requires_approval:
-                rec.write({
-                    'state': 'submitted',
-                    'submitted_by': self.env.user.id,
-                    'submitted_date': fields.Datetime.now()
-                })
-            else:
-                rec.write({
-                    'state': 'approved',
-                    'submitted_by': self.env.user.id,
-                    'submitted_date': fields.Datetime.now(),
-                    'approved_by': self.env.user.id,
-                    'approved_date': fields.Datetime.now()
-                })
+                notification = {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': 'Approval Required',
+                        'message': 'Quantity exceeds the approved limit. This sales invoice has been forwarded to the Manager for approval.',
+                        'type': 'warning',
+                        'sticky': True,
+                    }
+                }
+        
+        if len(self) == 1 and notification:
+            return notification
 
     def action_open_add_item_wizard(self):
         self.ensure_one()
@@ -1322,16 +1329,7 @@ class DealerShowroomSalesLine(models.Model):
 
     @api.onchange('product_id')
     def _onchange_product_id(self):
-        for rec in self:
-            if not rec.product_id or not rec.product_id.categ_id:
-                continue
-            categ = rec.product_id.categ_id
-            if not rec.product_subgroup_id:
-                rec.product_subgroup_id = categ
-            if not rec.product_group_id and categ.parent_id:
-                rec.product_group_id = categ.parent_id
-            if not rec.product_category_id and categ.parent_id and categ.parent_id.parent_id:
-                rec.product_category_id = categ.parent_id.parent_id
+        pass  # Disabled to prevent onchange cascade loop since fields are populated in create/write
 
     @api.model_create_multi
     def create(self, vals_list):

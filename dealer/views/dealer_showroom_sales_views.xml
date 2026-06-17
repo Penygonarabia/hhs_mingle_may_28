@@ -11,8 +11,6 @@
                     <field name="requires_approval" invisible="1"/>
                     <button name="action_submit" string="Send to Approve" type="object" class="oe_highlight" invisible="state != 'draft' or not requires_approval" />
                     <button name="action_submit" string="Submit" type="object" class="oe_highlight" invisible="state != 'draft' or requires_approval" />
-                    <button name="action_approve" string="Approve" type="object" class="btn-success" invisible="state != 'submitted'" groups="dealer.group_dealer_backoffice_user"/>
-                    <button name="action_open_reject_wizard" string="Reject" type="object" class="btn-danger" invisible="state != 'submitted'" groups="dealer.group_dealer_backoffice_user"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,submitted"/>
                 </header>
                 <sheet>
