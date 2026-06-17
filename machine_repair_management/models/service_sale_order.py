@@ -3124,6 +3124,27 @@ class ServiceSaleOrderLine(models.Model):
         for rec in self:
             if rec.product_id:
                 rec.standard_hours = rec.product_id.standard_hours
+                
+    '''Code Added on June 17 2026 by Vijaya Bhaskar client asked when standard hours is  changed then immediately validation error shows'''            
+    @api.onchange('standard_hours')
+    def _change_standard_hours_self(self):
+        for rec in self:
+            if rec.product_id:
+                product_standard_hours = rec.product_id.standard_hours or 0.0
+
+                if rec.standard_hours < product_standard_hours:
+                    raise ValidationError(_(
+                        "Standard Hours must be greater than or equal to the Product Standard Hours.\n\n"
+                        "Product: %s\n"
+                        "Product Standard Hours: %.2f\n"
+                        "Entered Standard Hours: %.2f"
+                    ) % (
+                                              rec.product_id.display_name,
+                                              product_standard_hours,
+                                              rec.standard_hours
+                                          ))
+            
+                           
 
     @api.constrains('product_id', 'standard_hours')
     def _check_standard_hours(self):
