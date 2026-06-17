@@ -153,7 +153,7 @@
 
                         <group>
 
-                            <group string="Maintenance" invisible="not maintenance_tab_show_bool or not project_related_amc_bool">
+                            <group string="Maintenance" invisible="not project_related_amc_bool">
                                 <field name="contract_id" readonly="state == 'closed'" required="project_related_amc_bool" domain="[('state', '=', 'Ongoing')]"/>
                                 <field name="contract_date" force_save="1" readonly="1"/>
                                 <!-- <field name="asset_no" readonly="state == 'closed'"/> -->

@@ -290,7 +290,15 @@ class CrmLead(models.Model):
             'customer_code' : self.customer_code or False,
             'work_center_id' :self.work_center_id.id or False,
             'work_center_group_id' : self.work_center_group_id.id or False,
-            'sales_person_user_id' : self.user_id.id or False
+            'sales_person_user_id' : self.user_id.id or False,
+            
+            'street': self.street or '',
+            'street2':self.street2 or ' ',
+            'customer_city_id' :self.customer_city_id.id or '',
+            'district_id': self.district.id or '',
+            'state_id': self.state_id.id or '',
+            'country_id':self.country_id.id or '',
+            'zip': self.zip or '',
 
 
         }

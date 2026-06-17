@@ -268,7 +268,21 @@
                                    readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
                             <field name="job_position"
                                    readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
-                            <field name="customer_address" widget="text"
+                            
+                            <label for="street" string="Address"/>
+				                <div class="o_address_format" >
+				                    <field name="street" placeholder="Street..." class="o_address_street" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+				                    <field name="street2" placeholder="Street 2..." class="o_address_street" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+				                    <field name="customer_city_id" placeholder="City" class="o_address_city" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+				                    <field name = "district_id" placeholder="District" class="o_address_city" domain ="[('city_id','=',customer_city_id)]" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+				                    <field name="state_id" class="o_address_state" placeholder="State"
+				                           options="{&quot;no_open&quot;: True}" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+				                    <field name="zip" placeholder="ZIP" class="o_address_zip" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+				                    <field name="country_id" placeholder="Country" class="o_address_country" readonly="state in ('approve','sent','sale','done','cancel','reject')"
+				                           options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+				                </div>
+                            
+                            <field name="customer_address" widget="text" invisible = "1"
                                    readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
                             <field name="contract_period" invisible="amc_quotation == False"
                                    readonly="state in ('approve','sent','sale','done','cancel','reject')"/>

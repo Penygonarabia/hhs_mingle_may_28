@@ -1767,6 +1767,57 @@ class ServiceSaleOrder(models.Model):
     sales_person_user_id = fields.Many2one('res.users', string  = "SalesPerson")
     
     
+    '''Code Added on June 12 2026 by Vijaya Bhaskar client asked site address similar to address'''
+    street = fields.Char(string = "Street")
+    
+    street2 = fields.Char(string = "Street2")
+    
+    customer_city_id = fields.Many2one('res.city', string = "Customer City")
+    
+    district_id  = fields.Many2one('res.state.district',string = "District")
+    
+    state_id = fields.Many2one('res.country.state', string = "State")
+    
+    country_id = fields.Many2one('res.country', string = "Country")
+    
+    zip = fields.Char(string = "Zip")
+    
+    
+    '''Code Added on June 16 2026 by Vijaya Bhaskar client asked site address similar to address'''
+
+    def write(self, vals):
+        res = super(ServiceSaleOrder, self).write(vals)
+
+        if 'street' in vals:
+            self.crm_id.partner_id.street = vals.get('street')
+        if 'street2' in vals:
+            self.crm_id.partner_id.street2 = vals.get('street2')
+
+        if 'customer_city_id' in vals:
+            city_search = self.env['res.city'].search([('id', '=', vals.get('customer_city_id'))], limit=1)
+            self.crm_id.partner_id.customer_city_id = city_search.id
+
+        if 'state_id' in vals:
+            state_search = self.env['res.country.state'].search([('id', '=', vals.get('state_id'))], limit=1)
+
+            self.crm_id.partner_id.state_id = state_search.id
+
+        if 'country_id' in vals:
+            country_search = self.env['res.country'].search([('id', '=', vals.get('country_id'))], limit=1)
+
+            self.crm_id.partner_id.country_id = country_search.id
+
+        if 'zip' in vals:
+            self.crm_id.partner_id.zip = vals.get('zip')
+
+        if 'email_from' in vals:
+            self.crm_id.partner_id.email = vals.get('email_from')
+
+        if 'phone' in vals:
+            self.crm_id.partner_id.mobile = vals.get('phone')
+        return res
+    
+    
     # @api.depends('customer_name')
     def _compute_sp_gross_margin(self):
         for rec in self:
@@ -2866,18 +2917,41 @@ class ServiceSaleOrder(models.Model):
             # Step 2 — Now call the original contract creation logic
             if order.contract_id:
                 raise ValidationError(_("A contract already exists for this order."))
+            
+            '''Code Added on June 12 2026 by Vijaya Bhaskar client asked site address similar to address'''
+
+            address = [
+                order.crm_id.site_street or False,
+                order.crm_id.site_street2 or False,
+                order.crm_id.site_customer_city_id.name or False,
+                order.crm_id.site_district_id.name or False,
+                order.crm_id.site_state_id.name or False,
+                order.crm_id.site_country_id.name or False,
+                order.crm_id.site_zip or False
+                
+                ]
+            site_address =", ".join(filter(None,address))
+            
             contract = self.env["subscription.contracts"].create(
                 {
                     "amc_quotation_id": order.id,
-                    "site_address": order.customer_address,
-                    'partner_name': order.partner_name,
+                    "site_address" : site_address,
+                    # "site_address": order.customer_address,                    'partner_name': order.partner_name,
                     'warehouse_id' : order.warehouse_id.id or False,
                     'customer_code' : order.customer_code or False,
                     'work_center_id' :order.work_center_id.id or False,
                     'work_center_group_id' : order.work_center_group_id.id or False,
                     'district' :order.district.id or False,
                     # "mobile_no": f"+{order.crm_id.country_id.phone_code if order.crm_id and order.crm_id.country_id else ''}-{order.crm_id.phone if order.crm_id else ''}",
-                    "sales_person_user_id" :   order.sales_person_user_id.id or False          
+                    "sales_person_user_id" :   order.sales_person_user_id.id or False ,
+                    
+                    'street': order.street or '',
+                    'street2':order.street2 or ' ',
+                    'customer_city_id' :order.customer_city_id.id or '',
+                    'district_id': order.district_id.id or '',
+                    'state_id': order.state_id.id or '',
+                    'country_id':order.country_id.id or '',
+                    'zip': order.zip or '',           
                 
 
                 }

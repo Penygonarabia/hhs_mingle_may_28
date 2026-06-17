@@ -2,6 +2,7 @@ from odoo import models, fields, api
 from odoo.exceptions import UserError , ValidationError
 from datetime import datetime, timedelta, time, date
 from dateutil.relativedelta import relativedelta
+import re
 
 
 class ServiceSaleOrder(models.Model):
@@ -192,12 +193,33 @@ class ServiceSaleOrder(models.Model):
         root = self
         while root.org_sale_id:
             root = root.org_sale_id
-
+            
+        '''Code Added on June 17 2026 by Vijaya bahskar for revision name is r1 is not added'''    
+        revision_count = self.env['service.sale.order'].search_count([
+        ('org_sale_id', '=', root.id),
+        ])
+        # revision_count = 1 means R1 already exists, so next is R2, etc.
+        next_revision = revision_count + 1
+    
+        # 📝 Build the new name: strip any existing /RN suffix from root name, then append new suffix
+        base_name = root.name
+        
+        base_name = re.sub(r'/R\d+$', '', base_name)  # safety: strip if root itself had one
+        new_name = f"{base_name}/R{next_revision}"
+    
         vals = {
             "org_sale_id": root.id,
             "state": "draft",
             "amc_quotation": True,
-        }
+            "name": new_name,
+        }    
+            
+        # vals = {
+        #     "org_sale_id": root.id,
+        #     "state": "draft",
+        #     "amc_quotation": True,
+        # }
+
 
         revised = self.copy(default=vals)
         self.is_revised = True

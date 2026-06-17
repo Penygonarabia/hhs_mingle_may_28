@@ -3375,6 +3375,21 @@ class ProjectTask(models.Model):
                     c for c in allowed_codes
                     if c not in hide_codes
                 ]
+                
+            # -------------------------------------------------  
+            # AMC PREVENTIVE HIDE
+            # -------------------------------------------------
+            '''Code Added on June 16 2026 by Vijaya Bhaskar client asked to warranty verification status need not'''
+            if (
+                rec.project_related_amc_bool
+                and rec.maintenance_type == 'preventive'
+                and '111' in allowed_codes
+            ):
+                allowed_codes = [
+                    c for c in allowed_codes
+                    if c != '111'
+                ]
+        
     
             if not allowed_codes:
                 continue

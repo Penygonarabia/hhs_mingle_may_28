@@ -72,6 +72,22 @@ class SubscriptionContracts(models.Model):
     invoice_txt = fields.Text(string = "Invoice Text", default = lambda self:self.env['ir.config_parameter'].sudo().get_param('machine_repair_management.invoice_txt_contract'))
     warehouse_lst_ids = fields.Many2many('stock.warehouse',string = "Warehouse List ids", compute="_compute_warehouse_lst_ids")
     
+    '''Code Added on June 16 2026 by Vijaya Bhaskar client asked site address similar to address'''
+    street = fields.Char(string = "Street")
+    
+    street2 = fields.Char(string = "Street2")
+    
+    customer_city_id = fields.Many2one('res.city', string = "Customer City")
+    
+    district_id  = fields.Many2one('res.state.district',string = "District")
+    
+    state_id = fields.Many2one('res.country.state', string = "State")
+    
+    country_id = fields.Many2one('res.country', string = "Country")
+    
+    zip = fields.Char(string = "Zip")
+    
+    
     @api.depends('amc_quotation_id')
     def _compute_warehouse_lst_ids(self):
         
@@ -150,7 +166,36 @@ class SubscriptionContracts(models.Model):
                         partner.vat = rec.customer_identification_number
                     else:
                         partner.additional_identification_number = rec.customer_identification_number
-
+            
+            '''Code Added on June 16 2026 by Vijaya Bhaskar client asked site address similar to address''' 
+            if 'street' in vals:
+                partner.street = vals.get('street')
+            if 'street2' in vals:
+                partner.street2 = vals.get('street2')
+    
+            if 'customer_city_id' in vals:
+                city_search = self.env['res.city'].search([('id', '=', vals.get('customer_city_id'))], limit=1)
+                partner.customer_city_id = city_search.id
+    
+            if 'state_id' in vals:
+                state_search = self.env['res.country.state'].search([('id', '=', vals.get('state_id'))], limit=1)
+    
+                partner.state_id = state_search.id
+    
+            if 'country_id' in vals:
+                country_search = self.env['res.country'].search([('id', '=', vals.get('country_id'))], limit=1)
+    
+                partner.country_id = country_search.id
+    
+            if 'zip' in vals:
+                partner.zip = vals.get('zip')
+    
+            if 'email_from' in vals:
+                partner.email = vals.get('email_from')
+    
+            if 'phone' in vals:
+                partner.mobile = vals.get('phone')
+            
         return res
 
     @api.constrains(
