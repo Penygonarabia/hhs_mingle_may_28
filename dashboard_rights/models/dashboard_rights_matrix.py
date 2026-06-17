@@ -233,8 +233,59 @@ class DashboardRightsMatrix(models.TransientModel):
         return False
 
     # ------------------------------------------------------------------
-    # Bulk grant / revoke
+    # Bulk grant / revoke — server-side persistence
     # ------------------------------------------------------------------
+    def action_bulk_set_access(self, value, line_ids=None):
+        """Set has_access=value on the given matrix lines AND write straight
+        through to dashboard.rights, without waiting for the form Save.
+
+        The JS bulk buttons call this so the persistence does not depend on
+        the parent matrix form's save round-trip (which routes through the
+        computed/non-stored ``visible_line_ids`` and has been observed to
+        drop updates on some servers).
+        """
+        self.ensure_one()
+        if not self.user_id:
+            return False
+        Line = self.env["dashboard.rights.matrix.line"].sudo()
+        if line_ids:
+            lines = Line.browse(line_ids).exists().filtered(
+                lambda l: l.matrix_id.id == self.id
+            )
+        else:
+            lines = self.line_ids
+        if not lines:
+            return False
+        val = bool(value)
+        # Skip admin: their toggles are locked True by view logic.
+        Rights = self.env["dashboard.rights"].sudo()
+        if Rights._is_admin_user(self.user_id):
+            return False
+        # 1) Update transient lines so the UI re-reads the same values.
+        lines.write({"has_access": val})
+        # 2) Hard-write to dashboard.rights so a refresh sees the change.
+        board_ids = lines.mapped("dashboard_id").ids
+        existing = Rights.search([
+            ("user_id", "=", self.user_id.id),
+            ("dashboard_id", "in", board_ids),
+        ])
+        existing_by_board = {r.dashboard_id.id: r for r in existing}
+        to_create = []
+        for bid in board_ids:
+            rec = existing_by_board.get(bid)
+            if rec:
+                if rec.has_access != val:
+                    rec.has_access = val
+            else:
+                to_create.append({
+                    "user_id": self.user_id.id,
+                    "dashboard_id": bid,
+                    "has_access": val,
+                })
+        if to_create:
+            Rights.create(to_create)
+        return True
+
     def action_reset_dashboards(self):
         self.ensure_one()
         if not self.lines_loaded:
