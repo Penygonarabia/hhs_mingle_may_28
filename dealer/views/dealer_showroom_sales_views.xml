@@ -4,36 +4,39 @@
     <record id="view_form_dealer_showroom_sales" model="ir.ui.view">
         <field name="name">dsales.showroom.sales.form</field>
         <field name="model">dsales.showroom.sales</field>
+        <field name="priority" eval="1"/>
         <field name="arch" type="xml">
             <form >
                 <header>
                     <field name="requires_approval" invisible="1"/>
                     <button name="action_submit" string="Send to Approve" type="object" class="oe_highlight" invisible="state != 'draft' or not requires_approval" />
                     <button name="action_submit" string="Submit" type="object" class="oe_highlight" invisible="state != 'draft' or requires_approval" />
+                    <button name="action_approve" string="Approve" type="object" class="btn-success" invisible="state != 'submitted'" groups="dealer.group_dealer_backoffice_user"/>
+                    <button name="action_open_reject_wizard" string="Reject" type="object" class="btn-danger" invisible="state != 'submitted'" groups="dealer.group_dealer_backoffice_user"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,submitted"/>
                 </header>
                 <sheet>
-                    <group class="deskvw">
+                    <field name="dealer_mobile_user_bool" invisible="1"/>
+                    <group class="deskvw" invisible="dealer_mobile_user_bool">
                         <field name="dealer_id" readonly="state != 'draft'" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
                         <field name="dealer_showroom_id" domain="[('dealer_id', '=', dealer_id),('sale_dealer_required','=',True)]" readonly="state != 'draft'" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
                         <field name="dealer_assignment_id"
                                domain="[('dealer_id', '=', dealer_id), ('dealer_showroom_id', '=', dealer_showroom_id)]" readonly="state != 'draft'" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"/>
                         <field name="invoice_no" readonly="state != 'draft'"/>
                     </group>
-                    <group  class="deskvw">
+                    <group class="deskvw" invisible="dealer_mobile_user_bool">
                         <field name="date_time" readonly="state != 'draft'"/>
                         <field name="is_sales_return" readonly="state != 'draft'"/>
                         <field name="notes" colspan="2" readonly="state != 'draft'"/>
                         <field name="invoice_attachment_name" invisible="1"/>
                         <field name="invoice_attachment" filename="invoice_attachment_name" readonly="state != 'draft'"/>
                         <field name="user_id" invisible="1" force_save="1"/>
-                        <field name="dealer_mobile_user_bool" invisible="1"/>
                         <field name="dealer_access_bool" invisible="1"/> 
                         <field name="current_latitude" invisible="1"/>
                         <field name="current_longitude" invisible="1"/>  
                         <field name="work_center_location_id" invisible="1"/>                     
                     </group>
-                    <group class="mobvw">
+                   <group class="mobvw">
                         <field name="invoice_no" readonly="state != 'draft'"/>
                         <field name="date_time" readonly="state != 'draft'"/>
                         <field name="is_sales_return" readonly="state != 'draft'"/>
@@ -59,7 +62,8 @@
                             <div style="text-align: center; width: 100%; padding-bottom: 10px;">
                                 <button name="action_open_add_item_wizard" string="Add Item" type="object" class="mobile-full-btn mobvw" icon="fa-plus" invisible="state != 'draft'"/>
                             </div>
-                            <field name="line_ids" readonly="state != 'draft'">
+                            <!-- Mobile View -->
+                            <field name="line_ids" readonly="state != 'draft'" invisible="not dealer_mobile_user_bool">
                                 <tree create="0">
                                     <field name="product_category_id" width="150px" domain="[('parent_id','=', False), ('name', '!=', 'All')]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
                                     <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
@@ -71,6 +75,37 @@
                                     <field name="fsm_loyalty_points" width="100px" readonly="1" widget="integer"/>
                                 </tree>
                             </field>
+                            
+                            <!-- Back Office View -->
+                            <field name="line_ids" readonly="state not in ['draft', 'submitted']" invisible="dealer_mobile_user_bool">
+                                <tree editable="bottom">
+                                    <field name="product_category_id" width="150px" domain="[('parent_id','=', False), ('name', '!=', 'All')]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
+                                    <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
+                                    <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
+                                    <field name="product_id" width="150px" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" domain="[('product_sub_group_id', '=', product_subgroup_id), ('show_in_dealer_app', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
+                                    <field name="product_name" width="200px"/>
+                                    <field name="capacity" width="80px"/>
+                                    <field name="qty" width="80px"/>
+                                    <field name="fsm_loyalty_points" width="100px" readonly="1" widget="integer"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Approval Details" invisible="state == 'draft'">
+                            <group>
+                                <group>
+                                    <field name="limit_qty" readonly="1"/>
+                                    <field name="exceeded_qty" readonly="1"/>
+                                    <field name="submitted_by" readonly="1" invisible="not submitted_by"/>
+                                    <field name="submitted_date" readonly="1" invisible="not submitted_date"/>
+                                </group>
+                                <group>
+                                    <field name="approved_by" readonly="1" invisible="not approved_by"/>
+                                    <field name="approved_date" readonly="1" invisible="not approved_date"/>
+                                    <field name="rejected_by" readonly="1" invisible="not rejected_by"/>
+                                    <field name="rejected_date" readonly="1" invisible="not rejected_date"/>
+                                    <field name="reject_reason" readonly="1" invisible="not reject_reason"/>
+                                </group>
+                            </group>
                         </page>
                     </notebook>
                 </sheet>
@@ -90,6 +125,7 @@
     <record id="view_tree_dealer_showroom_sales" model="ir.ui.view">
         <field name="name">dsales.showroom.sales.tree</field>
         <field name="model">dsales.showroom.sales</field>
+        <field name="priority" eval="1"/>
         <field name="arch" type="xml">
             <tree string="Showroom Sales">
                 <field name="invoice_no"/>
@@ -228,7 +264,7 @@
               parent="menu_dealer_root"
               action="action_dealer_showroom_sales"
               groups="dealer.group_dealer_backoffice_user"
-              sequence="20"/>
+              sequence="2"/>
 
     <!-- Mobile -->
     <menuitem id="menu_dealer_sales_mobile"
@@ -237,5 +273,116 @@
               action="action_dealer_sales_mobile"
               groups="dealer.group_dealer_user"
               sequence="60"/>
+
+    <!-- =========================
+         APPROVAL WORKFLOW
+    ========================== -->
+    <record id="view_tree_dealer_showroom_sales_approval" model="ir.ui.view">
+        <field name="name">dsales.showroom.sales.approval.tree</field>
+        <field name="model">dsales.showroom.sales</field>
+        <field name="priority" eval="99"/>
+        <field name="arch" type="xml">
+            <tree string="Approve Shop Sales">
+                <field name="dealer_id"/>
+                <field name="dealer_showroom_id"/>
+                <field name="user_id" string="Salesman"/>
+                <field name="invoice_no"/>
+                <field name="date_time"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_form_dealer_showroom_sales_approval" model="ir.ui.view">
+        <field name="name">dsales.showroom.sales.approval.form</field>
+        <field name="model">dsales.showroom.sales</field>
+        <field name="priority" eval="99"/>
+        <field name="arch" type="xml">
+            <form string="Approve Shop Sales">
+                <header>
+                    <button name="action_approve" string="Approve" type="object" class="btn-success" invisible="state != 'submitted'"/>
+                    <button name="action_open_reject_wizard" string="Reject" type="object" class="btn-danger" invisible="state != 'submitted'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,approved,rejected"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="dealer_id" readonly="1"/>
+                            <field name="dealer_showroom_id" readonly="1"/>
+                            <field name="user_id" string="Salesman" readonly="1"/>
+                            <field name="invoice_no" readonly="1"/>
+                            <field name="date_time" readonly="1"/>
+                            <field name="reject_reason" readonly="1"/>
+                        </group>
+                        <group></group>
+                    </group>
+                    
+                    <div class="row mt-4">
+                        <div class="col-8">
+                            <div style="background-color: #ff987c; color: white; padding: 5px 15px; border-radius: 5px 5px 0 0; font-weight: bold; display: inline-block;">
+                                Item Details
+                            </div>
+                            <field name="line_ids" readonly="1" nolabel="1" style="width: 100%;">
+                                <tree>
+                                    <field name="product_category_id" string="Category"/>
+                                    <field name="product_group_id" string="Group"/>
+                                    <field name="product_subgroup_id" string="Sub Group"/>
+                                    <field name="product_id" string="Model"/>
+                                    <field name="product_name" string="Name"/>
+                                    <field name="capacity"/>
+                                    <field name="qty"/>
+                                </tree>
+                            </field>
+                        </div>
+                        <div class="col-4">
+                            <div style="font-weight: bold; padding: 5px 0;">Invoice Scan Copy</div>
+                            <field name="invoice_attachment" widget="image" nolabel="1" readonly="1" class="w-100"/>
+                        </div>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_approve_shop_sales" model="ir.actions.act_window">
+        <field name="name">Approve Shop Sales</field>
+        <field name="res_model">dsales.showroom.sales</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('state', '=', 'submitted'), ('requires_approval', '=', True)]</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_tree_dealer_showroom_sales_approval')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_form_dealer_showroom_sales_approval')})]"/>
+    </record>
+
+    <record id="action_mass_approve_sales" model="ir.actions.server">
+        <field name="name">Mass Approve</field>
+        <field name="model_id" ref="dealer.model_dsales_showroom_sales"/>
+        <field name="binding_model_id" ref="dealer.model_dsales_showroom_sales"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+            if records:
+                records.action_approve()
+        </field>
+    </record>
+
+    <record id="action_mass_reject_sales" model="ir.actions.server">
+        <field name="name">Mass Reject</field>
+        <field name="model_id" ref="dealer.model_dsales_showroom_sales"/>
+        <field name="binding_model_id" ref="dealer.model_dsales_showroom_sales"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+            if records:
+                action_return = records.action_open_reject_wizard()
+        </field>
+    </record>
+
+    <menuitem id="menu_dealer_approve_shop_sales"
+              name="Approve Shop Sales"
+              parent="menu_dealer_root"
+              action="action_approve_shop_sales"
+              groups="dealer.group_dealer_backoffice_user"
+              sequence="3"/>
 
 </odoo>

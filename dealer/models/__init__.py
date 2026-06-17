@@ -7,7 +7,6 @@ from . import res_region
 from . import dealer_assignment
 from . import dealer_shop_status
 from . import dealer_showroom_sales
-from . import dsales_showroom_invoice
 # from . import hr_employee
 from . import size_master
 from . import product_category

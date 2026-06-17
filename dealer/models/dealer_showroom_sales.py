@@ -198,6 +198,37 @@ class dealerShowroomSales(models.Model):
         ('rejected', 'Rejected')
     ], string='Status', default='draft', tracking=True)
     
+    submitted_by = fields.Many2one('res.users', string="Submitted By", tracking=True)
+    submitted_date = fields.Datetime(string="Submitted Date", tracking=True)
+    approved_by = fields.Many2one('res.users', string="Approved By", tracking=True)
+    approved_date = fields.Datetime(string="Approved Date", tracking=True)
+    rejected_by = fields.Many2one('res.users', string="Rejected By", tracking=True)
+    rejected_date = fields.Datetime(string="Rejected Date", tracking=True)
+    reject_reason = fields.Text(string="Reject Reason", tracking=True)
+    
+    limit_qty = fields.Float(string="Limit Quantity", compute="_compute_limit_qty", store=True)
+    exceeded_qty = fields.Float(string="Exceeded Quantity", compute="_compute_limit_qty", store=True)
+
+    @api.depends('dealer_id', 'line_ids.qty', 'qty')
+    def _compute_limit_qty(self):
+        for rec in self:
+            params = self.env['ir.config_parameter'].sudo()
+            is_dealer = False
+            if rec.dealer_id:
+                is_cust = getattr(rec.dealer_id, 'partner_type_hhs', False) == 'customer'
+                is_sub_dealer = getattr(rec.dealer_id, 'sub_partner_type', False) == 'dealer'
+                is_req = getattr(rec.dealer_id, 'dealersalesman_required', False)
+                if is_cust and is_sub_dealer and is_req:
+                    is_dealer = True
+            
+            if is_dealer:
+                rec.limit_qty = float(params.get_param('dealer.dealer_sales_limit', default=100.0))
+            else:
+                rec.limit_qty = float(params.get_param('dealer.retailer_sales_limit', default=25.0))
+            
+            total = sum(abs(line.qty) for line in rec.line_ids) if rec.line_ids else abs(rec.qty or 0)
+            rec.exceeded_qty = max(0.0, total - rec.limit_qty)
+
     requires_approval = fields.Boolean(
         string='Requires Approval',
         compute='_compute_requires_approval',
@@ -304,9 +335,19 @@ class dealerShowroomSales(models.Model):
             if not any(line.product_id for line in rec.line_ids):
                 raise UserError("At least one product entry must be selected in the sales lines.")
             if rec.requires_approval:
-                rec.state = 'submitted'
+                rec.write({
+                    'state': 'submitted',
+                    'submitted_by': self.env.user.id,
+                    'submitted_date': fields.Datetime.now()
+                })
             else:
-                rec.state = 'approved'
+                rec.write({
+                    'state': 'approved',
+                    'submitted_by': self.env.user.id,
+                    'submitted_date': fields.Datetime.now(),
+                    'approved_by': self.env.user.id,
+                    'approved_date': fields.Datetime.now()
+                })
 
     def action_open_add_item_wizard(self):
         self.ensure_one()
@@ -321,18 +362,37 @@ class dealerShowroomSales(models.Model):
 
     def action_approve(self):
         for rec in self:
-            rec.state = 'approved'
+            rec.write({
+                'state': 'approved',
+                'approved_by': self.env.user.id,
+                'approved_date': fields.Datetime.now()
+            })
+
+    def action_open_reject_wizard(self):
+        return {
+            'name': 'Reject Sales',
+            'type': 'ir.actions.act_window',
+            'res_model': 'dsales.reject.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'active_ids': self.ids, 'active_model': 'dsales.showroom.sales'}
+        }
 
     def action_reject(self):
         for rec in self:
-            rec.state = 'rejected'
+            rec.write({
+                'state': 'rejected',
+                'rejected_by': self.env.user.id,
+                'rejected_date': fields.Datetime.now()
+            })
             self._send_whatsapp_notification(rec)
 
     def _send_whatsapp_notification(self, rec):
         _logger.info(f"WhatsApp Notification: Sales record {rec.invoice_no} rejected for Salesman {rec.user_id.name if rec.user_id else ''}")
 
-    def _default_dealer_mobile_user_bool(self): 
-        return bool(self.env.user.has_group('dealer.group_dealer_user'))    
+    def _compute_dealer_mobile_user_bool(self): 
+        for rec in self:
+            rec.dealer_mobile_user_bool = bool(self.env.user.has_group('dealer.group_dealer_user'))
 
     @api.depends('product_id')
     def _compute_capacity(self):
@@ -354,51 +414,17 @@ class dealerShowroomSales(models.Model):
                         })
                     record.size_id = size_rec.id
 
-    dealer_mobile_user_bool = fields.Boolean(string="dealer Mobile User",default=_default_dealer_mobile_user_bool)
+    dealer_mobile_user_bool = fields.Boolean(
+        string="dealer Mobile User",
+        compute="_compute_dealer_mobile_user_bool"
+    )
 
-    dealer_access_bool = fields.Boolean(string ="dealer_access_bool",compute="_compute_dealer_access_bool",default=False)
-
-   
-    
-        # Helper field to control readonly
-    # product_category_readonly = fields.Boolean(
-    #     string="Product Category Readonly",
-    #     compute="_compute_product_category_readonly"
-    # )
-
-    # @api.depends('dealer_mobile_user_bool')
-    # def _compute_product_category_readonly(self):
-    #     for rec in self:
-    #         rec.product_category_readonly = rec.dealer_mobile_user_bool
+    dealer_access_bool = fields.Boolean(string="dealer_access_bool", compute="_compute_dealer_access_bool", default=False)
 
     @api.depends('dealer_mobile_user_bool')
     def _compute_dealer_access_bool(self):
         for rec in self:
             rec.dealer_access_bool = bool(rec.dealer_mobile_user_bool)
-            
-
-    @api.onchange('dealer_mobile_user_bool')
-    def _onchange_dealer_mobile_user_bool(self):
-        for rec in self:
-            if not rec.dealer_mobile_user_bool:
-                rec.dealer_access_bool = False
-                rec.dealer_id = False
-                rec.dealer_showroom_id = False
-                rec.dealer_assignment_id = False
-                rec.product_category_id = False
-                return             
-                # print("/.///////////////// rec.dealer_access_bool//", rec.dealer_access_bool,rec.dealer_mobile_user_bool)
-            dealer_assignment = self.env['dsales.assignment'].search( 
-            [('sale_dealer_id', '=', self.env.user.id)], limit=1 ) 
-            if dealer_assignment:
-                rec.dealer_id = dealer_assignment.dealer_id.id
-                rec.dealer_showroom_id = dealer_assignment.dealer_showroom_id.id
-                rec.dealer_assignment_id = dealer_assignment.id
-                rec.product_category_id = dealer_assignment.category_id.id
-                # Make field readonly for mobile users
-                # rec._fields['product_category_id'].readonly = True
-                # print("...........dealer_assignment........",dealer_assignment.dealer_id.name ,rec._fields['product_category_id'].readonly)
-           
 
 
     # @api.constrains('qty')
@@ -1075,6 +1101,16 @@ class dealerShowroomSales(models.Model):
         if not user.has_group("dealer.group_dealer_user"):
             return res
 
+        # Always get the assigned showroom for this dealer
+        dealer_assignment = self.env['dsales.assignment'].search(
+            [('sale_dealer_id', '=', user.id),('active', '=', True)], limit=1
+        )
+        if dealer_assignment:
+            res['dealer_assignment_id'] = dealer_assignment.id
+            res['dealer_id'] = dealer_assignment.dealer_id.id
+            res['dealer_showroom_id'] = dealer_assignment.dealer_showroom_id.id
+            res['product_category_id'] = dealer_assignment.category_id.id
+
         validate_geo = self.env["ir.config_parameter"].sudo().get_param("dealer.validate_geo_location")
         if not validate_geo or validate_geo == "False":
             return res
@@ -1087,10 +1123,6 @@ class dealerShowroomSales(models.Model):
                 _("Cannot validate location for dealer '%s': Coordinates missing.") % user_name
             )
 
-        # Get the assigned showroom for this dealer
-        dealer_assignment = self.env['dsales.assignment'].search(
-            [('sale_dealer_id', '=', user.id),('active', '=', True)], limit=1
-        )
         if not dealer_assignment or not dealer_assignment.dealer_showroom_id:
             raise ValidationError(
                 _("Cannot validate location for dealer '%s': No showroom assigned.") % user_name
@@ -1119,7 +1151,9 @@ class dealerShowroomSales(models.Model):
 
         if distance > wfo_radius:
             raise ValidationError(
-                _("Hi '%s', you are not in a valid location (distance %.2f m).") % (user_name, distance)
+                _("Geo-location validation failed for dealer '%s': "
+                  "You are %.2f meters away, which exceeds the allowed radius of %d meters.") %
+                (user_name, distance, wfo_radius)
             )
 
         return res
@@ -1186,6 +1220,13 @@ class DealerShowroomSalesLine(models.Model):
 
     sales_id = fields.Many2one('dsales.showroom.sales', string='Sales', required=True, ondelete='cascade')
 
+    date_time = fields.Datetime(related='sales_id.date_time', store=True, string="Date")
+    dealer_id = fields.Many2one(related='sales_id.dealer_id', store=True, string="Dealer")
+    dealer_showroom_id = fields.Many2one(related='sales_id.dealer_showroom_id', store=True, string="Showroom")
+    dealer_assignment_id = fields.Many2one(related='sales_id.dealer_assignment_id', store=True, string="Promoter")
+    invoice_attachment = fields.Binary(related='sales_id.invoice_attachment', string="Invoice Attachment")
+    invoice_attachment_name = fields.Char(related='sales_id.invoice_attachment_name')
+
     product_category_id = fields.Many2one('product.category', string="Product Category", domain="[('parent_id','=',False),('name', '!=', 'All')]")
     product_group_id = fields.Many2one('product.category', string="Product Group", context={'show_only_name': True})
     product_subgroup_id = fields.Many2one('product.category', string="Product Sub Group", context={'show_only_name': True})
@@ -1195,6 +1236,28 @@ class DealerShowroomSalesLine(models.Model):
     capacity = fields.Char(string='Capacity', compute="_compute_capacity", store=True)
     fsm_loyalty_points = fields.Float("Loyalty Points", compute='_compute_fsm_loyalty_points', store=True)
     qty = fields.Integer(string='Qty', required=True, default=1)
+    
+    limit_qty = fields.Float(related='sales_id.limit_qty', store=True, string="Limit Quantity")
+    exceeded_qty = fields.Float(related='sales_id.exceeded_qty', store=True, string="Exceeded Quantity")
+    state = fields.Selection(related='sales_id.state', store=True, string="Status")
+
+    def action_mass_approve(self):
+        sales = self.mapped('sales_id')
+        sales.action_approve()
+
+    def action_mass_reject(self):
+        sales = self.mapped('sales_id')
+        sales.action_reject()
+
+    def action_open_reject_wizard(self):
+        return {
+            'name': 'Reject Sales',
+            'type': 'ir.actions.act_window',
+            'res_model': 'dsales.reject.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'active_ids': self.ids, 'active_model': 'dsales.showroom.sales.line'}
+        }
 
     @api.depends('product_id')
     def _compute_capacity(self):
