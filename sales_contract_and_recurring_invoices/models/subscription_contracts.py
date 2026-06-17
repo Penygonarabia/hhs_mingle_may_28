@@ -414,6 +414,23 @@ class SubscriptionContracts(models.Model):
         
         
         self.write({'state': 'Ongoing'})
+        
+        
+    '''Code Added on June 17 2026 by Vijaya Bhaskar customer code is unique'''
+    @api.constrains('customer_code')
+    def _check_customercode(self):
+        for rec in self:
+            if rec.customer_code:
+                duplicate = self.env['res.partner'].search([
+                    ('ref', '=', rec.customer_code),
+                    ('id', '!=', rec.id)
+                ], limit=1)
+    
+                if duplicate:
+                    raise ValidationError(
+                        _("Customer code '%s' is already associated with customer '%s'.")
+                        % (rec.customer_code, duplicate.display_name)
+                    )    
 
     def action_to_cancel(self):
         """ Cancel the Contract """

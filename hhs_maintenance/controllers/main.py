@@ -109,9 +109,12 @@ class HHSEquipmentTemplate(http.Controller):
                 seq = asset_counter[product_key]
 
                 # Dynamic Asset Tag
-                contract_code = (contract.name or '') \
-                .replace('AMC-J', 'J') \
-                .replace('AMCJ', 'J')
+                ''''Code Added on June 17 2026 Client asked the customer code for the name instead of usual name'''
+                # contract_code = (contract.name or '') \
+                # .replace('AMC-J', 'J') \
+                # .replace('AMCJ', 'J')
+                
+                contract_code = contract.customer_code or ''
 
                 asset_tag = f"{contract_code}/{default_code}-{str(seq).zfill(3)}"
 
