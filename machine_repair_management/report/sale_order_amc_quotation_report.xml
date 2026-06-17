@@ -6,7 +6,7 @@
             <field name="format">A4</field>
             <field name="page_height">0</field>
             <field name="page_width">0</field>
-            <field name="orientation">Landscape</field>
+            <field name="orientation">Portrait</field>
             <field name="margin_top">30</field>
             <field name="margin_bottom">20</field>
             <field name="margin_left">5</field>
@@ -289,27 +289,27 @@
                         <!--                        </div>-->
                     </div>
                     <div class="page" style="font-family:'Arial Unicode MS', Arial, sans-serif;page-break-before: always;">
-<style id="hhs-sig-style">.hhs-sig, .hhs-sig *, .hhs-sig p, .hhs-sig span { font-size:17pt !important; }</style>
+<!--<style id="hhs-sig-style">.hhs-sig, .hhs-sig *, .hhs-sig p, .hhs-sig span { font-size:14pt !important; }</style>-->
 
-                        <div style="font-size:17pt !important; line-height:2.1;">
+                        <div style="font-size:14pt !important; line-height:2.1;">
                             <div>
-                                <strong style="font-size:17pt !important;">Ref no.</strong>
+                                <strong style="font-size:14pt !important;">Ref no.</strong>
                                 :
-                                <span style="font-size:17pt !important;" t-esc="name"/>
+                                <span style="font-size:14pt !important;" t-esc="name"/>
                             </div>
                             <div>
-                                <strong style="font-size:17pt !important;">Date</strong>
+                                <strong style="font-size:14pt !important;">Date</strong>
                                 :
-                                <span style="font-size:17pt !important;" t-esc="quotation_date"/>
+                                <span style="font-size:14pt !important;" t-esc="quotation_date"/>
                             </div>
                             <div>
-                                <strong style="font-size:17pt !important;" t-esc="'Company' if (property_type or '') == 'commercial' else 'Villa'"/>
+                                <strong style="font-size:14pt !important;" t-esc="'Company' if (property_type or '') == 'commercial' else 'Villa'"/>
                                 <!--                                <strong t-esc="'Company' if property_type == 'Commercial' else 'Villa'"/>-->
                                 <!--                                strong t-if="property_type == 'Commercial'">Company</strong>-->
                                 <!--                                <strong t-elif="property_type == 'Residential'">Villa</strong><-->
                                 <!--                                <strong t-else="">Property</strong>-->
                                 :
-                                <span style="font-size:17pt !important;" t-esc="company_name"/>
+                                <span style="font-size:14pt !important;" t-esc="company_name"/>
                                 <!--                                <span t-esc="customer_name"/>-->
                             </div>
 
@@ -319,76 +319,76 @@
                             <!--                                <span t-esc="customer_name"/>-->
                             <!--                            </div>-->
                             <div>
-                                <strong style="font-size:17pt !important;">Attn. To</strong>
+                                <strong style="font-size:14pt !important;">Attn. To</strong>
                                 :
-                                <span style="font-size:17pt !important;" t-esc="att_to"/>
+                                <span style="font-size:14pt !important;" t-esc="att_to"/>
                             </div>
                             <div>
-                                <strong style="font-size:17pt !important;">Contact No.</strong>
+                                <strong style="font-size:14pt !important;">Contact No.</strong>
                                 :
-                                <span style="font-size:17pt !important;" t-esc="contact_no"/>
+                                <span style="font-size:14pt !important;" t-esc="contact_no"/>
                             </div>
                             <div>
-                                <strong style="font-size:17pt !important;">Address</strong>
+                                <strong style="font-size:14pt !important;">Address</strong>
                                 :
-                                <span style="font-size:17pt !important;" t-esc="address"/>
+                                <span style="font-size:14pt !important;" t-esc="address"/>
                             </div>
                             <div>
-                                <strong style="font-size:17pt !important;">Subject</strong>
+                                <strong style="font-size:14pt !important;">Subject</strong>
                                 :
-                                <span style="font-size:17pt !important; font-weight:bold !important;" t-esc="subject"/>
+                                <span style="font-size:14pt !important; font-weight:bold !important;" t-esc="subject"/>
                             </div>
                         </div>
                         <table style="width:100%; margin-top:48px; margin-bottom:0; border-collapse:collapse;">
                             <tr>
-                                <td style="width:100%; text-align:center; background-color:#D9D9D9; border:1px solid #000; padding:16px; font-size:20pt !important;">
+                                <td style="width:100%; text-align:center; background-color:#D9D9D9; border:1px solid #000; padding:16px; font-size:15pt !important;">
                                     <strong>QUOTATION</strong>
                                 </td>
                             </tr>
                         </table>
-                        <div class="hhs-sig" style="white-space: pre-line;margin:0; padding:0;line-height:1.2; font-size:17pt !important;">
-                            <strong style="font-size:17pt !important;">
+                        <div class="hhs-sig" style="white-space: pre-line;margin:0; padding:0;line-height:1.2; font-size:14pt !important;">
+                            <strong style="font-size:14pt !important;">
                                 <t t-raw="subject"/>
                             </strong>
                         </div>
 
 
-                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:17pt !important;">
+                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:14pt !important;">
                             <thead style="background-color:#1F6FAE; color:white;">
                                 <tr>
-                                    <th style="text-align:center; padding:8px; font-size:17pt !important;">S.No</th>
-                                    <th style="text-align:center; padding:8px; font-size:17pt !important;">
+                                    <th style="text-align:center; padding:8px; font-size:14pt !important;">S.No</th>
+                                    <th style="text-align:center; padding:8px; font-size:14pt !important;">
                                         <span style="font-size:17pt !important;">الوصف</span>
                                         <br/>
                                         Brand
                                     </th>
-                                    <th style="text-align:center; font-size:17pt !important; font-family:'Noto Naskh Arabic','Amiri','DejaVu Sans',sans-serif; padding:8px;">
+                                    <th style="text-align:center; font-size:14pt !important; font-family:'Noto Naskh Arabic','Amiri','DejaVu Sans',sans-serif; padding:8px;">
                                         <span style="font-size:17pt !important;">نوع الوحدة</span>
                                         <br/>
                                         Unit Type
                                     </th>
-                                    <th style="text-align:center; padding:8px; font-size:17pt !important;">
+                                    <th style="text-align:center; padding:8px; font-size:14pt !important;">
                                         <span style="font-size:17pt !important;">الوصف</span>
                                         <br/>
                                         Contract Type
                                     </th>
-                                    <th style="text-align:center; font-size:17pt !important; font-family:'Noto Naskh Arabic','Amiri','DejaVu Sans',sans-serif; padding:8px;">
+                                    <th style="text-align:center; font-size:14pt !important; font-family:'Noto Naskh Arabic','Amiri','DejaVu Sans',sans-serif; padding:8px;">
                                         <span style="font-size:17pt !important;">سعر البيع للوحدة</span>
                                         <br/>
                                         Per Unit Selling Price
                                     </th>
-                                    <th style="text-align:center; padding:8px; font-size:17pt !important;">
+                                    <th style="text-align:center; padding:8px; font-size:14pt !important;">
                                         <span style="font-size:17pt !important;">الكمية</span>
                                         <br/>
                                         Qty
                                     </th>
-                                    <th style="text-align:center; font-size:17pt !important; font-family:'Noto Naskh Arabic','Amiri','DejaVu Sans',sans-serif; padding:8px;">
+                                    <th style="text-align:center; font-size:14pt !important; font-family:'Noto Naskh Arabic','Amiri','DejaVu Sans',sans-serif; padding:8px;">
                                         <span style="font-size:17pt !important;">عدد الزيارات / السنة</span>
                                         <br/>
                                         No. of Visits / Yr
                                     </th>
-                                    <th style="text-align:center; padding:8px; font-size:17pt !important;">
-                                        <span style="font-size:17pt !important;">سعر</span>
+                                    <th style="text-align:center; padding:8px; font-size:14pt !important;">
+                                        <span style="font-size:14pt !important;">سعر</span>
                                         <br/>
                                         Price
                                     </th>
@@ -399,47 +399,47 @@
                                 <t t-foreach="quotations" t-as="quotation">
                                     <tr>
                                         <td style="text-align:center; padding:16px;">
-                                            <span style="font-size:17pt !important;" t-esc="counter"/>
+                                            <span style="font-size:14pt !important;" t-esc="counter"/>
                                             <span/>
                                         </td>
                                         <td style="text-align:center; padding:16px;">
-                                            <span style="font-size:17pt !important;" t-if="quotation['brand']" t-esc="quotation['brand']"/>
+                                            <span style="font-size:14pt !important;" t-if="quotation['brand']" t-esc="quotation['brand']"/>
                                         </td>
                                         <td style="text-align:left; padding:16px;">
-                                            <span style="font-size:17pt !important;" t-if="quotation['unit_type']" t-esc="quotation['unit_type']"/>
+                                            <span style="font-size:14pt !important;" t-if="quotation['unit_type']" t-esc="quotation['unit_type']"/>
                                         </td>
                                         <td style="text-align:center; padding:16px;">
-                                            <span style="font-size:17pt !important;" t-if="quotation['description']" t-esc="quotation['description']"/>
+                                            <span style="font-size:14pt !important;" t-if="quotation['description']" t-esc="quotation['description']"/>
                                         </td>
                                         <td style="text-align:center; padding:16px;">
-                                            <span style="font-size:17pt !important;" t-esc="quotation['unit_selling_price']" t-options="{'widget': 'float', 'precision': 0}"/>
+                                            <span style="font-size:14pt !important;" t-esc="quotation['unit_selling_price']" t-options="{'widget': 'float', 'precision': 0}"/>
                                         </td>
                                         <td style="text-align:center; padding:16px;">
-                                            <span style="font-size:17pt !important;" t-if="quotation['Qty']" t-esc="int(quotation['Qty'])"/>
+                                            <span style="font-size:14pt !important;" t-if="quotation['Qty']" t-esc="int(quotation['Qty'])"/>
                                         </td>
                                         <td style="text-align:center; padding:16px;">
-                                            <span style="font-size:17pt !important;" t-if="quotation['no_of_visits_per_year']" t-esc="quotation['no_of_visits_per_year']"/>
+                                            <span style="font-size:14pt !important;" t-if="quotation['no_of_visits_per_year']" t-esc="quotation['no_of_visits_per_year']"/>
                                         </td>
                                         <td style="text-align:right; padding:16px;">
-                                            <span style="font-size:17pt !important;" t-esc="company_symbol"/>
-                                            <span style="font-size:17pt !important;" t-esc="quotation['total']" t-options="{'widget': 'float', 'precision': 2}"/>
+                                            <span style="font-size:14pt !important;" t-esc="company_symbol"/>
+                                            <span style="font-size:14pt !important;" t-esc="quotation['total']" t-options="{'widget': 'float', 'precision': 2}"/>
                                         </td>
                                     </tr>
                                     <t t-set="counter" t-value="counter + 1"/>
                                 </t>
                             </tbody>
-                            <tfoot style="font-size:17pt !important;">
+                            <tfoot style="font-size:14pt !important;">
 
                                 <!-- Subtotal Row -->
                                 <tr>
                                     <!-- Col 1 -->
                                     <td colspan="5" style="padding:16px;">
-                                        <strong style="font-size:17pt !important;">Sub Total (Qty)</strong>
+                                        <strong style="font-size:14pt !important;">Sub Total (Qty)</strong>
                                     </td>
 
                                     <!-- ✅ Col 6 (Qty total) -->
                                     <td style="text-align:center; padding:16px;">
-                                        <span style="font-size:17pt !important;" t-esc="total_qty"/>
+                                        <span style="font-size:14pt !important;" t-esc="total_qty"/>
                                     </td>
 
                                     <!-- Col 7 -->
@@ -448,8 +448,8 @@
                                     <!-- Col 8 (Amount) -->
                                     <td style="text-align:right; padding:16px;">
                                         <strong>
-                                            <span style="font-size:17pt !important;" t-esc="company_symbol"/>
-                                            <span style="font-size:17pt !important;" t-esc="sub_total" t-options="{'widget': 'float', 'precision': 2}"/>
+                                            <span style="font-size:14pt !important;" t-esc="company_symbol"/>
+                                            <span style="font-size:14pt !important;" t-esc="sub_total" t-options="{'widget': 'float', 'precision': 2}"/>
                                         </strong>
                                     </td>
                                 </tr>
@@ -458,7 +458,7 @@
                                 <tr>
                                     <!-- Col 1 -->
                                     <td colspan="6" style="padding:16px;">
-                                        <strong style="font-size:17pt !important;">VAT - 15%</strong>
+                                        <strong style="font-size:14pt !important;">VAT - 15%</strong>
                                     </td>
 
                                     <!-- Col 7 -->
@@ -467,8 +467,8 @@
                                     <!-- Col 8 -->
                                     <td style="text-align:right; padding:16px;">
                                         <strong>
-                                            <span style="font-size:17pt !important;" t-esc="company_symbol"/>
-                                            <span style="font-size:17pt !important;" t-esc="total_vat" t-options="{'widget': 'float', 'precision': 2}"/>
+                                            <span style="font-size:14pt !important;" t-esc="company_symbol"/>
+                                            <span style="font-size:14pt !important;" t-esc="total_vat" t-options="{'widget': 'float', 'precision': 2}"/>
                                         </strong>
                                     </td>
                                 </tr>
@@ -477,7 +477,7 @@
                                 <tr>
                                     <!-- Col 1 -->
                                     <td colspan="6" style="padding:16px;">
-                                        <strong style="font-size:17pt !important;">Grand Total</strong>
+                                        <strong style="font-size:14pt !important;">Grand Total</strong>
                                     </td>
 
                                     <!-- Col 7 -->
@@ -486,8 +486,8 @@
                                     <!-- Col 8 -->
                                     <td style="text-align:right; padding:16px;">
                                         <strong>
-                                            <span style="font-size:17pt !important;" t-esc="company_symbol"/>
-                                            <span style="font-size:17pt !important;" t-esc="grand_total" t-options="{'widget': 'float', 'precision': 2}"/>
+                                            <span style="font-size:14pt !important;" t-esc="company_symbol"/>
+                                            <span style="font-size:14pt !important;" t-esc="grand_total" t-options="{'widget': 'float', 'precision': 2}"/>
                                         </strong>
                                     </td>
                                 </tr>
@@ -495,11 +495,11 @@
                                 <!-- In Words -->
                                 <tr>
                                     <td colspan="8" style="padding:8px; padding:16px;">
-                                        <strong style="font-size:17pt !important;">In Words:</strong>
+                                        <strong style="font-size:14pt !important;">In Words:</strong>
 
                                         <t t-set="amount_words" t-value="docs[0].company_id.currency_id.amount_to_text(grand_total)"/>
 
-                                        <span style="font-size:17pt !important;" t-esc="amount_words.replace('Riyal', 'Saudi Riyal') + ' Only'"/>
+                                        <span style="font-size:14pt !important;" t-esc="amount_words.replace('Riyal', 'Saudi Riyal') + ' Only'"/>
                                     </td>
                                 </tr>
 
@@ -509,19 +509,19 @@
                         <div class="mt-3">
                             <div style="font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
                                 <strong>
-                                    <span style="font-size:17pt !important;">Call Out :</span>
+                                    <span style="font-size:14pt !important;">Call Out :</span>
                                 </strong>
-                                <strong style="color:red; font-size:17pt !important;">
-                                    <span style="font-size:17pt !important;" t-esc="emergency_visit"/>
+                                <strong style="color:red; font-size:10pt !important;">
+                                    <span style="font-size:14pt !important;" t-esc="emergency_visit"/>
                                     Free Visits
                                 </strong>
                             </div>
                         </div>
                         <div class="mt-3" style="page-break-inside: avoid; display:flex;">
-                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
+                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif;font-size:14pt !important; line-height:1.4;">
                                 <strong>Scope of Work :</strong>
                             </div>
-                            <div class="hhs-sig" style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
+                            <div class="hhs-sig" style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:14pt !important; line-height:1.4;">
                                 <t t-raw="scope_work"/>
                             </div>
                         </div>
@@ -537,29 +537,29 @@
                         <!--                            </div>-->
                         <!--                        </div>-->
                         <div class="mt-3" style="page-break-inside: avoid; display:flex;">
-                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
+                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:14pt !important; line-height:1.4;">
                                 <strong>Terms of Execution :</strong>
                             </div>
-                            <div class="hhs-sig" style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
+                            <div class="hhs-sig" style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:14pt !important; line-height:1.4;">
                                 <t t-raw="terms_of_execution"/>
                             </div>
                         </div>
                         <div class="mt-3" style="page-break-inside: avoid; display:flex;">
-                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
+                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:14pt !important; line-height:1.4;">
                                 <strong>Terms of Payment : Advance</strong>
                             </div>
-                            <div style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
+                            <div style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:14pt !important; line-height:1.4;">
                                 <t t-if="payment_advance">
-                                    <ul style="margin:0; padding-left:20px; font-size:17pt !important;">
+                                    <ul style="margin:0; padding-left:20px; font-size:14pt !important;">
                                         <t t-foreach="payment_advance" t-as="payadv">
-                                            <li style="font-size:17pt !important;">
-                                                <span style="display:inline-block; width:20%; font-size:17pt !important;">
+                                            <li style="font-size:12pt !important;">
+                                                <span style="display:inline-block; width:20%; font-size:14pt !important;">
                                                     <t t-esc="payadv['name']"/>
                                                 </span>
-                                                <span style="display:inline-block; width:20%; font-size:17pt !important;">
+                                                <span style="display:inline-block; width:20%; font-size:14pt !important;">
                                                     <t t-esc="payadv['date']"/>
                                                 </span>
-                                                <span style="display:inline-block; width:20%; font-size:17pt !important;">
+                                                <span style="display:inline-block; width:20%; font-size:14pt !important;">
                                                     <t t-esc="payadv['amount']"/>
                                                 </span>
                                             </li>
@@ -569,20 +569,20 @@
                             </div>
                         </div>
                         <div class="mt-3" style="page-break-inside: avoid; display:flex;">
-                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
+                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:14pt !important; line-height:1.4;">
                                 <strong>Exclusions :</strong>
                             </div>
-                            <div class="hhs-sig" style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
+                            <div class="hhs-sig" style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:14pt !important; line-height:1.4;">
                                 <t t-raw="exclusions_text"/>
                                 <br/>
                                 <t t-raw="others_text"/>
                             </div>
                         </div>	
                         <div class="mt-3" style="page-break-inside: avoid; display:flex;">
-                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
+                            <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:14pt !important; line-height:1.4;">
                                 <strong>Others :</strong>
                             </div>
-                            <div class="hhs-sig" style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:17pt !important; line-height:1.4;">
+                            <div class="hhs-sig" style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:14pt !important; line-height:1.4;">
                                 <t t-raw="others"/>                             
                             </div>
                         </div>	
@@ -600,7 +600,7 @@
                            
                         </div> -->
                         
-                        <table style="width:100%; border:none !important; border-spacing:0 !important; border-collapse:separate !important; font-size:17pt !important;">
+                        <table style="width:100%; border:none !important; border-spacing:0 !important; border-collapse:separate !important; font-size:14pt !important;">
 						    <tbody style="border:none !important;">
 						
 						        <!-- <tr style="border:none !important;">
@@ -625,13 +625,13 @@
 						        <tr style="border:none !important;">
 						
 						            <td style="width:50%; text-align:left; border:none !important; padding:16px;">
-						                <strong style="font-size:17pt !important;">
+						                <strong style="font-size:14pt !important;">
 						                    This quotation is valid for 2 weeks from the date of issuance.
 						                </strong>
 						            </td>
 						
 						            <td style="width:50%; text-align:right; border:none !important; padding:16px;" dir="rtl">
-						                <strong style="font-size:17pt !important;">
+						                <strong style="font-size:14pt !important;">
 						                    صلاحية عرض السعر سارية لمدة أسبوعين من تاريخ إصدار عرض السعر.
 						                </strong>
 						            </td>
@@ -640,12 +640,12 @@
 						
 						    </tbody>
 						</table>
-                        <div class="mt-3" style="page-break-inside: avoid;font-family:'Lato','Helvetica','Arial',sans-serif;font-size:17pt !important;line-height:1.4;">
+                        <div class="mt-3" style="page-break-inside: avoid;font-family:'Lato','Helvetica','Arial',sans-serif;font-size:14pt !important;line-height:1.4;">
                             <div>
-                                <strong style="font-size:17pt !important;">Best Regards,</strong>
+                                <strong style="font-size:14pt !important;">Best Regards,</strong>
                             </div>
-                            <div class="hhs-sig" style="font-size:17pt !important;" t-esc="user_name"/>
-                            <div class="hhs-sig" style="font-size:17pt !important;" t-esc="signature"/>
+                            <div class="hhs-sig" style="font-size:14pt !important;" t-esc="user_name"/>
+                            <div class="hhs-sig" style="font-size:14pt !important;" t-esc="signature"/>
                         </div>
 
 
@@ -714,7 +714,7 @@
                                 <t t-foreach="unit.get('services', [])" t-as="service">
 
                                     <!-- NEW PAGE PER SERVICE -->
-                                    <div class="page hhs-sig" style="page-break-before: always; margin:0; padding:0; font-size:17pt !important;">
+                                    <div class="page hhs-sig" style="page-break-before: always; margin:0; padding:0; font-size:14pt !important;">
 
                                         <div style="display:table; width:100%; table-layout:fixed;">
 
@@ -724,11 +724,11 @@
                                                 <!-- LEFT -->
                                                 <div style="display:table-cell; width:50%; padding:6px 15px 6px 0; border-right:1px solid #c0c0c0; vertical-align:top;">
 
-                                                    <div style="margin-bottom:6px; font-size:17pt !important;">
+                                                    <div style="margin-bottom:6px; font-size:14pt !important;">
 
-                                                        <strong style="font-size:17pt !important;">Unit Type:</strong>
+                                                        <strong style="font-size:14pt !important;">Unit Type:</strong>
 
-                                                        <span style="margin-left:6px; font-size:17pt !important;">
+                                                        <span style="margin-left:6px; font-size:14pt !important;">
 
                                                             <!-- IF PRINT_ALWAYS_DEFAULT -->
                                                             <t t-if="unit.get('hide_unit_name')">
@@ -745,9 +745,9 @@
                                                     </div>
 
                                                     <div>
-                                                        <strong style="font-size:17pt !important;">Service Type:</strong>
+                                                        <strong style="font-size:14pt !important;">Service Type:</strong>
 
-                                                        <span style="margin-left:6px; font-size:17pt !important;">
+                                                        <span style="margin-left:6px; font-size:14pt !important;">
                                                             <t t-esc="service.get('service_en', '')"/>
                                                         </span>
                                                     </div>
@@ -757,11 +757,11 @@
                                                 <!-- RIGHT -->
                                                 <div style="display:table-cell; width:50%; padding:6px 0 6px 15px; direction:rtl; vertical-align:top;">
 
-                                                    <div style="text-align:right; margin-bottom:6px; font-size:17pt !important;">
+                                                    <div style="text-align:right; margin-bottom:6px; font-size:14pt !important;">
 
-                                                        <strong style="font-size:17pt !important;">نوع الوحدة:</strong>
+                                                        <strong style="font-size:14pt !important;">نوع الوحدة:</strong>
 
-                                                        <span style="margin-right:6px; font-size:17pt !important;">
+                                                        <span style="margin-right:6px; font-size:14pt !important;">
 
                                                             <!-- IF PRINT_ALWAYS_DEFAULT -->
                                                             <t t-if="unit.get('hide_unit_name')">
@@ -777,11 +777,11 @@
 
                                                     </div>
 
-                                                    <div style="text-align:right; font-size:17pt !important;">
+                                                    <div style="text-align:right; font-size:14pt !important;">
 
                                                         <strong style="font-size:17pt !important;">نوع الخدمة:</strong>
 
-                                                        <span style="margin-right:6px; font-size:17pt !important;">
+                                                        <span style="margin-right:6px;font-size:14pt !important;">
                                                             <t t-esc="service.get('service_ar', '')"/>
                                                         </span>
 
@@ -854,7 +854,7 @@
                                                     <!-- LEFT -->
                                                     <div style="display:table-cell; padding-right:15px; border-right:1px solid #c0c0c0;">
 
-                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold; font-size:17pt !important;">
+                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold; font-size:14pt !important;">
                                                             <t t-esc="param.get('param_en', '')"/>
                                                         </div>
 
@@ -862,7 +862,7 @@
 
                                                             <t t-foreach="param.get('lines', [])" t-as="line">
 
-                                                                <li style="margin-bottom:10px; font-size:17pt !important;">
+                                                                <li style="margin-bottom:10px; font-size:14pt !important;">
                                                                     <t t-esc="(line.get('en') or '').strip()"/>
                                                                 </li>
 
@@ -875,7 +875,7 @@
                                                     <!-- RIGHT -->
                                                     <div style="display:table-cell; padding-left:15px; direction:rtl; text-align:right; font-size:17pt !important;">
 
-                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold; font-size:17pt !important;">
+                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold; font-size:14pt !important;">
                                                             <t t-esc="param.get('param_ar', '')"/>
                                                         </div>
 
@@ -883,7 +883,7 @@
 
                                                             <t t-foreach="param.get('lines', [])" t-as="line">
 
-                                                                <li style="margin-bottom:10px; font-size:17pt !important;">
+                                                                <li style="margin-bottom:10px; font-size:14pt !important;">
                                                                     <t t-esc="line.get('ar', '')"/>
                                                                 </li>
 
