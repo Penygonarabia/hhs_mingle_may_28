@@ -45,15 +45,7 @@ class ProductProduct(models.Model):
         compute='_compute_show_dealer_menu'
     )
 
-    @api.depends_context('show_only_default_code')
-    def _compute_display_name(self):
-        super()._compute_display_name()
-        if self._context.get('show_only_default_code'):
-            is_mobile_only = self.env.user.has_group('dealer.group_dealer_user') and not self.env.user.has_group('dealer.group_dealer_backoffice_user')
-            if is_mobile_only:
-                for record in self:
-                    if record.default_code:
-                        record.display_name = record.default_code
+
 
     @api.depends()
     def _compute_show_dealer_menu(self):
@@ -64,3 +56,22 @@ class ProductProduct(models.Model):
 
         for rec in self:
             rec.show_dealer_menu = value
+
+    @api.depends_context('show_only_default_code', 'uid')
+    def _compute_display_name(self):
+        super()._compute_display_name()
+        is_dealer_user = self.env.user.has_group('dealer.group_dealer_user') or self.env.user.has_group('dealer.group_dealer_backoffice_user')
+        if self.env.context.get('show_only_default_code') or is_dealer_user:
+            for record in self:
+                if record.default_code:
+                    record.display_name = f"[{record.default_code}]"
+
+    def name_get(self):
+        is_dealer_user = self.env.user.has_group('dealer.group_dealer_user') or self.env.user.has_group('dealer.group_dealer_backoffice_user')
+        if self.env.context.get('show_only_default_code') or is_dealer_user:
+            res = []
+            for record in self:
+                name = f"[{record.default_code}]" if record.default_code else record.name
+                res.append((record.id, name))
+            return res
+        return super().name_get()

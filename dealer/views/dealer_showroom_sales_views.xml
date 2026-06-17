@@ -60,7 +60,7 @@
                                 <button name="action_open_add_item_wizard" string="Add Item" type="object" class="mobile-full-btn mobvw" icon="fa-plus" invisible="state != 'draft'"/>
                             </div>
                             <field name="line_ids" readonly="state != 'draft'">
-                                <tree editable="bottom">
+                                <tree create="0">
                                     <field name="product_category_id" width="150px" domain="[('parent_id','=', False), ('name', '!=', 'All')]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
                                     <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
                                     <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
@@ -140,6 +140,7 @@
             <field name="invoice_no"/>
             <field name="dealer_id"/>
             <field name="date_time"/>
+            <field name="total_qty"/>
 
             <field name="notes"/>
 
@@ -168,12 +169,13 @@
                             <t t-esc="record.date_time.value"/>
                         </div> -->
 
-                        <!-- Product Details Removed for multiple lines -->
-                        <div><field name="state"/></div>
-                        <!-- Quantity -->
-                        <!-- <div style="font-weight:bold; text-align:right; margin-top: 2px;" t-if="record.qty">
-                            Qty: <t t-esc="record.qty.value"/>
-                        </div> -->
+                        <!-- State and Quantity -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
+                            <div><field name="state"/></div>
+                            <div style="font-weight: bold; text-align: right;" t-if="record.total_qty and record.total_qty.value">
+                                Qty: <t t-esc="record.total_qty.value"/>
+                            </div>
+                        </div>
 
                         <!-- Notes Icon -->
                         <!-- <t t-if="record.notes and record.notes.raw_value">

@@ -137,7 +137,13 @@ class dealerShowroomSales(models.Model):
     is_sales_return = fields.Boolean(string="Sales Return", help="Enable this option to record a sales return. "
          "This will allow negative quantities, and Notes will be mandatory.")
     qty = fields.Integer(string='Quantity',required=False)
+    total_qty = fields.Integer(string='Total Quantity', compute='_compute_total_qty', store=True)
     notes = fields.Text(string='Notes')
+
+    @api.depends('line_ids.qty', 'qty')
+    def _compute_total_qty(self):
+        for rec in self:
+            rec.total_qty = sum(abs(line.qty) for line in rec.line_ids) if rec.line_ids else abs(rec.qty or 0)
 
     @api.onchange('is_sales_return')
     def _onchange_is_sales_return(self):
@@ -200,8 +206,12 @@ class dealerShowroomSales(models.Model):
 
     @api.depends('dealer_id', 'line_ids.qty', 'date_time')
     def _compute_requires_approval(self):
+        is_backoffice = self.env.user.has_group('dealer.group_dealer_backoffice_user')
         for rec in self:
             rec.requires_approval = False
+            if is_backoffice:
+                continue
+
             params = self.env['ir.config_parameter'].sudo()
             
             from odoo.fields import Date as FieldDate
@@ -448,7 +458,7 @@ class dealerShowroomSales(models.Model):
             total_qty = sum(abs(line.qty) for line in rec.line_ids) if rec.line_ids else abs(rec.qty or 0)
             rec.applied_multiplier = total_qty * raw_multiplier
 
-    def _get_raw_multiplier(self):
+    def _get_raw_multiplier(self, current_line=None):
         self.ensure_one()
         params = self.env['ir.config_parameter'].sudo()
         
@@ -486,8 +496,15 @@ class dealerShowroomSales(models.Model):
                     valid_date = False
                 
                 if valid_date:
-                    min_qty = float(params.get_param('dealer.dealer_promotion_minimum_quantity', default=0.0))
-                    total_qty = sum(abs(line.qty) for line in self.line_ids) if self.line_ids else abs(self.qty or 0)
+                    min_qty = float(params.get_param('dealer.dealer_promotion_min_qty', default=0.0))
+                    if current_line:
+                        total_qty = 0
+                        for l in self.line_ids:
+                            if l.id != current_line.id and getattr(l, '_origin', l).id != getattr(current_line, '_origin', current_line).id:
+                                total_qty += abs(l.qty)
+                        total_qty += abs(current_line.qty)
+                    else:
+                        total_qty = sum(abs(line.qty) for line in self.line_ids) if self.line_ids else abs(self.qty or 0)
                     
                     # Grant promotion if minimum quantity is met
                     if total_qty >= min_qty:
@@ -516,7 +533,7 @@ class dealerShowroomSales(models.Model):
     def _compute_fsm_loyalty_points(self):
         for rec in self:
             if rec.product_id and rec.qty:
-                multiplier = rec._get_applicable_multiplier()
+                multiplier = rec._get_raw_multiplier()
                 qty = abs(rec.qty)
                 points = qty * rec.product_id.fsm_loyalty_points * multiplier
                 if rec.is_sales_return:
@@ -815,6 +832,43 @@ class dealerShowroomSales(models.Model):
                 else:
                     self._create_target(record)
 
+        # FSM LOYALTY AUDIT RE-SYNC
+        if any(k in vals for k in ['line_ids', 'qty', 'is_sales_return', 'dealer_id', 'date_time', 'notes']):
+            for record in self:
+                if not record.invoice_no:
+                    continue
+                
+                # Remove old audits for this invoice
+                old_audits = self.env['fsm.loyalty.audit'].search([('reference', '=', record.invoice_no)])
+                old_audits.unlink()
+
+                # Recreate audits based on current lines
+                for line in record.line_ids:
+                    if line.product_id and line.qty:
+                        loyalty_points = line.fsm_loyalty_points
+                        trans_type = '2' if record.is_sales_return else '1'
+                        salesman_id = (
+                            record.dealer_assignment_id.sale_dealer_id.id
+                            if record.dealer_assignment_id and record.dealer_assignment_id.sale_dealer_id
+                            else self.env.user.id
+                        )
+
+                        if not record.dealer_id:
+                            continue
+
+                        self.env['fsm.loyalty.audit'].create({
+                            'date_time': record.date_time or fields.Datetime.now(),
+                            'dealer_id': record.dealer_id.id,
+                            'salesman_id': salesman_id,
+                            'location_id': record.dealer_showroom_id.id if record.dealer_showroom_id else False,
+                            'type': trans_type,
+                            'qty': line.qty,
+                            'loyalty_points': loyalty_points,
+                            'amount_paid': 0,
+                            'reference': record.invoice_no,
+                            'notes': record.notes,
+                        })
+
         return res
 
     def unlink(self):
@@ -832,6 +886,10 @@ class dealerShowroomSales(models.Model):
                     raise ValidationError(
                         f"Hi {self.env.user.name}, you can only delete today's records ({today})."
                     )
+                if record.state != 'draft':
+                    raise ValidationError(
+                        f"Hi {self.env.user.name}, you cannot delete records that are already {record.state}."
+                    )
 
             # Adjust actual_qty before deleting
             for line in record.line_ids:
@@ -847,6 +905,11 @@ class dealerShowroomSales(models.Model):
                 old_target = target_obj.search(target_domain, limit=1)
                 if old_target:
                     old_target.actual_qty = max(0, old_target.actual_qty - old_qty)
+
+            # Remove related FSM Loyalty Audits
+            if record.invoice_no:
+                old_audits = self.env['fsm.loyalty.audit'].search([('reference', '=', record.invoice_no)])
+                old_audits.unlink()
 
         return super().unlink()
 
@@ -1147,7 +1210,7 @@ class DealerShowroomSalesLine(models.Model):
     def _compute_fsm_loyalty_points(self):
         for rec in self:
             if rec.product_id and rec.qty:
-                raw_multiplier = rec.sales_id._get_raw_multiplier() if rec.sales_id else 1.0
+                raw_multiplier = rec.sales_id._get_raw_multiplier(current_line=rec) if rec.sales_id else 1.0
                 qty = abs(rec.qty)
                 points = qty * rec.product_id.fsm_loyalty_points * raw_multiplier
                 if rec.sales_id and rec.sales_id.is_sales_return:
@@ -1156,6 +1219,11 @@ class DealerShowroomSalesLine(models.Model):
                     rec.fsm_loyalty_points = points
             else:
                 rec.fsm_loyalty_points = 0.0
+
+    @api.onchange('qty', 'product_id')
+    def _onchange_qty_fsm_loyalty_points(self):
+        for rec in self:
+            rec._compute_fsm_loyalty_points()
 
     @api.onchange('product_category_id')
     def _onchange_product_category_id(self):
