@@ -178,10 +178,11 @@ class MaintenanceEquipmentViews(models.Model):
                     # -------------------------------------------------
                     # Duplicate Check
                     # -------------------------------------------------
-                    if self.search([("name", "=", seq)], limit=1):
-                        raise ValidationError(
-                            f"Sequence '{seq}' already exists."
-                        )
+                    '''Code commented on June 17 2026 because all customer code is added for the name.so always same '''
+                    # if self.search([("name", "=", seq)], limit=1):
+                    #     raise ValidationError(
+                    #         f"Sequence '{seq}' already exists."
+                    #     )
 
                     vals["name"] = seq
 
