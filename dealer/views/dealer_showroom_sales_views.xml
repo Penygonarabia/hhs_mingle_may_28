@@ -68,7 +68,7 @@
                                     <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
                                     <field name="product_id" width="150px" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" domain="[('show_in_dealer_app', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
                                     <field name="product_name" width="200px"/>
-                                    <field name="capacity" width="80px"/>
+                                    <field name="capacity" width="80px" column_invisible="True"/>
                                     <field name="qty" width="80px"/>
                                     <field name="fsm_loyalty_points" width="100px" readonly="1" widget="integer"/>
                                     <button name="action_edit_wizard" type="object" icon="fa-pencil" title="Edit Item"/>
@@ -83,7 +83,7 @@
                                     <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
                                     <field name="product_id" width="150px" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" domain="[('show_in_dealer_app', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
                                     <field name="product_name" width="200px"/>
-                                    <field name="capacity" width="80px"/>
+                                    <field name="capacity" width="80px" column_invisible="True"/>
                                     <field name="qty" width="80px"/>
                                     <field name="fsm_loyalty_points" width="100px" readonly="1" widget="integer"/>
                                 </tree>
@@ -385,5 +385,24 @@
               action="action_approve_shop_sales"
               groups="dealer.group_dealer_backoffice_user"
               sequence="3"/>
+
+    <record id="view_form_dsales_showroom_sales_line" model="ir.ui.view">
+        <field name="name">dsales.showroom.sales.line.form</field>
+        <field name="model">dsales.showroom.sales.line</field>
+        <field name="arch" type="xml">
+            <form string="Edit Item">
+                <group>
+                    <field name="product_category_id" invisible="1"/>
+                    <field name="product_group_id" invisible="1"/>
+                    <field name="product_subgroup_id" invisible="1"/>
+                    <field name="product_id" domain="[('show_in_dealer_app', '=', True)]" context="{'show_only_default_code': True}" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
+                    <field name="product_name" readonly="1"/>
+                    <field name="capacity" invisible="1"/>
+                    <field name="qty"/>
+                    <field name="fsm_loyalty_points" readonly="1" widget="integer" string="Loyalty Points"/>
+                </group>
+            </form>
+        </field>
+    </record>
 
 </odoo>
