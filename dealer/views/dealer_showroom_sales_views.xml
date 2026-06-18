@@ -9,8 +9,7 @@
             <form >
                 <header>
                     <field name="requires_approval" invisible="1"/>
-                    <button name="action_submit" string="Send to Approve" type="object" class="oe_highlight" invisible="state != 'draft' or not requires_approval" />
-                    <button name="action_submit" string="Submit" type="object" class="oe_highlight" invisible="state != 'draft' or requires_approval" />
+                    <button name="action_submit" string="Submit" type="object" class="oe_highlight" invisible="state != 'draft'" />
                     <field name="state" widget="statusbar" statusbar_visible="draft,submitted"/>
                 </header>
                 <sheet>
@@ -67,10 +66,10 @@
                                     <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
                                     <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
                                     <field name="product_id" width="150px" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" domain="[('show_in_dealer_app', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
-                                    <field name="product_name" width="200px"/>
-                                    <field name="capacity" width="80px" column_invisible="True"/>
                                     <field name="qty" width="80px"/>
                                     <field name="fsm_loyalty_points" width="100px" readonly="1" widget="integer"/>
+                                    <field name="product_name" width="200px"/>
+                                    <field name="capacity" width="80px" column_invisible="True"/>
                                     <button name="action_edit_wizard" type="object" icon="fa-pencil" title="Edit Item"/>
                                 </tree>
                             </field>
@@ -82,10 +81,10 @@
                                     <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
                                     <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
                                     <field name="product_id" width="150px" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" domain="[('show_in_dealer_app', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
-                                    <field name="product_name" width="200px"/>
-                                    <field name="capacity" width="80px" column_invisible="True"/>
                                     <field name="qty" width="80px"/>
                                     <field name="fsm_loyalty_points" width="100px" readonly="1" widget="integer"/>
+                                    <field name="product_name" width="200px"/>
+                                    <field name="capacity" width="80px" column_invisible="True"/>
                                 </tree>
                             </field>
                         </page>
@@ -176,7 +175,8 @@
             <field name="dealer_id"/>
             <field name="date_time"/>
             <field name="total_qty"/>
-
+            <field name="state"/>
+            <field name="reject_reason"/>
             <field name="notes"/>
 
             <templates>
@@ -206,10 +206,15 @@
 
                         <!-- State and Quantity -->
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2px;">
-                            <div><field name="state"/></div>
+                            <div><field name="state" widget="badge" decoration-danger="state == 'rejected'" decoration-success="state == 'approved'" decoration-warning="state == 'submitted'" decoration-info="state == 'draft'"/></div>
                             <div style="font-weight: bold; text-align: right;" t-if="record.total_qty and record.total_qty.value">
                                 Qty: <t t-esc="record.total_qty.value"/>
                             </div>
+                        </div>
+
+                        <!-- Reject Reason -->
+                        <div t-if="record.state.raw_value == 'rejected' and record.reject_reason.value" style="color: #dc3545; font-size: 0.9em; margin-top: 5px; border-top: 1px solid #f8d7da; padding-top: 2px;">
+                            <strong>Reason:</strong> <t t-esc="record.reject_reason.value"/>
                         </div>
 
                         <!-- Notes Icon -->
@@ -328,6 +333,7 @@
                                     <field name="product_subgroup_id" string="Sub Group" column_invisible="True"/>
                                     <field name="product_id" string="Model"/>
                                     <field name="qty"/>
+                                    <field name="fsm_loyalty_points" readonly="1" widget="integer" string="Loyalty Points"/>
                                     <field name="product_name" string="Name"/>
                                     <field name="capacity" column_invisible="True"/>
                                 </tree>
@@ -335,7 +341,10 @@
                         </div>
                         <div class="col-9">
                             <div style="font-weight: bold; padding: 5px 0;">Invoice Scan Copy</div>
-                            <field name="invoice_attachment" widget="image" nolabel="1" readonly="1" class="w-100"/>
+                            <field name="is_invoice_pdf" invisible="1"/>
+                            <field name="invoice_attachment_name" invisible="1"/>
+                            <field name="invoice_attachment" widget="pdf_viewer" filename="invoice_attachment_name" nolabel="1" readonly="1" class="w-100" invisible="not is_invoice_pdf"/>
+                            <field name="invoice_attachment" widget="image" filename="invoice_attachment_name" nolabel="1" readonly="1" class="w-100" invisible="is_invoice_pdf"/>
                         </div>
                     </div>
                 </sheet>
@@ -395,11 +404,11 @@
                     <field name="product_category_id" invisible="1"/>
                     <field name="product_group_id" invisible="1"/>
                     <field name="product_subgroup_id" invisible="1"/>
-                    <field name="product_id" domain="[('show_in_dealer_app', '=', True)]" context="{'show_only_default_code': True}" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
+                    <field name="product_id" domain="[('show_in_dealer_app', '=', True)]" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
                     <field name="product_name" readonly="1"/>
                     <field name="capacity" invisible="1"/>
                     <field name="qty"/>
-                    <field name="fsm_loyalty_points" readonly="1" widget="integer" string="Loyalty Points"/>
+                    <field name="fsm_loyalty_points" readonly="1" widget="integer" string="Loyalty Points" invisible="1"/>
                 </group>
             </form>
         </field>

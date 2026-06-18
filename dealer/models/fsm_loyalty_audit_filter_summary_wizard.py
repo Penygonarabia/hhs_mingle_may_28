@@ -29,7 +29,7 @@ class FsmLoyaltyAuditFilterWizard(models.TransientModel):
     def apply_filter_summary(self):
         action = self.env.ref('dealer.action_fsm_loyalty_audit_pivot_mob').read()[0]
 
-        domain = []
+        domain = [('sales_id.state', '=', 'approved')]
 
         if self.start_date:
             domain.append(('date_time', '>=', self.start_date))

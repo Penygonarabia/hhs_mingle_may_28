@@ -83,13 +83,13 @@ sales_data AS (
             product_category_id,
             region_id,
             city_id,
-            year,
-            month,
+            year::int AS year,
+            month::int AS month,
             qty,
             current_latitude,
             current_longitude
         FROM dsales_showroom_sales
-        WHERE qty IS NOT NULL AND qty != 0
+        WHERE qty IS NOT NULL AND qty != 0 AND state = 'approved'
 
         UNION ALL
 
@@ -103,8 +103,8 @@ sales_data AS (
             l.product_category_id,
             h.region_id,
             h.city_id,
-            h.year,
-            h.month,
+            h.year::int AS year,
+            h.month::int AS month,
             l.qty,
             h.current_latitude,
             h.current_longitude

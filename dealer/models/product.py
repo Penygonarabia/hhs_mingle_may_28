@@ -64,14 +64,14 @@ class ProductProduct(models.Model):
         if self.env.context.get('show_only_default_code') or is_dealer_user:
             for record in self:
                 if record.default_code:
-                    record.display_name = f"[{record.default_code}]"
+                    record.display_name = record.default_code
 
     def name_get(self):
         is_dealer_user = self.env.user.has_group('dealer.group_dealer_user') or self.env.user.has_group('dealer.group_dealer_backoffice_user')
         if self.env.context.get('show_only_default_code') or is_dealer_user:
             res = []
             for record in self:
-                name = f"[{record.default_code}]" if record.default_code else record.name
+                name = record.default_code if record.default_code else record.name
                 res.append((record.id, name))
             return res
         return super().name_get()

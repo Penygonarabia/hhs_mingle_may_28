@@ -304,6 +304,12 @@ class dealerShowroomSales(models.Model):
 
     invoice_attachment = fields.Binary(string='Invoice Attachment')
     invoice_attachment_name = fields.Char(string='Attachment Name')
+    is_invoice_pdf = fields.Boolean(compute='_compute_is_invoice_pdf')
+
+    @api.depends('invoice_attachment_name')
+    def _compute_is_invoice_pdf(self):
+        for rec in self:
+            rec.is_invoice_pdf = bool(rec.invoice_attachment_name and rec.invoice_attachment_name.lower().endswith('.pdf'))
     
     line_ids = fields.One2many(
         'dsales.showroom.sales.line',
@@ -335,6 +341,7 @@ class dealerShowroomSales(models.Model):
                 raise UserError("At least one sales line is required.")
             if not any(line.product_id for line in rec.line_ids):
                 raise UserError("At least one product entry must be selected in the sales lines.")
+            
             rec.write({
                 'state': 'submitted',
                 'submitted_by': self.env.user.id,
@@ -350,6 +357,7 @@ class dealerShowroomSales(models.Model):
                         'message': 'Quantity exceeds the approved limit. This sales invoice has been forwarded to the Manager for approval.',
                         'type': 'warning',
                         'sticky': True,
+                        'next': {'type': 'ir.actions.client', 'tag': 'reload'},
                     }
                 }
         
@@ -735,37 +743,39 @@ class dealerShowroomSales(models.Model):
 
         # proceed with normal creation and target update
         record = super(dealerShowroomSales, self).create(vals)
-        self._update_target_on_create(record, create_if_missing=True)
+        if record.state == 'approved':
+            self._update_target_on_create(record, create_if_missing=True)
         # -------------------------------------------------
         # FSM LOYALTY AUDIT CREATION
         # -------------------------------------------------
-        for line in record.line_ids:
-            if line.product_id and line.qty:
-                loyalty_points = line.fsm_loyalty_points
-                trans_type = '2' if record.is_sales_return else '1'
+        if record.state == 'approved':
+            for line in record.line_ids:
+                if line.product_id and line.qty:
+                    loyalty_points = line.fsm_loyalty_points
+                    trans_type = '2' if record.is_sales_return else '1'
 
-                salesman_id = (
-                    record.dealer_assignment_id.sale_dealer_id.id
-                    if record.dealer_assignment_id and record.dealer_assignment_id.sale_dealer_id
-                    else self.env.user.id
-                )
+                    salesman_id = (
+                        record.dealer_assignment_id.sale_dealer_id.id
+                        if record.dealer_assignment_id and record.dealer_assignment_id.sale_dealer_id
+                        else self.env.user.id
+                    )
 
-                if not record.dealer_id:
-                    raise ValidationError(_("Dealer is required for Loyalty Audit."))
+                    if not record.dealer_id:
+                        raise ValidationError(_("Dealer is required for Loyalty Audit."))
 
-                self.env['fsm.loyalty.audit'].create({
-                    'date_time': record.date_time or fields.Datetime.now(),
-                    'dealer_id': record.dealer_id.id,
-                    'salesman_id': salesman_id,
-                    'location_id': record.dealer_showroom_id.id if record.dealer_showroom_id else False,
-                    'type': trans_type,
-                    'qty': line.qty,
-                    'loyalty_points': loyalty_points,
-                    'amount_paid': 0,
-                    'reference': record.invoice_no or self.env['ir.sequence'].next_by_code('dsales.showroom.sales'),
-                    'notes': record.notes,
-                    'sales_id': record.id,
-                })
+                    self.env['fsm.loyalty.audit'].create({
+                        'date_time': record.date_time or fields.Datetime.now(),
+                        'dealer_id': record.dealer_id.id,
+                        'salesman_id': salesman_id,
+                        'location_id': record.dealer_showroom_id.id if record.dealer_showroom_id else False,
+                        'type': trans_type,
+                        'qty': line.qty,
+                        'loyalty_points': loyalty_points,
+                        'amount_paid': 0,
+                        'reference': record.invoice_no or self.env['ir.sequence'].next_by_code('dsales.showroom.sales'),
+                        'notes': record.notes,
+                        'sales_id': record.id,
+                    })
 
                 # except Exception as e:
                 #     _logger.error("FSM Loyalty Audit creation failed: %s", str(e))
@@ -816,12 +826,13 @@ class dealerShowroomSales(models.Model):
 
         # Save old target keys and quantities
         for record in self:
+            is_approved = (record.state == 'approved')
             for line in record.line_ids:
                 old_data.append({
                     'record': record,
                     'line': line,
                     'key': self._get_target_key(record, line),
-                    'qty': int(line.qty or 0),
+                    'qty': int(line.qty or 0) if is_approved else 0,
                 })
             # Also keep old header qty in case old records without lines are edited
             if record.qty:
@@ -829,7 +840,7 @@ class dealerShowroomSales(models.Model):
                     'record': record,
                     'line': None,
                     'key': self._get_target_key(record),
-                    'qty': int(record.qty),
+                    'qty': int(record.qty) if is_approved else 0,
                 })
 
         res = super().write(vals)
@@ -847,62 +858,65 @@ class dealerShowroomSales(models.Model):
 
         # After super().write, process new quantities.
         for record in self:
+            is_approved = (record.state == 'approved')
             for line in record.line_ids:
                 new_key = self._get_target_key(record, line)
-                new_qty = int(line.qty or 0)
+                new_qty = int(line.qty or 0) if is_approved else 0
                 new_target = target_obj.search(new_key, limit=1)
 
                 if new_target:
                     new_target.actual_qty += new_qty
-                else:
+                elif new_qty > 0:
                     self._create_target(record, line)
             
-            if record.qty:
+            # process header qty if no lines
+            if not record.line_ids and record.qty:
                 new_key = self._get_target_key(record)
-                new_qty = int(record.qty or 0)
+                new_qty = int(record.qty) if is_approved else 0
                 new_target = target_obj.search(new_key, limit=1)
                 if new_target:
                     new_target.actual_qty += new_qty
-                else:
+                elif new_qty > 0:
                     self._create_target(record)
 
         # FSM LOYALTY AUDIT RE-SYNC
-        if any(k in vals for k in ['line_ids', 'qty', 'is_sales_return', 'dealer_id', 'date_time', 'notes']):
+        if any(k in vals for k in ['line_ids', 'qty', 'is_sales_return', 'dealer_id', 'date_time', 'notes', 'state']):
             for record in self:
                 if not record.invoice_no:
                     continue
                 
                 # Remove old audits for this invoice
                 old_audits = self.env['fsm.loyalty.audit'].search([('reference', '=', record.invoice_no)])
-                old_audits.unlink()
+                old_audits.sudo().unlink()
 
-                # Recreate audits based on current lines
-                for line in record.line_ids:
-                    if line.product_id and line.qty:
-                        loyalty_points = line.fsm_loyalty_points
-                        trans_type = '2' if record.is_sales_return else '1'
-                        salesman_id = (
-                            record.dealer_assignment_id.sale_dealer_id.id
-                            if record.dealer_assignment_id and record.dealer_assignment_id.sale_dealer_id
-                            else self.env.user.id
-                        )
+                # Recreate audits based on current lines if state is approved
+                if record.state == 'approved':
+                    for line in record.line_ids:
+                        if line.product_id and line.qty:
+                            loyalty_points = line.fsm_loyalty_points
+                            trans_type = '2' if record.is_sales_return else '1'
+                            salesman_id = (
+                                record.dealer_assignment_id.sale_dealer_id.id
+                                if record.dealer_assignment_id and record.dealer_assignment_id.sale_dealer_id
+                                else self.env.user.id
+                            )
 
-                        if not record.dealer_id:
-                            continue
+                            if not record.dealer_id:
+                                continue
 
-                        self.env['fsm.loyalty.audit'].create({
-                            'date_time': record.date_time or fields.Datetime.now(),
-                            'dealer_id': record.dealer_id.id,
-                            'salesman_id': salesman_id,
-                            'location_id': record.dealer_showroom_id.id if record.dealer_showroom_id else False,
-                            'type': trans_type,
-                            'qty': line.qty,
-                            'loyalty_points': loyalty_points,
-                            'amount_paid': 0,
-                            'reference': record.invoice_no,
-                            'notes': record.notes,
-                            'sales_id': record.id,
-                        })
+                            self.env['fsm.loyalty.audit'].create({
+                                'date_time': record.date_time or fields.Datetime.now(),
+                                'dealer_id': record.dealer_id.id,
+                                'salesman_id': salesman_id,
+                                'location_id': record.dealer_showroom_id.id if record.dealer_showroom_id else False,
+                                'type': trans_type,
+                                'qty': line.qty,
+                                'loyalty_points': loyalty_points,
+                                'amount_paid': 0,
+                                'reference': record.invoice_no,
+                                'notes': record.notes,
+                                'sales_id': record.id,
+                            })
 
         return res
 
@@ -944,7 +958,7 @@ class dealerShowroomSales(models.Model):
             # Remove related FSM Loyalty Audits
             if record.invoice_no:
                 old_audits = self.env['fsm.loyalty.audit'].search([('reference', '=', record.invoice_no)])
-                old_audits.unlink()
+                old_audits.sudo().unlink()
 
         return super().unlink()
 
