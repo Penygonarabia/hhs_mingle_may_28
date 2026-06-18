@@ -107,9 +107,9 @@
                            create="0"
                            edit="0"
                            delete="0">
-                        <tree string="Transaction History" style="table-layout:fixed;">
+                        <tree string="Transaction History" style="table-layout:fixed;" default_order="clph_date asc">
                             <field name="clph_doctype" string="Type" style="width:140px;"/>
-                            <field name="clph_whouse" style="width:140px;"/>
+                            <field name="display_whouse" string="W/H" style="width:140px;"/>
                             <field name="clph_docnumber" style="width:60px;"/>
                             <field name="clph_date" string="Date"
                                    options="{'no_create': True,'no_create_edit': True,'no_open': True}"

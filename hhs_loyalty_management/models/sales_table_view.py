@@ -38,7 +38,7 @@ class LoyaltySalesTableView(models.Model):
                     row_number() OVER () as id,
                     th.trnh_region,
                     th.trnh_city,
-                    rp.salesman_name as trnh_sman,
+                    COALESCE(sm.sm_name, th.trnh_sman) as trnh_sman,
                     th.trnh_cstno,
                     th.trnh_cstname,
                     th.trnh_cstmobile,
@@ -82,7 +82,7 @@ class LoyaltySalesTableView(models.Model):
                             (COALESCE(td.trnd_qtyiss, 0) * ((COALESCE(td.trnd_price, 0) - COALESCE(td.trnd_disc, 0) - COALESCE(td.trnd_cstspldisc, 0)) + COALESCE(td.trnd_vat, 0)))
                     END as net_sales_with_vat,
 
-                    ph.clph_promoref,
+                    NULLIF(TRIM(td.trnd_promoref), '') as clph_promoref,
                     COALESCE(ph.clph_regpoints, 0) as clph_points,
                     COALESCE(ph.clph_bonuspoints, 0) as clph_bonuspoint,
                     COALESCE(ph.clph_regpoints, 0) + COALESCE(ph.clph_bonuspoints, 0) as total_points
@@ -90,6 +90,7 @@ class LoyaltySalesTableView(models.Model):
                 FROM transaction_header th
                 JOIN transaction_details td ON th.trnh_no = td.trnd_no
                 LEFT JOIN res_partner rp ON rp.ref = th.trnh_cstno
+                LEFT JOIN sl_salesman sm ON sm.sm_code = th.trnh_sman
                 LEFT JOIN (
                     SELECT 
                         clph_docnumber, 

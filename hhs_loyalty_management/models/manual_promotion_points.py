@@ -413,6 +413,16 @@ class CustomerLoyaltyPointsHistory(models.Model):
     clph_adjtype = fields.Char()
     clph_type = fields.Char()
     clph_whouse = fields.Char(string='W/H')
+    display_whouse = fields.Char(string='W/H', compute='_compute_display_whouse')
+
+    @api.depends('clph_whouse')
+    def _compute_display_whouse(self):
+        for rec in self:
+            if rec.clph_whouse and str(rec.clph_whouse).strip() in ['0', '0.0']:
+                rec.display_whouse = ''
+            else:
+                rec.display_whouse = rec.clph_whouse
+
     clph_regpoints = fields.Integer()
     clph_bonuspoints = fields.Integer()
     clph_totalpoints = fields.Integer()
