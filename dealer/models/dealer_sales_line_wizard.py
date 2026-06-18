@@ -117,9 +117,6 @@ class DealerSalesLineWizard(models.TransientModel):
         self.ensure_one()
         vals = {
             'sales_id': self.sales_id.id,
-            'product_category_id': self.product_category_id.id,
-            'product_group_id': self.product_group_id.id,
-            'product_subgroup_id': self.product_subgroup_id.id,
             'product_id': self.product_id.id,
             'qty': self.qty,
         }
