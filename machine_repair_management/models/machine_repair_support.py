@@ -1897,12 +1897,19 @@ class MachineRepairSupport(models.Model):
                                     ('maintenance_type', '=', 'preventive'),
                                 ])
                     
+                                # completed_jobs = contract_search + 1
+                                # visit_count = completed_jobs // li.qty_ordered
+                                #
+                                # li.actual_prevent_count = min(
+                                #     visit_count,
+                                #     li.days_require_rpm_round_off
+                                # )
+                                
                                 completed_jobs = contract_search + 1
-                                visit_count = completed_jobs // li.qty_ordered
-                    
+
                                 li.actual_prevent_count = min(
-                                    visit_count,
-                                    li.days_require_rpm_round_off
+                                    completed_jobs // li.qty_ordered,
+                                    li.no_of_visits_per_year
                                 )
                             '''Code Commented on May 30 2026 by Vijaya Bhaskar because client asked overall qty is over then only count was updated
                             if li.actual_prevent_count < li.days_require_rpm_round_off:
