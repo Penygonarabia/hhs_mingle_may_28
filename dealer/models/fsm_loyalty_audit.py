@@ -24,6 +24,7 @@ class FSMLoyaltyAudit(models.Model):
     notes = fields.Text()
     reference = fields.Char()
     sales_id = fields.Many2one('dsales.showroom.sales', string='Sales Record', ondelete='cascade')
+    status = fields.Selection(related="sales_id.state", string="Status")
 
     type_order = fields.Integer(compute='_compute_type_order', store=True)
 

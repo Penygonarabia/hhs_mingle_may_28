@@ -748,10 +748,11 @@ class dealerShowroomSales(models.Model):
         # -------------------------------------------------
         # FSM LOYALTY AUDIT CREATION
         # -------------------------------------------------
-        if record.state == 'approved':
+        if record.state in ('approved', 'rejected'):
             for line in record.line_ids:
                 if line.product_id and line.qty:
-                    loyalty_points = line.fsm_loyalty_points
+                    loyalty_points = line.fsm_loyalty_points if record.state == 'approved' else 0
+                    actual_qty = line.qty if record.state == 'approved' else 0
                     trans_type = '2' if record.is_sales_return else '1'
 
                     salesman_id = (
@@ -769,7 +770,7 @@ class dealerShowroomSales(models.Model):
                         'salesman_id': salesman_id,
                         'location_id': record.dealer_showroom_id.id if record.dealer_showroom_id else False,
                         'type': trans_type,
-                        'qty': line.qty,
+                        'qty': actual_qty,
                         'loyalty_points': loyalty_points,
                         'amount_paid': 0,
                         'reference': record.invoice_no or self.env['ir.sequence'].next_by_code('dsales.showroom.sales'),
@@ -889,11 +890,12 @@ class dealerShowroomSales(models.Model):
                 old_audits = self.env['fsm.loyalty.audit'].search([('reference', '=', record.invoice_no)])
                 old_audits.sudo().unlink()
 
-                # Recreate audits based on current lines if state is approved
-                if record.state == 'approved':
+                # Recreate audits based on current lines if state is approved or rejected
+                if record.state in ('approved', 'rejected'):
                     for line in record.line_ids:
                         if line.product_id and line.qty:
-                            loyalty_points = line.fsm_loyalty_points
+                            loyalty_points = line.fsm_loyalty_points if record.state == 'approved' else 0
+                            actual_qty = line.qty if record.state == 'approved' else 0
                             trans_type = '2' if record.is_sales_return else '1'
                             salesman_id = (
                                 record.dealer_assignment_id.sale_dealer_id.id
@@ -910,7 +912,7 @@ class dealerShowroomSales(models.Model):
                                 'salesman_id': salesman_id,
                                 'location_id': record.dealer_showroom_id.id if record.dealer_showroom_id else False,
                                 'type': trans_type,
-                                'qty': line.qty,
+                                'qty': actual_qty,
                                 'loyalty_points': loyalty_points,
                                 'amount_paid': 0,
                                 'reference': record.invoice_no,
