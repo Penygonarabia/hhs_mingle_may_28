@@ -21,6 +21,19 @@
                     force_save="1"
                     required="customer_identification_scheme == 'TIN'"/>
                     
+                  <label for="street" string="Address"/>
+	                <div class="o_address_format">
+	                    <field name="street" placeholder="Street..." class="o_address_street"/>
+	                    <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+	                    <field name="customer_city_id" placeholder="City" class="o_address_city"/>
+	                    <field name = "district_id" placeholder="District" class="o_address_city" domain ="[('city_id','=',customer_city_id)]"/>
+	                    <field name="state_id" class="o_address_state" placeholder="State"
+	                           options="{&quot;no_open&quot;: True}"/>
+	                    <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+	                    <field name="country_id" placeholder="Country" class="o_address_country"
+	                           options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+	                </div>   
+                    
                  <field name = "customer_code"  required = "0"/>
                  <field name = "warehouse_id" required = "1" domain ="[('id','in',warehouse_lst_ids)]"/>
                  <field name = "district" invisible = "1"/>
@@ -50,21 +63,7 @@
                 <field name="project_id" invisible="1"/>
             </xpath>
             
-            <xpath expr = "//group/field[@name = 'partner_id']" position = "after">
             
-            	 <label for="street" string="Address"/>
-	                <div class="o_address_format">
-	                    <field name="street" placeholder="Street..." class="o_address_street"/>
-	                    <field name="street2" placeholder="Street 2..." class="o_address_street"/>
-	                    <field name="customer_city_id" placeholder="City" class="o_address_city"/>
-	                    <field name = "district_id" placeholder="District" class="o_address_city" domain ="[('city_id','=',customer_city_id)]"/>
-	                    <field name="state_id" class="o_address_state" placeholder="State"
-	                           options="{&quot;no_open&quot;: True}"/>
-	                    <field name="zip" placeholder="ZIP" class="o_address_zip"/>
-	                    <field name="country_id" placeholder="Country" class="o_address_country"
-	                           options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
-	                </div>
-            </xpath>
         </field>
     </record>
         
