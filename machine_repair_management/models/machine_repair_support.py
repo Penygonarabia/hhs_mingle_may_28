@@ -1907,10 +1907,13 @@ class MachineRepairSupport(models.Model):
                                 
                                 completed_jobs = contract_search + 1
 
-                                li.actual_prevent_count = min(
+                                '''Code Added on June 18 2026 by Vijaya Bhaskar'''
+                                li.write({
+                                'actual_prevent_count': min(
                                     completed_jobs // li.qty_ordered,
                                     li.no_of_visits_per_year
                                 )
+                            })
                             '''Code Commented on May 30 2026 by Vijaya Bhaskar because client asked overall qty is over then only count was updated
                             if li.actual_prevent_count < li.days_require_rpm_round_off:
                                 li.actual_prevent_count += 1
