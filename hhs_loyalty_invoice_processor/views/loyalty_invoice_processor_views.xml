@@ -130,7 +130,9 @@
                             </group>
                         </group>
                         <group>
+                            <field name="available_partner_ids" invisible="1"/>
                             <field name="invoice_ids" widget="many2many_tags" placeholder="Select specific invoices (leave empty to process all unprocessed in date range)"/>
+                            <field name="partner_ids" widget="many2many_tags" placeholder="Select specific customers (leave empty to process for all)" domain="[('id', 'in', available_partner_ids)]"/>
                         </group>
                         <footer>
                             <button name="action_process_invoices" type="object" string="Process Invoices" class="btn-primary"/>

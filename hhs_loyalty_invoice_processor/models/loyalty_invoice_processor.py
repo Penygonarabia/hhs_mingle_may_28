@@ -12,12 +12,45 @@ class LoyaltyInvoiceProcessor(models.TransientModel):
         string='Select Invoices',
         domain="[('trnh_processed', '=', 'N')]"
     )
+    partner_ids = fields.Many2many(
+        'res.partner',
+        string='Select Customers'
+    )
+    available_partner_ids = fields.Many2many(
+        'res.partner',
+        relation='loyalty_invoice_processor_available_partner_rel',
+        compute='_compute_available_partner_ids'
+    )
+
+    @api.depends('start_date', 'end_date')
+    def _compute_available_partner_ids(self):
+        for rec in self:
+            domain = [('trnh_processed', '=', 'N')]
+            if rec.start_date:
+                domain.append(('trnh_date', '>=', rec.start_date.strftime('%Y%m%d')))
+            if rec.end_date:
+                domain.append(('trnh_date', '<=', rec.end_date.strftime('%Y%m%d')))
+            
+            # Fetch distinct customer numbers
+            headers = self.env['transaction.header'].search_read(domain, ['trnh_cstno'])
+            cstnos = list(set([h['trnh_cstno'] for h in headers if h.get('trnh_cstno')]))
+            
+            if cstnos:
+                partners = self.env['res.partner'].search([('ref', 'in', cstnos)])
+                rec.available_partner_ids = partners.ids
+            else:
+                rec.available_partner_ids = False
 
     def action_process_invoices(self):
         """
         Main entry point to select unprocessed transaction headers,
         process each with savepoints, and record results.
         """
+        from odoo.exceptions import ValidationError
+        
+        if not ((self.start_date and self.end_date) or self.invoice_ids):
+            raise ValidationError("You must provide either Invoice Dates (Start and End Date) or Select specific Invoices.")
+
         domain = [('trnh_processed', '=', 'N')]
         if self.start_date:
             domain.append(('trnh_date', '>=', self.start_date.strftime('%Y%m%d')))
@@ -25,6 +58,10 @@ class LoyaltyInvoiceProcessor(models.TransientModel):
             domain.append(('trnh_date', '<=', self.end_date.strftime('%Y%m%d')))
         if self.invoice_ids:
             domain.append(('id', 'in', self.invoice_ids.ids))
+        if self.partner_ids:
+            refs = [r for r in self.partner_ids.mapped('ref') if r]
+            if refs:
+                domain.append(('trnh_cstno', 'in', refs))
 
         headers = self.env['transaction.header'].sudo().search(domain)
         success_invoices = []
@@ -181,10 +218,7 @@ class LoyaltyInvoiceProcessor(models.TransientModel):
                     Items_loyalty_point_promovr = promotional_value
 
             # Calculate line totals
-            if doc_type_str == '01':
-                qty = detail.trnd_qtyiss or 0.0
-            else:
-                qty = getattr(detail, 'trnd_ret', 0.0) or 0.0
+            qty = detail.trnd_qtyiss or 0.0
             Total_item_points_vr = Items_loyalty_point_vr * qty
             Total_item_points_promovr = Items_loyalty_point_promovr * qty
 
@@ -209,33 +243,33 @@ class LoyaltyInvoiceProcessor(models.TransientModel):
                 'trnd_bonuspts': Total_item_points_promovr
             })
 
-            # Create Customer Loyalty Points History (Audit) for THIS detail line
-            # Set document type as '01' (Invoice) or '02' (Credit Note)
-            doc_type = header.trnh_type if header.trnh_type in ('01', '02') else ('01' if sign == 1 else '02')
-            adj_type = '+' if sign == 1 else '-'
-            clph_type_val = 'I' if sign == 1 else 'O'
+# History creation moved to aggregated block (single record per invoice)
 
-            self.env['customer.loyalty.points.history'].sudo().create({
-                'clph_cstid': partner.id,
-                'clph_cstcode': partner.ref or '',
-                'clph_date': parsed_date,
-                'clph_doctype': doc_type,
-                'clph_docnumber': header.trnh_no,
-                'clph_adjtype': adj_type,
-                'clph_type': clph_type_val,
-                'clph_whouse': header.trnh_whouse or '',
-                'clph_regpoints': Total_item_points_vr,
-                'clph_bonuspoints': Total_item_points_promovr,
-                'clph_totalpoints': Total_item_points_vr + Total_item_points_promovr,
-                'clph_note': detail.trnd_part or '',
-                'clph_uid': str(self.env.user.id),
-                'clph_datetime': fields.Datetime.now(),
-                'clph_reasoncode': '',
-                'clph_promoref': promo_ref,
-                'clph_export': 'False',
-                'clph_redemptionprice': 0.0,
-                'type': type,
-            })
+        # Create aggregated loyalty points history record
+        doc_type = header.trnh_type if header.trnh_type in ('01', '02') else ('01' if sign == 1 else '02')
+        adj_type = '+' if sign == 1 else '-'
+        clph_type_val = 'I' if sign == 1 else 'O'
+
+        self.env['customer.loyalty.points.history'].sudo().create({
+            'clph_cstid': partner.id,
+            'clph_cstcode': partner.ref or '',
+            'clph_date': parsed_date,
+            'clph_doctype': doc_type,
+            'clph_docnumber': header.trnh_no,
+            'clph_adjtype': adj_type,
+            'clph_type': clph_type_val,
+            'clph_whouse': header.trnh_whouse or '',
+            'clph_regpoints': Invoice_points_vr,
+            'clph_bonuspoints': Invoice_points_promovr,
+            'clph_totalpoints': Invoice_points_vr + Invoice_points_promovr,
+            'clph_note': '',
+            'clph_uid': str(self.env.user.id),
+            'clph_datetime': fields.Datetime.now(),
+            'clph_reasoncode': '',
+            'clph_promoref': '',
+            'clph_export': 'False',
+            'clph_redemptionprice': 0.0,
+        })
 
         # Calculate and update partner loyalty balance
         if Invoice_points_vr > 0 or Invoice_points_promovr > 0:
