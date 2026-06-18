@@ -206,32 +206,32 @@ class LoyaltyInvoiceProcessor(models.TransientModel):
                 'trnd_bonuspts': Total_item_points_promovr
             })
 
-            # Create Customer Loyalty Points History (Audit) for THIS detail line
-            # Set document type as '01' (Invoice) or '02' (Credit Note)
-            doc_type = header.trnh_type if header.trnh_type in ('01', '02') else ('01' if sign == 1 else '02')
-            adj_type = '+' if sign == 1 else '-'
-            clph_type_val = 'I' if sign == 1 else 'O'
+# History creation moved to aggregated block (single record per invoice)
 
-            self.env['customer.loyalty.points.history'].sudo().create({
-                'clph_cstid': partner.id,
-                'clph_cstcode': partner.ref or '',
-                'clph_date': parsed_date,
-                'clph_doctype': doc_type,
-                'clph_docnumber': header.trnh_no,
-                'clph_adjtype': adj_type,
-                'clph_type': clph_type_val,
-                'clph_whouse': header.trnh_whouse or '',
-                'clph_regpoints': Total_item_points_vr,
-                'clph_bonuspoints': Total_item_points_promovr,
-                'clph_totalpoints': Total_item_points_vr + Total_item_points_promovr,
-                'clph_note': detail.trnd_part or '',
-                'clph_uid': str(self.env.user.id),
-                'clph_datetime': fields.Datetime.now(),
-                'clph_reasoncode': '',
-                'clph_promoref': promo_ref,
-                'clph_export': 'False',
-                'clph_redemptionprice': 0.0,
-            })
+        # Create aggregated loyalty points history record
+        doc_type = header.trnh_type if header.trnh_type in ('01', '02') else ('01' if sign == 1 else '02')
+        adj_type = '+' if sign == 1 else '-'
+        clph_type_val = 'I' if sign == 1 else 'O'
+        self.env['customer.loyalty.points.history'].sudo().create({
+            'clph_cstid': partner.id,
+            'clph_cstcode': partner.ref or '',
+            'clph_date': parsed_date,
+            'clph_doctype': doc_type,
+            'clph_docnumber': header.trnh_no,
+            'clph_adjtype': adj_type,
+            'clph_type': clph_type_val,
+            'clph_whouse': header.trnh_whouse or '',
+            'clph_regpoints': Invoice_points_vr,
+            'clph_bonuspoints': Invoice_points_promovr,
+            'clph_totalpoints': Invoice_points_vr + Invoice_points_promovr,
+            'clph_note': '',
+            'clph_uid': str(self.env.user.id),
+            'clph_datetime': fields.Datetime.now(),
+            'clph_reasoncode': '',
+            'clph_promoref': '',
+            'clph_export': 'False',
+            'clph_redemptionprice': 0.0,
+        })
 
         # Calculate and update partner loyalty balance
         if Invoice_points_vr > 0 or Invoice_points_promovr > 0:

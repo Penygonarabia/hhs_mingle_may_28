@@ -122,6 +122,13 @@ class CustomerLoyaltyResPartner(models.Model):
 
             rec.loyalty_transaction_ids = [(6, 0, history_ids.ids)]
 
+    @api.depends('loyalty_transaction_ids')
+    def _compute_loyalty_summary(self):
+        for rec in self:
+            transactions = rec.loyalty_transaction_ids.filtered(lambda t: t.type != 'adjustment')
+            rec.total_regular_points = sum(transactions.mapped('clph_regpoints'))
+            rec.total_bonus_points = sum(transactions.mapped('clph_bonuspoint'))
+
     @api.onchange('partner_type_hhs')
     def _on_change_partner_type(self):
         for rec in self:
