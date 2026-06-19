@@ -117,7 +117,7 @@ class ReportAMCQuotation(models.AbstractModel):
                 self.env.cr.execute(query, (unit_type_id, service_type))
                 res = self.env.cr.dictfetchall()
 
-                print("RESULT:", res)
+                
 
                 grouped = {}
 
