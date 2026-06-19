@@ -227,7 +227,7 @@
                     </div>
 
 
-                    <div style="display: flex; flex-direction: column;" invisible="project_related_amc_bool">
+                    <div style="display: flex; flex-direction: column;" invisible="project_related_amc_bool and maintenance_type == 'preventive'">
                         <hr class="hr-5"/>
                         <div class="FAQ" id="Productinfo">
                             <div class="toggle-btn" onclick="toggleFaq(this)">

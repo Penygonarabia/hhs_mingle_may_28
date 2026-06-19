@@ -348,7 +348,8 @@
                         </table>
                         <div class="hhs-sig" style="white-space: pre-line;margin:0; padding:0;line-height:1.2; font-size:14pt !important;">
                             <strong style="font-size:14pt !important;">
-                                <t t-raw="subject"/>
+                                <!-- <t t-raw="subject"/> -->
+                                 <t t-raw="others"/>
                             </strong>
                         </div>
 
@@ -578,14 +579,14 @@
                                 <t t-raw="others_text"/>
                             </div>
                         </div>	
-                        <div class="mt-3" style="page-break-inside: avoid; display:flex;">
+                       <!--  <div class="mt-3" style="page-break-inside: avoid; display:flex;">
                             <div style="width:25%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:14pt !important; line-height:1.4;">
                                 <strong>Others :</strong>
                             </div>
                             <div class="hhs-sig" style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:14pt !important; line-height:1.4;">
                                 <t t-raw="others"/>                             
                             </div>
-                        </div>	
+                        </div> -->	
                        <!--  <div class="mt-3"
                              style="page-break-inside: avoid;font-family:'Lato','Helvetica','Arial',sans-serif;font-size:17pt !important;line-height:1.4;">
                             <div style="display:flex; justify-content:space-between; width:100%;">
