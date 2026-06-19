@@ -346,12 +346,16 @@
                                 </td>
                             </tr>
                         </table>
-                        <div class="hhs-sig" style="white-space: pre-line;margin:0; padding:0;line-height:1.2; font-size:14pt !important;">
+                       <!--   <div class="hhs-sig" style="white-space: pre-line;margin:0; padding:0;line-height:1.2; font-size:14pt !important;">
                             <strong style="font-size:14pt !important;">
-                                <!-- <t t-raw="subject"/> -->
-                                 <t t-raw="others"/>
+                                <t t-raw="others"/>
                             </strong>
-                        </div>
+                        </div> -->
+                        <div style="padding:15px 0; line-height:1.2; font-size:14pt !important;">
+						              <strong style="font-size:14pt !important;">
+						                  <t t-raw="others"/>
+						              </strong>
+						          </div>
 
 
                         <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:14pt !important;">
@@ -575,6 +579,8 @@
                             </div>
                             <div class="hhs-sig" style="width:75%;font-family:'Lato','Helvetica','Arial',sans-serif; font-size:14pt !important; line-height:1.4;">
                                 <t t-raw="exclusions_text"/>
+                                <br/>
+                                <br/>
                                 <br/>
                                 <t t-raw="others_text"/>
                             </div>
