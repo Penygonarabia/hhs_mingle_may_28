@@ -578,7 +578,11 @@ class MaintenanceEquipment(models.Model):
             message += _("✅ Created Job Cards:\n%s\n\n") % (",".join(created_jobs))
     
         if skipped_jobs:
-            message += _("⚠️ Skipped Records:\n%s") % (",".join(skipped_jobs))
+            '''Code Added on June 19 2026 by Vijaya Bhaskar'''
+            message += ("⚠️ Cannot Create Schedule Preventive maintenance schedules have already been generated for the entire contract period. No additional schedules can be created.")
+            # message += _("⚠️ Skipped Records:\n%s") % (",".join(skipped_jobs))
+    
+
     
         if not message:
             message = _("No Job Card was created")
