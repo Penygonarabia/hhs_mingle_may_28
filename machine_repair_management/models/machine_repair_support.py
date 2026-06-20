@@ -751,7 +751,8 @@ class MachineRepairSupport(models.Model):
                  self.env.ref(
                      'machine_repair_management.group_technical_allocation_user'
                  ).id),
-                ('default_work_center_id', 'in', work_center_search.ids)
+                ('default_work_center_id', 'in', work_center_search.ids),
+                ('project_ids','in',self.amc_project_id.ids)
             ])
     
             for user in supervisor_users:
