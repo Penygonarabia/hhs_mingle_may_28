@@ -668,7 +668,8 @@
                                                 <td style="border: 0px transparent !important;text-align:center;width:300px;">
                                                       <t t-if="move.partner_id.additional_identification_scheme == 'TIN' and move.partner_id.vat">
 												                            <span style="font-size:16px !important;">
-												                                <t t-if="move.company_id.name" t-esc="move.company_id.name"/>
+												                                  <t t-if="move.subscription_contract_id" t-esc="move.subscription_contract_id.amc_quotation_id.partner_name"/>
+
 												                            </span>
 												                        </t>
 												                        
