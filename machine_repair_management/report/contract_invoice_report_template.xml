@@ -666,9 +666,21 @@
                                                     <strong style="font-size:18px;">Name</strong>
                                                 </td>
                                                 <td style="border: 0px transparent !important;text-align:center;width:300px;">
-                                                    <span style="font-size:16px !important;">
+                                                      <t t-if="move.partner_id.additional_identification_scheme == 'TIN' and move.partner_id.vat">
+												                            <span style="font-size:16px !important;">
+												                                <t t-if="move.company_id.name" t-esc="move.company_id.name"/>
+												                            </span>
+												                        </t>
+												                        
+												                        <t t-else="">
+												                            <span style="font-size:16px !important;">
+												                                <t t-esc="move.partner_id.name"/>
+												                            </span>
+												                        </t>
+
+                                                    <!-- <span style="font-size:16px !important;">
                                                         <t t-esc="move.partner_id.name"/>
-                                                    </span>
+                                                    </span> -->
                                                 </td>
                                                 <td class="col-3"
                                                     style="text-align: right;border: 0px transparent !important; ">
