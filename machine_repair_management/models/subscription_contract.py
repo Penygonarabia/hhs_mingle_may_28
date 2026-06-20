@@ -366,6 +366,7 @@ class SubscriptionContracts(models.Model):
             #     if partner:
             #         self.partner_id = partner.id if partner else False
             # self.reference = f"{self.amc_quotation_id.name} - {self.partner_id.name}"
+            self.partner_name  = self.amc_quotation_id.crm_id.partner_name or False
             self.reference = self.amc_quotation_id.crm_id.name
             self.recurring_period = self.amc_quotation_id.contract_period
             self.recurring_period_interval = self.amc_quotation_id.contract_interval
