@@ -3132,18 +3132,19 @@ class ServiceSaleOrderLine(models.Model):
             if rec.product_id:
                 product_standard_hours = rec.product_id.standard_hours or 0.0
 
-                if rec.standard_hours < product_standard_hours:
-                    raise ValidationError(_(
-                        "Standard Hours must be greater than or equal to the Product Standard Hours.\n\n"
-                        "Product: %s\n"
-                        "Product Standard Hours: %.2f\n"
-                        "Entered Standard Hours: %.2f"
-                    ) % (
-                                              rec.product_id.display_name,
-                                              product_standard_hours,
-                                              rec.standard_hours
-                                          ))
-            
+                '''Code Added on June 20 2026 by Vijaya Bhaskar client asked the Only Sales should have the restriction to reduce the standard hours. Manager should do anything can reduce'''
+                if not rec.env.user.has_group("selling_cost_price_restrict.group_product_price_user"):
+                    if rec.standard_hours < product_standard_hours:
+                        raise ValidationError(_(
+                            "Standard Hours must be greater than or equal to the Product Standard Hours.\n\n"
+                            "Product: %s\n"
+                            "Product Standard Hours: %.2f\n"
+                            "Entered Standard Hours: %.2f"
+                        ) % (
+                                                  rec.product_id.display_name,
+                                                  product_standard_hours,
+                                                  rec.standard_hours
+                                              ))
                            
 
     @api.constrains('product_id', 'standard_hours')
@@ -3152,17 +3153,19 @@ class ServiceSaleOrderLine(models.Model):
             if rec.product_id:
                 product_standard_hours = rec.product_id.standard_hours or 0.0
 
-                if rec.standard_hours < product_standard_hours:
-                    raise ValidationError(_(
-                        "Standard Hours must be greater than or equal to the Product Standard Hours.\n\n"
-                        "Product: %s\n"
-                        "Product Standard Hours: %.2f\n"
-                        "Entered Standard Hours: %.2f"
-                    ) % (
-                                              rec.product_id.display_name,
-                                              product_standard_hours,
-                                              rec.standard_hours
-                                          ))
+                '''Code Added on June 20 2026 by Vijaya Bhaskar client asked the Only Sales should have the restriction to reduce the standard hours. Manager should do anything can reduce'''
+                if not rec.env.user.has_group("selling_cost_price_restrict.group_product_price_user"):
+                    if rec.standard_hours < product_standard_hours:
+                        raise ValidationError(_(
+                            "Standard Hours must be greater than or equal to the Product Standard Hours.\n\n"
+                            "Product: %s\n"
+                            "Product Standard Hours: %.2f\n"
+                            "Entered Standard Hours: %.2f"
+                        ) % (
+                                                  rec.product_id.display_name,
+                                                  product_standard_hours,
+                                                  rec.standard_hours
+                                              ))
 
     @api.onchange("product_id")
     def _onchange_description(self):
