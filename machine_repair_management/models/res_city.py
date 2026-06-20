@@ -14,3 +14,10 @@ class UsersCity(models.Model):
     #     domain = args + ['|', ('name', operator, name), ('state_id.name', operator, name)]
     #     cities = self.search(domain, limit=limit)
     #     return cities.name_get()
+    
+    '''Code Added on June 20 2026 zip code was removed'''
+    @api.depends('zipcode')
+    def _compute_display_name(self):
+        for city in self:
+            name = city.name if not city.zipcode else city.name
+            city.display_name = name
