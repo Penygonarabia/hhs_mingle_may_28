@@ -172,20 +172,23 @@ class SubscriptionContracts(models.Model):
     #     string='Attachment Images'
     # )
 
-    img1 = fields.Image("img1")
-    img1_text = fields.Char("")
+    attachment1 = fields.Binary("Caption 1")
+    attachment1_filename = fields.Char("File Name")
 
-    img2 = fields.Image("img2")
-    img2_text = fields.Char("")
+    attachment2 = fields.Binary("Caption 2")
+    attachment2_filename = fields.Char("File Name")
 
-    img3 = fields.Image("img3")
-    img3_text = fields.Char("")
+    attachment3 = fields.Binary("Caption 3")
+    attachment3_filename = fields.Char("File Name")
 
-    img4 = fields.Image("img4")
-    img4_text = fields.Char("")
+    attachment4 = fields.Binary("Caption 4")
+    attachment4_filename = fields.Char("File Name")
 
-    img5 = fields.Image("img5")
-    img5_text = fields.Char("")
+    attachment5 = fields.Binary("Caption 5")
+    attachment5_filename = fields.Char("File Name")
+
+    attachment6 = fields.Binary("Caption 6")
+    attachment6_filename = fields.Char("File Name")
 
     # Link to service sale order
     amc_quotation_id = fields.Many2one(

@@ -238,77 +238,43 @@
 
                         </page>
 
-                        <page string="Attachment Images">
+                        <page string="Attachments">
 
-                            <div class="question">Attachment Images</div>
+                            <group string="Attachments">
 
-                            <div class="list square-signature">
+                                <group>
+                                    <!--                                    <label string="Caption 1"/>-->
+                                    <field name="attachment1"
+                                           filename="attachment1_filename"
+                                           widget="binary"/>
 
-                                <div class="row mt16">
+                                    <!--                                    <label string="Caption 2"/>-->
+                                    <field name="attachment2"
+                                           filename="attachment2_filename"
+                                           widget="binary"/>
 
-                                    <div class="row mb-2">
-                                        <div class="col-3 d-flex justify-content-center align-items-center">
-                                            <field name="img1"
-                                                   widget="image"
-                                                   class="oe_avatar"/>
-                                        </div>
+                                    <!--                                    <label string="Caption 3"/>-->
+                                    <field name="attachment3"
+                                           filename="attachment3_filename"
+                                           widget="binary"/>
 
-                                        <div class="col-9">
-                                            <field name="img1_text"/>
-                                        </div>
-                                    </div>
+                                    <!--                                    <label string="Caption 4"/>-->
+                                    <field name="attachment4"
+                                           filename="attachment4_filename"
+                                           widget="binary"/>
 
-                                    <div class="row mb-2">
-                                        <div class="col-3 d-flex justify-content-center align-items-center">
-                                            <field name="img2"
-                                                   widget="image"
-                                                   class="oe_avatar"/>
-                                        </div>
+                                    <!--                                    <label string="Caption 5"/>-->
+                                    <field name="attachment5"
+                                           filename="attachment5_filename"
+                                           widget="binary"/>
 
-                                        <div class="col-9">
-                                            <field name="img2_text"/>
-                                        </div>
-                                    </div>
+                                    <!--                                    <label string="Caption 6"/>-->
+                                    <field name="attachment6"
+                                           filename="attachment6_filename"
+                                           widget="binary"/>
+                                </group>
 
-                                    <div class="row mb-2">
-                                        <div class="col-3 d-flex justify-content-center align-items-center">
-                                            <field name="img3"
-                                                   widget="image"
-                                                   class="oe_avatar"/>
-                                        </div>
-
-                                        <div class="col-9">
-                                            <field name="img3_text"/>
-                                        </div>
-                                    </div>
-
-                                    <div class="row mb-2">
-                                        <div class="col-3 d-flex justify-content-center align-items-center">
-                                            <field name="img4"
-                                                   widget="image"
-                                                   class="oe_avatar"/>
-                                        </div>
-
-                                        <div class="col-9">
-                                            <field name="img4_text"/>
-                                        </div>
-                                    </div>
-
-                                    <div class="row mb-2">
-                                        <div class="col-3 d-flex justify-content-center align-items-center">
-                                            <field name="img5"
-                                                   widget="image"
-                                                   class="oe_avatar"/>
-                                        </div>
-
-                                        <div class="col-9">
-                                            <field name="img5_text"/>
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                            </div>
+                            </group>
 
                         </page>
                     </notebook>
