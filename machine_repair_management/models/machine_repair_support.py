@@ -301,6 +301,8 @@ class MachineRepairSupport(models.Model):
         record = super(MachineRepairSupport, self).create(vals)
         record._create_job_card()
         record._send_whatsapp_greeting()
+        '''Code Added on June 20 2026 by vijaya Bhaskar client asked supervisor send the email notification for emergency visit'''
+        record._send_email_to_supervisor_for_emergency()
         """HHS Client again ask customer is retrieved from the res_partner need not fetch from the service request itself on JULY 29-2025 """
         record._create_res_partner()
         # record.action_show_job_card()
@@ -724,190 +726,64 @@ class MachineRepairSupport(models.Model):
             )
             return False
 
-    # def _send_whatsapp_greeting(self):
-    #     _logger.info(
-    #         "✅ WhatsApp greeting send triggered for order %s at %s", self.name
-    #     )
-    #     if (
-    #         not self.env["ir.config_parameter"]
-    #         .sudo()
-    #         .get_param("machine_repair_management.whatsapp_send_bool")
-    #         == "True"
-    #     ):
-    #         _logger.info("❌ No WhatsApp set in res Config Settings")
-    #         return False
+    '''Code Added on June 19 2026 by Vijaya Bhaskar client asked the emergency visit sent to cordinator '''
+       
+    def _send_email_to_supervisor_for_emergency(self): 
+        for rec in self:
 
-    #     # Validate partner data
-    #     phone_number = self.phone
-    #     whatsapp_opt_in = self.whatsapp_opt_in
-    #     # whatsapp_opt_in = self.partner_id.x_whatsapp_opt_in
-    #     country_code = self.country_id.phone_code
-
-    #     if not whatsapp_opt_in:
-    #         _logger.info("❌ No WhatsApp opt-in for customer %s", self.customer_name)
-    #         return False
-
-    #     if not phone_number:
-    #         _logger.info(
-    #             "❌ No mobile number found for customer  %s", self.customer_name
-    #         )
-    #         return False
-
-    #     # Format phone number (E.164 without +)
-    #     phone_number = phone_number.replace("+", "").replace(" ", "")
-    #     phone_number = f"{country_code}{phone_number}"
-    #     _logger.info("Formatted phone number: %s", phone_number)
-
-    #     # base_url = 'https://graph.facebook.com/v18.0/629139543620025'
-    #     whatsapp_phone_number_id = f"{self.env['ir.config_parameter'].sudo().get_param('whatsapp_sale_order_notify.whatsapp_phone_number_id')}"
-
-    #     base_url = f"https://graph.facebook.com/v18.0/{whatsapp_phone_number_id}"
-
-    #     access_token = f"{self.env['ir.config_parameter'].sudo().get_param('whatsapp_sale_order_notify.whatsapp_access_token')}"
-
-    #     # headers = {
-    #     #     'Authorization': f'Bearer {access_token}',
-    #     # }
-
-    #     # base_url = f'https://graph.facebook.com/{api_version}/{phone_number_id}'
-    #     headers = {
-    #         "Authorization": f"Bearer {access_token}",
-    #         "Content-Type": "application/json",
-    #     }
-    #     if not access_token:
-    #         _logger.error("❌ No WhatsApp access token configured")
-    #         return False
-
-    #     # Send greeting template message
-    #     template_url = f"{base_url}/messages"
-    #     # template_payload = {
-    #     #     'messaging_product': 'whatsapp',
-    #     #     'to': phone_number,
-    #     #     'type': 'template',
-    #     #     'template': {
-    #     #         'name': 'hello_world',
-    #     #         'language': {'code': 'en_US'}
-    #     #     }
-    #     # }
-
-    #     """
-    #     message = False
-
-    #     message = f"Welcome Shaker & Co. \n \n Dear Customer {self.customer_name},\n Thank you for contacting Shaker & Co. your service request number is {self.name}.We will send you an appointment schedule shortly.\n\n Thank You.\n Service Team"
-
-    #     template_payload = {
-
-    #         'messaging_product':"whatsapp",
-    #         'to':phone_number,
-    #         "type":"text",
-    #         "text":{
-    #             'body': message,
-    #             }
-
-    #         }
-    #     """
-
-    #     """This is working perfect but i commented by Vijaya Bhaskar on august-02-2025 because they don't want Default Template """
-    #     """
-    #     template_payload = {
-    #           "messaging_product": "whatsapp",
-    #            'to': phone_number,
-    #           "type": "template",
-    #           "template": {
-    #             "name": "initial_contact_optin",
-    #             "language": {
-    #               "code": "en"
-    #             },
-    #             "components": [
-
-    #             #     {
-    #             #     "type": "body",
-    #             #     "parameters": [
-    #             #         {"type": "text", "text": str(self.name or "")}
-    #             #     ]
-    #             # },
-    #               {
-    #                 "type": "button",
-    #                 "sub_type": "quick_reply",
-    #                 "index": "0",
-    #                 "parameters": [
-    #                   {
-    #                     "type": "payload",
-    #                     "payload": "OPTIN_YES"
-    #                   }
-    #                 ]
-    #               },
-    #               {
-    #                 "type": "button",
-    #                 "sub_type": "quick_reply",
-    #                 "index": "1",
-    #                 "parameters": [
-    #                   {
-    #                     "type": "payload",
-    #                     "payload": "OPTIN_NO"
-    #                   }
-    #                 ]
-    #               }
-
-    #             ]
-    #           }
-    #         }
-    #         """
-
-    #     template_payload = {
-    #         "messaging_product": "whatsapp",
-    #         "to": phone_number,
-    #         "type": "template",
-    #         "template": {
-    #             # "name": "approval",
-    #             # "name": "initial_contact_optin",
-    #             "name": "greetings",
-    #             "language": {"code": "en"},
-    #             "components": [
-    #                 {
-    #                     "type": "body",
-    #                     "parameters": [
-    #                         {"type": "text", "text": str(self.name)},
-    #                         {"type": "text", "text": str(self.name)},  # Replaces {{2}}
-    #                     ],
-    #                 },
-    #                 {
-    #                     "type": "button",
-    #                     "sub_type": "quick_reply",
-    #                     "index": "0",
-    #                     "parameters": [{"type": "payload", "payload": "OPTIN_YES"}],
-    #                 },
-    #                 {
-    #                     "type": "button",
-    #                     "sub_type": "quick_reply",
-    #                     "index": "1",
-    #                     "parameters": [{"type": "payload", "payload": "OPTIN_NO"}],
-    #                 },
-    #             ],
-    #         },
-    #     }
-
-    #     try:
-    #         response = requests.post(
-    #             template_url, headers=headers, json=template_payload
-    #         )
-    #         response.raise_for_status()
-    #         _logger.info(
-    #             "✅ Greeting message sent for order %s: %s", self.name, response.json()
-    #         )
-    #         self.message_post(body=_("WhatsApp greeting message sent successfully"))
-    #         return True
-    #     except requests.exceptions.RequestException as e:
-    #         error_details = {
-    #             "status_code": response.status_code if response else "No response",
-    #             "request_payload": template_payload,
-    #         }
-    #         _logger.error(
-    #             "❌ Greeting send error for order %s: %s | Details: %s",
-    #             self.name,
-    #             str(e),
-    #         )
-    #         return False
+            if not rec.project_related_amc_bool:
+                continue
+    
+            if rec.maintenance_type != 'corrective':
+                continue
+    
+            work_center_group = rec.work_center_group_id
+    
+            if not work_center_group:
+                continue
+    
+            work_center_search = self.env['work.center.location'].search([
+                ('work_center_group_id', '=', work_center_group.id)
+            ])
+    
+            supervisor_users = self.env['res.users'].search([
+                ('groups_id', 'in',
+                 self.env.ref(
+                     'machine_repair_management.group_technical_allocation_user'
+                 ).id),
+                ('default_work_center_id', 'in', work_center_search.ids)
+            ])
+    
+            for user in supervisor_users:
+                if not user.email:
+                    continue
+    
+                subject = f"Emergency for the Job Card : {rec.name}"
+    
+                body_html = f"""
+                    <p style="color:#0000FF;font-size:20px">
+                        Dear {user.name},
+                    </p>
+    
+                    <p style="color:#0000FF;font-size:20px">
+                        Emergency visit has been added for Job Card <b>{rec.name}</b>.
+                    </p>
+    
+                    <br/>
+    
+                    <b style="color:#0000FF;font-size:20px">Best Regards</b><br/>
+                    <b style="color:#0000FF;font-size:20px">Maintenance Dept</b><br/>
+                    <b style="color:#0000FF;font-size:20px">HH-Shaker</b>
+                """
+    
+                mail = self.env['mail.mail'].create({
+                    'subject': subject,
+                    'body_html': body_html,
+                    'email_from': self.env.user.email or self.env.company.email,
+                    'email_to': user.email,
+                })
+    
+                mail.send()
 
     #    @api.multi odoo13
     @api.depends("timesheet_line_ids.unit_amount")
@@ -1807,7 +1683,19 @@ class MachineRepairSupport(models.Model):
     
     '''Code Added on May 22 2026 by Vijaya Bhaskar'''
     used_location_equipment = fields.Char(string = "Used in Location")
-
+    
+    
+    '''Code Added on June 19 2026 by Vijaya Bhaskar preventive count radio widget is disabled'''
+    preventive_completed = fields.Boolean(
+    compute="_compute_actual_counts",
+    store=True
+    )
+    
+    corrective_completed = fields.Boolean(
+        compute="_compute_actual_counts",
+        store=True
+    )
+    
 
     @api.depends("contract_id", "asset_id", "service_products_code_id")
     def _compute_actual_counts(self):
@@ -1835,6 +1723,31 @@ class MachineRepairSupport(models.Model):
             # rec.actual_corrective = f"{done_cor} / {total_cor}"
             '''Code Added on May 26 2026 by Vijaya Bhaskar client asked total corrective count will be total emergency count irrespective of product'''
             rec.actual_corrective = f"{done_cor} / {total_corrective_count}"
+            
+            '''Code Added on June 19 2026 by Vijaya Bhaskar preventive count radio widget is disabled'''
+
+            rec.preventive_completed = (
+            total_pre > 0 and done_pre >= total_pre
+            )
+    
+            rec.corrective_completed = (
+                total_corrective_count > 0
+                and done_cor >= total_corrective_count
+            )
+    
+    '''Code Added on June 19 2026 by Vijaya Bhaskar preventive count radio widget is disabled'''
+
+    @api.onchange('maintenance_type')
+    def _onchange_maintenance_type(self):
+        if self.maintenance_type == 'preventive' and self.preventive_completed:
+            raise ValidationError(
+                _("Preventive visits are already completed.")
+            )
+    
+        if self.maintenance_type == 'corrective' and self.corrective_completed:
+            raise ValidationError(
+                _("Corrective visits are already completed.")
+            )
 
     # @api.depends("contract_id", "asset_id", "service_products_code_id")
     # def _compute_actual_counts(self):

@@ -506,6 +506,29 @@ class ProjectTask(models.Model):
         selection=lambda self: self._get_year_selection("purchase"),
         string="Purchase Year Pick",
     )
+    
+    '''Code Added on June 19 2026 by Vijaya Bhaskar'''
+    preventive_completed = fields.Boolean(related = "service_request_id.preventive_completed",
+    store=True
+    )
+    
+    corrective_completed = fields.Boolean(related = "service_request_id.preventive_completed",
+        store=True
+    )
+    
+    '''Code Added on June 19 2026 by Vijaya Bhaskar preventive count radio widget is disabled'''
+
+    @api.onchange('maintenance_type')
+    def _onchange_maintenance_type(self):
+        if self.maintenance_type == 'preventive' and self.preventive_completed:
+            raise ValidationError(
+                _("Preventive visits are already completed.")
+            )
+    
+        if self.maintenance_type == 'corrective' and self.corrective_completed:
+            raise ValidationError(
+                _("Corrective visits are already completed.")
+            )
 
     @api.depends("job_state", "job_card_state_code", "message_log_ids")
     def _compute_technician_no_of_visit_count(self):

@@ -186,6 +186,8 @@
                                 <field name="paid_service_amount" readonly="1" force_save="1" invisible="not paid_service_bool"/>
                                 
                                 <field name = "used_location_equipment" readonly="1" force_save="1"/>
+                                <field name = "preventive_completed" invisible = "1"/>
+                                <field name = "corrective_completed" invisible = "1" />
                                 
                             </group>
 

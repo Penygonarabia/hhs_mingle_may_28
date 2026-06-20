@@ -168,8 +168,13 @@
 			</xpath>
 			
 			 <xpath expr="//field[@name='lead_properties']" position="attributes">
-            <attribute name="invisible">1</attribute>
-        </xpath>
+	            <attribute name="invisible">1</attribute>
+	        </xpath>
+	        
+	        	<xpath expr="//group[@name='opportunity_partner']/field[@name='partner_id']" position="attributes">
+					<attribute name = "readonly">1</attribute>
+					<attribute name ="options">{'no_open':True}</attribute>
+				</xpath>
 			
 		
 			
