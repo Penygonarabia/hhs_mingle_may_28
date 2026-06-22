@@ -116,6 +116,8 @@
                 <field name="partner_name"/>
                  
                 <field name  = "customer_code" required = "0"/>
+                <field name = "customer_name" required = "1"/>
+                
             </xpath>
 
             <xpath expr="//group[@name='opportunity_partner']/field[@name='partner_id']" position="after">
@@ -174,6 +176,7 @@
 	        	<xpath expr="//group[@name='opportunity_partner']/field[@name='partner_id']" position="attributes">
 					<attribute name = "readonly">1</attribute>
 					<attribute name ="options">{'no_open':True}</attribute>
+					<attribute name = "invisible">1</attribute>
 				</xpath>
 			
 		

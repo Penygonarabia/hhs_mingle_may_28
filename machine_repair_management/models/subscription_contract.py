@@ -87,6 +87,9 @@ class SubscriptionContracts(models.Model):
     
     zip = fields.Char(string = "Zip")
     
+    '''code Added on June 22 2026 by Vijaya Bhaskar due to original name is updated when we create the contract'''
+    original_name = fields.Char(string = "Original name")
+    
     
     @api.depends('amc_quotation_id')
     def _compute_warehouse_lst_ids(self):

@@ -11,7 +11,10 @@ class CrmLead(models.Model):
     _inherit = 'crm.lead'
 
     # ✅ Project Name
-    name = fields.Char(string="Project Name", required=True)
+    name = fields.Char(
+        'Project Name', index='trigram',
+        compute='_compute_name', readonly=False, store=True)
+    # name = fields.Char(string="Project Name", required=True)
     email_from = fields.Char(required=True)
     phone = fields.Char(required=True)
     mobile = fields.Char()
@@ -47,6 +50,18 @@ class CrmLead(models.Model):
     
     site_zip = fields.Char(string = "Zip")
     
+    '''Code Added on June 20 2026 by Vijaya Bhaskar'''
+    customer_name = fields.Char(string = "Customer")
+    
+
+    @api.depends('partner_id','customer_name')
+    def _compute_name(self):
+        for lead in self:
+            if not lead.name and lead.partner_id and lead.partner_id.name:
+                lead.name = _("%s's opportunity") % lead.partner_id.name
+                '''Code Added on June 22 2026 by Vijaya Bhaskar '''    
+            elif lead.customer_name:
+                lead.name = _("%s's opportunity") %  lead.customer_name  
     
     '''Code Added on June 12 2026 by Vijaya Bhaskar client asked site address similar to address'''
 
@@ -153,7 +168,8 @@ class CrmLead(models.Model):
                 self.job_position = pipeline_search.job_position or False
                 self.warehouse_id = pipeline_search.warehouse_id.id or False
         
-        
+        '''Code Added on june 20 2026 by Vijaya Bhaskar'''
+        self.customer_name = self.partner_id.name or False
         
 
     '''Code Added on May 22 2026 by Vijaya Bhaskar'''
@@ -302,8 +318,35 @@ class CrmLead(models.Model):
             else:
                 vals['name'] = "New Project"
         
+        '''Code Added on June 20 2026 by Vijaya Bhaskar'''
 
-        return super().create(vals)
+      
+        record = super().create(vals)
+        record._create_res_partner()
+        return record
+
+    def _create_res_partner(self):
+        for rec in self:
+            partner_vals = {
+                "name": rec.customer_name or False,
+                "street": rec.street or False,
+                "street2": rec.street2 or False,
+                "customer_city_id": rec.customer_city_id.id or False,
+                "state_id": rec.state_id.id or False,
+                "country_id": rec.country_id.id or False,
+                "zip": rec.zip or False,
+                "email": rec.email_from or None,
+                "mobile": rec.phone or None,
+                # "partner_type_hhs": "customer",
+                # "sub_partner_type": "retail",
+            }
+            partner_search = self.env["res.partner"].search(
+                [("mobile", "=", rec.phone), ("id", "=", rec.partner_id.id)]
+            )
+           
+            if not partner_search:
+                partner = self.env["res.partner"].create(partner_vals)
+                rec.partner_id = partner.id  
 
     # -------------------------
     # ✅ UI AUTO FILL

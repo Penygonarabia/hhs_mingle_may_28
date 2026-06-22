@@ -2962,6 +2962,9 @@ class ServiceSaleOrder(models.Model):
             contract.onchange_partner_id_set_identification()
             '''Code Added on June 05 2026 by Vijaya Bhaskar'''
             contract._onchange_invoice_interval()
+            
+            '''Code Added on June 22 2026 by Vijaya Bhaskar due to name can be changed after the invoice date start in the contract'''
+            contract.write({'original_name':contract.name})
 
             ContractLine = self.env["subscription.contracts.line"]
 

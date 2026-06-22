@@ -215,8 +215,11 @@ class MachineRepairSupport(models.Model):
                             vals['emergency_count_exceed'] = True
                 
                         # Sequence Name
+                        '''Code Added on June 22 2026 by Vijaya Bhaskar client asked emergency count as also add the customer code instead of contract name
                         vals['name'] = f"{contract.name}/EC-{machine_repair_search + 1:02d}"
-                    
+                        '''
+                        vals['name'] = f"{contract.customer_code}/EC-{machine_repair_search + 1:02d}"
+
                     
                     '''Code Added on May 23 2026 by Vijaya Bhaskar because Already Preventive Count has finished their quota'''
                     # if vals.get('maintenance_type') == 'preventive' and vals.get('paid_service_bool')==True:
