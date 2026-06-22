@@ -3,7 +3,7 @@ import logging
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 from io import BytesIO
-
+import datetime
 try:
     import pandas as pd
 except ImportError:
@@ -148,6 +148,7 @@ class MaintenanceEquipmentImportWizard(models.TransientModel):
             # ---------------------------
             # LOOP
             # ---------------------------
+            base_dt = fields.Datetime.now()  # call once, before the loop
             for idx, row in df.iterrows():
                 row_num = idx + 2
     
@@ -293,7 +294,13 @@ class MaintenanceEquipmentImportWizard(models.TransientModel):
                         'crm_lead_id': crm_lead_id,
                     }
     
-                    self.env['maintenance.equipment'].create(vals)
+                    # self.env['maintenance.equipment'].create(vals)
+                    equipment_create = self.env['maintenance.equipment'].create(vals)
+                    fake_create_date = base_dt - datetime.timedelta(microseconds=idx * 1000)
+                    self.env.cr.execute(
+                        "UPDATE maintenance_equipment SET create_date = %s WHERE id = %s",
+                        (fake_create_date, equipment_create.id)
+                    )
                     created += 1
     
                 except Exception as e:
