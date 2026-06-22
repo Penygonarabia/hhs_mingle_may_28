@@ -20,7 +20,7 @@ class CrmLead(models.Model):
     mobile = fields.Char()
     contact_name = fields.Char()
     function = fields.Char()
-    partner_id = fields.Many2one('res.partner', required=True)
+    partner_id = fields.Many2one('res.partner')
     partner_name = fields.Char(required=True)
     street = fields.Char(required=True)
     
@@ -52,6 +52,7 @@ class CrmLead(models.Model):
     
     '''Code Added on June 20 2026 by Vijaya Bhaskar'''
     customer_name = fields.Char(string = "Customer")
+
     
 
     @api.depends('partner_id','customer_name')
@@ -169,6 +170,7 @@ class CrmLead(models.Model):
                 self.warehouse_id = pipeline_search.warehouse_id.id or False
         
         '''Code Added on june 20 2026 by Vijaya Bhaskar'''
+        # if self.partner_id:
         self.customer_name = self.partner_id.name or False
         
 
