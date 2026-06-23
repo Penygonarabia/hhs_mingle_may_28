@@ -53,7 +53,13 @@
         and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s </field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("is_user_work_location", "=", True)]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field>
+            <field name="ks_model_id_2" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_record_count_type_2">count</field>
+            <field name="ks_domain_2">["&amp;", ("job_card_status", "=", "Closed"), ("is_user_work_location", "=", True)]</field>
+            <field name="ks_date_filter_field_2" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/></record>
 
         <record id="legacy_item_455" model="ks_dashboard_ninja.item">
             <field name="name">Total service Revenue</field>
@@ -94,7 +100,9 @@ where
 	and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("is_user_work_location", "=", True)]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_456" model="ks_dashboard_ninja.item">
             <field name="name">Labor Revenue</field>
@@ -135,7 +143,9 @@ where
 	and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("is_user_work_location", "=", True)]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_457" model="ks_dashboard_ninja.item">
             <field name="name">Spare Parts Revenue</field>
@@ -176,7 +186,9 @@ where
 	and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("is_user_work_location", "=", True)]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_458" model="ks_dashboard_ninja.item">
             <field name="name">Spare Parts Warranty</field>
@@ -223,7 +235,9 @@ where
 	and pt.service_created_datetime between %(ks_start_date)s and %(ks_end_date)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("is_user_work_location", "=", True)]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_459" model="ks_dashboard_ninja.item">
             <field name="name">AVG RTAT</field>
@@ -271,7 +285,9 @@ from (
 ) as res</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("is_user_work_location", "=", True), ("job_card_status", "=", "Closed")]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_460" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Status analysis on weekly basis</field>
@@ -305,43 +321,37 @@ from (
             <field name="ks_sort_by_order">ASC</field>
             <field name="ks_custom_query">SELECT
     'Week-' || (
-        FLOOR((EXTRACT(DAY FROM service_created_datetime) - 1) / 7) + 1
+        FLOOR((EXTRACT(DAY FROM pt.service_created_datetime) - 1) / 7) + 1
     ) AS week_no,
 
     sum(CASE 
-        WHEN (job_card_state = 'Cancelled' or job_card_state = 'Closed') THEN 0 else 1
+        WHEN (pt.job_card_state = 'Cancelled' or pt.job_card_state = 'Closed') THEN 0 else 1
     END) AS not_closed,
 	
     sum(CASE 
-        WHEN job_card_state = 'Closed' THEN 1 else 0
+        WHEN pt.job_card_state = 'Closed' THEN 1 else 0
     END) AS closed,
 
     sum(CASE 
-        WHEN job_card_state = 'Cancelled' THEN 1 else 0
+        WHEN pt.job_card_state = 'Cancelled' THEN 1 else 0
     END) AS cancelled
 	
-FROM project_task
+FROM res_users ru
+     left join res_users_work_center_location_rel ruwcll on ruwcll.res_users_id = ru.id
+     left join project_task pt on pt.work_center_id = ruwcll.work_center_location_id
 
 WHERE 
-	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
-	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
-        and active = true
+	pt.pt.service_created_datetime &gt;= %(ks_start_date)s AND pt.pt.service_created_datetime &lt;=  %(ks_end_date)s
+        and pt.active = true
+        and ru.id = {#UID}
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("is_user_work_location", "=", True)]</field>
-        </record>
-        <record id="legacy_act_250" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_460"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="legacy_act_173" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_460"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_461" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Default Work Centre Wise</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_uwc"/>
@@ -371,39 +381,37 @@ ORDER BY week_no</field>
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_custom_query">SELECT
     'Week-' || (
-        FLOOR((EXTRACT(DAY FROM service_created_datetime) - 1) / 7) + 1
+        FLOOR((EXTRACT(DAY FROM pt.service_created_datetime) - 1) / 7) + 1
     ) AS week_no,
 
     sum(CASE 
-        WHEN (job_card_state = 'Cancelled' or job_card_state = 'Closed') THEN 0 else 1
+        WHEN (pt.job_card_state = 'Cancelled' or pt.job_card_state = 'Closed') THEN 0 else 1
     END) AS not_closed,
 	
     sum(CASE 
-        WHEN job_card_state = 'Closed' THEN 1 else 0
+        WHEN pt.job_card_state = 'Closed' THEN 1 else 0
     END) AS closed,
 
     sum(CASE 
-        WHEN job_card_state = 'Cancelled' THEN 1 else 0
+        WHEN pt.job_card_state = 'Cancelled' THEN 1 else 0
     END) AS cancelled
 	
-FROM project_task
+FROM res_users ru
+     left join res_users_work_center_location_rel ruwcll on ruwcll.res_users_id = ru.id
+     left join project_task pt on pt.work_center_id = ruwcll.work_center_location_id
 
 WHERE 
-	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
-	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
-        and active = true
+	pt.pt.service_created_datetime &gt;= %(ks_start_date)s AND pt.pt.service_created_datetime &lt;=  %(ks_end_date)s
+        and pt.active = true
+        and ru.id = {#UID}
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("is_user_work_location", "=", True), ("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_174" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_461"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_462" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Status Wise (Closed &amp; Cancelled)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_uwc"/>
@@ -433,39 +441,37 @@ ORDER BY week_no</field>
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_custom_query">SELECT
     'Week-' || (
-        FLOOR((EXTRACT(DAY FROM service_created_datetime) - 1) / 7) + 1
+        FLOOR((EXTRACT(DAY FROM pt.service_created_datetime) - 1) / 7) + 1
     ) AS week_no,
 
     sum(CASE 
-        WHEN (job_card_state = 'Cancelled' or job_card_state = 'Closed') THEN 0 else 1
+        WHEN (pt.job_card_state = 'Cancelled' or pt.job_card_state = 'Closed') THEN 0 else 1
     END) AS not_closed,
 	
     sum(CASE 
-        WHEN job_card_state = 'Closed' THEN 1 else 0
+        WHEN pt.job_card_state = 'Closed' THEN 1 else 0
     END) AS closed,
 
     sum(CASE 
-        WHEN job_card_state = 'Cancelled' THEN 1 else 0
+        WHEN pt.job_card_state = 'Cancelled' THEN 1 else 0
     END) AS cancelled
 	
-FROM project_task
+FROM res_users ru
+     left join res_users_work_center_location_rel ruwcll on ruwcll.res_users_id = ru.id
+     left join project_task pt on pt.work_center_id = ruwcll.work_center_location_id
 
 WHERE 
-	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
-	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
-        and active = true
+	pt.pt.service_created_datetime &gt;= %(ks_start_date)s AND pt.pt.service_created_datetime &lt;=  %(ks_end_date)s
+        and pt.active = true
+        and ru.id = {#UID}
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("is_user_work_location", "=", True)]</field>
-        </record>
-        <record id="legacy_act_175" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_462"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_463" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Status Wise (Except Closed &amp; Cancelled)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_uwc"/>
@@ -495,39 +501,37 @@ ORDER BY week_no</field>
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_custom_query">SELECT
     'Week-' || (
-        FLOOR((EXTRACT(DAY FROM service_created_datetime) - 1) / 7) + 1
+        FLOOR((EXTRACT(DAY FROM pt.service_created_datetime) - 1) / 7) + 1
     ) AS week_no,
 
     sum(CASE 
-        WHEN (job_card_state = 'Cancelled' or job_card_state = 'Closed') THEN 0 else 1
+        WHEN (pt.job_card_state = 'Cancelled' or pt.job_card_state = 'Closed') THEN 0 else 1
     END) AS not_closed,
 	
     sum(CASE 
-        WHEN job_card_state = 'Closed' THEN 1 else 0
+        WHEN pt.job_card_state = 'Closed' THEN 1 else 0
     END) AS closed,
 
     sum(CASE 
-        WHEN job_card_state = 'Cancelled' THEN 1 else 0
+        WHEN pt.job_card_state = 'Cancelled' THEN 1 else 0
     END) AS cancelled
 	
-FROM project_task
+FROM res_users ru
+     left join res_users_work_center_location_rel ruwcll on ruwcll.res_users_id = ru.id
+     left join project_task pt on pt.work_center_id = ruwcll.work_center_location_id
 
 WHERE 
-	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
-	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
-        and active = true
+	pt.pt.service_created_datetime &gt;= %(ks_start_date)s AND pt.pt.service_created_datetime &lt;=  %(ks_end_date)s
+        and pt.active = true
+        and ru.id = {#UID}
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("is_user_work_location", "=", True), ("job_card_status", "not in", ["Closed", "Cancelled"])]</field>
-        </record>
-        <record id="legacy_act_176" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_463"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_464" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Month Wise</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_uwc"/>
@@ -558,39 +562,37 @@ ORDER BY week_no</field>
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_custom_query">SELECT
     'Week-' || (
-        FLOOR((EXTRACT(DAY FROM service_created_datetime) - 1) / 7) + 1
+        FLOOR((EXTRACT(DAY FROM pt.service_created_datetime) - 1) / 7) + 1
     ) AS week_no,
 
     sum(CASE 
-        WHEN (job_card_state = 'Cancelled' or job_card_state = 'Closed') THEN 0 else 1
+        WHEN (pt.job_card_state = 'Cancelled' or pt.job_card_state = 'Closed') THEN 0 else 1
     END) AS not_closed,
 	
     sum(CASE 
-        WHEN job_card_state = 'Closed' THEN 1 else 0
+        WHEN pt.job_card_state = 'Closed' THEN 1 else 0
     END) AS closed,
 
     sum(CASE 
-        WHEN job_card_state = 'Cancelled' THEN 1 else 0
+        WHEN pt.job_card_state = 'Cancelled' THEN 1 else 0
     END) AS cancelled
 	
-FROM project_task
+FROM res_users ru
+     left join res_users_work_center_location_rel ruwcll on ruwcll.res_users_id = ru.id
+     left join project_task pt on pt.work_center_id = ruwcll.work_center_location_id
 
 WHERE 
-	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
-	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
-        and active = true
+	pt.pt.service_created_datetime &gt;= %(ks_start_date)s AND pt.pt.service_created_datetime &lt;=  %(ks_end_date)s
+        and pt.active = true
+        and ru.id = {#UID}
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("is_user_work_location", "=", True), ("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_177" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_464"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_465" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Warranty Wise (%)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_uwc"/>
@@ -621,43 +623,37 @@ ORDER BY week_no</field>
             <field name="ks_hide_legend" eval="True"/>
             <field name="ks_custom_query">SELECT
     'Week-' || (
-        FLOOR((EXTRACT(DAY FROM service_created_datetime) - 1) / 7) + 1
+        FLOOR((EXTRACT(DAY FROM pt.service_created_datetime) - 1) / 7) + 1
     ) AS week_no,
 
     sum(CASE 
-        WHEN (job_card_state = 'Cancelled' or job_card_state = 'Closed') THEN 0 else 1
+        WHEN (pt.job_card_state = 'Cancelled' or pt.job_card_state = 'Closed') THEN 0 else 1
     END) AS not_closed,
 	
     sum(CASE 
-        WHEN job_card_state = 'Closed' THEN 1 else 0
+        WHEN pt.job_card_state = 'Closed' THEN 1 else 0
     END) AS closed,
 
     sum(CASE 
-        WHEN job_card_state = 'Cancelled' THEN 1 else 0
+        WHEN pt.job_card_state = 'Cancelled' THEN 1 else 0
     END) AS cancelled
 	
-FROM project_task
+FROM res_users ru
+     left join res_users_work_center_location_rel ruwcll on ruwcll.res_users_id = ru.id
+     left join project_task pt on pt.work_center_id = ruwcll.work_center_location_id
 
 WHERE 
-	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
-	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
-        and active = true
+	pt.pt.service_created_datetime &gt;= %(ks_start_date)s AND pt.pt.service_created_datetime &lt;=  %(ks_end_date)s
+        and pt.active = true
+        and ru.id = {#UID}
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("is_user_work_location", "=", True), ("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_216" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_465"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="legacy_act_178" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_465"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_562" model="ks_dashboard_ninja.item">
             <field name="name">Warranty Sts &amp; Region - Jobs Count</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_uwc"/>
@@ -687,43 +683,37 @@ ORDER BY week_no</field>
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_custom_query">SELECT
     'Week-' || (
-        FLOOR((EXTRACT(DAY FROM service_created_datetime) - 1) / 7) + 1
+        FLOOR((EXTRACT(DAY FROM pt.service_created_datetime) - 1) / 7) + 1
     ) AS week_no,
 
     sum(CASE 
-        WHEN (job_card_state = 'Cancelled' or job_card_state = 'Closed') THEN 0 else 1
+        WHEN (pt.job_card_state = 'Cancelled' or pt.job_card_state = 'Closed') THEN 0 else 1
     END) AS not_closed,
 	
     sum(CASE 
-        WHEN job_card_state = 'Closed' THEN 1 else 0
+        WHEN pt.job_card_state = 'Closed' THEN 1 else 0
     END) AS closed,
 
     sum(CASE 
-        WHEN job_card_state = 'Cancelled' THEN 1 else 0
+        WHEN pt.job_card_state = 'Cancelled' THEN 1 else 0
     END) AS cancelled
 	
-FROM project_task
+FROM res_users ru
+     left join res_users_work_center_location_rel ruwcll on ruwcll.res_users_id = ru.id
+     left join project_task pt on pt.work_center_id = ruwcll.work_center_location_id
 
 WHERE 
-	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
-	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
-        and active = true
+	pt.pt.service_created_datetime &gt;= %(ks_start_date)s AND pt.pt.service_created_datetime &lt;=  %(ks_end_date)s
+        and pt.active = true
+        and ru.id = {#UID}
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("is_user_work_location", "=", True), ("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_195" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_562"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="legacy_act_217" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_562"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <!-- ============ Board 121: Service Analysis (C) - New ============ -->
         <record id="legacy_board_c" model="ks_dashboard_ninja.board">
             <field name="name">Service Analysis (C) - New</field>
@@ -774,7 +764,13 @@ ORDER BY week_no</field>
         and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s </field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [7])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field>
+            <field name="ks_model_id_2" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_record_count_type_2">count</field>
+            <field name="ks_domain_2">["&amp;", ("job_card_status", "=", "Closed"), ("work_center_group_id", "in", [7])]</field>
+            <field name="ks_date_filter_field_2" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/></record>
 
         <record id="legacy_item_480" model="ks_dashboard_ninja.item">
             <field name="name">Total service Revenue</field>
@@ -815,7 +811,9 @@ where
 	and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [7])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_481" model="ks_dashboard_ninja.item">
             <field name="name">Labor Revenue</field>
@@ -856,7 +854,9 @@ where
 	and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [7])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_482" model="ks_dashboard_ninja.item">
             <field name="name">Spare Parts Revenue</field>
@@ -897,7 +897,9 @@ where
 	and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [7])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_483" model="ks_dashboard_ninja.item">
             <field name="name">Spare Parts Warranty</field>
@@ -944,7 +946,9 @@ where
 	and pt.service_created_datetime between %(ks_start_date)s and %(ks_end_date)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [7])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_484" model="ks_dashboard_ninja.item">
             <field name="name">AVG RTAT</field>
@@ -992,7 +996,9 @@ from (
 ) as res</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("job_card_status", "in", ["Closed"]), ("work_center_group_id", "in", [7])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_485" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Status analysis on weekly basis</field>
@@ -1045,23 +1051,16 @@ FROM project_task
 WHERE 
 	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
 	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
+	and work_center_group_id = '7'
         and active = true
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [7])]</field>
-        </record>
-        <record id="legacy_act_247" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_485"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="legacy_act_144" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_485"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_486" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Status Wise (Closed &amp; Cancelled)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_c"/>
@@ -1111,19 +1110,16 @@ FROM project_task
 WHERE 
 	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
 	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
+	and work_center_group_id = '7'
         and active = true
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [7])]</field>
-        </record>
-        <record id="legacy_act_188" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_486"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_487" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Status Wise (Except Closed &amp; Cancelled)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_c"/>
@@ -1174,19 +1170,16 @@ FROM project_task
 WHERE 
 	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
 	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
+	and work_center_group_id = '7'
         and active = true
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("job_card_status", "not in", ["Closed", "Cancelled"]), ("work_center_group_id", "in", [7])]</field>
-        </record>
-        <record id="legacy_act_209" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_487"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_488" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Month Wise</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_c"/>
@@ -1237,19 +1230,16 @@ FROM project_task
 WHERE 
 	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
 	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
+	and work_center_group_id = '7'
         and active = true
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("work_center_group_id", "in", [7]), ("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_210" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_488"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_489" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Warranty Status Wise (%)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_c"/>
@@ -1300,23 +1290,16 @@ FROM project_task
 WHERE 
 	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
 	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
+	and work_center_group_id = '7'
         and active = true
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("work_center_group_id", "in", [7]), ("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_211" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_489"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="legacy_act_212" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_489"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_558" model="ks_dashboard_ninja.item">
             <field name="name">Warranty Sts &amp; Region - Jobs Count</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_c"/>
@@ -1346,16 +1329,9 @@ ORDER BY week_no</field>
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("service_warranty_id", "!=", False), ("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_190" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_558"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="legacy_act_189" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_558"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <!-- ============ Board 122: Service Analysis (E) - New ============ -->
         <record id="legacy_board_e" model="ks_dashboard_ninja.board">
             <field name="name">Service Analysis (E) - New</field>
@@ -1406,7 +1382,13 @@ ORDER BY week_no</field>
         and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s </field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [6])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field>
+            <field name="ks_model_id_2" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_record_count_type_2">count</field>
+            <field name="ks_domain_2">["&amp;", ("job_card_status", "=", "Closed"), ("work_center_group_id", "in", [6])]</field>
+            <field name="ks_date_filter_field_2" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/></record>
 
         <record id="legacy_item_491" model="ks_dashboard_ninja.item">
             <field name="name">Total service Revenue</field>
@@ -1447,7 +1429,9 @@ where
 	and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [6])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_492" model="ks_dashboard_ninja.item">
             <field name="name">Labor Revenue</field>
@@ -1488,7 +1472,9 @@ where
 	and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [6])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_493" model="ks_dashboard_ninja.item">
             <field name="name">Spare Parts Revenue</field>
@@ -1529,7 +1515,9 @@ where
 	and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [6])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_494" model="ks_dashboard_ninja.item">
             <field name="name">Spare Parts Warranty</field>
@@ -1576,7 +1564,9 @@ where
 	and pt.service_created_datetime between %(ks_start_date)s and %(ks_end_date)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [6])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_495" model="ks_dashboard_ninja.item">
             <field name="name">AVG RTAT</field>
@@ -1624,7 +1614,9 @@ from (
 ) as res</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("job_card_status", "in", ["Closed"]), ("work_center_group_id", "in", [6])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_496" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Status analysis on weekly basis</field>
@@ -1677,23 +1669,16 @@ FROM project_task
 WHERE 
 	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
 	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
+	and work_center_group_id = '6'
         and active = true
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [6])]</field>
-        </record>
-        <record id="legacy_act_248" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_496"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="legacy_act_145" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_496"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_497" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Status Wise (Closed &amp; Cancelled)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_e"/>
@@ -1744,19 +1729,16 @@ FROM project_task
 WHERE 
 	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
 	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
+	and work_center_group_id = '6'
         and active = true
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [6])]</field>
-        </record>
-        <record id="legacy_act_198" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_497"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_498" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Status Wise (Except Closed &amp; Cancelled)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_e"/>
@@ -1807,19 +1789,16 @@ FROM project_task
 WHERE 
 	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
 	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
+	and work_center_group_id = '6'
         and active = true
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("job_card_status", "not in", ["Closed", "Cancelled"]), ("work_center_group_id", "in", [6])]</field>
-        </record>
-        <record id="legacy_act_199" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_498"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_499" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Month Wise</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_e"/>
@@ -1870,19 +1849,16 @@ FROM project_task
 WHERE 
 	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
 	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
+	and work_center_group_id = '6'
         and active = true
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("work_center_group_id", "in", [6]), ("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_197" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_499"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_500" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Warranty Status Wise (%)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_e"/>
@@ -1933,23 +1909,16 @@ FROM project_task
 WHERE 
 	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
 	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
+	and work_center_group_id = '6'
         and active = true
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("work_center_group_id", "in", [6]), ("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_207" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_500"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="legacy_act_200" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_500"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_563" model="ks_dashboard_ninja.item">
             <field name="name">Warranty Sts &amp; Region - Jobs Count</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_e"/>
@@ -1999,23 +1968,16 @@ FROM project_task
 WHERE 
 	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
 	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
+	and work_center_group_id = '6'
         and active = true
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("work_center_group_id", "in", [6]), ("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_208" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_563"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="legacy_act_196" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_563"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <!-- ============ Board 123: Service Analysis (W) - New ============ -->
         <record id="legacy_board_w" model="ks_dashboard_ninja.board">
             <field name="name">Service Analysis (W) - New</field>
@@ -2066,7 +2028,13 @@ ORDER BY week_no</field>
         and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s </field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [5])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field>
+            <field name="ks_model_id_2" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_record_count_type_2">count</field>
+            <field name="ks_domain_2">["&amp;", ("job_card_status", "=", "Closed"), ("work_center_group_id", "in", [5])]</field>
+            <field name="ks_date_filter_field_2" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/></record>
 
         <record id="legacy_item_502" model="ks_dashboard_ninja.item">
             <field name="name">Total service Revenue</field>
@@ -2107,7 +2075,9 @@ where
 	and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [5])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_503" model="ks_dashboard_ninja.item">
             <field name="name">Labor Revenue</field>
@@ -2148,7 +2118,9 @@ where
 	and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [5])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_504" model="ks_dashboard_ninja.item">
             <field name="name">Spare Parts Revenue</field>
@@ -2189,7 +2161,9 @@ where
 	and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [5])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_505" model="ks_dashboard_ninja.item">
             <field name="name">Spare Parts Warranty</field>
@@ -2236,7 +2210,9 @@ where
 	and pt.service_created_datetime between %(ks_start_date)s and %(ks_end_date)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [5])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_506" model="ks_dashboard_ninja.item">
             <field name="name">AVG RTAT</field>
@@ -2284,7 +2260,9 @@ from (
 ) as res</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("job_card_status", "in", ["Closed"]), ("work_center_group_id", "in", [5])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_507" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Status analysis on weekly basis</field>
@@ -2343,16 +2321,9 @@ GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [5])]</field>
-        </record>
-        <record id="legacy_act_249" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_507"/>
-            <field name="sequence">1</field>
-        </record>
-        <record id="legacy_act_203" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_507"/>
-            <field name="sequence">2</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_508" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Status Wise (Closed &amp; Cancelled)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_w"/>
@@ -2409,12 +2380,9 @@ GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("work_center_group_id", "in", [5])]</field>
-        </record>
-        <record id="legacy_act_204" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_508"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_509" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Status Wise (Except Closed &amp; Cancelled)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_w"/>
@@ -2471,12 +2439,9 @@ GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("job_card_status", "not in", ["Closed", "Cancelled"]), ("work_center_group_id", "in", [5])]</field>
-        </record>
-        <record id="legacy_act_205" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_509"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_510" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Month Wise</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_w"/>
@@ -2534,12 +2499,9 @@ GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("work_center_group_id", "in", [5]), ("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_213" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_510"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_511" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Warranty Status Wise (%)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_w"/>
@@ -2597,16 +2559,9 @@ GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("work_center_group_id", "in", [5]), ("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_214" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_511"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="legacy_act_206" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_511"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_565" model="ks_dashboard_ninja.item">
             <field name="name">Warranty Sts &amp; Region - Jobs Count</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_w"/>
@@ -2663,16 +2618,9 @@ GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("work_center_group_id", "in", [5]), ("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_215" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_565"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="legacy_act_202" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_565"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <!-- ============ Board 124: Service Analysis (JCs) - New ============ -->
         <record id="legacy_board_jcs" model="ks_dashboard_ninja.board">
             <field name="name">Service Analysis (JCs) - New</field>
@@ -2715,7 +2663,9 @@ from
 where
 	service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_540" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Overall Closed</field>
@@ -2750,7 +2700,9 @@ where
 	service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("action_status", "in", ["Closed"])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_541" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Overall Cancelled</field>
@@ -2785,7 +2737,9 @@ where
 	service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("action_status", "in", ["Cancelled"])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_542" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Overall Not Closed</field>
@@ -2820,7 +2774,9 @@ where
 	service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("action_status", "in", ["Not Closed"])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_543" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Status analysis on weekly basis</field>
@@ -2880,12 +2836,9 @@ GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_170" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_543"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <!-- ============ Board 125: Service Analysis (CC) - New ============ -->
         <record id="legacy_board_cc" model="ks_dashboard_ninja.board">
             <field name="name">Service Analysis (CC) - New</field>
@@ -2936,7 +2889,13 @@ ORDER BY week_no</field>
         and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s </field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("user_group", "=", "call-center")]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field>
+            <field name="ks_model_id_2" ref="service_dashboards_ct.model_dbmodel_usergroup_analysis_ct"/>
+            <field name="ks_record_count_type_2">count</field>
+            <field name="ks_domain_2">["&amp;", ("job_card_status", "=", "Closed"), ("user_group", "=", "call-center")]</field>
+            <field name="ks_date_filter_field_2" ref="service_dashboards_ct.field_dbmodel_usergroup_analysis_ct__request_date"/></record>
 
         <record id="legacy_item_552" model="ks_dashboard_ninja.item">
             <field name="name">Total Job Cards - Month wise</field>
@@ -2980,12 +2939,9 @@ ORDER BY week_no</field>
         and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s </field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("user_group", "=", "call-center"), ("work_center_group_id", "!=", False)]</field>
-        </record>
-        <record id="legacy_act_222" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_552"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_567" model="ks_dashboard_ninja.item">
             <field name="name">Total Job Cards - User wise</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_cc"/>
@@ -3027,12 +2983,9 @@ ORDER BY week_no</field>
         and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s </field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("user_group", "=", "call-center")]</field>
-        </record>
-        <record id="legacy_act_221" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_567"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <!-- ============ Board 126: Service Analysis (CRD) - New ============ -->
         <record id="legacy_board_crd" model="ks_dashboard_ninja.board">
             <field name="name">Service Analysis (CRD) - New</field>
@@ -3083,7 +3036,9 @@ ORDER BY week_no</field>
         and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s </field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("job_card_status", "=", "Scheduled"), ("is_user_work_location", "=", True)]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_554" model="ks_dashboard_ninja.item">
             <field name="name">Total Scheduled Job Cards - Month wise</field>
@@ -3130,12 +3085,9 @@ ORDER BY week_no</field>
         and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s </field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("is_user_work_location", "=", True), ("job_card_status", "=", "Scheduled")]</field>
-        </record>
-        <record id="legacy_act_183" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_554"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_555" model="ks_dashboard_ninja.item">
             <field name="name">Total Job Cards - Closed</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_crd"/>
@@ -3175,7 +3127,9 @@ ORDER BY week_no</field>
         and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s </field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("job_card_status", "=", "Closed"), ("is_user_work_location", "=", True)]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_556" model="ks_dashboard_ninja.item">
             <field name="name">Total Closed Job Cards - Month wise</field>
@@ -3222,12 +3176,9 @@ ORDER BY week_no</field>
         and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s </field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("is_user_work_location", "=", True), ("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_184" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_556"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_568" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Users wise</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_crd"/>
@@ -3269,16 +3220,9 @@ ORDER BY week_no</field>
         and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s </field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("user_role", "in", [7])]</field>
-        </record>
-        <record id="legacy_act_338" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_568"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="legacy_act_339" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_568"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <!-- ============ Board 127: Sales & Cost Analysis - New ============ -->
         <record id="legacy_board_sales_cost" model="ks_dashboard_ninja.board">
             <field name="name">Sales &amp; Cost Analysis - New</field>
@@ -3322,7 +3266,13 @@ from
 where
 	service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field>
+            <field name="ks_model_id_2" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_record_count_type_2">count</field>
+            <field name="ks_domain_2">[("job_card_status", "=", "Closed")]</field>
+            <field name="ks_date_filter_field_2" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/></record>
 
         <record id="legacy_item_570" model="ks_dashboard_ninja.item">
             <field name="name">Total service Revenue</field>
@@ -3357,7 +3307,9 @@ from
 where
 	service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_571" model="ks_dashboard_ninja.item">
             <field name="name">Spare Parts Revenue</field>
@@ -3392,7 +3344,9 @@ from
 where
 	service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_572" model="ks_dashboard_ninja.item">
             <field name="name">AVG RTAT</field>
@@ -3434,7 +3388,9 @@ from (
 ) as res</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("job_card_status", "in", ["Closed"])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_580" model="ks_dashboard_ninja.item">
             <field name="name">Labor Revenue</field>
@@ -3469,7 +3425,9 @@ from
 where
 	service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_581" model="ks_dashboard_ninja.item">
             <field name="name">Spare Parts Warranty</field>
@@ -3510,7 +3468,9 @@ where
 	and ip.name = 'standard_price' 
 	and pt.service_created_datetime between %(ks_start_date)s and %(ks_end_date)s</field>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_583" model="ks_dashboard_ninja.item">
             <field name="name">Total Service Revenue - Month Wise</field>
@@ -3542,12 +3502,9 @@ where
             <field name="ks_precision_digits">2</field>
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
-        <record id="legacy_act_234" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_583"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_586" model="ks_dashboard_ninja.item">
             <field name="name">Total Service Revenue - Region Wise</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_sales_cost"/>
@@ -3577,12 +3534,9 @@ where
             <field name="ks_precision_digits">2</field>
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
-        <record id="legacy_act_237" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_586"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_587" model="ks_dashboard_ninja.item">
             <field name="name">Total Service Revenue - Month Wise (%)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_sales_cost"/>
@@ -3614,12 +3568,9 @@ where
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_hide_legend" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
-        <record id="legacy_act_238" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_587"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_588" model="ks_dashboard_ninja.item">
             <field name="name">Labour Revenue - Region Wise</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_sales_cost"/>
@@ -3649,12 +3600,9 @@ where
             <field name="ks_precision_digits">2</field>
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
-        <record id="legacy_act_239" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_588"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_589" model="ks_dashboard_ninja.item">
             <field name="name">Total Service Revenue - Region Wise (%)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_sales_cost"/>
@@ -3685,12 +3633,9 @@ where
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_hide_legend" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
-        <record id="legacy_act_240" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_589"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_590" model="ks_dashboard_ninja.item">
             <field name="name">Spare Parts Revenue - Region Wise</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_sales_cost"/>
@@ -3720,12 +3665,9 @@ where
             <field name="ks_precision_digits">2</field>
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
-        <record id="legacy_act_241" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_590"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_591" model="ks_dashboard_ninja.item">
             <field name="name">Spare Parts Revenue - Region Wise (%)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_sales_cost"/>
@@ -3756,12 +3698,9 @@ where
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_hide_legend" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
-        <record id="legacy_act_242" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_591"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_592" model="ks_dashboard_ninja.item">
             <field name="name">Spare Parts Warranty Revenue - Region Wise</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_sales_cost"/>
@@ -3791,12 +3730,9 @@ where
             <field name="ks_precision_digits">2</field>
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
-        <record id="legacy_act_243" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_592"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_593" model="ks_dashboard_ninja.item">
             <field name="name">Labour Revenue - Region Wise (%)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_sales_cost"/>
@@ -3827,12 +3763,9 @@ where
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_hide_legend" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
-        <record id="legacy_act_244" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_593"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <!-- ============ Board 128: Service Analysis - New ============ -->
         <record id="legacy_board_main" model="ks_dashboard_ninja.board">
             <field name="name">Service Analysis - New</field>
@@ -3876,7 +3809,9 @@ from
 where
 	service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_624" model="ks_dashboard_ninja.item">
             <field name="name">Total service Revenue</field>
@@ -3911,7 +3846,9 @@ from
 where
 	service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_625" model="ks_dashboard_ninja.item">
             <field name="name">Spare Parts Revenue</field>
@@ -3946,7 +3883,9 @@ from
 where
 	service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_626" model="ks_dashboard_ninja.item">
             <field name="name">AVG RTAT</field>
@@ -3988,7 +3927,9 @@ from (
 ) as res</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("job_card_status", "in", ["Closed"])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_627" model="ks_dashboard_ninja.item">
             <field name="name">Job Status Wise - Count</field>
@@ -4019,12 +3960,9 @@ from (
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_bar_chart_stacked" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
-        <record id="legacy_act_275" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_627"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_628" model="ks_dashboard_ninja.item">
             <field name="name">Warranty Sts &amp; Region - Jobs Count</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_main"/>
@@ -4054,16 +3992,9 @@ from (
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_277" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_628"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="legacy_act_276" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_628"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_629" model="ks_dashboard_ninja.item">
             <field name="name">Warranty Status - Jobs (%)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_main"/>
@@ -4095,16 +4026,9 @@ from (
             <field name="ks_sort_by_field" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_warranty_id"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("job_card_status", "in", ["Closed"])]</field>
-        </record>
-        <record id="legacy_act_279" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_629"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="legacy_act_278" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_629"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_630" model="ks_dashboard_ninja.item">
             <field name="name">Region Wise - Jobs Count</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_main"/>
@@ -4135,12 +4059,9 @@ from (
             <field name="ks_bar_chart_stacked" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_280" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_630"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_631" model="ks_dashboard_ninja.item">
             <field name="name">Region Wise - Jobs (%)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_main"/>
@@ -4172,12 +4093,9 @@ from (
             <field name="ks_sort_by_field" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__work_center_group_id"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_281" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_631"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_632" model="ks_dashboard_ninja.item">
             <field name="name">Region Wise - RTAT (Avg)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_main"/>
@@ -4210,12 +4128,9 @@ from (
             <field name="ks_sort_by_order">DESC</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("job_card_status", "in", ["Closed"])]</field>
-        </record>
-        <record id="legacy_act_282" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_632"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_633" model="ks_dashboard_ninja.item">
             <field name="name">Region Wise - RTAT (Avg %)</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_main"/>
@@ -4249,12 +4164,9 @@ from (
             <field name="ks_sort_by_order">ASC</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("job_card_status", "in", ["Closed"])]</field>
-        </record>
-        <record id="legacy_act_283" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_633"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_634" model="ks_dashboard_ninja.item">
             <field name="name">Labor Revenue</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_main"/>
@@ -4288,7 +4200,9 @@ from
 where
 	service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_635" model="ks_dashboard_ninja.item">
             <field name="name">Spare Parts Warranty</field>
@@ -4329,7 +4243,9 @@ where
 	and ip.name = 'standard_price' 
 	and pt.service_created_datetime between %(ks_start_date)s and %(ks_end_date)s</field>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_636" model="ks_dashboard_ninja.item">
             <field name="name">Job Status Wise - Count</field>
@@ -4362,12 +4278,9 @@ where
             <field name="ks_sort_by_field" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__job_card_status"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("job_card_status", "not in", ["Closed", "Cancelled"])]</field>
-        </record>
-        <record id="legacy_act_284" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_636"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_637" model="ks_dashboard_ninja.item">
             <field name="name">Month wise - Jobs Count</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_main"/>
@@ -4398,12 +4311,9 @@ where
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("job_card_status", "=", "Closed")]</field>
-        </record>
-        <record id="legacy_act_285" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_637"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_638" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Status analysis on weekly basis</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_main"/>
@@ -4453,23 +4363,15 @@ FROM project_task
 
 WHERE 
 	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
-	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
+	/* Overall dashboard - no work_center_group_id filter */
         and active = true
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
-        <record id="legacy_act_287" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_638"/>
-            <field name="sequence">1</field>
-        </record>
-        <record id="legacy_act_286" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_638"/>
-            <field name="sequence">2</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_666" model="ks_dashboard_ninja.item">
             <field name="name">Employee Performance Analysis - Actual Hours</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_main"/>
@@ -4500,16 +4402,9 @@ ORDER BY week_no</field>
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("is_my_user_group", "=", True), ("total_worked_hours", "!=", 0)]</field>
-        </record>
-        <record id="legacy_act_306" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_666"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="legacy_act_307" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_666"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_698" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Not Closed Status analysis on weekly basis</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_main"/>
@@ -4560,20 +4455,16 @@ FROM project_task
 
 WHERE 
 	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
-	/* 7: Central; 6: East; 5: West */
-	and work_center_group_id = '5'
+	/* Overall dashboard - no work_center_group_id filter */
         and active = true
 
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("action_status", "in", ["Not Closed"])]</field>
-        </record>
-        <record id="legacy_act_343" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_698"/>
-            <field name="sequence">2</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <!-- ============ Board 129: Service Analysis (Parts) - New ============ -->
         <record id="legacy_board_parts" model="ks_dashboard_ninja.board">
             <field name="name">Service Analysis (Parts) - New</field>
@@ -4624,7 +4515,9 @@ where
 	and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("job_card_status", "in", ["Customer Need Quote"])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_640" model="ks_dashboard_ninja.item">
             <field name="name">On Hold - SP Req</field>
@@ -4670,7 +4563,9 @@ where
 	and pt.service_created_datetime between %(ks_start_date)s and %(ks_end_date)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("job_card_status", "=", "On Hold -SP Req")]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_641" model="ks_dashboard_ninja.item">
             <field name="name">Job Card - Status wise Analysis</field>
@@ -4730,16 +4625,9 @@ GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("job_card_status", "in", ["On Hold -SP Req", "Customer Need Quote"])]</field>
-        </record>
-        <record id="legacy_act_335" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_641"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="legacy_act_288" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_641"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_668" model="ks_dashboard_ninja.item">
             <field name="name">Job Card - User wise Analysis</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_parts"/>
@@ -4796,12 +4684,9 @@ GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("user_role", "in", [8])]</field>
-        </record>
-        <record id="legacy_act_334" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_668"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_669" model="ks_dashboard_ninja.item">
             <field name="name">Waiting period from On hold to parts ready state</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_parts"/>
@@ -4857,12 +4742,9 @@ WHERE
 GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
-        </record>
-        <record id="legacy_act_311" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_669"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_670" model="ks_dashboard_ninja.item">
             <field name="name">Waiting period from quotation to parts ready state</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_parts"/>
@@ -4920,12 +4802,9 @@ GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("is_my_user_group", "=", True)]</field>
-        </record>
-        <record id="legacy_act_312" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_670"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <!-- ============ Board 130: Technician Analysis - New ============ -->
         <record id="legacy_board_technician" model="ks_dashboard_ninja.board">
             <field name="name">Technician Analysis - New</field>
@@ -4976,7 +4855,13 @@ ORDER BY week_no</field>
         and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s </field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("is_user_work_location", "=", True)]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field>
+            <field name="ks_model_id_2" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_record_count_type_2">count</field>
+            <field name="ks_domain_2">["&amp;", ("job_card_status", "=", "Closed"), ("is_user_work_location", "=", True)]</field>
+            <field name="ks_date_filter_field_2" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/></record>
 
         <record id="legacy_item_643" model="ks_dashboard_ninja.item">
             <field name="name">Scheduled</field>
@@ -5017,7 +4902,9 @@ where
 	and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("job_card_status", "in", ["Scheduled"]), ("is_user_work_location", "=", True)]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_644" model="ks_dashboard_ninja.item">
             <field name="name">Parts Ready &amp; Rescheduled</field>
@@ -5058,7 +4945,9 @@ where
 	and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("job_card_status", "in", ["Parts Ready &amp; Reschedule"]), ("is_user_work_location", "=", True)]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_645" model="ks_dashboard_ninja.item">
             <field name="name">Cst Need Quote</field>
@@ -5099,7 +4988,9 @@ where
 	and service_created_datetime between %(ks_start_datetime)s and %(ks_end_datetime)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("job_card_status", "in", ["Customer Need Quote"]), ("is_user_work_location", "=", True)]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_646" model="ks_dashboard_ninja.item">
             <field name="name">On hold</field>
@@ -5146,7 +5037,9 @@ where
 	and pt.service_created_datetime between %(ks_start_date)s and %(ks_end_date)s</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("job_card_status", "in", ["On Hold -SP Req"]), ("is_user_work_location", "=", True)]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_647" model="ks_dashboard_ninja.item">
             <field name="name">Technician Jobs</field>
@@ -5204,12 +5097,9 @@ GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("technician_id", "!=", False), ("is_user_work_location", "=", True)]</field>
-        </record>
-        <record id="legacy_act_289" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_647"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_648" model="ks_dashboard_ninja.item">
             <field name="name">Technician Jobs - RTAT AVG</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_technician"/>
@@ -5267,12 +5157,9 @@ GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("technician_id", "!=", False), ("is_user_work_location", "=", True)]</field>
-        </record>
-        <record id="legacy_act_290" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_648"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_671" model="ks_dashboard_ninja.item">
             <field name="name">Technician Travel Hours</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_technician"/>
@@ -5332,12 +5219,9 @@ GROUP BY week_no
 ORDER BY week_no</field>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("is_user_work_location", "=", True)]</field>
-        </record>
-        <record id="legacy_act_313" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_671"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_697" model="ks_dashboard_ninja.item">
             <field name="name">Employee Performance Analysis - Estimated vs Actual Hours</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_technician"/>
@@ -5369,12 +5253,9 @@ ORDER BY week_no</field>
             <field name="ks_hide_legend" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("is_my_user_group", "=", True), ("total_worked_hours", "!=", 0)]</field>
-        </record>
-        <record id="legacy_act_352" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.legacy_item_697"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <!-- ================================================================
              Custom "Regions" filters on
              dbmodel.jobcards.analysis.work_center_group_id.
@@ -5404,6 +5285,275 @@ ORDER BY week_no</field>
             <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
             <field name="ks_domain_field_id" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__work_center_group_id"/>
             <field name="name">Regions</field>
+        </record>
+
+        <!-- New items for C, E, W boards -->
+        <record id="legacy_item_not_closed_weekly_c" model="ks_dashboard_ninja.item">
+            <field name="name">Job Cards - Not Closed Status analysis on weekly basis</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_c"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_chart_relation_groupby" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
+            <field name="ks_chart_relation_sub_groupby" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__action_status"/>
+            <field name="ks_chart_date_groupby">week</field>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
+            <field name="ks_dashboard_item_type">ks_bar_chart</field>
+            <field name="ks_record_count_type">count</field>
+            <field name="ks_chart_data_count_type">count</field>
+            <field name="ks_record_data_limit">0</field>
+            <field name="ks_data_calculation_type">custom</field>
+            <field name="data_source">odoo</field>
+            <field name="ks_date_filter_selection">l_none</field>
+            <field name="ks_date_filter_selection_2">l_none</field>
+            <field name="ks_layout">layout5</field>
+            <field name="ks_background_color">#DAEAF6,0.99</field>
+            <field name="ks_font_color">#000000,0.99</field>
+            <field name="ks_header_bg_color">#8e24aa,0.99</field>
+            <field name="ks_default_icon">bar-chart</field>
+            <field name="ks_default_icon_color">#6789C6,0.99</field>
+            <field name="ks_icon_select">Default</field>
+            <field name="ks_dashboard_item_theme">white</field>
+            <field name="ks_chart_item_color">custom-1</field>
+            <field name="ks_data_label_type">percent</field>
+            <field name="ks_data_format">global</field>
+            <field name="ks_precision_digits">2</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_custom_query">SELECT
+    'Week-' || (
+        FLOOR((EXTRACT(DAY FROM service_created_datetime) - 1) / 7) + 1
+    ) AS week_no,
+
+    sum(CASE 
+        WHEN (job_card_state = 'Cancelled' or job_card_state = 'Closed') THEN 0 else 1
+    END) AS not_closed,
+	
+    sum(CASE 
+        WHEN job_card_state = 'Closed' THEN 1 else 0
+    END) AS closed,
+
+    sum(CASE 
+        WHEN job_card_state = 'Cancelled' THEN 1 else 0
+    END) AS cancelled
+	
+FROM project_task
+
+WHERE 
+	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
+	/* 7: Central; 6: East; 5: West */
+	and work_center_group_id = '7'
+        and active = true
+
+GROUP BY week_no
+ORDER BY week_no</field>
+            <field name="ks_list_view_type">ungrouped</field>
+            <field name="ks_domain">["&amp;", ("action_status", "in", ["Not Closed"]), ("work_center_group_id", "in", [7])]</field>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
+
+        <record id="legacy_item_not_closed_weekly_e" model="ks_dashboard_ninja.item">
+            <field name="name">Job Cards - Not Closed Status analysis on weekly basis</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_e"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_chart_relation_groupby" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
+            <field name="ks_chart_relation_sub_groupby" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__action_status"/>
+            <field name="ks_chart_date_groupby">week</field>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
+            <field name="ks_dashboard_item_type">ks_bar_chart</field>
+            <field name="ks_record_count_type">count</field>
+            <field name="ks_chart_data_count_type">count</field>
+            <field name="ks_record_data_limit">0</field>
+            <field name="ks_data_calculation_type">custom</field>
+            <field name="data_source">odoo</field>
+            <field name="ks_date_filter_selection">l_none</field>
+            <field name="ks_date_filter_selection_2">l_none</field>
+            <field name="ks_layout">layout5</field>
+            <field name="ks_background_color">#DAEAF6,0.99</field>
+            <field name="ks_font_color">#000000,0.99</field>
+            <field name="ks_header_bg_color">#8e24aa,0.99</field>
+            <field name="ks_default_icon">bar-chart</field>
+            <field name="ks_default_icon_color">#6789C6,0.99</field>
+            <field name="ks_icon_select">Default</field>
+            <field name="ks_dashboard_item_theme">white</field>
+            <field name="ks_chart_item_color">custom-1</field>
+            <field name="ks_data_label_type">percent</field>
+            <field name="ks_data_format">global</field>
+            <field name="ks_precision_digits">2</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_custom_query">SELECT
+    'Week-' || (
+        FLOOR((EXTRACT(DAY FROM service_created_datetime) - 1) / 7) + 1
+    ) AS week_no,
+
+    sum(CASE 
+        WHEN (job_card_state = 'Cancelled' or job_card_state = 'Closed') THEN 0 else 1
+    END) AS not_closed,
+	
+    sum(CASE 
+        WHEN job_card_state = 'Closed' THEN 1 else 0
+    END) AS closed,
+
+    sum(CASE 
+        WHEN job_card_state = 'Cancelled' THEN 1 else 0
+    END) AS cancelled
+	
+FROM project_task
+
+WHERE 
+	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
+	/* 7: Central; 6: East; 5: West */
+	and work_center_group_id = '6'
+        and active = true
+
+GROUP BY week_no
+ORDER BY week_no</field>
+            <field name="ks_list_view_type">ungrouped</field>
+            <field name="ks_domain">["&amp;", ("action_status", "in", ["Not Closed"]), ("work_center_group_id", "in", [6])]</field>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
+
+        <record id="legacy_item_not_closed_weekly_w" model="ks_dashboard_ninja.item">
+            <field name="name">Job Cards - Not Closed Status analysis on weekly basis</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_w"/>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_chart_relation_groupby" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
+            <field name="ks_chart_relation_sub_groupby" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__action_status"/>
+            <field name="ks_chart_date_groupby">week</field>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
+            <field name="ks_dashboard_item_type">ks_bar_chart</field>
+            <field name="ks_record_count_type">count</field>
+            <field name="ks_chart_data_count_type">count</field>
+            <field name="ks_record_data_limit">0</field>
+            <field name="ks_data_calculation_type">custom</field>
+            <field name="data_source">odoo</field>
+            <field name="ks_date_filter_selection">l_none</field>
+            <field name="ks_date_filter_selection_2">l_none</field>
+            <field name="ks_layout">layout5</field>
+            <field name="ks_background_color">#DAEAF6,0.99</field>
+            <field name="ks_font_color">#000000,0.99</field>
+            <field name="ks_header_bg_color">#8e24aa,0.99</field>
+            <field name="ks_default_icon">bar-chart</field>
+            <field name="ks_default_icon_color">#6789C6,0.99</field>
+            <field name="ks_icon_select">Default</field>
+            <field name="ks_dashboard_item_theme">white</field>
+            <field name="ks_chart_item_color">custom-1</field>
+            <field name="ks_data_label_type">percent</field>
+            <field name="ks_data_format">global</field>
+            <field name="ks_precision_digits">2</field>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_custom_query">SELECT
+    'Week-' || (
+        FLOOR((EXTRACT(DAY FROM service_created_datetime) - 1) / 7) + 1
+    ) AS week_no,
+
+    sum(CASE 
+        WHEN (job_card_state = 'Cancelled' or job_card_state = 'Closed') THEN 0 else 1
+    END) AS not_closed,
+	
+    sum(CASE 
+        WHEN job_card_state = 'Closed' THEN 1 else 0
+    END) AS closed,
+
+    sum(CASE 
+        WHEN job_card_state = 'Cancelled' THEN 1 else 0
+    END) AS cancelled
+	
+FROM project_task
+
+WHERE 
+	service_created_datetime &gt;= %(ks_start_date)s AND service_created_datetime &lt;=  %(ks_end_date)s
+	/* 7: Central; 6: East; 5: West */
+	and work_center_group_id = '5'
+        and active = true
+
+GROUP BY week_no
+ORDER BY week_no</field>
+            <field name="ks_list_view_type">ungrouped</field>
+            <field name="ks_domain">["&amp;", ("action_status", "in", ["Not Closed"]), ("work_center_group_id", "in", [5])]</field>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
+
+        <!-- Untracked Item ID: 305 | Name: Spare Parts Revenue - Region Wise (%) -->
+        <record id="legacy_item_305" model="ks_dashboard_ninja.item">
+            <field name="data_source">odoo</field>
+            <field name="ks_background_color">#DAEAF6,0.99</field>
+            <field name="ks_chart_data_count_type">sum</field>
+            <field name="ks_chart_item_color">custom-1</field>
+            <field name="ks_chart_measure_field" eval="[(6, 0, [ref('service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__parts_revenue')])]"/>
+            <field name="ks_chart_relation_groupby" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__work_center_group_id"/>
+            <field name="ks_chart_relation_sub_groupby" eval="False"/>
+            <field name="ks_dashboard_item_theme">white</field>
+            <field name="ks_dashboard_item_type">ks_pie_chart</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_sales_cost"/>
+            <field name="ks_data_calculation_type">custom</field>
+            <field name="ks_data_format">global</field>
+            <field name="ks_data_label_type">percent</field>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
+            <field name="ks_date_filter_field_2" eval="False"/>
+            <field name="ks_date_filter_selection">l_none</field>
+            <field name="ks_date_filter_selection_2">l_none</field>
+            <field name="ks_default_icon">bar-chart</field>
+            <field name="ks_default_icon_color">#6789C6,0.99</field>
+            <field name="ks_font_color">#000000,0.99</field>
+            <field name="ks_header_bg_color">#8e24aa,0.99</field>
+            <field name="ks_hide_legend" eval="True"/>
+            <field name="ks_icon_select">Default</field>
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_layout">layout5</field>
+            <field name="ks_list_view_layout">layout_1</field>
+            <field name="ks_list_view_type">ungrouped</field>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_model_id_2" eval="False"/>
+            <field name="ks_precision_digits">2</field>
+            <field name="ks_record_count_type">count</field>
+            <field name="ks_record_count_type_2">sum</field>
+            <field name="ks_record_data_limit">0</field>
+            <field name="ks_record_field" eval="False"/>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_sort_by_field" eval="False"/>
+            <field name="name">Spare Parts Revenue - Region Wise (%)</field>
+        </record>
+
+        <!-- Untracked Item ID: 306 | Name: Employee Performance Analysis - Actual Hours -->
+        <record id="legacy_item_306" model="ks_dashboard_ninja.item">
+            <field name="data_source">odoo</field>
+            <field name="ks_background_color">#DAEAF6,0.99</field>
+            <field name="ks_chart_data_count_type">sum</field>
+            <field name="ks_chart_item_color">custom-1</field>
+            <field name="ks_chart_measure_field" eval="[(6, 0, [ref('service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__total_worked_hours')])]"/>
+            <field name="ks_chart_relation_groupby" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__work_center_group_id"/>
+            <field name="ks_chart_relation_sub_groupby" eval="False"/>
+            <field name="ks_dashboard_item_theme">white</field>
+            <field name="ks_dashboard_item_type">ks_bar_chart</field>
+            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_technician"/>
+            <field name="ks_data_calculation_type">custom</field>
+            <field name="ks_data_format">global</field>
+            <field name="ks_data_label_type">percent</field>
+            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
+            <field name="ks_date_filter_field_2" eval="False"/>
+            <field name="ks_date_filter_selection">l_none</field>
+            <field name="ks_date_filter_selection_2">l_none</field>
+            <field name="ks_default_icon">bar-chart</field>
+            <field name="ks_default_icon_color">#6789C6,0.99</field>
+            <field name="ks_domain">["&amp;", ("is_my_user_group", "=", True), ("total_worked_hours", "!=", 0)]</field>
+            <field name="ks_font_color">#000000,0.99</field>
+            <field name="ks_header_bg_color">#8e24aa,0.99</field>
+            <field name="ks_icon_select">Default</field>
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_layout">layout5</field>
+            <field name="ks_list_view_layout">layout_1</field>
+            <field name="ks_list_view_type">ungrouped</field>
+            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_model_id_2" eval="False"/>
+            <field name="ks_precision_digits">2</field>
+            <field name="ks_record_count_type">count</field>
+            <field name="ks_record_count_type_2">sum</field>
+            <field name="ks_record_data_limit">0</field>
+            <field name="ks_record_field" eval="False"/>
+            <field name="ks_show_data_value" eval="True"/>
+            <field name="ks_sort_by_field" eval="False"/>
+            <field name="name">Employee Performance Analysis - Actual Hours</field>
         </record>
 
     </data>

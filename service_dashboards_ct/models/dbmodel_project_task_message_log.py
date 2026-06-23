@@ -131,52 +131,78 @@ class DbModelTaskMessageLogAnalysis(models.Model):
         )
         return [row[0] for row in self.env.cr.fetchall() if row[0]]
 
+    # Canonical role -> field list used across every CT analysis model. Fields
+    # absent on this particular model are silently filtered out by the
+    # ``self._fields`` check below, so the same map drives all three models
+    # without per-model branching.
+    _DR_ROLE_FIELD_MAP = {
+        'Parts': [
+            'task_id', 'qty', 'parts_revenue',
+            'warranty_spareparts_revenue', 'job_card_status', 'action_status',
+        ],
+        'Coordinator': [
+            'task_id', 'user_id', 'job_card_status',
+            'total_revenue', 'labour_revenue', 'parts_revenue',
+            'rtat_hours', 'technician_travel_hours', 'onhold_hours',
+            'total_worked_hours', 'action_status', 'service_created_datetime',
+        ],
+        'Call Center': [
+            'task_id', 'job_card_status', 'action_status',
+            'service_created_datetime', 'work_center_id', 'work_center_group_id',
+        ],
+        'Technician': [
+            'task_id', 'job_card_status',
+            'technician_travel_hours', 'total_worked_hours', 'action_status',
+        ],
+    }
+
     @api.model
     def _get_default_tree_view(self):
-        node = etree.Element("tree", string=self._description, action="action_open_task_list", type="object", create="0", edit="0", delete="0")
+        node = etree.Element(
+            "tree", string=self._description,
+            action="action_open_task_list", type="object",
+            create="0", edit="0", delete="0",
+        )
         roles = self._get_logged_user_role_groups()
-        role_field_map = {
-            'Parts': ['task_id', 'task_date', 'status_transition'],
-            'Coordinator': [
-                'task_id', 'user_id', 'task_date', 'user_role', 'region', 'city',
-                'status_transition', 'rtat_hours', 'technician_travel_hours',
-                'onhold_hours', 'total_worked_hours'
-            ],
-            'Call Center': ['task_id', 'task_date', 'region', 'city', 'status_transition'],
-            'Technician': ['task_id', 'task_date', 'status_transition', 'technician_travel_hours', 'total_worked_hours'],
-        }
+
         visible_fields = set()
         for role in roles:
-            if role in role_field_map:
-                visible_fields.update(role_field_map[role])
-        if not visible_fields:
+            visible_fields.update(self._DR_ROLE_FIELD_MAP.get(role, []))
+
+        exclude_fields = {
+            'id', 'display_name', 'complete_name',
+            'create_uid', 'create_date', 'write_uid', 'write_date',
+            '__last_update', 'active',
+        }
+        if visible_fields:
             render_fields = [
-                "task_id", "user_id", "task_date", "user_role", "region", "city",
-                "status_transition", "rtat_hours"
+                f for f in self._DR_ROLE_FIELD_MAP['Coordinator']
+                if f in visible_fields
+                and f in self._fields
+                and f not in exclude_fields
             ]
         else:
-            all_possible_fields = [
-                "task_id", "user_id", "task_date", "user_role", "region", "city",
-                "status_transition", "rtat_hours", "technician_travel_hours",
-                "onhold_hours", "total_worked_hours"
-            ]
-            render_fields = [f for f in all_possible_fields if f in visible_fields]
-        if not render_fields:
             render_fields = [
-                "task_id", "user_id", "task_date", "user_role", "region", "city",
-                "status_transition", "rtat_hours"
+                f for f in self._fields if f not in exclude_fields
             ]
-        render_fields.extend(['task_count', 'on_hold_task_count'])
+
+        # Aggregate helpers that always trail the role-driven columns.
+        for tail in ('task_count', 'on_hold_task_count'):
+            if tail in self._fields and tail not in render_fields:
+                render_fields.append(tail)
+
         for field_name in render_fields:
-            if field_name in self._fields:
-                field_node = etree.SubElement(node, "field", name=field_name)
-                if field_name != "task_id" and self._fields[field_name].type == "many2one":
-                    field_node.set("options", "{'no_open': True, 'no_create': True}")
-                if field_name.endswith("_hours"):
-                    field_node.set("widget", "float_time")
-                if field_name in ['task_count', 'on_hold_task_count']:
-                    field_node.set("sum", "Total")
-        etree.SubElement(node, "button", name="action_open_task_list", type="object", string="Drilldown", icon="fa-arrow-circle-right")
+            field_node = etree.SubElement(node, "field", name=field_name)
+            if field_name != "task_id" and self._fields[field_name].type == "many2one":
+                field_node.set("options", "{'no_open': True, 'no_create': True}")
+            if field_name.endswith("_hours"):
+                field_node.set("widget", "float_time")
+            if field_name in ('task_count', 'on_hold_task_count'):
+                field_node.set("sum", "Total")
+        etree.SubElement(
+            node, "button", name="action_open_task_list",
+            type="object", string="Drilldown", icon="fa-arrow-circle-right",
+        )
         return node
 
     @api.model
@@ -197,6 +223,16 @@ class DbModelTaskMessageLogAnalysis(models.Model):
                 'view_mode': 'form',
                 'target': 'current',
             }
+
+    def get_formview_action(self, access_uid=None):
+        """Direct form access (URL / breadcrumb) should also bypass the
+        intermediate analysis-model form and land on the source project.task.
+        """
+        self.ensure_one()
+        action = self.action_open_task_list()
+        if action:
+            return action
+        return super().get_formview_action(access_uid=access_uid)
 
     @api.model
     def refresh_materialized(self):

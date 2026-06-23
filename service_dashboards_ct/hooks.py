@@ -1,5 +1,10 @@
 import ast
 import json
+import logging
+
+from .drill_actions_data import DRILL_ACTIONS
+
+_logger = logging.getLogger(__name__)
 
 
 GRID_W = 12
@@ -107,3 +112,118 @@ def post_init_hook(env):
             items.write({'ks_chart_item_color': CT_PALETTE})
 
     ks_rebuild_board_layouts(env)
+    apply_drill_actions(env)
+
+
+def apply_drill_actions(env):
+    """Re-create every ``ks_dashboard_ninja.item_action`` row owned by
+    service_dashboards_ct from :data:`DRILL_ACTIONS`.
+
+    The drill-down configuration is the single source of truth and lives in
+    :mod:`drill_actions_data`. We wipe the existing CT-owned rows and rebuild
+    so the in-DB state always matches the data file — both on fresh install
+    (post_init_hook) and on upgrade (post-migrate).
+
+    Items and boards are matched by ``name`` per the JSON export schema; a
+    missing item is logged and skipped (no exception, so a partially-edited
+    board can't break upgrades).
+    """
+    Action = env['ks_dashboard_ninja.item_action'].sudo()
+    Item = env['ks_dashboard_ninja.item'].sudo()
+    Board = env['ks_dashboard_ninja.board'].sudo()
+    Field = env['ir.model.fields'].sudo()
+    ModelData = env['ir.model.data'].sudo()
+
+    # 1) Resolve CT-owned boards and their items, keyed by name.
+    ct_board_xmlids = ModelData.search([
+        ('module', '=', CT_MODULE),
+        ('model', '=', 'ks_dashboard_ninja.board'),
+    ])
+    ct_boards = Board.browse(ct_board_xmlids.mapped('res_id')).exists()
+    board_by_name = {b.name: b for b in ct_boards}
+
+    ct_item_xmlids = ModelData.search([
+        ('module', '=', CT_MODULE),
+        ('model', '=', 'ks_dashboard_ninja.item'),
+    ])
+    ct_items = Item.browse(ct_item_xmlids.mapped('res_id')).exists()
+    items_by_board = {}
+    for it in ct_items:
+        if it.ks_dashboard_ninja_board_id:
+            items_by_board.setdefault(it.ks_dashboard_ninja_board_id.id, {})[it.name] = it
+
+    # 2) Wipe every action row attached to a CT-owned item, then drop any
+    #    leftover CT-owned xmlid for the action model. We key on the parent
+    #    item's ownership (not on the action's xmlid) because rows created by
+    #    this helper are anonymous — no ir.model.data is written for them.
+    if ct_items:
+        Action.search([
+            ('ks_dashboard_item_id', 'in', ct_items.ids),
+        ]).unlink()
+    leftover_xmlids = ModelData.search([
+        ('module', '=', CT_MODULE),
+        ('model', '=', 'ks_dashboard_ninja.item_action'),
+    ])
+    if leftover_xmlids:
+        leftover_xmlids.unlink()
+
+    # 3) Field lookup cache.
+    field_cache = {}
+
+    def _resolve_field(model_name, field_name):
+        key = (model_name, field_name)
+        if key in field_cache:
+            return field_cache[key]
+        rec = Field.search([
+            ('model', '=', model_name),
+            ('name', '=', field_name),
+        ], limit=1)
+        field_cache[key] = rec.id if rec else False
+        if not rec:
+            _logger.warning(
+                "service_dashboards_ct drill: %s.%s not found in ir.model.fields",
+                model_name, field_name,
+            )
+        return field_cache[key]
+
+    # 4) Recreate action rows from the data file.
+    created = 0
+    skipped_items = 0
+    for board_name, items_data in DRILL_ACTIONS.items():
+        board = board_by_name.get(board_name)
+        if not board:
+            _logger.warning(
+                "service_dashboards_ct drill: board %r not found, skipping", board_name,
+            )
+            continue
+        item_lookup = items_by_board.get(board.id, {})
+        for item_name, actions in items_data.items():
+            item = item_lookup.get(item_name)
+            if not item:
+                skipped_items += 1
+                _logger.warning(
+                    "service_dashboards_ct drill: item %r not found on board %r",
+                    item_name, board_name,
+                )
+                continue
+            for action in actions:
+                field_id = _resolve_field(action['model'], action['field'])
+                if not field_id:
+                    continue
+                vals = {
+                    'ks_dashboard_item_id': item.id,
+                    'ks_item_action_field': field_id,
+                    'sequence': action['sequence'],
+                }
+                if action.get('date_groupby'):
+                    vals['ks_item_action_date_groupby'] = action['date_groupby']
+                if action.get('chart_type'):
+                    vals['ks_chart_type'] = action['chart_type']
+                if action.get('record_limit'):
+                    vals['ks_record_limit'] = action['record_limit']
+                Action.create(vals)
+                created += 1
+    _logger.info(
+        "service_dashboards_ct drill: created %s action rows (skipped %s items)",
+        created, skipped_items,
+    )

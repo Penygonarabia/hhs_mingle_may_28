@@ -60,7 +60,9 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", "&amp;", ("ptml_final_taskstatus", "in", ["New"]), ("user_id", "in", ["%UID"]), ("user_role", "in", [6])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="bar_cc_tasks_monthwise" model="ks_dashboard_ninja.item">
             <field name="name">Tasks - Month wise</field>
@@ -92,16 +94,9 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("user_id", "in", ["%UID"]), ("user_role", "in", [6])]</field>
-        </record>
-        <record id="drill_cc_monthwise_0_status" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_cc_tasks_monthwise"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="drill_cc_monthwise_1_city" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_cc_tasks_monthwise"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="board_service_analysis_crd_users" model="ks_dashboard_ninja.board">
             <field name="name">Service Analysis - CRD Users</field>
             <field name="ks_dashboard_menu_name">Service Analysis - CRD Users</field>
@@ -140,7 +135,9 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("ptml_final_taskstatus", "in", ["Scheduled"]), ("user_id", "in", ["%UID"])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="bar_crd_tasks_monthwise" model="ks_dashboard_ninja.item">
             <field name="name">Tasks - Month wise</field>
@@ -172,16 +169,9 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("user_id", "in", ["%UID"])]</field>
-        </record>
-        <record id="drill_crd_monthwise_0_status" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_crd_tasks_monthwise"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="drill_crd_monthwise_1_city" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_crd_tasks_monthwise"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="kpi_crd_closed_tasks" model="ks_dashboard_ninja.item">
             <field name="name">Closed Tasks</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_crd_users"/>
@@ -210,7 +200,9 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("ptml_final_taskstatus", "in", ["Closed"]), ("user_id", "in", ["%UID"])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="bar_crd_tasks_userrole" model="ks_dashboard_ninja.item">
             <field name="name">Tasks - User Role wise</field>
@@ -241,16 +233,9 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("user_role", "!=", False), ("user_id", "in", ["%UID"])]</field>
-        </record>
-        <record id="drill_crd_userrole_0_user" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_crd_tasks_userrole"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="drill_crd_userrole_2_status" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_crd_tasks_userrole"/>
-            <field name="sequence">2</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="board_service_analysis_parts_users" model="ks_dashboard_ninja.board">
             <field name="name">Service Analysis - Parts Users</field>
             <field name="ks_dashboard_menu_name">Service Analysis - Parts Users</field>
@@ -289,7 +274,9 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("is_user_work_location", "=", True), ("job_card_status", "in", ["On Hold -SP Req"])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="bar_parts_tasks_monthwise" model="ks_dashboard_ninja.item">
             <field name="name">Tasks - Month wise</field>
@@ -321,16 +308,9 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("is_user_work_location", "=", True), ("job_card_status", "in", ["On Hold -SP Req", "Customer Need Quote"])]</field>
-        </record>
-        <record id="drill_parts_monthwise_0_region" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_parts_tasks_monthwise"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="drill_parts_monthwise_1_workcenter" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_parts_tasks_monthwise"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="kpi_parts_cust_need_quote" model="ks_dashboard_ninja.item">
             <field name="name">Customer Need Quote Tasks</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_parts_users"/>
@@ -359,7 +339,9 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("is_user_work_location", "=", True), ("job_card_status", "in", ["Customer Need Quote"])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="bar_parts_onhold_sp_req_hours" model="ks_dashboard_ninja.item">
             <field name="name">On Hold -SP Req Hours</field>
@@ -391,12 +373,9 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("is_user_work_location", "=", True), ("job_card_status", "in", ["On Hold -SP Req"])]</field>
-        </record>
-        <record id="drill_parts_onhold_0_workcenter" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_parts_onhold_sp_req_hours"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="bar_parts_cust_need_quote_hours" model="ks_dashboard_ninja.item">
             <field name="name">Customer Need Quote Hours</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_parts_users"/>
@@ -427,12 +406,9 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("is_user_work_location", "=", True), ("job_card_status", "in", ["Customer Need Quote"])]</field>
-        </record>
-        <record id="drill_parts_cust_quote_0_workcenter" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_parts_cust_need_quote_hours"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="board_service_analysis_technicians" model="ks_dashboard_ninja.board">
             <field name="name">Service Analysis - Technicians</field>
             <field name="ks_dashboard_menu_name">Service Analysis - Technicians</field>
@@ -471,7 +447,9 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("ptml_final_taskstatus", "in", ["Req. Revisit"]), ("user_id", "in", ["%UID"])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="kpi_tech_need_reschedule" model="ks_dashboard_ninja.item">
             <field name="name">Need Reschedule Tasks</field>
@@ -501,7 +479,9 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("ptml_final_taskstatus", "in", ["Need Reschedule"]), ("user_id", "in", ["%UID"])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="kpi_tech_parts_ready_reschedule" model="ks_dashboard_ninja.item">
             <field name="name">Parts Ready &amp; Reschedule Tasks</field>
@@ -531,7 +511,9 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("ptml_final_taskstatus", "in", ["Parts Ready &amp; Reschedule"]), ("user_id", "in", ["%UID"])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="kpi_tech_rescheduled" model="ks_dashboard_ninja.item">
             <field name="name">Rescheduled Tasks</field>
@@ -561,7 +543,9 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">["&amp;", ("ptml_final_taskstatus", "in", ["Rescheduled"]), ("user_id", "in", ["%UID"])]</field>
-        </record>
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="bar_tech_tasks_monthwise" model="ks_dashboard_ninja.item">
             <field name="name">Tasks - Month wise</field>
@@ -593,16 +577,9 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("user_id", "in", ["%UID"])]</field>
-        </record>
-        <record id="drill_tech_monthwise_0_status" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_tech_tasks_monthwise"/>
-            <field name="sequence">0</field>
-        </record>
-        <record id="drill_tech_monthwise_1_city" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_tech_tasks_monthwise"/>
-            <field name="sequence">1</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="bar_tech_travel_hours" model="ks_dashboard_ninja.item">
             <field name="name">Technician Travel Hours</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.board_service_analysis_technicians"/>
@@ -633,11 +610,8 @@
             <field name="ks_show_data_value" eval="True"/>
             <field name="ks_list_view_type">ungrouped</field>
             <field name="ks_domain">[("user_id", "in", ["%UID"])]</field>
-        </record>
-        <record id="drill_tech_travel_0_workcenter" model="ks_dashboard_ninja.item_action">
-            <field name="ks_dashboard_item_id" ref="service_dashboards_ct.bar_tech_travel_hours"/>
-            <field name="sequence">0</field>
-        </record>
-
+        
+            <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_list_view_layout">layout_1</field></record>
     </data>
 </odoo>

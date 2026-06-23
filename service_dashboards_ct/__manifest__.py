@@ -1,6 +1,6 @@
 {
     "name": "Service Dashboards - CT",
-    "version": "17.0.1.1.0",
+    "version": "17.0.1.5.0",
     "category": "Services",
     "summary": "Service Dashboards with the custom (custom-1) chart palette.",
     "description": """

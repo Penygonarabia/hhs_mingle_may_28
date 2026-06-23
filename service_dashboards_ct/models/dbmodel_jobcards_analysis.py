@@ -114,6 +114,30 @@ class DbModelJobCards(models.Model):
         search="_search_is_my_user_group"
     )
 
+    # Canonical role -> field list, shared with every other CT analysis model.
+    # Fields absent on the local model are dropped by the ``self._fields``
+    # check in ``_get_default_tree_view``.
+    _DR_ROLE_FIELD_MAP = {
+        'Parts': [
+            'task_id', 'qty', 'parts_revenue',
+            'warranty_spareparts_revenue', 'job_card_status', 'action_status',
+        ],
+        'Coordinator': [
+            'task_id', 'user_id', 'job_card_status',
+            'total_revenue', 'labour_revenue', 'parts_revenue',
+            'rtat_hours', 'technician_travel_hours', 'onhold_hours',
+            'total_worked_hours', 'action_status', 'service_created_datetime',
+        ],
+        'Call Center': [
+            'task_id', 'job_card_status', 'action_status',
+            'service_created_datetime', 'work_center_id', 'work_center_group_id',
+        ],
+        'Technician': [
+            'task_id', 'job_card_status',
+            'technician_travel_hours', 'total_worked_hours', 'action_status',
+        ],
+    }
+
     @api.model
     def _get_logged_user_role_groups(self):
         self.env.cr.execute(
@@ -187,6 +211,16 @@ class DbModelJobCards(models.Model):
             })
             return action
 
+    def get_formview_action(self, access_uid=None):
+        """Direct form access (URL / breadcrumb) should also bypass the
+        intermediate analysis-model form and land on the source project.task.
+        """
+        self.ensure_one()
+        action = self.action_open_task_list()
+        if action:
+            return action
+        return super().get_formview_action(access_uid=access_uid)
+
     @api.model
     def _get_default_tree_view(self):
         node = etree.Element("tree", string=self._description, action="action_open_task_list", type="object", create="0", edit="0", delete="0")
@@ -194,34 +228,11 @@ class DbModelJobCards(models.Model):
         # Get roles for current logged-in user
         roles = self._get_logged_user_role_groups()
         
-        # Define specific field sets for each user group
-        role_field_map = {
-            'Parts': [
-                'task_id', 'qty', 'parts_revenue', 
-                'warranty_spareparts_revenue', 'job_card_status', 'action_status'
-            ],
-            'Coordinator': [
-                'task_id', 'user_id', 'job_card_status', 
-                'total_revenue', 'labour_revenue', 'parts_revenue', 
-                'rtat_hours', 'technician_travel_hours', 'onhold_hours', 
-                'total_worked_hours', 'action_status', 'service_created_datetime'
-            ],
-            'Call Center': [
-                'task_id', 'job_card_status', 
-                'action_status', 'service_created_datetime', 'work_center_id', 
-                'work_center_group_id'
-            ],
-            'Technician': [
-                'task_id', 'job_card_status', 
-                'technician_travel_hours', 'total_worked_hours', 'action_status'
-            ]
-        }
-
-        # Combine fields if user has multiple roles
+        # Combine fields if user has multiple roles. The map is the class-level
+        # ``_DR_ROLE_FIELD_MAP`` (same map used by every CT analysis model).
         visible_fields = set()
         for role in roles:
-            if role in role_field_map:
-                visible_fields.update(role_field_map[role])
+            visible_fields.update(self._DR_ROLE_FIELD_MAP.get(role, []))
 
         exclude_fields = [
             "id", "row_no", "display_name", "complete_name", "create_uid", "create_date",
