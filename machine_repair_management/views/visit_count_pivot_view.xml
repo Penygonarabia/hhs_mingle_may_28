@@ -11,6 +11,8 @@
                 <field name="work_center_group_id" type="row"/>
                 <field name="city" type="row"/>
                 <field name="sales_person_user_id" type="row"/>
+                <field name="contract_id" type="row"/>
+
 
                 <!-- PREVENTIVE -->
                 <field name="entitlement_prevent" type="measure"/>
@@ -34,9 +36,11 @@
 
                 <!-- <field name="project_id"/> -->
                 <field name="work_center_group_id"/>
-<!--                <field name="city"/>-->
+                <!--                <field name="city"/>-->
                 <field name="partner_id"/>
                 <field name="sales_person_user_id"/>
+                <field name="contract_id"/>
+
 
                 <group string="Group By">
 
@@ -59,6 +63,9 @@
                     <filter string="Customer"
                             name="group_customer"
                             context="{'group_by':'partner_id'}"/>
+                    <filter string="Contract"
+                            name="group_contract"
+                            context="{'group_by':'contract_id'}"/>
 
                 </group>
 
@@ -74,8 +81,10 @@
                 <field name="partner_id"/>
                 <field name="work_center_group_id"/>
                 <field name="city"/>
-               
+
                 <field name="sales_person_user_id"/>
+                <field name="contract_id"/>
+
 
                 <field name="entitlement_prevent"/>
                 <field name="actual_prevent_count"/>
@@ -115,10 +124,10 @@
         <field name="search_view_id" ref="view_subscription_contract_search"/>
     </record>
     <menuitem id="menu_visit_count_report"
-          name="Visit Count Report"
-          parent="crm.crm_menu_report"
-          action="action_subscription_contract_visit_analysis"
-          sequence="1000"/>
+              name="Visit Count Report"
+              parent="crm.crm_menu_report"
+              action="action_subscription_contract_visit_analysis"
+              sequence="1000"/>
 
 
 </odoo>
