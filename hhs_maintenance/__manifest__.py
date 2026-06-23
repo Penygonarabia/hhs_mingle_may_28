@@ -15,6 +15,8 @@
         "wizard/maintenance_equipment_import_view.xml",
         "data/cron_maintenace_equipment.xml",
         "data/data_create_service_request.xml",
+        "views/machine_repair_support_views.xml",
+        "views/job_card_views.xml",
         # "views/subscription_contract.xml",
     ],
     #'pre_init_hook': 'pre_init_hook',

@@ -1290,7 +1290,7 @@
                 </group>
 
                 <group groups="machine_repair_management.group_job_card_mobile_user, machine_repair_management.group_job_card_back_office_user" class="deskvw">
-                    <group string="Product Information">
+                    <group string="Product Information" name = "product_information">
                         <field name="product_category_id" invisible="project_related_amc_bool" readonly="state_status == True" required="not project_related_amc_bool" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
                         <field name="product_group_id" invisible="project_related_amc_bool" readonly="state_status == True" options="{'no_create_edit':True,'no_create':True,'no_open':True}" domain="[('parent_id','=',product_category_id),('allowed_group_bool','=',True)]" required="not project_related_amc_bool" context="{'show_only_name':True}"/>
                         <field name="product_sub_group_id" invisible="project_related_amc_bool" readonly="state_status == True" options="{'no_create_edit':True,'no_create':True,'no_open':True}" domain="[('parent_id','=',product_group_id),('allowed_group_is_promoter','!=', True)]" context="{'show_only_name':True}"/>
