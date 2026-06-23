@@ -33,16 +33,18 @@
     }
 
     .fc-timeline-slots {
-      .fc-day-fri,
-      .fc-day-sat {
+      .fc-day-fri
+      // .fc-day-sat 
+      {
         // background-color: #e9ecef;
         background-color: rgb(228, 162, 173);
         opacity: 0.5;
       }
     }
     /* Pink background for Friday and Saturday slots */
-    td.fc-slot-fri,
-    td.fc-slot-sat {
+    td.fc-slot-fri
+    // td.fc-slot-sat
+     {
       background-color: #d3d3d3;
       opacity: 0.5;
     }
