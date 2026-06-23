@@ -241,8 +241,8 @@
 
                                 <!-- <field name="product_category" readonly="state == 'closed'" string="Machine Category"/> -->
                                 <field name="product_id" invisible="project_related_amc_bool" string="Model No" required="0" readonly="state == 'closed'" placeholder=" " domain="[('categ_id', 'child_of', product_sub_group_id or product_group_id or product_category)]" options="{'no_create_edit':True,'no_create':True,'no_open':True,'no_edit':True}" class="underline-empty"/>
-                                <field name="brand" readonly="state == 'closed'" placeholder=" " class="underline-empty" invisible="not project_related_amc_bool"/>
-                                <field name="model" readonly="state == 'closed'" placeholder=" " class="underline-empty" invisible="not project_related_amc_bool"/>
+                                <field name="brand" readonly="state == 'closed'" placeholder=" " class="underline-empty" invisible="1"/>
+                                <field name="model" readonly="state == 'closed'" placeholder=" " class="underline-empty" invisible="1"/>
                                 <!-- <field name="brand" readonly="state == 'closed'" placeholder=" " class="underline-empty" invisible="not maintenance_tab_show_bool"/>
                                 <field name="model" readonly="state == 'closed'" placeholder=" " class="underline-empty" invisible="not maintenance_tab_show_bool"/> -->
                                 <field name="color" readonly="state == 'closed'" placeholder=" " class="underline-empty" invisible="not maintenance_tab_show_bool or project_related_amc_bool"/>
