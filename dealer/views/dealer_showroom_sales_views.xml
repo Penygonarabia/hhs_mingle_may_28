@@ -62,9 +62,9 @@
                             <!-- Mobile View -->
                             <field name="line_ids" readonly="state != 'draft'" invisible="not dealer_mobile_user_bool">
                                 <tree create="0" edit="0" delete="1">
-                                    <field name="product_category_id" width="150px" domain="[('parent_id','=', False), ('name', '!=', 'All')]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
-                                    <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
-                                    <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
+                                    <field name="product_category_id" width="150px" domain="[('parent_id','=', False), ('name', '!=', 'All')]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
+                                    <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
+                                    <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
                                     <field name="product_id" width="150px" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" domain="[('show_in_dealer_app', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
                                     <field name="qty" width="80px"/>
                                     <field name="fsm_loyalty_points" width="100px" readonly="1" widget="integer"/>
@@ -77,9 +77,9 @@
                             <!-- Back Office View -->
                             <field name="line_ids" readonly="state not in ['draft', 'submitted']" invisible="dealer_mobile_user_bool">
                                 <tree editable="bottom">
-                                    <field name="product_category_id" width="150px" domain="[('parent_id','=', False), ('name', '!=', 'All')]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
-                                    <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
-                                    <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="True"/>
+                                    <field name="product_category_id" width="150px" domain="[('parent_id','=', False), ('name', '!=', 'All')]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
+                                    <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
+                                    <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
                                     <field name="product_id" width="150px" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" domain="[('show_in_dealer_app', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
                                     <field name="qty" width="80px"/>
                                     <field name="fsm_loyalty_points" width="100px" readonly="1" widget="integer"/>
@@ -131,7 +131,7 @@
                 <field name="dealer_showroom_id"/>
                 <field name="user_id"/>
                 <field name="date_time"/>
-                <field name="state"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'submitted'" decoration-success="state == 'approved'" decoration-danger="state == 'rejected'"/>
                 <field name="reject_reason"/>
             </tree>
         </field>
@@ -293,7 +293,7 @@
                 <field name="user_id" string="Salesman"/>
                 <field name="invoice_no"/>
                 <field name="date_time"/>
-                <field name="state"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state == 'submitted'" decoration-success="state == 'approved'" decoration-danger="state == 'rejected'"/>
                 <field name="reject_reason"/>
             </tree>
         </field>
@@ -330,9 +330,9 @@
                             </div>
                             <field name="line_ids" readonly="1" nolabel="1" style="width: 100%;">
                                 <tree>
-                                    <field name="product_category_id" string="Category" column_invisible="True"/>
-                                    <field name="product_group_id" string="Group" column_invisible="True"/>
-                                    <field name="product_subgroup_id" string="Sub Group" column_invisible="True"/>
+                                    <field name="product_category_id" string="Category" column_invisible="False"/>
+                                    <field name="product_group_id" string="Group" column_invisible="False"/>
+                                    <field name="product_subgroup_id" string="Sub Group" column_invisible="False"/>
                                     <field name="product_id" string="Model"/>
                                     <field name="qty"/>
                                     <field name="fsm_loyalty_points" readonly="1" widget="integer" string="Loyalty Points"/>
