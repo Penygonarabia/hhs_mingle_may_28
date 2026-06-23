@@ -90,6 +90,114 @@ class SubscriptionContracts(models.Model):
     '''code Added on June 22 2026 by Vijaya Bhaskar due to original name is updated when we create the contract'''
     original_name = fields.Char(string = "Original name")
     
+    '''Code Added on June 23 2026 by Vijaya Bhaskar'''
+    
+    notification_send_salesman = fields.Boolean(string = "Notification Send Salesman", default = False)
+    
+    notification_send_manager = fields.Boolean(string = "Notification Send Manager", default = False)
+    
+    renewal_confirm_by_customer = fields.Boolean(string = "Renewal Confirm By Customer", default = False)
+    
+    confirmation_date = fields.Date(string = "Confirmation Date")
+    
+    
+    def send_notification_salesman_for_sixty_day(self):
+        today = fields.Date.today()
+
+        for rec in self:
+            if not rec.date_end or rec.notification_send_salesman:
+                continue
+    
+            reminder_date = rec.date_end - relativedelta(days=rec.contract_reminder)
+    
+            if reminder_date == today and rec.state == 'ongoing':
+                subject = f"Contract Notification - {rec.name}"
+    
+                body_html = f"""
+                    <p>Dear {rec.sales_person_user_id.name or ''},</p>
+    
+                    <p>
+                        The contract <b>{rec.name}</b> will expire on
+                        <b>{rec.date_end.strftime('%d-%m-%Y')}</b>.
+                    </p>
+    
+                    <p>
+                        Please contact the customer regarding renewal.
+                    </p>
+    
+                    <br/>
+                    <p>
+                        Best Regards,<br/>
+                        Maintenance Department
+                    </p>
+                """
+    
+                self.env['mail.mail'].create({
+                    'subject': subject,
+                    'body_html': body_html,
+                    'email_from': self.env.user.email or self.env.company.email,
+                    'email_to': rec.sales_person_user_id.login,
+                }).send()
+    
+                rec.notification_send_salesman = True
+                        
+    
+    def send_notification_manager(self): 
+        today = fields.Date.today()
+    
+        renewal_days = int(
+            self.env['ir.config_parameter'].sudo().get_param(
+                'machine_repair_management.notify_manager_thirty_day', 30
+            )
+        )
+    
+        manager_group = self.env.ref(
+            'hr_exit_process.group_genaral_manager_for_exit'
+        )
+    
+        for rec in self:
+            if (
+                rec.notification_send_salesman
+                and not rec.confirmation_date
+                and not rec.renewal_confirm_by_customer
+                 and rec.state == 'ongoing'
+            ):
+                reminder_date = rec.date_end - relativedelta(days=renewal_days)
+    
+                if reminder_date == today:
+    
+                    for manager in manager_group.users:
+                        if not manager.login:
+                            continue
+    
+                        subject = f"Contract Notification - {rec.name}"
+    
+                        body_html = f"""
+                            <p>Dear {manager.name},</p>
+    
+                            <p>
+                                The contract <b>{rec.name}</b> will expire on
+                                <b>{rec.date_end.strftime('%d-%m-%Y')}</b>.
+                            </p>
+    
+                            <p>
+                                Please contact the customer regarding renewal.
+                            </p>
+    
+                            <br/>
+                            <p>
+                                Best Regards,<br/>
+                                Maintenance Department
+                            </p>
+                        """
+    
+                        self.env['mail.mail'].create({
+                            'subject': subject,
+                            'body_html': body_html,
+                            'email_from': self.env.user.email or self.env.company.email,
+                            'email_to': manager.login,
+                        }).send()
+                        
     
     @api.depends('amc_quotation_id')
     def _compute_warehouse_lst_ids(self):
@@ -387,7 +495,9 @@ class SubscriptionContracts(models.Model):
             # self.mobile_no = self.amc_quotation_id.crm_id.phone or False
             # self.email = self.amc_quotation_id.crm_id.email_from
             # self.job_position = self.amc_quotation_id.crm_id.function
-            self.contract_reminder = 30
+            # self.contract_reminder = 30
+            self.contract_reminder = int(self.env['ir.config_parameter'].sudo().get_param(
+            'machine_repair_management.notify_salesman_sixty_day', 0))
             self.date = fields.Date.today()
             self.add_paid_service_price = self.amc_quotation_id.add_paid_service_price
             self.invoice_interval_duration = (

@@ -172,22 +172,22 @@ class SubscriptionContracts(models.Model):
     #     string='Attachment Images'
     # )
 
-    attachment1 = fields.Binary("Caption 1")
+    attachment1 = fields.Binary("Quotation")
     attachment1_filename = fields.Char("File Name")
 
-    attachment2 = fields.Binary("Caption 2")
+    attachment2 = fields.Binary("Contract")
     attachment2_filename = fields.Char("File Name")
 
-    attachment3 = fields.Binary("Caption 3")
+    attachment3 = fields.Binary("C.R.")
     attachment3_filename = fields.Char("File Name")
 
-    attachment4 = fields.Binary("Caption 4")
+    attachment4 = fields.Binary("VAT")
     attachment4_filename = fields.Char("File Name")
 
-    attachment5 = fields.Binary("Caption 5")
+    attachment5 = fields.Binary("National Address")
     attachment5_filename = fields.Char("File Name")
 
-    attachment6 = fields.Binary("Caption 6")
+    attachment6 = fields.Binary("Company’s Representative")
     attachment6_filename = fields.Char("File Name")
 
     # Link to service sale order

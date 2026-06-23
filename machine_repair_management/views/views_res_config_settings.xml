@@ -493,6 +493,35 @@
 	                                </div>
 	                            </div>
 	                        </div>
+	                        
+	                       <h2>Contract Expiry Setting</h2>  
+	                      <!-- <div class="text-muted mb-2 ms-3">
+		                          Notify Salesman 60 days before contract expiration
+	                    </div> -->
+	
+	                    <div class="col-12 col-lg-6 o_setting_box">
+	                         <div class="o_setting_left_pane"/>
+	                            <div class="o_setting_right_pane">
+	                                <label for="notify_salesman_sixty_day"/>
+	                                <div class="content-group">
+	                                    <div class="mt16">
+	                                        <field name="notify_salesman_sixty_day" class="oe_inline" />
+	                                    </div>
+	                                </div>
+	                            </div>
+	                        </div>
+	                        
+	                       <div class="col-12 col-lg-6 o_setting_box">
+	                         <div class="o_setting_left_pane"/>
+	                            <div class="o_setting_right_pane">
+	                                <label for="notify_manager_thirty_day"/>
+	                                <div class="content-group">
+	                                    <div class="mt16">
+	                                        <field name="notify_manager_thirty_day" class="oe_inline" />
+	                                    </div>
+	                                </div>
+	                            </div>
+	                        </div>    
         		</xpath>
         
         </field>

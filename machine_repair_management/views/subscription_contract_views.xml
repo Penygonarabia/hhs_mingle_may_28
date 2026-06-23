@@ -42,9 +42,24 @@
                  <field name = "sales_person_user_id" invisible = "1"/>
                  <field name = "invoice_txt" widget = "text"/>
                  <field name = "warehouse_lst_ids" invisible ="1" widget = "many2many_tags"/>
-				<field name = "original_name" invisible = "1"/>
+				 <field name = "original_name" invisible = "1"/>
 				
             </xpath>
+            
+             <xpath expr="//group/field[@name='project_id']" position = "after">
+            	   <field name = "notification_send_salesman"  />
+            	   <field name = "notification_send_manager"  />
+            	   <field name = "renewal_confirm_by_customer"  />
+            	   <field name = "confirmation_date" />
+            	   
+            
+            </xpath>
+            
+            <xpath expr = "//header/button[@name ='action_to_cancel']" position = "after">
+            	<button name = "send_notification_salesman_for_sixty_day" string ="Send notification to Salesman" type = "object" class = "oe_highlight"/>
+            	<button name = "send_notification_manager" string = "Send notification to Manager" type = "object" class = "oe_highlight"/>
+            </xpath>
+            
         </field>
        </record>
         

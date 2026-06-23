@@ -183,6 +183,11 @@ class ResConfigSettings(models.TransientModel):
     
     invoice_txt_contract = fields.Char(string = "Invoice Text Contract", config_parameter = "machine_repair_management.invoice_txt_contract")
     
+    '''Code Added on June 23 2026 by Vijaya Bhaskar'''
+    
+    notify_salesman_sixty_day = fields.Integer(string = "Notify Salesman 60 days before contract Expiration",config_parameter ='machine_repair_management.notify_salesman_sixty_day')
+
+    notify_manager_thirty_day = fields.Integer(string = "Notify Manager 30 Days before Contract Expiration", config_parameter = 'machine_repair_management.notify_manager_thirty_day')
     
 
     @api.model
@@ -281,6 +286,9 @@ class ResConfigSettings(models.TransientModel):
             installment_product_id=installment_product_id,
             asset_tag_sequence_creation_bool=params.get_param('machine_repair_management.asset_tag_sequence_creation_bool'),
             invoice_txt_contract = params.get_param('machine_repair_management.invoice_txt_contract'),
+            notify_salesman_sixty_day = params.get_param('machine_repair_management.notify_salesman_sixty_day'),
+            notify_manager_thirty_day = params.get_param('machine_repair_management.notify_manager_thirty_day')
+
 
         )
         return res
@@ -410,5 +418,9 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('machine_repair_management.asset_tag_sequence_creation_bool', self.asset_tag_sequence_creation_bool)
         
         self.env['ir.config_parameter'].sudo().set_param('machine_repair_management.invoice_txt_contract',self.invoice_txt_contract)
-
+        
+        self.env['ir.config_parameter'].sudo().set_param('machine_repair_management.notify_salesman_sixty_day',self.notify_salesman_sixty_day)
+        
+        self.env['ir.config_parameter'].sudo().set_param('machine_repair_management.notify_manager_thirty_day',self.notify_manager_thirty_day)
+        
         return res

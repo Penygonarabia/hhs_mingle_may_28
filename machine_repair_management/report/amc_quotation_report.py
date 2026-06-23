@@ -10,7 +10,7 @@ class ReportAMCQuotation(models.AbstractModel):
     @api.model
     def _get_report_values(self, docids, data=None):
         docs = self.env['service.sale.order'].browse(docids)
-        print("docccccccccccccccccccc++++++++++++++++++++++++++++++", docs)
+       
         amc_quotation_list = []
         scopes_of_work = []
         payments = []
@@ -20,7 +20,7 @@ class ReportAMCQuotation(models.AbstractModel):
         emergency_visit = 0.0
 
         for rec in docs:
-            print("{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{", rec)
+            
 
             # ------------------ AMC QUOTATION ------------------
             for line in rec.service_sale_order_line_ids:
@@ -77,14 +77,13 @@ class ReportAMCQuotation(models.AbstractModel):
             doc_scopes = []
 
             service_lines = rec.pm_checklist_ids.filtered(lambda l: l.is_selected)
-            print("++++++++++++++++++++ Service Lines:", service_lines)
+          
 
             for line in service_lines:
                 unit_type_id = line.service_unit_type_id.id
                 service_type = line.service_type_id  # 'major' / 'minor'
 
-                print("unit_type_id:", unit_type_id)
-                print("service_type:", service_type)
+              
 
                 query = '''
                     SELECT
@@ -211,7 +210,7 @@ class ReportAMCQuotation(models.AbstractModel):
                         else (row.get('product_arabic_name') or '')
                     )
 
-                    print("product_arabic_name:", row.get('product_arabic_name'))
+                  
 
                     doc_scopes.append({
                         'unit_type': full_unit_name,
@@ -226,7 +225,7 @@ class ReportAMCQuotation(models.AbstractModel):
                             ], limit=1).print_always_default
                         ),
                     })
-                    print("CHECK hide:", line.print_always_default, type(line.print_always_default))
+                    
                 # if grouped_list:
                 #     base_unit_name = line.service_unit_type_id.name or ''
                 #
@@ -357,8 +356,7 @@ class ReportAMCQuotation(models.AbstractModel):
             # FINAL ASSIGNMENT
             scopes_of_work.extend(doc_scopes)
 
-            print("FINAL DOC SCOPES:", doc_scopes)
-
+            
             #  doc_scopes = []
             #
             #  service_lines = rec.pm_checklist_ids.filtered(lambda l: l.is_selected)
@@ -553,9 +551,7 @@ class ReportAMCQuotation(models.AbstractModel):
             'user_name': user_details['name'],
             'signature': user_details['signature'],
         }
-        print("Tota++++++++++++++++++++++++++++++++++", rec.vat_amount, rec.grand_total_amount)
-        print("+++++++++++++++++++++++++++++++++++++++++++++++Property", rec.crm_id.type_of_property)
-
+        
         return {
             'doc_ids': docids,
             'doc_model': 'service.sale.order',
