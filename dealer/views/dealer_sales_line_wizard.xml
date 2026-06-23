@@ -7,9 +7,9 @@
             <form string="Add Item">
                 <group>
                     <field name="sales_id" invisible="1"/>
-                    <field name="product_category_id" options="{'no_create_edit': True}" invisible="1"/>
-                    <field name="product_group_id" options="{'no_create_edit': True}" invisible="1"/>
-                    <field name="product_subgroup_id" options="{'no_create_edit': True}" invisible="1"/>
+                    <field name="product_category_id" options="{'no_create_edit': True}" invisible="0"/>
+                    <field name="product_group_id" options="{'no_create_edit': True}" invisible="0"/>
+                    <field name="product_subgroup_id" options="{'no_create_edit': True}" invisible="0"/>
                     <field name="product_id" options="{'no_create_edit': True}" domain="[('show_in_dealer_app', '=', True)]" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}"/>
                     <field name="product_name" readonly="1"/>
                     <field name="capacity" readonly="1" invisible="1"/>
