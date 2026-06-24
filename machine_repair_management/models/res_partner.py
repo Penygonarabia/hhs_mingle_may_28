@@ -19,7 +19,7 @@ class Partner(models.Model):
     )
     # customer_city_id = fields.Many2one('res.city',string="Customer City",domain="[('country_id','=',country_id)]")
     customer_city_id = fields.Many2one('res.city', string="Customer City")
-    #district_id = fields.Many2one('res.state.district', string="Customer District")
+    district_id = fields.Many2one('res.state.district', string="Customer District")
 
     supplier_invoice_count = fields.Boolean(string="Supplier Invoice Count")
     # hide_peppol_fields = fields.Boolean(string="hide peppol Fileds", insvisible=True)
