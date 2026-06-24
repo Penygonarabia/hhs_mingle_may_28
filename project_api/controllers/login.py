@@ -16335,6 +16335,98 @@ class AccessToken(http.Controller):
                 "message": str(e)
             }
 
+    @validate_token
+    @http.route("/api/customer_updates", methods=["GET"], type="http", auth="none", csrf=False)
+    def customer_updates(self, **kwargs):
+        try:
+            last_modified = kwargs.get('last_modified')
+
+            domain = []
+            if last_modified:
+                domain.append(('write_date', '>=', last_modified))
+
+            customers = request.env['res.partner'].sudo().search(domain)
+
+            result = []
+            for rec in customers:
+                result.append({
+                    "name": rec.name,
+                    "ref": rec.ref,
+                    "collected_points_regular": rec.collected_points_regular,
+                    "balance_points_regular": rec.balance_points_regular,
+                    "tier_name": rec.tier_name,
+                    "activation_date": str(rec.activation_date) if rec.activation_date else "",
+                    "redemption_deadline": str(rec.redemption_deadline) if rec.redemption_deadline else "",
+                    "activate_loyalty_feature": rec.activate_loyalty_feature,
+                    "write_date": str(rec.write_date) if rec.write_date else "",
+                })
+
+            return Response(
+                json.dumps({
+                    "status": "success",
+                    "count": len(result),
+                    "data": result
+                }),
+                content_type="application/json",
+                status=200
+            )
+
+        except Exception as e:
+            return Response(
+                json.dumps({
+                    "status": "error",
+                    "message": str(e)
+                }),
+                content_type="application/json",
+                status=500
+            )
+
+    @validate_token
+    @http.route("/api/loyalty_audit_updates", methods=["GET"], type="http", auth="none", csrf=False)
+    def loyalty_audit_updates(self, **kwargs):
+        try:
+            last_modified = kwargs.get('last_modified')
+
+            domain = []
+            if last_modified:
+                domain.append(('write_date', '>=', last_modified))
+
+            records = request.env['customer.loyalty.points.history'].sudo().search(domain)
+
+            result = []
+            for rec in records:
+                result.append({
+                    "clph_cstcode": rec.clph_cstcode,
+                    "clph_date": str(rec.clph_date) if rec.clph_date else "",
+                    "clph_doctype": rec.clph_doctype,
+                    "clph_docnumber": rec.clph_docnumber,
+                    "clph_type": rec.clph_type,
+                    "clph_whouse": rec.clph_whouse,
+                    "clph_regpoints": rec.clph_regpoints,
+                    "clph_note": rec.clph_note,
+                    "clph_adjtype": rec.clph_adjtype,
+                    "write_date": str(rec.write_date) if rec.write_date else "",
+                })
+
+            return Response(
+                json.dumps({
+                    "status": "success",
+                    "count": len(result),
+                    "data": result
+                }),
+                content_type="application/json",
+                status=200
+            )
+
+        except Exception as e:
+            return Response(
+                json.dumps({
+                    "status": "error",
+                    "message": str(e)
+                }),
+                content_type="application/json",
+                status=500
+            )
 
         
 # @http.route(["/api/auth/token"], methods=["DELETE"], type="http", auth="none", csrf=False)
