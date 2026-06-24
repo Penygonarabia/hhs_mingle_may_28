@@ -3,6 +3,9 @@ from odoo.exceptions import ValidationError
 from odoo.tools import float_round
 from dateutil.relativedelta import relativedelta
 
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class SubscriptionContracts(models.Model):
@@ -101,16 +104,88 @@ class SubscriptionContracts(models.Model):
     confirmation_date = fields.Date(string = "Confirmation Date")
     
     
+    # def send_notification_salesman_for_sixty_day(self):
+    #     today = fields.Date.today()
+    #
+    #     for rec in self:
+    #         if not rec.date_end:
+    #             continue
+    #
+    #         reminder_date = rec.date_end - relativedelta(days=rec.contract_reminder)
+    #
+    #         if reminder_date == today and rec.state == 'ongoing':
+    #             subject = f"Contract Notification - {rec.name}"
+    #
+    #             body_html = f"""
+    #                 <p>Dear {rec.sales_person_user_id.name or ''},</p>
+    #
+    #                 <p>
+    #                     The contract <b>{rec.name}</b> will expire on
+    #                     <b>{rec.date_end.strftime('%d-%m-%Y')}</b>.
+    #                 </p>
+    #
+    #                 <p>
+    #                     Please contact the customer regarding renewal.
+    #                 </p>
+    #
+    #                 <br/>
+    #                 <p>
+    #                     Best Regards,<br/>
+    #                     Maintenance Department
+    #                 </p>
+    #             """
+    #
+    #             self.env['mail.mail'].create({
+    #                 'subject': subject,
+    #                 'body_html': body_html,
+    #                 'email_from': self.env.user.email or self.env.company.email,
+    #                 'email_to': rec.sales_person_user_id.login,
+    #             }).send()
+    #
+    #             rec.notification_send_salesman = True
+    
+ 
+
     def send_notification_salesman_for_sixty_day(self):
         today = fields.Date.today()
-
+    
+        _logger.info("Salesman notification cron started on %s", today)
+        print("Salesman notification cron started on", today)
+    
         for rec in self:
+            _logger.info(
+                "Processing Contract: %s, End Date: %s, Reminder Days: %s, State: %s",
+                rec.name,
+                rec.date_end,
+                rec.contract_reminder,
+                rec.state
+            )
+            print(
+                f"Processing Contract: {rec.name}, End Date: {rec.date_end}, "
+                f"Reminder Days: {rec.contract_reminder}, State: {rec.state}"
+            )
+    
             if not rec.date_end:
+                _logger.info("Skipping %s - No end date found", rec.name)
+                print(f"Skipping {rec.name} - No end date found")
                 continue
     
             reminder_date = rec.date_end - relativedelta(days=rec.contract_reminder)
     
+            _logger.info(
+                "Contract: %s | Reminder Date: %s | Today: %s",
+                rec.name,
+                reminder_date,
+                today
+            )
+            print(
+                f"Contract: {rec.name} | Reminder Date: {reminder_date} | Today: {today}"
+            )
+    
             if reminder_date == today and rec.state == 'ongoing':
+                _logger.info("Sending notification for contract %s", rec.name)
+                print(f"Sending notification for contract {rec.name}")
+    
                 subject = f"Contract Notification - {rec.name}"
     
                 body_html = f"""
@@ -132,15 +207,38 @@ class SubscriptionContracts(models.Model):
                     </p>
                 """
     
-                self.env['mail.mail'].create({
+                mail = self.env['mail.mail'].create({
                     'subject': subject,
                     'body_html': body_html,
                     'email_from': self.env.user.email or self.env.company.email,
                     'email_to': rec.sales_person_user_id.login,
-                }).send()
+                })
+    
+                _logger.info(
+                    "Mail created for %s (%s)",
+                    rec.sales_person_user_id.name,
+                    rec.sales_person_user_id.login
+                )
+                print(
+                    f"Mail created for {rec.sales_person_user_id.name} "
+                    f"({rec.sales_person_user_id.login})"
+                )
+    
+                mail.send()
+    
+                _logger.info("Mail sent successfully for contract %s", rec.name)
+                print(f"Mail sent successfully for contract {rec.name}")
     
                 rec.notification_send_salesman = True
-                        
+    
+                _logger.info(
+                    "notification_send_salesman updated to True for %s",
+                    rec.name
+                )
+                print(
+                    f"notification_send_salesman updated to True for {rec.name}"
+                )
+                            
     
     def send_notification_manager(self): 
         today = fields.Date.today()
