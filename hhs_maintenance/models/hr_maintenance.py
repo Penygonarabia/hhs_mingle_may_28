@@ -443,6 +443,7 @@ class MaintenanceEquipment(models.Model):
                 rec.crm_lead_id.customer_city_id.name if rec.crm_lead_id.customer_city_id else "",
                 rec.crm_lead_id.state_id.name if rec.crm_lead_id.state_id else "",
                 rec.crm_lead_id.country_id.name if rec.crm_lead_id.country_id else "",
+                rec.crm_lead_id.district.name if rec.crm_lead_id.district else "",
                 rec.crm_lead_id.zip or "",
             ]
             full_address = ",".join(filter(None, address_parts))
@@ -456,9 +457,9 @@ class MaintenanceEquipment(models.Model):
     
             service_team_id = self.env['machine.support.team'].search(
                 [('leader_id', '=', rec.technician_user_id.id)], limit=1)
-    
+
             district_search_id = self.env['res.state.district'].search(
-                [('city_id', '=', rec.crm_lead_id.customer_city_id.id)], limit=1)
+                [('id', '=', rec.crm_lead_id.district.id)], limit=1)
             
             # existing_request = self.env['machine.repair.support'].search(
             #     [('asset_id', '=', rec.id),

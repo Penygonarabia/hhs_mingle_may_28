@@ -35,6 +35,7 @@
                         <attribute name="invisible">additional_identification_scheme != 'TIN'</attribute>
                     </xpath>
                     <xpath expr="//div[hasclass('o_address_format')]" position="inside">
+                        <field name="district_id" placeholder="District"/>
                         <field name="building_number" placeholder="Building Number"/>
                         <field name="plot_identification" placeholder="Plot Identification"/>
                     </xpath>

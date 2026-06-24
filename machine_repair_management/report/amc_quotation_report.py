@@ -513,7 +513,7 @@ class ReportAMCQuotation(models.AbstractModel):
             payments.append({
                 'name': convert_name(pay.name).replace('%', '').strip(),
                 'date': formatted_date,
-                'amount': f"SAR{amount:,.2f}"
+                'amount': f"SAR {amount:,.2f}"
             })
         # ------------------ FINAL DATA ------------------
         rec = docs[0] if docs else None
@@ -529,7 +529,7 @@ class ReportAMCQuotation(models.AbstractModel):
             'total_vat': rec.vat_amount or 0.0,
             'grand_total': rec.grand_total_amount or 0.0,
             'total_qty': int(total_qty),
-            'company_symbol': rec.company_id.currency_id.symbol if rec else '',
+            'company_symbol': rec.company_id.currency_id.name if rec else '',
             # 'address': rec.customer_address if rec else '',
             'address': rec.customer_address.replace(',', ', ') if rec and rec.customer_address else '',
             'emergency_visit': int(emergency_visit),
