@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ========================= -->
+    <!-- Time & Attendance -->
+    <!-- ========================= -->
+
+    <record id="menu_time_attendance" model="mobile.menu">
+        <field name="name">Time &amp; Attendance</field>
+        <field name="code">TIME_ATTENDANCE</field>
+        <field name="sequence">1</field>
+    </record>
+
+    <record id="menu_attendance_report" model="mobile.menu">
+        <field name="name">Attendance Report</field>
+        <field name="code">ATTENDANCE_REPORT</field>
+        <field name="parent_id" ref="menu_time_attendance"/>
+    </record>
+
+    <record id="menu_attendance_request" model="mobile.menu">
+        <field name="name">Attendance Request</field>
+        <field name="code">ATTENDANCE_REQUEST</field>
+        <field name="parent_id" ref="menu_time_attendance"/>
+    </record>
+
+    <record id="menu_my_requests" model="mobile.menu">
+        <field name="name">My Requests</field>
+        <field name="code">MY_REQUESTS</field>
+        <field name="parent_id" ref="menu_time_attendance"/>
+    </record>
+
+    <record id="menu_timesheet" model="mobile.menu">
+        <field name="name">Timesheet</field>
+        <field name="code">TIMESHEET</field>
+        <field name="parent_id" ref="menu_time_attendance"/>
+    </record>
+
+    <record id="menu_apply_timesheet" model="mobile.menu">
+        <field name="name">Apply Timesheet</field>
+        <field name="code">APPLY_TIMESHEET</field>
+        <field name="parent_id" ref="menu_timesheet"/>
+    </record>
+
+    <record id="menu_history" model="mobile.menu">
+        <field name="name">History</field>
+        <field name="code">HISTORY</field>
+        <field name="parent_id" ref="menu_time_attendance"/>
+    </record>
+
+    <!-- ========================= -->
+    <!-- Leave Management -->
+    <!-- ========================= -->
+
+    <record id="menu_leave_management" model="mobile.menu">
+        <field name="name">Leave Management</field>
+        <field name="code">LEAVE_MANAGEMENT</field>
+        <field name="sequence">2</field>
+    </record>
+
+    <record id="menu_apply_leaves" model="mobile.menu">
+        <field name="name">Apply Leaves</field>
+        <field name="code">APPLY_LEAVES</field>
+        <field name="parent_id" ref="menu_leave_management"/>
+    </record>
+
+    <record id="menu_my_leaves" model="mobile.menu">
+        <field name="name">My Leaves</field>
+        <field name="code">MY_LEAVES</field>
+        <field name="parent_id" ref="menu_leave_management"/>
+    </record>
+
+    <record id="menu_holidays" model="mobile.menu">
+        <field name="name">Holidays</field>
+        <field name="code">HOLIDAYS</field>
+        <field name="parent_id" ref="menu_leave_management"/>
+    </record>
+
+    <!-- ========================= -->
+    <!-- Finance & Payroll -->
+    <!-- ========================= -->
+
+    <record id="menu_finance_payroll" model="mobile.menu">
+        <field name="name">Finance &amp; Payroll</field>
+        <field name="code">FINANCE_PAYROLL</field>
+        <field name="sequence">3</field>
+    </record>
+
+    <record id="menu_payslip" model="mobile.menu">
+        <field name="name">Payslip</field>
+        <field name="code">PAYSLIP</field>
+        <field name="parent_id" ref="menu_finance_payroll"/>
+    </record>
+
+    <record id="menu_expenses" model="mobile.menu">
+        <field name="name">Expenses</field>
+        <field name="code">EXPENSES</field>
+        <field name="parent_id" ref="menu_finance_payroll"/>
+    </record>
+
+    <record id="menu_add_expense" model="mobile.menu">
+        <field name="name">Add Expense</field>
+        <field name="code">ADD_EXPENSE</field>
+        <field name="parent_id" ref="menu_expenses"/>
+    </record>
+
+    <record id="menu_loans" model="mobile.menu">
+        <field name="name">Loans</field>
+        <field name="code">LOANS</field>
+        <field name="parent_id" ref="menu_finance_payroll"/>
+    </record>
+
+    <record id="menu_request_loan" model="mobile.menu">
+        <field name="name">Request Loan</field>
+        <field name="code">REQUEST_LOAN</field>
+        <field name="parent_id" ref="menu_loans"/>
+    </record>
+
+    <record id="menu_loan_details" model="mobile.menu">
+        <field name="name">Loan Details</field>
+        <field name="code">LOAN_DETAILS</field>
+        <field name="parent_id" ref="menu_loans"/>
+    </record>
+
+    <record id="menu_travel" model="mobile.menu">
+        <field name="name">Travel</field>
+        <field name="code">TRAVEL</field>
+        <field name="parent_id" ref="menu_finance_payroll"/>
+    </record>
+
+    <record id="menu_add_travel" model="mobile.menu">
+        <field name="name">Add Travel</field>
+        <field name="code">ADD_TRAVEL</field>
+        <field name="parent_id" ref="menu_travel"/>
+    </record>
+
+    <!-- ========================= -->
+    <!-- Career & Assets -->
+    <!-- ========================= -->
+
+    <record id="menu_career_assets" model="mobile.menu">
+        <field name="name">Career &amp; Assets</field>
+        <field name="code">CAREER_ASSETS</field>
+        <field name="sequence">4</field>
+    </record>
+
+    <record id="menu_performance" model="mobile.menu">
+        <field name="name">Performance</field>
+        <field name="code">PERFORMANCE</field>
+        <field name="parent_id" ref="menu_career_assets"/>
+    </record>
+
+    <record id="menu_training" model="mobile.menu">
+        <field name="name">Training</field>
+        <field name="code">TRAINING</field>
+        <field name="parent_id" ref="menu_career_assets"/>
+    </record>
+
+    <record id="menu_assets" model="mobile.menu">
+        <field name="name">Assets</field>
+        <field name="code">ASSETS</field>
+        <field name="parent_id" ref="menu_career_assets"/>
+    </record>
+
+    <record id="menu_request_new_asset" model="mobile.menu">
+        <field name="name">Request New Asset</field>
+        <field name="code">REQUEST_NEW_ASSET</field>
+        <field name="parent_id" ref="menu_assets"/>
+    </record>
+
+    <record id="menu_asset_action" model="mobile.menu">
+        <field name="name">Asset Action</field>
+        <field name="code">ASSET_ACTION</field>
+        <field name="parent_id" ref="menu_assets"/>
+    </record>
+
+    <record id="menu_communication" model="mobile.menu">
+        <field name="name">Communication</field>
+        <field name="code">COMMUNICATION</field>
+        <field name="parent_id" ref="menu_career_assets"/>
+    </record>
+
+
+</odoo>
