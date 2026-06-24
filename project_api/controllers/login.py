@@ -16345,20 +16345,23 @@ class AccessToken(http.Controller):
             if last_modified:
                 domain.append(('write_date', '>=', last_modified))
 
-            customers = request.env['res.partner'].sudo().search(domain)
+            customers = request.env['res.partner'].sudo().search(
+                domain,
+                order='write_date asc'
+            )
 
             result = []
             for rec in customers:
                 result.append({
-                    "name": rec.name,
-                    "ref": rec.ref,
-                    "collected_points_regular": rec.collected_points_regular,
-                    "balance_points_regular": rec.balance_points_regular,
-                    "tier_name": rec.tier_name,
-                    "activation_date": str(rec.activation_date) if rec.activation_date else "",
-                    "redemption_deadline": str(rec.redemption_deadline) if rec.redemption_deadline else "",
-                    "activate_loyalty_feature": rec.activate_loyalty_feature,
-                    "write_date": str(rec.write_date) if rec.write_date else "",
+                    "Customer_Name": rec.name or "",
+                    "Customer_Code": rec.ref or "",
+                    "Collected_Points": rec.collected_points_regular or 0,
+                    "Balance_Points": rec.balance_points_regular or 0,
+                    "Customer_Tier_Name": rec.tier_name or "",
+                    "Loyalty_Feature_Activation_Date": str(rec.activation_date) if rec.activation_date else "",
+                    "Redemption_Deadline_Date": str(rec.redemption_deadline) if rec.redemption_deadline else "",
+                    "Customer_Lotalty_Feature_Activate_Yes_or_No": rec.activate_loyalty_feature,
+                    "Last_Modified_Date": str(rec.write_date) if rec.write_date else ""
                 })
 
             return Response(
@@ -16380,6 +16383,7 @@ class AccessToken(http.Controller):
                 content_type="application/json",
                 status=500
             )
+
 
     @validate_token
     @http.route("/api/loyalty_audit_updates", methods=["GET"], type="http", auth="none", csrf=False)
@@ -16391,21 +16395,24 @@ class AccessToken(http.Controller):
             if last_modified:
                 domain.append(('write_date', '>=', last_modified))
 
-            records = request.env['customer.loyalty.points.history'].sudo().search(domain)
+            records = request.env['customer.loyalty.points.history'].sudo().search(
+                domain,
+                order='write_date asc'
+            )
 
             result = []
             for rec in records:
                 result.append({
-                    "clph_cstcode": rec.clph_cstcode,
-                    "clph_date": str(rec.clph_date) if rec.clph_date else "",
-                    "clph_doctype": rec.clph_doctype,
-                    "clph_docnumber": rec.clph_docnumber,
-                    "clph_type": rec.clph_type,
-                    "clph_whouse": rec.clph_whouse,
-                    "clph_regpoints": rec.clph_regpoints,
-                    "clph_note": rec.clph_note,
-                    "clph_adjtype": rec.clph_adjtype,
-                    "write_date": str(rec.write_date) if rec.write_date else "",
+                    "Customer_Code": rec.clph_cstcode or "",
+                    "Transaction_Date": str(rec.clph_date) if rec.clph_date else "",
+                    "Document_Type": rec.clph_doctype or "",
+                    "Transaction_No": rec.clph_docnumber or "",
+                    "Transaction_Type": rec.clph_type or "",
+                    "warehouse": rec.clph_whouse or "",
+                    "regular_points": rec.clph_regpoints or 0,
+                    "reason": rec.clph_note or "",
+                    "adjustmenttype": rec.clph_adjtype or "",
+                    "Last_Modified_Date": str(rec.write_date) if rec.write_date else ""
                 })
 
             return Response(
@@ -16429,30 +16436,35 @@ class AccessToken(http.Controller):
             )
 
     @validate_token
-    @http.route('/api/loyalty_audit/create', methods=['POST'], type='http', auth='none', csrf=False)
+    @http.route('/api/loyalty_audit/create',
+                methods=['POST'],
+                type='http',
+                auth='none',
+                csrf=False)
     def create_loyalty_audit(self, **kwargs):
         try:
-            data = json.loads(request.httprequest.data)
+            data = json.loads(request.httprequest.get_data(as_text=True) or '{}')
+            params = data.get('params', {})
 
             vals = {
-                'clph_cstcode': data.get('clph_cstcode'),
-                'clph_date': data.get('clph_date'),
-                'clph_doctype': data.get('clph_doctype'),
-                'clph_docnumber': data.get('clph_docnumber'),
-                'clph_type': data.get('clph_type'),
-                'clph_whouse': data.get('clph_whouse'),
-                'clph_regpoints': data.get('clph_regpoints', 0),
-                'clph_note': data.get('clph_note'),
-                'clph_adjtype': data.get('clph_adjtype'),
+                'clph_cstcode': params.get('Customer_Code'),
+                'clph_date': params.get('Transaction_Date'),
+                'clph_doctype': params.get('Document_Type'),
+                'clph_docnumber': params.get('Transaction_No'),
+                'clph_type': params.get('Transaction_Type'),
+                'clph_whouse': params.get('warehouse'),
+                'clph_regpoints': params.get('regular_points'),
+                'clph_note': params.get('reason'),
+                'clph_adjtype': params.get('adjustmenttype'),
             }
 
             record = request.env['customer.loyalty.points.history'].sudo().create(vals)
 
             return Response(
                 json.dumps({
-                    'status': 'success',
-                    'message': 'Loyalty audit record created successfully',
-                    'id': record.id
+                    "status": "success",
+                    "message": "Loyalty audit record created successfully",
+                    "id": record.id
                 }),
                 content_type='application/json',
                 status=200
@@ -16461,26 +16473,31 @@ class AccessToken(http.Controller):
         except Exception as e:
             return Response(
                 json.dumps({
-                    'status': 'error',
-                    'message': str(e)
+                    "status": "error",
+                    "message": str(e)
                 }),
                 content_type='application/json',
                 status=500
             )
 
     @validate_token
-    @http.route('/api/customer_respartner/update', methods=['PUT'], type='http', auth='none', csrf=False)
+    @http.route('/api/customer_respartner/update',
+                methods=['PUT'],
+                type='http',
+                auth='none',
+                csrf=False)
     def update_customer(self, **kwargs):
         try:
-            data = json.loads(request.httprequest.data)
+            data = json.loads(request.httprequest.get_data(as_text=True) or '{}')
+            params = data.get('params', {})
 
-            customer_code = data.get('ref')
+            customer_code = params.get('Customer_Code')
 
             if not customer_code:
                 return Response(
                     json.dumps({
-                        'status': 'error',
-                        'message': 'Customer code(ref) is required'
+                        "status": "error",
+                        "message": "Customer_Code is required"
                     }),
                     content_type='application/json',
                     status=400
@@ -16494,20 +16511,21 @@ class AccessToken(http.Controller):
             if not partner:
                 return Response(
                     json.dumps({
-                        'status': 'error',
-                        'message': 'Customer not found'
+                        "status": "error",
+                        "message": "Customer not found"
                     }),
                     content_type='application/json',
                     status=404
                 )
 
             vals = {
-                'collected_points_regular': data.get('collected_points_regular'),
-                'balance_points_regular': data.get('balance_points_regular'),
-                'tier_name': data.get('tier_name'),
-                'activation_date': data.get('activation_date'),
-                'redemption_deadline': data.get('redemption_deadline'),
-                'activate_loyalty_feature': data.get('activate_loyalty_feature'),
+                'name': params.get('Customer_Name'),
+                'collected_points_regular': params.get('Collected_Points'),
+                'balance_points_regular': params.get('Balance_Points'),
+                'tier_name': params.get('Customer_Tier_Name'),
+                'activation_date': params.get('Loyalty_Feature_Activation_Date'),
+                'redemption_deadline': params.get('Redemption_Deadline_Date'),
+                'activate_loyalty_feature': params.get('Customer_Lotalty_Feature_Activate_Yes_or_No'),
             }
 
             vals = {k: v for k, v in vals.items() if v is not None}
@@ -16516,9 +16534,10 @@ class AccessToken(http.Controller):
 
             return Response(
                 json.dumps({
-                    'status': 'success',
-                    'message': 'Customer updated successfully',
-                    'customer_id': partner.id
+                    "status": "success",
+                    "message": "Customer updated successfully",
+                    "customer_id": partner.id,
+                    "customer_code": customer_code
                 }),
                 content_type='application/json',
                 status=200
@@ -16527,8 +16546,8 @@ class AccessToken(http.Controller):
         except Exception as e:
             return Response(
                 json.dumps({
-                    'status': 'error',
-                    'message': str(e)
+                    "status": "error",
+                    "message": str(e)
                 }),
                 content_type='application/json',
                 status=500
