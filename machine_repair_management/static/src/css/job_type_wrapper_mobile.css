@@ -1,0 +1,30 @@
+.job_type_row {
+    display: flex;
+    align-items: flex-start;
+
+    .job_type_radio {
+        .o_radio_input {
+            display: flex;
+            flex-direction: column;
+
+            .o_radio_item {
+                height: 32px;          
+                display: flex;
+                align-items: center;
+                white-space: nowrap;   
+            }
+        }
+    }
+
+    .job_type_counts {
+        display: flex;
+        flex-direction: column;
+        margin-left: 16px;
+
+        .o_field_widget {
+            height: 32px;            
+            display: flex;
+            align-items: center;
+        }
+    }
+}

@@ -518,6 +518,8 @@ workshop machine repair
             "machine_repair_management/static/src/js/onhold_spare_parts.js",
             "machine_repair_management/static/src/xml/chatter_template.xml",
             "machine_repair_management/static/src/css/radio_inline.css",
+            "machine_repair_management/static/src/css/job_type_wrapper_mobile.css"
+
             # '/machine_repair_management/static/src/css/fixed_navbar.css',
             # "machine_repair_management/static/src/js/popup_wizardclose.js",
             # 'machine_repair_management/static/src/js/statusbar_no_trigger.js',
