@@ -102,7 +102,7 @@
                         <group>
                             <field name="reference" required="1"
                                    readonly="lock or state not in 'New' "/>
-                            <field name="partner_id" options="{'no_create': True}" options ="{'no_create':True,'no_edit':True,'no_open':True}"
+                            <field name="partner_id"  options ="{'no_create':True,'no_edit':True,'no_open':True}"
                                    readonly="lock or state not in 'New' "/>
                             <field name="contract_type" readonly="lock or state not in 'New' " invisible="1"/>
                             <field name="recurring_period"
