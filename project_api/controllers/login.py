@@ -16428,6 +16428,111 @@ class AccessToken(http.Controller):
                 status=500
             )
 
+    @validate_token
+    @http.route('/api/loyalty_audit/create', methods=['POST'], type='http', auth='none', csrf=False)
+    def create_loyalty_audit(self, **kwargs):
+        try:
+            data = json.loads(request.httprequest.data)
+
+            vals = {
+                'clph_cstcode': data.get('clph_cstcode'),
+                'clph_date': data.get('clph_date'),
+                'clph_doctype': data.get('clph_doctype'),
+                'clph_docnumber': data.get('clph_docnumber'),
+                'clph_type': data.get('clph_type'),
+                'clph_whouse': data.get('clph_whouse'),
+                'clph_regpoints': data.get('clph_regpoints', 0),
+                'clph_note': data.get('clph_note'),
+                'clph_adjtype': data.get('clph_adjtype'),
+            }
+
+            record = request.env['customer.loyalty.points.history'].sudo().create(vals)
+
+            return Response(
+                json.dumps({
+                    'status': 'success',
+                    'message': 'Loyalty audit record created successfully',
+                    'id': record.id
+                }),
+                content_type='application/json',
+                status=200
+            )
+
+        except Exception as e:
+            return Response(
+                json.dumps({
+                    'status': 'error',
+                    'message': str(e)
+                }),
+                content_type='application/json',
+                status=500
+            )
+
+    @validate_token
+    @http.route('/api/customer_respartner/update', methods=['PUT'], type='http', auth='none', csrf=False)
+    def update_customer(self, **kwargs):
+        try:
+            data = json.loads(request.httprequest.data)
+
+            customer_code = data.get('ref')
+
+            if not customer_code:
+                return Response(
+                    json.dumps({
+                        'status': 'error',
+                        'message': 'Customer code(ref) is required'
+                    }),
+                    content_type='application/json',
+                    status=400
+                )
+
+            partner = request.env['res.partner'].sudo().search(
+                [('ref', '=', customer_code)],
+                limit=1
+            )
+
+            if not partner:
+                return Response(
+                    json.dumps({
+                        'status': 'error',
+                        'message': 'Customer not found'
+                    }),
+                    content_type='application/json',
+                    status=404
+                )
+
+            vals = {
+                'collected_points_regular': data.get('collected_points_regular'),
+                'balance_points_regular': data.get('balance_points_regular'),
+                'tier_name': data.get('tier_name'),
+                'activation_date': data.get('activation_date'),
+                'redemption_deadline': data.get('redemption_deadline'),
+                'activate_loyalty_feature': data.get('activate_loyalty_feature'),
+            }
+
+            vals = {k: v for k, v in vals.items() if v is not None}
+
+            partner.write(vals)
+
+            return Response(
+                json.dumps({
+                    'status': 'success',
+                    'message': 'Customer updated successfully',
+                    'customer_id': partner.id
+                }),
+                content_type='application/json',
+                status=200
+            )
+
+        except Exception as e:
+            return Response(
+                json.dumps({
+                    'status': 'error',
+                    'message': str(e)
+                }),
+                content_type='application/json',
+                status=500
+            )
         
 # @http.route(["/api/auth/token"], methods=["DELETE"], type="http", auth="none", csrf=False)
     # def delete(self, **post):
