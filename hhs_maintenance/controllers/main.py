@@ -58,7 +58,7 @@ class HHSEquipmentTemplate(http.Controller):
 
         # ===== TABLE HEADER =====
         headers = [
-            "SNO", "Brand", "Unit Type", "Model",
+            "SNO", "Brand", "Unit Type","Contract Type", "Model",
             "Serial No (Optional)", "Used in Location (Optional)",
             "No of visits per year", "Default Technician Emp Code",
             "Default Technician Name", "Asset Tag", "Batch No"
@@ -72,14 +72,15 @@ class HHSEquipmentTemplate(http.Controller):
         sheet.set_column('A:A', 17)
         sheet.set_column('B:B', 15)
         sheet.set_column('C:C', 30)
-        sheet.set_column('D:D', 20)
-        sheet.set_column('E:E', 25)
+        sheet.set_column('D:D', 25)
+        sheet.set_column('E:E', 20)
         sheet.set_column('F:F', 25)
         sheet.set_column('G:G', 20)
         sheet.set_column('H:H', 25)
         sheet.set_column('I:I', 25)
         sheet.set_column('J:J', 25)
         sheet.set_column('K:K', 15)
+        sheet.set_column('L:L', 15)
 
         # ===== DATA =====
         row += 1
@@ -126,17 +127,18 @@ class HHSEquipmentTemplate(http.Controller):
                 sheet.write(row, 2, line.product_id.name if line.product_id else '')  # Unit Type
 
                 # Columns 3,4,5 remain blank
-                sheet.write(row, 3, '')  # Model
-                sheet.write(row, 4, '')  # Serial No
-                sheet.write(row, 5, '')  # Location
+                sheet.write(row, 3, line.contract_type_id.name if line.contract_type_id else '')   # Contract Type
+                sheet.write(row, 4, '') # Model
+                sheet.write(row, 5, '')  # Serial No
+                sheet.write(row, 6, '')  # Location
 
-                sheet.write(row, 6, line.no_of_visits_per_year or 0)  # No of visits per year
+                sheet.write(row, 7, line.no_of_visits_per_year or 0)  # No of visits per year
 
                 # Columns 7–10 remain blank
-                sheet.write(row, 7, '')  # Technician Emp Code
-                sheet.write(row, 8, '')  # Technician Name
-                sheet.write(row, 9, asset_tag)  # Asset Tag
-                sheet.write(row, 10, '')  # Batch No
+                sheet.write(row, 8, '')  # Technician Emp Code
+                sheet.write(row, 9, '')  # Technician Name
+                sheet.write(row, 10, asset_tag)  # Asset Tag
+                sheet.write(row, 11, '')  # Batch No
 
                 row += 1
                 sno += 1

@@ -139,6 +139,7 @@ class MaintenanceEquipmentImportWizard(models.TransientModel):
                 'default_technician': self.get_col(
                     col_map, 'defaulttechniciannameoptional', 'defaulttechnician'
                 ),
+                'contract_type' : self.get_col(col_map,'contracttype'),
             }
     
             created = 0
@@ -272,7 +273,15 @@ class MaintenanceEquipmentImportWizard(models.TransientModel):
                         )
                         if lead:
                             crm_lead_id = lead.id
-    
+                    
+                    contract_type = False
+                    
+                    contract_type = self.get_val(row, headers, 'contract_type')
+                    if contract_type:
+                        contract_type_search = self.env['crm.contract.type'].search([('name', '=', contract_type)], limit=1)
+                        
+                        contract_type = contract_type_search.id   
+                    
                     # ---------------------------
                     # CREATE
                     # ---------------------------
@@ -292,6 +301,7 @@ class MaintenanceEquipmentImportWizard(models.TransientModel):
                         'contract_end_date': self.contract_end_date,
                         'description': self.description,
                         'crm_lead_id': crm_lead_id,
+                        'maintenance_contract_type_id' :contract_type,
                     }
     
                     # self.env['maintenance.equipment'].create(vals)
