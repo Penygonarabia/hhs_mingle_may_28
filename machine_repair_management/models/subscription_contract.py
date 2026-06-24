@@ -182,7 +182,7 @@ class SubscriptionContracts(models.Model):
                 f"Contract: {rec.name} | Reminder Date: {reminder_date} | Today: {today}"
             )
     
-            if reminder_date == today and rec.state == 'ongoing':
+            if reminder_date == today and rec.state == 'Ongoing':
                 _logger.info("Sending notification for contract %s", rec.name)
                 print(f"Sending notification for contract {rec.name}")
     
@@ -258,7 +258,7 @@ class SubscriptionContracts(models.Model):
                 rec.notification_send_salesman
                 and not rec.confirmation_date
                 and not rec.renewal_confirm_by_customer
-                 and rec.state == 'ongoing'
+                 and rec.state == 'Ongoing'
             ):
                 reminder_date = rec.date_end - relativedelta(days=renewal_days)
     
