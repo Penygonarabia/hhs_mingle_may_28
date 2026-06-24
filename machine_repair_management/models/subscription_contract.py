@@ -295,6 +295,7 @@ class SubscriptionContracts(models.Model):
                             'email_from': self.env.user.email or self.env.company.email,
                             'email_to': manager.login,
                         }).send()
+                        rec.notification_send_manager = True
                         
     
     @api.depends('amc_quotation_id')
