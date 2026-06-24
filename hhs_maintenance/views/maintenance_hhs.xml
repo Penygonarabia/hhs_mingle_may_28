@@ -56,7 +56,7 @@
             <!--            </xpath>-->
             <xpath expr="//field[@name='model']" position="replace">
                 <field name ="brand_id" invisible="1"/>
-                <field name="model_id" required="0"  invisible = "items_from_own_company_bool"  context="{'default_brand_id': brand_id}" domain="[('brand_id', '=', brand_id)]"/>
+                <field name="model_id" required="0"  invisible = "items_from_own_company_bool"  context="{'default_brand_id': brand_id}" domain="[('brand_id', '=', brand_id)]" options ="{'no_create':True,'no_edit':True,'no_open':True}"/>
             </xpath>
             <xpath expr="//field[@name='location']" position="attributes">
                 <attribute name="required">1</attribute>

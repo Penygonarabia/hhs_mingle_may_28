@@ -1922,6 +1922,11 @@ class MachineRepairSupport(models.Model):
             '''Code Added on May 23 2026 by Vijaya Bhaskar'''
             rec.used_location_equipment = rec.asset_id.location or False
             rec.product_id = rec.asset_id.service_products_code_id.id or False
+            '''Code Added on June 24 2026 by Vijaya Bhaskar'''
+            rec.brand_id = rec.asset_id.brand_id.id or False
+            rec.items_from_own_company_bool = rec.asset_id.items_from_own_company_bool or False
+            rec.model_id = rec.asset_id.model_id.id or False
+            rec.product_product_model_id = rec.asset_id.product_product_model_id.id or False
 
     @api.onchange("contract_id")
     def _update_related_data_subscription(self):

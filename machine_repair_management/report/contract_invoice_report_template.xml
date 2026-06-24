@@ -444,7 +444,7 @@
 
                                         <tbody>
                                             <tr>
-                                                <t>
+                                                <t t-if ="move.inv_qrcode_has">
                                                     <td style="vertical-align:top;">
                                                         <img t-att-src="image_data_uri(move.qr_image)"
                                                              style="width:200px;height:200px;margin-left:-10px;text-align:center"/>

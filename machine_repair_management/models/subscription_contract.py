@@ -405,6 +405,9 @@ class SubscriptionContracts(models.Model):
     
             if 'phone' in vals:
                 partner.mobile = vals.get('phone')
+                
+            if 'customer_code' in vals:
+                partner.ref = vals.get('customer_code')     
             
         return res
 
