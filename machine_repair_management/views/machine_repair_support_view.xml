@@ -154,11 +154,11 @@
                         <group>
 
                             <group string="Maintenance" invisible="not project_related_amc_bool">
-                                <field name="contract_id" readonly="state == 'closed'" required="project_related_amc_bool" domain="[('state', '=', 'Ongoing'),('partner_id','=',partner_id)]"/>
+                                <field name="contract_id" readonly="state == 'closed'" required="project_related_amc_bool" domain="[('state', '=', 'Ongoing'),('partner_id','=',partner_id)]" options ="{'no_create':True,'no_edit':True,'no_open':True}"/>
                                 <field name="contract_date" force_save="1" readonly="1"/>
                                 <!-- <field name="asset_no" readonly="state == 'closed'"/> -->
                                 <field name="contract_expiry_date" force_save="1" readonly="1"/>
-                                <field name="asset_id" readonly="state == 'closed'" required="project_related_amc_bool"/>
+                                <field name="asset_id" readonly="state == 'closed'" required="project_related_amc_bool" options ="{'no_create':True,'no_edit':True,'no_open':True}"/>
                                 <field name="service_products_code_id" options="{'no_open':True}" readonly="1" force_save="1"/>
                                 <!--                                <field name = "maintenance_type" widget="radio"/>-->
                                 <!--                                <field name="actual_corrective" readonly="1" class="oe_inline"/>-->
