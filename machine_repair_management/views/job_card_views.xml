@@ -67,7 +67,7 @@
                                         <field name="contract_expiry_date" force_save="1" readonly="1"/>
                                         <field name="asset_id" readonly="1" force_save="1"/>
                                         <field name="service_products_code_id" options="{'no_open':True}" readonly="1" force_save="1"/>
-                                        <!-- <label for="maintenance_type" string="Job Type"/>
+                                        <label for="maintenance_type" string="Job Type"/>
                                         <div class="o_row">
                                             <div>
                                                 <field name="maintenance_type" force_save="1" widget="radio" class="oe_inline" readonly ="1"/>
@@ -77,9 +77,9 @@
                                                 <br/>
                                                 <field name="actual_preventive" force_save="1" class="oe_inline" readonly="1"/>
                                             </div>
-                                        </div> -->
+                                        </div>
                                         
-                                         <label for="maintenance_type" string="Job Type"/>
+                                         <!-- <label for="maintenance_type" string="Job Type"/>
 											<div class="o_row job_type_row">
 											    <field name="maintenance_type" force_save="1" widget="radio"
 											           class="oe_inline job_type_radio"
@@ -89,7 +89,7 @@
 											        <field name="actual_preventive" force_save="1" class="oe_inline" readonly="1"/>
 											    </div>
 											</div>
-                                       
+                                        -->
                                         <field name="paid_service_bool" force_save="1" readonly="1"/>
                                         <field name = "service_group_batch" invisible = "1"/>
                                          <field name="brand" readonly="state == 'closed'"/>
