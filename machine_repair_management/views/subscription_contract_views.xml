@@ -25,8 +25,8 @@
 	                <div class="o_address_format">
 	                    <field name="street" placeholder="Street..." class="o_address_street"/>
 	                    <field name="street2" placeholder="Street 2..." class="o_address_street"/>
-	                    <field name="customer_city_id" placeholder="City" class="o_address_city"/>
-	                    <field name = "district_id" placeholder="District" class="o_address_city" domain ="[('city_id','=',customer_city_id)]"/>
+	                    <field name="customer_city_id" placeholder="City" class="o_address_city" options ="{'no_create':True,'no_edit':True,'no_open':True}"/>
+	                    <field name = "district_id" placeholder="District" class="o_address_city" domain ="[('city_id','=',customer_city_id)]" options ="{'no_create':True,'no_edit':True,'no_open':True}"/>
 	                    <field name="state_id" class="o_address_state" placeholder="State"
 	                           options="{&quot;no_open&quot;: True}"/>
 	                    <field name="zip" placeholder="ZIP" class="o_address_zip"/>

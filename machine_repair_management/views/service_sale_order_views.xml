@@ -109,7 +109,7 @@
                                             <field name="invoice_interval" string="Invoice Interval (Days)"
                                                    invisible="amc_quotation == False" readonly="1"/>
 
-                                            <field name="payment_term_id" invisible="amc_quotation == False"
+                                            <field name="payment_term_id" invisible="amc_quotation == False"  options ="{'no_create':True,'no_edit':True,'no_open':True}"
                                                    readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
                                             <field name="approval_level_id" invisible=" not amc_quotation"
                                                    readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
@@ -273,8 +273,8 @@
 				                <div class="o_address_format" >
 				                    <field name="street" placeholder="Street..." class="o_address_street" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
 				                    <field name="street2" placeholder="Street 2..." class="o_address_street" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
-				                    <field name="customer_city_id" placeholder="City" class="o_address_city" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
-				                    <field name = "district_id" placeholder="District" class="o_address_city" domain ="[('city_id','=',customer_city_id)]" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+				                    <field name="customer_city_id" placeholder="City" class="o_address_city" readonly="state in ('approve','sent','sale','done','cancel','reject')" options ="{'no_create':True,'no_edit':True,'no_open':True}"/>
+				                    <field name = "district_id" placeholder="District" class="o_address_city" domain ="[('city_id','=',customer_city_id)]" readonly="state in ('approve','sent','sale','done','cancel','reject')" options ="{'no_create':True,'no_edit':True,'no_open':True}"/>
 				                    <field name="state_id" class="o_address_state" placeholder="State"
 				                           options="{&quot;no_open&quot;: True}" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
 				                    <field name="zip" placeholder="ZIP" class="o_address_zip" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
@@ -313,7 +313,7 @@
                             <!-- Use existing integer invoice_interval field (readonly) to show computed days -->
                             <field name="invoice_interval" string="Invoice Interval (Days)" readonly="1" invisible="1"/>
 
-                            <field name="payment_term_id" invisible="amc_quotation == False"
+                            <field name="payment_term_id" invisible="amc_quotation == False" options ="{'no_create':True,'no_edit':True,'no_open':True}"
                                    readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
 
                             <field name="approval_level_id" invisible="1"/>
