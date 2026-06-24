@@ -54,15 +54,22 @@ class CrmLead(models.Model):
     customer_name = fields.Char(string = "Customer")
 
     
-
-    @api.depends('partner_id','customer_name')
+    @api.depends('partner_id', 'customer_name')
     def _compute_name(self):
         for lead in self:
-            if not lead.name and lead.partner_id and lead.partner_id.name:
-                lead.name = _("%s's opportunity") % lead.partner_id.name
-                '''Code Added on June 22 2026 by Vijaya Bhaskar '''    
-            elif lead.customer_name:
-                lead.name = _("%s's opportunity") %  lead.customer_name  
+            if not lead.name:
+                partner_name = lead.partner_id.name or lead.customer_name
+                if partner_name:
+                    lead.name = _("%s's opportunity") % partner_name  
+
+    # @api.depends('partner_id','customer_name')
+    # def _compute_name(self):
+    #     for lead in self:
+    #         if not lead.name and lead.partner_id and lead.partner_id.name:
+    #             lead.name = _("%s's opportunity") % lead.partner_id.name
+    #             '''Code Added on June 22 2026 by Vijaya Bhaskar '''    
+    #         elif lead.customer_name:
+    #             lead.name = _("%s's opportunity") %  lead.customer_name  
     
     '''Code Added on June 12 2026 by Vijaya Bhaskar client asked site address similar to address'''
 
