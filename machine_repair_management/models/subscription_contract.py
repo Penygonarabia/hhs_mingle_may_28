@@ -105,7 +105,7 @@ class SubscriptionContracts(models.Model):
         today = fields.Date.today()
 
         for rec in self:
-            if not rec.date_end or rec.notification_send_salesman:
+            if not rec.date_end:
                 continue
     
             reminder_date = rec.date_end - relativedelta(days=rec.contract_reminder)
