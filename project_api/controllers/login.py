@@ -16435,6 +16435,7 @@ class AccessToken(http.Controller):
                 status=500
             )
 
+
     @validate_token
     @http.route('/api/loyalty_audit/create',
                 methods=['POST'],
@@ -16446,25 +16447,204 @@ class AccessToken(http.Controller):
             data = json.loads(request.httprequest.get_data(as_text=True) or '{}')
             params = data.get('params', {})
 
-            vals = {
-                'clph_cstcode': params.get('Customer_Code'),
-                'clph_date': params.get('Transaction_Date'),
-                'clph_doctype': params.get('Document_Type'),
-                'clph_docnumber': params.get('Transaction_No'),
-                'clph_type': params.get('Transaction_Type'),
-                'clph_whouse': params.get('warehouse'),
-                'clph_regpoints': params.get('regular_points'),
-                'clph_note': params.get('reason'),
-                'clph_adjtype': params.get('adjustmenttype'),
+            # =====================================================
+            # Mandatory Field Validation
+            # =====================================================
+
+            customer_code = params.get('Customer_Code')
+            transaction_date = params.get('Transaction_Date')
+            document_type = params.get('Document_Type')
+            transaction_no = params.get('Transaction_No')
+            transaction_type = params.get('Transaction_Type')
+            regular_points = params.get('regular_points')
+            adjustment_type = params.get('adjustmenttype')
+
+            if not customer_code:
+                return Response(
+                    json.dumps({
+                        "status": "error",
+                        "message": "Customer_Code is required"
+                    }),
+                    content_type='application/json',
+                    status=400
+                )
+
+            # Validate Transaction_Date
+            if not transaction_date:
+                return Response(
+                    json.dumps({
+                        "status": "error",
+                        "message": "Transaction_Date is required"
+                    }),
+                    content_type='application/json',
+                    status=400
+                )
+
+            try:
+                datetime.strptime(transaction_date, '%Y-%m-%d')
+            except ValueError:
+                return Response(
+                    json.dumps({
+                        "status": "error",
+                        "message": "Invalid Transaction_Date format. Expected format: YYYY-MM-DD"
+                    }),
+                    content_type='application/json',
+                    status=400
+                )
+                
+            if not document_type:
+                return Response(
+                    json.dumps({
+                        "status": "error",
+                        "message": "Document_Type is required"
+                    }),
+                    content_type='application/json',
+                    status=400
+                )
+
+            if not transaction_no:
+                return Response(
+                    json.dumps({
+                        "status": "error",
+                        "message": "Transaction_No is required"
+                    }),
+                    content_type='application/json',
+                    status=400
+                )
+
+            if not transaction_type:
+                return Response(
+                    json.dumps({
+                        "status": "error",
+                        "message": "Transaction_Type is required"
+                    }),
+                    content_type='application/json',
+                    status=400
+                )
+
+            if regular_points is None:
+                return Response(
+                    json.dumps({
+                        "status": "error",
+                        "message": "regular_points is required"
+                    }),
+                    content_type='application/json',
+                    status=400
+                )
+
+            # =====================================================
+            # Document Type Validation
+            # clph_doctype
+            # =====================================================
+
+            allowed_doctypes = {
+                '01': 'Invoice',
+                '02': 'Credit Note',
+                '99': 'Adjustment',
+                '98': 'Redeem',
+                '97': 'Expired'
             }
 
-            record = request.env['customer.loyalty.points.history'].sudo().create(vals)
+            if document_type not in allowed_doctypes:
+                return Response(
+                    json.dumps({
+                        "status": "error",
+                        "message": "Invalid Document_Type. Allowed values are "
+                                   "01-Invoice, 02-Credit Note, "
+                                   "99-Adjustment, 98-Redeem, 97-Expired"
+                    }),
+                    content_type='application/json',
+                    status=400
+                )
+
+            # =====================================================
+            # Transaction Type Validation
+            # clph_type
+            # =====================================================
+
+            allowed_transaction_types = {
+                'I': 'IN',
+                'O': 'OUT'
+            }
+
+            if transaction_type not in allowed_transaction_types:
+                return Response(
+                    json.dumps({
+                        "status": "error",
+                        "message": "Invalid Transaction_Type. Allowed values are I-IN or O-OUT"
+                    }),
+                    content_type='application/json',
+                    status=400
+                )
+
+            # =====================================================
+            # Adjustment Type Validation
+            # clph_adjtype
+            # =====================================================
+
+            if adjustment_type:
+                allowed_adjustment_types = {
+                    '+': 'Add',
+                    '-': 'Subtraction'
+                }
+
+                if adjustment_type not in allowed_adjustment_types:
+                    return Response(
+                        json.dumps({
+                            "status": "error",
+                            "message": "Invalid adjustmenttype. Allowed values are + (Add) or - (Subtraction)"
+                        }),
+                        content_type='application/json',
+                        status=400
+                    )
+
+            # =====================================================
+            # Duplicate Transaction Validation
+            # =====================================================
+
+            existing = request.env[
+                'customer.loyalty.points.history'
+            ].sudo().search(
+                [('clph_docnumber', '=', transaction_no)],
+                limit=1
+            )
+
+            if existing:
+                return Response(
+                    json.dumps({
+                        "status": "error",
+                        "message": "Transaction_No already exists"
+                    }),
+                    content_type='application/json',
+                    status=400
+                )
+
+            # =====================================================
+            # Create Record
+            # =====================================================
+
+            vals = {
+                'clph_cstcode': customer_code,
+                'clph_date': transaction_date,
+                'clph_doctype': document_type,
+                'clph_docnumber': transaction_no,
+                'clph_type': transaction_type,
+                'clph_whouse': params.get('warehouse'),
+                'clph_regpoints': regular_points,
+                'clph_note': params.get('reason'),
+                'clph_adjtype': adjustment_type,
+            }
+
+            record = request.env[
+                'customer.loyalty.points.history'
+            ].sudo().create(vals)
 
             return Response(
                 json.dumps({
                     "status": "success",
                     "message": "Loyalty audit record created successfully",
-                    "id": record.id
+                    "id": record.id,
+                    "transaction_no": record.clph_docnumber
                 }),
                 content_type='application/json',
                 status=200
