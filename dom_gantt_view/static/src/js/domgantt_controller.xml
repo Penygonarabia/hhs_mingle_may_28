@@ -58,22 +58,32 @@
             <t t-if="env.searchModel.resModel == 'project.task'">
                 <!--                Newly Added on - 2025-11-16-->
 
-                <t t-if="projectState.showProjectSelector">
-                <!-- may 20 2026 -->
-                    <div class="jobcard-gantt-header" style="width:25%; display:flex; justify-content:center; margin:10px 0;">
-
-                        <select t-on-change="onProjectChange" t-att-value="projectState.project_id" style="min-width:30px; padding:6px 10px; border-radius:6px; border:1px solid #c6c6c6;">
-
-                            <option value="">Select Project</option>
-
-                            <t t-foreach="projectState.projects" t-as="proj" t-key="proj.id">
-                                <option t-att-value="proj.id">
-                                    <t t-esc="proj.name"/>
-                                </option>
-                            </t>
-
-                        </select>
-                    </div>
+               <t t-if="projectState.showProjectSelector">
+                    <!-- may 20 2026 -->
+                    <t t-if="env.searchModel.context.hide_jobcard_list">
+                        <div class="jobcard-gantt-header" style="width: 250px; display:flex; justify-content:flex-start; margin-top: -30px; margin-bottom: 15px; margin-left: 10px; position: relative; z-index: 10;">
+                            <select t-on-change="onProjectChange" t-att-value="projectState.project_id" style="width: 100%; padding:6px 10px; border-radius:6px; border:1px solid #c6c6c6;">
+                                <option value="">Select Project</option>
+                                <t t-foreach="projectState.projects" t-as="proj" t-key="proj.id">
+                                    <option t-att-value="proj.id">
+                                        <t t-esc="proj.name"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <div class="jobcard-gantt-header p-2" style="width: 250px; display:flex; justify-content:flex-start;">
+                            <select t-on-change="onProjectChange" t-att-value="projectState.project_id" style="width: 100%; padding:6px 10px; border-radius:6px; border:1px solid #c6c6c6;">
+                                <option value="">Select Project</option>
+                                <t t-foreach="projectState.projects" t-as="proj" t-key="proj.id">
+                                    <option t-att-value="proj.id">
+                                        <t t-esc="proj.name"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </div>
+                    </t>
                 </t>
                 <!-- <div class="jobcard-gantt-header" style="width:25%; display:flex; justify-content:center; margin:10px 0;">
                     <select t-on-change="onProjectChange" style="min-width:30px; padding:6px 10px; border-radius:6px; border:1px solid #c6c6c6;">

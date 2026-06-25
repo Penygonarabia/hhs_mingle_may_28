@@ -3,14 +3,14 @@
     <t t-name="MyComponent" owl="1">
         <div class="o_my_component">
 
-            <div class="row mb-3 pt-3">
-                <div class="col-3"></div>
-                <div class="d-flex gap-2 col-6">
-                    <input type="text" class="form-control" style="width: 210px; height: 30px;" placeholder="Job Card#" t-model="state.jobCardNumber" t-att-readonly="true"/>
-                    <input type="text" class="form-control" style="width: 210px; height: 30px;" placeholder="Customer name" t-model="state.customerName" t-att-readonly="true" />
-                    <input type="text" class="form-control" style="width: 210px; height: 30px;" placeholder="Service Requested Appt Date-Time" t-model="state.service_requested_datetime_formatted" t-att-readonly="true" />
+            <div class="row pt-3">
+                <div class="col-4"></div>
+                <div class="d-flex gap-2 col-8">
+                    <input type="text" class="form-control" style="width: 210px; height: 30px;border:2px solid green;border-radius:5px;" placeholder="Job Card#" t-model="state.jobCardNumber" t-att-readonly="true"/>
+                    <input type="text" class="form-control" style="width: 210px; height: 30px;border:2px solid green;border-radius:5px;" placeholder="Customer name" t-model="state.customerName" t-att-readonly="true" />
+                    <input type="text" class="form-control" style="width: 210px; height: 30px;border:2px solid green;border-radius:5px;" placeholder="Service Requested Appt Date-Time" t-model="state.service_requested_datetime_formatted" t-att-readonly="true" />
+                    <input type="text" class="form-control" style="width:300px;height:30px;border:2px solid green;border-radius:5px;" placeholder="DealerName" t-model="state.dealer_id" readonly="readonly"/>
                 </div>
-                <div class="col-3"></div>
             </div>
         </div>
     </t>

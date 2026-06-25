@@ -774,6 +774,7 @@ class ProjectTask(models.Model):
             balance_amount_received_bool=self.balance_amount_received_bool,  # 24/01/2026
             service_warranty_id=self.service_warranty_id.id or False,  # 24/01/2026
             last_rescheduled_status_code=self.last_rescheduled_status_code,
+            dealer_id=self.dealer_id.name,#25/06/2026
             # dialog_size="large",  # optional, still used internally
             # dialog_class="modal-dialog modal-xl modal-dialog-centered",
         )

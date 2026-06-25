@@ -45,6 +45,7 @@ export class MyComponent extends Component {
       warehouseId: null,
       quatecraetedBy: context.quote_created_by || "",
       last_rescheduled_status_code: context.last_rescheduled_status_code || "",
+      dealer_id: context.dealer_id || "",
     });
     console.log("this.state", this.state);
 
@@ -226,7 +227,7 @@ export class MyComponent extends Component {
     sessionStorage.setItem("jobCardNumber", this.state.jobCardNumber);
     sessionStorage.setItem("customerName", this.state.customerName);
     sessionStorage.setItem("serviceDatetime", this.state.serviceDatetime || "");
-
+    sessionStorage.setItem("dealer_id", this.state.dealer_id || "");
     try {
       await this.updateJobCard();
     } catch (err) {
