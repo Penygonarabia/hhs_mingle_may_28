@@ -41,14 +41,15 @@
                     <field name="amc_project_id" invisible="1"/>
                     <field name="project_related_amc_bool" invisible="1"/>
                     <field name="paid_service_bool" invisible="1"/>
-                    <field name="maintenance_type" invisible = "1" />
-                      <field name = "emergency_count_exceed" invisible = "1"/>
-                      
-                    <field name="security_warranty_expiry" invisible="1"/>
-	                <field name="text_warranty_expiry" invisible="1"/>
-	                <field name="user_expiry_check_bool" invisible="1"/>
+                    <field name="maintenance_type" invisible="1"/>
+                    <field name="emergency_count_exceed" invisible="1"/>
 
-                    <button name="action_check_wizard" string="Check Wizard" type="object" class="oe_highlight" invisible="1"/>
+                    <field name="security_warranty_expiry" invisible="1"/>
+                    <field name="text_warranty_expiry" invisible="1"/>
+                    <field name="user_expiry_check_bool" invisible="1"/>
+
+                    <button name="action_check_wizard" string="Check Wizard" type="object" class="oe_highlight"
+                            invisible="1"/>
 
 
                     <div style="display: flex; flex-direction: column;" invisible="not project_related_amc_bool">
@@ -62,39 +63,67 @@
                                 <group groups="machine_repair_management.group_job_card_mobile_user, machine_repair_management.group_job_card_back_office_user">
 
                                     <group>
-                                        <field name="contract_id" readonly="1" force_save = "1"/>
+                                        <field name="contract_id" readonly="1" force_save="1"/>
                                         <field name="contract_date" force_save="1" readonly="1"/>
                                         <field name="contract_expiry_date" force_save="1" readonly="1"/>
                                         <field name="asset_id" readonly="1" force_save="1"/>
-                                        <field name="service_products_code_id" options="{'no_open':True}" readonly="1" force_save="1"/>
+                                        <field name="service_products_code_id" options="{'no_open':True}" readonly="1"
+                                               force_save="1"/>
                                         <label for="maintenance_type" string="Job Type"/>
+                                        <!--                                        <div class="o_row">-->
+                                        <!--                                            <div>-->
+                                        <!--                                                <field name="maintenance_type" force_save="1" widget="radio" class="oe_inline" readonly ="1"/>-->
+                                        <!--                                            </div>-->
+                                        <!--                                            <div>-->
+                                        <!--                                                <field name="actual_corrective" force_save="1" class="oe_inline" readonly="1"/>-->
+                                        <!--                                                <br/>-->
+                                        <!--                                                <field name="actual_preventive" force_save="1" class="oe_inline" readonly="1"/>-->
+                                        <!--                                            </div>-->
+                                        <!--                                        </div>-->
                                         <div class="o_row">
-                                            <div>
-                                                <field name="maintenance_type" force_save="1" widget="radio" class="oe_inline" readonly ="1"/>
-                                            </div>
-                                            <div>
-                                                <field name="actual_corrective" force_save="1" class="oe_inline" readonly="1"/>
-                                                <br/>
-                                                <field name="actual_preventive" force_save="1" class="oe_inline" readonly="1"/>
+                                            <div class="d-flex align-items-start">
+                                                <div>
+                                                    <field name="maintenance_type"
+                                                           widget="radio"
+                                                           force_save="1"
+                                                           readonly="1"/>
+                                                </div>
+
+                                                <div class="ms-3" style="margin-top:-8px;">
+                                                    <div style="height:32px;">
+                                                        <field name="actual_corrective"
+                                                               readonly="1"
+                                                               force_save="1"
+                                                               class="oe_inline"/>
+                                                    </div>
+
+                                                    <div style="height:32px; margin-top:2px;">
+                                                        <field name="actual_preventive"
+                                                               readonly="1"
+                                                               force_save="1"
+                                                               class="oe_inline"/>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        
-                                         <!-- <label for="maintenance_type" string="Job Type"/>
-											<div class="o_row job_type_row">
-											    <field name="maintenance_type" force_save="1" widget="radio"
-											           class="oe_inline job_type_radio"
-											           readonly="1"/>
-											    <div class="job_type_counts">
-											        <field name="actual_corrective" force_save="1" class="oe_inline" readonly="1"/>
-											        <field name="actual_preventive" force_save="1" class="oe_inline" readonly="1"/>
-											    </div>
-											</div>
-                                        -->
+
+                                        <!-- <label for="maintenance_type" string="Job Type"/>
+                                           <div class="o_row job_type_row">
+                                               <field name="maintenance_type" force_save="1" widget="radio"
+                                                      class="oe_inline job_type_radio"
+                                                      readonly="1"/>
+                                               <div class="job_type_counts">
+                                                   <field name="actual_corrective" force_save="1" class="oe_inline" readonly="1"/>
+                                                   <field name="actual_preventive" force_save="1" class="oe_inline" readonly="1"/>
+                                               </div>
+                                           </div>
+                                       -->
                                         <field name="paid_service_bool" force_save="1" readonly="1"/>
-                                        <field name = "service_group_batch" invisible = "1"/>
-                                         <field name="brand" readonly="state == 'closed'"/>
-                                        <field name = "model"  readonly="state == 'closed'"/>
-                                        <field name="product_slno" force_save="1" readonly="inspection_started_status_check != True"/>
+                                        <field name="service_group_batch" invisible="1"/>
+                                        <field name="brand" readonly="state == 'closed'"/>
+                                        <field name="model" readonly="state == 'closed'"/>
+                                        <field name="product_slno" force_save="1"
+                                               readonly="inspection_started_status_check != True"/>
                                     </group>
                                 </group>
                             </div>
@@ -105,7 +134,8 @@
 
                     <div style="display: flex; flex-direction: column;" invisible="cancel_status_check != True">
                         <div style="display: flex; flex-direction: column; align-items: center;">
-                            <button name="cancelled_reason_button_mobile" id="cancelled_reason_button_mobile" type="object" class="oe_highlight" string="Cancelled Job Card" invisible="1"/>
+                            <button name="cancelled_reason_button_mobile" id="cancelled_reason_button_mobile"
+                                    type="object" class="oe_highlight" string="Cancelled Job Card" invisible="1"/>
                         </div>
                     </div>
 
@@ -122,7 +152,9 @@
 
                                         <!--  <field name = "cancellation_reason_id"   readonly = "job_card_state_code == '124'" force_save = "1"
                                           options = "{'no_create':True,'no_edit':True,'no_open':True}" /> -->
-                                        <field name="cancellation_reason_id" readonly="job_card_state_code == '124'" invisible="not cancel_status_check and not cancelled_inspection_charges_bool and not cancellation_reason_id" options="{'no_create':True,'no_edit':True,'no_open':True}" />
+                                        <field name="cancellation_reason_id" readonly="job_card_state_code == '124'"
+                                               invisible="not cancel_status_check and not cancelled_inspection_charges_bool and not cancellation_reason_id"
+                                               options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                                     </group>
                                 </group>
                             </div>
@@ -141,7 +173,9 @@
                                     <group>
 
 
-                                        <field name="onhold_spareparts_reason_id" invisible="not onhold_spareparts_reason_show" options="{'no_create':True,'no_edit':True,'no_open':True}" />
+                                        <field name="onhold_spareparts_reason_id"
+                                               invisible="not onhold_spareparts_reason_show"
+                                               options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                                     </group>
                                 </group>
                             </div>
@@ -160,26 +194,43 @@
                                 <group groups="machine_repair_management.group_job_card_mobile_user, machine_repair_management.group_job_card_back_office_user">
 
                                     <group>
-                                        <field name="service_warranty_id" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True" options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}" />
-                                        <field name="purchase_invoice_no" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True" invisible="warranty == False" required="warranty == True" />
+                                        <field name="service_warranty_id"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True"
+                                               options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}"/>
+                                        <field name="purchase_invoice_no"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True"
+                                               invisible="warranty == False" required="warranty == True"/>
                                         <!--                                        <field name = "purchase_date" readonly = "job_card_state_code in ('124','126') or technician_accepted_status_check == True "-->
                                         <!--                                        invisible = "warranty == False"-->
                                         <!--                                        required = "warranty == True"-->
                                         <!--                                        />-->
-                                        <div style="font-weight: bold;" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True" invisible="warranty == False">Purchase Date
+                                        <div style="font-weight: bold;"
+                                             readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+                                             invisible="warranty == False">Purchase Date
                                         </div>
                                         <div class="o_row">
-                                            <field name="date_pick_purchase" class="oe_inline" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True" invisible="warranty == False"/>
-                                            <field name="month_pick_purchase" class="oe_inline" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True" invisible="warranty == False"/>
-                                            <field name="year_pick_purchase" class="oe_inline" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True" invisible="warranty == False"/>
+                                            <field name="date_pick_purchase" class="oe_inline"
+                                                   readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+                                                   invisible="warranty == False"/>
+                                            <field name="month_pick_purchase" class="oe_inline"
+                                                   readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+                                                   invisible="warranty == False"/>
+                                            <field name="year_pick_purchase" class="oe_inline"
+                                                   readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+                                                   invisible="warranty == False"/>
                                         </div>
 
                                         <field name="combine_date_purchase" invisible="1"/>
 
-                                        <field name="dealer_id" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True" placeholder=" " classService="underline-empty" options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}" domain="[('partner_type_hhs','=','customer'),('sub_partner_type','=','dealer')]" context="{
+                                        <field name="dealer_id"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True"
+                                               placeholder=" " classService="underline-empty"
+                                               options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"
+                                               domain="[('partner_type_hhs','=','customer'),('sub_partner_type','=','dealer')]"
+                                               context="{
 									        'default_partner_type_hhs': 'customer',
 									        'default_sub_partner_type': 'dealer'
-									   		 }" invisible="warranty == False" required="warranty == True" />
+									   		 }" invisible="warranty == False" required="warranty == True"/>
 
                                         <!-- <div style="font-weight: bold;">Warranty Expiry Date</div> -->
 
@@ -189,13 +240,21 @@
                                         <!--											    <field name="year_pick_warranty_expiry" class="oe_inline" invisible = "1"/>-->
                                         <!--											</div>-->
 
-                                        <div style="font-weight: bold;" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True" invisible="warranty == False">Warranty Expiry Date
+                                        <div style="font-weight: bold;"
+                                             readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+                                             invisible="warranty == False">Warranty Expiry Date
                                         </div>
 
                                         <div class="o_row">
-                                            <field name="date_pick_warranty_expiry" class="oe_inline" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True" invisible="warranty == False"/>
-                                            <field name="month_pick_warranty_expiry" class="oe_inline" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True" invisible="warranty == False"/>
-                                            <field name="year_pick_warranty_expiry" class="oe_inline" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True" invisible="warranty == False"/>
+                                            <field name="date_pick_warranty_expiry" class="oe_inline"
+                                                   readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+                                                   invisible="warranty == False"/>
+                                            <field name="month_pick_warranty_expiry" class="oe_inline"
+                                                   readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+                                                   invisible="warranty == False"/>
+                                            <field name="year_pick_warranty_expiry" class="oe_inline"
+                                                   readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+                                                   invisible="warranty == False"/>
                                         </div>
 
                                         <field name="combine_date_warranty_expiry" invisible="1"/>
@@ -222,14 +281,16 @@
                                             <field name="text_warranty_expiry"
                                                    readonly="1"
                                                    nolabel="1"/>
-                                        </div>	
-                                        	
+                                        </div>
+
                                         <field name="warranty" readonly="1" force_save="1" invisible="1"/>
 
-                                        <div style="font-size:15px;font-weight:bold;color: #070808ff;" invisible="warranty == False">Document Invoice
+                                        <div style="font-size:15px;font-weight:bold;color: #070808ff;"
+                                             invisible="warranty == False">Document Invoice
                                         </div>
                                         <div width="70%" height="400px">
-                                            <field name="attachment_ids" widget="many2many_binary" invisible="warranty == False"/>
+                                            <field name="attachment_ids" widget="many2many_binary"
+                                                   invisible="warranty == False"/>
                                         </div>
 
                                     </group>
@@ -239,7 +300,8 @@
                     </div>
 
 
-                    <div style="display: flex; flex-direction: column;" invisible="project_related_amc_bool and maintenance_type == 'preventive'">
+                    <div style="display: flex; flex-direction: column;"
+                         invisible="project_related_amc_bool and maintenance_type == 'preventive'">
                         <hr class="hr-5"/>
                         <div class="FAQ" id="Productinfo">
                             <div class="toggle-btn" onclick="toggleFaq(this)">
@@ -249,16 +311,37 @@
                             <div class="list">
                                 <group groups="machine_repair_management.group_job_card_mobile_user, machine_repair_management.group_job_card_back_office_user">
                                     <group>
-                                        <field name="product_category_id" invisible="project_related_amc_bool" readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True" options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}"/>
-                                        <field name="product_group_id" readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True" domain="[('parent_id','=',product_category_id)]" required="not project_related_amc_bool" invisible="project_related_amc_bool" options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}" context="{'show_only_name':True}"/>
-                                        <field name="product_sub_group_id" invisible="project_related_amc_bool" readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True" domain="[('parent_id','=',product_group_id),('allowed_group_is_promoter','!=', True)]" options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}" context="{'show_only_name':True}"/>
+                                        <field name="product_category_id" invisible="project_related_amc_bool"
+                                               readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True"
+                                               options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}"/>
+                                        <field name="product_group_id"
+                                               readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True"
+                                               domain="[('parent_id','=',product_category_id)]"
+                                               required="not project_related_amc_bool"
+                                               invisible="project_related_amc_bool"
+                                               options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}"
+                                               context="{'show_only_name':True}"/>
+                                        <field name="product_sub_group_id" invisible="project_related_amc_bool"
+                                               readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True"
+                                               domain="[('parent_id','=',product_group_id),('allowed_group_is_promoter','!=', True)]"
+                                               options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}"
+                                               context="{'show_only_name':True}"/>
 
-                                        <field name="svc_id" invisible="project_related_amc_bool" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True" placeholder=" " class="underline-empty" options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}" />
+                                        <field name="svc_id" invisible="project_related_amc_bool"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"
+                                               placeholder=" " class="underline-empty"
+                                               options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}"/>
 
-                                        <field name="product_id" invisible="project_related_amc_bool" required="0" placeholder=" " readonly="job_card_state_code in ('124','125','126') or technician_accepted_status_check == True or inspection_started_status_check != True" domain="[('categ_id', 'child_of', product_sub_group_id or product_group_id or product_category_id)]" options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}" class="underline-empty" />
+                                        <field name="product_id" invisible="project_related_amc_bool" required="0"
+                                               placeholder=" "
+                                               readonly="job_card_state_code in ('124','125','126') or technician_accepted_status_check == True or inspection_started_status_check != True"
+                                               domain="[('categ_id', 'child_of', product_sub_group_id or product_group_id or product_category_id)]"
+                                               options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}"
+                                               class="underline-empty"/>
                                         <field name="brand" readonly="0" invisible="not maintenance_tab_show_bool"/>
                                         <field name="model" readonly="0" invisible="not maintenance_tab_show_bool"/>
-                                        <field name="product_slno" readonly="job_card_state_code in ('124','125','126') or technician_accepted_status_check == True  or inspection_started_status_check != True"/>
+                                        <field name="product_slno"
+                                               readonly="job_card_state_code in ('124','125','126') or technician_accepted_status_check == True  or inspection_started_status_check != True"/>
                                         <field name="maintenance_tab_show_bool" invisible="1"/>
                                     </group>
                                     <group name="purchase_information_mo">
@@ -278,19 +361,24 @@
                                         <!-- invisible="1"/>-->
                                         <field name="warranty" readonly="1" force_save="1" invisible="1"/>
 
-                                        <field name="inspection_charges_amount" force_save="1" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"/>
+                                        <field name="inspection_charges_amount" force_save="1"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"/>
 
-                                        <field name="mode_of_payment" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"/>
+                                        <field name="mode_of_payment"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"/>
 
-                                        <field name="inspection_charges_bool" string="Inspection Charges Confirmed" readonly="technician_accepted_status_check == True"/>
+                                        <field name="inspection_charges_bool" string="Inspection Charges Confirmed"
+                                               readonly="technician_accepted_status_check == True"/>
 
                                         <!--                                        <field name="inspection_charges_amount" force_save="1"-->
                                         <!-- readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True"/>-->
                                         <!-- <field name="mode_of_payment" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True"/> -->
 
-                                        <field name="mode_of_payment_balance_amount" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                        <field name="mode_of_payment_balance_amount"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
 
-                                        <field name="balance_amount_received_bool" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                        <field name="balance_amount_received_bool"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
 
                                     </group>
                                 </group>
@@ -299,9 +387,10 @@
                     </div>
 
                     <!-- Newly added for hss live code - 23-03-2026 -->
-                    
-                    <div style="display: flex; flex-direction: column;"   invisible="project_related_amc_bool and maintenance_type == 'preventive'">
-                    <hr class="hr-5"/>
+
+                    <div style="display: flex; flex-direction: column;"
+                         invisible="project_related_amc_bool and maintenance_type == 'preventive'">
+                        <hr class="hr-5"/>
                         <div class="FAQ" id="payment_information_tab">
                             <div class="toggle-btn" onclick="toggleFaq(this)">
                                 <i class="fa fa-chevron-down accordion-icon"/>
@@ -311,7 +400,8 @@
                                 <group>
                                     <field name="inspection_charges_amount" force_save="1" readonly="1"/>
                                     <field name="mode_of_payment" force_save="1" readonly="1"/>
-                                    <field name="inspection_charges_bool" string="Inspection Charges Confirmed" force_save="1" readonly="1"/>
+                                    <field name="inspection_charges_bool" string="Inspection Charges Confirmed"
+                                           force_save="1" readonly="1"/>
                                     <field name="mode_of_payment_balance_amount" force_save="1" readonly="1"/>
                                     <field name="balance_amount_received_bool" force_save="1" readonly="1"/>
                                 </group>
@@ -403,10 +493,10 @@
                         </div>
                     </div>
 
-                    
 
                     <!-- Symptoms -->
-                    <div style="display: flex; flex-direction: column;"  invisible="project_related_amc_bool and maintenance_type == 'preventive'">
+                    <div style="display: flex; flex-direction: column;"
+                         invisible="project_related_amc_bool and maintenance_type == 'preventive'">
                         <hr class="hr-5"/>
 
                         <div class="FAQ" id="Symptomstab">
@@ -415,23 +505,29 @@
                             </div>
                             <div class="question">Symptoms</div>
                             <div class="list square-signature">
-                                <field name="symptoms_line_ids_duplicate" class="readonly-full-width" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True" string="Symptoms" widget="list">
+                                <field name="symptoms_line_ids_duplicate" class="readonly-full-width"
+                                       readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"
+                                       string="Symptoms" widget="list">
                                     <tree string="Symptoms Lines" editable="bottom">
-                                        <field name="code" class="full-width-code" options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}" domain="[('symptom_product_category_id','=',parent.product_category_id)]" />
+                                        <field name="code" class="full-width-code"
+                                               options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}"
+                                               domain="[('symptom_product_category_id','=',parent.product_category_id)]"/>
                                     </tree>
                                 </field>
                                 <span style="color:#00c292; font-weight: bold; margin-left:5px;">Client Comments:</span>
 
                                 <!--                                <label for="client_comments" string="Client Comments:" style="color:#00c292;"/>-->
-                                <field name="client_comments" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                <field name="client_comments"
+                                       readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
                             </div>
                         </div>
                     </div>
-                   
+
 
                     <!-- Defects -->
-                    <div style="display: flex; flex-direction: column;"   invisible="project_related_amc_bool and maintenance_type == 'preventive'">
-                     <hr class="hr-5"/>
+                    <div style="display: flex; flex-direction: column;"
+                         invisible="project_related_amc_bool and maintenance_type == 'preventive'">
+                        <hr class="hr-5"/>
 
                         <div class="FAQ" id="Defectstab">
                             <div class="toggle-btn" onclick="toggleFaq(this)">
@@ -439,24 +535,30 @@
                             </div>
                             <div class="question">Defects</div>
                             <div class="list square-signature">
-                                <field name="defects_type_ids_duplicate" class="readonly-full-width" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True" string="Defects" widget="list">
+                                <field name="defects_type_ids_duplicate" class="readonly-full-width"
+                                       readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"
+                                       string="Defects" widget="list">
                                     <tree string="Defects Lines" editable="bottom">
-                                        <field name="code" class="full-width-code" options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}" domain="[('defects_product_catgeory_id','=', parent.product_category_id)]"/>
+                                        <field name="code" class="full-width-code"
+                                               options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}"
+                                               domain="[('defects_product_catgeory_id','=', parent.product_category_id)]"/>
                                     </tree>
                                 </field>
                                 <span style="color:#00c292; font-weight: bold; margin-left:5px;">Technician Comments:
                                 </span>
 
                                 <!--                                <label for="technician_comments" string="Technician Comments"/>-->
-                                <field name="technician_comments" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                <field name="technician_comments"
+                                       readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
                             </div>
                         </div>
                     </div>
-                    
+
 
                     <!-- Service -->
                     <!-- <div style="display: flex; flex-direction: column;"> -->
-                    <div style="display: flex; flex-direction: column;"   invisible="project_related_amc_bool and maintenance_type == 'preventive'">
+                    <div style="display: flex; flex-direction: column;"
+                         invisible="project_related_amc_bool and maintenance_type == 'preventive'">
                         <hr class="hr-5"/>
 
                         <div class="FAQ" id="Servicetab">
@@ -465,31 +567,40 @@
                             </div>
                             <div class="question">Service</div>
                             <div class="list square-signature">
-                                <field name="service_type_ids_duplicate" string="Service" widget="list" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True">
+                                <field name="service_type_ids_duplicate" string="Service" widget="list"
+                                       readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True">
                                     <tree string="Service Lines" editable="bottom">
-                                        <field name="code" class="full-width-code" domain="[('service_product_category_id','=', parent.product_category_id)]" options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}"/>
+                                        <field name="code" class="full-width-code"
+                                               domain="[('service_product_category_id','=', parent.product_category_id)]"
+                                               options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}"/>
                                         <field name="under_warranty" class="valign-top wrap-text"/>
-                                        <field name = "service_quantity"  readonly="service_quantity_bool == False"/>
-                                    	<field name = "service_quantity_bool" readonly ="1" force_save = "1" column_invisible = "1"/>
+                                        <field name="service_quantity" readonly="service_quantity_bool == False"/>
+                                        <field name="service_quantity_bool" readonly="1" force_save="1"
+                                               column_invisible="1"/>
                                     </tree>
                                 </field>
                                 <span style="color:#00c292; font-weight: bold; margin-left:5px;">Technician Comments 1:
                                 </span>
 
                                 <!--                                <label for="engineer_comments" string="Engineer Comments"/>-->
-                                <field name="engineer_comments" readonly="job_card_state_code == '124' or technician_accepted_status_check == True  or inspection_started_status_check != True"/>
-                                <span style="color:#00c292; font-weight: bold; margin-left:5px;" invisible="not second_visit_technician_bool">Technician Comments 2:
+                                <field name="engineer_comments"
+                                       readonly="job_card_state_code == '124' or technician_accepted_status_check == True  or inspection_started_status_check != True"/>
+                                <span style="color:#00c292; font-weight: bold; margin-left:5px;"
+                                      invisible="not second_visit_technician_bool">Technician Comments 2:
                                 </span>
 
                                 <!--                                <label for="engineer_comments" string="Engineer Comments"/>-->
-                                <field name="engineer_comments_second" readonly="job_card_state_code == '124' or technician_accepted_status_check == True  or inspection_started_status_check != True" invisible="not second_visit_technician_bool" />
+                                <field name="engineer_comments_second"
+                                       readonly="job_card_state_code == '124' or technician_accepted_status_check == True  or inspection_started_status_check != True"
+                                       invisible="not second_visit_technician_bool"/>
                             </div>
                         </div>
                     </div>
 
-                   
-                    <div style="display: flex; flex-direction: column;"   invisible="project_related_amc_bool and maintenance_type == 'preventive'">
-                         <hr class="hr-5"/>
+
+                    <div style="display: flex; flex-direction: column;"
+                         invisible="project_related_amc_bool and maintenance_type == 'preventive'">
+                        <hr class="hr-5"/>
                         <div class="FAQ" id="others_tab">
                             <div class="toggle-btn" onclick="toggleFaq(this)">
                                 <i class="fa fa-chevron-down accordion-icon"/>
@@ -499,16 +610,25 @@
                                 <group>
                                     <group>
                                         <!--                                    <field name="project_task_id"/>-->
-                                        <field name="volt" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
-                                        <field name="ampere" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
-                                        <field name="lp" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
-                                        <field name="hp" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
-                                        <field name="sat" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
-                                        <field name="rat" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
-                                        <field name="length" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
-                                        <field name="width" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                        <field name="volt"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                        <field name="ampere"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                        <field name="lp"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                        <field name="hp"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                        <field name="sat"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                        <field name="rat"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                        <field name="length"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                        <field name="width"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
                                         <field name="area" readyonly="1" force_save="1"/>
-                                        <field name="p_length" readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                        <field name="p_length"
+                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
                                     </group>
                                 </group>
                             </div>
@@ -535,7 +655,8 @@
                        </div>
                    </div> -->
 
-                    <div style="display: flex; flex-direction: column;" invisible="not (mode_of_payment in ('bank','online') or mode_of_payment_balance_amount in ('bank','online'))">
+                    <div style="display: flex; flex-direction: column;"
+                         invisible="not (mode_of_payment in ('bank','online') or mode_of_payment_balance_amount in ('bank','online'))">
                         <hr class="hr-5"/>
                         <div class="FAQ" id="attachment_ids_tab">
                             <div class="toggle-btn" onclick="toggleFaq(this)">
@@ -545,15 +666,17 @@
                             <div class="list square-signature">
                                 <div class="row mt16">
                                     <div class="row mb-2">
-                                        <field name="online_payment_invoice_attachment_ids" widget="many2many_binary" readonly="state_status == True or technician_accepted_status_check == True" />
+                                        <field name="online_payment_invoice_attachment_ids" widget="many2many_binary"
+                                               readonly="state_status == True or technician_accepted_status_check == True"/>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    
-                    <div style="display: flex; flex-direction: column;"   invisible="project_related_amc_bool and maintenance_type == 'preventive'">
+
+                    <div style="display: flex; flex-direction: column;"
+                         invisible="project_related_amc_bool and maintenance_type == 'preventive'">
                         <hr class="hr-5"/>
                         <div class="FAQ" id="machineimagetab">
                             <div class="toggle-btn" onclick="toggleFaq(this)">
@@ -564,46 +687,61 @@
                                 <div class="row mt16">
                                     <div class="row mb-2">
                                         <div class="col-3 d-flex justify-content-center align-items-center">
-                                            <field name="img1" widget="image" style="margin-left:5px" class="oe_avatar" readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                            <field name="img1" widget="image" style="margin-left:5px" class="oe_avatar"
+                                                   readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True"/>
                                         </div>
                                         <div class="col-9">
-                                            <field name="img1_text" readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True" style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
+                                            <field name="img1_text"
+                                                   readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True"
+                                                   style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
                                         </div>
                                     </div>
 
                                     <div class="row mb-2">
                                         <div class="col-3 d-flex justify-content-center align-items-center">
-                                            <field name="img2" widget="image" style="margin-left:5px" class="oe_avatar" readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                            <field name="img2" widget="image" style="margin-left:5px" class="oe_avatar"
+                                                   readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True"/>
                                         </div>
                                         <div class="col-9">
-                                            <field name="img2_text" readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True" style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
+                                            <field name="img2_text"
+                                                   readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True"
+                                                   style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
                                         </div>
                                     </div>
 
                                     <div class="row mb-2">
                                         <div class="col-3 d-flex justify-content-center align-items-center">
-                                            <field name="img3" widget="image" style="margin-left:5px" class="oe_avatar" readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                            <field name="img3" widget="image" style="margin-left:5px" class="oe_avatar"
+                                                   readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True"/>
                                         </div>
                                         <div class="col-9">
-                                            <field name="img3_text" readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True" style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
+                                            <field name="img3_text"
+                                                   readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True"
+                                                   style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
                                         </div>
                                     </div>
 
                                     <div class="row mb-2">
                                         <div class="col-3 d-flex justify-content-center align-items-center">
-                                            <field name="img4" widget="image" style="margin-left:5px" class="oe_avatar" readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                            <field name="img4" widget="image" style="margin-left:5px" class="oe_avatar"
+                                                   readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True"/>
                                         </div>
                                         <div class="col-9">
-                                            <field name="img4_text" readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True" style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
+                                            <field name="img4_text"
+                                                   readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True"
+                                                   style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
                                         </div>
                                     </div>
 
                                     <div class="row mb-2">
                                         <div class="col-3 d-flex justify-content-center align-items-center">
-                                            <field name="img5" style="margin-left:5px" widget="image" class="oe_avatar" readonly="state_status != False or job_card_state_code in ('124','125','126')"/>
+                                            <field name="img5" style="margin-left:5px" widget="image" class="oe_avatar"
+                                                   readonly="state_status != False or job_card_state_code in ('124','125','126')"/>
                                         </div>
                                         <div class="col-9">
-                                            <field name="img5_text" readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True" style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
+                                            <field name="img5_text"
+                                                   readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True"
+                                                   style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
                                         </div>
                                     </div>
                                 </div>
@@ -611,11 +749,11 @@
                         </div>
                     </div>
 
-                   
 
                     <!-- Product Consume Part / Service (No Add Product Button on Desktop) -->
-                    <div style="display: flex; flex-direction: column;"    invisible="project_related_amc_bool and maintenance_type == 'preventive'">
-                     <hr class="hr-5"/>
+                    <div style="display: flex; flex-direction: column;"
+                         invisible="project_related_amc_bool and maintenance_type == 'preventive'">
+                        <hr class="hr-5"/>
                         <div class="FAQ" id="Productconsumetab">
                             <div class="toggle-btn" onclick="toggleFaq(this)">
                                 <i class="fa fa-chevron-down accordion-icon"/>
@@ -623,15 +761,22 @@
                             <div class="question">Product Consume Part / Service</div>
                             <div class="list square-signature">
                                 <div style="display: flex; flex-direction: column; align-items: center;">
-                                    <button name="action_add_product_line" type="object" string="Add Product" class="mobile-full-btn" invisible="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                    <button name="action_add_product_line" type="object" string="Add Product"
+                                            class="mobile-full-btn"
+                                            invisible="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"/>
                                 </div>
-                                <field name="product_line_ids_duplicate" widget="list" readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True">
+                                <field name="product_line_ids_duplicate" widget="list"
+                                       readonly="state_status == True or technician_accepted_status_check == True or inspection_started_status_check != True">
                                     <tree edit="0" create="0" decoration-danger="return_damage_to_warehouse == True">
                                         <!--   <field name="product_id" domain="[('id', 'in', product_ids)]" options="{'no_create': True, 'no_create_edit': True, 'no_create': True, 'no_open': True}" />
 
                                            -->
-                                        <field name="product_id" options="{'no_create': True, 'no_open': True}" domain="product_id_domain" column_invisible="not parent.project_related_amc_bool" />
-                                        <field name="product_id" options="{'no_create': True, 'no_open': True}" column_invisible="parent.project_related_amc_bool" domain="product_id_domain" />
+                                        <field name="product_id" options="{'no_create': True, 'no_open': True}"
+                                               domain="product_id_domain"
+                                               column_invisible="not parent.project_related_amc_bool"/>
+                                        <field name="product_id" options="{'no_create': True, 'no_open': True}"
+                                               column_invisible="parent.project_related_amc_bool"
+                                               domain="product_id_domain"/>
 
                                         <!-- <field name="product_id" domain="[('stock_quant_ids.location_id', '=', location_id)]" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}" context="{'location': location_id}" /> -->
                                         <field name="parts_reserved_bool" column_invisible="0"/>
@@ -639,9 +784,14 @@
                                         <field name="on_hand_qty" column_invisible="0" readonly="1" force_save="1"/>
                                         <field name="overall_qty" column_invisible="0" readonly="1" force_save="1"/>
                                         <field name="qty"/>
-                                        <field name="uom_id" readonly="1" options="{'no_quick_create': True, 'no_create_edit': True, 'no_create': True, 'no_open': True}"/>
-                                        <field name="price_unit" groups="machine_repair_management.group_job_card_mobile_user" readonly="not service_product_price_edit_bool" force_save="1"/>
-                                        <field name="price_unit" groups="!machine_repair_management.group_job_card_mobile_user" force_save="1" />
+                                        <field name="uom_id" readonly="1"
+                                               options="{'no_quick_create': True, 'no_create_edit': True, 'no_create': True, 'no_open': True}"/>
+                                        <field name="price_unit"
+                                               groups="machine_repair_management.group_job_card_mobile_user"
+                                               readonly="not service_product_price_edit_bool" force_save="1"/>
+                                        <field name="price_unit"
+                                               groups="!machine_repair_management.group_job_card_mobile_user"
+                                               force_save="1"/>
                                         <field name="under_warranty_bool"/>
                                         <field name="vat" readonly="1"/>
                                         <field name="total" readonly="1"/>
@@ -753,7 +903,9 @@
                             </div>
                             <div class="question">Customer Signature</div>
                             <div class="list square-signature">
-                                <field name="signature" widget="signature" readonly="technician_accepted_status_check == True or state_status == True or job_card_state_code in ('126','124') or inspection_started_status_check != True" options="{'clear': True}"/>
+                                <field name="signature" widget="signature"
+                                       readonly="technician_accepted_status_check == True or state_status == True or job_card_state_code in ('126','124') or inspection_started_status_check != True"
+                                       options="{'clear': True}"/>
                                 <!-- <field name="signature" widget="signature" readonly="state_status == True or technician_accepted_status_check == True" options="{'clear': true}"/>     -->
                             </div>
                         </div>
@@ -769,9 +921,12 @@
                             <div class="list">
                                 <group groups="machine_repair_management.group_job_card_mobile_user, machine_repair_management.group_job_card_back_office_user">
                                     <group>
-                                        <field name="google_maps_url" readonly="technician_accepted_status_check == True or inspection_started_status_check != True"/>
+                                        <field name="google_maps_url"
+                                               readonly="technician_accepted_status_check == True or inspection_started_status_check != True"/>
                                         <div style="display: flex; flex-direction: column; align-items: center;">
-                                            <button name="update_google_map" string="Update" type="object" class="mobile-full-btn" readonly="technician_accepted_status_check == True"/>
+                                            <button name="update_google_map" string="Update" type="object"
+                                                    class="mobile-full-btn"
+                                                    readonly="technician_accepted_status_check == True"/>
                                         </div>
                                         <field name="latitude" readyonly="1"/>
                                         <field name="longitude" readyonly="1"/>
@@ -781,7 +936,8 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; flex-direction: column;" invisible="not (damaged_parts_to_be_returned_technician and warranty)">
+                    <div style="display: flex; flex-direction: column;"
+                         invisible="not (damaged_parts_to_be_returned_technician and warranty)">
                         <hr class="hr-5"/>
                         <div class="FAQ" id="parts_returned_tab">
                             <div class="toggle-btn" onclick="toggleFaq(this)">
@@ -792,23 +948,36 @@
                                 <group>
 
                                     <group>
-                                        <field name="damaged_parts_to_be_returned_technician" invisible="0" readonly="1" force_save="1"/>
+                                        <field name="damaged_parts_to_be_returned_technician" invisible="0" readonly="1"
+                                               force_save="1"/>
 
-                                        <field name="return_damage_parts_technician" invisible="not damaged_parts_to_be_returned_technician" groups="machine_repair_management.group_job_card_mobile_user"/>
+                                        <field name="return_damage_parts_technician"
+                                               invisible="not damaged_parts_to_be_returned_technician"
+                                               groups="machine_repair_management.group_job_card_mobile_user"/>
 
-                                        <field name="return_damage_parts_technician" invisible="not damaged_parts_to_be_returned_technician" groups="machine_repair_management.group_parts_user,machine_repair_management.group_job_card_back_office_user" readonly="1" />
+                                        <field name="return_damage_parts_technician"
+                                               invisible="not damaged_parts_to_be_returned_technician"
+                                               groups="machine_repair_management.group_parts_user,machine_repair_management.group_job_card_back_office_user"
+                                               readonly="1"/>
 
-                                        <field name="damaged_parts_returned_parts_user" readonly="1" groups="machine_repair_management.group_job_card_back_office_user,machine_repair_management.group_job_card_mobile_user"/>
+                                        <field name="damaged_parts_returned_parts_user" readonly="1"
+                                               groups="machine_repair_management.group_job_card_back_office_user,machine_repair_management.group_job_card_mobile_user"/>
 
-                                        <field name="damaged_parts_returned_parts_user" groups="machine_repair_management.group_parts_user"/>
+                                        <field name="damaged_parts_returned_parts_user"
+                                               groups="machine_repair_management.group_parts_user"/>
 
-                                        <field name="lost_item_payment_received_technician" readonly="1" groups="machine_repair_management.group_job_card_back_office_user,machine_repair_management.group_job_card_mobile_user"/>
-                                        <field name="lost_item_payment_received_technician" groups="machine_repair_management.group_parts_user"/>
-                                        <field name="damaged_item_amount_received_technician" readonly="1" groups="machine_repair_management.group_job_card_back_office_user,machine_repair_management.group_job_card_mobile_user"/>
+                                        <field name="lost_item_payment_received_technician" readonly="1"
+                                               groups="machine_repair_management.group_job_card_back_office_user,machine_repair_management.group_job_card_mobile_user"/>
+                                        <field name="lost_item_payment_received_technician"
+                                               groups="machine_repair_management.group_parts_user"/>
+                                        <field name="damaged_item_amount_received_technician" readonly="1"
+                                               groups="machine_repair_management.group_job_card_back_office_user,machine_repair_management.group_job_card_mobile_user"/>
 
-                                        <field name="damaged_item_amount_received_technician" groups="machine_repair_management.group_parts_user"/>
+                                        <field name="damaged_item_amount_received_technician"
+                                               groups="machine_repair_management.group_parts_user"/>
 
-                                        <field name="damaged_return_datetime" invisible="0" readonly="1" force_save="1"/>
+                                        <field name="damaged_return_datetime" invisible="0" readonly="1"
+                                               force_save="1"/>
                                     </group>
                                 </group>
                             </div>
@@ -840,40 +1009,64 @@
 
             <xpath expr="//form/header" position="inside">
                 <!-- <field name="job_state" force_save="1" widget="statusbar" options="{'clickable': '1', 'fold_field': 'fold'}" groups="machine_repair_management.group_service_request_admin_user" /> -->
-                <field name="job_state" force_save="1" widget="statusbar" readonly="job_card_state_code in ('126','154')" options="{'clickable': '1', 'fold_field': 'fold'}" groups="machine_repair_management.group_job_card_back_office_user" domain="[('id', 'in', available_state_ids)]"/>
-                <field name="job_state" widget="statusbar" readonly="job_card_state_code in ('124','126','154')" options="{'clickable': '1', 'fold_field': 'fold'}" groups="machine_repair_management.group_job_card_mobile_user" domain="[('id', 'in', available_state_ids)]"/>
+                <field name="job_state" force_save="1" widget="statusbar"
+                       readonly="job_card_state_code in ('126','154')"
+                       options="{'clickable': '1', 'fold_field': 'fold'}"
+                       groups="machine_repair_management.group_job_card_back_office_user"
+                       domain="[('id', 'in', available_state_ids)]"/>
+                <field name="job_state" widget="statusbar" readonly="job_card_state_code in ('124','126','154')"
+                       options="{'clickable': '1', 'fold_field': 'fold'}"
+                       groups="machine_repair_management.group_job_card_mobile_user"
+                       domain="[('id', 'in', available_state_ids)]"/>
 
-                <button class="oe_highlight" name="create_receipt" string="Create Inspection Charges Receipt" type="object" invisible="1"/>
+                <button class="oe_highlight" name="create_receipt" string="Create Inspection Charges Receipt"
+                        type="object" invisible="1"/>
                 <!-- <button class="oe_highlight" name="create_receipt" string="Create Inspection Charges Receipt" type="object" invisible="not payment_receipt_count == 0 or inspection_charges_amount == 0.0"/> -->
 
-                <button class="oe_highlight" name="create_quotation" string="Create Quotation" type="object" invisible="job_card_state_code in ('124','126','125','204') or (quotation_count != 0 and  not sale_order_state_check) or (parts_user_bool == True) or (create_quotation_show_bool == False)"/>
+                <button class="oe_highlight" name="create_quotation" string="Create Quotation" type="object"
+                        invisible="job_card_state_code in ('124','126','125','204') or (quotation_count != 0 and  not sale_order_state_check) or (parts_user_bool == True) or (create_quotation_show_bool == False)"/>
 
                 <!-- <button class="oe_highlight" name="create_quotation" string="Create Quotation" type="object"
                         groups = "machine_repair_management.group_job_card_back_office_user"
                         invisible = "job_card_state_code in ('124','126') or (quotation_count != 0 and  not sale_order_state_check) or (parts_user_bool == True)"/>
                                   -->
 
-                <button class="oe_highlight" name="print_job_card" string="Print Quotation" type="object" invisible="1"/>
-                <button class="oe_highlight" name="print_job_card_receipt" string="Print Service Receipt" type="object" invisible="1"/>
-                <button class="oe_highlight" name="print_job_card_invoice" string="Print Invoice" type="object" invisible="1"/>
+                <button class="oe_highlight" name="print_job_card" string="Print Quotation" type="object"
+                        invisible="1"/>
+                <button class="oe_highlight" name="print_job_card_receipt" string="Print Service Receipt" type="object"
+                        invisible="1"/>
+                <button class="oe_highlight" name="print_job_card_invoice" string="Print Invoice" type="object"
+                        invisible="1"/>
 
                 <!--  <button class="oe_highlight" name="print_job_card" string="Print Quotation" type="object"/>
                  <button class="oe_highlight" name="print_job_card_receipt" string="Print Service Receipt" type="object" invisible = "not product_line_ids_check"/>
                  <button class="oe_highlight" name="print_job_card_invoice" string="Print Invoice" type="object" invisible ="not invoice_no_check "/> -->
 
-                <button class="oe_highlight" invisible="1" name="print_inspection_charge_receipt" string="Print Inspection Charge Receipt" type="object"/>
-                <button class="oe_highlight" invisible="1" name="send_whatsapp_inspection_receipt" icon="fa-whatsapp" string="Send Inspection Charge Receipt" type="object"/>
-                <button class="oe_highlight" invisible="not product_line_ids_check or job_card_state_code in ('125','126','204') or parts_user_bool == True" name="send_whatsapp_service_charges_receipt" icon="fa-whatsapp" string="Send Proforma Invoice" type="object" groups="machine_repair_management.group_job_card_mobile_user, machine_repair_management.group_job_card_back_office_user" />
-                <button class="oe_highlight" invisible="not invoice_no_check" name="send_whatsapp_invoice_receipt" icon="fa-whatsapp" string="Send Invoice" type="object"/>
+                <button class="oe_highlight" invisible="1" name="print_inspection_charge_receipt"
+                        string="Print Inspection Charge Receipt" type="object"/>
+                <button class="oe_highlight" invisible="1" name="send_whatsapp_inspection_receipt" icon="fa-whatsapp"
+                        string="Send Inspection Charge Receipt" type="object"/>
+                <button class="oe_highlight"
+                        invisible="not product_line_ids_check or job_card_state_code in ('125','126','204') or parts_user_bool == True"
+                        name="send_whatsapp_service_charges_receipt" icon="fa-whatsapp" string="Send Proforma Invoice"
+                        type="object"
+                        groups="machine_repair_management.group_job_card_mobile_user, machine_repair_management.group_job_card_back_office_user"/>
+                <button class="oe_highlight" invisible="not invoice_no_check" name="send_whatsapp_invoice_receipt"
+                        icon="fa-whatsapp" string="Send Invoice" type="object"/>
 
-                <button class="oe_highlight" name="duplicate_service_job_card_create" string="Create Copy Work Order" type="object" groups="machine_repair_management.group_job_card_mobile_user, machine_repair_management.group_job_card_back_office_user" invisible="job_card_state_code not in ('121','129', '117','130', '116','107') or duplicate_service_button_clicked == True  or parts_user_bool == True"/>
+                <button class="oe_highlight" name="duplicate_service_job_card_create" string="Create Copy Work Order"
+                        type="object"
+                        groups="machine_repair_management.group_job_card_mobile_user, machine_repair_management.group_job_card_back_office_user"
+                        invisible="job_card_state_code not in ('121','129', '117','130', '116','107') or duplicate_service_button_clicked == True  or parts_user_bool == True"/>
 
 
                 <!-- <button class = "oe_highlight" name ="duplicate_service_job_card_create" invisible = "job_card_state_code != '126'" string = "Create New Service Request" type = "object"/> -->
 
-                <button class="oe_highlight" name="job_card_service_report" string="Job Card Report" type="object" groups="not machine_repair_management.group_parts_user" />
+                <button class="oe_highlight" name="job_card_service_report" string="Job Card Report" type="object"
+                        groups="not machine_repair_management.group_parts_user"/>
 
-                <button class="oe_highlight" name="preformatted_job_card_cash_receipt" string="Preformatted Service Report" type="object" invisible="1"/>
+                <button class="oe_highlight" name="preformatted_job_card_cash_receipt"
+                        string="Preformatted Service Report" type="object" invisible="1"/>
 
                 <field name="duplicate_service_button_clicked" invisible="1"/>
                 <field name="technician_accepted_status_check" invisible="1"/>
@@ -882,9 +1075,11 @@
                 <field name="cancel_status_check" invisible="1"/>
                 <field name="warranty" invisible="1"/>
                 <field name="whatsapp_send_bool" invisible="1"/>
-                <button class="oe_highlight" string="Cancelled" name="cancelled_reason_button" type="object" invisible="1"/>
+                <button class="oe_highlight" string="Cancelled" name="cancelled_reason_button" type="object"
+                        invisible="1"/>
                 <field name="cancel_button_wizard_bool" invisible="1"/>
-                <button name="action_check_wizard" string="Check Wizard" type="object" class="oe_highlight" invisible="1" />
+                <button name="action_check_wizard" string="Check Wizard" type="object" class="oe_highlight"
+                        invisible="1"/>
                 <field name="previous_job_card_state_code" invisible="1"/>
                 <field name="parts_user_bool" invisible="1"/>
                 <field name="cancelled_inspection_charges_bool" invisible="1"/>
@@ -909,23 +1104,22 @@
                 <field name="product_category_id" invisible="1"/>
                 <field name="cancellation_reason_id" invisible="1"/>
                 <field name="work_center_id" invisible="1"/>
-                
+
                 <field name="security_warranty_expiry" invisible="1"/>
                 <field name="text_warranty_expiry" invisible="1"/>
                 <field name="user_expiry_check_bool" invisible="1"/>
 
                 <field name="project_related_amc_bool" invisible="1"/>
                 <field name="paid_service_bool" invisible="1"/>
-                <field name = "service_group_batch" invisible = "1"/>
-                <field name="maintenance_type" invisible = "1" />
-                <field name = "maintenance_contract_type_id"  force_save="1" readonly="1" invisible  = "1"/>
-                <field name = "service_create_from_equipment_bool" readonly = "1" invisible  = "1"/>
-            	 <field name = "emergency_count_exceed" invisible = "1"/>
-            	 <field name = "preventive_completed" invisible = "1"/>
-            	<field name = "corrective_completed" invisible = "1"/>
-            	 
-            	 
-            	 
+                <field name="service_group_batch" invisible="1"/>
+                <field name="maintenance_type" invisible="1"/>
+                <field name="maintenance_contract_type_id" force_save="1" readonly="1" invisible="1"/>
+                <field name="service_create_from_equipment_bool" readonly="1" invisible="1"/>
+                <field name="emergency_count_exceed" invisible="1"/>
+                <field name="preventive_completed" invisible="1"/>
+                <field name="corrective_completed" invisible="1"/>
+
+
             </xpath>
 
             <xpath expr="//field[@name ='state']" position="attributes">
@@ -938,14 +1132,18 @@
                 <!-- groups="machine_repair_management.group_job_card_back_office_user,machine_repair_management.group_job_card_mobile_user"-->
                 <!-- invisible="quotation_count == 0"/>-->
 
-                <button class="oe_stat_button" icon="fa-pencil-square" name="show_quotation" string="Quotation" type="object" groups="!machine_repair_management.group_parts_user" invisible="quotation_count == 0"/>
+                <button class="oe_stat_button" icon="fa-pencil-square" name="show_quotation" string="Quotation"
+                        type="object" groups="!machine_repair_management.group_parts_user"
+                        invisible="quotation_count == 0"/>
 
-                <button class="oe_stat_button" icon="fa-pencil-square" name="show_quotation" string="Quotation" type="object" groups="machine_repair_management.group_parts_user" invisible="1"/>
+                <button class="oe_stat_button" icon="fa-pencil-square" name="show_quotation" string="Quotation"
+                        type="object" groups="machine_repair_management.group_parts_user" invisible="1"/>
 
                 <!--                <button class="oe_stat_button" icon="fa-pencil-square" name="show_receipt" string="Payment Receipt"-->
                 <!-- type="object"-->
                 <!-- invisible="payment_receipt_count == 0"/>-->
-                <button class="oe_stat_button" icon="fa-pencil-square" name="show_receipt" string="Payment Receipt" type="object" invisible="1"/>
+                <button class="oe_stat_button" icon="fa-pencil-square" name="show_receipt" string="Payment Receipt"
+                        type="object" invisible="1"/>
                 <field name="payment_receipt_count" invisible="1"/>
                 <field name="quotation_count" invisible="1"/>
                 <field name="inspection_charges_amount" invisible="1"/>
@@ -974,7 +1172,8 @@
 
             <xpath expr="//form/sheet/notebook/page[last()]" position="before">
                 <page string="Machine Repair Estimation" invisible="1">
-                    <field groups="machine_repair_management.group_machine_repair_user" name="repair_estimation_line_ids">
+                    <field groups="machine_repair_management.group_machine_repair_user"
+                           name="repair_estimation_line_ids">
                         <tree editable="bottom" string="Estimation Repair">
                             <field name="product_id"/>
                             <field name="notes"/>
@@ -1017,17 +1216,21 @@
             </xpath>
 
             <xpath expr="//header/field[@name='stage_id']" position="replace">
-                <field name="stage_id" widget="statusbar_duration" options="{'clickable': '1', 'fold_field': 'fold'}" invisible="1"/>
+                <field name="stage_id" widget="statusbar_duration" options="{'clickable': '1', 'fold_field': 'fold'}"
+                       invisible="1"/>
                 <field name="state_status" invisible="1"/>
                 <field name="technician_accepted_status_check" invisible="1"/>
 
 
             </xpath>
             <xpath expr="//header/field[@name='state']" position="replace">
-                <field name="state" widget="statusbar" options="{'clickable': '1', 'fold_field': 'fold'}" invisible="1"/>
+                <field name="state" widget="statusbar" options="{'clickable': '1', 'fold_field': 'fold'}"
+                       invisible="1"/>
             </xpath>
             <xpath expr="//header/field[@name='personal_stage_type_id']" position="replace">
-                <field name="personal_stage_type_id" widget="statusbar" options="{'clickable': '1', 'fold_field': 'fold'}" invisible="project_id" domain="[('user_id', '=', uid)]" string="Personal Stage"/>
+                <field name="personal_stage_type_id" widget="statusbar"
+                       options="{'clickable': '1', 'fold_field': 'fold'}" invisible="project_id"
+                       domain="[('user_id', '=', uid)]" string="Personal Stage"/>
             </xpath>
 
 
@@ -1044,16 +1247,24 @@
                     <!--                            <field name="job_state"/>-->
                     <group>
 
-                        <field name="service_nature_id" readonly="1" force_save="1" options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                        <field name="service_nature_id" readonly="1" force_save="1"
+                               options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
                         <field name="name" readonly="1"/>
-                        <field name="location_id" readonly="1" force_save="1" invisible="1" options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
-                        <field name="control_card_no" readonly="job_card_state_code in ('124','126','154')" invisible="1" placeholder=" " class="underline-empty"/>
+                        <field name="location_id" readonly="1" force_save="1" invisible="1"
+                               options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                        <field name="control_card_no" readonly="job_card_state_code in ('124','126','154')"
+                               invisible="1" placeholder=" " class="underline-empty"/>
 
-                        <field name="service_call_center_comments" placeholder=" " class="underline-empty" readonly="1" force_save="1"/>
+                        <field name="service_call_center_comments" placeholder=" " class="underline-empty" readonly="1"
+                               force_save="1"/>
 
-                        <field name="warehouse_id" invisible="0" readonly="state_status == True" force_save="1" domain="[('id','in',warehouse_lst_ids)]" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}" />
-                        <field name="warehouse_code" readonly="job_card_state_code in ('124','126','154')" invisible="1" force_save="1" />
-                        <field name="warehouse_complete_name" string="Warehouse" invisible="1" readonly="1" force_save="1"/>
+                        <field name="warehouse_id" invisible="0" readonly="state_status == True" force_save="1"
+                               domain="[('id','in',warehouse_lst_ids)]"
+                               options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                        <field name="warehouse_code" readonly="job_card_state_code in ('124','126','154')" invisible="1"
+                               force_save="1"/>
+                        <field name="warehouse_complete_name" string="Warehouse" invisible="1" readonly="1"
+                               force_save="1"/>
                         <field name="region_id" invisible="1"/>
                         <field name="call_date" invisible="1"/>
                         <field name="call_time" invisible="1"/>
@@ -1090,17 +1301,23 @@
 
                 <group groups='machine_repair_management.group_job_card_back_office_user' class="deskvw">
                     <group>
-                        <field name="partner_id" readonly="1" invisible="1" options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                        <field name="partner_id" readonly="1" invisible="1"
+                               options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
 
-                        <field name="phone" widget="phone" options="{'enable_sms': false}" readonly="state_status == True"/>
+                        <field name="phone" widget="phone" options="{'enable_sms': false}"
+                               readonly="state_status == True"/>
 
-                        <field name="customer_name" placeholder=" " class="underline-empty" invisible="0" readonly="state_status == True"/>
+                        <field name="customer_name" placeholder=" " class="underline-empty" invisible="0"
+                               readonly="state_status == True"/>
 
                         <field name="email" readonly="state_status == True" placeholder=" " class="underline-empty"/>
 
-                        <field name="customer_city_id" readonly="state_status == True" force_save="1" options="{'no_create_edit':True,'no_create':True,'no_open':True}"/>
+                        <field name="customer_city_id" readonly="state_status == True" force_save="1"
+                               options="{'no_create_edit':True,'no_create':True,'no_open':True}"/>
 
-                        <field name="country_district_id" required="1" placeholder=" " class="underline-empty" options="{'no_create_edit':True,'no_create':True,'no_open':True}" readonly="state_status == True" domain="[('city_id','=',customer_city_id)]"/>
+                        <field name="country_district_id" required="1" placeholder=" " class="underline-empty"
+                               options="{'no_create_edit':True,'no_create':True,'no_open':True}"
+                               readonly="state_status == True" domain="[('city_id','=',customer_city_id)]"/>
 
 
                         <!--                        <field name="address" invisible="1" force_save="1"-->
@@ -1108,43 +1325,55 @@
 
                         <field name="address" invisible="1" force_save="1"/>
 
-                        <field name="address_one" readonly="state_status == True" force_save="1" placeholder=" " class="underline-empty" />
-                        <field name="address_two" readonly="0" invisible="1" force_save="1" placeholder=" " class="underline-empty" />
+                        <field name="address_one" readonly="state_status == True" force_save="1" placeholder=" "
+                               class="underline-empty"/>
+                        <field name="address_two" readonly="0" invisible="1" force_save="1" placeholder=" "
+                               class="underline-empty"/>
 
                         <field name="zip_code" readonly="state_status == True" force_save="1"/>
 
-                        <field name="country_state_id" string="Province" readonly="1" force_save="1" options="{'no_create_edit':True,'no_create':True,'no_open':True}"/>
+                        <field name="country_state_id" string="Province" readonly="1" force_save="1"
+                               options="{'no_create_edit':True,'no_create':True,'no_open':True}"/>
 
 
                         <field name="longitude" invisible="1"/>
                         <field name="latitude" invisible="1"/>
 
-                        <field name="work_center_group_id" string="Region" invisible="0" readonly="1" force_save="1" options="{'no_create_edit':True,'no_create':True,'no_open':True}"/>
+                        <field name="work_center_group_id" string="Region" invisible="0" readonly="1" force_save="1"
+                               options="{'no_create_edit':True,'no_create':True,'no_open':True}"/>
 
                         <!-- <field name = "district" readonly="1" force_save = "1"/> -->
 
                         <!-- <field name = "country_state" readonly="1" force_save = "1"/> -->
 
-                        <field name="country_id" force_save="1" options="{'no_create_edit':True,'no_create':True,'no_open':True}" readonly="1"/>
+                        <field name="country_id" force_save="1"
+                               options="{'no_create_edit':True,'no_create':True,'no_open':True}" readonly="1"/>
 
-                        <field name="work_center_id" string="Work Center" invisible="0" readonly="1" force_save="1" options="{'no_create_edit':True,'no_create':True,'no_open':True}"/>
+                        <field name="work_center_id" string="Work Center" invisible="0" readonly="1" force_save="1"
+                               options="{'no_create_edit':True,'no_create':True,'no_open':True}"/>
 
-                        <field name = "type_of_property"  required = "0" readonly = "state_status == True"/>
+                        <field name="type_of_property" required="0" readonly="state_status == True"/>
 
-                        <field name="property_type_maintenance_details_id" domain="[('type_of_property','=',type_of_property)]" options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}" readonly = "state_status == True"/>
+                        <field name="property_type_maintenance_details_id"
+                               domain="[('type_of_property','=',type_of_property)]"
+                               options="{'no_create_edit':True,'no_open':True,'no_create':True,'no_edit':True}"
+                               readonly="state_status == True"/>
 
-                        <field name="company_preventive_maintenance_bool" invisible = "1" />
+                        <field name="company_preventive_maintenance_bool" invisible="1"/>
 
-                        <field name = "company_preventive_maintenance" widget = "radio" class="pm_radio_inline"
-                               	required = "1" readonly = "state_status == True" />
+                        <field name="company_preventive_maintenance" widget="radio" class="pm_radio_inline"
+                               required="1" readonly="state_status == True"/>
 
                         <field name="customer_identification_scheme" string="Tax Type" force_save="1"/>
 
-                        <field name="customer_identification_number" string="VAT No" readonly="state_status == True" force_save="1" required="customer_identification_scheme in ('TIN','CRN','IQA','NAT')"/>
+                        <field name="customer_identification_number" string="VAT No" readonly="state_status == True"
+                               force_save="1" required="customer_identification_scheme in ('TIN','CRN','IQA','NAT')"/>
 
-                        <field name="building_number" readonly="state_status == True" force_save="1" required="customer_identification_scheme == 'TIN'"/>
+                        <field name="building_number" readonly="state_status == True" force_save="1"
+                               required="customer_identification_scheme == 'TIN'"/>
 
-                        <field name="plot_identification" readonly="state_status == True" force_save="1" required="customer_identification_scheme == 'TIN'"/>
+                        <field name="plot_identification" readonly="state_status == True" force_save="1"
+                               required="customer_identification_scheme == 'TIN'"/>
 
                         <field name="partner_latitude" readonly="0" force_save="1" invisible="1"/>
 
@@ -1154,9 +1383,13 @@
 
                         <!--  <field name = "cancellation_reason_id"   readonly = "job_card_state_code == '124'"  force_save = "1"
                             options = "{'no_create':True,'no_edit':True,'no_open':True}" /> -->
-                        <field name="cancellation_reason_id" readonly="job_card_state_code == '124'" invisible="not cancel_status_check and not cancelled_inspection_charges_bool or cancellation_reason_id == False" options="{'no_create':True,'no_edit':True,'no_open':True}" />
+                        <field name="cancellation_reason_id" readonly="job_card_state_code == '124'"
+                               invisible="not cancel_status_check and not cancelled_inspection_charges_bool or cancellation_reason_id == False"
+                               options="{'no_create':True,'no_edit':True,'no_open':True}"/>
 
-                        <field name="onhold_spareparts_reason_id" readonly="1" force_save="1" invisible="not onhold_spareparts_reason_show" options="{'no_create':True,'no_edit':True,'no_open':True}" />
+                        <field name="onhold_spareparts_reason_id" readonly="1" force_save="1"
+                               invisible="not onhold_spareparts_reason_show"
+                               options="{'no_create':True,'no_edit':True,'no_open':True}"/>
 
                         <field name="date_pick_warranty_expiry" invisible="1"/>
                         <field name="month_pick_warranty_expiry" invisible="1"/>
@@ -1174,41 +1407,65 @@
                 </group>
 
                 <group>
-                    <group string="Technician Information" groups="machine_repair_management.group_job_card_back_office_user" class="deskvw">
-                        <field name="team_id" domain="[('service_type_id','=',service_nature_id),('work_center_id.work_center_group_id','=',work_center_group_id)]" invisible="project_related_amc_bool" readonly="state_status == True" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}" string="Technician" placeholder=" " class="underline-empty"/>
+                    <group string="Technician Information"
+                           groups="machine_repair_management.group_job_card_back_office_user" class="deskvw">
+                        <field name="team_id"
+                               domain="[('service_type_id','=',service_nature_id),('work_center_id.work_center_group_id','=',work_center_group_id)]"
+                               invisible="project_related_amc_bool" readonly="state_status == True"
+                               options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
+                               string="Technician" placeholder=" " class="underline-empty"/>
 
-                        <field name="team_id" domain="[('service_type_id','=',service_nature_id),('work_center_id.work_center_group_id','=',work_center_group_id),('project_ids', 'in', amc_project_id)]" invisible="not project_related_amc_bool" readonly="state_status == True" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}" string="Technician" placeholder=" " class="underline-empty"/>
+                        <field name="team_id"
+                               domain="[('service_type_id','=',service_nature_id),('work_center_id.work_center_group_id','=',work_center_group_id),('project_ids', 'in', amc_project_id)]"
+                               invisible="not project_related_amc_bool" readonly="state_status == True"
+                               options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
+                               string="Technician" placeholder=" " class="underline-empty"/>
 
                         <field name="available_user_ids" widget="many2many_tags" invisible="1" force_save="1"/>
                     </group>
                     <group name="technician_visit" string="Technician Visit" class="deskvw">
 
                         <!-- <button name="action_save" type="object" class="btn btn-primary ms-2" string="Technician"/> -->
-                        <button name="action_open_js_popup" type="object" class="btn btn-primary ms-2 deskvw" string="Scheduling" groups="machine_repair_management.group_job_card_back_office_user" invisible="job_card_state_code in ('124','126','154') or parts_user_bool == True "/>
+                        <button name="action_open_js_popup" type="object" class="btn btn-primary ms-2 deskvw"
+                                string="Scheduling" groups="machine_repair_management.group_job_card_back_office_user"
+                                invisible="job_card_state_code in ('124','126','154') or parts_user_bool == True "/>
 
                         <!-- <button name="action_open_popup" type="object" string="Technician" context="{'job_card_number': job_card_number, 'customer_name': partner_id.name, 'service_requested_datetime': service_requested_datetime}"/> -->
                     </group>
 
                     <group groups="machine_repair_management.group_job_card_back_office_user" class="deskvw">
-                        <field name="technician_id" domain="[('id', 'in', available_user_ids)]" readonly="state_status == True" force_save="1" placeholder=" " class="underline-empty" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}" invisible="1" string="Technician"/>
+                        <field name="technician_id" domain="[('id', 'in', available_user_ids)]"
+                               readonly="state_status == True" force_save="1" placeholder=" " class="underline-empty"
+                               options="{'no_create': True, 'no_create_edit': True, 'no_open': True}" invisible="1"
+                               string="Technician"/>
                         <!--                        <field name="service_created_datetime" readonly="state_status == True"/>-->
                         <field name="service_created_datetime" readonly="1"/>
-                        <field name="service_requested_datetime" readonly="state_status == True" placeholder=" " class="underline-empty"/>
+                        <field name="service_requested_datetime" readonly="state_status == True" placeholder=" "
+                               class="underline-empty"/>
                         <field name="appointment_datetime" readonly="state_status == True" invisible="1"/>
-                        <field name="planned_date_begin" readonly="state_status == True" placeholder=" " class="underline-empty"/>
-                        <field name="planned_date_end" readonly="state_status == True" placeholder=" " class="underline-empty"/>
+                        <field name="planned_date_begin" readonly="state_status == True" placeholder=" "
+                               class="underline-empty"/>
+                        <field name="planned_date_end" readonly="state_status == True" placeholder=" "
+                               class="underline-empty"/>
 
-                        <field name="closed_datetime" readonly="not job_card_closed_date_time_enable" placeholder=" " class="underline-empty"/>
+                        <field name="closed_datetime" readonly="not job_card_closed_date_time_enable" placeholder=" "
+                               class="underline-empty"/>
 
-                        <field name="job_card_completed_time" readonly="1" force_save="1" placeholder=" " class="underline-empty"/>
+                        <field name="job_card_completed_time" readonly="1" force_save="1" placeholder=" "
+                               class="underline-empty"/>
 
-                        <field name="supervisor_comments" placeholder=" " class="underline-empty" readonly="state_status == True"/>
+                        <field name="supervisor_comments" placeholder=" " class="underline-empty"
+                               readonly="state_status == True"/>
                         <!--   <field name ="supervisor_comments" groups="machine_repair_management.group_technical_allocation_user" invisible = "job_card_state_code !='126'"/> -->
 
-                        <field name="cancel_date_time" required="job_card_state_code =='124'" invisible="job_card_state_code !='124'" placeholder=" " class="underline-empty"/>
-                        <field name="client_remarks" invisible="not client_remarks" placeholder=" " class="underline-empty"/>
-                        <field name="engineer_comments" readonly="job_card_state_code == '124'" invisible="1" placeholder=" " class="underline-empty"/>
-                        <field name="engineer_comments_second" readonly="job_card_state_code == '124'" placeholder=" " class="underline-empty" invisible="1"/>
+                        <field name="cancel_date_time" required="job_card_state_code =='124'"
+                               invisible="job_card_state_code !='124'" placeholder=" " class="underline-empty"/>
+                        <field name="client_remarks" invisible="not client_remarks" placeholder=" "
+                               class="underline-empty"/>
+                        <field name="engineer_comments" readonly="job_card_state_code == '124'" invisible="1"
+                               placeholder=" " class="underline-empty"/>
+                        <field name="engineer_comments_second" readonly="job_card_state_code == '124'" placeholder=" "
+                               class="underline-empty" invisible="1"/>
                         <field name="rtat_hours" readonly="state_status != False" widget="float_time"/>
                         <field name="sale_id" invisible="1"/>
                         <field name="service_sale_id" invisible="1"/>
@@ -1233,32 +1490,33 @@
                         <field name="job_other4_date"/>
                         <field name="job_other5_date"/>
                         <field name="stage_kanban_color"/>
-                        
-                        <field name = "technician_travel_hours"  widget = "float_time" readonly = "1" force_save = "1"/>
-                        <field name = "technician_travel_hours_min" readonly = "1" force_save  = "1"/>
-                        <field name = "onhold_hours" widget  = "float_time" readonly = "1" force_save = "1" />
-                        <field name = "onhold_hours_min" readonly = "1" force_save = "1"/>
-                        <field name = "cstneedquote_date" />
-                        <field name = "cstneedquote_hours" widget = "float_time" readonly = "1" force_save = "1"/>
-                        <field name = "cstneedquote_hours_min" readonly = "1" force_save = "1"/>
-                        <field name = "sv_worked_hours" widget = "float_time" readonly = "1" force_save = "1" />
-                        <field name = "sv_worked_hours_min" readonly = "1" force_save = "1"/>
-						
-						<field name = "sv_worked_withhold_hours" widget = "float_time" readonly = "1" force_save = "1" />
-                        <field name = "sv_worked_withhold_hours_min" readonly = "1" force_save = "1"/>
-                        <field name = "sv_worked_hours2" widget = "float_time" readonly = "1" force_save = "1" />
-                        <field name = "sv_worked_hours2_min" readonly = "1" force_save = "1"/>
-                    	<field name = "total_worked_hours" widget = "float_time" readonly = "1" force_save = "1" />
-                    	<field name = "total_worked_hours_min" readonly = "1" force_save = "1"/>
-						
-						<field name = "expected_completion_mins" widget = "float_time" readonly = "1" force_save = "1" />
-                    	<field name = "expected_completion_hours" widget = "float_time" readonly = "1" force_save = "1" />
-                    	<field name = "expected_completion_hours_min" readonly = "1" force_save = "1"/>
-						<field name = "technician_started_date_second" />
-                        
+
+                        <field name="technician_travel_hours" widget="float_time" readonly="1" force_save="1"/>
+                        <field name="technician_travel_hours_min" readonly="1" force_save="1"/>
+                        <field name="onhold_hours" widget="float_time" readonly="1" force_save="1"/>
+                        <field name="onhold_hours_min" readonly="1" force_save="1"/>
+                        <field name="cstneedquote_date"/>
+                        <field name="cstneedquote_hours" widget="float_time" readonly="1" force_save="1"/>
+                        <field name="cstneedquote_hours_min" readonly="1" force_save="1"/>
+                        <field name="sv_worked_hours" widget="float_time" readonly="1" force_save="1"/>
+                        <field name="sv_worked_hours_min" readonly="1" force_save="1"/>
+
+                        <field name="sv_worked_withhold_hours" widget="float_time" readonly="1" force_save="1"/>
+                        <field name="sv_worked_withhold_hours_min" readonly="1" force_save="1"/>
+                        <field name="sv_worked_hours2" widget="float_time" readonly="1" force_save="1"/>
+                        <field name="sv_worked_hours2_min" readonly="1" force_save="1"/>
+                        <field name="total_worked_hours" widget="float_time" readonly="1" force_save="1"/>
+                        <field name="total_worked_hours_min" readonly="1" force_save="1"/>
+
+                        <field name="expected_completion_mins" widget="float_time" readonly="1" force_save="1"/>
+                        <field name="expected_completion_hours" widget="float_time" readonly="1" force_save="1"/>
+                        <field name="expected_completion_hours_min" readonly="1" force_save="1"/>
+                        <field name="technician_started_date_second"/>
+
                     </group>
                     <group groups="machine_repair_management.group_job_card_back_office_user" class="deskvw">
-                        <field name="technician_first_visit_id" invisible="0" force_save="1" readonly="1" options = "{'no_open':True}"/>
+                        <field name="technician_first_visit_id" invisible="0" force_save="1" readonly="1"
+                               options="{'no_open':True}"/>
                         <field name="technician_first_visit" invisible="1" force_save="1" readonly="1"/>
                         <field name="technician_first_visit_date" invisible="0" force_save="1" readonly="1"/>
                         <field name="technician_first_visit_datetime" invisible="1" force_save="1" readonly="1"/>
@@ -1266,7 +1524,8 @@
                         <field name="technician_first_outtime" invisible="0" force_save="1" readonly="1"/>
                         <field name="second_visit_technician_bool" invisible="1" force_save="1" readonly="1"/>
 
-                        <field name="technician_second_visit_id" invisible="0" force_save="1" readonly="1" options = "{'no_open':True}"/>
+                        <field name="technician_second_visit_id" invisible="0" force_save="1" readonly="1"
+                               options="{'no_open':True}"/>
                         <field name="technician_second_visit" invisible="1" force_save="1" readonly="1"/>
                         <field name="technician_second_visit_date" invisible="0" force_save="1" readonly="1"/>
                         <field name="technician_second_visit_datetime" invisible="1" force_save="1" readonly="1"/>
@@ -1274,17 +1533,21 @@
                         <field name="technician_second_outtime" invisible="0" force_save="1" readonly="1"/>
                     </group>
                 </group>
-                <group groups="machine_repair_management.group_job_card_mobile_user, machine_repair_management.group_job_card_back_office_user" class="deskvw" invisible="not project_related_amc_bool">
+                <group groups="machine_repair_management.group_job_card_mobile_user, machine_repair_management.group_job_card_back_office_user"
+                       class="deskvw" invisible="not project_related_amc_bool">
                     <group string="Maintenance" name="maintenance_type_id">
-                        <field name="contract_id" force_save="1" readonly="state == 'closed'" options ="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                        <field name="contract_id" force_save="1" readonly="state == 'closed'"
+                               options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                         <field name="contract_date" force_save="1" readonly="1"/>
                         <field name="contract_expiry_date" force_save="1" readonly="1"/>
-                        <field name="asset_id" force_save="1" readonly="state == 'closed'" options ="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                        <field name="asset_id" force_save="1" readonly="state == 'closed'"
+                               options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                         <field name="service_products_code_id" options="{'no_open':True}" readonly="1" force_save="1"/>
                         <label for="maintenance_type" string="Job Type"/>
                         <div class="o_row">
                             <div>
-                                <field name="maintenance_type" force_save="1" widget="radio" class="oe_inline" readonly="service_create_from_equipment_bool"/>
+                                <field name="maintenance_type" force_save="1" widget="radio" class="oe_inline"
+                                       readonly="service_create_from_equipment_bool"/>
                             </div>
                             <div>
                                 <field name="actual_corrective" force_save="1" class="oe_inline" readonly="1"/>
@@ -1293,40 +1556,65 @@
                             </div>
                         </div>
                         <field name="paid_service_bool" force_save="1" readonly="1"/>
-                        <field name = "service_group_batch" invisible = "1"/>
-                       <field name = "maintenance_contract_type_id" force_save="1" readonly="1" invisible  = "1"/>
-                       <field name = "service_create_from_equipment_bool" readonly = "1" invisible  = "1"/>
-                       <field name = "used_location_equipment" readonly="1" force_save="1"/>
-                       
+                        <field name="service_group_batch" invisible="1"/>
+                        <field name="maintenance_contract_type_id" force_save="1" readonly="1" invisible="1"/>
+                        <field name="service_create_from_equipment_bool" readonly="1" invisible="1"/>
+                        <field name="used_location_equipment" readonly="1" force_save="1"/>
+
                     </group>
                 </group>
 
-                <group groups="machine_repair_management.group_job_card_mobile_user, machine_repair_management.group_job_card_back_office_user" class="deskvw">
-                    <group string="Product Information" name = "product_information">
-                        <field name="product_category_id" invisible="project_related_amc_bool" readonly="state_status == True" required="not project_related_amc_bool" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
-                        <field name="product_group_id" invisible="project_related_amc_bool" readonly="state_status == True" options="{'no_create_edit':True,'no_create':True,'no_open':True}" domain="[('parent_id','=',product_category_id),('allowed_group_bool','=',True)]" required="not project_related_amc_bool" context="{'show_only_name':True}"/>
-                        <field name="product_sub_group_id" invisible="project_related_amc_bool" readonly="state_status == True" options="{'no_create_edit':True,'no_create':True,'no_open':True}" domain="[('parent_id','=',product_group_id),('allowed_group_is_promoter','!=', True)]" context="{'show_only_name':True}"/>
+                <group groups="machine_repair_management.group_job_card_mobile_user, machine_repair_management.group_job_card_back_office_user"
+                       class="deskvw">
+                    <group string="Product Information" name="product_information">
+                        <field name="product_category_id" invisible="project_related_amc_bool"
+                               readonly="state_status == True" required="not project_related_amc_bool"
+                               options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                        <field name="product_group_id" invisible="project_related_amc_bool"
+                               readonly="state_status == True"
+                               options="{'no_create_edit':True,'no_create':True,'no_open':True}"
+                               domain="[('parent_id','=',product_category_id),('allowed_group_bool','=',True)]"
+                               required="not project_related_amc_bool" context="{'show_only_name':True}"/>
+                        <field name="product_sub_group_id" invisible="project_related_amc_bool"
+                               readonly="state_status == True"
+                               options="{'no_create_edit':True,'no_create':True,'no_open':True}"
+                               domain="[('parent_id','=',product_group_id),('allowed_group_is_promoter','!=', True)]"
+                               context="{'show_only_name':True}"/>
                         <!-- <field name="product_category" readonly="state == 'closed'" string="Machine Category"/> -->
 
-                        <field name="svc_id" invisible="project_related_amc_bool" readonly="state_status == True" placeholder=" " class="underline-empty" options="{'no_create_edit':True,'no_create':True,'no_open':True}"/>
+                        <field name="svc_id" invisible="project_related_amc_bool" readonly="state_status == True"
+                               placeholder=" " class="underline-empty"
+                               options="{'no_create_edit':True,'no_create':True,'no_open':True}"/>
 
-                        <field name="product_id" invisible="project_related_amc_bool" required="0" readonly="state_status == True" placeholder=" " domain="[('categ_id', 'child_of', product_sub_group_id or product_group_id or product_category_id)]" options="{'no_create_edit':True,'no_create':True,'no_open':True}" class="underline-empty"/>
+                        <field name="product_id" invisible="project_related_amc_bool" required="0"
+                               readonly="state_status == True" placeholder=" "
+                               domain="[('categ_id', 'child_of', product_sub_group_id or product_group_id or product_category_id)]"
+                               options="{'no_create_edit':True,'no_create':True,'no_open':True}"
+                               class="underline-empty"/>
 
-                        <field name="brand" readonly="state_status == True" placeholder=" " class="underline-empty" invisible="not maintenance_tab_show_bool"/>
-                        <field name="model" rreadonly="state_status == True" placeholder=" " class="underline-empty" invisible="not maintenance_tab_show_bool"/>
-                        <field name="product_slno" readonly="state_status == True" force_save="1" placeholder=" " class="underline-empty"/>
+                        <field name="brand" readonly="state_status == True" placeholder=" " class="underline-empty"
+                               invisible="not maintenance_tab_show_bool"/>
+                        <field name="model" rreadonly="state_status == True" placeholder=" " class="underline-empty"
+                               invisible="not maintenance_tab_show_bool"/>
+                        <field name="product_slno" readonly="state_status == True" force_save="1" placeholder=" "
+                               class="underline-empty"/>
                         <field name="job_card_state" invisible="1" force_save="1"/>
                         <field name="job_card_state_code" invisible="1" force_save="1"/>
                         <field name="project_id" invisible="1"/>
-                        <field name="amc_project_id" invisible="0" readonly ="1"/>
+                        <field name="amc_project_id" invisible="0" readonly="1"/>
                     </group>
 
-                    <group string="Purchase Information" name="purchase_information" invisible="project_related_amc_bool">
+                    <group string="Purchase Information" name="purchase_information"
+                           invisible="project_related_amc_bool">
 
-                        <field name="service_warranty_id" placeholder=" " class="underline-empty" invisible="0" options="{'no_create':True,'no_edit':True,'no_create_edit':True,'no_open':True}" readonly="state_status == True"/>
+                        <field name="service_warranty_id" placeholder=" " class="underline-empty" invisible="0"
+                               options="{'no_create':True,'no_edit':True,'no_create_edit':True,'no_open':True}"
+                               readonly="state_status == True"/>
 
-                        <field name="purchase_invoice_no" readonly="state_status == True" placeholder=" " class="underline-empty" invisible="warranty == False" required="warranty == True" />
-                        <field name="purchase_date" readonly="state_status == True" placeholder=" " class="underline-empty" invisible="warranty == False" required="warranty == True" />
+                        <field name="purchase_invoice_no" readonly="state_status == True" placeholder=" "
+                               class="underline-empty" invisible="warranty == False" required="warranty == True"/>
+                        <field name="purchase_date" readonly="state_status == True" placeholder=" "
+                               class="underline-empty" invisible="warranty == False" required="warranty == True"/>
 
                         <!--  <field name="purchase_dealer_name" readonly="state_status != False or job_card_state_code in ('124','126')" placeholder=" " class="underline-empty"/> -->
                         <!--                        <field name="warranty"-->
@@ -1335,19 +1623,23 @@
 
                         <field name="warranty" readonly="1" force_save="1" invisible="1"/>
 
-                        <field name="dealer_id" readonly="state_status == True" placeholder=" " class="underline-empty" options="{'no_create_edit':True,'no_open':True,'no_edit':True}" domain="[('partner_type_hhs','=','customer'),('sub_partner_type','=','dealer')]" context="{
+                        <field name="dealer_id" readonly="state_status == True" placeholder=" " class="underline-empty"
+                               options="{'no_create_edit':True,'no_open':True,'no_edit':True}"
+                               domain="[('partner_type_hhs','=','customer'),('sub_partner_type','=','dealer')]"
+                               context="{
 									        'default_partner_type_hhs': 'customer',
 									        'default_sub_partner_type': 'dealer'
-									   		 }" invisible="warranty == False" required="warranty == True" />
+									   		 }" invisible="warranty == False" required="warranty == True"/>
 
-                        <field name="warranty_expiry_date" readonly="state_status == True" placeholder=" " class="underline-empty"/>
-						
-						 <field name="security_warranty_expiry" invisible="not user_expiry_check_bool"/>
+                        <field name="warranty_expiry_date" readonly="state_status == True" placeholder=" "
+                               class="underline-empty"/>
 
-                    	<field name="text_warranty_expiry" invisible="not security_warranty_expiry"
-                            required="security_warranty_expiry == True"
-                            groups="machine_repair_management.group_technical_allocation_user,!machine_repair_management.group_job_card_warranty_expired"/>
-                    
+                        <field name="security_warranty_expiry" invisible="not user_expiry_check_bool"/>
+
+                        <field name="text_warranty_expiry" invisible="not security_warranty_expiry"
+                               required="security_warranty_expiry == True"
+                               groups="machine_repair_management.group_technical_allocation_user,!machine_repair_management.group_job_card_warranty_expired"/>
+
                         <!--  <div class="o_row">
 					            <field name="inspection_charges_amount"/>
 					            <div class="o_row oe_inline">
@@ -1359,13 +1651,15 @@
                         <!--  <field name = "inspection_charges_amount" readonly ="warranty == True or job_card_state_code in ('124','126')"/> -->
                         <field name="mode_of_payment" readonly="state_status == True"/>
 
-                        <field name="inspection_charges_bool" string="Inspection Charges Confirmed" readonly="state_status == True"/>
+                        <field name="inspection_charges_bool" string="Inspection Charges Confirmed"
+                               readonly="state_status == True"/>
 
                         <field name="mode_of_payment_balance_amount" readonly="state_status == True"/>
                         <field name="balance_amount_received_bool" readonly="state_status == True"/>
 
                         <!-- <field name = "balance_amount_received" /> -->
-                        <button name="create_inspection_amount" string="Print" type="object" class="oe_highlight" invisible="1"/>
+                        <button name="create_inspection_amount" string="Print" type="object" class="oe_highlight"
+                                invisible="1"/>
                         <field name="state_status" invisible="1"/>
                         <field name="user_ids_bool" invisible="1"/>
                     </group>
@@ -1501,7 +1795,8 @@
                         <!--                                </group>-->
                         <!--                            </group>-->
                         <!--                        </page>-->
-                        <page string="Symptoms" invisible="project_related_amc_bool and maintenance_type == 'preventive'">
+                        <page string="Symptoms"
+                              invisible="project_related_amc_bool and maintenance_type == 'preventive'">
                             <!-- <group>
                                 <div style="width: 300px;">
                                  
@@ -1509,7 +1804,9 @@
                             </group> -->
                             <field name="symptoms_line_ids" readonly="state_status == True" string="Symptoms">
                                 <tree string="Symptoms Lines" editable="bottom">
-                                    <field name="code" placeholder="Please select the Symptoms here............" options="{'no_create_edit': True, 'no_create': True}" domain="[('symptom_product_category_id','=',parent.product_category_id)]" />
+                                    <field name="code" placeholder="Please select the Symptoms here............"
+                                           options="{'no_create_edit': True, 'no_create': True}"
+                                           domain="[('symptom_product_category_id','=',parent.product_category_id)]"/>
 
                                 </tree>
                             </field>
@@ -1518,31 +1815,39 @@
                             <!--                             <button type="button" class="o_form_button_save btn" name ="btn_save" data-hotkey="s" title="">Save</button>
                              -->
                         </page>
-                        <page string="Defects" invisible="project_related_amc_bool and maintenance_type == 'preventive'">
+                        <page string="Defects"
+                              invisible="project_related_amc_bool and maintenance_type == 'preventive'">
                             <field name="defects_type_ids" readonly="state_status == True" string="Defects">
                                 <tree string="Defects Lines" editable="bottom">
-                                    <field name="code" options="{'no_create_edit': True, 'no_create': True}" domain="[('defects_product_catgeory_id','=', parent.product_category_id)]"/>
+                                    <field name="code" options="{'no_create_edit': True, 'no_create': True}"
+                                           domain="[('defects_product_catgeory_id','=', parent.product_category_id)]"/>
                                 </tree>
                             </field>
                             <label for="technician_comments" string="Technician Comments" invisible="0"/>
                             <field name="technician_comments" invisible="0" readonly="state_status == True"/>
                         </page>
-                        <page string="Service" invisible="project_related_amc_bool and maintenance_type == 'preventive'">
+                        <page string="Service"
+                              invisible="project_related_amc_bool and maintenance_type == 'preventive'">
                             <field name="service_type_ids" readonly="state_status == True" string="Service">
                                 <tree string="Service Lines" editable="bottom">
-                                    <field name="code" options="{'no_create_edit': True, 'no_create': True}" domain="[('service_product_category_id','=', parent.product_category_id)]" />
+                                    <field name="code" options="{'no_create_edit': True, 'no_create': True}"
+                                           domain="[('service_product_category_id','=', parent.product_category_id)]"/>
                                     <field name="under_warranty" readonly="0"/>
-                                    <field name = "service_quantity"  readonly="service_quantity_bool == False"/>
-                                    <field name = "service_quantity_bool" readonly ="1" force_save = "1" column_invisible = "1"/>
+                                    <field name="service_quantity" readonly="service_quantity_bool == False"/>
+                                    <field name="service_quantity_bool" readonly="1" force_save="1"
+                                           column_invisible="1"/>
                                 </tree>
                             </field>
                             <label for="engineer_comments" string="Technician Comments 1" invisible="0"/>
                             <field name="engineer_comments" invisible="0" readonly="state_status == True"/>
-                            <label for="engineer_comments_second" string="Technician Comments 2" invisible="not second_visit_technician_bool"/>
-                            <field name="engineer_comments_second" invisible="not second_visit_technician_bool" readonly="state_status == True"/>
+                            <label for="engineer_comments_second" string="Technician Comments 2"
+                                   invisible="not second_visit_technician_bool"/>
+                            <field name="engineer_comments_second" invisible="not second_visit_technician_bool"
+                                   readonly="state_status == True"/>
                         </page>
 
-                        <page string="Unit Parameters" name="other_tab" invisible="project_related_amc_bool and maintenance_type == 'preventive'">
+                        <page string="Unit Parameters" name="other_tab"
+                              invisible="project_related_amc_bool and maintenance_type == 'preventive'">
                             <group>
                                 <group>
                                     <!--                                    <field name="project_task_id"/>-->
@@ -1566,10 +1871,13 @@
                             <field name="timesheet_line_ids" editable="bottom" readonly="state_status == True">
                                 <tree editable="bottom" delete="0">
                                     <field name="date"/>
-                                    <field name="user_id" options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                                    <field name="user_id"
+                                           options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
                                     <field column_invisible="1" name="project_request_id"/>
-                                    <field name="project_id" options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
-                                    <field name="account_id" column_invisible="1" options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                                    <field name="project_id"
+                                           options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                                    <field name="account_id" column_invisible="1"
+                                           options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
                                     <field name="name"/>
                                     <field column_invisible="1" name="billable"/>
                                     <field name="unit_amount" string="Hours" sum="Hours" widget="float_time"/>
@@ -1578,74 +1886,93 @@
                             </field>
                         </page>
                         <!-- invisible="project_related_amc_bool and maintenance_type == 'preventive'" -->
-                        <page string="Document Invoice" readonly="state_status == True" invisible="warranty == False and project_related_amc_bool and maintenance_type == 'preventive'" required="warranty == True">
+                        <page string="Document Invoice" readonly="state_status == True"
+                              invisible="warranty == False and project_related_amc_bool and maintenance_type == 'preventive'"
+                              required="warranty == True">
                             <field name="attachment_ids" widget="many2many_binary" readonly="state_status == True"/>
                         </page>
 
-                        <page string="Online/Bank Transfer Attachment" name="online_payment_invoice" invisible="not (mode_of_payment in ('bank','online') or mode_of_payment_balance_amount in ('bank','online'))">
+                        <page string="Online/Bank Transfer Attachment" name="online_payment_invoice"
+                              invisible="not (mode_of_payment in ('bank','online') or mode_of_payment_balance_amount in ('bank','online'))">
 
                             <field name="online_payment_invoice_attachment_ids" widget="many2many_binary"/>
 
                         </page>
 
-                        <page string="Attachment Images" invisible="project_related_amc_bool and maintenance_type == 'preventive'" readonly="state_status == True">
+                        <page string="Attachment Images"
+                              invisible="project_related_amc_bool and maintenance_type == 'preventive'"
+                              readonly="state_status == True">
                             <div class="row mt16">
                                 <div class="row mb-2">
                                     <div class="col-3 d-flex justify-content-center align-items-center">
-                                        <field name="img1" widget="image" style="margin-left:5px;width:250px;" readonly="state_status == True"/>
+                                        <field name="img1" widget="image" style="margin-left:5px;width:250px;"
+                                               readonly="state_status == True"/>
                                     </div>
                                     <div class="col-9">
-                                        <field name="img1_text" readonly="1" force_save="1" style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
+                                        <field name="img1_text" readonly="1" force_save="1"
+                                               style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
                                     </div>
                                 </div>
 
                                 <div class="row mb-2">
                                     <div class="col-3 d-flex justify-content-center align-items-center">
-                                        <field name="img2" widget="image" style="margin-left:5px;width:250px;" readonly="state_status == True"/>
+                                        <field name="img2" widget="image" style="margin-left:5px;width:250px;"
+                                               readonly="state_status == True"/>
                                         <!-- <field name="img2" widget="image" style="margin-left:5px" class="oe_avatar" readonly="state_status != False or job_card_state_code in ('124','125','126')"/> -->
                                     </div>
                                     <div class="col-9">
-                                        <field name="img2_text" readonly="1" force_save="1" style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
+                                        <field name="img2_text" readonly="1" force_save="1"
+                                               style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
                                     </div>
                                 </div>
 
                                 <div class="row mb-2">
                                     <div class="col-3 d-flex justify-content-center align-items-center">
-                                        <field name="img3" widget="image" style="margin-left:5px;width:250px;" readonly="state_status == True"/>
+                                        <field name="img3" widget="image" style="margin-left:5px;width:250px;"
+                                               readonly="state_status == True"/>
                                     </div>
                                     <div class="col-9">
-                                        <field name="img3_text" readonly="state_status == True" style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
+                                        <field name="img3_text" readonly="state_status == True"
+                                               style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
                                     </div>
                                 </div>
 
                                 <div class="row mb-2">
                                     <div class="col-3 d-flex justify-content-center align-items-center">
-                                        <field name="img4" widget="image" style="margin-left:5px;width:250px;" readonly="state_status == True"/>
+                                        <field name="img4" widget="image" style="margin-left:5px;width:250px;"
+                                               readonly="state_status == True"/>
                                     </div>
                                     <div class="col-9">
-                                        <field name="img4_text" readonly="state_status == True" style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
+                                        <field name="img4_text" readonly="state_status == True"
+                                               style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
                                     </div>
                                 </div>
 
                                 <div class="row mb-2">
                                     <div class="col-3 d-flex justify-content-center align-items-center">
-                                        <field name="img5" widget="image" style="margin-left:5px;width:250px;" readonly="state_status == True"/>
+                                        <field name="img5" widget="image" style="margin-left:5px;width:250px;"
+                                               readonly="state_status == True"/>
                                     </div>
                                     <div class="col-9">
-                                        <field name="img5_text" readonly="state_status == True" style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
+                                        <field name="img5_text" readonly="state_status == True"
+                                               style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
                                     </div>
                                 </div>
                             </div>
                         </page>
 
-                        <page string="Product Consume Part/Service" invisible="project_related_amc_bool and maintenance_type == 'preventive'" name="consume_service">
+                        <page string="Product Consume Part/Service"
+                              invisible="project_related_amc_bool and maintenance_type == 'preventive'"
+                              name="consume_service">
                             <group groups='machine_repair_management.group_job_card_mobile_user'>
                                 <div style="width: 300px;">
-                                    <button name="action_add_product_line" type="object" string="Add Product" class="btn btn-primary w-100" />
+                                    <button name="action_add_product_line" type="object" string="Add Product"
+                                            class="btn btn-primary w-100"/>
                                 </div>
                             </group>
                             <group groups='machine_repair_management.group_parts_user'>
-                                <field name="main_warehouse_id" force_save="1" readonly="1" options="{'no_create':True,'no_edit':True,'no_open':True}" />
+                                <field name="main_warehouse_id" force_save="1" readonly="1"
+                                       options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                                 <!-- <field name = "main_warehouse_id"
                                     domain = "[('default_work_center_bool','=',True),('product_category_ids','in',product_category_id), ('work_center_id.work_center_group_id','=',work_center_group_id),('region_default_warehouse_bool','=',True)]"
                                     options = "{'no_create':True,'no_edit':True,'no_open':True}" groups='machine_repair_management.group_parts_user'
@@ -1654,19 +1981,27 @@
                                     domain = "[('default_work_center_bool','=',True),('product_category_ids','in',product_category_id), ('work_center_id','=',work_center_id)]"
                                     options = "{'no_create':True,'no_edit':True,'no_open':True}" groups='machine_repair_management.group_parts_user'
                                     /> -->
-                                <field name="include_zero_stock_bool" groups='machine_repair_management.group_parts_user'/>
-                                <field name="reserve_from_main_warehouse_bool" groups='machine_repair_management.group_parts_user'/>
+                                <field name="include_zero_stock_bool"
+                                       groups='machine_repair_management.group_parts_user'/>
+                                <field name="reserve_from_main_warehouse_bool"
+                                       groups='machine_repair_management.group_parts_user'/>
                                 <!--  <field name = "main_warehouse_lst_ids" /> -->
                             </group>
 
-                            <field name="product_line_ids" readonly="state_status == True" context="{'default_project_task_id': id}" groups='machine_repair_management.group_job_card_back_office_user'>
+                            <field name="product_line_ids" readonly="state_status == True"
+                                   context="{'default_project_task_id': id}"
+                                   groups='machine_repair_management.group_job_card_back_office_user'>
                                 <tree editable="bottom" decoration-danger="return_damage_to_warehouse == True">
                                     <!-- <field name="product_id" domain ="['|',('detailed_type','=','service'),('categ_id','=',product_categ_id)]" options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}" /> -->
                                     <!--  <field name="product_id" domain="[('id', 'in', product_ids)]" context="{'warehouse_id': parent.warehouse_id,'default_warehouse_id': parent.warehouse_id}" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}" /> -->
 
                                     <!--  <field name="product_id" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}" /> -->
-                                    <field name="product_id" options="{'no_create': True, 'no_open': True}" domain="product_id_domain" column_invisible="parent.project_related_amc_bool" required="not parent.project_related_amc_bool" />
-                                    <field name="product_id" options="{'no_create': True, 'no_open': True}" column_invisible="not parent.project_related_amc_bool" required="parent.project_related_amc_bool" domain="product_id_domain" />
+                                    <field name="product_id" options="{'no_create': True, 'no_open': True}"
+                                           domain="product_id_domain" column_invisible="parent.project_related_amc_bool"
+                                           required="not parent.project_related_amc_bool"/>
+                                    <field name="product_id" options="{'no_create': True, 'no_open': True}"
+                                           column_invisible="not parent.project_related_amc_bool"
+                                           required="parent.project_related_amc_bool" domain="product_id_domain"/>
 
 
                                     <!--   <field name="product_id" domain="[('stock_quant_ids.location_id', '=', location_id)]" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}" context="{'location': location_id}" /> -->
@@ -1677,14 +2012,18 @@
                                     <field name="on_hand_qty" column_invisible="0" readonly="1" force_save="1"/>
                                     <field name="overall_qty" column_invisible="0" readonly="1" force_save="1"/>
                                     <field name="qty"/>
-                                    <field name="uom_id" readonly="1" force_save="1" options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
-                                    <field name="price_unit" groups="machine_repair_management.group_job_card_mobile_user" readonly="service_product_price_edit_bool == False"/>
+                                    <field name="uom_id" readonly="1" force_save="1"
+                                           options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                                    <field name="price_unit"
+                                           groups="machine_repair_management.group_job_card_mobile_user"
+                                           readonly="service_product_price_edit_bool == False"/>
 
-                                    <field name="price_unit" groups="!machine_repair_management.group_job_card_mobile_user" />
+                                    <field name="price_unit"
+                                           groups="!machine_repair_management.group_job_card_mobile_user"/>
 
                                     <field name="under_warranty_bool" readonly="0"/>
                                     <!-- """Code Added by Vengatesh On Mar 25 2026""" -->
-                                    <field name = "amount_required" column_invisible="1"/>
+                                    <field name="amount_required" column_invisible="1"/>
 
                                     <!--  <field name = "under_warranty_bool" readonly ="product_id.detailed_type == 'service'" /> -->
                                     <field name="vat" readonly="1" force_save="1"/>
@@ -1708,13 +2047,20 @@
                                 </tree>
                             </field>
 
-                            <field name="product_line_ids" invisible="check_user == True" readonly="state_status != False or job_card_state_code in ('124','126','154')" context="{'default_project_task_id': id}" groups='machine_repair_management.group_job_card_mobile_user'>
+                            <field name="product_line_ids" invisible="check_user == True"
+                                   readonly="state_status != False or job_card_state_code in ('124','126','154')"
+                                   context="{'default_project_task_id': id}"
+                                   groups='machine_repair_management.group_job_card_mobile_user'>
                                 <tree edit="0" create="0" decoration-danger="return_damage_to_warehouse == True">
                                     <!-- <field name="product_id" domain ="['|',('detailed_type','=','service'),('categ_id','=',product_categ_id)]" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}" /> -->
 
 
-                                    <field name="product_id" options="{'no_create': True, 'no_open': True}" domain="product_id_domain" column_invisible="parent.project_related_amc_bool" />
-                                    <field name="product_id" options="{'no_create': True, 'no_open': True}" column_invisible="not parent.project_related_amc_bool" domain="product_id_domain" />
+                                    <field name="product_id" options="{'no_create': True, 'no_open': True}"
+                                           domain="product_id_domain"
+                                           column_invisible="parent.project_related_amc_bool"/>
+                                    <field name="product_id" options="{'no_create': True, 'no_open': True}"
+                                           column_invisible="not parent.project_related_amc_bool"
+                                           domain="product_id_domain"/>
                                     <!--  <field name="product_id" domain="[('stock_quant_ids.location_id', '=', location_id)]" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}" context="{'location': location_id}" /> -->
                                     <field name="parts_reserved_bool" column_invisible="0"/>
                                     <field name="main_warehouse_on_hand_qty" readonly="1" force_save="1"/>
@@ -1724,10 +2070,14 @@
 
 
                                     <field name="qty"/>
-                                    <field name="uom_id" readonly="1" force_save="1" options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
-                                    <field name="price_unit" groups="machine_repair_management.group_job_card_mobile_user" readonly="service_product_price_edit_bool == False"/>
+                                    <field name="uom_id" readonly="1" force_save="1"
+                                           options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                                    <field name="price_unit"
+                                           groups="machine_repair_management.group_job_card_mobile_user"
+                                           readonly="service_product_price_edit_bool == False"/>
 
-                                    <field name="price_unit" groups="!machine_repair_management.group_job_card_mobile_user" />
+                                    <field name="price_unit"
+                                           groups="!machine_repair_management.group_job_card_mobile_user"/>
                                     <field name="under_warranty_bool" readonly="0"/>
 
                                     <!-- <field name = "under_warranty_bool"  readonly ="product_id.detailed_type == 'service'" /> -->
@@ -1756,26 +2106,35 @@
 
                                 <field name="parts_total_amount" style="text-align:right" readonly="1" force_save="1"/>
                                 <field name="parts_vat_totamount" style="text-align:right" readonly="1" force_save="1"/>
-                                <field name="parts_grand_total_amount" style="text-align:right" readonly="1" force_save="1"/>
-                                <field name="service_charge_amount" style="text-align:right" readonly="1" force_save="1"/>
+                                <field name="parts_grand_total_amount" style="text-align:right" readonly="1"
+                                       force_save="1"/>
+                                <field name="service_charge_amount" style="text-align:right" readonly="1"
+                                       force_save="1"/>
                                 <field name="service_vat_amount" style="text-align:right" readonly="1" force_save="1"/>
-                                <field name="service_grand_total_amount" style="text-align:right" readonly="1" force_save="1"/>
+                                <field name="service_grand_total_amount" style="text-align:right" readonly="1"
+                                       force_save="1"/>
                                 <field name="grand_total" style="text-align:right" readonly="1"/>
-                                <field name="final_inspection_charges_amount" string="Inspection Charges Amount Received" style="text-align:right" readonly="1" force_save="1"/>
+                                <field name="final_inspection_charges_amount"
+                                       string="Inspection Charges Amount Received" style="text-align:right" readonly="1"
+                                       force_save="1"/>
                                 <!-- <field name = "inspection_charges_amount"  string ="Amount Received" style="text-align:right" readonly="1" force_save ="1"/> -->
 
                                 <field name="balance_paid" style="text-align:right" readonly="1"/>
 
-                                <field name="balance_received" style="text-align:right" readonly="1" force_save="1" invisible="1"/>
-                                <field name="balance_payment_shown_actual" style="text-align:right" readonly="1" force_save="1" invisible="1"/>
+                                <field name="balance_received" style="text-align:right" readonly="1" force_save="1"
+                                       invisible="1"/>
+                                <field name="balance_payment_shown_actual" style="text-align:right" readonly="1"
+                                       force_save="1" invisible="1"/>
                                 <field name="final_balance_amount" readonly="1" force_save="1" invisible="1"/>
                             </group>
                         </page>
 
-                        <page string="Customer Signature" invisible="project_related_amc_bool and maintenance_type == 'preventive'">
+                        <page string="Customer Signature"
+                              invisible="project_related_amc_bool and maintenance_type == 'preventive'">
                             <!--  <page string="Customer Signature" invisible="job_card_state_code not in ('125','126') or not ready_to_invoice_status_check" readonly = "state_status == True"> -->
                             <group>
-                                <field name="signature" widget="signature" string="Customer Signature" options="{'clear': True}"/>
+                                <field name="signature" widget="signature" string="Customer Signature"
+                                       options="{'clear': True}"/>
                             </group>
                         </page>
 
@@ -1786,7 +2145,8 @@
                                 </group>
 
                                 <group>
-                                    <button name="update_google_map" string="Update" type="object" class="btn btn-primary ms-2" readonly="state_status == True"/>
+                                    <button name="update_google_map" string="Update" type="object"
+                                            class="btn btn-primary ms-2" readonly="state_status == True"/>
                                 </group>
 
                                 <group>
@@ -1799,36 +2159,50 @@
                 <attribute name="width">100px</attribute>
             </xpath>  -->
                         <page string="Jobcard Status">
-                            <field name="message_log_ids" readonly="1" options="{'no_create':True,'no_edit':True,'no_open':True}">
+                            <field name="message_log_ids" readonly="1"
+                                   options="{'no_create':True,'no_edit':True,'no_open':True}">
                                 <tree editable="false" default_order="date Asc" no_open="1">
                                     <field name="serial_no" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
-		                            <field name="date" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
-		                            <field name="author" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
-		<!--                            <field name="field_id" column_invisible="True"/>-->
-		                            
-		                            <field name="new_value" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
-		                            <field name="model" column_invisible="True"/>
-		                            <field name="res_id" column_invisible="True"/>
-		                            <field name="author_id" column_invisible="True"/>
-		                            <field name="old_value" column_invisible="True"/>
+                                    <field name="date" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                                    <field name="author" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                                    <!--                            <field name="field_id" column_invisible="True"/>-->
+
+                                    <field name="new_value" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                                    <field name="model" column_invisible="True"/>
+                                    <field name="res_id" column_invisible="True"/>
+                                    <field name="author_id" column_invisible="True"/>
+                                    <field name="old_value" column_invisible="True"/>
                                 </tree>
                             </field>
                         </page>
 
-                        <page string="Damaged Part(s)" name="parts_returned" invisible="not (damaged_parts_to_be_returned_technician and warranty)">
+                        <page string="Damaged Part(s)" name="parts_returned"
+                              invisible="not (damaged_parts_to_be_returned_technician and warranty)">
                             <group>
                                 <group>
-                                    <field name="damaged_parts_to_be_returned_technician" invisible="0" readonly="1" force_save="1"/>
-                                    <field name="return_damage_parts_technician" invisible="not damaged_parts_to_be_returned_technician" groups="machine_repair_management.group_job_card_mobile_user"/>
-                                    <field name="return_damage_parts_technician" invisible="not damaged_parts_to_be_returned_technician" groups="machine_repair_management.group_parts_user,machine_repair_management.group_job_card_back_office_user" readonly="1" />
-                                    <field name="damaged_parts_returned_parts_user" readonly="1" groups="!machine_repair_management.group_parts_user"/>
-                                    <field name="damaged_parts_returned_parts_user" groups="machine_repair_management.group_parts_user"/>
+                                    <field name="damaged_parts_to_be_returned_technician" invisible="0" readonly="1"
+                                           force_save="1"/>
+                                    <field name="return_damage_parts_technician"
+                                           invisible="not damaged_parts_to_be_returned_technician"
+                                           groups="machine_repair_management.group_job_card_mobile_user"/>
+                                    <field name="return_damage_parts_technician"
+                                           invisible="not damaged_parts_to_be_returned_technician"
+                                           groups="machine_repair_management.group_parts_user,machine_repair_management.group_job_card_back_office_user"
+                                           readonly="1"/>
+                                    <field name="damaged_parts_returned_parts_user" readonly="1"
+                                           groups="!machine_repair_management.group_parts_user"/>
+                                    <field name="damaged_parts_returned_parts_user"
+                                           groups="machine_repair_management.group_parts_user"/>
                                 </group>
                                 <group>
-                                    <field name="lost_item_payment_received_technician" readonly="1" groups="!machine_repair_management.group_parts_user"/>
-                                    <field name="lost_item_payment_received_technician" groups="machine_repair_management.group_parts_user"/>
-                                    <field name="damaged_item_amount_received_technician" readonly="1" groups="!machine_repair_management.group_parts_user"/>
-                                    <field name="damaged_item_amount_received_technician" groups="machine_repair_management.group_parts_user"/>
+                                    <field name="lost_item_payment_received_technician" readonly="1"
+                                           groups="!machine_repair_management.group_parts_user"/>
+                                    <field name="lost_item_payment_received_technician"
+                                           groups="machine_repair_management.group_parts_user"/>
+                                    <field name="damaged_item_amount_received_technician" readonly="1"
+                                           groups="!machine_repair_management.group_parts_user"/>
+                                    <field name="damaged_item_amount_received_technician"
+                                           groups="machine_repair_management.group_parts_user"/>
 
                                     <field name="damaged_return_datetime" invisible="0" readonly="1" force_save="1"/>
                                 </group>
@@ -1845,8 +2219,9 @@
             <xpath expr="//div[@class='oe_chatter']" position="before">
                 <div class="d-flex justify-content-start mt-2 mb-2 ps-3">
                     <button name="action_save" type="object" class="mobile-full-btn-save" string="Save"/>
-                    <button name="action_discard" type="object" class="mobile-full-btn-discard" string="Discard" invisible = "1"/>
-               		<button special="cancel" string="Discard" class="mobile-full-btn-discard"/>
+                    <button name="action_discard" type="object" class="mobile-full-btn-discard" string="Discard"
+                            invisible="1"/>
+                    <button special="cancel" string="Discard" class="mobile-full-btn-discard"/>
                 </div>
             </xpath>
 
@@ -1875,8 +2250,10 @@
             <form string="Add Product Line">
                 <group>
                     <!-- <field name="product_id" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}" /> -->
-                    <field name="product_id" options="{'no_create': True, 'no_open': True}" domain="product_id_domain" invisible="amc_project_bool" />
-                    <field name="product_id" options="{'no_create': True, 'no_open': True}" invisible="not amc_project_bool" domain="product_id_domain" />
+                    <field name="product_id" options="{'no_create': True, 'no_open': True}" domain="product_id_domain"
+                           invisible="amc_project_bool"/>
+                    <field name="product_id" options="{'no_create': True, 'no_open': True}"
+                           invisible="not amc_project_bool" domain="product_id_domain"/>
 
                     <!--  <field name="product_id"  options = "{'no_open':True,'no_create_edit':True,'no_create':True}" domain="[('stock_quant_ids.location_id', '=', location_id)]" context="{'location': location_id}"/> -->
                     <field name="parts_reserved_bool" invisible="0"/>
@@ -1888,9 +2265,10 @@
                     <field name="qty"/>
                     <field name="uom_id" readonly="1" force_save="1"/>
                     <!--                    <field name="price_unit" force_save="1"/>-->
-                    <field name="price_unit" groups="machine_repair_management.group_job_card_mobile_user" readonly="not service_product_price_edit_bool" force_save="1"/>
+                    <field name="price_unit" groups="machine_repair_management.group_job_card_mobile_user"
+                           readonly="not service_product_price_edit_bool" force_save="1"/>
 
-                    <field name="price_unit" groups="!machine_repair_management.group_job_card_mobile_user" />
+                    <field name="price_unit" groups="!machine_repair_management.group_job_card_mobile_user"/>
                     <field name="under_warranty_bool"/>
                     <field name="vat" readonly="1" force_save="1"/>
                     <field name="tax_amount" invisible="1" force_save="1"/>
@@ -2078,84 +2456,132 @@
             <xpath expr="//filter[@name='private_tasks']" position="after">
                 <separator/>
                 <filter name="job_state_new" string="Job State - New" domain="[('job_card_state_code','=','101')]"/>
-                <filter name="job_state_scheduled" string="Scheduled State" domain="[('job_card_state_code','=','102')]"/>
-                <filter name="job_state_technician_accept" string="Technician Accept State" domain="[('job_card_state_code','=','103')]"/>
-                <filter name="job_state_technician_reject" string="Technician Rejected State" domain="[('job_card_state_code','=','104')]"/>
+                <filter name="job_state_scheduled" string="Scheduled State"
+                        domain="[('job_card_state_code','=','102')]"/>
+                <filter name="job_state_technician_accept" string="Technician Accept State"
+                        domain="[('job_card_state_code','=','103')]"/>
+                <filter name="job_state_technician_reject" string="Technician Rejected State"
+                        domain="[('job_card_state_code','=','104')]"/>
                 <separator/>
                 <!--                <filter name="job_state_failed_attend_call" string="Failed to attend call State"-->
                 <!-- domain="[('job_card_state_code','=','105')]"/>-->
                 <!--                <filter name="job_state_out_of_city" string="Out of City State"-->
                 <!-- domain="[('job_card_state_code','=','106')]"/>-->
-                <filter name="job_state_rescheduled" string="Rescheduled State" domain="[('job_card_state_code','=','107')]"/>
-                <filter name="job_state_customer_accepted" string="Customer Accepted State" domain="[('job_card_state_code','=','108')]"/>
+                <filter name="job_state_rescheduled" string="Rescheduled State"
+                        domain="[('job_card_state_code','=','107')]"/>
+                <filter name="job_state_customer_accepted" string="Customer Accepted State"
+                        domain="[('job_card_state_code','=','108')]"/>
                 <separator/>
 
-                <filter name="job_state_technician_started" string=" Technician Started State" domain="[('job_card_state_code','=','109')]"/>
-                <filter name="job_state_technician_reached" string="Technician Reached State" domain="[('job_card_state_code','=','110')]"/>
-                <filter name="job_state_warranty_verification" string="Warranty Verification State" domain="[('job_card_state_code','=','111')]"/>
-                <filter name="job_state_cancelled_insp_chrg_rej_by_cst" string="Cancelled. Insp Chrg Rej by Cst State" domain="[('job_card_state_code','=','112')]"/>
+                <filter name="job_state_technician_started" string=" Technician Started State"
+                        domain="[('job_card_state_code','=','109')]"/>
+                <filter name="job_state_technician_reached" string="Technician Reached State"
+                        domain="[('job_card_state_code','=','110')]"/>
+                <filter name="job_state_warranty_verification" string="Warranty Verification State"
+                        domain="[('job_card_state_code','=','111')]"/>
+                <filter name="job_state_cancelled_insp_chrg_rej_by_cst" string="Cancelled. Insp Chrg Rej by Cst State"
+                        domain="[('job_card_state_code','=','112')]"/>
                 <separator/>
-                <filter name="job_state_inspection_started" string="Inspection Started State" domain="[('job_card_state_code','=','113')]"/>
-                <filter name="job_state_quote_provided" string="Quote Provided State" domain="[('job_card_state_code','=','114')]"/>
-                <filter name="job_state_job_started" string="Job Started State" domain="[('job_card_state_code','=','115')]"/>
-                <filter name="job_state_payment_refused" string="Payment Refused State" domain="[('job_card_state_code','=','116')]"/>
+                <filter name="job_state_inspection_started" string="Inspection Started State"
+                        domain="[('job_card_state_code','=','113')]"/>
+                <filter name="job_state_quote_provided" string="Quote Provided State"
+                        domain="[('job_card_state_code','=','114')]"/>
+                <filter name="job_state_job_started" string="Job Started State"
+                        domain="[('job_card_state_code','=','115')]"/>
+                <filter name="job_state_payment_refused" string="Payment Refused State"
+                        domain="[('job_card_state_code','=','116')]"/>
 
                 <separator/>
 
-                <filter name="job_state_unit_pull_out" string="Unit Pull Out State" domain="[('job_card_state_code','=','117')]"/>
-                <filter name="job_state_unit_replaced" string="Unit Replaced State" domain="[('job_card_state_code','=','118')]"/>
-                <filter name="job_state_unit_returned" string="Unit Returned State" domain="[('job_card_state_code','=','119')]"/>
+                <filter name="job_state_unit_pull_out" string="Unit Pull Out State"
+                        domain="[('job_card_state_code','=','117')]"/>
+                <filter name="job_state_unit_replaced" string="Unit Replaced State"
+                        domain="[('job_card_state_code','=','118')]"/>
+                <filter name="job_state_unit_returned" string="Unit Returned State"
+                        domain="[('job_card_state_code','=','119')]"/>
                 <filter name="job_state_pending" string="Pending State" domain="[('job_card_state_code','=','120')]"/>
 
                 <separator/>
 
-                <filter name="job_state_on_hold_spare_parts" string="On Hold -SP Req State" domain="[('job_card_state_code','=','121')]"/>
-                <filter name="job_state_party_ready_reschedule" string="Parts Ready &amp; Reschedule State" domain="[('job_card_state_code','=','122')]"/>
-                <filter name="job_state_spare_parts_handover_to_me" string="Spare Parts Handover to me State" domain="[('job_card_state_code','=','123')]"/>
-                <filter name="job_state_cancellation" string="Cancellation State" domain="[('job_card_state_code','=','124')]"/>
+                <filter name="job_state_on_hold_spare_parts" string="On Hold -SP Req State"
+                        domain="[('job_card_state_code','=','121')]"/>
+                <filter name="job_state_party_ready_reschedule" string="Parts Ready &amp; Reschedule State"
+                        domain="[('job_card_state_code','=','122')]"/>
+                <filter name="job_state_spare_parts_handover_to_me" string="Spare Parts Handover to me State"
+                        domain="[('job_card_state_code','=','123')]"/>
+                <filter name="job_state_cancellation" string="Cancellation State"
+                        domain="[('job_card_state_code','=','124')]"/>
 
                 <separator/>
 
-                <filter name="job_state_ready_to_invoice" string="Ready to Invoice State" domain="[('job_card_state_code','=','125')]"/>
+                <filter name="job_state_ready_to_invoice" string="Ready to Invoice State"
+                        domain="[('job_card_state_code','=','125')]"/>
                 <filter name="job_state_closed" string="Closed State" domain="[('job_card_state_code','=','126')]"/>
-                <filter name="job_state_quote_approved" string="Quote Approved State" domain="[('job_card_state_code','=','127')]"/>
-                <filter name="job_state_quote_rejected" string="Quote Rejected State" domain="[('job_card_state_code','=','128')]"/>
+                <filter name="job_state_quote_approved" string="Quote Approved State"
+                        domain="[('job_card_state_code','=','127')]"/>
+                <filter name="job_state_quote_rejected" string="Quote Rejected State"
+                        domain="[('job_card_state_code','=','128')]"/>
                 <separator/>
 
-                <filter name="job_state_customer_need_quote" string="Customer Need Quote State" domain="[('job_card_state_code','=','129')]"/>
-                <filter name="job_state_cust_reject_service" string="Cust Reject Service State" domain="[('job_card_state_code','=','130')]"/>
-                <filter name="job_state_parts_added_req_service_charge" string="Parts Added Req Service Charge State" domain="[('job_card_state_code','=','131')]"/>
-                <filter name="job_state_unit_ready_for_delivery" string="Unit Ready For Delivery State" domain="[('job_card_state_code','=','132')]"/>
-
-                <separator/>
-
-                <filter name="job_state_rescheduled_with_unit" string="Rescheduled with Unit State" domain="[('job_card_state_code','=','133')]"/>
-                <filter name="job_state_rescheduled_with_parts" string="Rescheduled with Parts State" domain="[('job_card_state_code','=','134')]"/>
-                <filter name="job_state_req_revisit" string="Req. Revisit State" domain="[('job_card_state_code','=','152')]"/>
-                <filter name="job_state_cancelled" string="Cancelled State" domain="[('job_card_state_code','=','154')]"/>
-
-
-                <separator/>
-
-                <filter name="job_state_reschduled" string="Rescheduled State" domain="[('job_card_state_code','=','156')]"/>
-                <filter name="job_state_internal_technician_accepted" string="Internal Technician Accepted State" domain="[('job_card_state_code','=','201')]"/>
-                <filter name="job_state_internal_technician_rejected" string="Internal Technician Rejected State" domain="[('job_card_state_code','=','202')]"/>
-                <filter name="job_state_internal_job_started" string="Internal Job started State" domain="[('job_card_state_code','=','203')]"/>
+                <filter name="job_state_customer_need_quote" string="Customer Need Quote State"
+                        domain="[('job_card_state_code','=','129')]"/>
+                <filter name="job_state_cust_reject_service" string="Cust Reject Service State"
+                        domain="[('job_card_state_code','=','130')]"/>
+                <filter name="job_state_parts_added_req_service_charge" string="Parts Added Req Service Charge State"
+                        domain="[('job_card_state_code','=','131')]"/>
+                <filter name="job_state_unit_ready_for_delivery" string="Unit Ready For Delivery State"
+                        domain="[('job_card_state_code','=','132')]"/>
 
                 <separator/>
 
-                <filter name="job_state_rescheduled_for_internal_technician" string="Rescheduled  for Internal Technician State" domain="[('job_card_state_code','=','204')]"/>
-                <filter name="job_state_parts_received_by_internal_technician" string="Parts Received by Internal Technician State" domain="[('job_card_state_code','=','205')]"/>
-                <filter name="job_state_internal_technician_job_started" string="Internal Technician job Started State" domain="[('job_card_state_code','=','206')]"/>
-                <filter name="job_state_parts_ready_reschedule_with_internal_technician" string="Parts Ready  &amp; Reschedule with Internal  Technician State" domain="[('job_card_state_code','=','207')]"/>
-                <filter name="job_state_rescheduled_with_internal_parts" string="Rescheduled  with Internal Parts State" domain="[('job_card_state_code','=','208')]"/>
+                <filter name="job_state_rescheduled_with_unit" string="Rescheduled with Unit State"
+                        domain="[('job_card_state_code','=','133')]"/>
+                <filter name="job_state_rescheduled_with_parts" string="Rescheduled with Parts State"
+                        domain="[('job_card_state_code','=','134')]"/>
+                <filter name="job_state_req_revisit" string="Req. Revisit State"
+                        domain="[('job_card_state_code','=','152')]"/>
+                <filter name="job_state_cancelled" string="Cancelled State"
+                        domain="[('job_card_state_code','=','154')]"/>
 
 
                 <separator/>
-                <filter name="damaged_parts_to_be_returned_technician" string="Damaged to Be Technician" domain="[('damaged_parts_to_be_returned_technician','=',True)]"/>
-                <filter name="return_damage_parts_technician" string="I will Return the Damaged Part(s)" domain="[('return_damage_parts_technician','=',True)]"/>
-                <filter name="damaged_parts_returned_parts_user" string="Damage Part(s) Returned" domain="[('damaged_parts_returned_parts_user','=',True)]"/>
-                <filter name="lost_item_payment_received_technician" string="Technician Lost the Item &amp; Payment Received" domain="[('lost_item_payment_received_technician','=',True)]"/>
+
+                <filter name="job_state_reschduled" string="Rescheduled State"
+                        domain="[('job_card_state_code','=','156')]"/>
+                <filter name="job_state_internal_technician_accepted" string="Internal Technician Accepted State"
+                        domain="[('job_card_state_code','=','201')]"/>
+                <filter name="job_state_internal_technician_rejected" string="Internal Technician Rejected State"
+                        domain="[('job_card_state_code','=','202')]"/>
+                <filter name="job_state_internal_job_started" string="Internal Job started State"
+                        domain="[('job_card_state_code','=','203')]"/>
+
+                <separator/>
+
+                <filter name="job_state_rescheduled_for_internal_technician"
+                        string="Rescheduled  for Internal Technician State"
+                        domain="[('job_card_state_code','=','204')]"/>
+                <filter name="job_state_parts_received_by_internal_technician"
+                        string="Parts Received by Internal Technician State"
+                        domain="[('job_card_state_code','=','205')]"/>
+                <filter name="job_state_internal_technician_job_started" string="Internal Technician job Started State"
+                        domain="[('job_card_state_code','=','206')]"/>
+                <filter name="job_state_parts_ready_reschedule_with_internal_technician"
+                        string="Parts Ready  &amp; Reschedule with Internal  Technician State"
+                        domain="[('job_card_state_code','=','207')]"/>
+                <filter name="job_state_rescheduled_with_internal_parts" string="Rescheduled  with Internal Parts State"
+                        domain="[('job_card_state_code','=','208')]"/>
+
+
+                <separator/>
+                <filter name="damaged_parts_to_be_returned_technician" string="Damaged to Be Technician"
+                        domain="[('damaged_parts_to_be_returned_technician','=',True)]"/>
+                <filter name="return_damage_parts_technician" string="I will Return the Damaged Part(s)"
+                        domain="[('return_damage_parts_technician','=',True)]"/>
+                <filter name="damaged_parts_returned_parts_user" string="Damage Part(s) Returned"
+                        domain="[('damaged_parts_returned_parts_user','=',True)]"/>
+                <filter name="lost_item_payment_received_technician"
+                        string="Technician Lost the Item &amp; Payment Received"
+                        domain="[('lost_item_payment_received_technician','=',True)]"/>
 
                 <!--                <filter name="job_state_cancelled" string="Cancelled State"-->
                 <!-- domain="[('job_card_state_code','=','124')]"/>-->
@@ -2216,7 +2642,7 @@
                 <field name="longitude"/>
                 <field name="latitude"/>
                 <field name="amc_project_id"/>
-               <field name = "used_location_equipment" />
+                <field name="used_location_equipment"/>
             </xpath>
 
             <!-- Custom Kanban Template with Stage Colors -->
@@ -2265,11 +2691,11 @@
                                     <t t-esc="record.address.value"/>
                                 </div>
                                 <div style="margin-bottom: 5px;">
-                                	<span t-att-style="'background-color: ' + (record.stage_kanban_color.value or '#6C757D') + '; color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.9rem; display: inline-block;'">
+                                    <span t-att-style="'background-color: ' + (record.stage_kanban_color.value or '#6C757D') + '; color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.9rem; display: inline-block;'">
                                         <t t-esc="record.used_location_equipment.value"/>
                                     </span>
                                 </div>
-                                
+
                             </div>
 
                             <!-- Action Icons -->
@@ -2278,15 +2704,18 @@
                                     <t t-esc="record.phone.value"/>
                                 </div>
                                 <div style="display: flex; gap: 30px;">
-                                    <a t-att-href="'https://www.google.com/maps?q=' + (record.latitude.value) + ',' + (record.longitude.value)" target="_blank" style="color: #666; text-decoration: none;">
+                                    <a t-att-href="'https://www.google.com/maps?q=' + (record.latitude.value) + ',' + (record.longitude.value)"
+                                       target="_blank" style="color: #666; text-decoration: none;">
                                         <i class="fa fa-map-marker" title="Open Google Maps" style="font-size: 16px;"/>
                                     </a>
                                     <!-- Call Icon -->
-                                    <a t-att-href="'tel:' + record.phone.value" style="color: #666; text-decoration: none; ">
+                                    <a t-att-href="'tel:' + record.phone.value"
+                                       style="color: #666; text-decoration: none; ">
                                         <i class="fa fa-phone" title="Call" style="font-size: 16px;"/>
                                     </a>
                                     <!-- SMS Icon -->
-                                    <a t-att-href="'sms:' + record.phone.value" style="color: #666; text-decoration: none;">
+                                    <a t-att-href="'sms:' + record.phone.value"
+                                       style="color: #666; text-decoration: none;">
                                         <i class="fa fa-comment" title="Send SMS" style="font-size: 16px;"/>
                                     </a>
                                 </div>
@@ -2313,9 +2742,13 @@
         <field name="view_id" ref="view_project_task_kanban_mobile"/>
     </record>
 
-    <menuitem id="menu_project_task_kanban" name="Job Card List" parent="machine_repair_management.menu_machine_repair_support" action="action_job_card_kanban" groups="machine_repair_management.group_job_card_mobile_user" sequence="11" />
+    <menuitem id="menu_project_task_kanban" name="Job Card List"
+              parent="machine_repair_management.menu_machine_repair_support" action="action_job_card_kanban"
+              groups="machine_repair_management.group_job_card_mobile_user" sequence="11"/>
 
-    <menuitem name="Job Card" id="menu_item_project_task" sequence="10" parent="machine_repair_management.menu_machine_repair_support" action="action_job_card_form_view" groups="machine_repair_management.group_job_card_back_office_user" />
+    <menuitem name="Job Card" id="menu_item_project_task" sequence="10"
+              parent="machine_repair_management.menu_machine_repair_support" action="action_job_card_form_view"
+              groups="machine_repair_management.group_job_card_back_office_user"/>
 
     <!--    <menuitem-->
     <!-- id="menu_projct_task_parts_user"-->
@@ -2334,6 +2767,9 @@
         <field name="context">{'parts_menu':'without_damaged_parts'}</field>
     </record>
 
-    <menuitem id="menu_job_card_parts_without_damaged_parts" name="Job Card-Parts" parent="machine_repair_management.menu_machine_repair_support" action="action_job_card_parts_user_without_damaged_parts" sequence="15" groups="machine_repair_management.group_parts_user" />
+    <menuitem id="menu_job_card_parts_without_damaged_parts" name="Job Card-Parts"
+              parent="machine_repair_management.menu_machine_repair_support"
+              action="action_job_card_parts_user_without_damaged_parts" sequence="15"
+              groups="machine_repair_management.group_parts_user"/>
 
 </odoo>
