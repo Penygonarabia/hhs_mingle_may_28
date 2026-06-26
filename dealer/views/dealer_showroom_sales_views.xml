@@ -26,7 +26,7 @@
                         <field name="is_sales_return" readonly="state != 'draft'"/>
                         <field name="notes" colspan="2" readonly="state != 'draft'"/>
                         <field name="invoice_attachment_name" invisible="1"/>
-                        <field name="invoice_attachment" filename="invoice_attachment_name" readonly="state != 'draft'"/>
+                        <field name="attachment_ids" widget="many2many_binary" readonly="state != 'draft'" options="{'accepted_file_extensions': 'image/*,application/pdf'}"/>
                         <field name="user_id" invisible="1" force_save="1"/>
                         <field name="dealer_access_bool" invisible="1"/> 
                         <field name="current_latitude" invisible="1"/>
@@ -43,9 +43,9 @@
                             <field name="notes" readonly="state != 'draft'" class="o_field_text w-100" style="background-color: #f6fbfd; border-radius: 8px; padding: 6px;"/>
                         </div>
                         <div style="font-size:15px;font-weight:bold;color: #070808ff;">Invoice Attachment</div>
-                        <div style="width: 80%; padding: 5px 0;">
+                        <div style="width: 100%; padding: 5px 0;">
                            <field name="invoice_attachment_name" invisible="1"/>
-                           <field name="invoice_attachment" filename="invoice_attachment_name" readonly="state != 'draft'" class="w-100" style="max-width: 100% !important; box-sizing: border-box;"/>
+                           <field name="attachment_ids" widget="many2many_binary" readonly="state != 'draft'" class="w-100" style="max-width: 100% !important; box-sizing: border-box;" options="{'accepted_file_extensions': 'image/*,application/pdf'}"/>
                         </div>
                         <field name="user_id" invisible="1" force_save="1"/>
                         <field name="dealer_mobile_user_bool" invisible="1"/>
@@ -351,8 +351,7 @@
                             <div style="font-weight: bold; padding: 5px 0;">Invoice Scan Copy</div>
                             <field name="is_invoice_pdf" invisible="1"/>
                             <field name="invoice_attachment_name" invisible="1"/>
-                            <field name="invoice_attachment" widget="pdf_viewer" filename="invoice_attachment_name" nolabel="1" readonly="1" class="w-100" invisible="not is_invoice_pdf"/>
-                            <field name="invoice_attachment" widget="image" filename="invoice_attachment_name" nolabel="1" readonly="1" class="w-100" invisible="is_invoice_pdf"/>
+                            <field name="invoice_attachments_html" readonly="1" nolabel="1" class="w-100"/>
                         </div>
                     </div>
                 </sheet>
@@ -409,9 +408,9 @@
         <field name="arch" type="xml">
             <form string="Edit Item">
                 <group>
-                    <field name="product_category_id" invisible="1"/>
-                    <field name="product_group_id" invisible="1"/>
-                    <field name="product_subgroup_id" invisible="1"/>
+                    <field name="product_category_id" options="{'no_create_edit': True, 'no_open': True, 'no_create': True}"/>
+                    <field name="product_group_id" options="{'no_create_edit': True, 'no_open': True, 'no_create': True}" domain="[('parent_id', '=', product_category_id)]"/>
+                    <field name="product_subgroup_id" options="{'no_create_edit': True, 'no_open': True, 'no_create': True}" domain="[('parent_id', '=', product_group_id)]"/>
                     <field name="product_id" domain="[
                         ('show_in_dealer_app', '=', True),
                         ('product_tmpl_id.categ_id', 'child_of', product_subgroup_id if product_subgroup_id else (product_group_id if product_group_id else (product_category_id if product_category_id else 0)))
