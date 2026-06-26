@@ -414,15 +414,17 @@ class SubscriptionContracts(models.Model):
         '''Code Added on June 09 2026 by Vijaya Bhaskar'''
         if not self.customer_code:
             raise ValidationError(_("Please create the customer in the Penygon Application and enter the same customer code here  "))
-        '''Code Added on June 22 2026 by Vijaya bhaskar due to original name is updated when we create the contract'''
-        if self.date_start and self.name:
-            yymm = self.date_start.strftime('%y%m')
-            # Replace only the YYMM portion before the last 4 sequence digits
-            self.name = re.sub(
-                r'(\d{4})(\d{4})$',
-                lambda m: f'{yymm}{m.group(2)}',
-                self.name
-            )
+        
+        '''Client Asked same Bring Number Auto Number generation Original one Code Added on June 25 2026 '''
+        # '''Code Added on June 22 2026 by Vijaya bhaskar due to original name is updated when we create the contract'''
+        # if self.date_start and self.name:
+        #     yymm = self.date_start.strftime('%y%m')
+        #     # Replace only the YYMM portion before the last 4 sequence digits
+        #     self.name = re.sub(
+        #         r'(\d{4})(\d{4})$',
+        #         lambda m: f'{yymm}{m.group(2)}',
+        #         self.name
+        #     )
         
         self.write({'state': 'Ongoing'})
         
