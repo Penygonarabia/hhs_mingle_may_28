@@ -25,9 +25,9 @@
             <sheet>
                 <group> 
                     <field name="transaction_reference"/>                   
-                    <field name="dealer_id"/>
-                    <field name="dealer_showroom_id"/>
-                    <field name="salesman_id"/>                    
+                    <field name="dealer_id" options="{'no_create_edit': True, 'no_open': True, 'no_create': True}"/>
+                    <field name="dealer_showroom_id" options="{'no_create_edit': True, 'no_open': True, 'no_create': True}"/>
+                    <field name="salesman_id" options="{'no_create_edit': True, 'no_open': True, 'no_create': True}"/>                    
                     <field name="date_time"/>
                     <field name="points_available" readonly="1"/>
                     <field name="points_redeemed" mode="readonly" decorator="{'readonly': [('state', '=', 'processed')]}"/>

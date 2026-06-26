@@ -24,7 +24,29 @@ class FSMLoyaltyAudit(models.Model):
     notes = fields.Text()
     reference = fields.Char()
     sales_id = fields.Many2one('dsales.showroom.sales', string='Sales Record', ondelete='cascade')
-    status = fields.Selection(related="sales_id.state", string="Status")
+    status = fields.Selection(
+        selection=[
+            ('draft', 'Draft'),
+            ('submitted', 'Submitted'),
+            ('approved', 'Approved'),
+            ('rejected', 'Rejected'),
+            ('processed', 'Processed')
+        ],
+        compute='_compute_status',
+        store=True,
+        string="Status"
+    )
+
+    @api.depends('sales_id.state', 'type')
+    def _compute_status(self):
+        for rec in self:
+            if rec.type == '1': # Sales
+                rec.status = rec.sales_id.state if rec.sales_id else False
+            elif rec.type == '3': # Redemption
+                # Redemptions only appear in audit log when processed, so they are effectively approved
+                rec.status = 'approved'
+            else:
+                rec.status = False
 
     type_order = fields.Integer(compute='_compute_type_order', store=True)
 

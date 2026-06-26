@@ -310,6 +310,57 @@ class dealerShowroomSales(models.Model):
     def _compute_is_invoice_pdf(self):
         for rec in self:
             rec.is_invoice_pdf = bool(rec.invoice_attachment_name and rec.invoice_attachment_name.lower().endswith('.pdf'))
+            
+    invoice_attachments_html = fields.Html(string='Attachments Gallery', compute='_compute_invoice_attachments_html', sanitize=False)
+    
+    @api.depends('attachment_ids', 'invoice_attachment')
+    def _compute_invoice_attachments_html(self):
+        for rec in self:
+            items = []
+            # Fallback for old single attachment
+            if rec.invoice_attachment:
+                if rec.is_invoice_pdf:
+                    items.append('<iframe src="/web/content/dsales.showroom.sales/%s/invoice_attachment" style="width:100%%; height:600px;" frameborder="0"></iframe>' % rec.id)
+                else:
+                    items.append('<img src="/web/image/dsales.showroom.sales/%s/invoice_attachment" class="d-block w-100" style="object-fit:contain; max-height:600px;">' % rec.id)
+            
+            # Multiple attachments
+            for att in rec.attachment_ids:
+                if att.mimetype == 'application/pdf':
+                    items.append('<iframe src="/web/content/ir.attachment/%s/datas" style="width:100%%; height:600px;" frameborder="0"></iframe>' % att.id)
+                else:
+                    items.append('<img src="/web/image/ir.attachment/%s/datas" class="d-block w-100" style="object-fit:contain; max-height:600px;">' % att.id)
+                    
+            if not items:
+                rec.invoice_attachments_html = '<div class="text-muted p-3 text-center">No attachments uploaded.</div>'
+                continue
+                
+            if len(items) == 1:
+                rec.invoice_attachments_html = items[0]
+                continue
+                
+            # Build Bootstrap Carousel
+            html = f'<div id="carouselAttachments-{rec.id}" class="carousel slide" data-bs-ride="false">'
+            html += '<div class="carousel-inner" style="background-color: #f8f9fa; border-radius: 8px;">'
+            for i, content in enumerate(items):
+                active = 'active' if i == 0 else ''
+                html += f'<div class="carousel-item {active} text-center">{content}</div>'
+            html += '</div>'
+            
+            # Prev / Next controls
+            html += f'''
+              <button class="carousel-control-prev" type="button" data-bs-target="#carouselAttachments-{rec.id}" data-bs-slide="prev" style="background-color: rgba(0,0,0,0.5); width: 40px; height: 60px; top: 50%%; transform: translateY(-50%%); border-radius: 5px; margin-left: 10px;">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#carouselAttachments-{rec.id}" data-bs-slide="next" style="background-color: rgba(0,0,0,0.5); width: 40px; height: 60px; top: 50%%; transform: translateY(-50%%); border-radius: 5px; margin-right: 10px;">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+              </button>
+            '''
+            html += '</div>'
+            
+            rec.invoice_attachments_html = html
     
     line_ids = fields.One2many(
         'dsales.showroom.sales.line',
@@ -341,6 +392,8 @@ class dealerShowroomSales(models.Model):
                 raise UserError("At least one sales line is required.")
             if not any(line.product_id for line in rec.line_ids):
                 raise UserError("At least one product entry must be selected in the sales lines.")
+            if not rec.attachment_ids and not rec.invoice_attachment:
+                raise UserError("Invoice attachment is mandatory. Please upload your file.")
             
             rec.write({
                 'state': 'submitted',
@@ -372,7 +425,12 @@ class dealerShowroomSales(models.Model):
             'res_model': 'dealer.sales.line.wizard',
             'view_mode': 'form',
             'target': 'new',
-            'context': {'default_sales_id': self.id}
+            'context': {
+                'default_sales_id': self.id,
+                'default_product_category_id': self.product_category_id.id if self.product_category_id else False,
+                'default_product_group_id': self.group_id.id if self.group_id else False,
+                'default_product_subgroup_id': self.subgroup_id.id if self.subgroup_id else False,
+            }
         }
 
     def action_approve(self):

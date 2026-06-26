@@ -17,9 +17,11 @@
                         <field name="available_sale_dealer_ids" invisible="1"/>
                         <field name="sale_dealer_id" 
                                domain="[( 'id', 'in', available_sale_dealer_ids )]"
-                               modifiers='{"readonly": [["active", "=", false]]}'/>
+                               modifiers='{"readonly": [["active", "=", false]]}'
+                               options="{'no_create_edit': true, 'no_open': true, 'no_create': true}"/>
                         <field name="category_id"
-                               modifiers='{"readonly": [["active", "=", false]]}'/>
+                               modifiers='{"readonly": [["active", "=", false]]}'
+                               options="{'no_create_edit': true, 'no_open': true, 'no_create': true}"/>
                         <field name="from_date" modifiers='{"readonly": [["active", "=", false]]}'/>
                         <field name="to_date" modifiers='{"readonly": [["active", "=", false]]}'/>
                         <field name="dealer_conflict" invisible="1"/>

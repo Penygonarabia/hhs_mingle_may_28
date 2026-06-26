@@ -63,7 +63,11 @@ class DealerSalesLineWizard(models.TransientModel):
         domain = []
         if self.product_category_id:
             domain = [('parent_id', '=', self.product_category_id.id)]
-        return {'domain': {'product_group_id': domain}}
+        # Also narrow product domain to category level
+        product_domain = [('show_in_dealer_app', '=', True)]
+        if self.product_category_id:
+            product_domain.append(('product_tmpl_id.categ_id', 'child_of', self.product_category_id.id))
+        return {'domain': {'product_group_id': domain, 'product_id': product_domain}}
 
     @api.onchange('product_group_id')
     def _onchange_product_group_id(self):
@@ -76,18 +80,26 @@ class DealerSalesLineWizard(models.TransientModel):
         domain = []
         if self.product_group_id:
             domain = [('parent_id', '=', self.product_group_id.id)]
-        return {'domain': {'product_subgroup_id': domain}}
+        # Also narrow product domain to group level
+        product_domain = [('show_in_dealer_app', '=', True)]
+        if self.product_group_id:
+            product_domain.append(('product_tmpl_id.categ_id', 'child_of', self.product_group_id.id))
+        elif self.product_category_id:
+            product_domain.append(('product_tmpl_id.categ_id', 'child_of', self.product_category_id.id))
+        return {'domain': {'product_subgroup_id': domain, 'product_id': product_domain}}
 
     @api.onchange('product_subgroup_id')
     def _onchange_product_subgroup_id(self):
-        if self.product_id and self.product_id.product_sub_group_id != self.product_subgroup_id:
-            self.product_id = False
-        if not self.product_subgroup_id:
-            self.product_id = False
+        # Always clear product when subgroup changes so domain re-applies
+        self.product_id = False
             
         domain = []
         if self.product_subgroup_id:
-            domain.append(('product_sub_group_id', '=', self.product_subgroup_id.id))
+            domain.append(('product_tmpl_id.categ_id', 'child_of', self.product_subgroup_id.id))
+        elif self.product_group_id:
+            domain.append(('product_tmpl_id.categ_id', 'child_of', self.product_group_id.id))
+        elif self.product_category_id:
+            domain.append(('product_tmpl_id.categ_id', 'child_of', self.product_category_id.id))
         domain.append(('show_in_dealer_app', '=', True))
         return {'domain': {'product_id': domain}}
 
