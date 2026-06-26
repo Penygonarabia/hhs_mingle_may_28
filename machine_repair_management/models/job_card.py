@@ -8926,6 +8926,13 @@ class ProjectTask(models.Model):
                 record.service_request_id.company_preventive_maintenance = vals.get(
                     "company_preventive_maintenance"
                 )
+                
+            '''Code Added on June 26 2026 by Vijaya Bhaskar'''
+                
+            if 'used_location_equipment' in vals:
+                record.service_request_id.used_location_equipment = vals.get('used_location_equipment')    
+                record.asset_id.location = vals.get('used_location_equipment')
+                    
 
             invoice_no = vals.get("invoice_no") or record.invoice_no
             invoice_date = vals.get("invoice_date") or record.invoice_date

@@ -69,6 +69,8 @@
                                         <field name="asset_id" readonly="1" force_save="1"/>
                                         <field name="service_products_code_id" options="{'no_open':True}" readonly="1"
                                                force_save="1"/>
+                                               
+                                       	<field name = "used_location_equipment" readonly="0" force_save="1"/>       
                                         <label for="maintenance_type" string="Job Type"/>
                                         <!--                                        <div class="o_row">-->
                                         <!--                                            <div>-->

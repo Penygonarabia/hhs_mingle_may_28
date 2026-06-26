@@ -42,15 +42,22 @@ class JobCard(models.Model):
         res =super().write(vals)
         if 'brand_id' in vals:
            self.service_request_id.brand_id = vals.get('brand_id')
+           self.asset_id.brand_id = vals.get('brand_id')
+
            
         if 'items_from_own_company_bool' in vals:
             self.service_request_id.items_from_own_company_bool = vals.get('items_from_own_company_bool')
+            self.asset_id.items_from_own_company_bool = vals.get('items_from_own_company_bool')
+
         if 'model_id' in vals:
             self.service_request_id.model_id = vals.get('model_id')
+            self.asset_id.model_id = vals.get('model_id')
+
         
         if 'product_product_model_id' in vals:
             self.service_request_id.product_product_model_id = vals.get('product_product_model_id')
-                
+            self.asset_id.product_product_model_id = vals.get('product_product_model_id')   
+  
                
         return res
         
