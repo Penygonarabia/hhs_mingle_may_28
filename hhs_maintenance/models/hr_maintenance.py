@@ -527,7 +527,7 @@ class MaintenanceEquipment(models.Model):
                 'items_from_own_company_bool' :rec.items_from_own_company_bool or False,
                 'model_id' : rec.model_id.id or False,
                 'product_product_model_id' : rec.product_product_model_id.id or False,
-                'partner_name' : rec.partner_name or False,
+                'partner_name' : rec.contract_id.partner_name or False,
 
 
             }
