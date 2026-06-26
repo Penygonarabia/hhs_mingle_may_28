@@ -16354,9 +16354,7 @@ class AccessToken(http.Controller):
             for rec in customers:
                 result.append({
                     "Customer_Name": rec.name or "",
-                    "Customer_Code": rec.ref or "",
-                    "Collected_Points": rec.collected_points_regular or 0,
-                    "Balance_Points": rec.balance_points_regular or 0,
+                    "Customer_Code": rec.ref or "",                   
                     "Customer_Tier_Name": rec.tier_name or "",
                     "Loyalty_Feature_Activation_Date": str(rec.activation_date) if rec.activation_date else "",
                     "Redemption_Deadline_Date": str(rec.redemption_deadline) if rec.redemption_deadline else "",
@@ -16453,11 +16451,15 @@ class AccessToken(http.Controller):
 
             customer_code = params.get('Customer_Code')
             transaction_date = params.get('Transaction_Date')
-            document_type = params.get('Document_Type')
             transaction_no = params.get('Transaction_No')
-            transaction_type = params.get('Transaction_Type')
             regular_points = params.get('regular_points')
-            adjustment_type = params.get('adjustmenttype')
+
+            # Hardcoded values for Redemption
+            document_type = '98'
+            transaction_type = 'O'
+            warehouse = ''
+            reason = 'Redemption'
+            adjustment_type = '-'
 
             if not customer_code:
                 return Response(
@@ -16491,16 +16493,16 @@ class AccessToken(http.Controller):
                     content_type='application/json',
                     status=400
                 )
-                
-            if not document_type:
-                return Response(
-                    json.dumps({
-                        "status": "error",
-                        "message": "Document_Type is required"
-                    }),
-                    content_type='application/json',
-                    status=400
-                )
+
+            # if not document_type:
+            #     return Response(
+            #         json.dumps({
+            #             "status": "error",
+            #             "message": "Document_Type is required"
+            #         }),
+            #         content_type='application/json',
+            #         status=400
+            #     )
 
             if not transaction_no:
                 return Response(
@@ -16512,15 +16514,15 @@ class AccessToken(http.Controller):
                     status=400
                 )
 
-            if not transaction_type:
-                return Response(
-                    json.dumps({
-                        "status": "error",
-                        "message": "Transaction_Type is required"
-                    }),
-                    content_type='application/json',
-                    status=400
-                )
+            # if not transaction_type:
+            #     return Response(
+            #         json.dumps({
+            #             "status": "error",
+            #             "message": "Transaction_Type is required"
+            #         }),
+            #         content_type='application/json',
+            #         status=400
+            #     )
 
             if regular_points is None:
                 return Response(
@@ -16631,7 +16633,7 @@ class AccessToken(http.Controller):
                 'clph_type': transaction_type,
                 'clph_whouse': params.get('warehouse'),
                 'clph_regpoints': regular_points,
-                'clph_note': params.get('reason'),
+                'clph_note': reason,
                 'clph_adjtype': adjustment_type,
             }
 
@@ -16668,10 +16670,18 @@ class AccessToken(http.Controller):
                 csrf=False)
     def update_customer(self, **kwargs):
         try:
-            data = json.loads(request.httprequest.get_data(as_text=True) or '{}')
+            data = json.loads(
+                request.httprequest.get_data(as_text=True) or '{}'
+            )
             params = data.get('params', {})
 
             customer_code = params.get('Customer_Code')
+            customer_name = params.get('Customer_Name')
+            redemption_points = params.get('Redemption_points')
+
+            # ==========================================
+            # Validation
+            # ==========================================
 
             if not customer_code:
                 return Response(
@@ -16682,6 +16692,32 @@ class AccessToken(http.Controller):
                     content_type='application/json',
                     status=400
                 )
+
+            if redemption_points is None:
+                return Response(
+                    json.dumps({
+                        "status": "error",
+                        "message": "Redemption_points is required"
+                    }),
+                    content_type='application/json',
+                    status=400
+                )
+
+            try:
+                redemption_points = float(redemption_points)
+            except Exception:
+                return Response(
+                    json.dumps({
+                        "status": "error",
+                        "message": "Redemption_points must be numeric"
+                    }),
+                    content_type='application/json',
+                    status=400
+                )
+
+            # ==========================================
+            # Find Customer
+            # ==========================================
 
             partner = request.env['res.partner'].sudo().search(
                 [('ref', '=', customer_code)],
@@ -16698,26 +16734,67 @@ class AccessToken(http.Controller):
                     status=404
                 )
 
+            # ==========================================
+            # Existing Values
+            # ==========================================
+
+            collected_points = partner.collected_points_regular or 0
+            current_redeem_points = partner.redeem_points_regular or 0
+            expired_points = partner.expired_points_regular or 0
+
+            # ==========================================
+            # Calculate New Values
+            # ==========================================
+
+            new_redeem_points = (
+                current_redeem_points + redemption_points
+            )
+
+            new_balance_points = (
+                collected_points -
+                (new_redeem_points + expired_points)
+            )
+
+            # Prevent negative balance
+            if new_balance_points < 0:
+                return Response(
+                    json.dumps({
+                        "status": "error",
+                        "message": "Insufficient loyalty points"
+                    }),
+                    content_type='application/json',
+                    status=400
+                )
+
+            # ==========================================
+            # Update Customer
+            # ==========================================
+
             vals = {
-                'name': params.get('Customer_Name'),
-                'collected_points_regular': params.get('Collected_Points'),
-                'balance_points_regular': params.get('Balance_Points'),
-                'tier_name': params.get('Customer_Tier_Name'),
-                'activation_date': params.get('Loyalty_Feature_Activation_Date'),
-                'redemption_deadline': params.get('Redemption_Deadline_Date'),
-                'activate_loyalty_feature': params.get('Customer_Lotalty_Feature_Activate_Yes_or_No'),
+                'redeem_points_regular': new_redeem_points,
+                'balance_points_regular': new_balance_points,
             }
 
-            vals = {k: v for k, v in vals.items() if v is not None}
+            if customer_name:
+                vals['name'] = customer_name
 
             partner.write(vals)
+
+            # ==========================================
+            # Success Response
+            # ==========================================
 
             return Response(
                 json.dumps({
                     "status": "success",
                     "message": "Customer updated successfully",
                     "customer_id": partner.id,
-                    "customer_code": customer_code
+                    "customer_code": partner.ref,
+                    "customer_name": partner.name,
+                    "collected_points_regular": collected_points,
+                    "redeem_points_regular": new_redeem_points,
+                    "expired_points_regular": expired_points,
+                    "balance_points_regular": new_balance_points
                 }),
                 content_type='application/json',
                 status=200
