@@ -50,6 +50,9 @@ class AccountMove(models.Model):
     
     '''code Added on Jun 02 2026 by Vijaya Bhaskar'''
     invoice_txt = fields.Text(string = "Invoice Text")
+    
+    '''Code Added on June 25 2026 by Vijaya Bhaskar'''
+    partner_name = fields.Char(string = "Company Name")
 
     def _generate_qr_code(self):
         for record in self:

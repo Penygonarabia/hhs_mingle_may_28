@@ -425,6 +425,7 @@ class MachineRepairSupport(models.Model):
                 "maintenance_contract_type_id" :  self.maintenance_contract_type_id.id or False,
                 'emergency_count_exceed' : self.emergency_count_exceed or False,
                 'used_location_equipment' : self.used_location_equipment or False,
+                'partner_name' : self.partner_name or False,
 
             }
 
@@ -1699,6 +1700,15 @@ class MachineRepairSupport(models.Model):
         compute="_compute_actual_counts",
         store=True
     )
+    
+    '''Code Added on June 26 2026 by Vijaya Bhaskar'''
+    partner_name = fields.Char(string = "Company Name")
+
+    @api.onchange('contract_id')
+    def _onchange_partner_name_contract(self):
+        for rec in self:
+            if rec.project_related_amc_bool and rec.contract_id:
+                rec.partner_name = rec.contract_id.partner_name or False
     
 
     @api.depends("contract_id", "asset_id", "service_products_code_id")

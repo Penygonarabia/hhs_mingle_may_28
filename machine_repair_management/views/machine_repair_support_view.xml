@@ -69,7 +69,10 @@
                                 <!--                                <field name="phone" required="1" readonly="state == 'closed'" string="Mobile No"-->
                                 <!-- force_save="1"/>-->
                                 <field name="partner_id" readonly="state == 'closed'" force_save="1" class="underline-empty" string="Customer Name" placeholder=" " invisible="1" required="1"/>
-
+								
+								<field name = "partner_name"  readonly="state == 'closed'" force_save="1" class="underline-empty" invisible = "not project_related_amc_bool"/>
+								
+								
                                 <field name="customer_name" placeholder=" " class="underline-empty" required="1" invisible="0"/>
 
                                 <field name="email" readonly="0" force_save="1" placeholder=" " class="underline-empty" />

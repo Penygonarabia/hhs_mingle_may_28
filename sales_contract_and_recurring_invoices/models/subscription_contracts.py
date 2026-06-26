@@ -592,6 +592,7 @@ class SubscriptionContracts(models.Model):
             'work_center_group_id' : self.work_center_group_id.id or False,
             'sales_person_user_id' : self.sales_person_user_id.id or False,
             'invoice_txt' :self.invoice_txt,
+            'partner_name' : self.partner_name or False,
         })
 
         # ---------------------------------------------------------

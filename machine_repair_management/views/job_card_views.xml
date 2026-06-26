@@ -1306,7 +1306,10 @@
 
                         <field name="phone" widget="phone" options="{'enable_sms': false}"
                                readonly="state_status == True"/>
-
+                               
+                         <field name = "partner_name"  readonly="1" force_save="1" class="underline-empty" invisible = "not project_related_amc_bool"/>
+                              
+						
                         <field name="customer_name" placeholder=" " class="underline-empty" invisible="0"
                                readonly="state_status == True"/>
 
