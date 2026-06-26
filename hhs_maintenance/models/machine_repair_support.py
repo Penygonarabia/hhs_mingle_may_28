@@ -51,4 +51,11 @@ class MachineRepairSupport(models.Model):
                 })
 
         return res 
+    
+    def write(self,vals):
+        res = super().write(vals)
+        for rec in self:
+            if 'product_slno' in vals:
+                rec.asset_id.serial_no = vals.get('product_slno')
+        return res
   
