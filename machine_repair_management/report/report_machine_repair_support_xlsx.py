@@ -1,7 +1,7 @@
 from odoo import fields, models, api, _
 from odoo.tools.misc import xlsxwriter
 import io
-from datetime import datetime
+from datetime import datetime,date
 import pytz
 import pandas as pd
 from odoo.exceptions import warnings, ValidationError
