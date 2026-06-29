@@ -138,9 +138,28 @@ class JobCardExcel(models.AbstractModel):
         domain = [('id', 'in',
                    wizard.job_card_ids.ids if wizard.job_card_ids else self.env['project.task'].search([]).ids)]
 
-        if wizard.from_date and wizard.to_date:
-            domain += [('service_created_datetime', '<=', wizard.to_date), ('service_created_datetime', '>=', wizard.from_date)]
+        # if wizard.from_date and wizard.to_date:
+        #     domain += [('service_created_datetime', '<=', wizard.to_date), ('service_created_datetime', '>=', wizard.from_date)]
+        
+        '''Code Commented on June 29 2026 by Vijaya Bhaskar because before Feb 01 2026 client asked request date is taken from machine repair support '''
+        # if wizard.from_date and wizard.to_date:
+        #     domain += [('service_created_datetime', '<=', wizard.to_date), ('service_created_datetime', '>=', wizard.from_date)]
+        
+        cutoff_date = date(2026, 2, 1)
 
+        if wizard.from_date and wizard.from_date < cutoff_date:
+            model = self.env['machine.repair.support']
+            date_field = 'request_date'
+        else:
+            model = self.env['project.task']
+            date_field = 'service_created_datetime'
+        
+        # Date domain
+        if wizard.from_date and wizard.to_date:
+            domain += [
+                (date_field, '>=', wizard.from_date),
+                (date_field, '<=', wizard.to_date),
+            ]
      
         if wizard.job_card_ids:
             domain += [('id', 'in', wizard.job_card_ids.ids)]
