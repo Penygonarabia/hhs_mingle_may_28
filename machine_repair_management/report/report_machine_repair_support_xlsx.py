@@ -155,25 +155,30 @@ class JobCardExcel(models.AbstractModel):
                 ('request_date', '<=', wizard.to_date),
             ]
 
-            support_records = self.env['machine.repair.support'].search(
+            support_records = self.env['machine.repair.support'].sudo().search(
                 support_domain,
                 order="request_date asc"
             )
 
             names = support_records.mapped('name')
+           
+
             if names:
                 domain += [('name', 'in', names)]
+
+
             else:
                 # No matching records in machine.repair.support
                 domain += [('id', '=', 0)]
-
-
+           
 
         else:
             domain += [('service_created_datetime', '<=', wizard.to_date), ('service_created_datetime', '>=', wizard.from_date)]
 
+      
 
-     
+        
+            
         if wizard.job_card_ids:
             domain += [('id', 'in', wizard.job_card_ids.ids)]
         if wizard.product_category_ids:
