@@ -682,6 +682,7 @@ class SubscriptionContracts(models.Model):
             self.entitlement_correct = total_correct
             # Assign the commands to contract_line_ids
             self.contract_line_ids = line_commands
+           
         # else:
         #     # Clear fields if amc_quotation_id is unset
         #     self.reference = False

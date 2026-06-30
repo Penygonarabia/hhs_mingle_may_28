@@ -316,37 +316,37 @@ class ServiceSaleOrderLine(models.Model):
     #     return record
 
 
-    def write(self, vals):
-        res = super().write(vals)
+    # def write(self, vals):
+    #     res = super().write(vals)
 
-        for record in self:
+    #     for record in self:
 
-            if not record.service_sale_id or not record.service_sale_id.contract_id:
-                print("Skipping record:", record.id)
-                print("Service Sale ID:", record.service_sale_id)
-                print("Contract ID:", record.service_sale_id.contract_id if record.service_sale_id else None)
-                continue
+    #         if not record.service_sale_id or not record.service_sale_id.contract_id:
+    #             print("Skipping record:", record.id)
+    #             print("Service Sale ID:", record.service_sale_id)
+    #             print("Contract ID:", record.service_sale_id.contract_id if record.service_sale_id else None)
+    #             continue
 
-            contract_line = self.env['subscription.contracts.line'].search([
-                ('subscription_contract_id', '=', record.service_sale_id.contract_id.id),
-                ('product_id', '=', record.product_id.id),
-            ], limit=1)
+    #         contract_line = self.env['subscription.contracts.line'].search([
+    #             ('subscription_contract_id', '=', record.service_sale_id.contract_id.id),
+    #             ('product_id', '=', record.product_id.id),
+    #         ], limit=1)
 
-            values = {
-                'main_category_id': record.main_category_id.id,
-                'brand_category_id': record.brand_category_id.id,
-                'contract_type_id': record.contract_type_id.id,
-                'amc_pricing_id': record.amc_pricing_id.id,
-                'unit_cost_price': record.unit_cost_price,
-                'unit_selling_price': record.unit_selling_price,
-                'spare_parts_cost_per_category': record.spare_parts_cost_per_category,
-                'spare_parts_cost': record.spare_parts_cost,
-                'spare_parts_selling_price': record.spare_parts_selling_price,
-                'total_selling_price': record.total_selling_price,
-                'per_unit_selling_price': record.per_unit_selling_price,
-            }
+    #         values = {
+    #             'main_category_id': record.main_category_id.id,
+    #             'brand_category_id': record.brand_category_id.id,
+    #             'contract_type_id': record.contract_type_id.id,
+    #             'amc_pricing_id': record.amc_pricing_id.id,
+    #             'unit_cost_price': record.unit_cost_price,
+    #             'unit_selling_price': record.unit_selling_price,
+    #             'spare_parts_cost_per_category': record.spare_parts_cost_per_category,
+    #             'spare_parts_cost': record.spare_parts_cost,
+    #             'spare_parts_selling_price': record.spare_parts_selling_price,
+    #             'total_selling_price': record.total_selling_price,
+    #             'per_unit_selling_price': record.per_unit_selling_price,
+    #         }
 
-            if contract_line:
-                contract_line.write(values)
+    #         if contract_line:
+    #             contract_line.write(values)
 
-        return res 
+    #     return res 

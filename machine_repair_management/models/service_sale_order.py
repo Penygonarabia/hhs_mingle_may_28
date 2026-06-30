@@ -2958,7 +2958,7 @@ class ServiceSaleOrder(models.Model):
             )
             order.contract_id = contract
             order.state = "sale"
-            contract.onchange_amc_quotation_id()
+            # contract.onchange_amc_quotation_id()
             contract.onchange_partner_id_set_identification()
             '''Code Added on June 05 2026 by Vijaya Bhaskar'''
             contract._onchange_invoice_interval()
@@ -2968,34 +2968,31 @@ class ServiceSaleOrder(models.Model):
 
             ContractLine = self.env["subscription.contracts.line"]
 
-            # ✅ Step 4 — Insert lines ONLY if not already created
-            existing_lines = ContractLine.search(
-                [("subscription_contract_id", "=", contract.id)], limit=1
-            )
+            # # ✅ Step 4 — Insert lines ONLY if not already created
+            # # existing_lines = ContractLine.search(
+            # #     [("subscription_contract_id", "=", contract.id)], limit=1
+            # # )
 
-            if not existing_lines:
-                lines_vals = []
-                for line in order.service_sale_order_line_ids:
-                    lines_vals.append(
-                        {
-                            "subscription_contract_id": contract.id,
-                            "product_id": line.product_id.id,
-                            "main_category_id": line.main_category_id.id,
-                            "brand_category_id": line.brand_category_id.id,
-                            "contract_type_id": line.contract_type_id.id,
-                            "amc_pricing_id": line.amc_pricing_id.id,
-                            "unit_cost_price": line.unit_cost_price,
-                            "unit_selling_price": line.unit_selling_price,
-                            "spare_parts_cost_per_category": line.spare_parts_cost_per_category,
-                            "spare_parts_cost": line.spare_parts_cost,
-                            "spare_parts_selling_price": line.spare_parts_selling_price,
-                            "total_selling_price": line.total_selling_price,
-                            "per_unit_selling_price": line.per_unit_selling_price,
-                          #  "analytic_account_id": order.analytic_account_id.id,
-                        }
-                    )
+            # # if not existing_lines:
+            # lines_vals = []
+            # for line in order.service_sale_order_line_ids:
+            #     lines_vals.append({
+            #         "subscription_contract_id": contract.id,
+            #         "product_id": line.product_id.id,
+            #         "main_category_id": line.main_category_id.id,
+            #         "brand_category_id": line.brand_category_id.id,
+            #         "contract_type_id": line.contract_type_id.id,
+            #         "amc_pricing_id": line.amc_pricing_id.id,
+            #         "unit_cost_price": line.unit_cost_price,
+            #         "unit_selling_price": line.unit_selling_price,
+            #         "spare_parts_cost_per_category": line.spare_parts_cost_per_category,
+            #         "spare_parts_cost": line.spare_parts_cost,
+            #         "spare_parts_selling_price": line.spare_parts_selling_price,
+            #         "total_selling_price": line.total_selling_price,
+            #         "per_unit_selling_price": line.per_unit_selling_price,
+            #     })
 
-                ContractLine.create(lines_vals)
+            # ContractLine.create(lines_vals)
 
             # 🔥 STEP 5 — CREATE PAYMENT SCHEDULE (YOUR REQUIREMENT)
             if order.quotation_payment_term_ids:
