@@ -135,6 +135,8 @@ class JobCardExcel(models.AbstractModel):
         # Data rows
         row = 8
         no = 1
+        domain = []
+        support_domain = []
         domain = [('id', 'in',
                    wizard.job_card_ids.ids if wizard.job_card_ids else self.env['project.task'].search([]).ids)]
 
@@ -148,18 +150,29 @@ class JobCardExcel(models.AbstractModel):
         cutoff_date = date(2026, 2, 1)
 
         if wizard.from_date and wizard.from_date < cutoff_date:
-            model = self.env['machine.repair.support']
-            date_field = 'request_date'
-        else:
-            model = self.env['project.task']
-            date_field = 'service_created_datetime'
-        
-        # Date domain
-        if wizard.from_date and wizard.to_date:
-            domain += [
-                (date_field, '>=', wizard.from_date),
-                (date_field, '<=', wizard.to_date),
+            support_domain = [
+                ('request_date', '>=', wizard.from_date),
+                ('request_date', '<=', wizard.to_date),
             ]
+
+            support_records = self.env['machine.repair.support'].search(
+                support_domain,
+                order="request_date asc"
+            )
+
+            names = support_records.mapped('name')
+            if names:
+                domain += [('name', 'in', names)]
+            else:
+                # No matching records in machine.repair.support
+                domain += [('id', '=', 0)]
+
+
+
+        else:
+            domain += [('service_created_datetime', '<=', wizard.to_date), ('service_created_datetime', '>=', wizard.from_date)]
+
+
      
         if wizard.job_card_ids:
             domain += [('id', 'in', wizard.job_card_ids.ids)]
