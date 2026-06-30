@@ -34,7 +34,7 @@ class FSMLoyaltyRedemption(models.Model):
 
     transaction_reference = fields.Char(
         string="Transaction Reference",
-        default=lambda self: "New",
+        default="New",
         readonly=True,
         copy=False,
     )
@@ -141,14 +141,17 @@ class FSMLoyaltyRedemption(models.Model):
     @api.model
     def create(self, values):
         if values.get('transaction_reference', 'New') == 'New':
-            self.env.cr.execute("SELECT MAX(transaction_reference) FROM fsm_loyalty_redemption WHERE transaction_reference LIKE 'RED%'")
-            max_ref = self.env.cr.fetchone()[0]
-            if max_ref:
-                try:
-                    num = int(max_ref[3:])
-                    values['transaction_reference'] = f"RED{num + 1:05d}"
-                except ValueError:
-                    values['transaction_reference'] = "RED00001"
+            # Use regex to find only exact 'RED' + digits, cast to integer to find the true mathematical max.
+            # This prevents string sorting bugs (where 'RED99' > 'RED100').
+            self.env.cr.execute("""
+                SELECT MAX(CAST(SUBSTRING(transaction_reference FROM 4) AS INTEGER))
+                FROM fsm_loyalty_redemption 
+                WHERE transaction_reference ~ '^RED[0-9]+$'
+            """)
+            max_num = self.env.cr.fetchone()[0]
+            
+            if max_num is not None:
+                values['transaction_reference'] = f"RED{max_num + 1:05d}"
             else:
                 values['transaction_reference'] = "RED00001"
             
