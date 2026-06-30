@@ -34,7 +34,7 @@ class FSMLoyaltyRedemption(models.Model):
 
     transaction_reference = fields.Char(
         string="Transaction Reference",
-        default="New",
+        default=lambda self: "New",
         readonly=True,
         copy=False,
     )
