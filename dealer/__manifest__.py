@@ -63,9 +63,10 @@ This module allows you to:
     'assets': {
         'web.assets_backend': [
             # 'dealer/static/src/js/dealer_confirm.js',
-            # 'dealer/static/src/css/custom.css',
-            # 'dealer/static/src/css/pivot_fix.css',   
-            'dealer/static/src/js/hide_user_menu.js',                                    
+            'dealer/static/src/css/custom.css',
+            'dealer/static/src/css/pivot_fix.css',   
+            'dealer/static/src/js/hide_user_menu.js',
+            'dealer/static/src/js/pivot_patch.js',
         ],
         'web.assets_frontend': [
             'dealer/static/src/css/custom.css',                  

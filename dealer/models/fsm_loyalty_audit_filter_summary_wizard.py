@@ -27,7 +27,12 @@ class FsmLoyaltyAuditFilterWizard(models.TransientModel):
     )
 
     def apply_filter_summary(self):
-        action = self.env.ref('dealer.action_fsm_loyalty_audit_pivot_mob').read()[0]
+        # Force-fix the view in the database in case the module was not upgraded
+        pivot_view = self.env.ref('dealer.view_fsm_loyalty_audit_pivot_mob', raise_if_not_found=False)
+        if pivot_view and 'type_order' in pivot_view.arch:
+            new_arch = pivot_view.arch.replace('<field name="type_order" type="sort"  invisible="1"/>', '')
+            new_arch = new_arch.replace('<field name="type_order" type="sort" invisible="1"/>', '')
+            pivot_view.sudo().write({'arch': new_arch})
 
         domain = [('sales_id.state', '=', 'approved')]
 
@@ -37,5 +42,15 @@ class FsmLoyaltyAuditFilterWizard(models.TransientModel):
         if self.end_date:
             domain.append(('date_time', '<=', self.end_date))
 
-        action['domain'] = domain
-        return action
+        pivot_view_id = self.env.ref('dealer.view_fsm_loyalty_audit_pivot_mob').id
+        tree_view_id = self.env.ref('dealer.view_fsm_loyalty_audit_tree_mob').id
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Loyalty Points Summary',
+            'res_model': 'fsm.loyalty.audit',
+            'view_mode': 'pivot,tree',
+            'views': [(pivot_view_id, 'pivot'), (tree_view_id, 'tree')],
+            'domain': domain,
+            'target': 'current',
+        }
