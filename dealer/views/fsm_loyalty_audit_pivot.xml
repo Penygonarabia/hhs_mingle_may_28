@@ -74,4 +74,18 @@
     <field name="view_id" ref="view_fsm_loyalty_audit_pivot_mob"/>
 </record>
 
+<record id="action_fsm_loyalty_audit_pivot_mob_view_pivot" model="ir.actions.act_window.view">
+    <field name="sequence" eval="1"/>
+    <field name="view_mode">pivot</field>
+    <field name="view_id" ref="view_fsm_loyalty_audit_pivot_mob"/>
+    <field name="act_window_id" ref="action_fsm_loyalty_audit_pivot_mob"/>
+</record>
+
+<record id="action_fsm_loyalty_audit_pivot_mob_view_tree" model="ir.actions.act_window.view">
+    <field name="sequence" eval="2"/>
+    <field name="view_mode">tree</field>
+    <field name="view_id" ref="view_fsm_loyalty_audit_tree_mob"/>
+    <field name="act_window_id" ref="action_fsm_loyalty_audit_pivot_mob"/>
+</record>
+
 </odoo>

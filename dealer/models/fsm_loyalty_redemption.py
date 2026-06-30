@@ -137,10 +137,18 @@ class FSMLoyaltyRedemption(models.Model):
 
         return self.env.ref('dealer.action_fsm_loyalty_redemption_report').report_action(self)
 
+    @api.model
+    def default_get(self, fields_list):
+        res = super(FSMLoyaltyRedemption, self).default_get(fields_list)
+        if 'transaction_reference' in fields_list:
+            res['transaction_reference'] = 'New'
+        return res
+
 
     @api.model
     def create(self, values):
-        if values.get('transaction_reference', 'New') == 'New':
+        ref = values.get('transaction_reference', 'New')
+        if ref == 'New' or (not self.env.context.get('import_file') and str(ref).startswith('RED')):
             # Use regex to find only exact 'RED' + digits, cast to integer to find the true mathematical max.
             # This prevents string sorting bugs (where 'RED99' > 'RED100').
             self.env.cr.execute("""
