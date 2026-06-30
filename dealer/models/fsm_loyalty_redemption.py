@@ -34,8 +34,9 @@ class FSMLoyaltyRedemption(models.Model):
 
     transaction_reference = fields.Char(
         string="Transaction Reference",
-        default=lambda self: self.env['ir.sequence'].next_by_code('fsm.loyalty.redemption'),
+        default="New",
         readonly=True,
+        copy=False,
     )
 
     date_time = fields.Datetime(default=fields.Datetime.now)
@@ -139,6 +140,18 @@ class FSMLoyaltyRedemption(models.Model):
 
     @api.model
     def create(self, values):
+        if values.get('transaction_reference', 'New') == 'New':
+            self.env.cr.execute("SELECT MAX(transaction_reference) FROM fsm_loyalty_redemption WHERE transaction_reference LIKE 'RED%'")
+            max_ref = self.env.cr.fetchone()[0]
+            if max_ref:
+                try:
+                    num = int(max_ref[3:])
+                    values['transaction_reference'] = f"RED{num + 1:05d}"
+                except ValueError:
+                    values['transaction_reference'] = "RED00001"
+            else:
+                values['transaction_reference'] = "RED00001"
+            
         """ Prevent creation when state is 'processed' """
         if values.get('state') == 'processed':
             raise AccessError(_("You cannot create records with the 'processed' state."))

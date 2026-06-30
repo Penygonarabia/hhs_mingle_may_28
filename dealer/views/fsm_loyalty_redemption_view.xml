@@ -71,12 +71,11 @@
         </field>
     </record>
 
-    <!-- Action Window -->
     <record id="action_loyalty_redemption" model="ir.actions.act_window">
         <field name="name">Redemption</field>
         <field name="res_model">fsm.loyalty.redemption</field>
         <field name="view_mode">tree,form</field>
-        <!-- <field name="view_id" ref="view_fsm_loyalty_redemption_form"/> -->       
+        <field name="view_id" ref="view_fsm_loyalty_redemption_tree"/>
     </record>
 
     <menuitem id="menu_fsm_loyalty_redemption" name="Redemptions"
