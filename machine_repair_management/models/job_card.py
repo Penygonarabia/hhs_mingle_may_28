@@ -8248,6 +8248,9 @@ class ProjectTask(models.Model):
                         'job_state': rec.job_state.id,
                         'job_card_state_code': rec.job_state.code,
                         'job_card_state': rec.job_state.name,
+                         'technician_first_visit_datetime' : rec.technician_first_visit_datetime,
+                        'technician_first_visit_date' : rec.technician_first_visit_date,
+                        'technician_first_intime' : rec.technician_first_intime
                     }
     
                     # Avoid recursive loop
