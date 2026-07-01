@@ -2600,6 +2600,11 @@ class KsDashboardNinjaItems(models.Model):
                         ks_chart_record = {}
                     chart_data = []
                     chart_sub_data = []
+                    # KS patch: drop the empty/false primary-groupby bucket so charts
+                    # never show a "False"/"None"/"Undefined" category.
+                    if ks_chart_groupby_relation_fields and isinstance(ks_chart_record, list):
+                        ks_chart_record = [r for r in ks_chart_record
+                                           if r.get(ks_chart_groupby_relation_fields[0])]
                     for res in ks_chart_record:
                         domain = res.get('__domain', [])
                         if ks_chart_groupby_relation_fields[0] in res:
@@ -3822,6 +3827,9 @@ class KsDashboardNinjaItems(models.Model):
         if ks_chart_groupby_type == "relational_type":
             ks_chart_data['groupByIds'] = []
 
+        # KS patch: drop the empty/false groupby bucket (do not show false records).
+        if ks_chart_groupby_relation_field:
+            ks_chart_records = [r for r in ks_chart_records if r.get(ks_chart_groupby_field)]
         for res in ks_chart_records:
             is_ks_index = False
             ks_index = False

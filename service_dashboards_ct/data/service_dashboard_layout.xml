@@ -11,6 +11,13 @@
              DrillDown + ListView fix sourced from 20260617_DrillDown_ListIView_Fixed.
           -->
 
+        <!-- Unfreeze CT item xmlids BEFORE the grid_corners records below.
+             legacy_service_boards.xml (noupdate="1") loads first and freezes
+             these items (ir_model_data.noupdate=True), which makes Odoo skip
+             the position updates below on every -u. This clears that flag so
+             the records re-apply; the trailing rebuild function re-freezes. -->
+        <function model="ks_dashboard_ninja.board" name="service_dashboard_ct_unfreeze_layout_items"/>
+
         <!-- Board: legacy_board_uwc -->
         <record id="legacy_item_454" model="ks_dashboard_ninja.item">
             <field name="grid_corners">{'x': 0, 'y': 0, 'w': 2, 'h': 3}</field>
@@ -42,36 +49,43 @@
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Status analysis on weekly basis (full width, 3rd row) -->
         <record id="legacy_item_460" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 12, 'h': 7}</field>
-            <field name="ks_show_records" eval="True"/>
-            <field name="ks_list_view_layout">layout_1</field>
-        </record>
-        <record id="legacy_item_461" model="ks_dashboard_ninja.item">
             <field name="grid_corners">{'x': 0, 'y': 10, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Default Work Centre Wise (full width, 4th row) -->
+        <record id="legacy_item_461" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 17, 'w': 12, 'h': 7}</field>
+            <field name="ks_show_records" eval="True"/>
+            <field name="ks_list_view_layout">layout_1</field>
+        </record>
+        <!-- Job Cards - Status Wise (Closed & Cancelled) (left, 5th row) -->
         <record id="legacy_item_462" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 17, 'w': 6, 'h': 7}</field>
+            <field name="grid_corners">{'x': 0, 'y': 24, 'w': 6, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Status Wise (Except Closed & Cancelled) (right, 5th row) -->
         <record id="legacy_item_463" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 6, 'y': 17, 'w': 6, 'h': 7}</field>
+            <field name="grid_corners">{'x': 6, 'y': 24, 'w': 6, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Month Wise (full width, 2nd row) -->
         <record id="legacy_item_464" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 24, 'w': 12, 'h': 7}</field>
+            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Warranty Wise (%) (right, 6th row) -->
         <record id="legacy_item_465" model="ks_dashboard_ninja.item">
             <field name="grid_corners">{'x': 6, 'y': 31, 'w': 6, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Warranty Sts & Region - Jobs Count (left, 6th row) -->
         <record id="legacy_item_562" model="ks_dashboard_ninja.item">
             <field name="grid_corners">{'x': 0, 'y': 31, 'w': 6, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
@@ -109,38 +123,45 @@
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Status analysis on weekly basis (full width, 3rd row) -->
         <record id="legacy_item_485" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 12, 'h': 6}</field>
+            <field name="grid_corners">{'x': 0, 'y': 10, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Status Wise (Closed & Cancelled) (left, 5th row) -->
         <record id="legacy_item_486" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 15, 'w': 4, 'h': 8}</field>
+            <field name="grid_corners">{'x': 0, 'y': 24, 'w': 4, 'h': 8}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Status Wise (Except Closed & Cancelled) (right, 5th row) -->
         <record id="legacy_item_487" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 4, 'y': 15, 'w': 8, 'h': 8}</field>
+            <field name="grid_corners">{'x': 4, 'y': 24, 'w': 8, 'h': 8}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Month Wise (full width, 2nd row) -->
         <record id="legacy_item_488" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 23, 'w': 12, 'h': 8}</field>
+            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Warranty Status Wise (%) (right, 6th row) -->
         <record id="legacy_item_489" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 6, 'y': 31, 'w': 6, 'h': 8}</field>
+            <field name="grid_corners">{'x': 6, 'y': 32, 'w': 6, 'h': 8}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Warranty Sts & Region - Jobs Count (left, 6th row) -->
         <record id="legacy_item_558" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 31, 'w': 6, 'h': 8}</field>
+            <field name="grid_corners">{'x': 0, 'y': 32, 'w': 6, 'h': 8}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
-
+        <!-- Job Cards - Not Closed Status analysis on weekly basis (full width, 4th row) -->
         <record id="legacy_item_not_closed_weekly_c" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 17, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
@@ -176,38 +197,45 @@
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Status analysis on weekly basis (full width, 3rd row) -->
         <record id="legacy_item_496" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 12, 'h': 6}</field>
+            <field name="grid_corners">{'x': 0, 'y': 10, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Status Wise (Closed & Cancelled) (left, 5th row) -->
         <record id="legacy_item_497" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 15, 'w': 4, 'h': 8}</field>
+            <field name="grid_corners">{'x': 0, 'y': 24, 'w': 4, 'h': 8}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Status Wise (Except Closed & Cancelled) (right, 5th row) -->
         <record id="legacy_item_498" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 4, 'y': 15, 'w': 8, 'h': 8}</field>
+            <field name="grid_corners">{'x': 4, 'y': 24, 'w': 8, 'h': 8}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Month Wise (full width, 2nd row) -->
         <record id="legacy_item_499" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 23, 'w': 12, 'h': 8}</field>
+            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Warranty Status Wise (%) (right, 6th row) -->
         <record id="legacy_item_500" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 6, 'y': 31, 'w': 6, 'h': 8}</field>
+            <field name="grid_corners">{'x': 6, 'y': 32, 'w': 6, 'h': 8}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Warranty Sts & Region - Jobs Count (left, 6th row) -->
         <record id="legacy_item_563" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 31, 'w': 6, 'h': 8}</field>
+            <field name="grid_corners">{'x': 0, 'y': 32, 'w': 6, 'h': 8}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
-
+        <!-- Job Cards - Not Closed Status analysis on weekly basis (full width, 4th row) -->
         <record id="legacy_item_not_closed_weekly_e" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 17, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
@@ -243,38 +271,45 @@
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Status analysis on weekly basis (full width, 3rd row) -->
         <record id="legacy_item_507" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 12, 'h': 6}</field>
+            <field name="grid_corners">{'x': 0, 'y': 10, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Status Wise (Closed & Cancelled) (left, 5th row) -->
         <record id="legacy_item_508" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 15, 'w': 4, 'h': 8}</field>
+            <field name="grid_corners">{'x': 0, 'y': 24, 'w': 4, 'h': 8}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Status Wise (Except Closed & Cancelled) (right, 5th row) -->
         <record id="legacy_item_509" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 4, 'y': 15, 'w': 8, 'h': 8}</field>
+            <field name="grid_corners">{'x': 4, 'y': 24, 'w': 8, 'h': 8}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Month Wise (full width, 2nd row) -->
         <record id="legacy_item_510" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 23, 'w': 12, 'h': 8}</field>
+            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Warranty Status Wise (%) (right, 6th row) -->
         <record id="legacy_item_511" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 6, 'y': 31, 'w': 6, 'h': 8}</field>
+            <field name="grid_corners">{'x': 6, 'y': 32, 'w': 6, 'h': 8}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Warranty Sts & Region - Jobs Count (left, 6th row) -->
         <record id="legacy_item_565" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 31, 'w': 6, 'h': 8}</field>
+            <field name="grid_corners">{'x': 0, 'y': 32, 'w': 6, 'h': 8}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
-
+        <!-- Job Cards - Not Closed Status analysis on weekly basis (full width, 4th row) -->
         <record id="legacy_item_not_closed_weekly_w" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 17, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
@@ -324,28 +359,33 @@
         </record>
 
         <!-- Board: legacy_board_crd -->
+        <!-- Total Job Cards - Scheduled (KPI, left half) -->
         <record id="legacy_item_553" model="ks_dashboard_ninja.item">
             <field name="grid_corners">{'x': 0, 'y': 0, 'w': 6, 'h': 3}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Total Scheduled Job Cards - Month wise (full width, 2nd row) -->
         <record id="legacy_item_554" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 6, 'h': 7}</field>
+            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Total Job Cards - Closed (KPI, right half) -->
         <record id="legacy_item_555" model="ks_dashboard_ninja.item">
             <field name="grid_corners">{'x': 6, 'y': 0, 'w': 6, 'h': 3}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Total Closed Job Cards - Month wise (full width, 3rd row) -->
         <record id="legacy_item_556" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 6, 'y': 3, 'w': 6, 'h': 7}</field>
+            <field name="grid_corners">{'x': 0, 'y': 10, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Job Cards - Users wise (full width, 4th row) -->
         <record id="legacy_item_568" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 3, 'w': 6, 'h': 7}</field>
+            <field name="grid_corners">{'x': 0, 'y': 17, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
@@ -513,17 +553,11 @@
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
-        <record id="legacy_item_666" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 45, 'w': 12, 'h': 7}</field>
-            <field name="ks_show_records" eval="True"/>
-            <field name="ks_list_view_layout">layout_1</field>
-        </record>
         <record id="legacy_item_698" model="ks_dashboard_ninja.item">
             <field name="grid_corners">{'x': 0, 'y': 17, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
-
         <!-- Board: legacy_board_parts -->
         <record id="legacy_item_639" model="ks_dashboard_ninja.item">
             <field name="grid_corners">{'x': 0, 'y': 0, 'w': 2, 'h': 3}</field>
@@ -597,13 +631,13 @@
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
-         <record id="legacy_item_306" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 24, 'w': 12, 'h': 7}</field>
+        <record id="legacy_item_697" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 31, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
-        <record id="legacy_item_697" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 31, 'w': 12, 'h': 7}</field>
+        <record id="legacy_item_306" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 24, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
@@ -621,23 +655,27 @@
         </record>
 
         <!-- Board: board_service_analysis_crd_users -->
+        <!-- Scheduled Tasks (KPI, left) -->
         <record id="kpi_crd_scheduled_tasks" model="ks_dashboard_ninja.item">
             <field name="grid_corners">{'x': 0, 'y': 0, 'w': 2, 'h': 3}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
+        <!-- Closed Tasks (KPI, beside Scheduled) -->
+        <record id="kpi_crd_closed_tasks" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 2, 'y': 0, 'w': 2, 'h': 3}</field>
+            <field name="ks_show_records" eval="True"/>
+            <field name="ks_list_view_layout">layout_1</field>
+        </record>
+        <!-- Tasks - Month Wise (full width, 2nd row) -->
         <record id="bar_crd_tasks_monthwise" model="ks_dashboard_ninja.item">
             <field name="grid_corners">{'x': 0, 'y': 3, 'w': 12, 'h': 8}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>
-        <record id="kpi_crd_closed_tasks" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 11, 'w': 2, 'h': 3}</field>
-            <field name="ks_show_records" eval="True"/>
-            <field name="ks_list_view_layout">layout_1</field>
-        </record>
+        <!-- Tasks - User Role Wise (full width, 3rd row) -->
         <record id="bar_crd_tasks_userrole" model="ks_dashboard_ninja.item">
-            <field name="grid_corners">{'x': 0, 'y': 14, 'w': 12, 'h': 7}</field>
+            <field name="grid_corners">{'x': 0, 'y': 11, 'w': 12, 'h': 7}</field>
             <field name="ks_show_records" eval="True"/>
             <field name="ks_list_view_layout">layout_1</field>
         </record>

@@ -77,6 +77,14 @@ export class GroupedUserList extends X2ManyField {
             // header reflects the newly-selected user_id.
             await this.props.record.load();
         }
+
+        // Focus back to the Dashboards tab after user selection
+        setTimeout(() => {
+            const dashboardTab = document.querySelector('.dr_matrix_form .o_notebook a.nav-link[name="dashboards"]');
+            if (dashboardTab) {
+                dashboardTab.click();
+            }
+        }, 150);
     }
 }
 

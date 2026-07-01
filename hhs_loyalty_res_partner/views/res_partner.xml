@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_crm_res_partner_loyalty_form" model="ir.ui.view">
+        <field name="name">res.partner.loyalty.inherit.form</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <!-- Tier Tab -->
+            <xpath expr="//page[@name='applicable_loyalty']" position="after">
+                <page string="Tier"
+                      name="tier_tab"
+                      groups="hhs_loyalty_management.group_loyalty_program_user">
+                    <group>
+                        <field name="tier_name"/>
+                    </group>
+                    <group col="2">
+                        <group string="Regular">
+                            <field name="collected_points_regular"/>
+                            <field name="redeem_points_regular"/>
+                            <field name="expired_points_regular"/>
+                            <field name="balance_points_regular"/>
+                        </group>
+                        <group string="Bonus">
+                            <div class="o_form_label"/>
+                            <field name="collected_points_bonus" nolabel="1"/>
+                            <div class="o_form_label"/>
+                            <field name="redeem_points_bonus" nolabel="1"/>
+                            <div class="o_form_label"/>
+                            <field name="expired_points_bonus" nolabel="1"/>
+                            <div class="o_form_label"/>
+                            <field name="balance_points_bonus" nolabel="1"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+
+            <!-- Loyalty Transaction History -->
+            <xpath expr="//page[@name='tier_tab']" position="after">
+
+                <page string="Loyalty Transaction History"
+                      name="loyalty_transaction_history_tab"
+                      groups="hhs_loyalty_management.group_loyalty_program_user">
+<!--                    <header>-->
+<!--                        <button name="generate_loyalty_transaction_history" type="object"-->
+<!--                                class="btn-primary"></button>-->
+<!--                    </header>-->
+
+<!--                    <group col="3">-->
+
+<!--                        <field name="loyalty_points" readonly="1"/>-->
+<!--                        <field name="redeemed_points" readonly="1"/>-->
+<!--                        <field name="balance_points" readonly="1"/>-->
+
+<!--                    </group>-->
+
+                    <field name="loyalty_transaction_history_ids"
+                           readonly="1"
+                           create="0"
+                           edit="0"
+                           delete="0">
+                        <tree string="Transaction History">
+                            <field name="clph_docnumber"/>
+                            <field name="clph_points"/>
+                            <field name="clph_bonuspoints"/>
+                            <field name="clph_whouse"/>
+                            <field name="clph_note"/>
+                            <field name="clph_datetime"/>
+                        </tree>
+
+                    </field>
+
+                </page>
+
+            </xpath>
+        </field>
+    </record>
+</odoo>

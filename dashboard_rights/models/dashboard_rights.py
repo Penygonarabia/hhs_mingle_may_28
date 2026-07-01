@@ -6,9 +6,10 @@ source of truth for whether a given user can see/use a given ks_dashboard
 board.
 
 One record per (user, dashboard). Defaults to has_access=False for every
-non-admin user. The admin user (base.group_system / base.user_admin) is
-always considered to have access — see ``user_has_dashboard_access`` — so we
-do not need to maintain explicit rows for admin.
+user. Only the true superuser (``__system__``) is always considered to have
+access — see ``_is_admin_user`` / ``user_has_dashboard_access``. Every other
+user (including Settings admins and the bootstrap Administrator) is governed
+by their explicit rows, so their access is configurable from the matrix.
 """
 
 from odoo import api, fields, models, _
@@ -44,7 +45,7 @@ class DashboardRights(models.Model):
     dashboard_top_menu_id = fields.Many2one(
         "ir.ui.menu",
         string="Dashboard Category",
-        related="dashboard_id.ks_dashboard_top_menu_id",
+        compute="_compute_dashboard_top_menu_id",
         store=True,
         index=True,
         readonly=True,
@@ -63,6 +64,12 @@ class DashboardRights(models.Model):
         store=True,
         group_operator="sum",
         help="1 when has_access is True, 0 otherwise. Used for group-by aggregation.",
+    )
+    access_status = fields.Char(
+        string="Status",
+        compute="_compute_access_status",
+        store=False,
+        help="Shows how many dashboards the user can access vs total (e.g. '5 / 12').",
     )
 
     _sql_constraints = [
@@ -112,21 +119,97 @@ class DashboardRights(models.Model):
         for rec in self:
             rec.has_access_int = 1 if rec.has_access else 0
 
+    def _compute_access_status(self):
+        """Compute 'granted / total' dashboard counts for each user.
+
+        Uses a single SQL query to fetch aggregated counts for all users
+        in the current recordset, avoiding N+1 queries.
+        """
+        if not self:
+            return
+        user_ids = list({rec.user_id.id for rec in self if rec.user_id})
+        if not user_ids:
+            for rec in self:
+                rec.access_status = "0 / 0"
+            return
+
+        self.env.cr.execute(
+            """
+            SELECT
+                user_id,
+                SUM(CASE WHEN has_access THEN 1 ELSE 0 END) AS granted,
+                COUNT(*) AS total
+            FROM dashboard_rights
+            WHERE user_id = ANY(%s)
+            GROUP BY user_id
+            """,
+            [user_ids],
+        )
+        counts = {row[0]: (row[1], row[2]) for row in self.env.cr.fetchall()}
+        for rec in self:
+            uid = rec.user_id.id
+            if uid and uid in counts:
+                granted, total = counts[uid]
+                rec.access_status = f"{int(granted)} / {int(total)}"
+            else:
+                rec.access_status = "0 / 0"
+
+    @api.depends("dashboard_id", "dashboard_id.ks_dashboard_top_menu_id")
+    def _compute_dashboard_top_menu_id(self):
+        my_dashboard_menu = self.env['ir.ui.menu'].sudo().search([('name', '=', 'My Dashboard'), ('parent_id', '=', False)], limit=1)
+        for rec in self:
+            if rec.dashboard_id.id == 1 or rec.dashboard_id.name == "My Dashboard":
+                rec.dashboard_top_menu_id = my_dashboard_menu.id if my_dashboard_menu else False
+            else:
+                rec.dashboard_top_menu_id = rec.dashboard_id.ks_dashboard_top_menu_id.id if rec.dashboard_id else False
+
     @api.depends("user_id", "user_id.groups_id")
     def _compute_user_role(self):
         for rec in self:
             rec.user_role = self._dr_role_for_user(rec.user_id)
 
     # ------------------------------------------------------------------
+    # CRUD — invalidate the menu visibility cache on any rights change
+    # ------------------------------------------------------------------
+    # ir.ui.menu._visible_menu_ids is ormcache'd by the user's groups, and our
+    # enforcement (ir_ui_menu._dr_restricted_menu_ids) runs inside it. Changing
+    # a dashboard.rights row does NOT touch groups, so without clearing the
+    # registry cache the worker keeps serving the old menu (a granted/revoked
+    # dashboard stays visible/hidden until restart). Mirror what ir.ui.menu
+    # itself does on write.
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        self.env.registry.clear_cache()
+        return records
+
+    def write(self, values):
+        res = super().write(values)
+        self.env.registry.clear_cache()
+        return res
+
+    def unlink(self):
+        res = super().unlink()
+        self.env.registry.clear_cache()
+        return res
+
+    # ------------------------------------------------------------------
     # Public helpers — used by enforcement (ir.ui.menu / ks board)
     # ------------------------------------------------------------------
     @api.model
     def _is_admin_user(self, user):
-        """Admin = the superuser only. Every other user — including the
-        bootstrap Administrator (``base.user_admin``) — must have an
-        explicit ``has_access=True`` row in :class:`dashboard.rights` to
-        see a dashboard, so their toggles in the matrix wizard are fully
-        configurable.
+        """Admin = ONLY the true superuser (``__system__``), who always sees
+        every dashboard and bypasses access checks anyway.
+
+        Everyone else is fully configurable — including Settings administrators
+        (``base.group_system``) and the bootstrap Administrator
+        (``base.user_admin``). They see a dashboard only when they have an
+        explicit ``has_access=True`` row in :class:`dashboard.rights`, so
+        Grant/Revoke in the Users Setup matrix persists for them.
+
+        NB: previously every ``base.group_system`` member auto-saw all
+        dashboards, which made Revoke silently reset for the ~77 Settings
+        admins; that short-circuit was removed so their access is controllable.
         """
         if not user:
             return False
@@ -202,17 +285,24 @@ class DashboardRights(models.Model):
         row for every ks_dashboard board.  Missing rows are created with
         has_access=False.  Idempotent — safe to call on every list load.
         """
-        board_ids = self.env["ks_dashboard_ninja.board"].sudo().search([]).ids
+        boards = self.env["ks_dashboard_ninja.board"].sudo().search([])
+        boards = boards.filtered(
+            # Only boards that belong to the My Dashboard menu: the special
+            # "My Dashboard" board, or any board with a top-menu. Menu-less
+            # boards (e.g. the standalone "Actual vs Target") are out of scope.
+            lambda b: (b.id == 1 or b.name == "My Dashboard" or b.ks_dashboard_top_menu_id)
+            and not (b.name == "Service Analysis - New" and b.ks_dashboard_top_menu_id and b.ks_dashboard_top_menu_id.name == "My Dashboard")
+        )
+        board_ids = boards.ids
         if not board_ids:
             return
 
-        admin = self.env.ref("base.user_admin", raise_if_not_found=False)
-        exclude_ids = [admin.id] if admin else []
-
+        # NB: the admin user (base.user_admin) is intentionally included here so
+        # it shows up in the Users Setup list. Its dashboard access is still
+        # auto-granted via ``_is_admin_user`` regardless of these rows.
         user_ids = self.env["res.users"].sudo().search([
             ("share", "=", False),
             ("active", "=", True),
-            ("id", "not in", exclude_ids),
         ]).ids
         if not user_ids:
             return
@@ -238,8 +328,38 @@ class DashboardRights(models.Model):
     def web_search_read(self, domain, specification, offset=0, limit=None,
                         order=None, count_limit=None):
         """Sync missing rows before every list-view load so all users always
-        appear for every dashboard."""
+        appear for every dashboard.
+
+        When the JS controller sets ``unique_users_only=True`` in the request
+        context (triggered when all optional columns are hidden), we collapse
+        the results to a single representative row per user so no duplicates
+        appear in the compact default view.
+        """
         self._sync_missing_records()
+
+        ctx = self.env.context
+        if ctx.get("unique_users_only"):
+            # Compact view: return only the first record per user
+            all_records = self.search(domain, order=order)
+            seen_users = set()
+            unique_ids = []
+            for rec in all_records:
+                if rec.user_id.id not in seen_users:
+                    seen_users.add(rec.user_id.id)
+                    unique_ids.append(rec.id)
+
+            total_count = len(unique_ids)
+            if offset:
+                unique_ids = unique_ids[offset:]
+            if limit:
+                unique_ids = unique_ids[:limit]
+
+            res_records = self.browse(unique_ids)
+            return {
+                "records": res_records.web_read(specification),
+                "length": total_count,
+            }
+
         return super().web_search_read(
             domain, specification,
             offset=offset, limit=limit,

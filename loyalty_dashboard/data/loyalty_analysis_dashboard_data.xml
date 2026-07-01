@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ============================================================
+             Dashboard Board: Loyalty Analysis
+             ============================================================ -->
+        <record id="loyalty_analysis_dashboard_board" model="ks_dashboard_ninja.board">
+            <field name="name">Loyalty Analysis</field>
+            <field name="ks_dashboard_menu_name">Loyalty Analysis</field>
+            <field name="ks_dashboard_top_menu_id" ref="loyalty_dashboard.loyalty_dashboards_menu_root"/>
+            <field name="ks_dashboard_active">1</field>
+            <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
+            <field name="ks_dashboard_group_access" eval="False"/>
+            <field name="ks_date_filter_selection">t_year</field>
+        </record>
+
+        <!-- ============================================================
+             Chart 1: Number of customers per tier
+             Source : res.partner (loyalty-enabled customers)
+             Group  : Region (work_center_group_id)
+             Drill 1: City   (work_center_id)
+             ============================================================ -->
+        <record id="la_chart_customers_per_tier" model="ks_dashboard_ninja.item">
+            <field name="name">Number of customers per tier</field>
+            <field name="ks_dashboard_ninja_board_id" ref="loyalty_analysis_dashboard_board"/>
+            <field name="ks_dashboard_item_type">ks_bar_chart</field>
+            <field name="ks_chart_data_count_type">count</field>
+            <field name="ks_model_id" ref="base.model_res_partner"/>
+            <field name="ks_chart_relation_groupby" ref="loyalty_dashboard.field_res_partner__work_center_group_id"/>
+            <field name="ks_date_filter_field" ref="hhs_loyalty_management.field_res_partner__activation_date"/>
+            <field name="ks_domain">[("activate_loyalty_feature", "=", True)]</field>
+            <field name="ks_chart_item_color">custom-1</field>
+            <field name="ks_show_data_value">1</field>
+            <field name="ks_actions" ref="base.action_partner_form"/>
+        </record>
+
+        <record id="la_chart_customers_per_tier_drill_1" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="la_chart_customers_per_tier"/>
+            <field name="ks_item_action_field" ref="loyalty_dashboard.field_res_partner__work_center_id"/>
+            <field name="ks_chart_type">ks_bar_chart</field>
+            <field name="sequence">0</field>
+        </record>
+
+        <!-- ============================================================
+             Chart 2: Points issued
+             Source : customer.loyalty.points.history (additions: doctype 99)
+             Measure: sum(clph_totalpoints)
+             Group  : Region (work_center_group_id)
+             Drill 1: City   (work_center_id)
+             Drill 2: Customer (customer_no)
+             ============================================================ -->
+        <record id="la_chart_points_issued" model="ks_dashboard_ninja.item">
+            <field name="name">Points issued</field>
+            <field name="ks_dashboard_ninja_board_id" ref="loyalty_analysis_dashboard_board"/>
+            <field name="ks_dashboard_item_type">ks_bar_chart</field>
+            <field name="ks_chart_data_count_type">sum</field>
+            <field name="ks_model_id" ref="hhs_loyalty_management.model_customer_loyalty_points_history"/>
+            <field name="ks_chart_measure_field" eval="[(6, 0, [ref('hhs_loyalty_management.field_customer_loyalty_points_history__clph_totalpoints')])]"/>
+            <field name="ks_chart_relation_groupby" ref="loyalty_dashboard.field_customer_loyalty_points_history__work_center_group_id"/>
+            <field name="ks_date_filter_field" ref="loyalty_dashboard.field_customer_loyalty_points_history__transaction_date"/>
+            <field name="ks_domain">[("clph_doctype", "=", "99")]</field>
+            <field name="ks_chart_item_color">custom-1</field>
+            <field name="ks_show_data_value">1</field>
+        </record>
+
+        <record id="la_chart_points_issued_drill_1" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="la_chart_points_issued"/>
+            <field name="ks_item_action_field" ref="loyalty_dashboard.field_customer_loyalty_points_history__work_center_id"/>
+            <field name="ks_chart_type">ks_bar_chart</field>
+            <field name="sequence">0</field>
+        </record>
+        <record id="la_chart_points_issued_drill_2" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="la_chart_points_issued"/>
+            <field name="ks_item_action_field" ref="loyalty_dashboard.field_customer_loyalty_points_history__customer_no"/>
+            <field name="ks_chart_type">ks_bar_chart</field>
+            <field name="sequence">1</field>
+        </record>
+
+        <!-- ============================================================
+             Chart 3: Points redeemed
+             Source : customer.loyalty.points.history (redemptions: doctype 98)
+             ============================================================ -->
+        <record id="la_chart_points_redeemed" model="ks_dashboard_ninja.item">
+            <field name="name">Points redeemed</field>
+            <field name="ks_dashboard_ninja_board_id" ref="loyalty_analysis_dashboard_board"/>
+            <field name="ks_dashboard_item_type">ks_bar_chart</field>
+            <field name="ks_chart_data_count_type">sum</field>
+            <field name="ks_model_id" ref="hhs_loyalty_management.model_customer_loyalty_points_history"/>
+            <field name="ks_chart_measure_field" eval="[(6, 0, [ref('hhs_loyalty_management.field_customer_loyalty_points_history__clph_totalpoints')])]"/>
+            <field name="ks_chart_relation_groupby" ref="loyalty_dashboard.field_customer_loyalty_points_history__work_center_group_id"/>
+            <field name="ks_date_filter_field" ref="loyalty_dashboard.field_customer_loyalty_points_history__transaction_date"/>
+            <field name="ks_domain">[("clph_doctype", "=", "98")]</field>
+            <field name="ks_chart_item_color">custom-1</field>
+            <field name="ks_show_data_value">1</field>
+        </record>
+
+        <record id="la_chart_points_redeemed_drill_1" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="la_chart_points_redeemed"/>
+            <field name="ks_item_action_field" ref="loyalty_dashboard.field_customer_loyalty_points_history__work_center_id"/>
+            <field name="ks_chart_type">ks_bar_chart</field>
+            <field name="sequence">0</field>
+        </record>
+        <record id="la_chart_points_redeemed_drill_2" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="la_chart_points_redeemed"/>
+            <field name="ks_item_action_field" ref="loyalty_dashboard.field_customer_loyalty_points_history__customer_no"/>
+            <field name="ks_chart_type">ks_bar_chart</field>
+            <field name="sequence">1</field>
+        </record>
+
+        <!-- ============================================================
+             Chart 4: Newly added users per defined timeframe
+             Source : res.partner (loyalty-enabled customers)
+             Date   : create_date (newly added in the active filter range)
+             Group  : Region (work_center_group_id)
+             Drill 1: City   (work_center_id)
+             ============================================================ -->
+        <record id="la_chart_new_users_by_timeframe" model="ks_dashboard_ninja.item">
+            <field name="name">Newly added users per defined timeframe</field>
+            <field name="ks_dashboard_ninja_board_id" ref="loyalty_analysis_dashboard_board"/>
+            <field name="ks_dashboard_item_type">ks_bar_chart</field>
+            <field name="ks_chart_data_count_type">count</field>
+            <field name="ks_model_id" ref="base.model_res_partner"/>
+            <field name="ks_chart_relation_groupby" ref="loyalty_dashboard.field_res_partner__work_center_group_id"/>
+            <field name="ks_date_filter_field" ref="hhs_loyalty_management.field_res_partner__activation_date"/>
+            <field name="ks_domain">[("activate_loyalty_feature", "=", True)]</field>
+            <field name="ks_chart_item_color">custom-1</field>
+            <field name="ks_show_data_value">1</field>
+            <field name="ks_actions" ref="base.action_partner_form"/>
+        </record>
+
+        <record id="la_chart_new_users_by_timeframe_drill_1" model="ks_dashboard_ninja.item_action">
+            <field name="ks_dashboard_item_id" ref="la_chart_new_users_by_timeframe"/>
+            <field name="ks_item_action_field" ref="loyalty_dashboard.field_res_partner__work_center_id"/>
+            <field name="ks_chart_type">ks_bar_chart</field>
+            <field name="sequence">0</field>
+        </record>
+
+    </data>
+</odoo>

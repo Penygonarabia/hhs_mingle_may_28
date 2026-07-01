@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Loyalty Dashboards parent menu under My Dashboard root -->
+        <menuitem id="loyalty_dashboards_menu_root"
+                  name="Loyalty Dashboards"
+                  parent="ks_dashboard_ninja.board_menu_root"
+                  sequence="60"/>
+    </data>
+</odoo>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Declare the loyalty_dashboard fields on form views with invisible="1"
+         so they are registered against a view but never rendered to end users.
+
+         Partner-side fields (work_center_id, work_center_group_id on
+         res.partner) are intentionally NOT bound to a res.partner inherit.
+         A stale ir.ui.view (xmlid hhs_loyalty_management.view_crm_partner_loyalty_form)
+         carries a "Tier Movement History" page referencing a non-existent
+         field `tier_movement_history_ids`, and any res.partner view inherit
+         re-validates the combined arch and fails. The two partner fields are
+         stored related fields with no other view referencing them, so they
+         are functionally invisible already. -->
+
+    <!-- Tree (list) view used by the dashboard drilldown for the
+         "Points issued" / loyalty points charts. Without a real tree view
+         Odoo renders a default list that only shows the record id, so the
+         drilldown looked blank. -->
+    <record id="view_customer_loyalty_points_history_tree" model="ir.ui.view">
+        <field name="name">customer.loyalty.points.history.tree</field>
+        <field name="model">customer.loyalty.points.history</field>
+        <field name="arch" type="xml">
+            <tree string="Loyalty Points History" create="false" edit="false">
+                <field name="transaction_date"/>
+                <field name="customer_no"/>
+                <field name="work_center_group_id" optional="show"/>
+                <field name="work_center_id" optional="show"/>
+                <field name="clph_docnumber" optional="hide"/>
+                <field name="clph_doctype" optional="hide"/>
+                <field name="clph_regpoints" sum="Regular"/>
+                <field name="clph_bonuspoints" sum="Bonus"/>
+                <field name="clph_totalpoints" sum="Total"/>
+                <field name="clph_note" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Readable form opened when a points-history row is clicked from the
+         drilldown. Replaces the previous invisible-only stub form. -->
+    <record id="view_customer_loyalty_points_history_form" model="ir.ui.view">
+        <field name="name">customer.loyalty.points.history.form</field>
+        <field name="model">customer.loyalty.points.history</field>
+        <field name="arch" type="xml">
+            <form string="Loyalty Points History" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group string="Customer">
+                            <field name="customer_no"/>
+                            <field name="clph_cstcode"/>
+                            <field name="work_center_group_id"/>
+                            <field name="work_center_id"/>
+                        </group>
+                        <group string="Transaction">
+                            <field name="transaction_date"/>
+                            <field name="clph_datetime"/>
+                            <field name="clph_docnumber"/>
+                            <field name="clph_doctype"/>
+                            <field name="clph_type"/>
+                            <field name="clph_whouse"/>
+                        </group>
+                        <group string="Points">
+                            <field name="clph_regpoints"/>
+                            <field name="clph_bonuspoints"/>
+                            <field name="clph_totalpoints"/>
+                        </group>
+                        <group string="Other">
+                            <field name="clph_reasoncode"/>
+                            <field name="clph_promoref"/>
+                            <field name="clph_note"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

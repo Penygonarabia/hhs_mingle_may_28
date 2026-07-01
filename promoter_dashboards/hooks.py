@@ -179,16 +179,23 @@ def post_init_hook(env):
             })
             # Point the board at the placeholder so subsequent board edits
             # (rename, group-access, etc.) keep flowing onto the stable xmlid.
+            # Also align ks_dashboard_top_menu_id with the menu's actual
+            # parent — ks_import_dashboard sets it to board_menu_root, which
+            # leaves the board form / dashboard-rights category grouping
+            # showing the wrong parent and trips the menu-visibility
+            # walk-up in dashboard_rights.
+            board_vals = {"ks_dashboard_top_menu_id": promoter_dashboards_menu.id}
             if board.ks_dashboard_menu_id.id != placeholder_menu.id:
-                board.write({"ks_dashboard_menu_id": placeholder_menu.id})
-                if live_menu and live_menu.id != placeholder_menu.id:
-                    try:
-                        live_menu.unlink()
-                    except Exception:
-                        _logger.warning(
-                            "promoter_dashboards: could not unlink duplicate menu %s.",
-                            live_menu.id,
-                        )
+                board_vals["ks_dashboard_menu_id"] = placeholder_menu.id
+            board.write(board_vals)
+            if board.ks_dashboard_menu_id.id == placeholder_menu.id and live_menu and live_menu.id != placeholder_menu.id:
+                try:
+                    live_menu.unlink()
+                except Exception:
+                    _logger.warning(
+                        "promoter_dashboards: could not unlink duplicate menu %s.",
+                        live_menu.id,
+                    )
             _logger.info(
                 "promoter_dashboards: wired placeholder %s -> board %s (menu=%s, action=%s).",
                 xmlid_suffix, board.id, placeholder_menu.id, client_action.id,
@@ -209,7 +216,10 @@ def post_init_hook(env):
                 "sequence": sequence,
                 "action": action_ref,
             })
-            board.write({"ks_dashboard_menu_id": live_menu.id})
+            board.write({
+                "ks_dashboard_menu_id": live_menu.id,
+                "ks_dashboard_top_menu_id": promoter_dashboards_menu.id,
+            })
         else:
             live_menu.write({
                 "parent_id": promoter_dashboards_menu.id,
@@ -217,6 +227,7 @@ def post_init_hook(env):
                 "active": True,
                 "action": action_ref,
             })
+            board.write({"ks_dashboard_top_menu_id": promoter_dashboards_menu.id})
 
         ModelData.create({
             "module": "promoter_dashboards",

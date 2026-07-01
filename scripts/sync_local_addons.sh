@@ -80,23 +80,18 @@ set -- $MODULES
 total=$#
 echo "==> $total custom modules found."
 
-count=0
-for mod in "$@"; do
-  count=$((count + 1))
-  printf '    [%3d/%3d] %s\n' "$count" "$total" "$mod"
-  # tar on the host (host reads are reliable), stream into the container.
-  # Exclude heavy/derived dirs that are irrelevant to load/compile.
-  tar \
-    --exclude='static/description' \
-    --exclude='__pycache__' \
-    --exclude='*.pyc' \
-    --exclude='.git' \
-    -cf - "$mod" 2>/dev/null \
-  | docker exec --user root -i "$WEB_CONTAINER" \
-      tar -xf - -C "$LOCAL_ADDONS" 2>/dev/null || {
-        echo "      WARN: failed to stage $mod (continuing)" >&2
-      }
-done
+echo "==> Staging all custom modules in a single tar stream..."
+tar \
+  --exclude='static/description' \
+  --exclude='__pycache__' \
+  --exclude='*.pyc' \
+  --exclude='.git' \
+  -cf - $MODULES 2>/dev/null \
+| docker exec --user root -i "$WEB_CONTAINER" \
+    tar -xf - -C "$LOCAL_ADDONS" 2>/dev/null || {
+      echo "      ERROR: failed to stage modules" >&2
+      exit 1
+    }
 
 docker exec --user root "$WEB_CONTAINER" chown -R odoo:odoo "$LOCAL_ADDONS"
 echo "==> Staging complete."

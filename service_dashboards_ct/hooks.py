@@ -81,8 +81,13 @@ def ks_rebuild_board_layouts(env):
     for board in boards:
         cfg_json = json.dumps(_board_layout_from_items(env, board))
         board.ks_gridstack_config = cfg_json
-        for child in board.ks_child_dashboard_ids:
-            child.ks_gridstack_config = cfg_json
+        # Keep every child-board cache in sync so frontend does not render a
+        # stale order from ks_dashboard_ninja.child_board after reinstall/-u.
+        child_boards = env['ks_dashboard_ninja.child_board'].sudo().search([
+            ('ks_dashboard_ninja_id', '=', board.id),
+        ])
+        if child_boards:
+            child_boards.write({'ks_gridstack_config': cfg_json})
 
 
 def post_init_hook(env):

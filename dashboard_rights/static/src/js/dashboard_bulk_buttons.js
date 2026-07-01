@@ -1,39 +1,42 @@
 /** @odoo-module **/
 import { Component } from "@odoo/owl";
 import { registry } from "@web/core/registry";
-import { useService } from "@web/core/utils/hooks";
 
 class DashboardBulkButtons extends Component {
     static template = "dashboard_rights.BulkButtons";
     static props = ["record", "readonly?", "*"];
 
     setup() {
-        this.orm = useService("orm");
+        this._busy = false;
     }
 
-    get lines() {
-        return this.props.record.data.visible_line_ids?.records || [];
-    }
-
+    /**
+     * Stage a Has Access value on every loaded dashboard row *in the browser*.
+     *
+     * Nothing is written to the database here: the rows are simply selected
+     * (true) or unselected (false) and the form is left dirty, so the change is
+     * only committed when the user clicks Save — and reverted by the Refresh
+     * (discard) icon. The server `_onchange_line_ids_cascade` keeps the
+     * group rows and their `granted/total` counts in sync as each row updates.
+     */
     async _applyBulk(value) {
-        // 1) Reflect change in the open form immediately so the UI is responsive.
-        for (const line of this.lines) {
-            await line.update({ has_access: value });
-        }
-        // 2) Persist directly to dashboard.rights server-side, so the change
-        //    survives a page refresh without depending on the form Save.
-        const matrixId = this.props.record.resId;
-        if (!matrixId) {
+        const record = this.props.record;
+        if (this._busy) {
             return;
         }
-        const lineIds = this.lines
-            .map((l) => l.resId)
-            .filter((id) => typeof id === "number");
-        await this.orm.call(
-            "dashboard.rights.matrix",
-            "action_bulk_set_access",
-            [[matrixId], value, lineIds],
-        );
+        this._busy = true;
+        try {
+            const list = record.data.line_ids;
+            if (list && list.records) {
+                for (const line of list.records) {
+                    if (line.data.has_access !== value) {
+                        await line.update({ has_access: value });
+                    }
+                }
+            }
+        } finally {
+            this._busy = false;
+        }
     }
 
     onGrantAll(ev) {

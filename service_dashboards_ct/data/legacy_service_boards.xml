@@ -9,7 +9,7 @@
             <field name="ks_dashboard_menu_name">Service Analysis (UWC) - New</field>
             <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
-            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_date_filter_selection">t_month</field>
             <field name="ks_dashboard_menu_sequence">24</field>
             <field name="ks_dashboard_active" eval="True"/>
         </record>
@@ -720,7 +720,7 @@ ORDER BY week_no</field>
             <field name="ks_dashboard_menu_name">Service Analysis (C) - New</field>
             <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
-            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_date_filter_selection">t_month</field>
             <field name="ks_dashboard_menu_sequence">21</field>
             <field name="ks_dashboard_active" eval="True"/>
         </record>
@@ -1338,7 +1338,7 @@ ORDER BY week_no</field>
             <field name="ks_dashboard_menu_name">Service Analysis (E) - New</field>
             <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
-            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_date_filter_selection">t_month</field>
             <field name="ks_dashboard_menu_sequence">22</field>
             <field name="ks_dashboard_active" eval="True"/>
         </record>
@@ -1984,7 +1984,7 @@ ORDER BY week_no</field>
             <field name="ks_dashboard_menu_name">Service Analysis (W) - New</field>
             <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
-            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_date_filter_selection">t_month</field>
             <field name="ks_dashboard_menu_sequence">23</field>
             <field name="ks_dashboard_active" eval="True"/>
         </record>
@@ -2845,7 +2845,7 @@ ORDER BY week_no</field>
             <field name="ks_dashboard_menu_name">Service Analysis (CC) - New</field>
             <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
-            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_date_filter_selection">t_month</field>
             <field name="ks_dashboard_menu_sequence">27</field>
             <field name="ks_dashboard_active" eval="True"/>
         </record>
@@ -2992,7 +2992,7 @@ ORDER BY week_no</field>
             <field name="ks_dashboard_menu_name">Service Analysis (CRD) - New</field>
             <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
-            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_date_filter_selection">t_month</field>
             <field name="ks_dashboard_menu_sequence">28</field>
             <field name="ks_dashboard_active" eval="True"/>
         </record>
@@ -3229,7 +3229,7 @@ ORDER BY week_no</field>
             <field name="ks_dashboard_menu_name">Sales &amp; Cost Analysis - New</field>
             <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
-            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_date_filter_selection">t_month</field>
             <field name="ks_dashboard_menu_sequence">31</field>
             <field name="ks_dashboard_active" eval="True"/>
         </record>
@@ -3772,7 +3772,7 @@ where
             <field name="ks_dashboard_menu_name">Service Analysis - New</field>
             <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
-            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_date_filter_selection">t_month</field>
             <field name="ks_dashboard_menu_sequence">20</field>
             <field name="ks_dashboard_active" eval="True"/>
         </record>
@@ -3811,6 +3811,10 @@ where
             <field name="ks_list_view_type">ungrouped</field>
         
             <field name="ks_kpi_type">layout_1</field>
+            <field name="ks_record_count_type_2">count</field>
+            <field name="ks_model_id_2" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
+            <field name="ks_date_filter_field_2" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
+            <field name="ks_domain_2">[("job_card_status", "=", "Closed")]</field>
             <field name="ks_list_view_layout">layout_1</field></record>
 
         <record id="legacy_item_624" model="ks_dashboard_ninja.item">
@@ -4372,39 +4376,6 @@ ORDER BY week_no</field>
         
             <field name="ks_kpi_type">layout_1</field>
             <field name="ks_list_view_layout">layout_1</field></record>
-        <record id="legacy_item_666" model="ks_dashboard_ninja.item">
-            <field name="name">Employee Performance Analysis - Actual Hours</field>
-            <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_main"/>
-            <field name="ks_model_id" ref="service_dashboards_ct.model_dbmodel_jobcards_analysis_ct"/>
-            <field name="ks_chart_relation_groupby" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__work_center_group_id"/>
-            <field name="ks_chart_measure_field" eval="[(6,0,[ref('service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__total_worked_hours')])]"/>
-            <field name="ks_date_filter_field" ref="service_dashboards_ct.field_dbmodel_jobcards_analysis_ct__service_created_datetime"/>
-            <field name="ks_dashboard_item_type">ks_bar_chart</field>
-            <field name="ks_record_count_type">count</field>
-            <field name="ks_chart_data_count_type">sum</field>
-            <field name="ks_record_data_limit">0</field>
-            <field name="ks_data_calculation_type">custom</field>
-            <field name="data_source">odoo</field>
-            <field name="ks_date_filter_selection">l_none</field>
-            <field name="ks_date_filter_selection_2">l_none</field>
-            <field name="ks_layout">layout5</field>
-            <field name="ks_background_color">#DAEAF6,0.99</field>
-            <field name="ks_font_color">#000000,0.99</field>
-            <field name="ks_header_bg_color">#8e24aa,0.99</field>
-            <field name="ks_default_icon">bar-chart</field>
-            <field name="ks_default_icon_color">#6789C6,0.99</field>
-            <field name="ks_icon_select">Default</field>
-            <field name="ks_dashboard_item_theme">white</field>
-            <field name="ks_chart_item_color">custom-1</field>
-            <field name="ks_data_label_type">percent</field>
-            <field name="ks_data_format">global</field>
-            <field name="ks_precision_digits">2</field>
-            <field name="ks_show_data_value" eval="True"/>
-            <field name="ks_list_view_type">ungrouped</field>
-            <field name="ks_domain">["&amp;", ("is_my_user_group", "=", True), ("total_worked_hours", "!=", 0)]</field>
-        
-            <field name="ks_kpi_type">layout_1</field>
-            <field name="ks_list_view_layout">layout_1</field></record>
         <record id="legacy_item_698" model="ks_dashboard_ninja.item">
             <field name="name">Job Cards - Not Closed Status analysis on weekly basis</field>
             <field name="ks_dashboard_ninja_board_id" ref="service_dashboards_ct.legacy_board_main"/>
@@ -4471,7 +4442,7 @@ ORDER BY week_no</field>
             <field name="ks_dashboard_menu_name">Service Analysis (Parts) - New</field>
             <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
-            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_date_filter_selection">t_month</field>
             <field name="ks_dashboard_menu_sequence">29</field>
             <field name="ks_dashboard_active" eval="True"/>
         </record>
@@ -4811,7 +4782,7 @@ ORDER BY week_no</field>
             <field name="ks_dashboard_menu_name">Technician Analysis - New</field>
             <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
-            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_date_filter_selection">t_month</field>
             <field name="ks_dashboard_menu_sequence">30</field>
             <field name="ks_dashboard_active" eval="True"/>
         </record>

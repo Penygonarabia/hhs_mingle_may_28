@@ -27,7 +27,7 @@
             <field name="ks_dashboard_menu_name">Service Analysis - CC Users</field>
             <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
-            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_date_filter_selection">t_month</field>
             <field name="ks_dashboard_menu_sequence">40</field>
             <field name="ks_dashboard_active" eval="True"/>
         </record>
@@ -102,7 +102,7 @@
             <field name="ks_dashboard_menu_name">Service Analysis - CRD Users</field>
             <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
-            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_date_filter_selection">t_month</field>
             <field name="ks_dashboard_menu_sequence">41</field>
             <field name="ks_dashboard_active" eval="True"/>
         </record>
@@ -241,7 +241,7 @@
             <field name="ks_dashboard_menu_name">Service Analysis - Parts Users</field>
             <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
-            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_date_filter_selection">t_month</field>
             <field name="ks_dashboard_menu_sequence">42</field>
             <field name="ks_dashboard_active" eval="True"/>
         </record>
@@ -414,7 +414,7 @@
             <field name="ks_dashboard_menu_name">Service Analysis - Technicians</field>
             <field name="ks_dashboard_top_menu_id" ref="service_dashboards_ct.menu_root"/>
             <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
-            <field name="ks_date_filter_selection">t_year</field>
+            <field name="ks_date_filter_selection">t_month</field>
             <field name="ks_dashboard_menu_sequence">43</field>
             <field name="ks_dashboard_active" eval="True"/>
         </record>

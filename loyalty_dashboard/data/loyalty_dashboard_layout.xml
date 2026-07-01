@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Loyalty Analysis grid: three full-width bar charts stacked. -->
+        <record id="la_chart_customers_per_tier" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 0, 'w': 12, 'h': 7}</field>
+            <field name="ks_actions" ref="base.action_partner_form"/>
+        </record>
+        <record id="la_chart_points_issued" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 7, 'w': 12, 'h': 7}</field>
+        </record>
+        <record id="la_chart_points_redeemed" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 14, 'w': 12, 'h': 7}</field>
+        </record>
+        <record id="la_chart_new_users_by_timeframe" model="ks_dashboard_ninja.item">
+            <field name="grid_corners">{'x': 0, 'y': 21, 'w': 12, 'h': 7}</field>
+        </record>
+
+        <function model="ks_dashboard_ninja.board" name="loyalty_dashboard_rebuild_layouts"/>
+
+    </data>
+</odoo>

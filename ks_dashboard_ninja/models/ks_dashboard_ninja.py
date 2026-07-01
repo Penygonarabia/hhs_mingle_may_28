@@ -225,8 +225,18 @@ class KsDashboardNinjaBoard(models.Model):
         return res
 
     def ks_update_menu_id_old_db(self):
-        ks_records = self.search([('name','in',['Template1 Dashboard','Template2 Dashboard','Template3 Dashboard','My Dashboard'])])
-        ks_menu_id = self.env.ref('ks_dashboard_ninja.dashboards_menu_root').id
+        # Legacy one-time migration helper for very old databases. Disabled for
+        # this deployment: the "My Dashboards" container menu
+        # (ks_dashboard_ninja.dashboards_menu_root) was intentionally removed,
+        # and this routine — invoked on every dashboard Overview load — would
+        # otherwise crash on the missing external id and re-nest the locked
+        # "My Dashboard" board back under it. Bail out unless the container menu
+        # actually exists, and never re-parent the already-configured boards.
+        ks_menu = self.env.ref('ks_dashboard_ninja.dashboards_menu_root', raise_if_not_found=False)
+        if not ks_menu:
+            return True
+        ks_records = self.search([('name','in',['Template1 Dashboard','Template2 Dashboard','Template3 Dashboard']),('ks_dashboard_menu_id','=',False)])
+        ks_menu_id = ks_menu.id
         for rec in ks_records:
             if (rec.name == "My Dashboard" and rec.ks_dashboard_state == 'Locked') or(rec.name in ['Template1 Dashboard','Template2 Dashboard','Template3 Dashboard'] and rec.ks_dashboard_top_menu_id.name == 'My Dashboard'):
                 rec.ks_dashboard_top_menu_id = ks_menu_id

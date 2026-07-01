@@ -4,21 +4,97 @@
     <!-- All menus gated by group_dashboard_rights_admin (bootstrap Admin only).
          Other system administrators need to be added to that group explicitly. -->
 
-    <!-- Settings ▸ Dashboard Rights  →  list view (main surface) -->
+    <!-- Settings ▸ Dashboard Rights (Parent Menu) -->
     <menuitem id="menu_dashboard_rights_root"
               name="Dashboard Rights"
               parent="base.menu_administration"
-              action="dashboard_rights.action_dashboard_rights_list"
+              action="dashboard_rights.action_dashboard_rights_grid"
               sequence="50"
               groups="dashboard_rights.group_dashboard_rights_admin"/>
 
-    <!-- Settings ▸ Technical ▸ Dashboard Rights  →  same list view -->
+    <!-- Settings ▸ Dashboard Rights sub-menus -->
+    <menuitem id="menu_dashboard_rights_by_user"
+              name="Users Setup"
+              parent="menu_dashboard_rights_root"
+              action="dashboard_rights.action_dashboard_rights_grid"
+              sequence="1"
+              groups="dashboard_rights.group_dashboard_rights_admin"/>
+
+    <!--
+    <menuitem id="menu_dashboard_rights_by_role"
+              name="By User Role"
+              parent="menu_dashboard_rights_root"
+              action="dashboard_rights.action_dashboard_rights_list"
+              sequence="2"
+              groups="dashboard_rights.group_dashboard_rights_admin"/>
+
+    <menuitem id="menu_dashboard_rights_by_category"
+              name="By Category"
+              parent="menu_dashboard_rights_root"
+              action="dashboard_rights.action_dashboard_rights_by_category"
+              sequence="3"
+              groups="dashboard_rights.group_dashboard_rights_admin"/>
+
+    <menuitem id="menu_dashboard_rights_by_dashboard"
+              name="By Dashboard"
+              parent="menu_dashboard_rights_root"
+              action="dashboard_rights.action_dashboard_rights_by_dashboard"
+              sequence="4"
+              groups="dashboard_rights.group_dashboard_rights_admin"/>
+
+    <menuitem id="menu_dashboard_rights_raw"
+              name="Raw List"
+              parent="menu_dashboard_rights_root"
+              action="dashboard_rights.action_dashboard_rights_raw"
+              sequence="5"
+              groups="dashboard_rights.group_dashboard_rights_admin"/>
+    -->
+
+    <!-- Settings ▸ Technical ▸ Dashboard Rights (Parent Menu) -->
     <menuitem id="menu_dashboard_rights_technical"
               name="Dashboard Rights"
               parent="base.menu_custom"
-              action="dashboard_rights.action_dashboard_rights_list"
+              action="dashboard_rights.action_dashboard_rights_grid"
               sequence="60"
               groups="dashboard_rights.group_dashboard_rights_admin"/>
+
+    <!-- Settings ▸ Technical ▸ Dashboard Rights sub-menus -->
+    <menuitem id="menu_dashboard_rights_tech_by_user"
+              name="Users Setup"
+              parent="menu_dashboard_rights_technical"
+              action="dashboard_rights.action_dashboard_rights_grid"
+              sequence="1"
+              groups="dashboard_rights.group_dashboard_rights_admin"/>
+
+    <!--
+    <menuitem id="menu_dashboard_rights_tech_by_role"
+              name="By User Role"
+              parent="menu_dashboard_rights_technical"
+              action="dashboard_rights.action_dashboard_rights_list"
+              sequence="2"
+              groups="dashboard_rights.group_dashboard_rights_admin"/>
+
+    <menuitem id="menu_dashboard_rights_tech_by_category"
+              name="By Category"
+              parent="menu_dashboard_rights_technical"
+              action="dashboard_rights.action_dashboard_rights_by_category"
+              sequence="3"
+              groups="dashboard_rights.group_dashboard_rights_admin"/>
+
+    <menuitem id="menu_dashboard_rights_tech_by_dashboard"
+              name="By Dashboard"
+              parent="menu_dashboard_rights_technical"
+              action="dashboard_rights.action_dashboard_rights_by_dashboard"
+              sequence="4"
+              groups="dashboard_rights.group_dashboard_rights_admin"/>
+
+    <menuitem id="menu_dashboard_rights_tech_raw"
+              name="Raw List"
+              parent="menu_dashboard_rights_technical"
+              action="dashboard_rights.action_dashboard_rights_raw"
+              sequence="5"
+              groups="dashboard_rights.group_dashboard_rights_admin"/>
+    -->
 
     <!-- Settings ▸ Technical ▸ Manage User Rights  →  wizard form -->
     <menuitem id="menu_dashboard_rights_wizard"
@@ -27,5 +103,10 @@
               action="dashboard_rights.action_dashboard_rights_matrix"
               sequence="61"
               groups="dashboard_rights.group_dashboard_rights_admin"/>
+
+    <!-- Link the My Dashboards menu to the main dashboard client action -->
+    <menuitem id="ks_dashboard_ninja.dashboards_menu_root"
+              name="My Dashboards"
+              parent="ks_dashboard_ninja.board_menu_root"/>
 
 </odoo>

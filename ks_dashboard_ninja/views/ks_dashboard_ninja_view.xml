@@ -365,10 +365,6 @@
                   web_icon="ks_dashboard_ninja,static/description/icon.png"
                   action="ks_dashboard_ninja.dashboard_action_window"/>
 
-        <menuitem name="Beta Dashboards" id="ks_dashboard_ninja.beta_dashboards_menu_root"
-                  parent="ks_dashboard_ninja.board_menu_root" sequence="16"
-                  action="ks_dashboard_ninja.dashboard_action_window"/>
-
         <menuitem name="My Dashboards" id="ks_dashboard_ninja.dashboards_menu_root"
                   parent="ks_dashboard_ninja.board_menu_root" sequence="15"/>
 
@@ -409,19 +405,4 @@
 
     </data>
 
-    <!-- Boards under the Beta Dashboards menu. noupdate so live edits survive upgrades.
-         The board's create() override auto-builds the child ir.ui.menu + client action
-         under ks_dashboard_ninja.beta_dashboards_menu_root. -->
-    <data noupdate="1">
-
-        <record id="ks_dashboard_ninja.beta1_board" model="ks_dashboard_ninja.board">
-            <field name="name">beta1</field>
-            <field name="ks_dashboard_menu_name">beta1</field>
-            <field name="ks_dashboard_top_menu_id" ref="ks_dashboard_ninja.beta_dashboards_menu_root"/>
-            <field name="ks_dashboard_default_template" ref="ks_dashboard_ninja.ks_blank"/>
-            <field name="ks_dashboard_menu_sequence">10</field>
-            <field name="ks_dashboard_active" eval="True"/>
-        </record>
-
-    </data>
 </odoo>
