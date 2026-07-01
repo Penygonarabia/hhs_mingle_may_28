@@ -46,6 +46,7 @@ export class MyComponent extends Component {
       quatecraetedBy: context.quote_created_by || "",
       last_rescheduled_status_code: context.last_rescheduled_status_code || "",
       dealer_id: context.dealer_id || "",
+      partner_name: context.partner_name || "",
     });
     console.log("this.state", this.state);
 
@@ -228,6 +229,8 @@ export class MyComponent extends Component {
     sessionStorage.setItem("customerName", this.state.customerName);
     sessionStorage.setItem("serviceDatetime", this.state.serviceDatetime || "");
     sessionStorage.setItem("dealer_id", this.state.dealer_id || "");
+    sessionStorage.setItem("partner_name", this.state.partner_name || "");
+
     try {
       await this.updateJobCard();
     } catch (err) {

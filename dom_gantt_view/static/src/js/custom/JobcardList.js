@@ -813,6 +813,7 @@ export class JobcardList extends Component {
         "used_location_equipment",
         "work_center_id",
         "contract_id",
+        "partner_name",
       ]);
 
       console.log("jobCards (Base):", jobCards);
@@ -884,6 +885,7 @@ export class JobcardList extends Component {
           ? card.country_district_id[1]
           : "";
         const dealerId = card.dealer_id ? card.dealer_id[1] : "";
+        const partnerName = card.partner_name || "";
 
         let formattedDate = "";
         if (card.service_requested_datetime) {
