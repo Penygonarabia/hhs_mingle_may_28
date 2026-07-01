@@ -203,6 +203,16 @@ class SubscriptionContracts(models.Model):
         domain=[("related_to_amc", "=", True)],
         default=lambda self: self.env["project.project"].search([("related_to_amc", "=", True)], limit=1).id if "project.project" in self.env else False,
     )
+    
+    attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="subscription_contract_rel",
+        column1="contract_id",
+        column2="attachment_id",
+        string="Payment Attachment",
+        help="Multiple Images and Pdf is attached here",
+        domain="[('mimetype','in',['image/jpeg','image/png','image/gif','application/pdf'])]",
+    )
 
     
     

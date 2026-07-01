@@ -277,6 +277,12 @@
                             </group>
 
                         </page>
+                        
+                        <page string = "Payment Attachment">
+                        	
+                        	<field name = "attachment_ids" widget="many2many_binary"/>
+                        
+                        </page>
                     </notebook>
                 </sheet>
                 <div class="oe_chatter">
