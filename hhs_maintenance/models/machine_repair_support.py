@@ -21,7 +21,7 @@ class MachineRepairSupport(models.Model):
     
     
     '''Code Added on June 08 2026 by Vijaya Bhaskar'''
-    @api.depends('items_from_own_company_bool', 'service_products_code_id','project_related_amc_bool')
+    @api.depends('items_from_own_company_bool', 'service_products_code_id','project_related_amc_bool','brand_id')
     def _compute_product_search_ids(self):
         for rec in self:
             rec.product_search_ids = False
