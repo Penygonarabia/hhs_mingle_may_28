@@ -60,8 +60,8 @@
                                 <button name="action_open_add_item_wizard" string="Add Item" type="object" class="mobile-full-btn mobvw" icon="fa-plus" invisible="state != 'draft'"/>
                             </div>
                             <!-- Mobile View -->
-                            <field name="line_ids" readonly="state != 'draft'" invisible="not dealer_mobile_user_bool">
-                                <tree create="0" edit="0" delete="1">
+                            <field name="line_ids" readonly="state != 'draft'" invisible="not dealer_mobile_user_bool" options="{'no_create': True}" class="mobile-no-create-tree">
+                                <tree create="false" edit="false" delete="true">
                                     <field name="product_category_id" width="150px" domain="[('parent_id','=', False), ('name', '!=', 'All')]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
                                     <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
                                     <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>

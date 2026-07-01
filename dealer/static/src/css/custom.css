@@ -348,4 +348,10 @@
         overflow: hidden !important;
         touch-action: none !important;
     }
+
+    /* Forcibly hide native 'Add a line' in mobile tree views that have this class */
+    .mobile-no-create-tree .o_list_record_add,
+    .mobile-no-create-tree tbody tr td:has(.o_list_record_add) {
+        display: none !important;
+    }
 }

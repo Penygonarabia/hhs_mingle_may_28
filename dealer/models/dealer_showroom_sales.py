@@ -385,6 +385,12 @@ class dealerShowroomSales(models.Model):
         string='Attachments'
     )
 
+    @api.constrains('attachment_ids', 'invoice_attachment')
+    def _check_mandatory_attachment(self):
+        for rec in self:
+            if not rec.attachment_ids and not rec.invoice_attachment:
+                raise ValidationError(_("Invoice attachment is mandatory. Please upload your file before saving."))
+
     def action_submit(self):
         notification = False
         for rec in self:

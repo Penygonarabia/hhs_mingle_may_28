@@ -58,7 +58,7 @@ class DealerSalesLineWizard(models.TransientModel):
         if not self.product_category_id:
             self.product_group_id = False
             self.product_subgroup_id = False
-            self.product_id = False
+            # self.product_id = False
         
         domain = []
         if self.product_category_id:
@@ -75,7 +75,7 @@ class DealerSalesLineWizard(models.TransientModel):
             self.product_subgroup_id = False
         if not self.product_group_id:
             self.product_subgroup_id = False
-            self.product_id = False
+            # self.product_id = False
             
         domain = []
         if self.product_group_id:
@@ -90,8 +90,8 @@ class DealerSalesLineWizard(models.TransientModel):
 
     @api.onchange('product_subgroup_id')
     def _onchange_product_subgroup_id(self):
-        # Always clear product when subgroup changes so domain re-applies
-        self.product_id = False
+        # Allow the domain to re-apply without clearing the product_id
+        # self.product_id = False
             
         domain = []
         if self.product_subgroup_id:
