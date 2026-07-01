@@ -63,10 +63,10 @@
                                 <group groups="machine_repair_management.group_job_card_mobile_user, machine_repair_management.group_job_card_back_office_user">
 
                                     <group>
-                                        <field name="contract_id" readonly="1" force_save="1"/>
+                                        <field name="contract_id" readonly="1" force_save="1" options="{'no_open':True}"/>
                                         <field name="contract_date" force_save="1" readonly="1"/>
                                         <field name="contract_expiry_date" force_save="1" readonly="1"/>
-                                        <field name="asset_id" readonly="1" force_save="1"/>
+                                        <field name="asset_id" readonly="1" force_save="1" options="{'no_open':True}"/>
                                         <field name="service_products_code_id" options="{'no_open':True}" readonly="1"
                                                force_save="1"/>
                                                
