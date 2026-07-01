@@ -172,14 +172,7 @@ class ProductProduct(models.Model):
         self._compute_quantities()
 
     '''This only Worked'''
-    def name_get(self):
-        res = []
-        location_id = self.env.context.get('location')
-        for product in self:
-            qty = product.with_context(location=location_id).qty_available
-            name = f"[{product.default_code}] {product.name} ({qty:.2f} On Hand)"
-            res.append((product.id, name))
-        return res
+   
 
     def action_machine_repair_request(self):
         self.ensure_one()
