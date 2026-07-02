@@ -349,8 +349,12 @@
         touch-action: none !important;
     }
 
-    /* Forcibly hide native 'Add a line' in mobile tree views that have this class */
-    .mobile-no-create-tree .o_field_x2many_list_row_add,
+    /* Forcibly hide native 'Add a line' in mobile tree views */
+    .mobile-no-create-tree .o_field_x2many_list_row_add {
+        display: none !important;
+    }
+    
+    /* Hide the parent row if the browser supports :has() */
     .mobile-no-create-tree tr:has(.o_field_x2many_list_row_add) {
         display: none !important;
     }
