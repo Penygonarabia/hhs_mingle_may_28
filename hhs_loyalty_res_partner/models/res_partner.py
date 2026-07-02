@@ -80,66 +80,28 @@ class ResPartner(models.Model):
             # -----------------------------
             # REGULAR
             # -----------------------------
+            collected_reg = sum(history.filtered(lambda x: x.clph_adjtype == '+').mapped('clph_regpoints'))
+            redeem_reg = sum(history.filtered(lambda x: str(x.clph_doctype) == '98').mapped('clph_regpoints'))
+            expired_reg = sum(history.filtered(lambda x: str(x.clph_doctype) == '97').mapped('clph_regpoints'))
+            returned_reg = sum(history.filtered(lambda x: str(x.clph_doctype) == '02').mapped('clph_regpoints'))
 
-            rec.collected_points_regular = sum(
-                history.filtered(
-                    lambda x: str(x.clph_doctype) == '99'
-                ).mapped('clph_regpoints')
-            )
-
-            rec.redeem_points_regular = sum(
-                history.filtered(
-                    lambda x: str(x.clph_doctype) == '98'
-                ).mapped('clph_regpoints')
-            )
-
-            rec.expired_points_regular = sum(
-                history.filtered(
-                    lambda x: str(x.clph_doctype) == '97'
-                ).mapped('clph_regpoints')
-            )
-
-            rec.balance_points_regular = (
-                    rec.collected_points_regular
-                    - rec.redeem_points_regular
-                    - rec.expired_points_regular
-            )
+            rec.collected_points_regular = max(collected_reg - returned_reg, 0)
+            rec.redeem_points_regular = redeem_reg
+            rec.expired_points_regular = expired_reg
+            rec.balance_points_regular = max(rec.collected_points_regular - redeem_reg - expired_reg, 0)
 
             # -----------------------------
             # BONUS
             # -----------------------------
+            collected_bonus = sum(history.filtered(lambda x: x.clph_adjtype == '+').mapped('clph_bonuspoints'))
+            redeem_bonus = sum(history.filtered(lambda x: str(x.clph_doctype) == '98').mapped('clph_bonuspoints'))
+            expired_bonus = sum(history.filtered(lambda x: str(x.clph_doctype) == '97').mapped('clph_bonuspoints'))
+            returned_bonus = sum(history.filtered(lambda x: str(x.clph_doctype) == '02').mapped('clph_bonuspoints'))
 
-            rec.collected_points_bonus = sum(
-                history.filtered(
-                    lambda x: str(x.clph_doctype) == '99'
-                ).mapped('clph_bonuspoints')
-            )
-
-            rec.redeem_points_bonus = sum(
-                history.filtered(
-                    lambda x: str(x.clph_doctype) == '98'
-                ).mapped('clph_bonuspoints')
-            )
-
-            rec.expired_points_bonus = sum(
-                history.filtered(
-                    lambda x: str(x.clph_doctype) == '97'
-                ).mapped('clph_bonuspoints')
-            )
-
-            rec.balance_points_bonus = (
-                    rec.collected_points_bonus
-                    - rec.redeem_points_bonus
-                    - rec.expired_points_bonus
-            )
-
-            regular_total = sum(history.mapped('clph_regpoints'))
-
-            bonus_total = sum(history.mapped('clph_bonuspoints'))
-
-            rec.collected_points_regular = regular_total
-
-            rec.collected_points_bonus = bonus_total
+            rec.collected_points_bonus = max(collected_bonus - returned_bonus, 0)
+            rec.redeem_points_bonus = redeem_bonus
+            rec.expired_points_bonus = expired_bonus
+            rec.balance_points_bonus = max(rec.collected_points_bonus - redeem_bonus - expired_bonus, 0)
 
 
 

@@ -517,6 +517,17 @@ class ReportAMCQuotation(models.AbstractModel):
             })
         # ------------------ FINAL DATA ------------------
         rec = docs[0] if docs else None
+        address = [
+            rec.street.strip() if rec.street else "",
+            rec.street2.strip() if rec.street2 else "",
+            rec.state_id.name.strip() if rec.state_id else "",
+            rec.customer_city_id.name.strip() if rec.customer_city_id else "",
+            rec.district_id.name.strip() if rec.district_id else "",
+            rec.country_id.name.strip() if rec.country_id else "",
+            rec.zip.strip() if rec.zip else "",
+        ]
+
+        site_address = ", ".join(filter(None, address))
 
         datas = {
             'quotation_no': rec.name if rec else '',
@@ -531,7 +542,8 @@ class ReportAMCQuotation(models.AbstractModel):
             'total_qty': int(total_qty),
             'company_symbol': rec.company_id.currency_id.name if rec else '',
             # 'address': rec.customer_address if rec else '',
-            'address': rec.customer_address.replace(',', ', ') if rec and rec.customer_address else '',
+            # 'address': rec.customer_address.replace(',', ', ') if rec and rec.customer_address else '',
+            'address': site_address or '',
             'emergency_visit': int(emergency_visit),
             'att_to': rec.crm_id.contact_name if rec and rec.crm_id else '',
             'contact_no': rec.mobile if rec and rec.mobile else '',
