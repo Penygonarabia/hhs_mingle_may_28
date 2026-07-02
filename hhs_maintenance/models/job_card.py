@@ -21,6 +21,14 @@ class JobCard(models.Model):
                                             
     
     
+    @api.onchange(
+    'brand_id',
+    'items_from_own_company_bool',
+    'service_products_code_id'
+    )
+    def _onchange_product_domain(self):
+        self.product_product_model_id = False
+
     
     @api.depends('items_from_own_company_bool', 'service_products_code_id','project_related_amc_bool','brand_id')
     def _compute_product_search_ids(self):

@@ -6,7 +6,7 @@
     'version': '17.0',
     "license": "LGPL-3",
     'depends': ['base', 'maintenance', 'machine_repair_management', 'sales_contract_and_recurring_invoices',
-                'hr_maintenance'],
+                'hr_maintenance','product'],
     'data': [
         "security/ir.model.access.csv",
         "views/maintenance_hhs.xml",
