@@ -363,6 +363,22 @@
                     <div class="deskvw">
                         <notebook>
                             <page id="service_sale_order_line" string="Order Lines">
+                            	<style>
+                                    [name="service_sale_order_line_ids"],
+                                    [name="service_sale_order_line_ids"] .o_list_renderer,
+                                    [name="service_sale_order_line_ids"] .table-responsive,
+                                    [name="service_sale_order_line_ids"] .o_list_table {
+                                        height: auto !important;
+                                        min-height: unset !important;
+                                        flex: 0 0 auto !important;
+                                    }
+                                    [name="service_sale_order_line_ids"] .o_list_renderer,
+                                    [name="service_sale_order_line_ids"] .table-responsive {
+                                        overflow-y: hidden !important;
+                                        overflow-x: auto !important;
+                                    }
+                                </style>
+                            
                                 <field name="service_sale_order_line_ids"
                                        readonly="state in ('approve','sent','sale','done','cancel','reject')">
                                     <tree editable="bottom">

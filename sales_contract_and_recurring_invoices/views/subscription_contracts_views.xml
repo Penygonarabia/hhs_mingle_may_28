@@ -156,6 +156,21 @@
                     </group>
                     <notebook>
                         <page string="Contract Lines">
+                        	 <style>
+                                [name="contract_line_ids"],
+                                [name="contract_line_ids"] .o_list_renderer,
+                                [name="contract_line_ids"] .table-responsive,
+                                [name="contract_line_ids"] .o_list_table {
+                                    height: auto !important;
+                                    min-height: unset !important;
+                                    flex: 0 0 auto !important;
+                                }
+                                [name="contract_line_ids"] .o_list_renderer,
+                                [name="contract_line_ids"] .table-responsive {
+                                    overflow-y: hidden !important;
+                                    overflow-x: auto !important;
+                                }
+                            </style>
                             <field name="contract_line_ids"
                                    readonly="1"/>
                             <group style="float:right;">
