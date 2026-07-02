@@ -350,8 +350,8 @@
     }
 
     /* Forcibly hide native 'Add a line' in mobile tree views that have this class */
-    .mobile-no-create-tree .o_list_record_add,
-    .mobile-no-create-tree tbody tr td:has(.o_list_record_add) {
+    .mobile-no-create-tree .o_field_x2many_list_row_add,
+    .mobile-no-create-tree tr:has(.o_field_x2many_list_row_add) {
         display: none !important;
     }
 }
