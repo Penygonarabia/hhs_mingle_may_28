@@ -20,6 +20,8 @@
                 <field name="trnh_date" optional="show"/>
                 <field name="trnd_slno" optional="show"/>
                 <field name="trnd_group" optional="show"/>
+                <field name="product_group" optional="show"/>
+                <field name="product_subgroup" optional="show"/>
                 <field name="trnd_part" optional="show"/>
                 <field name="trnd_desc" optional="show"/>
                 <field name="qty" sum="Total Qty" optional="show" widget="integer"/>
@@ -76,7 +78,9 @@
                     <filter string="Warehouse" name="group_by_warehouse" context="{'group_by':'trnh_whouse'}"/>
                     <filter string="Transaction No" name="group_by_trnh_no" context="{'group_by':'trnh_no'}"/>
                     <filter string="Date" name="group_by_date" context="{'group_by':'trnh_date'}"/>
-                    <filter string="Product Group" name="group_by_group" context="{'group_by':'trnd_group'}"/>
+                    <filter string="Product Category" name="group_by_category" context="{'group_by':'trnd_group'}"/>
+                    <filter string="Product Group" name="group_by_group" context="{'group_by':'product_group'}"/>
+                    <filter string="Product Sub Group" name="group_by_subgroup" context="{'group_by':'product_subgroup'}"/>
                     <filter string="Product No" name="group_by_part" context="{'group_by':'trnd_part'}"/>
                     <filter string="Product Description" name="group_by_desc" context="{'group_by':'trnd_desc'}"/>
                     <filter string="Promo Ref" name="group_by_promo" context="{'group_by':'clph_promoref'}"/>

@@ -765,6 +765,17 @@ class ProcessTier(models.Model):
             }
         }
 
+    @api.model
+    def cron_auto_process_tiers(self):
+        _logger.info("Executing automatic cron tier processing for all active loyalty customers...")
+        process_rec = self.create({
+            'select_all_customers': True,
+            'state': 'draft',
+        })
+        process_rec.action_run_tier_process()
+        _logger.info("Completed automatic cron tier processing successfully.")
+        return True
+
     # staging def action_run_tier_process(self):
     #
     #     for rec in self:

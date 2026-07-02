@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_promotion_detailed" model="ir.actions.report">
+        <field name="name">Promotion Detailed Report</field>
+        <field name="model">promotion.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">hhs_loyalty_management.promo_detailed_template</field>
+        <field name="report_file">hhs_loyalty_management.promo_detailed_template</field>
+        <field name="binding_model_id" eval="False"/>
+    </record>
+
+    <template id="promo_detailed_template">
+        <t t-call="web.html_container">
+            <t t-call="hhs_loyalty_management.promotion_report_print_document_template_internal_layout">
+
+                <!-- ===== HEADER (same as Print Promotion) ===== -->
+                <div class="header" t-att-style="report_header_style">
+                    <div class="row mt32 mb32">
+                        <div class="col-4 text-left">
+                            <img src="hhs_loyalty_management/static/src/img/HHS_Header_Left.png" alt="img"
+                                 style="height: 120px; width: 350px;"/>
+                        </div>
+                        <div class="col-4 text-center" style="vertical-align:text-top">
+                            <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)"
+                                 style="max-height: 100px; min-height:100px; min-width: 200px; max-width: 200px;"/>
+                        </div>
+                        <div class="col-4 text-right" style="vertical-align:text-top; text-align:right">
+                            <img src="hhs_loyalty_management/static/src/img/HHS_Header_Right.png" alt="img"
+                                 style="height: 120px; width: 350px;"/>
+                        </div>
+                    </div>
+                </div>
+
+                <style>
+                    * {
+                        font-family: 'Calibri', 'Calibri (Body)', Arial, sans-serif !important;
+                    }
+                    .header {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                    }
+                    .page {
+                        margin-top: 0 !important;
+                        padding-top: 0 !important;
+                    }
+                    .promo-detail-section {
+                        margin-bottom: 6px;
+                    }
+                    .promo-label {
+                        font-weight: bold;
+                        font-size: 15px;
+                        color: #002060;
+                        min-width: 160px;
+                        display: inline-block;
+                        font-family: 'Calibri', 'Calibri (Body)', Arial, sans-serif !important;
+                    }
+                    .promo-value {
+                        font-size: 14px;
+                        color: #333;
+                        font-family: 'Calibri', 'Calibri (Body)', Arial, sans-serif !important;
+                    }
+                    .section-title {
+                        background-color: #002060;
+                        color: #ffffff;
+                        padding: 5px 10px;
+                        font-weight: bold;
+                        font-size: 15px;
+                        margin-top: 14px;
+                        margin-bottom: 4px;
+                        border-radius: 3px;
+                        font-family: 'Calibri', 'Calibri (Body)', Arial, sans-serif !important;
+                    }
+                    .promo-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        font-size: 13px;
+                        font-family: 'Calibri', 'Calibri (Body)', Arial, sans-serif !important;
+                    }
+                    .promo-table th {
+                        background-color: #dce6f1;
+                        color: #002060;
+                        font-weight: bold;
+                        font-size: 14px;
+                        padding: 6px 8px;
+                        border: 1px solid #b0c4de;
+                        text-align: left;
+                        font-family: 'Calibri', 'Calibri (Body)', Arial, sans-serif !important;
+                    }
+                    .promo-table td {
+                        padding: 5px 8px;
+                        font-size: 13px;
+                        border: 1px solid #d0d0d0;
+                        vertical-align: top;
+                        font-family: 'Calibri', 'Calibri (Body)', Arial, sans-serif !important;
+                    }
+                    .promo-table tr:nth-child(even) td {
+                        background-color: #f5f8fb;
+                    }
+                    .promo-header-box {
+                        border: none !important;
+                        border-radius: 0 !important;
+                        padding: 0 !important;
+                        margin-bottom: 10px;
+                        background-color: transparent !important;
+                        background: none !important;
+                    }
+                    .promo-header-box table,
+                    .promo-header-box tr,
+                    .promo-header-box th,
+                    .promo-header-box td {
+                        border: none !important;
+                        border-top: none !important;
+                        border-bottom: none !important;
+                        border-left: none !important;
+                        border-right: none !important;
+                        outline: none !important;
+                        background-color: transparent !important;
+                        background: none !important;
+                    }
+                    .promo-header-row {
+                        display: flex;
+                        margin-bottom: 5px;
+                    }
+
+                    .text-no-records {
+                        color: #888;
+                        font-style: italic;
+                        font-size: 13px;
+                        padding: 6px 8px;
+                        font-family: 'Calibri', 'Calibri (Body)', Arial, sans-serif !important;
+                    }
+                    .page-break {
+                        page-break-after: always;
+                    }
+                </style>
+
+                <!-- ===== PAGE CONTENT ===== -->
+                <div class="page" style="margin:0 !important; padding:0 !important;">
+
+                    <!-- Report Title + Date Range -->
+                    <h4 class="text-center" style="margin: 0 0 8px 0; padding:0; color:#002060; font-family: 'Calibri', 'Calibri (Body)', Arial, sans-serif;">
+                        Promotion - Detailed
+                    </h4>
+                    <div class="row" style="margin-top:6px; margin-bottom:14px;">
+                        <div class="col-auto">
+                            <strong>From Date: <span t-esc="from_date" style="font-weight:bold;"/></strong>
+                        </div>
+                        <div class="col-auto">
+                            <strong>To Date: <span t-esc="to_date" style="font-weight:bold;"/></strong>
+                        </div>
+                    </div>
+
+                    <!-- ===== LOOP: One promotion per page ===== -->
+                    <t t-foreach="docs" t-as="doc">
+                        <!-- Promotion Header Info Box -->
+                        <div style="margin-bottom: 14px; font-size: 13px;">
+                            <div style="display:flex; margin-bottom: 4px;">
+                                <div style="width:50%;">
+                                    <span class="promo-label">Reference:</span>
+                                    <span class="promo-value"><t t-esc="doc.promotion_reference"/></span>
+                                </div>
+                                <div style="width:50%;">
+                                    <span class="promo-label">Status:</span>
+                                    <t t-if="doc.active">
+                                        <span class="promo-value">Active</span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="promo-value">Inactive</span>
+                                    </t>
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 4px;">
+                                <span class="promo-label">Description:</span>
+                                <span class="promo-value"><t t-esc="doc.promotion_name"/></span>
+                            </div>
+                            <div style="display:flex; margin-bottom: 4px;">
+                                <div style="width:50%;">
+                                    <span class="promo-label">Start Date:</span>
+                                    <span class="promo-value"><t t-esc="doc.promotion_start_date"/></span>
+                                </div>
+                                <div style="width:50%;">
+                                    <span class="promo-label">End Date:</span>
+                                    <span class="promo-value"><t t-esc="doc.promotion_end_date"/></span>
+                                </div>
+                            </div>
+                            <div style="display:flex; margin-bottom: 4px;">
+                                <div style="width:50%;">
+                                    <span class="promo-label">Priority Order:</span>
+                                    <span class="promo-value"><t t-esc="doc.sort_order"/></span>
+                                </div>
+                                <div style="width:50%;">
+                                    <span class="promo-label">Select All Customers:</span>
+                                    <span class="promo-value">
+                                        <t t-if="doc.select_all_customers">Yes</t>
+                                        <t t-else="">No</t>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PRODUCTS TAB -->
+                        <div class="section-title">Products</div>
+                        <t t-if="doc.applicable_product_ids">
+                            <table class="promo-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:5%;">#</th>
+                                        <th style="width:20%;">Product Category</th>
+                                        <th style="width:35%;">Product</th>
+                                        <th style="width:25%;">Promotion Type</th>
+                                        <th style="width:15%; text-align:right;">Promo Value Per Qty</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="doc.applicable_product_ids" t-as="line">
+                                        <tr>
+                                            <td><t t-esc="line_index + 1"/></td>
+                                            <td><t t-esc="line.product_category_id.name or ''"/></td>
+                                            <td><t t-esc="line.product_name_id.display_name or ''"/></td>
+                                            <td>
+                                                <t t-if="line.promotion_type == 'bonus'">Bonus</t>
+                                                <t t-elif="line.promotion_type == 'multiplier'">Multiplier</t>
+                                                <t t-else=""><t t-esc="line.promotion_type or ''"/></t>
+                                            </td>
+                                            <td style="text-align:right;">
+                                                <t t-esc="'%.2f' % line.promotional_value_per_qty"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                        <t t-else="">
+                            <p class="text-no-records">No products configured for this promotion.</p>
+                        </t>
+
+                        <!-- PROMOTION FILTERS (Tiers + Customers) -->
+                        <div class="section-title">Promotion Filters</div>
+                        <div class="row" style="margin:0;">
+                            <!-- Tiers (left half) -->
+                            <div class="col-6" style="padding-left:0; padding-right:8px;">
+                                <div style="font-weight:bold; color:#002060; font-size:14px; margin-bottom:4px;">Tiers</div>
+                                <t t-if="doc.tier_line_ids">
+                                    <table class="promo-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:15%;">#</th>
+                                                <th>Tier Name</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="doc.tier_line_ids" t-as="tier">
+                                                <tr>
+                                                    <td><t t-esc="tier_index + 1"/></td>
+                                                    <td><t t-esc="tier.tier_id.name or ''"/></td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </t>
+                                <t t-else="">
+                                    <p class="text-no-records">No tiers configured.</p>
+                                </t>
+                            </div>
+                            <!-- Customers (right half) -->
+                            <div class="col-6" style="padding-left:8px; padding-right:0;">
+                                <div style="font-weight:bold; color:#002060; font-size:14px; margin-bottom:4px;">Customers</div>
+                                <t t-if="doc.customer_line_ids">
+                                    <table class="promo-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:15%;">#</th>
+                                                <th>Customer Name</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="doc.customer_line_ids" t-as="cust">
+                                                <tr>
+                                                    <td><t t-esc="cust_index + 1"/></td>
+                                                    <td><t t-esc="cust.customer_id.name or ''"/></td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </t>
+                                <t t-else="">
+                                    <p class="text-no-records">No customers configured.</p>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- Page break after each promotion EXCEPT the last -->
+                        <t t-if="not doc_last">
+                            <div class="page-break"/>
+                        </t>
+
+                    </t>
+                    <!-- END LOOP -->
+
+                </div>
+
+                <!-- ===== FOOTER (same as Print Promotion) ===== -->
+                <div class="footer" style="margin:0; padding:0; border-top: 1px solid #002060;">
+                    <div class="row" style="margin:0; padding:0;">
+                        <div class="col-12" style="margin:0; padding:0;">
+                            <img src="hhs_loyalty_management/static/src/img/JobCard_Footer_img.png"
+                                 style="width:100%;"/>
+                        </div>
+                    </div>
+                </div>
+
+            </t>
+        </t>
+    </template>
+
+</odoo>

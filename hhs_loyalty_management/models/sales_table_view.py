@@ -19,6 +19,8 @@ class LoyaltySalesTableView(models.Model):
     trnh_date = fields.Date(string='Transaction Date', readonly=True)
     trnd_slno = fields.Char(string='SL #', readonly=True)
     trnd_group = fields.Char(string='Product Category', readonly=True)
+    product_group = fields.Char(string='Product Group', readonly=True)
+    product_subgroup = fields.Char(string='Product Sub Group', readonly=True)
     trnd_part = fields.Char(string='Product #', readonly=True)
     trnd_desc = fields.Char(string='Product Name', readonly=True)
     qty = fields.Float(string='Qty', readonly=True)
@@ -57,6 +59,8 @@ class LoyaltySalesTableView(models.Model):
                     TO_DATE(th.trnh_date, 'YYYYMMDD') as trnh_date,
                     CAST(td.trnd_slno AS VARCHAR) as trnd_slno,
                     td.trnd_group,
+                    pc_group.name as product_group,
+                    pc_subgroup.name as product_subgroup,
                     td.trnd_part,
                     td.trnd_desc,
                     
@@ -91,6 +95,10 @@ class LoyaltySalesTableView(models.Model):
                 JOIN transaction_details td ON th.trnh_no = td.trnd_no
                 LEFT JOIN res_partner rp ON rp.ref = th.trnh_cstno
                 LEFT JOIN sl_salesman sm ON sm.sm_code = th.trnh_sman
+                LEFT JOIN product_product pp ON pp.default_code = td.trnd_part
+                LEFT JOIN product_template pt ON pt.id = pp.product_tmpl_id
+                LEFT JOIN product_category pc_subgroup ON pc_subgroup.id = pt.categ_id
+                LEFT JOIN product_category pc_group ON pc_group.id = pc_subgroup.parent_id
                 LEFT JOIN (
                     SELECT 
                         clph_docnumber, 

@@ -31,12 +31,18 @@ class CustomerNotification(models.Model):
     _description = 'Customer Notification'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    name = fields.Char(string='Title', required=True, tracking=True)
-    notes = fields.Html(string='Notes', required=True)
+    name = fields.Char(string='Title (English)', required=True, tracking=True)
+    name_ar = fields.Char(string='Title (Arabic)', tracking=True)
+    notes = fields.Html(string='Notes (English)', required=True)
+    notes_ar = fields.Html(string='Notes (Arabic)')
     attachment_ids = fields.Many2many('ir.attachment', string='Attachments')
     
     # Filters
-    partner_ids = fields.Many2many('res.partner', string='Customer(s)', domain="[('activate_loyalty_feature', '=', True)]")
+    active_loyalty_only = fields.Boolean(string='Active Loyalty Customers', default=True)
+    promotion_ids = fields.Many2many('lp.setup.promotions', string='Promotions')
+    is_promotion_selected = fields.Boolean(compute='_compute_is_promotion_selected')
+
+    partner_ids = fields.Many2many('res.partner', string='Customer(s)')
     tier_ids = fields.Many2many('customer.tier', string='Tier(s)')
     activation_date_from = fields.Date(string='Activation Date From')
     activation_date_to = fields.Date(string='Activation Date To')
@@ -51,6 +57,20 @@ class CustomerNotification(models.Model):
         ('draft', 'Draft'),
         ('sent', 'Sent')
     ], string='Status', default='draft', tracking=True)
+
+    @api.depends('promotion_ids')
+    def _compute_is_promotion_selected(self):
+        for rec in self:
+            rec.is_promotion_selected = bool(rec.promotion_ids)
+
+    @api.onchange('promotion_ids')
+    def _onchange_promotion_ids(self):
+        if self.promotion_ids:
+            self.partner_ids = [(5, 0, 0)]
+            self.tier_ids = [(5, 0, 0)]
+            self.salesman_ids = [(5, 0, 0)]
+            self.activation_date_from = False
+            self.activation_date_to = False
 
     @api.model
     def default_get(self, fields_list):
@@ -78,8 +98,8 @@ class CustomerNotification(models.Model):
         self.ensure_one()
         
         # Validation 1: At least one filter must be selected
-        if not (self.partner_ids or self.tier_ids or self.salesman_ids or (self.activation_date_from and self.activation_date_to)):
-            raise ValidationError(_("You must select at least one criteria (Customer, Tier, Dates, or Salesman) to send a notification."))
+        if not (self.promotion_ids or self.partner_ids or self.tier_ids or self.salesman_ids or (self.activation_date_from and self.activation_date_to)):
+            raise ValidationError(_("You must select at least one criteria (Promotions, Customer, Tier, Dates, or Salesman) to send a notification."))
 
         # Validation 2: At least one medium must be selected
         if not (self.send_email or self.send_sms or self.send_whatsapp):
@@ -96,19 +116,35 @@ class CustomerNotification(models.Model):
         self.env['loyalty.salesman'].sync_salesmen_from_partners()
 
         # Build Domain for Partners
-        domain = [('activate_loyalty_feature', '=', True)]
-        
-        if self.partner_ids:
-            domain.append(('id', 'in', self.partner_ids.ids))
-        if self.tier_ids:
-            domain.append(('customer_tier_id', 'in', self.tier_ids.ids))
-        if self.activation_date_from and self.activation_date_to:
-            domain.append(('activation_date', '>=', self.activation_date_from))
-            domain.append(('activation_date', '<=', self.activation_date_to))
-        if self.salesman_ids:
-            domain.append(('salesman_name', 'in', self.salesman_ids.mapped('name')))
+        if self.promotion_ids:
+            partners = self.env['res.partner']
+            for promo in self.promotion_ids:
+                if promo.select_all_customers:
+                    partners |= self.env['res.partner'].search([('activate_loyalty_feature', '=', True)])
+                else:
+                    if promo.tier_line_ids:
+                        partners |= self.env['res.partner'].search([
+                            ('activate_loyalty_feature', '=', True),
+                            ('customer_tier_id', 'in', promo.tier_line_ids.mapped('tier_id').ids)
+                        ])
+                    if promo.customer_line_ids:
+                        partners |= promo.customer_line_ids.mapped('customer_id')
+        else:
+            domain = []
+            if self.active_loyalty_only:
+                domain.append(('activate_loyalty_feature', '=', True))
+            
+            if self.partner_ids:
+                domain.append(('id', 'in', self.partner_ids.ids))
+            if self.tier_ids:
+                domain.append(('customer_tier_id', 'in', self.tier_ids.ids))
+            if self.activation_date_from and self.activation_date_to:
+                domain.append(('activation_date', '>=', self.activation_date_from))
+                domain.append(('activation_date', '<=', self.activation_date_to))
+            if self.salesman_ids:
+                domain.append(('salesman_name', 'in', self.salesman_ids.mapped('name')))
 
-        partners = self.env['res.partner'].search(domain)
+            partners = self.env['res.partner'].search(domain)
         
         if not partners:
             raise ValidationError(_("No customers found matching the selected criteria."))
@@ -139,9 +175,29 @@ class CustomerNotification(models.Model):
         }
 
     def _send_email(self, partner):
+        notes_en = self.notes or ''
+        notes_ar = self.notes_ar or ''
+        
+        body = f"""
+<div style="font-family: Arial, sans-serif; font-size: 14px; color: #333333; line-height: 1.6;">
+    <p>Dear Customer,</p>
+    <div style="direction: ltr; text-align: left; margin-bottom: 15px;">
+        {notes_en}
+    </div>
+    <div style="direction: rtl; text-align: right; margin-bottom: 15px;">
+        {notes_ar}
+    </div>
+    <p>Thank you.</p>
+    <p>With Regards,<br/>HHS Sales Team</p>
+</div>
+        """
+        
+        is_arabic = partner.lang and partner.lang.startswith('ar')
+        subject = self.name_ar if (is_arabic and self.name_ar) else self.name
+
         mail_values = {
-            'subject': self.name,
-            'body_html': self.notes,
+            'subject': subject,
+            'body_html': body,
             'email_to': partner.email,
             'attachment_ids': [(6, 0, self.attachment_ids.ids)],
         }
@@ -149,10 +205,14 @@ class CustomerNotification(models.Model):
 
     def _send_sms(self, partner):
         try:
-            clean_text = html2plaintext(self.notes)
+            is_arabic = partner.lang and partner.lang.startswith('ar')
+            subject = self.name_ar if (is_arabic and self.name_ar) else self.name
+            content = self.notes_ar if (is_arabic and self.notes_ar) else self.notes
+            
+            clean_text = html2plaintext(content)
             self.env['sms.sms'].sudo().create({
                 'number': partner.mobile,
-                'body': f"{self.name}\n\n{clean_text}",
+                'body': f"{subject}\n\n{clean_text}",
             }).send()
         except Exception as e:
             _logger.warning(f"SMS sending failed for {partner.name}: {e}")
@@ -175,8 +235,12 @@ class CustomerNotification(models.Model):
             "Content-Type": "application/json"
         }
         
-        clean_text = html2plaintext(self.notes)
-        full_msg = f"*{self.name}*\n\n{clean_text}"
+        is_arabic = partner.lang and partner.lang.startswith('ar')
+        subject = self.name_ar if (is_arabic and self.name_ar) else self.name
+        content = self.notes_ar if (is_arabic and self.notes_ar) else self.notes
+
+        clean_text = html2plaintext(content)
+        full_msg = f"*{subject}*\n\n{clean_text}"
 
         payload = {
             "messaging_product": "whatsapp",
@@ -191,3 +255,4 @@ class CustomerNotification(models.Model):
                 _logger.warning(f"WhatsApp sending failed for {partner.name}: {response.text}")
         except Exception as e:
             _logger.warning(f"WhatsApp sending exception for {partner.name}: {str(e)}")
+

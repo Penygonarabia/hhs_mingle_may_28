@@ -20,3 +20,9 @@ class PromotionReportWizard(models.TransientModel):
             'form': self.read()[0],
         }
         return self.env.ref('hhs_loyalty_management.action_report_promotion').report_action(self, data=data)
+
+    def action_print_detailed_report(self):
+        data = {
+            'form': self.read()[0],
+        }
+        return self.env.ref('hhs_loyalty_management.action_report_promotion_detailed').report_action(self, data=data)

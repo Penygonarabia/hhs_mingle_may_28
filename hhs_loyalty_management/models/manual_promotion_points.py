@@ -426,7 +426,16 @@ class CustomerLoyaltyPointsHistory(models.Model):
     clph_regpoints = fields.Integer()
     clph_bonuspoints = fields.Integer()
     clph_totalpoints = fields.Integer()
-    clph_note = fields.Char(string='Note')
+    clph_note = fields.Char(string='Note', compute='_compute_clph_note')
+
+    @api.depends('reason_type_id', 'reason_type_id.reason_name')
+    def _compute_clph_note(self):
+        for rec in self:
+            if rec.reason_type_id:
+                rec.clph_note = rec.reason_type_id.reason_name
+            else:
+                rec.clph_note = False
+
     clph_uid = fields.Char()
     clph_datetime = fields.Datetime(string='Date')
     clph_reasoncode = fields.Char()

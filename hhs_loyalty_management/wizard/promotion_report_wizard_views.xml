@@ -10,7 +10,7 @@
                     <field name="to_date"/>
                 </group>
                 <footer>
-                    <button name="action_print_report" string="Print Report" type="object" class="btn-primary"/>
+                    <button name="action_print_detailed_report" string="Print PDF" type="object" class="btn-primary"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
@@ -30,10 +30,19 @@
               parent="menu_loyalty_points_root"
               sequence="3"/>
 
-    <!-- Submenu Print Promotion Report -->
+    <!-- Submenu Print Promotion Report (hidden - enable via groups if needed) -->
     <menuitem id="menu_print_promotion_report"
               name="Print Promotion"
               parent="menu_loyalty_reports_root"
               action="action_promotion_report_wizard"
-              sequence="10"/>
+              sequence="10"
+              groups="base.group_no_one"/>
+
+    <!-- Submenu Print Promotion - Detailed -->
+    <menuitem id="menu_print_promotion_detailed_report"
+              name="Print Promotion - Detailed"
+              parent="menu_loyalty_reports_root"
+              action="action_promotion_report_wizard"
+              sequence="11"/>
 </odoo>
+

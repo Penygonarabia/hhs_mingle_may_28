@@ -48,20 +48,21 @@ class LoyaltyInvoiceProcessor(models.TransientModel):
         """
         from odoo.exceptions import ValidationError
         
-        if not ((self.start_date and self.end_date) or self.invoice_ids):
+        if self and not ((self.start_date and self.end_date) or self.invoice_ids):
             raise ValidationError("You must provide either Invoice Dates (Start and End Date) or Select specific Invoices.")
 
         domain = [('trnh_processed', '=', 'N')]
-        if self.start_date:
-            domain.append(('trnh_date', '>=', self.start_date.strftime('%Y%m%d')))
-        if self.end_date:
-            domain.append(('trnh_date', '<=', self.end_date.strftime('%Y%m%d')))
-        if self.invoice_ids:
-            domain.append(('id', 'in', self.invoice_ids.ids))
-        if self.partner_ids:
-            refs = [r for r in self.partner_ids.mapped('ref') if r]
-            if refs:
-                domain.append(('trnh_cstno', 'in', refs))
+        if self:
+            if self.start_date:
+                domain.append(('trnh_date', '>=', self.start_date.strftime('%Y%m%d')))
+            if self.end_date:
+                domain.append(('trnh_date', '<=', self.end_date.strftime('%Y%m%d')))
+            if self.invoice_ids:
+                domain.append(('id', 'in', self.invoice_ids.ids))
+            if self.partner_ids:
+                refs = [r for r in self.partner_ids.mapped('ref') if r]
+                if refs:
+                    domain.append(('trnh_cstno', 'in', refs))
 
         headers = self.env['transaction.header'].sudo().search(domain)
         success_invoices = []

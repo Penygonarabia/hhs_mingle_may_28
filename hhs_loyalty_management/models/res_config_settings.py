@@ -9,7 +9,7 @@ class ResConfigSettings(models.TransientModel):
                                               config_parameter="hhs_loyalty_management.loyalty_points_hide_show")
 
     customer_loyalty_point_limit = fields.Integer(
-        string="Maximum Point Allowed",
+        string="Maximum Points Allowed Per Product",
         config_parameter='hhs_loyalty_management.customer_loyalty_point_limit'
     )
     tier_downgrade_waiting_days = fields.Integer(

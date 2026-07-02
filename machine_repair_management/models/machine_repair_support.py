@@ -1812,8 +1812,8 @@ class MachineRepairSupport(models.Model):
                         for li in lines:
                             '''Code Commented on May 30 2026 by Vijaya Bhaskar because client asked overall qty is over then only count was updated '''
                             if (
-                                rec.task_id.planned_date_begin.date() > rec.contract_id.date_start
-                                and rec.task_id.planned_date_begin.date() < rec.contract_id.date_end
+                                rec.task_id.planned_date_begin.date() >= rec.contract_id.date_start
+                                and rec.task_id.planned_date_begin.date() <= rec.contract_id.date_end
                                 and li.qty_ordered
                             ):
                                 contract_search = self.env['machine.repair.support'].search_count([
@@ -1841,6 +1841,8 @@ class MachineRepairSupport(models.Model):
                                     li.no_of_visits_per_year
                                 )
                             })
+                                print("................first",li.actual_prevent_count)
+
                             '''Code Commented on May 30 2026 by Vijaya Bhaskar because client asked overall qty is over then only count was updated
                             if li.actual_prevent_count < li.days_require_rpm_round_off:
                                 li.actual_prevent_count += 1

@@ -1107,7 +1107,7 @@ class ProjectTask(models.Model):
                 if rec.state_status and rec.project_related_amc_bool:
                     '''Code Added on May 23 2026 by Vijaya Bhaskar'''
                     rec.asset_id.last_actual_prevent_visit = fields.Date.today()
-                    rec.service_request_id._compute_update_contract_line()
+                    # rec.service_request_id._compute_update_contract_line()
 
             scheduled_state_cancel = self.env["project.task.type"].search(
                 [("code", "=", "124")], limit=1
@@ -7814,6 +7814,8 @@ class ProjectTask(models.Model):
                     '''Code Added on May 23 2026 by Vijaya Bhaskar'''
                     if self.project_related_amc_bool:
                         self.asset_id.last_actual_prevent_visit = fields.Date.today()
+                        self.service_request_id._compute_update_contract_line()
+
                     # self.send_whatsapp_invoice_receipt()
 
                 if state.code == "128":
