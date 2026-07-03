@@ -28,4 +28,14 @@
               sequence="61"
               groups="dashboard_rights.group_dashboard_rights_admin"/>
 
+    <!-- Settings ▸ Manage User Rights  →  wizard form (setup screen).
+         Parented to the Administration/Settings root (NOT Technical) so it is
+         visible without developer mode, unlike menu_dashboard_rights_wizard. -->
+    <menuitem id="menu_dashboard_rights_setup"
+              name="Manage User Rights"
+              parent="base.menu_administration"
+              action="dashboard_rights.action_dashboard_rights_matrix"
+              sequence="51"
+              groups="dashboard_rights.group_dashboard_rights_admin"/>
+
 </odoo>
