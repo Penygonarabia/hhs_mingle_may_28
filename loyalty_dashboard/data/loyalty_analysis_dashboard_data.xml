@@ -18,7 +18,7 @@
         <!-- ============================================================
              Chart 1: Number of customers per tier
              Source : res.partner (loyalty-enabled customers)
-             Group  : Region (work_center_group_id)
+             Group  : Tier (tier_name)
              Drill 1: City   (work_center_id)
              ============================================================ -->
         <record id="la_chart_customers_per_tier" model="ks_dashboard_ninja.item">
@@ -27,7 +27,7 @@
             <field name="ks_dashboard_item_type">ks_bar_chart</field>
             <field name="ks_chart_data_count_type">count</field>
             <field name="ks_model_id" ref="base.model_res_partner"/>
-            <field name="ks_chart_relation_groupby" ref="loyalty_dashboard.field_res_partner__work_center_group_id"/>
+            <field name="ks_chart_relation_groupby" ref="hhs_loyalty_management.field_res_partner__tier_name"/>
             <field name="ks_date_filter_field" ref="hhs_loyalty_management.field_res_partner__activation_date"/>
             <field name="ks_domain">[("activate_loyalty_feature", "=", True)]</field>
             <field name="ks_chart_item_color">custom-1</field>

@@ -26,18 +26,25 @@
                position="replace">
             <div class="d-flex align-items-center">
 
-                <!-- Caret icon (unchanged) -->
-                <span t-attf-class="o_group_caret fa fa-fw {{group.isFolded ? 'fa-caret-right' : 'fa-caret-down' }} me-1"
-                      t-attf-style="--o-list-group-level: {{getGroupLevel(group)}}"/>
+                <!-- Caret icon — unicode triangles to prevent FontAwesome load failures -->
+                <span class="dr_group_caret me-1"
+                      t-attf-style="--o-list-group-level: {{getGroupLevel(group)}}">
+                    <t t-if="group.isFolded">▶</t>
+                    <t t-else="">▼</t>
+                </span>
 
-                <!-- Name + count display -->
+                <!-- Name (bold) + count (muted) — like grouped_user_list.xml -->
                 <t t-if="group.groupByField.name === 'user_id'">
-                    <t t-esc="getGroupDisplayName(group)"/>
-                    (<t t-esc="(group.aggregates.has_access_int || 0) + '/' + group.count"/>)
+                    <span class="dr_group_name_text" t-esc="getGroupDisplayName(group)"/>
+                    <span class="dr_group_count_badge">
+                        (<t t-esc="(group.aggregates.has_access_int || 0) + '/' + group.count"/>)
+                    </span>
                 </t>
                 <t t-else="">
-                    <t t-esc="getGroupDisplayName(group)"/>
-                    (<t t-esc="group.count"/>)
+                    <span class="dr_group_name_text" t-esc="getGroupDisplayName(group)"/>
+                    <span class="dr_group_count_badge">
+                        (<t t-esc="group.count"/>)
+                    </span>
                 </t>
 
                 <!-- Inline action buttons (unchanged) -->

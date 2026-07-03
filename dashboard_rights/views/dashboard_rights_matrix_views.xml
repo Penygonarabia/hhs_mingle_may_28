@@ -31,15 +31,11 @@
                             <field name="user_id"
                                    string="User Name"
                                    options="{'no_create': True, 'no_open': True}"/>
-                            <!-- email_copy_char is our HTTP-safe copy widget: uses
-                                 navigator.clipboard when available and falls back to
-                                 document.execCommand("copy") on plain-HTTP servers where
-                                 navigator.clipboard is undefined. The stock-based
-                                 email_id_copy widget has no such fallback and throws
-                                 "Cannot read properties of undefined (reading 'writeText')". -->
+                            <!-- email_id_copy is our local widget: same layout as
+                                 CopyClipboardChar but with a fixed "Copy Email ID" button label. -->
                             <field name="user_email"
                                    string="Email"
-                                   widget="email_copy_char"
+                                   widget="email_id_copy"
                                    readonly="1"/>
                             <field name="user_role"
                                    string="User Role"
@@ -81,24 +77,30 @@
                                        class="form-control"/>
                             </div>
 
-                            <field name="line_ids" invisible="1"/>
-                            <field name="visible_line_ids"
+                            <field name="line_ids"
                                    nolabel="1"
                                    mode="tree"
+                                   widget="dashboard_rights_matrix_list_field"
                                    options="{'no_create': True, 'no_open': True}">
                                 <tree string="Dashboards"
                                       editable="bottom"
-                                      create="false"
-                                      delete="false"
-                                      default_order="menu_name, dashboard_name">
+                                      create="0"
+                                      delete="0"
+                                      limit="9999"
+                                      decoration-bf="is_group"
+                                      default_order="menu_sequence, menu_name, sub_sequence, dashboard_name">
                                     <field name="dashboard_id" column_invisible="1"/>
+                                    <field name="menu_id" column_invisible="1"/>
+                                    <field name="is_group" column_invisible="1"/>
                                     <field name="is_user_admin" column_invisible="1"/>
+                                    <field name="has_access_prev" column_invisible="1"/>
+                                    <field name="menu_sequence" column_invisible="1"/>
+                                    <field name="sub_sequence" column_invisible="1"/>
                                     <field name="menu_name" string="Menu" readonly="1"/>
-                                    <field name="dashboard_name" string="Dashboard Name" readonly="1"/>
+                                    <field name="dashboard_name" string="Dashboard Name" widget="dr_group_count" readonly="1"/>
                                     <field name="has_access"
                                            string="Has Access"
-                                           widget="boolean_toggle"
-                                           readonly="is_user_admin"/>
+                                           widget="dr_access_toggle"/>
                                 </tree>
                             </field>
                         </page>
@@ -129,8 +131,8 @@
                                      user_role (sorted last by default_order) get cut off when the
                                      total user count exceeds the default page size of 40. -->
                                 <tree string="Users"
-                                      create="false"
-                                      delete="false"
+                                      create="0"
+                                      delete="0"
                                       default_order="user_role, user_name"
                                       limit="9999">
                                     <field name="user_id" column_invisible="1"/>

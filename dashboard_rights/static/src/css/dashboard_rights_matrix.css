@@ -105,3 +105,166 @@ body.dr_matrix_pre_load .o_form_status_indicator_buttons {
     text-align: center;
 }
 
+/* Hide "Add a line" (add link) and the row close/delete buttons in the dashboards list */
+.dr_matrix_form .o_field_x2many_list_row_add,
+.dr_matrix_form .o_list_table_add_link,
+.dr_matrix_form .o_list_button_add,
+.dr_matrix_form .o-kanban-button-new,
+.dr_matrix_form tr.o_field_x2many_list_row_add {
+    display: none !important;
+}
+
+/* Hide the action/delete column headers, body cells, and footers entirely in dashboards list */
+.dr_matrix_form th.o_list_actions_header,
+.dr_matrix_form td.o_list_record_remove,
+.dr_matrix_form tfoot tr td:last-child {
+    display: none !important;
+    width: 0 !important;
+    padding: 0 !important;
+}
+
+/* ── Parent group rows formatting ─────────────────────────────────── */
+.dr_matrix_form tr.dr_parent_row {
+    cursor: pointer;
+    background-color: #f2f2f2 !important;
+}
+.dr_matrix_form tr.dr_parent_row td {
+    background-color: #f2f2f2 !important;
+    border-top: 1px solid #dee2e6 !important;
+    border-bottom: 2px solid #ced4da !important;
+    font-size: 0.95rem !important;
+    font-weight: bold !important;
+}
+.dr_matrix_form tr.dr_parent_row td.o_data_cell[name="menu_name"]::before {
+    content: "▼";
+    font-size: 0.8rem;
+    color: #5f5f5f;
+    margin-right: 8px;
+    display: inline-block;
+    width: 12px;
+}
+.dr_matrix_form tr.dr_parent_row.dr_collapsed td.o_data_cell[name="menu_name"]::before {
+    content: "▶";
+}
+
+/* ── Child rows formatting & indentation ──────────────────────────── */
+.dr_matrix_form tr:not(.fw-bold):not(.font-weight-bold):not(.o_text_bold) td.o_data_cell[name="dashboard_name"] {
+    padding-left: 24px !important;
+    color: #4f5f6f;
+}
+.dr_matrix_form tr:not(.fw-bold):not(.font-weight-bold):not(.o_text_bold) td.o_data_cell[name="dashboard_name"]::before {
+    content: "↳ ";
+    font-size: 1.1rem;
+    color: #92a3a4;
+    margin-right: 6px;
+}
+
+/* Force strict column widths. Without this the table uses the browser's
+   default auto layout, where the percentage widths below are only hints:
+   clicking "Has Access" puts that row into edit mode, the toggle cell mounts
+   the real switch widget (wider than its readonly rendering), and auto layout
+   grows the WHOLE table to fit it — which inflates every percentage column,
+   including Menu, since they're all a share of that now-larger table. Fixed
+   layout locks each column to the widths declared below regardless of cell
+   content, so only the intended cell truncates instead of the table growing. */
+.dr_matrix_form .o_list_table {
+    table-layout: fixed !important;
+}
+
+/* ── Adjust column widths to prevent squishing ────────────────────── */
+.dr_matrix_form .o_list_table th[data-name="menu_name"],
+.dr_matrix_form .o_list_table td[name="menu_name"] {
+    width: 25% !important;
+    min-width: 180px !important;
+}
+.dr_matrix_form .o_list_table th[data-name="dashboard_name"],
+.dr_matrix_form .o_list_table td[name="dashboard_name"] {
+    width: 55% !important;
+    min-width: 350px !important;
+}
+.dr_matrix_form .o_list_table th[data-name="has_access"],
+.dr_matrix_form .o_list_table td[name="has_access"] {
+    width: 20% !important;
+    min-width: 120px !important;
+}
+
+/* Keep Menu / Dashboard Name on a single line. Without this the Dashboard Name
+   cell wraps on the FIRST render (before the column widths settle) and only
+   looks right after a re-render. Forcing nowrap makes it consistent. */
+.dr_matrix_form .o_list_table td[name="menu_name"],
+.dr_matrix_form .o_list_table td[name="dashboard_name"] {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* When a row is edited (e.g. after clicking its Has Access toggle) the readonly
+   Menu / Dashboard Name mounts a block-level .o_field_widget div, which combined
+   with the inline ::before arrow ("▼"/"▶" on group rows, "↳" on dashboard rows)
+   pushed the text onto a 2nd line. Keep the widget inline so the arrow and the
+   text stay on one line — on both group rows and dashboard rows. */
+.dr_matrix_form .o_list_table td[name="dashboard_name"] > .o_field_widget,
+.dr_matrix_form .o_list_table td[name="menu_name"] > .o_field_widget {
+    display: inline-block !important;
+    vertical-align: middle;
+    max-width: calc(100% - 24px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Ensure main list view checkbox column doesn't stretch during group expansion ── */
+.dr_rights_list_view th.o_list_record_selector,
+.dr_rights_list_view td.o_list_record_selector,
+.o_list_view.dr_rights_list_view th.o_list_record_selector,
+.o_list_view.dr_rights_list_view td.o_list_record_selector,
+.dr_rights_list_view .o_list_table th.o_list_record_selector,
+.dr_rights_list_view .o_list_table td.o_list_record_selector {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+}
+
+/* ── Hide the selection checkbox in GROUP HEADER rows only (not data rows) ── */
+.dr_rights_list_view .o_group_header .o_list_record_selector,
+.dr_rights_list_view .o_group_header th.o_list_record_selector {
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* ── Group header rows — dashboards-tab style ────────────────────────── */
+.dr_rights_list_view .o_group_header td.o_group_name {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Prominent caret icon — matches dashboards tab style */
+.dr_rights_list_view .o_group_header .dr_group_caret {
+    font-size: 0.8rem !important;
+    color: #5a7a7a !important;
+    width: 16px !important;
+    margin-right: 6px !important;
+    display: inline-block;
+    transition: color 0.15s ease;
+}
+
+/* Group name text — bold like dashboards tab */
+.dr_rights_list_view .o_group_header .dr_group_name_text {
+    font-weight: 600;
+    font-size: 0.93rem;
+}
+
+/* Count badge — muted like dashboards tab */
+.dr_rights_list_view .o_group_header .dr_group_count_badge {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-left: 6px;
+}
+
+/* Hover highlight on group header row */
+.dr_rights_list_view .o_group_header:hover .dr_group_caret {
+    color: #2d7d7d !important;
+}
+.dr_rights_list_view .o_group_header:hover .dr_group_name_text {
+    color: #1a5c5c;
+}
