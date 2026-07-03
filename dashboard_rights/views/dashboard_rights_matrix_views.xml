@@ -88,13 +88,14 @@
                                       delete="0"
                                       limit="9999"
                                       decoration-bf="is_group"
-                                      default_order="menu_sequence, menu_name, dashboard_name">
+                                      default_order="menu_sequence, menu_name, sub_sequence, dashboard_name">
                                     <field name="dashboard_id" column_invisible="1"/>
                                     <field name="menu_id" column_invisible="1"/>
                                     <field name="is_group" column_invisible="1"/>
                                     <field name="is_user_admin" column_invisible="1"/>
                                     <field name="has_access_prev" column_invisible="1"/>
                                     <field name="menu_sequence" column_invisible="1"/>
+                                    <field name="sub_sequence" column_invisible="1"/>
                                     <field name="menu_name" string="Menu" readonly="1"/>
                                     <field name="dashboard_name" string="Dashboard Name" widget="dr_group_count" readonly="1"/>
                                     <field name="has_access"

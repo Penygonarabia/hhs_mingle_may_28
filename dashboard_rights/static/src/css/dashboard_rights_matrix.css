@@ -159,6 +159,18 @@ body.dr_matrix_pre_load .o_form_status_indicator_buttons {
     margin-right: 6px;
 }
 
+/* Force strict column widths. Without this the table uses the browser's
+   default auto layout, where the percentage widths below are only hints:
+   clicking "Has Access" puts that row into edit mode, the toggle cell mounts
+   the real switch widget (wider than its readonly rendering), and auto layout
+   grows the WHOLE table to fit it — which inflates every percentage column,
+   including Menu, since they're all a share of that now-larger table. Fixed
+   layout locks each column to the widths declared below regardless of cell
+   content, so only the intended cell truncates instead of the table growing. */
+.dr_matrix_form .o_list_table {
+    table-layout: fixed !important;
+}
+
 /* ── Adjust column widths to prevent squishing ────────────────────── */
 .dr_matrix_form .o_list_table th[data-name="menu_name"],
 .dr_matrix_form .o_list_table td[name="menu_name"] {

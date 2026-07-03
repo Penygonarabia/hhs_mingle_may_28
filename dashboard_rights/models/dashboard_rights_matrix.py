@@ -284,6 +284,9 @@ class DashboardRightsMatrix(models.TransientModel):
                 'board': b,
                 'menu_name': menu_name,
                 'menu_sequence': seq_by_name.get(menu_name, 9999),
+                # Real menu-item sequence, so children list in the same order
+                # as they appear under the actual My Dashboard menu.
+                'sub_sequence': b.ks_dashboard_menu_id.sequence if b.ks_dashboard_menu_id else 9999,
                 'access_val': access_val
             })
 
@@ -302,6 +305,7 @@ class DashboardRightsMatrix(models.TransientModel):
                         "dashboard_id": item['board'].id,
                         "dashboard_name": Line._dr_board_display_name(item['board']),
                         "menu_sequence": item['menu_sequence'],
+                        "sub_sequence": item['sub_sequence'],
                         "has_access": item['access_val'],
                         "has_access_original": item['access_val'],
                         "has_access_prev": item['access_val'],
@@ -325,6 +329,7 @@ class DashboardRightsMatrix(models.TransientModel):
                 "is_group": True,
                 "menu_name": menu_name,
                 "menu_sequence": menu_seq,
+                "sub_sequence": -1,
                 "dashboard_name": count_label,
                 "has_access": all_on,
                 "has_access_original": all_on,
@@ -339,6 +344,7 @@ class DashboardRightsMatrix(models.TransientModel):
                     "dashboard_id": item['board'].id,
                     "dashboard_name": Line._dr_board_display_name(item['board']),
                     "menu_sequence": item['menu_sequence'],
+                    "sub_sequence": item['sub_sequence'],
                     "has_access": item['access_val'],
                     "has_access_original": item['access_val'],
                     "has_access_prev": item['access_val'],
@@ -392,6 +398,7 @@ class DashboardRightsMatrix(models.TransientModel):
                 "is_group": True,
                 "menu_name": parent.name,
                 "menu_sequence": parent_seq,
+                "sub_sequence": -1,
                 "dashboard_name": "%d / %d" % (granted, len(child_access)),
                 "has_access": all_on,
                 "has_access_original": all_on,
@@ -405,6 +412,7 @@ class DashboardRightsMatrix(models.TransientModel):
                     "menu_name": parent.name,
                     "dashboard_name": k.name,
                     "menu_sequence": parent_seq,
+                    "sub_sequence": k.sequence,
                     "has_access": acc,
                     "has_access_original": acc,
                     "has_access_prev": acc,
@@ -466,7 +474,7 @@ class DashboardRightsMatrix(models.TransientModel):
 class DashboardRightsMatrixLine(models.TransientModel):
     _name = "dashboard.rights.matrix.line"
     _description = "Dashboard Rights — Dashboard Row"
-    _order = "menu_sequence, menu_name, dashboard_name"
+    _order = "menu_sequence, menu_name, sub_sequence, dashboard_name"
 
     matrix_id = fields.Many2one(
         "dashboard.rights.matrix",
@@ -511,6 +519,15 @@ class DashboardRightsMatrixLine(models.TransientModel):
         help="Sequence of this dashboard's menu under the My Dashboard menu, "
              "so the groups list in the same order as the menu (OT, CT, "
              "Promoter, ...). Menus not found there sort last.",
+    )
+    sub_sequence = fields.Integer(
+        string="Sub Sequence",
+        default=9999,
+        readonly=True,
+        help="Ordering within a menu group: -1 for the group row itself (so it "
+             "always sorts first), otherwise the real ir.ui.menu sequence of the "
+             "board/menu-item, so children list in the same order as the actual "
+             "menu instead of alphabetically.",
     )
     dashboard_name = fields.Char(
         string="Dashboard Name",
