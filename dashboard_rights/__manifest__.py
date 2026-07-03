@@ -1,6 +1,6 @@
 {
     "name": "Dashboard Rights",
-    "version": "17.0.1.0.15",
+    "version": "17.0.1.0.1",
     "category": "Settings",
     "summary": "Per-user, per-dashboard access rights (Settings page).",
     "description": """
@@ -27,7 +27,6 @@ which dashboards each user is allowed to see/use.
     "data": [
         "security/dashboard_rights_groups.xml",
         "security/ir.model.access.csv",
-        "data/dashboard_rights_menus_data.xml",
         "views/dashboard_rights_views.xml",
         "views/dashboard_rights_matrix_views.xml",
         "views/dashboard_rights_menus.xml",
@@ -44,7 +43,6 @@ which dashboards each user is allowed to see/use.
             "dashboard_rights/static/src/js/email_copy_field.js",
             "dashboard_rights/static/src/js/email_id_copy_field.js",
             "dashboard_rights/static/src/js/dashboard_rights_list.js",
-            "dashboard_rights/static/src/js/dashboard_rights_matrix_list.js",
             "dashboard_rights/static/src/js/dashboard_bulk_buttons.js",
             "dashboard_rights/static/src/js/users_tab_refresh.js",
             "dashboard_rights/static/src/js/header_status_gate.js",
