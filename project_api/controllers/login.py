@@ -16350,7 +16350,7 @@ class AccessToken(http.Controller):
                 order='write_date asc'
             )
 
-            result = []
+             result = []
             for rec in customers:
                 result.append({
                     "Customer_Name": rec.name or "",
@@ -16359,7 +16359,9 @@ class AccessToken(http.Controller):
                     "Loyalty_Feature_Activation_Date": str(rec.activation_date) if rec.activation_date else "",
                     "Redemption_Deadline_Date": str(rec.redemption_deadline) if rec.redemption_deadline else "",
                     "Customer_Lotalty_Feature_Activate_Yes_or_No": rec.activate_loyalty_feature,
-                    "Last_Modified_Date": str(rec.write_date) if rec.write_date else ""
+                    "Base Points": rec.collected_points_regular,
+                    "Promotional Points": rec.balance_points_bonus,
+                    "Last_Modified_Date": rec.write_date.strftime("%Y-%m-%d %H:%M:%S") if rec.write_date else ""
                 })
 
             return Response(
