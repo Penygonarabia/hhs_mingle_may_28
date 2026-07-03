@@ -169,7 +169,7 @@
                                 <label for="maintenance_type" string="Job Type"/>
                                 <div class="o_row">
                                     <div>
-                                        <field name="maintenance_type" widget="radio" class="oe_inline" readonly="service_create_from_equipment_bool"/>
+                                        <field name="maintenance_type" widget="radio" class="oe_inline" readonly="service_create_from_equipment_bool or (project_related_amc_bool and preventive_count_completed)"/>
                                     </div>
                                     <div>
                                         <field name="actual_corrective" class="oe_inline" readonly="1"/>
@@ -178,7 +178,8 @@
                                     </div>
                                 </div>
                                 <field name="paid_service_bool" readonly="not paid_service_editable"/>
-
+								
+								 <field name="preventive_count_completed" invisible="1"/> 
                                 <field name="paid_service_editable" invisible="1" readonly="0"/>
                                 <field name="contract_already_updated" invisible="1" readonly="1"/>
                                 

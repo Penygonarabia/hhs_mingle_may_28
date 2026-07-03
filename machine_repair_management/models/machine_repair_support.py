@@ -1676,6 +1676,11 @@ class MachineRepairSupport(models.Model):
     actual_corrective = fields.Char(
         string="Actual Corrective", compute="_compute_actual_counts", store=True
     )
+    
+    preventive_count_completed = fields.Boolean(
+        compute="_compute_preventive_count_completed",
+        string="Preventive Count Completed"
+    )
     paid_service_bool = fields.Boolean("Paid Service", default=False)
     paid_service_editable = fields.Boolean(
         compute="_compute_paid_service_editable", readonly=False
@@ -1748,6 +1753,22 @@ class MachineRepairSupport(models.Model):
                 total_corrective_count > 0
                 and done_cor >= total_corrective_count
             )
+    
+    @api.depends("contract_id", "asset_id", "service_products_code_id", "amc_project_id", "project_related_amc_bool")
+    def _compute_preventive_count_completed(self):
+        for rec in self:
+            completed = False
+            if rec.contract_id and rec.asset_id and rec.service_products_code_id:
+                lines = rec.contract_id.contract_line_ids.filtered(
+                    lambda l: l.product_id == rec.service_products_code_id
+                )
+                total_pre = sum(li.days_require_rpm_round_off or 0 for li in lines)
+                done_pre = sum(li.actual_prevent_count or 0 for li in lines)
+                if total_pre > 0 and done_pre >= total_pre:
+                    completed = True
+            rec.preventive_count_completed = completed
+            if completed and rec.project_related_amc_bool:
+                rec.maintenance_type = "corrective"
     
     '''Code Added on June 19 2026 by Vijaya Bhaskar preventive count radio widget is disabled'''
 
