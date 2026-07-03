@@ -1103,7 +1103,16 @@ class SubscriptionContracts(models.Model):
 
     def action_print_contract_document(self):
         return self.env.ref('sales_contract_and_recurring_invoices.action_report_contract_document').report_action(self)
-
+    
+    def action_download_word_document(self):
+        ids_str = ','.join(map(str, self.ids))
+        url = f'/contract/download_word/{ids_str}'
+        return {
+            'type': 'ir.actions.act_url',
+            'url': url,
+            'target': 'new',
+        }
+    
     @api.model
     def number_to_words(self, number):
         try:

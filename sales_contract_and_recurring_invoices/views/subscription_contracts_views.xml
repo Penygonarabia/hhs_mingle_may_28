@@ -419,6 +419,18 @@
             action = env["subscription.contracts"].browse(env.context.get("active_ids")).action_print_contract_document()
         </field>
     </record>
+    
+        <!-- Add 'Download Contract as Word' to the Actions menu -->
+    <record id="action_download_word_contract_document_server" model="ir.actions.server">
+        <field name="name">Download Contract as Word</field>
+        <field name="model_id" ref="model_subscription_contracts"/>
+        <field name="state">code</field>
+        <field name="binding_model_id" ref="model_subscription_contracts"/>
+        <field name="binding_type">action</field>
+        <field name="code">
+            action = env["subscription.contracts"].browse(env.context.get("active_ids")).action_download_word_document()
+        </field>
+    </record>
 </odoo>
 
         <!--<?xml version="1.0" encoding="UTF-8" ?>-->
