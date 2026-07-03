@@ -1,6 +1,6 @@
 {
     'name': 'Promoter Dashboards',
-    'version': '17.0.1.0.1',
+    'version': '17.0.1.0.2',
     'category': 'Sales/Dashboard',
     'summary': 'Promoter dashboards under My Dashboard',
     'description': """

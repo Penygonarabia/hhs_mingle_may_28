@@ -32,12 +32,124 @@ DASHBOARDS = [
 ]
 
 
+# KS stores each item's measure / list-column selections both as a real
+# many2many onto ir.model.fields AND, redundantly, as raw field ids embedded
+# in the ks_many2many_field_ordering JSON blob. ks_import_dashboard remaps the
+# m2m by name to the importing DB, but the ordering blob is copied verbatim and
+# the m2m ids themselves rot whenever a *source* module is reinstalled (which
+# renumbers ir.model.fields). A stale id makes KS raise
+# "MissingError: ir.model.fields(<id>,)" the moment the board is opened.
+#
+# Each tuple: (m2m field on the item, sibling *_name key in the ordering blob).
+_MEASURE_FIELD_KEYS = [
+    ("ks_chart_measure_field",     "ks_chart_measure_field_name"),
+    ("ks_chart_measure_field_2",   "ks_chart_measure_field_2_name"),
+    ("ks_list_view_fields",        "ks_list_view_fields_name"),
+    ("ks_list_view_group_fields",  "ks_list_view_group_fields_name"),
+]
+
+
+def _heal_item_field_ids(env, board):
+    """Re-resolve every item's measure/list field ids **by name** against the
+    current DB, repairing both the ordering blob and the raw m2m relation.
+
+    KS's custom ``ks_read`` (see ks_dashboard_ninja_items.py) rebuilds these
+    four many2many fields *from the ks_many2many_field_ordering blob* whenever
+    it is present, so the blob is the real source of truth and a stale id there
+    is what makes the board crash with MissingError. We also rewrite the
+    underlying relation table by SQL: the ORM's own many2many write is a no-op
+    here (it diffs against the blob-synthesised value, which we have already
+    healed), so it would otherwise leave the dangling relation row behind.
+
+    Idempotent and cheap: if the stored ids already match the resolved ids the
+    item is left untouched. This is what keeps the promoter boards immune to
+    ir.model.fields renumbering after a source-module reinstall.
+    """
+    Field = env["ir.model.fields"].sudo()
+    for item in board.ks_dashboard_items_ids:
+        model = item.ks_model_id.model
+        if not model:
+            continue
+        try:
+            ordering = json.loads(item.ks_many2many_field_ordering or "{}")
+        except ValueError:
+            continue
+
+        changed = False
+        for id_key, name_key in _MEASURE_FIELD_KEYS:
+            names = ordering.get(name_key) or []
+            if not names:
+                continue
+            # Resolve by name, preserving the author's column order and
+            # dropping any name that no longer exists on the model.
+            resolved = []
+            for name in names:
+                fld = Field.search(
+                    [("model", "=", model), ("name", "=", name)], limit=1
+                )
+                if fld:
+                    resolved.append(fld.id)
+            if resolved == (ordering.get(id_key) or []):
+                continue
+            ordering[id_key] = resolved
+            changed = True
+
+            # Rewrite the relation table directly; the ORM write path can't be
+            # trusted to update it (no-op diff against the synthesised value).
+            m2m = item._fields[id_key]
+            env.cr.execute(
+                'DELETE FROM "%s" WHERE "%s" = %%s'
+                % (m2m.relation, m2m.column1),
+                (item.id,),
+            )
+            if resolved:
+                env.cr.execute(
+                    'INSERT INTO "%s" ("%s", "%s") '
+                    "SELECT %%s, unnest(%%s)"
+                    % (m2m.relation, m2m.column1, m2m.column2),
+                    (item.id, resolved),
+                )
+
+        if changed:
+            item.ks_many2many_field_ordering = json.dumps(ordering)
+            item.invalidate_recordset()
+            _logger.info(
+                "promoter_dashboards: healed stale field ids on item %s.",
+                item.id,
+            )
+
+
 def _read_menu_name(payload):
     try:
         decoded = json.loads(payload)
         return decoded["ks_dashboard_data"][0]["ks_dashboard_menu_name"]
     except (ValueError, KeyError, IndexError):
         return None
+
+
+def heal_promoter_boards(env):
+    """Heal the promoter boards' stale measure field ids.
+
+    Shared by post_init_hook (runs on install) and the post-migrate script
+    (runs on ``-u`` upgrade), so either path repairs an already-broken board.
+    Resolves each board by the menu name stored in its JSON snapshot so it is
+    not tied to any DB id.
+    """
+    Board = env["ks_dashboard_ninja.board"]
+    data_dir = os.path.join(os.path.dirname(__file__), "data")
+    for fname, _sequence, _xmlid_suffix in DASHBOARDS:
+        path = os.path.join(data_dir, fname)
+        if not os.path.exists(path):
+            continue
+        with open(path, "rb") as fh:
+            menu_name = _read_menu_name(fh.read())
+        if not menu_name:
+            continue
+        board = Board.search(
+            [("ks_dashboard_menu_name", "=", menu_name)], limit=1
+        )
+        if board:
+            _heal_item_field_ids(env, board)
 
 
 def _resolve_placeholder(env, xmlid_suffix):
@@ -161,6 +273,12 @@ def post_init_hook(env):
                 menu_name,
             )
             continue
+
+        # Repair any measure/list field ids that rotted since the last install
+        # (source-module reinstall renumbers ir.model.fields). Runs on both the
+        # fresh-import and reuse paths so re-running `-i promoter_dashboards`
+        # fixes an already-broken board.
+        _heal_item_field_ids(env, board)
 
         live_menu = board.ks_dashboard_menu_id  # auto-created by Board.create()
         md, placeholder_menu = _resolve_placeholder(env, xmlid_suffix)
