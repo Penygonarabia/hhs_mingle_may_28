@@ -4,6 +4,15 @@
 We override ``_visible_menu_ids`` so non-admin users never see a dashboard
 menu entry for a board they're not allowed to access. The cache is keyed
 by uid, so per-user filtering is safe.
+
+NB: dashboard_rights_ninja_bridge (auto_install=True whenever this module and
+ks_dashboard_ninja are both present — i.e. always, since this module already
+depends on ks_dashboard_ninja) re-declares this SAME method on the SAME model.
+Because it loads after this module, its version wins in the class MRO and
+fully shadows this one — this copy never actually runs in practice. It is kept
+byte-for-byte in sync with the bridge's copy anyway so behavior never depends
+on load order or on the bridge being present. If you fix a bug here, fix it in
+dashboard_rights_ninja_bridge/models/ir_ui_menu.py too (or vice versa).
 """
 
 from odoo import api, models
@@ -40,6 +49,11 @@ class IrUiMenu(models.Model):
         forbidden_menu_ids = set()
         all_top_menu_ids = set()
         allowed_top_menu_ids = set()
+        # Leaf menus of boards the user IS allowed to see. We use these
+        # later to mark every ancestor menu as "must keep visible", so a
+        # missing/misconfigured ks_dashboard_top_menu_id can't cause the
+        # whole "My Dashboards" tree to disappear after access is granted.
+        allowed_leaf_menu_ids = set()
 
         my_dashboard_menu = self.env.ref('ks_dashboard_ninja.dashboards_menu_root', raise_if_not_found=False)
         my_menu_id = my_dashboard_menu.id if my_dashboard_menu else False
@@ -59,6 +73,8 @@ class IrUiMenu(models.Model):
             if b.id in allowed_ids:
                 if top_menu_id:
                     allowed_top_menu_ids.add(top_menu_id)
+                if leaf_menu_id:
+                    allowed_leaf_menu_ids.add(leaf_menu_id)
                 continue
             if leaf_menu_id:
                 forbidden_menu_ids.add(leaf_menu_id)
@@ -88,20 +104,6 @@ class IrUiMenu(models.Model):
         # Step 2: forbid dashboard-category menus with no accessible boards
         forbidden_menu_ids.update(all_top_menu_ids - allowed_top_menu_ids)
 
-        # Step 2b: managed utility menus (Quick Access / Configuration sub-items)
-        # are plain ir.ui.menu records governed per-user via dashboard.rights.menu
-        # and, like dashboards, are hidden until granted. Forbid any the current
-        # user has not been granted. The walk-up below then hides their now-empty
-        # parent folders (Quick Access / Configuration).
-        RightsMenu = self.env["dashboard.rights.menu"].sudo()
-        managed_menu_ids = RightsMenu._managed_menu_ids()
-        if managed_menu_ids:
-            allowed_menu_ids = RightsMenu.allowed_menu_ids(self.env.user)
-            forbidden_menu_ids.update(managed_menu_ids - allowed_menu_ids)
-
-        if not forbidden_menu_ids:
-            return forbidden_menu_ids
-
         # Load full menu parent/child map via raw SQL to avoid any ORM
         # re-entry through our own search() / _visible_menu_ids() overrides.
         self.env.cr.execute(
@@ -112,6 +114,35 @@ class IrUiMenu(models.Model):
         for row_id, row_pid in self.env.cr.fetchall():
             parent_of[row_id] = row_pid
             children_of.setdefault(row_pid, set()).add(row_id)
+
+        # Build the "must keep visible" set by walking up from every allowed
+        # leaf menu to the root. This guarantees the "My Dashboards" subtree
+        # stays visible even when ks_dashboard_top_menu_id is unset on the
+        # boards (which happens on servers where boards were created via
+        # import rather than through the Ninja UI).
+        must_keep_menu_ids = set()
+        for leaf_id in allowed_leaf_menu_ids:
+            mid = leaf_id
+            while mid and mid not in must_keep_menu_ids:
+                must_keep_menu_ids.add(mid)
+                mid = parent_of.get(mid)
+
+        forbidden_menu_ids -= must_keep_menu_ids
+
+        # Step 2b: managed utility menus (Quick Access / Configuration sub-items)
+        # are plain ir.ui.menu records governed per-user via dashboard.rights.menu
+        # and, like dashboards, are hidden until granted. Forbid any the current
+        # user has not been granted. Added after the must-keep stripping (these
+        # menus are never board ancestors) so the walk-up below can hide their
+        # now-empty parent folders (Quick Access / Configuration).
+        RightsMenu = self.env["dashboard.rights.menu"].sudo()
+        managed_menu_ids = RightsMenu._managed_menu_ids()
+        if managed_menu_ids:
+            allowed_menu_ids = RightsMenu.allowed_menu_ids(self.env.user)
+            forbidden_menu_ids.update(managed_menu_ids - allowed_menu_ids)
+
+        if not forbidden_menu_ids:
+            return forbidden_menu_ids
 
         # Step 3: when ALL dashboard-category children of a parent are
         # forbidden, also forbid every other child in that subtree so that
@@ -132,14 +163,19 @@ class IrUiMenu(models.Model):
                 # At least one dashboard category is still accessible — keep
                 # the sibling menus (Quick Access, Configuration…) visible.
                 continue
-            # All dashboard categories gone — forbid the whole subtree.
-            queue = list(children_of.get(pid, set()) - forbidden_menu_ids)
+            # All dashboard categories gone — forbid the whole subtree,
+            # except anything in the must-keep set (an allowed board's
+            # ancestor chain).
+            queue = list(
+                children_of.get(pid, set()) - forbidden_menu_ids - must_keep_menu_ids
+            )
             while queue:
                 mid = queue.pop()
                 forbidden_menu_ids.add(mid)
                 queue.extend(
                     c for c in children_of.get(mid, set())
                     if c not in forbidden_menu_ids
+                    and c not in must_keep_menu_ids
                 )
 
         # Step 4: walk up — hide any ancestor whose every child is now forbidden.
@@ -149,6 +185,8 @@ class IrUiMenu(models.Model):
             for mid in list(forbidden_menu_ids):
                 pid = parent_of.get(mid)
                 if not pid or pid in forbidden_menu_ids:
+                    continue
+                if pid in must_keep_menu_ids:
                     continue
                 if children_of.get(pid, set()) <= forbidden_menu_ids:
                     forbidden_menu_ids.add(pid)

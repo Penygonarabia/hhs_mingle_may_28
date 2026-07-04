@@ -1,6 +1,6 @@
 {
     "name": "Dashboard Rights — Ninja Bridge",
-    "version": "17.0.1.0.0",
+    "version": "17.0.1.0.1",
     "category": "Settings",
     "summary": "Auto-install bridge that wires Dashboard Rights into "
                "ks_dashboard_ninja (board access checks + menu hiding).",
@@ -11,8 +11,10 @@ Dashboard Rights — Ninja Bridge
 Auto-installed whenever both ``dashboard_rights`` and ``ks_dashboard_ninja``
 are present. Holds every model override that touches Ninja:
 
-* ``ks_dashboard_ninja.board`` create hook (auto-provision rights rows) and
-  the ``ks_fetch_dashboard_data`` access check.
+* ``ks_dashboard_ninja.board`` create hook (auto-provision rights rows), the
+  ``ks_fetch_dashboard_data`` access check, and the ``fetch_dashboard_overview``
+  filter (Overview gallery cards match dashboard.rights instead of listing
+  every board unconditionally).
 * ``ir.ui.menu`` visibility filter that hides dashboards the current user
   is not allowed to see.
 

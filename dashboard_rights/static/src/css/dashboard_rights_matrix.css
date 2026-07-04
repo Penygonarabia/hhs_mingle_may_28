@@ -293,3 +293,26 @@ body.dr_matrix_pre_load .o_form_status_indicator_buttons {
 .dr_rights_list_view .o_group_header:hover .dr_group_name_text {
     color: #1a5c5c;
 }
+
+/* ── Group children popup (click a group row in the matrix) ─────────── */
+.dr_group_dialog_table td {
+    padding: 6px 8px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f0f0;
+}
+.dr_group_dialog_table tr:last-child td {
+    border-bottom: none;
+}
+.dr_group_dialog_toggle {
+    width: 60px;
+}
+.dr_group_dialog_summary {
+    font-size: 0.85rem;
+}
+
+/* ── Group row Has-Access is now a read-only status indicator (see
+   DrAccessToggleField) — dim it slightly so it doesn't look clickable. ── */
+.dr_matrix_form tr.dr_parent_row td[name="has_access"] .o_boolean_toggle {
+    opacity: 0.75;
+    cursor: pointer;
+}
