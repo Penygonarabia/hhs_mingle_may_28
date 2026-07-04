@@ -268,10 +268,24 @@ class DashboardRightsMatrix(models.TransientModel):
         # Order the groups the same way they appear under the My Dashboard menu:
         # map each menu name to the sequence of its menu item (OT, CT, Promoter,
         # Contract, Loyalty, ...). Menus not found there sort last (9999).
+        #
+        # NB: read the children via raw SQL, NOT ``my_dashboard_menu.child_id``.
+        # ``child_id`` goes through our ir.ui.menu.search enforcement override,
+        # which hides the dashboard category menus for the configured user when
+        # they have no/few grants (``.sudo()`` doesn't help — env.user stays the
+        # non-superuser being configured, so the filter still applies). That left
+        # ``seq_by_name`` empty, every group fell back to 9999, and the matrix
+        # sorted alphabetically instead of in menu order. SQL reads the rows
+        # directly, independent of the configured user's access.
         seq_by_name = {}
         if my_dashboard_menu:
-            for child in my_dashboard_menu.sudo().child_id:
-                seq_by_name[child.name] = child.sequence
+            lang = self.env.context.get('lang') or 'en_US'
+            self.env.cr.execute(
+                "SELECT COALESCE(name->>%s, name->>'en_US'), sequence "
+                "FROM ir_ui_menu WHERE parent_id = %s",
+                (lang, my_dashboard_menu.id),
+            )
+            seq_by_name = {row[0]: row[1] for row in self.env.cr.fetchall()}
 
         for b in Boards:
             # Group each board under the menu category it appears in beneath the
@@ -603,14 +617,30 @@ class DashboardRightsMatrixLine(models.TransientModel):
     # ------------------------------------------------------------------
     # Propagate Has Access toggles to dashboard.rights
     # ------------------------------------------------------------------
-    # NOTE: matrix line edits are intentionally NOT propagated to
-    # dashboard.rights here. The whole page is Save-gated: toggling rows only
-    # changes the transient line state in the browser, the live parent/child
-    # cascade is handled by
-    # DashboardRightsMatrix._onchange_line_ids_cascade, and the single commit
-    # point is DashboardRightsMatrix.write -> _commit_lines_to_rights (the form
-    # Save). Discard (the Refresh icon) therefore reverts cleanly to the loaded
-    # state because nothing was written.
+    # A matrix line's ``has_access`` change is propagated to dashboard.rights
+    # here, on the line's own ``write``. This is required because the Dashboards
+    # tree is an editable list: the web client persists each edited row
+    # INDIVIDUALLY via ``dashboard.rights.matrix.line.web_save`` (boolean-toggle
+    # autosave + row-save-on-blur), so the transient line's has_access is written
+    # straight to its own table. The parent form's ``line_ids`` is then already
+    # clean, so ``DashboardRightsMatrix.write -> _commit_lines_to_rights`` never
+    # sees the change and the grant/revoke was silently lost. Propagating on the
+    # line write makes persistence correct regardless of which path saves the
+    # line (individual web_save OR the parent commit); the latter re-asserts the
+    # same values idempotently on Save.
+    #
+    # ``skip_propagation`` context guards the bulk create during
+    # ``action_load_dashboards`` (loading a user's rows must not write back).
+    def write(self, vals):
+        res = super().write(vals)
+        if "has_access" in vals and not self.env.context.get("skip_propagation"):
+            lines = self.filtered(
+                lambda l: not l.is_group and l.matrix_id.user_id
+                and (l.dashboard_id or l.menu_id)
+            )
+            if lines:
+                lines._propagate_to_dashboard_rights()
+        return res
 
     def _propagate_to_dashboard_rights(self):
         Rights = self.env["dashboard.rights"].sudo()

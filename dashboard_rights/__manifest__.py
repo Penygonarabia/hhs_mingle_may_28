@@ -27,7 +27,13 @@ which dashboards each user is allowed to see/use.
     "data": [
         "security/dashboard_rights_groups.xml",
         "security/ir.model.access.csv",
-        "data/dashboard_rights_menus_data.xml",
+        # NB: data/dashboard_rights_menus_data.xml (which created placeholder
+        # "Quick Access"/"Configuration" KS boards) is intentionally NOT loaded.
+        # Those boards are excluded from the matrix anyway, and creating a
+        # ks_dashboard board via XML fails on this ks_dashboard_ninja build
+        # (missing static/images/dashboardOverview/defaultDashboard.png), which
+        # blocked reinstall. The quick_access_menu/configuration_menu xmlids the
+        # rest of the module references are governed independently.
         "views/dashboard_rights_views.xml",
         "views/dashboard_rights_matrix_views.xml",
         "views/dashboard_rights_menus.xml",

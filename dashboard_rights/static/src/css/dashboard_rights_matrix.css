@@ -133,7 +133,9 @@ body.dr_matrix_pre_load .o_form_status_indicator_buttons {
     border-top: 1px solid #dee2e6 !important;
     border-bottom: 2px solid #ced4da !important;
     font-size: 0.95rem !important;
-    font-weight: bold !important;
+    /* Match the form labels (e.g. "User Name", font-weight 500) instead of the
+       heavier bold that made the group rows look too thick. */
+    font-weight: 500 !important;
 }
 .dr_matrix_form tr.dr_parent_row td.o_data_cell[name="menu_name"]::before {
     content: "▼";
@@ -169,6 +171,29 @@ body.dr_matrix_pre_load .o_form_status_indicator_buttons {
    content, so only the intended cell truncates instead of the table growing. */
 .dr_matrix_form .o_list_table {
     table-layout: fixed !important;
+    width: 100% !important;
+}
+
+/* Belt-and-suspenders for the growth described above: pin the "Has Access"
+   cell content to a fixed compact width in BOTH readonly and edit mode. Odoo's
+   list renderer measures cell content to size columns; when a row enters edit
+   mode the toggle mounts a wider switch, and that measurement is what inflates
+   the column (and, through the shared table, the Menu column). Locking the
+   widget width means edit mode never requests more space, so nothing grows even
+   if table-layout:fixed is defeated by an inline width Odoo sets on the table. */
+.dr_matrix_form .o_list_table td[name="has_access"] {
+    text-align: center !important;
+}
+.dr_matrix_form .o_list_table td[name="has_access"] > .o_field_widget,
+.dr_matrix_form .o_list_table td[name="has_access"] .o_field_boolean,
+.dr_matrix_form .o_list_table td[name="has_access"] .form-switch,
+.dr_matrix_form .o_list_table td[name="has_access"] .o-checkbox {
+    display: inline-block !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
 }
 
 /* ── Adjust column widths to prevent squishing ────────────────────── */
