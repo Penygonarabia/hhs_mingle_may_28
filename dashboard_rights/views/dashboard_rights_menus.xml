@@ -104,9 +104,15 @@
               sequence="61"
               groups="dashboard_rights.group_dashboard_rights_admin"/>
 
-    <!-- Link the My Dashboards menu to the main dashboard client action -->
-    <menuitem id="ks_dashboard_ninja.dashboards_menu_root"
-              name="My Dashboards"
-              parent="ks_dashboard_ninja.board_menu_root"/>
+    <!-- NB: dashboard_rights must NOT declare menus in the ks_dashboard_ninja.*
+         xmlid namespace. A previous block here re-declared
+         ks_dashboard_ninja.dashboards_menu_root with parent
+         ks_dashboard_ninja.board_menu_root — both are already owned/created by
+         ks_dashboard_ninja itself (see ks_dashboard_ninja_view.xml). On any DB
+         where board_menu_root's external ID isn't resolvable at load time
+         (e.g. a differently-versioned KS build, or one where the menu was
+         removed), that cross-module parent reference raised
+         "External ID not found: ks_dashboard_ninja.board_menu_root" and aborted
+         the whole install. It was also redundant. Removed. -->
 
 </odoo>
