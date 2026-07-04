@@ -1,6 +1,6 @@
 {
     "name": "Dashboard Rights",
-    "version": "17.0.1.0.15",
+    "version": "17.0.1.0.16",
     "category": "Settings",
     "summary": "Per-user, per-dashboard access rights (Settings page).",
     "description": """

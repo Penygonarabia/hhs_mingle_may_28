@@ -832,10 +832,34 @@ class SubscriptionContracts(models.Model):
     #
     #     return super().create(vals)
 
+    # def write(self, vals):
+    #     if 'next_invoice_date' in vals:
+    #         vals['manual_next_invoice_date'] = True
+    #     return super().write(vals)
+    
+    '''Code Added on July 04 2026 Number generation based on the month of the start date '''
     def write(self, vals):
+        
+        res = super().write(vals)
+        
         if 'next_invoice_date' in vals:
             vals['manual_next_invoice_date'] = True
-        return super().write(vals)
+          
+        if 'date_start' in vals:
+            
+            '''Client Asked same Bring Number Auto Number generation based on the month of the start date Added on July 04 2026 '''
+
+            yymm = self.date_start.strftime('%y%m')
+            # Replace only the YYMM portion before the last 4 sequence digits
+            self.name = re.sub(
+                r'(\d{4})(\d{4})$',
+                lambda m: f'{yymm}{m.group(2)}',
+                self.name
+            )
+            
+               
+        return res
+
 
     # @api.model
     # def subscription_contract_state_change(self):

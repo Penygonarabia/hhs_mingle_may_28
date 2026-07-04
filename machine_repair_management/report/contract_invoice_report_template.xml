@@ -584,7 +584,8 @@
                                                 <td style="border: 0px transparent !important;text-align:center;width:300px;font-size:14px;">
 
                                                     <span style="font-size:16px !important;">
-                                                        <t t-esc="move.invoice_no"/>
+                                                        <!-- <t t-esc="move.invoice_no"/> -->
+                                                        <t t-esc="move.name"/>
                                                     </span>
                                                 </td>
                                                 <td style="text-align: right; border: 0px transparent !important;">
