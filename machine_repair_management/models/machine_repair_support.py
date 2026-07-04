@@ -49,6 +49,24 @@ code   State
 """
 
 
+
+
+
+from functools import wraps
+
+def postcommit_defer(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if not self:
+            return func(self, *args, **kwargs)
+        if not self.env.context.get('in_postcommit') and not self.env.context.get('skip_postcommit'):
+            self.env.cr.postcommit.add(
+                lambda: self._run_postcommit_action(func.__name__, *args, **kwargs)
+            )
+            return True
+        return func(self, *args, **kwargs)
+    return wrapper
+
 class MachineRepairSupport(models.Model):
     _name = "machine.repair.support"
     _description = "Machine Repair Support"

@@ -1,6 +1,6 @@
 {
     "name": "Dashboard Rights",
-    "version": "17.0.1.0.17",
+    "version": "17.0.1.0.19",
     "category": "Settings",
     "summary": "Per-user, per-dashboard access rights (Settings page).",
     "description": """
@@ -20,6 +20,12 @@ which dashboards each user is allowed to see/use.
   blocked server-side for users without the right.
 """,
     "author": "Cielo Digital",
+    # Drop the cached web.assets_* bundle on install AND on every upgrade (see
+    # hooks.py + migrations/17.0.1.0.19/) so CSS/JS changes to the matrix — the
+    # Has-Access column-width lock in particular — actually take effect via a
+    # plain -u, instead of silently serving the stale compiled bundle. Column
+    # widths are a JS/CSS-renderer concern and can't be fixed in Python/XML.
+    "post_init_hook": "post_init_hook",
     "depends": [
         "base",
         "ks_dashboard_ninja",

@@ -600,6 +600,18 @@ class DashboardRightsMatrixLine(models.TransientModel):
         "Service Dashboards - OT"). System boards like Quick Access /
         Configuration hang straight off the app root, so their top menu is the
         root itself — for those, the board's own leaf menu IS the category.
+
+        A board with NO top menu at all (e.g. the default KS "My Dashboard"
+        board, id 1, on servers where it was never nested under a menu) falls
+        back to the "My Dashboard" app-root menu name. This fallback MUST be here
+        — not only in action_load_dashboards' ``or my_menu_name`` — because the
+        group row and the child row both derive their group key from this method
+        (the group via the loader, the child via _compute_menu_name), and the
+        client pairs children to their group row by menu_name
+        (dashboard_rights_matrix_list.js). When the fallback lived only in the
+        loader, the group row read "My Dashboard" while the child read False, so
+        they never matched: the group showed "0 / 0" and the board dangled as a
+        stray "My Dashboard" child (reported on hhs_v2_live_may_28).
         """
         if not board:
             return False
@@ -607,7 +619,12 @@ class DashboardRightsMatrixLine(models.TransientModel):
         if top and not top.parent_id and top.name == "My Dashboard":
             leaf = board.ks_dashboard_menu_id
             return leaf.name if leaf else top.name
-        return top.name if top else False
+        if top:
+            return top.name
+        root = board.env["ir.ui.menu"].sudo().search(
+            [("name", "=", "My Dashboard"), ("parent_id", "=", False)], limit=1
+        )
+        return root.name if root else "My Dashboard"
 
     @staticmethod
     def _dr_board_display_name(board):
