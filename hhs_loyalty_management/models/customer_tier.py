@@ -14,6 +14,11 @@ class CustomerTier(models.Model):
         default=lambda self: self._get_next_sort_order(),
         help='Used for ordering tiers'
     )
+    tier_icon = fields.Many2one(
+        'loyalty.tier.icon',
+        string='Tier Icon',
+        help='Select an icon to represent this tier'
+    )
 
 
 

@@ -41,6 +41,8 @@ class CustomerNotification(models.Model):
     active_loyalty_only = fields.Boolean(string='Active Loyalty Customers', default=True)
     promotion_ids = fields.Many2many('lp.setup.promotions', string='Promotions')
     is_promotion_selected = fields.Boolean(compute='_compute_is_promotion_selected')
+    promotion_start_date = fields.Date(string='Promotion Start Date', compute='_compute_promotion_dates')
+    promotion_end_date = fields.Date(string='Promotion End Date', compute='_compute_promotion_dates')
 
     partner_ids = fields.Many2many('res.partner', string='Customer(s)')
     tier_ids = fields.Many2many('customer.tier', string='Tier(s)')
@@ -63,14 +65,33 @@ class CustomerNotification(models.Model):
         for rec in self:
             rec.is_promotion_selected = bool(rec.promotion_ids)
 
+    @api.depends('promotion_ids')
+    def _compute_promotion_dates(self):
+        for rec in self:
+            if rec.promotion_ids:
+                start_dates = rec.promotion_ids.filtered(lambda p: p.promotion_start_date).mapped('promotion_start_date')
+                end_dates = rec.promotion_ids.filtered(lambda p: p.promotion_end_date).mapped('promotion_end_date')
+                rec.promotion_start_date = min(start_dates) if start_dates else False
+                rec.promotion_end_date = max(end_dates) if end_dates else False
+            else:
+                rec.promotion_start_date = False
+                rec.promotion_end_date = False
+
     @api.onchange('promotion_ids')
     def _onchange_promotion_ids(self):
         if self.promotion_ids:
-            self.partner_ids = [(5, 0, 0)]
-            self.tier_ids = [(5, 0, 0)]
+            # Auto-populate tiers and customers configured on the selected promotions
+            tiers = self.promotion_ids.mapped('tier_line_ids.tier_id')
+            customers = self.promotion_ids.mapped('customer_line_ids.customer_id')
+            
+            self.tier_ids = [(6, 0, tiers.ids)]
+            self.partner_ids = [(6, 0, customers.ids)]
             self.salesman_ids = [(5, 0, 0)]
             self.activation_date_from = False
             self.activation_date_to = False
+        else:
+            self.tier_ids = [(5, 0, 0)]
+            self.partner_ids = [(5, 0, 0)]
 
     @api.model
     def default_get(self, fields_list):

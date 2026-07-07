@@ -30,6 +30,23 @@ class CustomerLoyaltyResPartner(models.Model):
         store=True,
         # related='customer_tier_id.name',
     )
+    tier_icon = fields.Many2one(
+        'loyalty.tier.icon',
+        string="Tier Icon",
+        compute="_compute_tier_icon",
+        store=False,
+    )
+
+    @api.depends('tier_name')
+    def _compute_tier_icon(self):
+        for rec in self:
+            if rec.tier_name:
+                tier = self.env['customer.tier'].search([('name', '=', rec.tier_name)], limit=1)
+                rec.tier_icon = tier.tier_icon if tier else False
+            else:
+                rec.tier_icon = False
+
+
     salesman_code = fields.Char(string="Salesman Code")
     salesman_name = fields.Char(string="Salesman Name")
 
@@ -203,9 +220,15 @@ class CustomerLoyaltyResPartner(models.Model):
         for rec in self:
             rec._compute_loyalty_points()
             rec._load_loyalty_transactions()
-
-            # rec._on_change_partner_type()
-            # rec._compute_tier_name()
+            
+        for rec_dict in res:
+            rec = self.browse(rec_dict['id'])
+            for f in [
+                'collected_points_regular', 'redeem_points_regular', 'expired_points_regular', 'balance_points_regular',
+                'collected_points_bonus', 'redeem_points_bonus', 'expired_points_bonus', 'balance_points_bonus'
+            ]:
+                if f in rec_dict or not fields:
+                    rec_dict[f] = getattr(rec, f)
         return res
 
     # @api.depends('loyalty_transaction_history_ids')
@@ -220,11 +243,12 @@ class CustomerLoyaltyResPartner(models.Model):
             # REGULAR
             # -----------------------------
             collected_reg = sum(history.filtered(lambda x: x.clph_adjtype == '+').mapped('clph_regpoints'))
+            deducted_reg = sum(history.filtered(lambda x: x.clph_adjtype == '-').mapped('clph_regpoints'))
             redeem_reg = sum(history.filtered(lambda x: str(x.clph_doctype) == '98').mapped('clph_regpoints'))
             expired_reg = sum(history.filtered(lambda x: str(x.clph_doctype) == '97').mapped('clph_regpoints'))
             returned_reg = sum(history.filtered(lambda x: str(x.clph_doctype) == '02').mapped('clph_regpoints'))
 
-            rec.collected_points_regular = max(collected_reg - returned_reg, 0)
+            rec.collected_points_regular = max(collected_reg - deducted_reg - returned_reg, 0)
             rec.redeem_points_regular = redeem_reg
             rec.expired_points_regular = expired_reg
             rec.balance_points_regular = max(rec.collected_points_regular - redeem_reg - expired_reg, 0)
@@ -233,11 +257,12 @@ class CustomerLoyaltyResPartner(models.Model):
             # BONUS
             # -----------------------------
             collected_bonus = sum(history.filtered(lambda x: x.clph_adjtype == '+').mapped('clph_bonuspoints'))
+            deducted_bonus = sum(history.filtered(lambda x: x.clph_adjtype == '-').mapped('clph_bonuspoints'))
             redeem_bonus = sum(history.filtered(lambda x: str(x.clph_doctype) == '98').mapped('clph_bonuspoints'))
             expired_bonus = sum(history.filtered(lambda x: str(x.clph_doctype) == '97').mapped('clph_bonuspoints'))
             returned_bonus = sum(history.filtered(lambda x: str(x.clph_doctype) == '02').mapped('clph_bonuspoints'))
 
-            rec.collected_points_bonus = max(collected_bonus - returned_bonus, 0)
+            rec.collected_points_bonus = max(collected_bonus - deducted_bonus - returned_bonus, 0)
             rec.redeem_points_bonus = redeem_bonus
             rec.expired_points_bonus = expired_bonus
             rec.balance_points_bonus = max(rec.collected_points_bonus - redeem_bonus - expired_bonus, 0)

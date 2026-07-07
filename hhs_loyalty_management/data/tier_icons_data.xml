@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Default Tier Icons seed data -->
+        <record id="tier_icon_gold_crown" model="loyalty.tier.icon">
+            <field name="name">Gold Crown</field>
+            <field name="fa_icon">fa-star</field>
+            <field name="color">#FFD700</field>
+            <field name="sequence">1</field>
+        </record>
+        <record id="tier_icon_silver_crown" model="loyalty.tier.icon">
+            <field name="name">Silver Crown</field>
+            <field name="fa_icon">fa-star</field>
+            <field name="color">#A8A8A8</field>
+            <field name="sequence">2</field>
+        </record>
+        <record id="tier_icon_bronze_crown" model="loyalty.tier.icon">
+            <field name="name">Bronze Crown</field>
+            <field name="fa_icon">fa-star</field>
+            <field name="color">#CD7F32</field>
+            <field name="sequence">3</field>
+        </record>
+        <record id="tier_icon_diamond" model="loyalty.tier.icon">
+            <field name="name">Diamond</field>
+            <field name="fa_icon">fa-diamond</field>
+            <field name="color">#00BFFF</field>
+            <field name="sequence">4</field>
+        </record>
+        <record id="tier_icon_platinum" model="loyalty.tier.icon">
+            <field name="name">Platinum</field>
+            <field name="fa_icon">fa-diamond</field>
+            <field name="color">#E8E8E8</field>
+            <field name="sequence">5</field>
+        </record>
+        <record id="tier_icon_gold_star" model="loyalty.tier.icon">
+            <field name="name">Gold Star</field>
+            <field name="fa_icon">fa-star</field>
+            <field name="color">#FFD700</field>
+            <field name="sequence">6</field>
+        </record>
+        <record id="tier_icon_silver_star" model="loyalty.tier.icon">
+            <field name="name">Silver Star</field>
+            <field name="fa_icon">fa-star</field>
+            <field name="color">#A8A8A8</field>
+            <field name="sequence">7</field>
+        </record>
+        <record id="tier_icon_trophy" model="loyalty.tier.icon">
+            <field name="name">Trophy</field>
+            <field name="fa_icon">fa-trophy</field>
+            <field name="color">#FFD700</field>
+            <field name="sequence">8</field>
+        </record>
+        <record id="tier_icon_medal" model="loyalty.tier.icon">
+            <field name="name">Medal</field>
+            <field name="fa_icon">fa-bullseye</field>
+            <field name="color">#FFD700</field>
+            <field name="sequence">9</field>
+        </record>
+        <record id="tier_icon_gold_shield" model="loyalty.tier.icon">
+            <field name="name">Gold Shield</field>
+            <field name="fa_icon">fa-shield</field>
+            <field name="color">#FFD700</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="tier_icon_silver_shield" model="loyalty.tier.icon">
+            <field name="name">Silver Shield</field>
+            <field name="fa_icon">fa-shield</field>
+            <field name="color">#A8A8A8</field>
+            <field name="sequence">11</field>
+        </record>
+        <record id="tier_icon_bronze_shield" model="loyalty.tier.icon">
+            <field name="name">Bronze Shield</field>
+            <field name="fa_icon">fa-shield</field>
+            <field name="color">#CD7F32</field>
+            <field name="sequence">12</field>
+        </record>
+    </data>
+</odoo>

@@ -16,7 +16,9 @@ Features:
     'depends': ['base', 'product', 'stock', 'sale', ],
     'data': [
         'data/sequence_creation.xml',
+        'data/tier_icons_data.xml',
         'security/ir.model.access.csv',
+        'views/views_loyalty_tier_icon.xml',
         'views/views_res_config_settings.xml',
         'views/views_customer_tier.xml',
         'views/views_manual_promotion_reason_types.xml',
@@ -54,11 +56,13 @@ Features:
         # 'views/promoter_showroom_sales_views.xml',
         # 'views/menus.xml',
     ],
-    # 'assets': {
-    #     'web.assets_backend': [
-    #         'hhs_loyalty_management/static/src/css/styles.css',
-    #         ]
-    # },
+    'assets': {
+        'web.assets_backend': [
+            'hhs_loyalty_management/static/src/css/tier_icon_picker.css',
+            'hhs_loyalty_management/static/src/js/tier_icon_picker.js',
+            'hhs_loyalty_management/static/src/xml/tier_icon_picker.xml',
+        ]
+    },
     'installable': True,
     'application': True,
 }

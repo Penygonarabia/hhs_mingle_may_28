@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <!-- Tree View -->
+        <!-- Tree View — tier_icon REMOVED -->
         <record id="view_customer_tier_tree" model="ir.ui.view">
             <field name="name">customer.tier.tree</field>
             <field name="model">customer.tier</field>
@@ -14,17 +14,37 @@
             </field>
         </record>
 
-        <!-- Form View -->
+        <!-- Form View — tier_icon shown in header as badge -->
         <record id="view_customer_tier_form" model="ir.ui.view">
             <field name="name">customer.tier.form</field>
             <field name="model">customer.tier</field>
             <field name="arch" type="xml">
                 <form string="Customer Tier">
                     <sheet>
+                        <!-- Icon badge in top-right header area -->
+                        <div class="oe_button_box" name="button_box"/>
+                        <div class="oe_title d-flex align-items-center justify-content-between">
+                            <div>
+                                <label for="name"/>
+                                <h1><field name="name" placeholder="Tier Name..."/></h1>
+                            </div>
+                            <!-- Icon badge on the right of the title -->
+                            <div invisible="not tier_icon"
+                                 style="min-width:100px; text-align:center; padding:8px 12px;
+                                        border:2px solid #e0d7f5; border-radius:10px;
+                                        background: linear-gradient(135deg,#f9f4ff,#fff);
+                                        box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                <field name="tier_icon" widget="tier_icon_picker" readonly="1" nolabel="1"/>
+                            </div>
+                        </div>
+
                         <group>
-                            <field name="name"/>
                             <field name="min_loyalty_points"/>
                             <field name="sort_order"/>
+                        </group>
+
+                        <group string="Tier Icon">
+                            <field name="tier_icon" widget="tier_icon_picker" nolabel="1" colspan="2"/>
                         </group>
                     </sheet>
                 </form>
@@ -65,7 +85,6 @@
                 parent="menu_loyalty_points_configuration"
                 action="action_customer_tier"
                 sequence="25"/>
-
 
     </data>
 </odoo>

@@ -155,47 +155,39 @@
                     <t t-foreach="docs" t-as="doc">
                         <!-- Promotion Header Info Box -->
                         <div style="margin-bottom: 14px; font-size: 13px;">
-                            <div style="display:flex; margin-bottom: 4px;">
-                                <div style="width:50%;">
-                                    <span class="promo-label">Reference:</span>
-                                    <span class="promo-value"><t t-esc="doc.promotion_reference"/></span>
-                                </div>
-                                <div style="width:50%;">
-                                    <span class="promo-label">Status:</span>
-                                    <t t-if="doc.active">
-                                        <span class="promo-value">Active</span>
-                                    </t>
-                                    <t t-else="">
-                                        <span class="promo-value">Inactive</span>
-                                    </t>
-                                </div>
+                            <div style="margin-bottom: 6px;">
+                                <span class="promo-label" style="width:200px;">Reference:</span>
+                                <span class="promo-value"><t t-esc="doc.promotion_reference"/></span>
                             </div>
-                            <div style="margin-bottom: 4px;">
-                                <span class="promo-label">Description:</span>
+                            <div style="margin-bottom: 6px;">
+                                <span class="promo-label" style="width:200px;">Status:</span>
+                                <span class="promo-value">
+                                    <t t-if="doc.active">Active</t>
+                                    <t t-else="">Inactive</t>
+                                </span>
+                            </div>
+                            <div style="margin-bottom: 6px;">
+                                <span class="promo-label" style="width:200px;">Description:</span>
                                 <span class="promo-value"><t t-esc="doc.promotion_name"/></span>
                             </div>
-                            <div style="display:flex; margin-bottom: 4px;">
-                                <div style="width:50%;">
-                                    <span class="promo-label">Start Date:</span>
-                                    <span class="promo-value"><t t-esc="doc.promotion_start_date"/></span>
-                                </div>
-                                <div style="width:50%;">
-                                    <span class="promo-label">End Date:</span>
-                                    <span class="promo-value"><t t-esc="doc.promotion_end_date"/></span>
-                                </div>
+                            <div style="margin-bottom: 6px;">
+                                <span class="promo-label" style="width:200px;">Start Date:</span>
+                                <span class="promo-value"><t t-esc="doc.promotion_start_date.strftime('%d-%m-%Y') if doc.promotion_start_date else ''"/></span>
                             </div>
-                            <div style="display:flex; margin-bottom: 4px;">
-                                <div style="width:50%;">
-                                    <span class="promo-label">Priority Order:</span>
-                                    <span class="promo-value"><t t-esc="doc.sort_order"/></span>
-                                </div>
-                                <div style="width:50%;">
-                                    <span class="promo-label">Select All Customers:</span>
-                                    <span class="promo-value">
-                                        <t t-if="doc.select_all_customers">Yes</t>
-                                        <t t-else="">No</t>
-                                    </span>
-                                </div>
+                            <div style="margin-bottom: 6px;">
+                                <span class="promo-label" style="width:200px;">End Date:</span>
+                                <span class="promo-value"><t t-esc="doc.promotion_end_date.strftime('%d-%m-%Y') if doc.promotion_end_date else ''"/></span>
+                            </div>
+                            <div style="margin-bottom: 6px;">
+                                <span class="promo-label" style="width:200px;">Priority Order:</span>
+                                <span class="promo-value"><t t-esc="doc.sort_order"/></span>
+                            </div>
+                            <div style="margin-bottom: 6px;">
+                                <span class="promo-label" style="width:200px;">Select All Customers:</span>
+                                <span class="promo-value">
+                                    <t t-if="doc.select_all_customers">Yes</t>
+                                    <t t-else="">No</t>
+                                </span>
                             </div>
                         </div>
 

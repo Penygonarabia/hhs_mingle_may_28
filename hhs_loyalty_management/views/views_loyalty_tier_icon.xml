@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Tree View -->
+        <record id="view_loyalty_tier_icon_tree" model="ir.ui.view">
+            <field name="name">loyalty.tier.icon.tree</field>
+            <field name="model">loyalty.tier.icon</field>
+            <field name="arch" type="xml">
+                <tree string="Tier Icons" editable="bottom">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="fa_icon"/>
+                    <field name="color" widget="color"/>
+                    <field name="active"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Form View -->
+        <record id="view_loyalty_tier_icon_form" model="ir.ui.view">
+            <field name="name">loyalty.tier.icon.form</field>
+            <field name="model">loyalty.tier.icon</field>
+            <field name="arch" type="xml">
+                <form string="Tier Icon">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name"/>
+                            <h1><field name="name" placeholder="e.g. Gold Crown"/></h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="fa_icon" placeholder="e.g. fa-star, fa-trophy, fa-diamond"/>
+                                <field name="color" widget="color"/>
+                                <field name="sequence"/>
+                                <field name="active"/>
+                            </group>
+                            <group string="Preview">
+                                <div style="text-align:center; padding: 20px;">
+                                    <p class="text-muted" style="font-size:12px;">Preview will appear in Customer Tier screen after saving.</p>
+                                    <p class="text-muted" style="font-size:11px;">
+                                        Visit <a href="https://fontawesome.com/v4/icons/" target="_blank">fontawesome.com/v4/icons</a>
+                                        to find icon class names.
+                                    </p>
+                                </div>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record id="action_loyalty_tier_icon" model="ir.actions.act_window">
+            <field name="name">Tier Icons</field>
+            <field name="res_model">loyalty.tier.icon</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first Tier Icon!
+                </p>
+                <p>
+                    Add icons here to use them in the Customer Tier screen.
+                    Use FontAwesome 4.7 class names (e.g. fa-star, fa-trophy).
+                </p>
+            </field>
+        </record>
+
+        <!-- Menu under Configuration -->
+        <menuitem
+            id="menu_loyalty_tier_icons"
+            name="Tier Icons"
+            parent="menu_loyalty_points_configuration"
+            action="action_loyalty_tier_icon"
+            sequence="30"/>
+
+    </data>
+</odoo>

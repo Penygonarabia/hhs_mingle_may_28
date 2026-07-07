@@ -25,11 +25,13 @@
                         <group string="Audience Filters">
                             <field name="is_promotion_selected" invisible="1"/>
                             <field name="promotion_ids" widget="many2many_tags" readonly="state == 'sent'"/>
+                            <field name="promotion_start_date" readonly="1" invisible="not is_promotion_selected"/>
+                            <field name="promotion_end_date" readonly="1" invisible="not is_promotion_selected"/>
                             <field name="active_loyalty_only" readonly="is_promotion_selected or state == 'sent'"/>
                             <label for="salesman_ids" string="Sync Salesmen" class="oe_inline"/>
                             <button name="action_sync_salesmen" type="object" string="Refresh Salesman List" class="oe_link"/>
-                            <field name="partner_ids" widget="many2many_tags" readonly="is_promotion_selected or state == 'sent'" domain="active_loyalty_only and [('activate_loyalty_feature', '=', True)] or []"/>
-                            <field name="tier_ids" widget="many2many_tags" readonly="is_promotion_selected or state == 'sent'"/>
+                            <field name="partner_ids" widget="many2many_tags" readonly="is_promotion_selected or state == 'sent'" force_save="1" domain="active_loyalty_only and [('activate_loyalty_feature', '=', True)] or []"/>
+                            <field name="tier_ids" widget="many2many_tags" readonly="is_promotion_selected or state == 'sent'" force_save="1"/>
                             <field name="salesman_ids" widget="many2many_tags" readonly="is_promotion_selected or state == 'sent'"/>
                             <label for="activation_date_from" string="Activation Date Range"/>
                             <div class="o_row">

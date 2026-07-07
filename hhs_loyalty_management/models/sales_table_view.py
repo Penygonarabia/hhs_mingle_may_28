@@ -87,9 +87,9 @@ class LoyaltySalesTableView(models.Model):
                     END as net_sales_with_vat,
 
                     NULLIF(TRIM(td.trnd_promoref), '') as clph_promoref,
-                    COALESCE(ph.clph_regpoints, 0) as clph_points,
-                    COALESCE(ph.clph_bonuspoints, 0) as clph_bonuspoint,
-                    COALESCE(ph.clph_regpoints, 0) + COALESCE(ph.clph_bonuspoints, 0) as total_points
+                    COALESCE(td.trnd_regularpts, 0) as clph_points,
+                    COALESCE(td.trnd_bonuspts, 0) as clph_bonuspoint,
+                    COALESCE(td.trnd_regularpts, 0) + COALESCE(td.trnd_bonuspts, 0) as total_points
 
                 FROM transaction_header th
                 JOIN transaction_details td ON th.trnh_no = td.trnd_no
@@ -99,15 +99,5 @@ class LoyaltySalesTableView(models.Model):
                 LEFT JOIN product_template pt ON pt.id = pp.product_tmpl_id
                 LEFT JOIN product_category pc_subgroup ON pc_subgroup.id = pt.categ_id
                 LEFT JOIN product_category pc_group ON pc_group.id = pc_subgroup.parent_id
-                LEFT JOIN (
-                    SELECT 
-                        clph_docnumber, 
-                        clph_cstcode, 
-                        MAX(clph_promoref) as clph_promoref,
-                        SUM(COALESCE(clph_regpoints, 0)) as clph_regpoints,
-                        SUM(COALESCE(clph_bonuspoints, 0)) as clph_bonuspoints
-                    FROM customer_loyalty_points_history
-                    GROUP BY clph_docnumber, clph_cstcode
-                ) ph ON ph.clph_docnumber = th.trnh_no AND ph.clph_cstcode = th.trnh_cstno
             )
         """ % (self._table,))

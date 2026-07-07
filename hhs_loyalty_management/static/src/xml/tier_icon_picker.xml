@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="hhs_loyalty_management.TierIconPicker" owl="1">
+        <div class="tier_icon_picker_wrapper">
+
+            <!-- Readonly Mode: show the selected icon as a card -->
+            <t t-if="props.readonly">
+                <t t-set="iconData" t-value="getSelectedIcon()"/>
+                <div t-if="iconData"
+                     class="tier_icon_option selected"
+                     style="cursor:default; width:90px; height:90px; margin:0; pointer-events:none;">
+                    <i t-attf-class="fa {{ iconData.fa_icon }}"
+                       t-attf-style="color: {{ iconData.color }}; font-size: 32px;"/>
+                    <div class="tier_icon_name"
+                         t-esc="iconData.name"
+                         style="font-size:11px; font-weight:600; margin-top:4px;"/>
+                </div>
+                <span t-else="" class="text-muted fst-italic">No icon selected</span>
+            </t>
+
+            <!-- Edit Mode: show all icons as clickable cards -->
+            <t t-else="">
+                <div class="tier_icon_grid" style="display:flex; flex-wrap:wrap; gap:10px; padding:4px;">
+                    <t t-if="state.icons.length === 0">
+                        <span class="text-muted fst-italic">
+                            No icons configured. Go to <strong>Configuration → Tier Icons</strong> to add icons.
+                        </span>
+                    </t>
+                    <t t-foreach="state.icons" t-as="icon" t-key="icon.id">
+                        <div t-attf-class="tier_icon_option {{ value === icon.id ? 'selected' : '' }}"
+                             t-on-click="() => this.selectIcon(icon)"
+                             t-att-title="icon.name">
+                            <i t-attf-class="fa {{ icon.fa_icon }}"
+                               t-attf-style="color: {{ icon.color }}; font-size: 24px;"/>
+                            <div class="tier_icon_name" t-esc="icon.name"/>
+                        </div>
+                    </t>
+                </div>
+            </t>
+
+        </div>
+    </t>
+</templates>

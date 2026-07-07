@@ -1,4 +1,5 @@
 from . import res_config_settings
+from . import loyalty_tier_icon
 from  . import customer_tier
 from . import manual_promotion_reason_types
 from . import loyalty_points_history

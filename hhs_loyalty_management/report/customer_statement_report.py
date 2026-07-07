@@ -37,7 +37,10 @@ class ReportCustomerStatement(models.AbstractModel):
             domain.append(('partner_id', 'in', customer_id))
 
         all_transactions = self.env['loyalty.audit.view'].search(domain, order='transaction_date asc, id asc')
-        customer_ids = all_transactions.mapped('partner_id')
+        if customer_id:
+            customer_ids = self.env['res.partner'].browse(customer_id).exists()
+        else:
+            customer_ids = all_transactions.mapped('partner_id')
         
         customers_data = []
         for customer in customer_ids:
