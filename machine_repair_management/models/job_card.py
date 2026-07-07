@@ -7205,11 +7205,19 @@ class ProjectTask(models.Model):
                             ):
                                
                                 if inspection_charges_amount == 0.0:
-                                    raise ValidationError(
-                                        _(
-                                            "Please give the Inspection Charges Amount if it is not under warranty"
+                                    '''Code Added on July 07 2026 by Vijaya Bhaskar due validation is only paid service only for corrective and hhs'''
+                                    if (
+                                        (rec.project_related_amc_bool and
+                                         rec.paid_service_bool and
+                                         not (rec.contract_id and rec.maintenance_type == "preventive"))
+                                        or
+                                        (not rec.project_related_amc_bool)
+                                    ):   
+                                        raise ValidationError(
+                                            _(
+                                                "Please give the Inspection Charges Amount if it is not under warranty"
+                                            )
                                         )
-                                    )
                     """Updated Code Added on Feb 03 2026"""
                     if not vals.get("service_warranty_id"):
                         if rec.service_warranty_id:
@@ -7217,7 +7225,15 @@ class ProjectTask(models.Model):
                                 not rec.service_warranty_id.warranty_applicable_bool
                                 and not rec.service_warranty_id.misuse_warranty_bool
                             ):
-                                if not (rec.contract_id and rec.maintenance_type == 'preventive'):
+                                # if not (rec.contract_id and rec.maintenance_type == 'preventive'):
+                                '''Code Added on July 07 2026 by Vijaya Bhaskar due validation is only paid service only for corrective and hhs'''
+                                if (
+                                        (rec.project_related_amc_bool and
+                                         rec.paid_service_bool and
+                                         not (rec.contract_id and rec.maintenance_type == "preventive"))
+                                        or
+                                        (not rec.project_related_amc_bool)
+                                    ):   
                                 
                                     if inspection_charges_amount == 0.0:
                                         raise ValidationError(
@@ -7235,7 +7251,14 @@ class ProjectTask(models.Model):
                         )
     
                         if amount == 0.0:
-                            if not (rec.contract_id and rec.maintenance_type == 'preventive'):
+                            '''Code Added on July 07 2026 by Vijaya Bhaskar due validation is only paid service only for corrective and hhs'''
+                            if ((rec.project_related_amc_bool and
+                                         rec.paid_service_bool and
+                                         not (rec.contract_id and rec.maintenance_type == "preventive"))
+                                        or
+                                        (not rec.project_related_amc_bool)
+                                    ):   
+                            # if not (rec.contract_id and rec.maintenance_type == 'preventive'):
                                 raise ValidationError(
                                     "Please enter the inspection Charges Amount if it is not under warranty"
                                 )
@@ -7535,41 +7558,7 @@ class ProjectTask(models.Model):
                                             )
                                         )
 
-                    # if rec.service_warranty_id.misuse_warranty_bool:
-                    #     if not state_changing_to_113:
-                    #         product_id = vals.get('product_id') or rec.product_id.id
-                    #         if not product_id:
-                    #             raise ValidationError(_("Please enter Model No. in the Job card"))
-                    #         product_slno = vals.get('product_slno') or rec.product_slno
-                    #
-                    #         if not product_slno:
-                    #             raise ValidationError(_("Please enter Serial Number in the Job Card"))
-                    #
-                    #         purchase_invoice_no = vals.get('purchase_invoice_no') or rec.purchase_invoice_no
-                    #         if not purchase_invoice_no:
-                    #             raise ValidationError(_("Please enter Purchase Invoice No in the Job Card"))
-                    #
-                    #         purchase_date = vals.get('purchase_date') or rec.purchase_date
-                    #         if not purchase_date:
-                    #             raise ValidationError(_("Please enter Purchase date in the Job Card"))
-                    #
-                    #         dealer = vals.get('dealer_id') or rec.dealer_id
-                    #         if not dealer :
-                    #             raise ValidationError(_("Please enter Dealer Name in the Job Card"))
-                    #
-                    #
-                    #         attachment_vals = vals.get('attachment_ids') or rec.attachment_ids
-                    #         if not attachment_vals:
-                    #             raise ValidationError(_('Please Attach Invoice Documents'))
-                    #         if attachment_vals:
-                    #             allowed_mimetypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']
-                    #             for attachment in rec.attachment_ids:
-                    #                 if attachment.mimetype not in allowed_mimetypes:
-                    #                     raise ValidationError(_(
-                    #                         "Only PDF, JPG, PNG, and GIF files are allowed in the job card.\n"
-                    #                         f"Invalid file: {attachment.name}"
-                    #                     ))
-                    #
+                  
 
             """Code Added on March 09 2026"""
             # balance_amount_received_bool = vals.get('balance_amount_received_bool') or rec.balance_amount_received_bool
