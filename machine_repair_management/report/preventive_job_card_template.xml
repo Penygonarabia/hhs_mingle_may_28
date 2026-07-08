@@ -518,7 +518,16 @@
                     </table>
 
                     <!-- CHECKLISTS -->
-                    <t t-set="all_checklist_lines" t-value="doc.checklist_line_ids"/>
+                    <t t-set="all_checklist_lines" t-value="doc.checklist_line_ids.filtered(
+                                lambda l:
+                                    l.check_item
+                                    and l.check_item.strip()
+                                    and (
+                                        l.answer_selection_id
+                                        or l.answer_numeric
+                                        or l.answer_text
+                                    )
+                        )"/>
                     <t t-if="all_checklist_lines">
                         <div class="section-header clearfix">
                             <span class="section-header-en">POST SERVICE CHECKLIST</span>
@@ -557,7 +566,13 @@
                             </thead>
                             <tbody>
                             <t t-set="sl_idx_all" t-value="1"/>
-                            <t t-foreach="all_checklist_lines.filtered(lambda l: l.check_item and l.check_item.strip())"
+                            <t t-foreach="all_checklist_lines.filtered(lambda l: l.check_item and l.check_item.strip()
+                                and (
+                                l.answer_selection_id
+                                or l.answer_numeric
+                                or l.answer_text
+                            )
+                            )"
                                t-as="line">
                                 <tr>
                                     <td class="text-center">
@@ -607,11 +622,11 @@
 
                     <!-- BEFORE / AFTER / OTHER PHOTOS -->
                     <t t-set="before_photos"
-                       t-value="doc.checklist_photo_ids.filtered(lambda p: (p.section or '').lower() == 'before')"/>
+                       t-value="doc.checklist_photo_ids.filtered(lambda p: (p.section or '').lower() == 'before' and p.photo)"/>
                     <t t-set="after_photos"
-                       t-value="doc.checklist_photo_ids.filtered(lambda p: (p.section or '').lower() == 'after')"/>
+                       t-value="doc.checklist_photo_ids.filtered(lambda p: (p.section or '').lower() == 'after' and p.photo)"/>
                     <t t-set="other_photos"
-                       t-value="doc.checklist_photo_ids.filtered(lambda p: (p.section or '').lower() not in ('before', 'after'))"/>
+                       t-value="doc.checklist_photo_ids.filtered(lambda p: (p.section or '').lower() not in ('before', 'after') and p.photo)"/>
 
                     <!-- Before Photos -->
                     <t t-if="before_photos">
