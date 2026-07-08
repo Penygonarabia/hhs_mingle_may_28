@@ -57,30 +57,21 @@ class ProductProduct(models.Model):
         for rec in self:
             rec.show_dealer_menu = value
 
-    # @api.depends_context('show_only_default_code', 'uid')
-    # def _compute_display_name(self):
-    #     super()._compute_display_name()
-    #     is_dealer_user = self.env.user.has_group('dealer.group_dealer_user') or self.env.user.has_group('dealer.group_dealer_backoffice_user')
-    #     if self.env.context.get('show_only_default_code') or is_dealer_user:
-    #         for record in self:
-    #             if record.default_code:
-    #                 record.display_name = record.default_code
-
-    # def name_get(self):
-    #     is_dealer_user = self.env.user.has_group('dealer.group_dealer_user') or self.env.user.has_group('dealer.group_dealer_backoffice_user')
-    #     if self.env.context.get('show_only_default_code') or is_dealer_user:
-    #         res = []
-    #         for record in self:
-    #             name = record.default_code if record.default_code else record.name
-    #             res.append((record.id, name))
-    #         return res
-    #     return super().name_get()
-    
-
-    @api.depends_context('show_only_default_code')
+    @api.depends_context('show_only_default_code', 'uid')
     def _compute_display_name(self):
         super()._compute_display_name()
+        is_dealer_user = self.env.user.has_group('dealer.group_dealer_user') or self.env.user.has_group('dealer.group_dealer_backoffice_user')
+        if self.env.context.get('show_only_default_code') or is_dealer_user:
+            for record in self:
+                if record.default_code:
+                    record.display_name = record.default_code
 
-        if self.env.context.get('show_only_default_code'):
-            for rec in self:
-                rec.display_name = rec.default_code or rec.name
+    def name_get(self):
+        is_dealer_user = self.env.user.has_group('dealer.group_dealer_user') or self.env.user.has_group('dealer.group_dealer_backoffice_user')
+        if self.env.context.get('show_only_default_code') or is_dealer_user:
+            res = []
+            for record in self:
+                name = record.default_code if record.default_code else record.name
+                res.append((record.id, name))
+            return res
+        return super().name_get()
