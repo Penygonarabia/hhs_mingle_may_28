@@ -359,3 +359,12 @@
         display: none !important;
     }
 }
+
+/* Global rule - hide 'Add a line' for mobile-no-create-tree on all screen sizes */
+.mobile-no-create-tree .o_field_x2many_list_row_add {
+    display: none !important;
+}
+
+.mobile-no-create-tree tr:has(.o_field_x2many_list_row_add) {
+    display: none !important;
+}
