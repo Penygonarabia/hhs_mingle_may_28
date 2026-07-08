@@ -6500,15 +6500,25 @@ class ProjectTask(models.Model):
                                     "Ensure Amount is received from the customer while clicking the Balance Amount Confirmed."
                                 )
                             )
-
+                
+                '''Code Added on July 08 2026 by Vijaya Bhaskar model and serial number validation for preventive and corrective'''
+                model_id = vals.get('model_id') or rec.model_id.id
+                product_product_model_id = vals.get('product_product_model_id') or rec.product_product_model_id.id
+                
+                if rec.items_from_own_company_bool:
+                    if not product_product_model_id:
+                        raise ValidationError(_("Please enter Model in the Job Card."))
+                else:
+                    if not model_id:
+                        raise ValidationError(_("Please enter Model in the Job Card."))
+                
+                
                 product_id = vals.get("product_id") or rec.product_id.id
                 if not product_id:
                     raise ValidationError(_("Please enter Model No. in the Job card"))
                 product_slno = vals.get("product_slno") or rec.product_slno
                 if not product_slno:
-                    if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                        raise ValidationError(
-                            _("Please enter Serial Number in the Job card")
+                    raise ValidationError(_("Please enter Serial Number in the Job card")
                         )
 
                 """Code Added on Jan 20 2026"""
@@ -6874,7 +6884,20 @@ class ProjectTask(models.Model):
                 product_id = vals.get("product_id") or rec.product_id.id
                 if not product_id:
                     raise ValidationError(_("Please enter Model No. in the Job card"))
-
+                
+                '''Code Added on July 08 2026 by Vijaya Bhaskar model and serial number validation for preventive and corrective'''
+                model_id = vals.get('model_id') or rec.model_id.id
+                product_product_model_id = vals.get('product_product_model_id') or rec.product_product_model_id.id
+                
+                if rec.items_from_own_company_bool:
+                    if not product_product_model_id:
+                        raise ValidationError(_("Please enter Model in the Job Card."))
+                else:
+                    if not model_id:
+                        raise ValidationError(_("Please enter Model in the Job Card."))
+                
+                
+                
                 purchase_invoice_no = (
                     vals.get("purchase_invoice_no") or rec.purchase_invoice_no
                 )
