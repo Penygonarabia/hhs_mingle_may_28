@@ -3101,7 +3101,28 @@ class ProjectTask(models.Model):
                     c for c in allowed_codes
                     if c != '111'
                 ]
-        
+            
+            
+            '''Code Added on july 08 2026 by Vijaya bhaskar client asked Technician Reached - job started - Instead of Cancellation show  the Need Reschedule''' 
+            # -------------------------------------------------
+            # REPLACE 124 WITH 107
+            # -------------------------------------------------
+            if (
+                rec.job_card_state_code == "110"
+                and rec.project_related_amc_bool
+                and "124" in allowed_codes
+            ):
+                allowed_codes = [
+                    "107" if code == "124" else code
+                    for code in allowed_codes
+                ]
+            
+                # Remove duplicates while preserving order
+                seen = set()
+                allowed_codes = [
+                    x for x in allowed_codes
+                    if not (x in seen or seen.add(x))
+                ]
     
             if not allowed_codes:
                 continue
