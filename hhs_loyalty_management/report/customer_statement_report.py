@@ -81,6 +81,25 @@ class ReportCustomerStatement(models.AbstractModel):
             total_bonus = opening_bonus + sum(cust_transactions.mapped('bonus_points'))
             grand_total = opening_total + sum(cust_transactions.mapped('total_points'))
             
+            # Calculate next tier required points
+            tiers = self.env['customer.tier'].search([], order='min_loyalty_points asc')
+            current_tier_name = customer.tier_name
+            current_tier = False
+            next_tier = False
+            if current_tier_name:
+                current_tier = tiers.filtered(lambda t: t.name == current_tier_name)
+                if current_tier:
+                    current_tier = current_tier[0]
+                    higher_tiers = tiers.filtered(lambda t: t.min_loyalty_points > current_tier.min_loyalty_points)
+                    if higher_tiers:
+                        next_tier = higher_tiers[0]
+            else:
+                if tiers:
+                    next_tier = tiers[0]
+
+            total_points = customer.balance_points_regular
+            required_points = max(next_tier.min_loyalty_points - total_points, 0) if next_tier else 0
+
             customers_data.append({
                 'customer': customer,
                 'opening_balance': {
@@ -92,6 +111,7 @@ class ReportCustomerStatement(models.AbstractModel):
                 'total_regular': total_regular,
                 'total_bonus': total_bonus,
                 'grand_total': grand_total,
+                'required_points': required_points,
             })
 
         return {

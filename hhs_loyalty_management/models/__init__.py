@@ -10,3 +10,4 @@ from . import process_tier
 from . import loyalty_audit_view
 from . import sales_table_view
 from . import customer_notification
+from . import promotion_participation

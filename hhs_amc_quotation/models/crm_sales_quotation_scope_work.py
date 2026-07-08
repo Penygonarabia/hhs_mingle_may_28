@@ -41,7 +41,10 @@ class ServiceSaleOrder(models.Model):
         default=lambda self: self._default_late_payment_note()
     )
     
-    terms_of_execution = fields.Text(string="Terms of Execution", default = lambda self:self.env['ir.config_parameter'].sudo().get_param('crm_custom_view.terms_of_execution').replace('\\n', '\n'))
+    terms_of_execution = fields.Text(string="Terms of Execution", default = lambda self:(self.env['ir.config_parameter']
+        .sudo()
+        .get_param('crm_custom_view.terms_of_execution')
+    ).replace('\\n', '\n'))
     exclusions_text = fields.Text(string="Exclusions", default = lambda self:self.env['ir.config_parameter'].sudo().get_param('crm_custom_view.exclusions').replace('\\n', '\n'))
     enable_scope = fields.Boolean(string="Enable Scope")
 

@@ -671,16 +671,20 @@ class ProcessTier(models.Model):
                     _logger.info("Customer %s matched tier is same as current tier (%s). Skipping.", customer.name, matched_tier.name)
                     continue
 
-                matched_sort = matched_tier.sort_order or 0
-                current_sort = current_tier.sort_order or 0
-                _logger.info("Customer %s logic evaluation: matched_sort=%s vs current_sort=%s", customer.name, matched_sort, current_sort)
+                matched_points = matched_tier.min_loyalty_points or 0
+                current_points = current_tier.min_loyalty_points or 0
+                _logger.info(
+                    "Customer %s logic evaluation: matched_tier=%s (min_pts=%s) vs current_tier=%s (min_pts=%s)",
+                    customer.name, matched_tier.name, matched_points,
+                    current_tier.name, current_points
+                )
 
                 # -------------------------------------------------
                 # UPGRADE
-                # LOWER SORT ORDER = HIGHER TIER
+                # HIGHER MIN_LOYALTY_POINTS = HIGHER TIER
                 # -------------------------------------------------
 
-                if matched_sort < current_sort:
+                if matched_points > current_points:
                     _logger.info("Customer %s triggers UPGRADE path.", customer.name)
                     rec._update_customer_tier(
                         customer=customer,
@@ -694,7 +698,7 @@ class ProcessTier(models.Model):
                 # DOWNGRADE
                 # -------------------------------------------------
 
-                elif matched_sort > current_sort:
+                elif matched_points < current_points:
                     _logger.info("Customer %s triggers DOWNGRADE check sequence.", customer.name)
                     # -----------------------------------------
                     # NO LAST PURCHASE DATE

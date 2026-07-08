@@ -48,21 +48,22 @@
                     </field>
                 </page>
             </xpath>
+            <!-- Insert Tier Icon to the left of the profile picture -->
+            <xpath expr="//div[@name='button_box']" position="after">
+                <div invisible="not tier_icon"
+                     style="position: absolute; top: 24px; right: 124px; z-index: 5;">
+                    <field name="tier_icon" widget="tier_icon_picker" readonly="1" nolabel="1"/>
+                </div>
+            </xpath>
+
             <!--             Tier Tab-->
             <xpath expr="//page[@name='applicable_loyalty']" position="after">
                 <page string="Tier"
                       name="tier_tab"
                       groups="hhs_loyalty_management.group_loyalty_program_user">
-                    <group col="2">
+                    <group col="1">
                         <group string="Tier Information">
                             <field name="tier_name" readonly="1"/>
-                        </group>
-                        <group>
-                            <div class="oe_avatar float-end text-center me-3 mt-2"
-                                 invisible="not tier_icon"
-                                 style="min-width:90px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius:10px; padding:8px; background:white;">
-                                <field name="tier_icon" widget="tier_icon_picker" readonly="1" nolabel="1"/>
-                            </div>
                         </group>
                     </group>
                     <group col="2">

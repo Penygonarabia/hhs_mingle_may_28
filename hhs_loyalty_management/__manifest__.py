@@ -41,6 +41,7 @@ Features:
         'report/report_promotion.xml',
         'report/report_promotion_detailed.xml',
         'views/views_sales_table_view.xml',
+        'views/promotion_participation_views.xml',
         'data/cron_job_customer_list.xml',
         'data/customer_statement_cron.xml',
         'data/process_tier_cron.xml',

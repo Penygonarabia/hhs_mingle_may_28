@@ -53,7 +53,7 @@
                         </div>
 
                         <div class="row mt-4">
-                            <div class="col-6">
+                            <div class="col-5">
                                 <div class="row">
                                     <div class="col-4"><strong>Customer Code:</strong></div>
                                     <div class="col-8"><span t-field="customer.ref"/></div>
@@ -83,18 +83,32 @@
                                     <div class="col-8"><span t-field="customer.mobile"/></div>
                                 </div>
                             </div>
-                            <div class="col-6">
+                            <div class="col-2 text-center" style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding-top: 15px;">
+                                <div t-if="customer.tier_icon" style="display: flex; flex-direction: column; align-items: center;">
+                                    <i t-attf-class="fa #{customer.tier_icon.fa_icon}" t-attf-style="color: #{customer.tier_icon.color}; font-size: 48px; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.15));"/>
+                                    <div t-field="customer.tier_name" t-attf-style="font-size: 11px; font-weight: bold; color: #{customer.tier_icon.color}; text-transform: uppercase; margin-top: 6px; letter-spacing: 0.5px;"/>
+                                </div>
+                            </div>
+                            <div class="col-5" style="padding-left: 50px;">
                                 <div class="row">
-                                    <div class="col-4"><strong>Statement Date:</strong></div>
-                                    <div class="col-8"><span t-esc="print_date.split(' ')[0]"/></div>
+                                    <div class="col-6"><strong>Statement Date:</strong></div>
+                                    <div class="col-6"><span t-esc="print_date.split(' ')[0]"/></div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-4"><strong>Period:</strong></div>
-                                    <div class="col-8"><t t-esc="period_display"/></div>
+                                    <div class="col-6"><strong>Period:</strong></div>
+                                    <div class="col-6"><t t-esc="period_display"/></div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-4"><strong>Salesman:</strong></div>
-                                    <div class="col-8"><span t-field="customer.user_id.name"/></div>
+                                    <div class="col-6"><strong>Salesman:</strong></div>
+                                    <div class="col-6"><span t-field="customer.user_id.name"/></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Tier Name:</strong></div>
+                                    <div class="col-6"><span t-field="customer.tier_name"/></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6"><strong>Required to Reach Next Tier:</strong></div>
+                                    <div class="col-6"><span t-esc="c_data['required_points']"/></div>
                                 </div>
                             </div>
                         </div>
