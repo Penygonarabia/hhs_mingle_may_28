@@ -14164,25 +14164,25 @@ class AccessToken(http.Controller):
 
             _logger.info("Searching ir_property for product_id: %s", product_id)
 
-            ir_property = request.env["ir.property"].sudo().search([
+            ir_properties = request.env["ir.property"].sudo().search([
                 ("res_id", "in", [
                     f"product.template,{product_id}",
                     f"product.product,{product_id}",
                     f"res.partner,{product_id}",
                     f"res.users,{product_id}",
                 ])
-            ], limit=1)
+            ])
 
-            if not ir_property:
+            if not ir_properties:
                 return {
                     "success": False,
-                    "error": f"ir_property not found for product_id {product_id}"
+                    "error": f"No ir_property records found for product_id {product_id}"
                 }, 404
 
-            # Allowed value fields only
+            # Allowed fields to update
             allowed_fields = {
                 "value_integer",
-                "value_reference",                
+                "value_reference",
                 "value_text",
                 "value_float",
                 "value_binary",
@@ -14197,26 +14197,31 @@ class AccessToken(http.Controller):
                 return {"error": "No valid fields provided for update"}, 400
 
             _logger.info(
-                "Updating ir_property ID %s with values %s",
-                ir_property.id,
-                update_vals
+                "Updating %s ir_property record(s) with values: %s",
+                len(ir_properties),
+                update_vals,
             )
 
-            ir_property.write(update_vals)
+            # Update all matching records
+            ir_properties.write(update_vals)
 
             return {
                 "success": True,
-                "message": "ir_property updated successfully",
-                "data": {
-                    "id": ir_property.id,
-                    "res_id": ir_property.res_id,
-                    "type": ir_property.type,
-                    "value_integer": ir_property.value_integer,
-                    "value_reference": ir_property.value_reference,
-                    "value_text": ir_property.value_text,
-                    "value_float": ir_property.value_float,
-                    "value_binary": ir_property.value_binary,
-                }
+                "message": f"{len(ir_properties)} ir_property record(s) updated successfully",
+                "data": [
+                    {
+                        "id": rec.id,
+                        "name": rec.name,
+                        "res_id": rec.res_id,
+                        "type": rec.type,
+                        "value_integer": rec.value_integer,
+                        "value_reference": rec.value_reference,
+                        "value_text": rec.value_text,
+                        "value_float": rec.value_float,
+                        "value_binary": rec.value_binary,
+                    }
+                    for rec in ir_properties
+                ]
             }, 200
 
         except Exception as e:
@@ -16811,7 +16816,358 @@ class AccessToken(http.Controller):
                 content_type='application/json',
                 status=500
             )
-        
+
+    @validate_token
+    @http.route('/api/product_category_updates', methods=['GET'], type='http', auth='none', csrf=False)
+    def product_category_updates(self, **kwargs):
+        try:
+            last_modified = kwargs.get('last_modified')
+
+            query = """
+                SELECT
+                    parent.code AS main_category_code,
+                    parent.name AS main_category,
+                    child.code AS product_category_code,
+                    child.name AS product_category,
+                    child.write_date AS last_modified_date
+                FROM product_category child
+                INNER JOIN product_category parent
+                    ON parent.id = child.parent_id
+                WHERE child.parent_id IS NOT NULL
+            """
+
+            params = []
+
+            if last_modified:
+                query += " AND child.write_date >= %s"
+                params.append(last_modified)
+
+            query += " ORDER BY child.write_date ASC"
+
+            request.env.cr.execute(query, tuple(params))
+            records = request.env.cr.dictfetchall()
+
+            result = []
+
+            for rec in records:
+                result.append({
+                    "Main_Category_Code": rec["main_category_code"] or "",
+                    "Main_Category": rec["main_category"] or "",
+                    "Product_Category": rec["product_category"] or "",
+                    "Product_Category_Code": rec["product_category_code"] or "",
+                    "Last_Modified_Date": rec["last_modified_date"].strftime("%Y-%m-%d %H:%M:%S")
+                    if rec["last_modified_date"] else ""
+                })
+
+            return Response(
+                json.dumps({
+                    "status": "success",
+                    "count": len(result),
+                    "data": result
+                }, default=str),
+                content_type="application/json",
+                status=200
+            )
+
+        except Exception as e:
+            return Response(
+                json.dumps({
+                    "status": "error",
+                    "message": str(e)
+                }),
+                content_type="application/json",
+                status=500
+            )
+
+
+    @validate_token
+    @http.route('/api/product_updates', methods=['GET'], type='http', auth='none', csrf=False)
+    def product_updates(self, **kwargs):
+        try:
+            last_modified = kwargs.get('last_modified')
+
+            query = """
+                SELECT
+                    pp.product_category_id,
+                    pp.category_code,
+                    pp.product_group_id,
+                    pp.group_code,
+                    pp.default_code,
+                    pp.active,
+                    pt.name AS item_name,
+                    pt.description_sale AS longdesc,
+                    (
+                        SELECT name->>'en_US'
+                        FROM account_tax
+                        WHERE id IN (
+                            SELECT tax_id
+                            FROM product_taxes_rel
+                            WHERE prod_id = pp.id
+                        )
+                        LIMIT 1
+                    ) AS vat,
+                    pt.list_price AS sales_price,
+                    (
+                        SELECT value_float
+                        FROM ir_property
+                        WHERE res_id = 'product.product,' || pp.id
+                        LIMIT 1
+                    ) AS cost_price,
+                    pp.write_date,
+                    pp.id,
+                    pp.product_tmpl_id
+                FROM product_product pp
+                JOIN product_template pt
+                    ON pt.id = pp.product_tmpl_id
+            """
+
+            params = []
+            if last_modified:
+                query += " WHERE pp.write_date >= %s"
+                params.append(last_modified)
+
+            query += " ORDER BY pp.write_date ASC"
+
+            request.env.cr.execute(query, tuple(params))
+            products = request.env.cr.dictfetchall()
+
+            result = []
+            for rec in products:
+                result.append({
+                    "Main_Group_Code": rec["category_code"] or "",                    
+                    "Category_Code": rec["group_code"] or "",
+                    "Part_No": rec["default_code"] or "",
+                    "Category_Discontinued": rec["active"],
+                    "Item_Name": rec["item_name"] or "",
+                    "Long_Description": rec["item_name"] or "",
+                    "VAT": rec["vat"] or "",
+                    "Cost_Price": rec["cost_price"] or 0,
+                    "Sale_Price": rec["sales_price"] or 0,
+                    "Last_Modified_Date": rec["write_date"].strftime("%Y-%m-%d %H:%M:%S")
+                    if rec["write_date"] else ""
+                })
+
+            return Response(
+                json.dumps({
+                    "status": "success",
+                    "count": len(result),
+                    "data": result
+                }, default=str),
+                content_type="application/json",
+                status=200
+            )
+
+        except Exception as e:
+            return Response(
+                json.dumps({
+                    "status": "error",
+                    "message": str(e)
+                }),
+                content_type="application/json",
+                status=500
+            )
+            
+    
+
+    @http.route('/api/update_standard_price',
+                type='json',
+                auth='public',
+                methods=['POST'],
+                csrf=False)
+    def update_standard_price(self, data=None, **kwargs):
+
+        try:
+            # Odoo passes params.data into 'data'
+            if data is None:
+                data = []
+
+            updated = []
+            not_found = []
+
+            Product = request.env['product.product'].sudo()
+            ProductLines = request.env['product.lines'].sudo()
+
+            for rec in data:
+
+                part_no = rec.get("STK_PART")
+                avg_cost = rec.get("STK_AVCOST")
+
+                product = Product.search([
+                    ('default_code', '=', part_no)
+                ], limit=1)
+
+                if not product:
+                    not_found.append(part_no)
+                    continue
+
+                lines = ProductLines.search([
+                    ('product_id', '=', product.id)
+                ])
+
+                if not lines:
+                    not_found.append(part_no)
+                    continue
+
+                lines.write({
+                    'standard_price': avg_cost
+                })
+
+                updated.append({
+                    "part_no": part_no,
+                    "product_id": product.id,
+                    "updated_records": len(lines),
+                    "standard_price": avg_cost
+                })
+
+            return {
+                "status": 200,
+                "message": "Completed",
+                "total_received": len(data),
+                "updated_count": len(updated),
+                "failed_count": len(not_found),
+                "updated": updated,
+                "not_found": not_found
+            }
+
+        except Exception as e:
+            return {
+                "status": 500,
+                "message": str(e)
+            }
+
+
+    @validate_token
+    @http.route('/api/export_attendance', methods=['POST'], type='http', auth='none', csrf=False)
+    def export_attendance(self, **kwargs):
+        try:
+            query = """
+                UPDATE hr_attendance_sheet_line
+                SET
+                    export = 'yes',
+                    export_bool = TRUE
+                WHERE
+                    export = 'no'
+                    AND export_bool = FALSE
+                    AND DATE(date) <> CURRENT_DATE
+                RETURNING id;
+            """
+
+            request.env.cr.execute(query)
+            updated_records = request.env.cr.fetchall()
+            request.env.cr.commit()
+
+            return Response(
+                json.dumps({
+                    "status": "success",
+                    "message": "Attendance export updated successfully.",
+                    "updated_count": len(updated_records)
+                }),
+                content_type="application/json",
+                status=200
+            )
+
+        except Exception as e:
+            request.env.cr.rollback()
+            return Response(
+                json.dumps({
+                    "status": "error",
+                    "message": str(e)
+                }),
+                content_type="application/json",
+                status=500
+            )
+
+    @validate_token
+    @http.route(
+        "/api/transaction_header/update_customer_details",
+        type="json",
+        auth="none",
+        methods=["POST"],
+        csrf=False,
+    )
+    def update_transaction_customer_details(self, **post):
+        try:
+            # Read JSON payload
+            payload = request.httprequest.data.decode("utf-8")
+            payload = json.loads(payload)
+
+            params = payload.get("params", {})
+            customer_code = params.get("customer_code")
+
+            if not customer_code:
+                return {
+                    "success": False,
+                    "message": "Missing required parameter: customer_code"
+                }, 400
+
+            # Customer
+            customer = request.env["customer"].sudo().search([
+                ("cst_no", "=", customer_code)
+            ], limit=1)
+
+            if not customer:
+                return {
+                    "success": False,
+                    "message": "Customer not found."
+                }, 404
+
+            # Partner (Tier)
+            partner = request.env["res.partner"].sudo().search([
+                ("ref", "=", customer_code)
+            ], limit=1)
+
+            # Transaction Headers
+            headers = request.env["transaction.header"].sudo().search([
+                ("trnh_cstno", "=", customer_code)
+            ])
+
+            if not headers:
+                return {
+                    "success": False,
+                    "message": "No Transaction Header found for customer %s" % customer_code
+                }, 404
+
+            updated = 0
+
+            for th in headers:
+
+                salesman = request.env["sl.salesmandesc"].sudo().search([
+                    ("sm_code", "=", th.trnh_sman)
+                ], limit=1)
+
+                vals = {
+                    "trnh_cstname": customer.cst_name,
+                    "trnh_cstadd": customer.cst_add,
+                    "trnh_add2": customer.cst_add2,
+                    "trnh_city": customer.cst_district,
+                    "trnh_region": customer.cst_region,
+                    "trnh_countrycode": customer.cst_nationality,
+                    "trnh_pobox": customer.cst_pcode,
+                    "trnh_cstmobile": customer.cst_tele,
+                    "trnh_cstemail": customer.cst_email,
+                    "trnh_cstvatreg": customer.cst_vatreg,
+                    "trnh_salesmanname": salesman.sm_name if salesman else False,
+                    # "trnh_tiername": partner.tier_name if partner else False,   # Replace tier_name if your field is different
+                }
+
+                th.sudo().write(vals)
+                updated += 1
+
+            return {
+                "success": True,
+                "customer_code": customer_code,
+                "updated_records": updated,
+                "message": "%s Transaction Header record(s) updated successfully." % updated
+            }, 200
+
+        except Exception as e:
+            _logger.exception("Transaction Header Update Error")
+            return {
+                "success": False,
+                "message": str(e)
+            }, 500
+
+
 # @http.route(["/api/auth/token"], methods=["DELETE"], type="http", auth="none", csrf=False)
     # def delete(self, **post):
     #     """Delete a given token"""
