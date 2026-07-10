@@ -1458,12 +1458,12 @@ td {
                 <tr class="para" t-foreach="o.contract_line_ids" t-as="line">
                   <!-- ✅ Merge site_address column -->
                   <t t-set="address_parts" t-value="[
-					    (o.street or '').strip(),
-					    (o.street2 or '').strip(),
-					    (o.district_id.name or '').strip() if o.district_id else '',
-					    (o.customer_city_id.name or '').strip() if o.customer_city_id else '',
-					    (o.country_id.name or '').strip() if o.country_id else '',
-					    (o.zip or '').strip(),
+					    (o.amc_quotation_id.crm_id.site_street or '').strip(),
+					    (o.amc_quotation_id.crm_id.site_street2 or '').strip(),
+					    (o.amc_quotation_id.crm_id.site_district_id.name or '').strip() if o.amc_quotation_id.crm_id.site_district_id else '',
+					    (o.amc_quotation_id.crm_id.site_customer_city_id.name or '').strip() if o.amc_quotation_id.crm_id.site_customer_city_id else '',
+					    (o.amc_quotation_id.crm_id.site_country_id.name or '').strip() if o.amc_quotation_id.crm_id.site_country_id else '',
+					    (o.amc_quotation_id.crm_id.site_zip or '').strip(),
 					]"/>
                   <td t-if="line_index == 0" t-att-rowspan="len(o.contract_line_ids)" style="padding:8px;">
                     <strong>
