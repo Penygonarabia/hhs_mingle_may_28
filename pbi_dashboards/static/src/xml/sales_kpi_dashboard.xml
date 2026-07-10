@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+  <t t-name="pbi_dashboards.sales_kpi_dashboard">
+    <div class="pbi-sales-dashboard pbi-sales-kpi-dashboard" t-ref="root">
+      <div class="wrap">
+        <header>
+          <h1>Sales Analysis</h1>
+          <p>Source: <code>v_bidata_live</code> · <t t-esc="state.periodLabel"/></p>
+        </header>
+
+        <div class="filters">
+          <div class="filter-row filter-row-inline">
+            <div class="filter-group">
+              <span class="filter-label">For</span>
+              <select class="filter-select" t-on-change="(ev) => this.selectPeriod(ev.target.value)">
+                <t t-foreach="state.periodOptions" t-as="opt" t-key="opt.v">
+                  <option t-att-value="opt.v" t-att-selected="opt.v === state.period ? true : undefined">
+                    <t t-esc="opt.l"/>
+                  </option>
+                </t>
+              </select>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">Franchise</span>
+              <select class="filter-select" t-on-change="(ev) => this.selectFranchise(ev.target.value)">
+                <t t-foreach="franchiseOptions" t-as="opt" t-key="opt.v">
+                  <option t-att-value="opt.v" t-att-selected="opt.v === state.franchise ? true : undefined">
+                    <t t-esc="opt.l"/>
+                  </option>
+                </t>
+              </select>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">Cst Grps</span>
+              <select class="filter-select" t-on-change="(ev) => this.selectCustomerGroup(ev.target.value)">
+                <t t-foreach="state.customerGroupOptions" t-as="opt" t-key="opt.v">
+                  <option t-att-value="opt.v" t-att-selected="opt.v === state.customerGroup ? true : undefined">
+                    <t t-esc="opt.l"/>
+                  </option>
+                </t>
+              </select>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">Customer Types</span>
+              <select class="filter-select" t-on-change="(ev) => this.selectCustomerType(ev.target.value)">
+                <t t-foreach="customerTypeOptions" t-as="opt" t-key="opt.v">
+                  <option t-att-value="opt.v" t-att-selected="opt.v === state.customerType ? true : undefined">
+                    <t t-esc="opt.l"/>
+                  </option>
+                </t>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="error-banner" t-if="state.error">
+          <t t-esc="state.error"/>
+        </div>
+
+        <div class="dashboard" t-att-class="state.loading ? 'loading' : ''">
+          <div class="drill-bar">
+            <div class="drill-breadcrumb" t-ref="breadcrumb"/>
+            <span class="drill-hint" t-if="state.canDrillFurther">
+              Grouped by <t t-esc="state.levelLabel"/> — click a bar or slice to drill in
+            </span>
+            <span class="drill-hint" t-else="">
+              Grouped by <t t-esc="state.levelLabel"/> (deepest level)
+            </span>
+          </div>
+
+          <div class="pbi-kpi-row twelve" t-ref="kpiRow"/>
+
+          <div class="pbi-card-grid">
+            <div class="pbi-card">
+              <h2>MTD – Sales Amount Analysis</h2>
+              <p class="subtitle">This Year, Target and Last Year</p>
+              <div class="chart-scroll" t-ref="mtdAmountBar"/>
+            </div>
+            <div class="pbi-card">
+              <h2>MTD – Amt Contribution %</h2>
+              <p class="subtitle">This Year, Target and Last Year</p>
+              <div class="donut-pad" t-ref="mtdAmountDonut"/>
+            </div>
+            <div class="pbi-card">
+              <h2>YTD – Sales Amount Analysis</h2>
+              <p class="subtitle">This Year, Target and Last Year</p>
+              <div class="chart-scroll" t-ref="ytdAmountBar"/>
+            </div>
+            <div class="pbi-card">
+              <h2>YTD – Amt Contribution %</h2>
+              <p class="subtitle">This Year, Target and Last Year</p>
+              <div class="donut-pad" t-ref="ytdAmountDonut"/>
+            </div>
+          </div>
+
+          <div class="pbi-card-grid">
+            <div class="pbi-card">
+              <h2>MTD – Sales Qty Analysis</h2>
+              <p class="subtitle">This Year, Target and Last Year</p>
+              <div class="chart-scroll" t-ref="mtdQtyBar"/>
+            </div>
+            <div class="pbi-card">
+              <h2>MTD – Qty Contribution %</h2>
+              <p class="subtitle">This Year, Target and Last Year</p>
+              <div class="donut-pad" t-ref="mtdQtyDonut"/>
+            </div>
+            <div class="pbi-card">
+              <h2>YTD – Sales Qty Analysis</h2>
+              <p class="subtitle">This Year, Target and Last Year</p>
+              <div class="chart-scroll" t-ref="ytdQtyBar"/>
+            </div>
+            <div class="pbi-card">
+              <h2>YTD – Qty Contribution %</h2>
+              <p class="subtitle">This Year, Target and Last Year</p>
+              <div class="donut-pad" t-ref="ytdQtyDonut"/>
+            </div>
+          </div>
+        </div>
+
+        <footer>PBI Dashboards &gt; Sales Dashboards &gt; Sales Analysis — live from v_bidata_live</footer>
+      </div>
+      <div class="pbi-tooltip" t-ref="tooltip"/>
+    </div>
+  </t>
+</templates>

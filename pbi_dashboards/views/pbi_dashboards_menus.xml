@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        "PBI Dashboards > Sales Dashboard" — a standalone top-level app menu
+        (not nested under My Dashboard), holding a custom OWL dashboard (not
+        a ks_dashboard_ninja board).
+
+        WHY TOP-LEVEL, NOT UNDER My Dashboard: it was originally nested under
+        ks_dashboard_ninja.board_menu_root ("My Dashboard"), but
+        dashboard_rights_ninja_bridge/models/ir_ui_menu.py treats ANY menu
+        under board_menu_root whose action is the shared
+        dashboard_action_window placeholder as an "empty dashboard category"
+        (awaiting board import, like Beta Dashboards) and hides it
+        unconditionally since it will never have accessible
+        ks_dashboard_ninja.board children. Since this category will never
+        contain a real board, that rule made it permanently invisible no
+        matter what access was granted. Making it its own top-level app
+        sidesteps that My-Dashboard-specific rule entirely. It is still
+        governed normally by dashboard.rights.menu's flat "every menu of
+        every top-level app" gating (see that model's docstring) — hidden
+        until an admin grants it via Module Rights Setup, same as any other
+        app's menus.
+
+        The old nested xmlids (pbi_dashboards_menu_root, menu_pbi_sales_dashboard)
+        are intentionally no longer declared here; Odoo's standard module-
+        upgrade cleanup removes their ir.ui.menu records on `-u` since they
+        are no longer present in this module's data.
+
+        noupdate="1" so this survives -u once an admin has (re)ordered or
+        hidden it, consistent with every other dashboard module here.
+    -->
+    <data noupdate="1">
+
+        <record id="action_pbi_sales_dashboard" model="ir.actions.client">
+            <field name="name">Sales Dashboard</field>
+            <field name="tag">pbi_dashboards.sales_dashboard</field>
+        </record>
+
+        <menuitem id="pbi_dashboards_app_root"
+                  name="PBI Dashboards"
+                  sequence="55"/>
+
+        <menuitem id="menu_pbi_sales_dashboard_app"
+                  name="Sales Dashboard"
+                  parent="pbi_dashboards.pbi_dashboards_app_root"
+                  sequence="10"
+                  action="pbi_dashboards.action_pbi_sales_dashboard"/>
+
+        <!--
+            "Loyalty Dashboards" — an intermediate container menu under
+            PBI Dashboards, holding "Loyalty Analysis" (and any future
+            loyalty-related boards). Governed by the same flat
+            dashboard.rights.menu gating as every level here (see the
+            comment above): this container menu needs its own explicit
+            grant row, same as the leaf action menu below.
+        -->
+        <menuitem id="menu_pbi_loyalty_dashboards"
+                  name="Loyalty Dashboards"
+                  parent="pbi_dashboards.pbi_dashboards_app_root"
+                  sequence="20"/>
+
+        <record id="action_pbi_loyalty_dashboard" model="ir.actions.client">
+            <field name="name">Loyalty Analysis</field>
+            <field name="tag">pbi_dashboards.loyalty_dashboard</field>
+        </record>
+
+        <menuitem id="menu_pbi_loyalty_analysis"
+                  name="Loyalty Analysis"
+                  parent="pbi_dashboards.menu_pbi_loyalty_dashboards"
+                  sequence="10"
+                  action="pbi_dashboards.action_pbi_loyalty_dashboard"/>
+
+        <!--
+            "Sales Analysis" — Report-1 (Amount) and Report-2 (Qty), each a
+            Region -> City -> Main -> Main Sub -> Prod Group -> Product Sub
+            Group -> Customer -> Transaction list drill-down, reading from
+            v_pbi_sales_analysis (pbi_dashboards/models/sales_analysis_view.py),
+            a view over the real ``bidata`` sales fact table. Nested under
+            "Loyalty Dashboards" alongside Loyalty Analysis (moved there from
+            being a standalone sibling of Sales Dashboard/Loyalty Dashboards).
+        -->
+        <record id="action_pbi_sales_analysis" model="ir.actions.client">
+            <field name="name">Sales Analysis</field>
+            <field name="tag">pbi_dashboards.sales_analysis_dashboard</field>
+        </record>
+
+        <menuitem id="menu_pbi_sales_analysis"
+                  name="Sales Analysis"
+                  parent="pbi_dashboards.menu_pbi_loyalty_dashboards"
+                  sequence="20"
+                  action="pbi_dashboards.action_pbi_sales_analysis"/>
+
+        <!--
+            "Sales Dashboards" — an intermediate container menu under PBI
+            Dashboards, holding "Sales Analysis" (KPI tiles + Customer Type
+            charts, live from v_bidata_live — see
+            pbi_dashboards/controllers/sales_kpi_main.py). Deliberately kept
+            as a SEPARATE leaf from the "Sales Analysis" drill-down above
+            (same display name, different menu/action/data source) rather
+            than merged or renamed — both are intentionally named "Sales
+            Analysis" in different places.
+        -->
+        <menuitem id="menu_pbi_sales_dashboards"
+                  name="Sales Dashboards"
+                  parent="pbi_dashboards.pbi_dashboards_app_root"
+                  sequence="40"/>
+
+        <record id="action_pbi_sales_kpi_dashboard" model="ir.actions.client">
+            <field name="name">Sales Analysis</field>
+            <field name="tag">pbi_dashboards.sales_kpi_dashboard</field>
+        </record>
+
+        <menuitem id="menu_pbi_sales_kpi_analysis"
+                  name="Sales Analysis"
+                  parent="pbi_dashboards.menu_pbi_sales_dashboards"
+                  sequence="10"
+                  action="pbi_dashboards.action_pbi_sales_kpi_dashboard"/>
+
+    </data>
+</odoo>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+  <t t-name="pbi_dashboards.sales_dashboard">
+    <div class="pbi-sales-dashboard" t-ref="root">
+      <div class="wrap">
+        <header>
+          <h1>BI Data Live — Sales Dashboard</h1>
+          <p>Source: <code>v_bidata_live</code> · Jan 2023 – Oct 2025</p>
+        </header>
+
+        <div class="filters">
+          <div class="filter-row filter-row-inline">
+            <div class="filter-group">
+              <span class="filter-label">Period</span>
+              <select class="filter-select" t-on-change="(ev) => this.selectYear(ev.target.value)">
+                <t t-foreach="yearOptions" t-as="opt" t-key="opt.v">
+                  <option t-att-value="opt.v" t-att-selected="opt.v === state.year ? true : undefined">
+                    <t t-esc="opt.l"/>
+                  </option>
+                </t>
+              </select>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">Franchise</span>
+              <select class="filter-select" t-on-change="(ev) => this.selectFranchise(ev.target.value)">
+                <t t-foreach="franchiseOptions" t-as="opt" t-key="opt.v">
+                  <option t-att-value="opt.v" t-att-selected="opt.v === state.franchise ? true : undefined">
+                    <t t-esc="opt.l"/>
+                  </option>
+                </t>
+              </select>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">Customer Type</span>
+              <select class="filter-select" t-on-change="(ev) => this.selectCustomerType(ev.target.value)">
+                <t t-foreach="customerTypeOptions" t-as="opt" t-key="opt.v">
+                  <option t-att-value="opt.v" t-att-selected="opt.v === state.customerType ? true : undefined">
+                    <t t-esc="opt.l"/>
+                  </option>
+                </t>
+              </select>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label">Region</span>
+              <select class="filter-select" t-on-change="(ev) => this.selectRegion(ev.target.value)">
+                <t t-foreach="regionOptions" t-as="opt" t-key="opt.v">
+                  <option t-att-value="opt.v" t-att-selected="opt.v === state.region ? true : undefined">
+                    <t t-esc="opt.l"/>
+                  </option>
+                </t>
+              </select>
+            </div>
+          </div>
+          <div class="filter-row export-actions">
+            <span class="filter-label">Export</span>
+            <div class="pill-filter">
+              <button t-on-click="exportPdf">Export PDF</button>
+              <button t-on-click="exportPptx">Export PowerPoint</button>
+              <button t-on-click="() => this.refs.importNotesInput.el.click()">Import Notes</button>
+              <input type="file" accept=".pptx" class="d-none" t-ref="importNotesInput" t-on-change="importNotes"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="error-banner" t-if="state.error">
+          <t t-esc="state.error"/>
+        </div>
+
+        <div class="dashboard" t-att-class="state.loading ? 'loading' : ''">
+          <div class="pbi-kpi-row" t-ref="kpiRow"/>
+
+          <div class="pbi-card">
+            <h2 t-ref="trendTitle">Monthly Sales vs Budget</h2>
+            <p class="subtitle" t-ref="trendSubtitle">Amount by month</p>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-legend" t-ref="trendLegend"/>
+                <div t-ref="trendChart"/>
+              </div>
+              <div class="narrative" t-ref="trendNotes"/>
+            </div>
+          </div>
+
+          <div class="pbi-card">
+            <h2 t-ref="regionTitle">Sales by Region</h2>
+            <p class="subtitle" t-ref="regionSubtitle">Amount vs budget</p>
+            <div class="drill-breadcrumb" t-ref="regionBreadcrumb"/>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-legend" t-ref="regionLegend"/>
+                <div t-ref="regionChart"/>
+              </div>
+              <div class="narrative" t-ref="regionNotes"/>
+            </div>
+          </div>
+
+          <div class="pbi-card">
+            <h2 t-ref="franchiseTitle">Sales by Franchise</h2>
+            <p class="subtitle" t-ref="franchiseSubtitle">Amount vs budget</p>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-legend" t-ref="franchiseLegend"/>
+                <div t-ref="franchiseChart"/>
+              </div>
+              <div class="narrative" t-ref="franchiseNotes"/>
+            </div>
+          </div>
+
+          <div class="pbi-card">
+            <h2 t-ref="customerTypeTitle">Sales by Customer Type</h2>
+            <p class="subtitle" t-ref="customerTypeSubtitle">Amount vs budget</p>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-legend" t-ref="customerTypeLegend"/>
+                <div t-ref="customerTypeChart"/>
+              </div>
+              <div class="narrative" t-ref="customerTypeNotes"/>
+            </div>
+          </div>
+
+          <div class="pbi-card">
+            <h2 t-ref="productTitle">Top Product Groups</h2>
+            <p class="subtitle" t-ref="productSubtitle">By sales amount, top 10</p>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-legend" t-ref="productLegend"/>
+                <div t-ref="productChart"/>
+              </div>
+              <div class="narrative" t-ref="productNotes"/>
+            </div>
+          </div>
+
+          <div class="pbi-card">
+            <h2 t-ref="salesmanTitle">Top 10 Salesmen</h2>
+            <p class="subtitle" t-ref="salesmanSubtitle">Sales vs budget, achievement %</p>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div t-ref="salesmanTable"/>
+              </div>
+              <div class="narrative" t-ref="salesmanNotes"/>
+            </div>
+          </div>
+        </div>
+
+        <footer>My Dashboard &gt; PBI Dashboards &gt; Sales Dashboard — live from v_bidata_live</footer>
+      </div>
+      <div class="pbi-tooltip" t-ref="tooltip"/>
+    </div>
+  </t>
+</templates>
