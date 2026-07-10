@@ -584,7 +584,9 @@ class SubscriptionContracts(models.Model):
         invoice = self.env['account.move'].create({
             'move_type': 'out_invoice',
             'partner_id': self.partner_id.id,
-            'invoice_date': invoice_date,
+            # 'invoice_date': invoice_date,
+            # code added on July 10 2026  client asked invocie date as today date
+            'invoice_date': fields.Date.today(),
             'invoice_date_due': invoice_date,
             'subscription_contract_id': self.id,
             'contract_origin': self.id,

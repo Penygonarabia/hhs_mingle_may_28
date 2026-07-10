@@ -520,9 +520,9 @@ class ReportAMCQuotation(models.AbstractModel):
         address = [
             rec.street.strip() if rec.street else "",
             rec.street2.strip() if rec.street2 else "",
-            rec.state_id.name.strip() if rec.state_id else "",
-            rec.customer_city_id.name.strip() if rec.customer_city_id else "",
+            # rec.state_id.name.strip() if rec.state_id else "",
             rec.district_id.name.strip() if rec.district_id else "",
+            rec.customer_city_id.name.strip() if rec.customer_city_id else "",
             rec.country_id.name.strip() if rec.country_id else "",
             rec.zip.strip() if rec.zip else "",
         ]

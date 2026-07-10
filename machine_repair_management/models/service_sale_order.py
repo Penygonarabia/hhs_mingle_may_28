@@ -2925,7 +2925,7 @@ class ServiceSaleOrder(models.Model):
                 order.crm_id.site_street2 or False,
                 order.crm_id.site_district_id.name or False,
                 order.crm_id.site_customer_city_id.name or False,
-                order.crm_id.site_state_id.name or False,
+                # order.crm_id.site_state_id.name or False,
                 order.crm_id.site_country_id.name or False,
                 order.crm_id.site_zip or False
                 

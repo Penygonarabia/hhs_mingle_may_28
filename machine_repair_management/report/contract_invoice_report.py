@@ -58,7 +58,7 @@ class ContractInvoiceReport(models.AbstractModel):
             total = contract.number_of_installments if contract else 0
 
             invoices = self.env['account.move'].search([
-                ('subscription_contract_id', '=', contract.id)
+                ('subscription_contract_id', '=', contract.id),('state','!=','cancel')
             ], order="invoice_date, id") if contract else self.env['account.move']
 
             current = invoices.ids.index(move.id) + 1 if move.id in invoices.ids else 0

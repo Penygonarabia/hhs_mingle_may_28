@@ -81,6 +81,21 @@
         	<field name="binding_model_id" eval="False"/>
         </record>
         
+        
+        <record id = "payment_state_hide_account_move" model = "ir.ui.view">
+        	<field name = "name">payment.state.hide.account.move.inherit</field>
+        	<field name = "model">account.move</field>
+        	<field name = "inherit_id" ref="account.view_invoice_tree"/>
+        	<field name = "arch" type = "xml">
+        		
+        		<xpath expr = "//field[@name = 'payment_state']" position = "attributes">
+        			<attribute name = "column_invisible">1</attribute>
+        		</xpath>
+        		
+        	</field>
+        
+        </record>
+	
 	
 	
 </odoo>

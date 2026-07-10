@@ -51,6 +51,9 @@ class MaintenanceEquipmentViews(models.Model):
     
     district = fields.Many2one('res.state.district',string = "District")
     
+    partner_name = fields.Char(string = "Company Name")
+
+    
     '''Code Added on May 26 2026 by Vijaya Bhaskar '''
     
     sales_person_user_id = fields.Many2one('res.users', string  = "SalesPerson")
@@ -258,5 +261,6 @@ class MaintenanceEquipmentViews(models.Model):
             rec.work_center_group_id = rec.contract_id.work_center_group_id.id or False
             '''Code Added on May 26 2026 by Vijaya Bhaskar '''
             rec.sales_person_user_id = rec.contract_id.sales_person_user_id.id or False
-            
+            rec.partner_name = rec.contract_id.partner_name or False
+
             

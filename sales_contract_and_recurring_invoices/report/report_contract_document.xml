@@ -1457,9 +1457,18 @@ td {
               <tbody>
                 <tr class="para" t-foreach="o.contract_line_ids" t-as="line">
                   <!-- ✅ Merge site_address column -->
+                  <t t-set="address_parts" t-value="[
+					    (o.street or '').strip(),
+					    (o.street2 or '').strip(),
+					    (o.district_id.name or '').strip() if o.district_id else '',
+					    (o.customer_city_id.name or '').strip() if o.customer_city_id else '',
+					    (o.country_id.name or '').strip() if o.country_id else '',
+					    (o.zip or '').strip(),
+					]"/>
                   <td t-if="line_index == 0" t-att-rowspan="len(o.contract_line_ids)" style="padding:8px;">
                     <strong>
-                      <t t-esc="o.site_address or ''"/>
+                       <!-- <t t-esc="o.site_address or ''"/> -->
+                      <t t-esc="', '.join(filter(None, address_parts))"/>
                     </strong>
                   </td>
                   <!-- Other columns -->
