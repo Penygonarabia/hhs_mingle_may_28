@@ -16607,6 +16607,13 @@ class AccessToken(http.Controller):
                         status=400
                     )
 
+            customer = request.env[
+                'res.partner'
+            ].sudo().search(
+                [('ref', '=', customer_code)],
+                limit=1
+            )
+
             # =====================================================
             # Duplicate Transaction Validation
             # =====================================================
@@ -16634,6 +16641,7 @@ class AccessToken(http.Controller):
 
             vals = {
                 'clph_cstcode': customer_code,
+                'clph_cstid': customer.id,
                 'clph_date': transaction_date,
                 'clph_doctype': document_type,
                 'clph_docnumber': transaction_no,
