@@ -6756,10 +6756,8 @@ class ProjectTask(models.Model):
                     and l.price_unit == 0.0
                     for l in rec.product_line_ids
                 ):
-                    if ((rec.project_related_amc_bool and rec.paid_service_bool and
-                                         not (rec.contract_id and rec.maintenance_type == "preventive"))
-                                        or
-                                        (not rec.project_related_amc_bool)):
+                    if ((rec.project_related_amc_bool and rec.paid_service_bool and not (rec.contract_id and rec.maintenance_type == "preventive"))
+                        or (not rec.project_related_amc_bool)):
                         raise ValidationError(_("Product  must have a price greater than 0 "
                                 "because amount is required. For ready to Invoice"
                             )
@@ -6768,10 +6766,8 @@ class ProjectTask(models.Model):
                 '''Code Added on April 09 2026 by Vijaya Bhaskar'''
                 if rec.service_warranty_id.amount_required:
                     if rec.grand_total == 0.0 or not rec.product_line_ids:
-                        if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                            raise ValidationError(
-                            _(
-                                "Product  must have a price greater than 0 "
+                        if ((rec.project_related_amc_bool and rec.paid_service_bool and not (rec.contract_id and rec.maintenance_type == "preventive")) or (not rec.project_related_amc_bool)):
+                            raise ValidationError(_("Product  must have a price greater than 0 "
                                 "because amount is required. For ready to Invoice"
                             )
                         )  
@@ -6972,9 +6968,9 @@ class ProjectTask(models.Model):
                         and l.price_unit == 0.0
                         for l in rec.product_line_ids
                     ):
-                        raise ValidationError(
-                            _(
-                                "Product  must have a price greater than 0 "
+                        if ((rec.project_related_amc_bool and rec.paid_service_bool and not (rec.contract_id and rec.maintenance_type == "preventive"))
+                        or (not rec.project_related_amc_bool)):
+                            raise ValidationError(_("Product  must have a price greater than 0 "
                                 "because amount is required. "
                             )
                         )
@@ -7110,6 +7106,7 @@ class ProjectTask(models.Model):
                     and l.vat == 0.0
                     for l in rec.product_line_ids
                 ):
+                        
                     raise ValidationError(
                         _("VAT must be entered when Price Unit is greater than zero.")
                     )
@@ -7133,9 +7130,9 @@ class ProjectTask(models.Model):
                     and l.price_unit == 0.0
                     for l in rec.product_line_ids
                 ):
-                    raise ValidationError(
-                        _(
-                            "Product  must have a price greater than 0 "
+                    if ((rec.project_related_amc_bool and rec.paid_service_bool and not (rec.contract_id and rec.maintenance_type == "preventive"))
+                        or (not rec.project_related_amc_bool)):
+                        raise ValidationError(_("Product  must have a price greater than 0 "
                             "because amount is required."
                         )
                     )
@@ -7144,10 +7141,9 @@ class ProjectTask(models.Model):
                 if rec.service_warranty_id.amount_required:
                     if rec.grand_total == 0.0 or not rec.product_line_ids:
                         '''Code Added on June 02 2026 by vijaya Bhaskar'''
-                        if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                            raise ValidationError(
-                            _(
-                                "Product  must have a price greater than 0 "
+                        if ((rec.project_related_amc_bool and rec.paid_service_bool and not (rec.contract_id and rec.maintenance_type == "preventive"))
+                        or (not rec.project_related_amc_bool)):
+                            raise ValidationError(_("Product  must have a price greater than 0 "
                                 "because amount is required. For Closed State"
                             )
                         )        
