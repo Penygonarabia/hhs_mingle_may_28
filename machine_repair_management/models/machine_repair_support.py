@@ -1937,57 +1937,58 @@ class MachineRepairSupport(models.Model):
                     rec.paid_service_editable = True
     
     '''Code Added on July 14 2026 Client asked when we corrective overall count to be made irrespective of product count'''
-    @api.constrains("paid_service_bool", "contract_id", "maintenance_type")
-    def _check_corrective_paid_service(self):
-        for rec in self:
-            if not rec.contract_id:
-                continue
-    
-            if rec.maintenance_type == "corrective":
-                total_allowed = sum(rec.contract_id.contract_line_ids.mapped("no_of_emergency_visit"))
-                total_used = sum(rec.contract_id.contract_line_ids.mapped("actual_correct_count"))
-    
-                if total_used >= total_allowed and not rec.paid_service_bool:
-                    raise ValidationError(
-                        _(
-                            "Corrective visits are fully used. Please enable Paid Service."
-                        )
-                    )
-    
-            elif rec.maintenance_type == "preventive":
-                # Preventive validation (if needed)
-                pass
-    
-    # @api.constrains("paid_service_bool", "contract_id", "service_products_code_id")
+    # @api.constrains("paid_service_bool", "contract_id", "maintenance_type")
     # def _check_corrective_paid_service(self):
     #     for rec in self:
-    #         line = rec.contract_id.contract_line_ids.filtered(
-    #             lambda l: l.product_id == rec.service_products_code_id
-    #         )
-    #         if not line:
+    #         if not rec.contract_id:
     #             continue
     #
-    #         li = line[0]
-    #
-    #         # If corrective is fully used and user still didn't tick paid
     #         if rec.maintenance_type == "corrective":
-    #             if li.actual_correct_count == li.no_of_emergency_visit:
-    #                 if not rec.paid_service_bool:
-    #                     raise ValidationError(
-    #                         _(
-    #                             "Corrective visits are fully used. Please enable Paid Service."
-    #                         )
+    #             total_allowed = sum(rec.contract_id.contract_line_ids.mapped("no_of_emergency_visit"))
+    #             total_used = sum(rec.contract_id.contract_line_ids.mapped("actual_correct_count"))
+    #
+    #             if total_used >= total_allowed and not rec.paid_service_bool:
+    #                 raise ValidationError(
+    #                     _(
+    #                         "Corrective visits are fully used. Please enable Paid Service."
     #                     )
-    #         if rec.maintenance_type == "preventive":
+    #                 )
+    #
+    #         elif rec.maintenance_type == "preventive":
+    #             # Preventive validation (if needed)
     #             pass
-    #             '''Code Commented on May 22 2026 by Vijaya Bhaskar meanwhile becasue when i create the service request from Maintenance equipment it will raise error'''
-    #             # if li.actual_prevent_count == li.days_require_rpm_round_off:
-    #             #     if not rec.paid_service_bool:
-    #             #         raise ValidationError(
-    #             #             _(
-    #             #                 "Preventive visits are fully used. Please enable Paid Service."
-    #             #             )
-    #             #         )
+    #
+
+    @api.constrains("paid_service_bool", "contract_id", "service_products_code_id")
+    def _check_corrective_paid_service(self):
+        for rec in self:
+            line = rec.contract_id.contract_line_ids.filtered(
+                lambda l: l.product_id == rec.service_products_code_id
+            )
+            if not line:
+                continue
+    
+            li = line[0]
+    
+            # If corrective is fully used and user still didn't tick paid
+            if rec.maintenance_type == "corrective":
+                if li.actual_correct_count == li.no_of_emergency_visit:
+                    if not rec.paid_service_bool:
+                        raise ValidationError(
+                            _(
+                                "Corrective visits are fully used. Please enable Paid Service."
+                            )
+                        )
+            if rec.maintenance_type == "preventive":
+                pass
+                '''Code Commented on May 22 2026 by Vijaya Bhaskar meanwhile becasue when i create the service request from Maintenance equipment it will raise error'''
+                # if li.actual_prevent_count == li.days_require_rpm_round_off:
+                #     if not rec.paid_service_bool:
+                #         raise ValidationError(
+                #             _(
+                #                 "Preventive visits are fully used. Please enable Paid Service."
+                #             )
+                #         )
 
     @api.onchange("asset_id")
     def _onchange_service_products_code_id(self):
