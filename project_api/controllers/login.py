@@ -16413,10 +16413,12 @@ class AccessToken(http.Controller):
                     "Document_Type": rec.clph_doctype or "",
                     "Transaction_No": rec.clph_docnumber or "",
                     "Transaction_Type": rec.clph_type or "",
-                    "warehouse": rec.clph_whouse or "",
-                    "regular_points": rec.clph_regpoints or 0,
-                    "reason": rec.clph_note or "",
-                    "adjustmenttype": rec.clph_adjtype or "",
+                    "Warehouse": rec.clph_whouse or "",
+                    "Regular_points": rec.clph_regpoints or 0,
+                    "Bonus_points": rec.clph_bonuspoints or 0,
+                    "Total_points": rec.clph_totalpoints or 0,
+                    "Reason": rec.clph_note or "",
+                    "Adjustmenttype": rec.clph_adjtype or "",
                     "Last_Modified_Date": str(rec.write_date) if rec.write_date else ""
                 })
 
