@@ -240,7 +240,7 @@ class MachineRepairSupport(models.Model):
                         ])
                         
                         # Exceeded check
-                        if machine_repair_search >= ordered_count:
+                        if machine_repair_search > ordered_count:
                             vals['emergency_count_exceed'] = True
                 
                         # Sequence Name
