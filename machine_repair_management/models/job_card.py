@@ -8269,6 +8269,7 @@ class ProjectTask(models.Model):
                     ('planned_date_begin', '>=', start_datetime),
                     ('planned_date_begin', '<=', end_datetime),
                     ('id', '!=', rec.id),
+                    ('job_card_state_code', 'in', ['101', '102', '103', '104', '105','106','108','109','110'])
                 ]
     
                 job_cards = self.env['project.task'].sudo().search(domain)
