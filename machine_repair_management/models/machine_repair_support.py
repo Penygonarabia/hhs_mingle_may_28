@@ -215,6 +215,8 @@ class MachineRepairSupport(models.Model):
                         contract = self.env["subscription.contracts"].browse(contract_id)
                 
                         # Get matching contract line
+                        
+                        '''Code Added on July 14 2026 by Vijaya Bhaskar 
                         line = contract.contract_line_ids.filtered(
                             lambda l: l.product_id.id == product_id
                         )[:1]
@@ -227,7 +229,16 @@ class MachineRepairSupport(models.Model):
                             ('service_products_code_id', '=', product_id),
                             ('maintenance_type', '=', 'corrective')
                         ])
-                
+                        
+                        '''
+                        
+                        ordered_count = sum(contract.contract_line_ids.mapped('no_of_emergency_visit'))
+                        
+                        machine_repair_search = self.env['machine.repair.support'].search_count([
+                            ('contract_id', '=', contract.id),
+                            ('maintenance_type', '=', 'corrective')
+                        ])
+                        
                         # Exceeded check
                         if machine_repair_search >= ordered_count:
                             vals['emergency_count_exceed'] = True
