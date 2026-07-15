@@ -530,6 +530,7 @@ class ProjectTask(models.Model):
                 _("Corrective visits are already completed.")
             )
 
+    ''' Code Commented on June 11 2026 by Vijaya Bhaskar due to fater performance optimize
     @api.depends("job_state", "job_card_state_code", "message_log_ids")
     def _compute_technician_no_of_visit_count(self):
         for rec in self:
@@ -540,7 +541,32 @@ class ProjectTask(models.Model):
                     # if line.new_value == 'Technician Reached - Job Started':
                     if line.new_value.lower().startswith("technician reached"):
                         count += 1
+    
                 rec.technician_no_of_visit_count = count
+    '''
+    @api.depends('job_state','job_card_state_code')
+    def _compute_technician_no_of_visit_count(self):
+        ids = [rec.id for rec in self if isinstance(rec.id, int)]
+        if not ids:
+            for rec in self:
+                rec.technician_no_of_visit_count = 0
+            return
+
+        self.env.cr.execute("""
+            SELECT m.res_id, COUNT(*)
+            FROM mail_tracking_value v
+            JOIN mail_message m ON v.mail_message_id = m.id
+            JOIN ir_model_fields f ON f.id = v.field_id
+            WHERE m.model = 'project.task'
+              AND m.res_id IN %s
+              AND f.name = 'job_state'
+              AND LOWER(COALESCE(v.new_value_char, v.new_value_text, CAST(v.new_value_integer AS TEXT))) LIKE 'technician reached%%'
+            GROUP BY m.res_id
+        """, (tuple(ids),))
+        counts = dict(self.env.cr.fetchall())
+        for rec in self:
+            rec.technician_no_of_visit_count = counts.get(rec.id, 0)
+
 
     @api.model
     def _get_year_selection(self, field_type):
