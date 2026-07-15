@@ -56,8 +56,8 @@
             </xpath>
             
             <xpath expr = "//header/button[@name ='action_to_cancel']" position = "after">
-            	<button name = "send_notification_salesman_for_sixty_day" string ="Send notification to Salesman" type = "object" class = "oe_highlight"/>
-            	<button name = "send_notification_manager" string = "Send notification to Manager" type = "object" class = "oe_highlight"/>
+            	<button name = "send_notification_salesman_for_sixty_day" string ="Send notification to Salesman" type = "object" class = "oe_highlight" invisible = "1"/>
+            	<button name = "send_notification_manager" string = "Send notification to Manager" type = "object" class = "oe_highlight" invisible = "1"/>
             </xpath>
             
         </field>
