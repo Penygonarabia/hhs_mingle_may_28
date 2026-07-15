@@ -1,0 +1,27 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+<odoo>
+	
+	<record id="ir_cron_contract_notification_salesman" model="ir.cron">
+	    <field name="name">Contract Renewal Notification (Salesman)</field>
+	    <field name="model_id" ref="machine_repair_management.model_subscription_contracts"/>
+	    <field name="state">code</field>
+	    <field name="code">model.send_notification_salesman_for_sixty_day_cron_job()</field>
+	    <field name="interval_number">1</field>
+	    <field name="interval_type">days</field>
+	    <field name="numbercall">-1</field>
+	    <field name="active">True</field>
+	</record>
+	
+	<record id="ir_cron_send_notification_manager" model="ir.cron">
+            <field name="name">Contracts: Send Manager Renewal Notification</field>
+            <field name="model_id" ref="machine_repair_management.model_subscription_contracts"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_send_notification_manager()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+        </record>
+
+
+</odoo>
