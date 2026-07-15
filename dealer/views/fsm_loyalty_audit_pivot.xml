@@ -80,6 +80,13 @@
     <field name="domain_force">[('salesman_id', '=', user.id)]</field>
 </record>
 
+<record id="fsm_loyalty_audit_backoffice_rule_all" model="ir.rule">
+    <field name="name">FSM Loyalty Audit - Backoffice All Records</field>
+    <field name="model_id" ref="model_fsm_loyalty_audit"/>
+    <field name="groups" eval="[(4, ref('dealer.group_dealer_backoffice_user'))]"/>
+    <field name="domain_force">[(1, '=', 1)]</field>
+</record>
+
 <record id="action_fsm_loyalty_audit_pivot_mob" model="ir.actions.act_window">
     <field name="name">Loyalty Points Summary</field>
     <field name="res_model">fsm.loyalty.audit</field>
