@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+  <t t-name="pbi_dashboards.sales_kpi_dashboard_new">
+    <div class="pbi-sales-dashboard pbi-sales-kpi-dashboard pbi-sales-kpi-dashboard-new" t-ref="root" t-att-dir="isArabicUI() ? 'rtl' : 'ltr'">
+      <div class="wrap">
+        <header>
+          <h1><t t-esc="t('Sales Dashboard - New')"/></h1>
+          <p><t t-esc="t('Source')"/>: <code>bidata</code> · <t t-esc="state.periodLabel"/></p>
+        </header>
+
+        <div class="pbi-toolbar" t-att-class="state.toolbarCollapsed ? 'collapsed' : ''">
+          <button type="button" class="toolbar-toggle-btn" t-on-click="toggleToolbar"
+                  t-att-aria-expanded="state.toolbarCollapsed ? 'false' : 'true'">
+            <span class="toolbar-toggle-icon">▾</span>
+            <t t-esc="t('Filters &amp; Levels')"/>
+          </button>
+
+          <div class="toolbar-body" t-if="!state.toolbarCollapsed">
+            <div class="filters">
+              <div class="filter-row filter-row-inline">
+                <div class="filter-group">
+                  <span class="filter-label"><t t-esc="t('Year')"/></span>
+                  <select class="filter-select" t-on-change="(ev) => this.selectYear(ev.target.value)">
+                    <t t-foreach="state.yearOptions" t-as="opt" t-key="opt.v">
+                      <option t-att-value="opt.v" t-att-selected="opt.v === state.year ? true : undefined">
+                        <t t-esc="opt.l"/>
+                      </option>
+                    </t>
+                  </select>
+                </div>
+                <div class="filter-group">
+                  <span class="filter-label"><t t-esc="t('Month')"/></span>
+                  <select class="filter-select" t-on-change="(ev) => this.selectMonth(ev.target.value)">
+                    <t t-foreach="monthOptions" t-as="opt" t-key="opt.v">
+                      <option t-att-value="opt.v" t-att-selected="opt.v === state.month ? true : undefined">
+                        <t t-esc="t(opt.l)"/>
+                      </option>
+                    </t>
+                  </select>
+                </div>
+                <div class="filter-group">
+                  <span class="filter-label"><t t-esc="t('Franchise')"/></span>
+                  <select class="filter-select" t-on-change="(ev) => this.selectFranchise(ev.target.value)">
+                    <t t-foreach="franchiseOptions" t-as="opt" t-key="opt.v">
+                      <option t-att-value="opt.v" t-att-selected="opt.v === state.franchise ? true : undefined">
+                        <t t-esc="t(opt.l)"/>
+                      </option>
+                    </t>
+                  </select>
+                </div>
+                <div class="filter-group">
+                  <span class="filter-label"><t t-esc="t('Customer Group')"/></span>
+                  <select class="filter-select" t-on-change="(ev) => this.selectCustomerGroup(ev.target.value)">
+                    <t t-foreach="state.customerGroupOptions" t-as="opt" t-key="opt.v">
+                      <option t-att-value="opt.v" t-att-selected="opt.v === state.customerGroup ? true : undefined">
+                        <t t-esc="opt.v === 'all' ? t('All') : opt.l"/>
+                      </option>
+                    </t>
+                  </select>
+                </div>
+                <div class="filter-group">
+                  <span class="filter-label"><t t-esc="state.levelFilterLabel"/></span>
+                  <select class="filter-select" t-on-change="(ev) => this.selectLevelFilter(ev.target.value)">
+                    <t t-foreach="state.levelFilterOptions" t-as="opt" t-key="opt.v">
+                      <option t-att-value="opt.v" t-att-selected="opt.v === state.levelFilterValue ? true : undefined">
+                        <t t-esc="opt.v === 'all' ? t('All') : opt.l"/>
+                      </option>
+                    </t>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="level-nav">
+            <t t-foreach="levelNav" t-as="lvl" t-key="lvl.v">
+              <button type="button"
+                      t-att-class="'level-nav-btn' + (state.level === lvl.v ? ' active' : '')"
+                      t-on-click="() => this.jumpToLevel(lvl.v)">
+                <t t-esc="lvl.l"/>
+              </button>
+            </t>
+          </div>
+        </div>
+
+        <div class="error-banner" t-if="state.error">
+          <t t-esc="state.error"/>
+        </div>
+
+        <div class="dashboard" t-att-class="state.loading ? 'loading' : ''">
+          <div class="drill-bar">
+            <div class="drill-breadcrumb" t-ref="breadcrumb"/>
+            <span class="drill-hint" t-if="state.canDrillFurther">
+              <t t-esc="t('Grouped by')"/> <t t-esc="state.levelLabel"/> — <t t-esc="t('click a bar or slice to drill in')"/>
+            </span>
+            <span class="drill-hint" t-else="">
+              <t t-esc="t('Grouped by')"/> <t t-esc="state.levelLabel"/> <t t-esc="t('(deepest level)')"/>
+            </span>
+          </div>
+
+          <!--
+              The one bit of UI this dashboard adds over sales_kpi_dashboard.js:
+              an Amount/Qty toggle. Picking one re-renders the KPI row and the
+              MTD/YTD chart pair below to that measure only (see
+              selectMeasure/renderKpis/renderCharts in the JS) — the filters/
+              level-nav above stay shared, same drill path either way.
+          -->
+          <div class="measure-toggle">
+            <t t-foreach="measureOptions" t-as="opt" t-key="opt.v">
+              <button type="button"
+                      t-att-class="'measure-btn' + (state.measure === opt.v ? ' active' : '')"
+                      t-on-click="() => this.selectMeasure(opt.v)">
+                <t t-esc="t(opt.l)"/>
+              </button>
+            </t>
+          </div>
+
+          <div class="pbi-kpi-row twelve" t-ref="kpiRow"/>
+
+          <!--
+              Widened-bar layout: 2 columns per row (bar chart, its donut)
+              instead of the original's 4-across grid — one row for MTD, a
+              second row below it for YTD. See .pbi-card-grid-wide in
+              sales_kpi_dashboard_new.css.
+          -->
+          <div class="pbi-card-grid-wide">
+            <div class="pbi-card wide-bar">
+              <h2><t t-esc="chartTitle('mtd', 'bar')"/></h2>
+              <p class="subtitle"><t t-esc="t('This Year, Target and Last Year')"/></p>
+              <div class="chart-scroll" t-ref="mtdBar"/>
+            </div>
+            <div class="pbi-card">
+              <h2><t t-esc="chartTitle('mtd', 'donut')"/></h2>
+              <p class="subtitle"><t t-esc="t('This Year, Target and Last Year')"/></p>
+              <div class="donut-pad" t-ref="mtdDonut"/>
+            </div>
+          </div>
+
+          <div class="pbi-card-grid-wide">
+            <div class="pbi-card wide-bar">
+              <h2><t t-esc="chartTitle('ytd', 'bar')"/></h2>
+              <p class="subtitle"><t t-esc="t('This Year, Target and Last Year')"/></p>
+              <div class="chart-scroll" t-ref="ytdBar"/>
+            </div>
+            <div class="pbi-card">
+              <h2><t t-esc="chartTitle('ytd', 'donut')"/></h2>
+              <p class="subtitle"><t t-esc="t('This Year, Target and Last Year')"/></p>
+              <div class="donut-pad" t-ref="ytdDonut"/>
+            </div>
+          </div>
+        </div>
+
+        <footer><t t-esc="t('PBI Dashboards')"/> &gt; <t t-esc="t('Sales Dashboards')"/> &gt; <t t-esc="t('Sales Dashboard - New')"/> — <t t-esc="t('live from')"/> bidata</footer>
+      </div>
+      <div class="pbi-tooltip" t-ref="tooltip"/>
+    </div>
+  </t>
+</templates>

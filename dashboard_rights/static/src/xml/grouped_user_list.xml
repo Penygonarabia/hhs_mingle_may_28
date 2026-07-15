@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-    <!-- Email field with robust copy (HTTP + HTTPS) -->
-    <t t-name="dashboard_rights.EmailCopyField" owl="1">
-        <div class="d-flex align-items-center gap-2">
-            <span class="o_field_char" t-esc="displayValue"/>
-            <button class="btn btn-sm btn-light border px-2"
-                    t-on-click="onCopy"
-                    t-att-title="state.copied ? 'Copied!' : 'Copy to clipboard'">
-                <i t-attf-class="fa {{ state.copied ? 'fa-check text-success' : 'fa-copy text-muted' }}"/>
-            </button>
-        </div>
-    </t>
-
     <t t-name="dashboard_rights.GroupedUserList" owl="1">
         <div class="dr_grouped_user_list">
 

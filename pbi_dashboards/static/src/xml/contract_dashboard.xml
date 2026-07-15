@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+  <t t-name="pbi_dashboards.contract_dashboard">
+    <div class="pbi-sales-dashboard pbi-contract-dashboard" t-ref="root" t-att-dir="isArabicUI() ? 'rtl' : 'ltr'">
+      <div class="wrap">
+        <header>
+          <h1><t t-esc="state.title"/></h1>
+          <p><t t-esc="t('Source')"/>: <code>subscription.contracts</code> · <t t-esc="state.periodLabel"/></p>
+        </header>
+
+        <div class="filters">
+          <div class="filter-row filter-row-inline">
+            <div class="filter-group">
+              <span class="filter-label"><t t-esc="t('Period')"/></span>
+              <select class="filter-select" t-on-change="(ev) => this.selectDateFilter(ev.target.value)">
+                <t t-foreach="dateFilterOptions" t-as="opt" t-key="opt.v">
+                  <option t-att-value="opt.v" t-att-selected="opt.v === state.dateFilter ? true : undefined">
+                    <t t-esc="t(opt.l)"/>
+                  </option>
+                </t>
+              </select>
+            </div>
+            <div class="filter-group" t-if="state.dateFilter === 'l_custom'">
+              <span class="filter-label"><t t-esc="t('From')"/></span>
+              <input type="date" class="filter-select" t-att-value="state.customStart"
+                     t-on-change="(ev) => this.selectCustomStart(ev.target.value)"/>
+              <span class="filter-label"><t t-esc="t('To')"/></span>
+              <input type="date" class="filter-select" t-att-value="state.customEnd"
+                     t-on-change="(ev) => this.selectCustomEnd(ev.target.value)"/>
+            </div>
+            <div class="filter-group" t-if="state.regionFilterable">
+              <span class="filter-label"><t t-esc="t('Region')"/></span>
+              <select class="filter-select" t-on-change="(ev) => this.selectRegion(ev.target.value)">
+                <option value="all" t-att-selected="state.region === 'all' ? true : undefined"><t t-esc="t('All Regions')"/></option>
+                <t t-foreach="state.regionOptions" t-as="r" t-key="r">
+                  <option t-att-value="r" t-att-selected="r === state.region ? true : undefined">
+                    <t t-esc="r"/>
+                  </option>
+                </t>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="error-banner" t-if="state.error">
+          <t t-esc="state.error"/>
+        </div>
+
+        <div class="dashboard" t-att-class="state.loading ? 'loading' : ''">
+          <div class="pbi-kpi-row-dynamic">
+            <t t-foreach="kpiItems" t-as="item" t-key="item.key">
+              <div class="pbi-kpi-slot" t-att-data-item-key="item.key">
+                <div class="chart-body"/>
+              </div>
+            </t>
+          </div>
+
+          <div class="pbi-card-grid-dynamic">
+            <t t-foreach="chartItems" t-as="item" t-key="item.key">
+              <div t-att-class="item.type === 'table' ? 'pbi-card pbi-card-table' : 'pbi-card'" t-att-data-item-key="item.key">
+                <h2><t t-esc="t(item.name)"/></h2>
+                <div class="drill-breadcrumb" t-if="state.charts[item.key] and state.charts[item.key].breadcrumb.length">
+                  <span class="crumb" t-on-click="() => this.drillTo(item.key, -1)"><t t-esc="t('All')"/></span>
+                  <span class="crumb-sep">›</span>
+                  <t t-foreach="state.charts[item.key].breadcrumb" t-as="crumb" t-key="crumb_index">
+                    <span t-if="!crumb_last" class="crumb" t-on-click="() => this.drillTo(item.key, crumb_index)"><t t-esc="crumb"/></span>
+                    <span t-if="crumb_last" class="crumb current"><t t-esc="crumb"/></span>
+                    <span t-if="!crumb_last" class="crumb-sep">›</span>
+                  </t>
+                </div>
+                <div t-if="item.type === 'table'" class="table-wrap">
+                  <div class="chart-body"/>
+                </div>
+                <div t-else="" t-att-class="item.type === 'pie' ? 'donut-pad' : 'chart-scroll'">
+                  <div class="chart-body"/>
+                </div>
+              </div>
+            </t>
+          </div>
+        </div>
+
+        <footer><t t-esc="t('PBI Dashboards')"/> &gt; <t t-esc="t('Contract Dashboards')"/> &gt; <t t-esc="state.title"/> — <t t-esc="t('live from')"/> subscription.contracts data</footer>
+      </div>
+      <div class="pbi-tooltip" t-ref="tooltip"/>
+    </div>
+  </t>
+</templates>

@@ -8,9 +8,12 @@
  * are styled here.
  */
 .pbi-sales-kpi-dashboard {
-  /* 5th categorical color (Customer Type "Others" in the donut charts) —
-     kept distinct from --series-6 (red), which sales_dashboard.js/css
-     reserve for "bad"/negative narrative text. */
+  /* 4th of 5 categorical colors (Customer Type "Projects" in the donut
+     charts — see SALES_TYPE_GROUP_COLORS in sales_kpi_dashboard.js) — kept
+     distinct from --series-6 (red), which sales_dashboard.js/css reserve for
+     "bad"/negative narrative text. The 5th ("Others") reuses the globally
+     defined --series-5 (violet, sales_dashboard.css) as-is — no override
+     needed since nothing else in this category context uses it. */
   --series-4: #17a2b8;
 }
 
@@ -111,6 +114,43 @@
 }
 .pbi-sales-kpi-dashboard .drill-bar .drill-breadcrumb { margin-bottom: 0; }
 .pbi-sales-kpi-dashboard .drill-hint { font-size: 12px; color: var(--text-muted); }
+
+/* Level-jump nav (jumpToLevel) — a direct shortcut to any of the 6 levels,
+   alongside (not replacing) the breadcrumb/click-to-drill flow. Pill/tab
+   row so the currently active level reads clearly against the other 5. */
+.pbi-sales-kpi-dashboard .level-nav {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;
+}
+.pbi-sales-kpi-dashboard .level-nav-btn {
+  font-family: inherit; font-size: 12px; font-weight: 600; line-height: 1;
+  color: var(--text-secondary); background: var(--surface-1);
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 7px 14px; cursor: pointer; transition: background .12s, color .12s, border-color .12s;
+}
+.pbi-sales-kpi-dashboard .level-nav-btn:hover { border-color: var(--series-1); color: var(--series-1); }
+.pbi-sales-kpi-dashboard .level-nav-btn.active {
+  background: var(--series-1); border-color: var(--series-1); color: #fff;
+}
+
+/* Expand/collapse wrapper around the filters row ONLY (see toggleToolbar in
+   sales_kpi_dashboard.js) — the level-jump nav below it stays put, always
+   visible, since it's the primary way to move around the drill chain, not
+   just a filter. Collapsing the filters row still lets more chart cards be
+   reached "in one look" without scrolling past that chrome first. */
+.pbi-sales-kpi-dashboard .pbi-toolbar { margin-bottom: 12px; }
+.pbi-sales-kpi-dashboard .toolbar-toggle-btn {
+  display: flex; align-items: center; gap: 6px;
+  font-family: inherit; font-size: 12.5px; font-weight: 600;
+  color: var(--text-secondary); background: none; border: none;
+  padding: 4px 2px; margin-bottom: 8px; cursor: pointer;
+}
+.pbi-sales-kpi-dashboard .toolbar-toggle-btn:hover { color: var(--series-1); }
+.pbi-sales-kpi-dashboard .toolbar-toggle-icon {
+  display: inline-block; transition: transform .15s;
+}
+.pbi-sales-kpi-dashboard .pbi-toolbar.collapsed .toolbar-toggle-icon { transform: rotate(-90deg); }
+.pbi-sales-kpi-dashboard .pbi-toolbar .filters { margin-bottom: 8px; }
+.pbi-sales-kpi-dashboard .pbi-toolbar .level-nav { margin-bottom: 0; }
 
 @media (max-width: 1100px) {
   .pbi-sales-kpi-dashboard .pbi-card-grid { grid-template-columns: repeat(2, 1fr); }

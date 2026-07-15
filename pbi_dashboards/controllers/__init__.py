@@ -2,3 +2,7 @@ from . import main
 from . import loyalty_main
 from . import sales_analysis_main
 from . import sales_kpi_main
+from . import sales_mail_main
+from . import service_main
+from . import promoter_main
+from . import contract_main

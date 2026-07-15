@@ -10,6 +10,18 @@
                   autocomplete="off"
                   class="dr_matrix_form">
                 <sheet>
+                    <!-- Smart button: quick check of what this user currently has access
+                         to, without opening every group. Read-only drill-down into
+                         dashboard.rights, pre-filtered to Granted. -->
+                    <div class="oe_button_box" name="button_box" invisible="not lines_loaded">
+                        <button name="action_view_rights_summary"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-check-circle">
+                            <field name="access_status" string="Dashboards Granted" widget="statinfo"/>
+                        </button>
+                    </div>
+
                     <!-- Screen usage hint — shown until the user loads dashboards (covers both
                          a fresh form open and the list "New" path, which pre-creates a wizard record). -->
                     <div class="alert alert-info d-flex align-items-start gap-2 mb-3 py-2 px-3" role="alert" style="font-size:0.9rem;" invisible="lines_loaded">
@@ -31,11 +43,10 @@
                             <field name="user_id"
                                    string="User Name"
                                    options="{'no_create': True, 'no_open': True}"/>
-                            <!-- email_id_copy is our local widget: same layout as
-                                 CopyClipboardChar but with a fixed "Copy Email ID" button label. -->
+                            <!-- Copy-to-clipboard button removed: it wasn't working and the
+                                 email is plainly visible as read-only text anyway. -->
                             <field name="user_email"
                                    string="Email"
-                                   widget="email_id_copy"
                                    readonly="1"/>
                             <field name="user_role"
                                    string="User Role"
@@ -56,6 +67,11 @@
                                 type="object"
                                 string="Load Dashboards"
                                 class="btn btn-primary"/>
+                        <button name="%(dashboard_rights.action_dashboard_rights_copy_wizard)d"
+                                type="action"
+                                string="Copy Rights From…"
+                                class="btn btn-secondary"
+                                context="{'default_source_user_id': user_id}"/>
                     </div>
 
                     <!-- ===== DETAIL ===== -->
@@ -74,7 +90,7 @@
                                 <field name="search_text"
                                        nolabel="1"
                                        placeholder="Search by Menu or Dashboard Name…"
-                                       class="form-control"/>
+                                       class="form-control dr_matrix_search_input"/>
                             </div>
 
                             <field name="line_ids"

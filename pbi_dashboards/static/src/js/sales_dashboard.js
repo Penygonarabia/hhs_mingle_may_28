@@ -3,6 +3,127 @@
 import { Component, useState, useRef, onMounted, onWillUnmount } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
+import { t, tDate, addLabels, isArabicUI } from "./pbi_i18n";
+
+// Sales Dashboard is hand-rolled (its own chart/legend/table rendering, not
+// pbi_chart_lib.js), so every static chrome string below is a literal found
+// directly in this file's title/subtitle/legend/KPI/table-header building —
+// NOT the auto-generated narrative sentences (monthValueSentence,
+// categoryNarrativeSingle*, productNarrative*, salesmanNarrative*, etc.) or
+// any pbi.dashboard.note-sourced override text, both of which stay in
+// English/whatever the source text is (DB/free-text content, out of scope
+// per the no-DB-value rule) except for their one-line "no data" fallbacks,
+// which are fixed UI strings like everything else here.
+addLabels({
+  // header / footer
+  "BI Data Live — Sales Dashboard": "لوحة معلومات المبيعات — بيانات مباشرة",
+  "My Dashboard": "لوحتي",
+  "Sales Dashboard": "لوحة معلومات المبيعات",
+  // filters
+  "Customer Type": "نوع العميل",
+  "Export": "تصدير",
+  "Export PDF": "تصدير PDF",
+  "Export PowerPoint": "تصدير PowerPoint",
+  "Import Notes": "استيراد الملاحظات",
+  // customer-type filter options
+  "Dealers": "الموزعون",
+  "Whole Sale": "الجملة",
+  "Modern Trade": "التجارة الحديثة",
+  "Projects": "المشاريع",
+  "Others": "أخرى",
+  // region filter options
+  "Central": "الوسطى",
+  "Eastern": "الشرقية",
+  "Western": "الغربية",
+  // card titles / subtitles (defaults + setMode()-built variants)
+  "Monthly Sales vs Budget": "المبيعات الشهرية مقابل الميزانية",
+  "Amount by month": "القيمة حسب الشهر",
+  "Sales by Region": "المبيعات حسب المنطقة",
+  "Amount vs budget": "القيمة مقابل الميزانية",
+  "Sales by Franchise": "المبيعات حسب الامتياز",
+  "Sales by Customer Type": "المبيعات حسب نوع العميل",
+  "Top Product Groups": "أفضل مجموعات المنتجات",
+  "By sales amount, top 10": "حسب قيمة المبيعات، أفضل 10",
+  "Top 10 Salesmen": "أفضل 10 مندوبي مبيعات",
+  "Sales vs budget, achievement %": "المبيعات مقابل الميزانية، نسبة الإنجاز %",
+  "Monthly Sales — 2024 vs 2025 (with 2025 Budget)": "المبيعات الشهرية — 2024 مقابل 2025 (مع ميزانية 2025)",
+  "Sales amount by month": "قيمة المبيعات حسب الشهر",
+  "Sales by Franchise — 2024 vs 2025": "المبيعات حسب الامتياز — 2024 مقابل 2025",
+  "Sales amount, with 2025 budget": "قيمة المبيعات، مع ميزانية 2025",
+  "Sales by Customer Type — 2024 vs 2025": "المبيعات حسب نوع العميل — 2024 مقابل 2025",
+  "Top Product Groups — 2024 vs 2025": "أفضل مجموعات المنتجات — 2024 مقابل 2025",
+  "Sales amount, top 10, with 2025 budget": "قيمة المبيعات، أفضل 10، مع ميزانية 2025",
+  "Top 10 Salesmen — 2024 vs 2025": "أفضل 10 مندوبي مبيعات — 2024 مقابل 2025",
+  "Sales amount, with 2025 budget, year-over-year": "قيمة المبيعات، مع ميزانية 2025، سنة مقابل سنة",
+  "highlighted": "محدد",
+  // region drill (level words / dimension phrases)
+  "Sales by": "المبيعات حسب",
+  "City": "المدينة",
+  "Salesman": "مندوب المبيعات",
+  "Click a bar to drill down": "انقر على عمود للتعمق",
+  "Click a bar to drill down further": "انقر على عمود لمزيد من التعمق",
+  "with estimated 2025 target": "مع هدف 2025 المقدّر",
+  "with 2025 budget": "مع ميزانية 2025",
+  "target (full month) vs this year (MTD) vs last year": "الهدف (الشهر الكامل) مقابل هذا العام (حتى تاريخه) مقابل العام الماضي",
+  "target vs this year vs last year": "الهدف مقابل هذا العام مقابل العام الماضي",
+  "amount vs budget": "القيمة مقابل الميزانية",
+  "(target estimated: region budget split by city sales share)": "(الهدف مقدّر: ميزانية المنطقة موزّعة على المدن حسب حصة المبيعات)",
+  "Estimated Target": "هدف مقدّر",
+  "Target (Full Month)": "الهدف (الشهر الكامل)",
+  "Target": "الهدف",
+  "This Year (MTD)": "هذا العام (حتى تاريخه)",
+  "This Year": "هذا العام",
+  "Last Year (Same Days)": "العام الماضي (نفس الأيام)",
+  "2025 Est. Target": "هدف 2025 المقدّر",
+  "2025 Budget": "ميزانية 2025",
+  "2025 Sales": "مبيعات 2025",
+  "2024 Sales": "مبيعات 2024",
+  "Sales": "المبيعات",
+  "Sales Amount": "قيمة المبيعات",
+  "Budget": "الميزانية",
+  "Budget Amount": "قيمة الميزانية",
+  "vs": "مقابل",
+  "vs target and last year": "مقابل الهدف والعام الماضي",
+  "Target (full month) vs this year (MTD) vs last year": "الهدف (الشهر الكامل) مقابل هذا العام (حتى تاريخه) مقابل العام الماضي",
+  "Target vs this year vs last year": "الهدف مقابل هذا العام مقابل العام الماضي",
+  "full-month budget": "ميزانية الشهر الكامل",
+  "budget": "الميزانية",
+  "distinct": "فريد",
+  "no budget data": "لا توجد بيانات ميزانية",
+  "full month": "الشهر الكامل",
+  "month-to-date": "حتى تاريخه ضمن الشهر",
+  "same days": "نفس الأيام",
+  // KPI tile labels
+  "Achievement": "نسبة الإنجاز",
+  "Total Qty Sold": "إجمالي الكمية المباعة",
+  "Active Customers": "العملاء النشطون",
+  "Total Sales Amount": "إجمالي قيمة المبيعات",
+  "Total Budget Amount": "إجمالي قيمة الميزانية",
+  "Data is only synced through": "البيانات متزامنة فقط حتى",
+  "for this month — sales figures above are month-to-date, while the budget is the full-month target.":
+    "لهذا الشهر — أرقام المبيعات أعلاه حتى تاريخه ضمن الشهر، بينما الميزانية هي هدف الشهر الكامل.",
+  "Sales Amount (2025)": "قيمة المبيعات (2025)",
+  "vs 2024": "مقابل 2024",
+  "Budget Amount (2025)": "قيمة الميزانية (2025)",
+  "Achievement (2025)": "نسبة الإنجاز (2025)",
+  "vs 2025 budget": "مقابل ميزانية 2025",
+  "Active Customers (2025)": "العملاء النشطون (2025)",
+  // salesman table headers
+  "YoY %": "نسبة التغير السنوي %",
+  "Achv %": "نسبة الإنجاز %",
+  "Budget 2025": "ميزانية 2025",
+  "Sales 2025": "مبيعات 2025",
+  "Sales 2024": "مبيعات 2024",
+  // misc chrome
+  "Edited note": "ملاحظة مُعدَّلة",
+  "n/a": "غير متاح",
+  "No data available for this selection.": "لا توجد بيانات متاحة لهذا الاختيار.",
+  "Not enough data to generate a summary for this selection.": "لا توجد بيانات كافية لإنشاء ملخص لهذا الاختيار.",
+  "No edited narrative notes were found — the file's speaker notes matched the dashboard's current text.":
+    "لم يتم العثور على ملاحظات سردية مُعدَّلة — تطابقت ملاحظات المتحدث في الملف مع النص الحالي للوحة المعلومات.",
+  "Failed to load dashboard data — ": "فشل تحميل بيانات لوحة المعلومات — ",
+  "Failed to import notes — ": "فشل استيراد الملاحظات — ",
+});
 
 // ---------------------------------------------------------------------
 // formatting helpers
@@ -17,12 +138,12 @@ function fmtYoy(a, b) {
 }
 function yoyWord(pct, upWord, downWord) { return pct >= 0 ? upWord : downWord; }
 function yoyHtml(pct) {
-  if (pct == null) return '<span class="bad">n/a</span>';
+  if (pct == null) return `<span class="bad">${t('n/a')}</span>`;
   const cls = pct >= 0 ? 'good' : 'bad';
   return `<span class="${cls}">${pct >= 0 ? '+' : ''}${pct.toFixed(0)}%</span>`;
 }
 function fmtDelta(pct) {
-  if (pct == null) return '<span class="bad">n/a</span>';
+  if (pct == null) return `<span class="bad">${t('n/a')}</span>`;
   const cls = pct >= 0 ? 'good' : 'bad';
   const sign = pct >= 0 ? '+' : '';
   return `<span class="${cls}">${sign}${pct.toFixed(1)}%</span>`;
@@ -56,7 +177,7 @@ function noteOverrideHtml(text) {
     return block.split(/(?<=[.!?])\s+(?=[A-Z(])/).map(s => s.trim()).filter(Boolean)
       .map(s => `<p>${markedToHtml(s)}</p>`);
   }).join('');
-  return `<div class="edited-note-tag">Edited note</div>${html}`;
+  return `<div class="edited-note-tag">${t('Edited note')}</div>${html}`;
 }
 
 // ---------------------------------------------------------------------
@@ -314,7 +435,7 @@ function ytdQtySentence(yearLabel, cur, prev) {
   return s;
 }
 function trendNarrativeHtml(nar, franchiseLabel) {
-  if (!nar) return '<p>Not enough data to generate a summary for this selection.</p>';
+  if (!nar) return `<p>${t('Not enough data to generate a summary for this selection.')}</p>`;
   const fLabel = franchiseLabel === 'all' ? 'the selected franchises' : franchiseLabel;
   const monthLabel = `${nar.monthName} ${nar.year}`;
   const notice = nar.isPartialMonth
@@ -328,7 +449,7 @@ function trendNarrativeHtml(nar, franchiseLabel) {
 }
 
 function categoryNarrativeSingle(data, dimLabel) {
-  if (!data.length) return '<p>No data available for this selection.</p>';
+  if (!data.length) return `<p>${t('No data available for this selection.')}</p>`;
   const total = data.reduce((s, d) => s + (d.sales || 0), 0);
   const top = data.reduce((a, b) => (b.sales || 0) > (a.sales || 0) ? b : a);
   let s = `<b>${top.label}</b> leads ${dimLabel} with sales of <b>${fmtM(top.sales)}</b>, accounting for <b>${fmtShare(top.sales, total)}</b> of the total shown`;
@@ -342,7 +463,7 @@ function categoryNarrativeSingle(data, dimLabel) {
 // Target / This Year / Last Year variant — used once a single month has a
 // prior-year figure to compare against (see hasPrevYear in load()).
 function categoryNarrativeSingle3(data, dimLabel, isPartialMonth) {
-  if (!data.length) return '<p>No data available for this selection.</p>';
+  if (!data.length) return `<p>${t('No data available for this selection.')}</p>`;
   const total = data.reduce((s, d) => s + (d.sales || 0), 0);
   const top = data.reduce((a, b) => (b.sales || 0) > (a.sales || 0) ? b : a);
   const achv = top.budget > 0 ? (top.sales / top.budget * 100) : null;
@@ -362,7 +483,7 @@ function categoryNarrativeSingle3(data, dimLabel, isPartialMonth) {
   return `<p>${s}</p>`;
 }
 function categoryNarrativeCompare(data, dimLabel) {
-  if (!data.length) return '<p>No data available for this selection.</p>';
+  if (!data.length) return `<p>${t('No data available for this selection.')}</p>`;
   const top25 = data.reduce((a, b) => (b.y2025 || 0) > (a.y2025 || 0) ? b : a);
   let s = `<b>${top25.label}</b> leads ${dimLabel} in 2025 with sales of <b>${fmtM(top25.y2025)}</b>`;
   const withYoy = data.map(d => ({ ...d, yoy: fmtYoy(d.y2024, d.y2025) })).filter(d => d.yoy != null);
@@ -375,14 +496,14 @@ function categoryNarrativeCompare(data, dimLabel) {
 }
 
 function productNarrativeSingle(data) {
-  if (!data.length) return '<p>No data available for this selection.</p>';
+  if (!data.length) return `<p>${t('No data available for this selection.')}</p>`;
   const total = data.reduce((s, d) => s + (d.value || 0), 0);
   const top = data[0];
   const s = `<b>${top.label}</b> is the top-selling product group at <b>${fmtM(top.value)}</b>, representing <b>${fmtShare(top.value, total)}</b> of sales across the top ${data.length} groups shown ${cite('Top product groups by sales amount')}.`;
   return `<p>${s}</p>`;
 }
 function productNarrativeSingle3(data, isPartialMonth) {
-  if (!data.length) return '<p>No data available for this selection.</p>';
+  if (!data.length) return `<p>${t('No data available for this selection.')}</p>`;
   const total = data.reduce((s, d) => s + (d.value || 0), 0);
   const top = data[0];
   const achv = top.budget > 0 ? (top.value / top.budget * 100) : null;
@@ -398,7 +519,7 @@ function productNarrativeSingle3(data, isPartialMonth) {
   return `<p>${s}</p>`;
 }
 function productNarrativeCompare(data) {
-  if (!data.length) return '<p>No data available for this selection.</p>';
+  if (!data.length) return `<p>${t('No data available for this selection.')}</p>`;
   const top = data[0];
   const yoy = fmtYoy(top.y2024, top.y2025);
   const yoyPhrase = yoy == null ? 'with no comparable 2024 figure' : `${yoyWord(yoy, 'up', 'down')} <b>${Math.abs(yoy).toFixed(0)}%</b> year-over-year`;
@@ -407,7 +528,7 @@ function productNarrativeCompare(data) {
 }
 
 function salesmanNarrativeSingle(data) {
-  if (!data.length) return '<p>No data available for this selection.</p>';
+  if (!data.length) return `<p>${t('No data available for this selection.')}</p>`;
   const top = data.reduce((a, b) => (b.sales || 0) > (a.sales || 0) ? b : a);
   const achvs = data.map(s => s.budget > 0 ? s.sales / s.budget * 100 : null).filter(v => v != null);
   const avg = achvs.length ? achvs.reduce((a, b) => a + b, 0) / achvs.length : null;
@@ -417,7 +538,7 @@ function salesmanNarrativeSingle(data) {
   return `<p>${s}</p>`;
 }
 function salesmanNarrativeSingle3(data, isPartialMonth) {
-  if (!data.length) return '<p>No data available for this selection.</p>';
+  if (!data.length) return `<p>${t('No data available for this selection.')}</p>`;
   const top = data.reduce((a, b) => (b.sales || 0) > (a.sales || 0) ? b : a);
   const achvs = data.map(s => s.budget > 0 ? s.sales / s.budget * 100 : null).filter(v => v != null);
   const avgAchv = achvs.length ? achvs.reduce((a, b) => a + b, 0) / achvs.length : null;
@@ -432,7 +553,7 @@ function salesmanNarrativeSingle3(data, isPartialMonth) {
   return `<p>${s}</p>`;
 }
 function salesmanNarrativeCompare(data) {
-  if (!data.length) return '<p>No data available for this selection.</p>';
+  if (!data.length) return `<p>${t('No data available for this selection.')}</p>`;
   const top = data.reduce((a, b) => (b.y2025 || 0) > (a.y2025 || 0) ? b : a);
   const yoys = data.map(s => fmtYoy(s.y2024, s.y2025)).filter(v => v != null);
   const avg = yoys.length ? yoys.reduce((a, b) => a + b, 0) / yoys.length : null;
@@ -455,39 +576,39 @@ function renderKpisSingle(el, k, monthInfo) {
     // the exact month/year it covers so the tile is unambiguous on its own.
     const { monthName, year } = monthInfo;
     tiles.push(
-      { label: 'Target', value: fmtM(k.budget), sub: `${monthName} ${year}${partial ? ' · full month' : ''}` },
-      { label: 'This Year', value: fmtM(k.sales), sub: `${monthName} ${year}${partial ? ' · month-to-date' : ''}` },
+      { label: t('Target'), value: fmtM(k.budget), sub: `${monthName} ${year}${partial ? ' · ' + t('full month') : ''}` },
+      { label: t('This Year'), value: fmtM(k.sales), sub: `${monthName} ${year}${partial ? ' · ' + t('month-to-date') : ''}` },
     );
     if (k.prevYearSales != null) {
       tiles.push({
-        label: 'Last Year',
+        label: t('Last Year'),
         value: fmtM(k.prevYearSales),
-        sub: `${monthName} ${year - 1}${partial ? ' · same days' : ''} — ${yoyHtml(fmtYoy(k.prevYearSales, k.sales))}`,
+        sub: `${monthName} ${year - 1}${partial ? ' · ' + t('same days') : ''} — ${yoyHtml(fmtYoy(k.prevYearSales, k.sales))}`,
       });
     }
   } else {
     tiles.push(
-      { label: 'Total Sales Amount', value: fmtM(k.sales), sub: null },
-      { label: 'Total Budget Amount', value: fmtM(k.budget), sub: null },
+      { label: t('Total Sales Amount'), value: fmtM(k.sales), sub: null },
+      { label: t('Total Budget Amount'), value: fmtM(k.budget), sub: null },
     );
   }
 
   tiles.push(
-    { label: 'Achievement', value: achv == null ? '–' : achv.toFixed(1) + '%', sub: achv == null ? 'no budget data' : ('<span class="' + (achv >= 100 ? 'good' : 'bad') + '">vs ' + (partial ? 'full-month budget' : 'budget') + '</span>') },
-    { label: 'Total Qty Sold', value: fmt(k.qty), sub: 'budget ' + fmt(k.budgetQty) },
-    { label: 'Active Customers', value: fmt(k.customers), sub: 'distinct bi_cstno' },
+    { label: t('Achievement'), value: achv == null ? '–' : achv.toFixed(1) + '%', sub: achv == null ? t('no budget data') : ('<span class="' + (achv >= 100 ? 'good' : 'bad') + '">' + t('vs') + ' ' + (partial ? t('full-month budget') : t('budget')) + '</span>') },
+    { label: t('Total Qty Sold'), value: fmt(k.qty), sub: t('budget') + ' ' + fmt(k.budgetQty) },
+    { label: t('Active Customers'), value: fmt(k.customers), sub: t('distinct') + ' bi_cstno' },
   );
 
   el.classList.remove('compare');
   el.classList.toggle('six', tiles.length === 6);
   const notice = partial
-    ? `<div class="pbi-kpi-notice">Data is only synced through <b>${new Date(k.asOfDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</b> for this month — sales figures above are month-to-date, while the budget is the full-month target.</div>`
+    ? `<div class="pbi-kpi-notice">${t('Data is only synced through')} <b>${new Date(k.asOfDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</b> ${t('for this month — sales figures above are month-to-date, while the budget is the full-month target.')}</div>`
     : '';
-  el.innerHTML = notice + tiles.map(t => `
+  el.innerHTML = notice + tiles.map(tile => `
     <div class="pbi-kpi">
-      <div class="label">${t.label}</div>
-      <div class="value">${t.value}</div>
-      ${t.sub ? `<div class="sub">${t.sub}</div>` : ''}
+      <div class="label">${tile.label}</div>
+      <div class="value">${tile.value}</div>
+      ${tile.sub ? `<div class="sub">${tile.sub}</div>` : ''}
     </div>
   `).join('');
 }
@@ -495,32 +616,32 @@ function renderKpisCompare(el, k24, k25) {
   const delta = (a, b) => (a > 0) ? ((b - a) / a * 100) : null;
   const achv25 = k25.budget > 0 ? (k25.sales / k25.budget * 100) : null;
   const tiles = [
-    { label: 'Sales Amount (2025)', value: fmtM(k25.sales), sub: fmtDelta(delta(k24.sales, k25.sales)) + ' vs 2024' },
-    { label: 'Budget Amount (2025)', value: fmtM(k25.budget), sub: fmtDelta(delta(k24.budget, k25.budget)) + ' vs 2024' },
-    { label: 'Achievement (2025)', value: achv25 == null ? '–' : achv25.toFixed(1) + '%', sub: '<span class="' + (achv25 >= 100 ? 'good' : 'bad') + '">vs 2025 budget</span>' },
-    { label: 'Active Customers (2025)', value: fmt(k25.customers), sub: fmtDelta(delta(k24.customers, k25.customers)) + ' vs 2024' },
+    { label: t('Sales Amount (2025)'), value: fmtM(k25.sales), sub: fmtDelta(delta(k24.sales, k25.sales)) + ' ' + t('vs 2024') },
+    { label: t('Budget Amount (2025)'), value: fmtM(k25.budget), sub: fmtDelta(delta(k24.budget, k25.budget)) + ' ' + t('vs 2024') },
+    { label: t('Achievement (2025)'), value: achv25 == null ? '–' : achv25.toFixed(1) + '%', sub: '<span class="' + (achv25 >= 100 ? 'good' : 'bad') + '">' + t('vs 2025 budget') + '</span>' },
+    { label: t('Active Customers (2025)'), value: fmt(k25.customers), sub: fmtDelta(delta(k24.customers, k25.customers)) + ' ' + t('vs 2024') },
   ];
   el.classList.add('compare');
-  el.innerHTML = tiles.map(t => `
+  el.innerHTML = tiles.map(tile => `
     <div class="pbi-kpi">
-      <div class="label">${t.label}</div>
-      <div class="value">${t.value}</div>
-      <div class="sub">${t.sub}</div>
+      <div class="label">${tile.label}</div>
+      <div class="value">${tile.value}</div>
+      <div class="sub">${tile.sub}</div>
     </div>
   `).join('');
 }
 
 function renderSalesmanSingleTable(el, data, monthMode, hasPrevYear, isPartialMonth) {
   const maxVal = Math.max(1, ...data.flatMap(s => [s.sales || 0, s.budget || 0]));
-  const salesLabel = monthMode ? (isPartialMonth ? 'This Year (MTD)' : 'This Year') : 'Sales Amount';
-  const budgetLabel = monthMode ? (isPartialMonth ? 'Target (Full Month)' : 'Target') : 'Budget Amount';
-  const lastYearLabel = isPartialMonth ? 'Last Year (Same Days)' : 'Last Year';
+  const salesLabel = monthMode ? (isPartialMonth ? t('This Year (MTD)') : t('This Year')) : t('Sales Amount');
+  const budgetLabel = monthMode ? (isPartialMonth ? t('Target (Full Month)') : t('Target')) : t('Budget Amount');
+  const lastYearLabel = isPartialMonth ? t('Last Year (Same Days)') : t('Last Year');
   el.innerHTML = `
     <table class="data-table">
       <thead><tr>
-        <th>Salesman</th><th class="num">${budgetLabel}</th><th class="num">${salesLabel}</th>
-        ${hasPrevYear ? `<th class="num">${lastYearLabel}</th><th class="num">YoY %</th>` : '<th class="num">Achv %</th>'}
-        <th style="width:160px">Sales</th>
+        <th>${t('Salesman')}</th><th class="num">${budgetLabel}</th><th class="num">${salesLabel}</th>
+        ${hasPrevYear ? `<th class="num">${lastYearLabel}</th><th class="num">${t('YoY %')}</th>` : `<th class="num">${t('Achv %')}</th>`}
+        <th style="width:160px">${t('Sales')}</th>
       </tr></thead>
       <tbody>
         ${data.map(s => {
@@ -544,7 +665,7 @@ function renderSalesmanCompareTable(el, data) {
   el.innerHTML = `
     <table class="data-table">
       <thead><tr>
-        <th>Salesman</th><th class="num">Budget 2025</th><th class="num">Sales 2025</th><th class="num">Sales 2024</th><th class="num">YoY %</th>
+        <th>${t('Salesman')}</th><th class="num">${t('Budget 2025')}</th><th class="num">${t('Sales 2025')}</th><th class="num">${t('Sales 2024')}</th><th class="num">${t('YoY %')}</th>
       </tr></thead>
       <tbody>
         ${data.map(s => {
@@ -605,6 +726,9 @@ export class PbiSalesDashboard extends Component {
 
   setup() {
     this.rpc = useService("rpc");
+    this.t = t;
+    this.tDate = tDate;
+    this.isArabicUI = isArabicUI;
     this.yearOptions = YEAR_OPTIONS;
     this.franchiseOptions = FRANCHISE_OPTIONS;
     this.customerTypeOptions = CUSTOMER_TYPE_OPTIONS;
@@ -684,7 +808,7 @@ export class PbiSalesDashboard extends Component {
       const json = await response.json();
       if (json.error) { this.state.error = json.error; return; }
       if (!Object.keys(json.notes).length) {
-        this.state.error = "No edited narrative notes were found — the file's speaker notes matched the dashboard's current text.";
+        this.state.error = t("No edited narrative notes were found — the file's speaker notes matched the dashboard's current text.");
         return;
       }
       this.state.error = '';
@@ -698,7 +822,7 @@ export class PbiSalesDashboard extends Component {
       this.resetDrill();
       await this.load();
     } catch (e) {
-      this.state.error = 'Failed to import notes — ' + e.message;
+      this.state.error = t('Failed to import notes — ') + e.message;
     } finally {
       this.state.loading = false;
     }
@@ -738,7 +862,7 @@ export class PbiSalesDashboard extends Component {
   }
 
   renderRegionBreadcrumb() {
-    const parts = [{ label: 'All Regions', level: 'region' }];
+    const parts = [{ label: t('All Regions'), level: 'region' }];
     if (this.state.drillRegion) parts.push({ label: this.state.drillRegion, level: 'city' });
     if (this.state.drillCity) parts.push({ label: this.state.drillCity, level: 'salesman' });
     const el = this.refs.regionBreadcrumb.el;
@@ -773,7 +897,7 @@ export class PbiSalesDashboard extends Component {
     if (level === 'region') {
       data = this.lastJson.region;
       dimLabel = 'regions';
-      levelWord = 'Region';
+      levelWord = t('Region');
     } else if (level === 'city') {
       const res = await this.rpc('/pbi_dashboards/sales/region_drill', {
         year: this.state.year, franchise: this.state.franchise,
@@ -783,7 +907,7 @@ export class PbiSalesDashboard extends Component {
       if (res.error) { this.state.error = res.error; return; }
       data = res.data;
       dimLabel = `cities in ${this.state.drillRegion}`;
-      levelWord = 'City';
+      levelWord = t('City');
       suffix = ` — ${this.state.drillRegion}`;
     } else {
       const res = await this.rpc('/pbi_dashboards/sales/region_drill', {
@@ -794,7 +918,7 @@ export class PbiSalesDashboard extends Component {
       if (res.error) { this.state.error = res.error; return; }
       data = res.data;
       dimLabel = `salesmen in ${this.state.drillRegion} / ${this.state.drillCity}`;
-      levelWord = 'Salesman';
+      levelWord = t('Salesman');
       suffix = ` — ${this.state.drillRegion} / ${this.state.drillCity}`;
     }
 
@@ -804,23 +928,23 @@ export class PbiSalesDashboard extends Component {
     // the source data — the backend instead estimates one by splitting the
     // parent region's real target across cities by sales share.
     const budgetEstimated = level === 'city';
-    const targetLabel = budgetEstimated ? 'Estimated Target' : (isPartialMonth ? 'Target (Full Month)' : 'Target');
-    const thisYearLabel = isPartialMonth ? 'This Year (MTD)' : 'This Year';
-    const lastYearLabel = isPartialMonth ? 'Last Year (Same Days)' : 'Last Year';
-    const estimatedNote = ' (target estimated: region budget split by city sales share)';
+    const targetLabel = budgetEstimated ? t('Estimated Target') : (isPartialMonth ? t('Target (Full Month)') : t('Target'));
+    const thisYearLabel = isPartialMonth ? t('This Year (MTD)') : t('This Year');
+    const lastYearLabel = isPartialMonth ? t('Last Year (Same Days)') : t('Last Year');
+    const estimatedNote = ' ' + t('(target estimated: region budget split by city sales share)');
     const suffixParts = [];
     if (suffix) suffixParts.push(suffix.replace(/^ — /, ''));
     if (!cmpMode && this.periodLabel) suffixParts.push(this.periodLabel);
     const combinedSuffix = suffixParts.length ? ` — ${suffixParts.join(', ')}` : '';
     r.regionTitle.el.textContent = cmpMode
-      ? `Sales by ${levelWord} — 2024 vs 2025${suffix}`
-      : `Sales by ${levelWord}${combinedSuffix}`;
-    r.regionSubtitle.el.textContent = (level === 'region' ? 'Click a bar to drill down' : 'Click a bar to drill down further')
+      ? `${t('Sales by')} ${levelWord} — 2024 ${t('vs')} 2025${suffix}`
+      : `${t('Sales by')} ${levelWord}${combinedSuffix}`;
+    r.regionSubtitle.el.textContent = (level === 'region' ? t('Click a bar to drill down') : t('Click a bar to drill down further'))
       + (cmpMode
-          ? (budgetEstimated ? ', with estimated 2025 target' : ', with 2025 budget')
+          ? (budgetEstimated ? ', ' + t('with estimated 2025 target') : ', ' + t('with 2025 budget'))
           : hasPrevYear
-            ? (isPartialMonth ? ', target (full month) vs this year (MTD) vs last year' : ', target vs this year vs last year') + (budgetEstimated ? estimatedNote : '')
-            : ', amount vs budget' + (budgetEstimated ? estimatedNote : ''));
+            ? (isPartialMonth ? ', ' + t('target (full month) vs this year (MTD) vs last year') : ', ' + t('target vs this year vs last year')) + (budgetEstimated ? estimatedNote : '')
+            : ', ' + t('amount vs budget') + (budgetEstimated ? estimatedNote : ''));
 
     this.renderRegionBreadcrumb();
 
@@ -835,17 +959,17 @@ export class PbiSalesDashboard extends Component {
     // drilled into a city or salesman, fall back to the auto-generated text.
     const regionOverride = level === 'region' ? (this.lastJson.notes || {}).region : null;
     if (cmpMode) {
-      const cmpTargetLabel = budgetEstimated ? '2025 Est. Target' : '2025 Budget';
-      r.regionLegend.el.innerHTML = legendHtml([cmpTargetLabel, '2025 Sales', '2024 Sales'], [c3, c2, c1]);
-      chartFn(r.regionChart.el, data, ['budget2025', 'y2025', 'y2024'], [c3, c2, c1], [cmpTargetLabel, '2025 Sales', '2024 Sales'], chartOpts);
+      const cmpTargetLabel = budgetEstimated ? t('2025 Est. Target') : t('2025 Budget');
+      r.regionLegend.el.innerHTML = legendHtml([cmpTargetLabel, t('2025 Sales'), t('2024 Sales')], [c3, c2, c1]);
+      chartFn(r.regionChart.el, data, ['budget2025', 'y2025', 'y2024'], [c3, c2, c1], [cmpTargetLabel, t('2025 Sales'), t('2024 Sales')], chartOpts);
       r.regionNotes.el.innerHTML = regionOverride ? noteOverrideHtml(regionOverride) : categoryNarrativeCompare(data, dimLabel);
     } else if (hasPrevYear) {
       r.regionLegend.el.innerHTML = legendHtml([targetLabel, thisYearLabel, lastYearLabel], [c3, c2, c1]);
       chartFn(r.regionChart.el, data, ['budget', 'sales', 'prevYearSales'], [c3, c2, c1], [targetLabel, thisYearLabel, lastYearLabel], chartOpts);
       r.regionNotes.el.innerHTML = regionOverride ? noteOverrideHtml(regionOverride) : categoryNarrativeSingle3(data, dimLabel, isPartialMonth);
     } else {
-      r.regionLegend.el.innerHTML = legendHtml(['Sales', targetLabel], [c1, c2]);
-      chartFn(r.regionChart.el, data, ['sales', 'budget'], [c1, c2], ['Sales', targetLabel], chartOpts);
+      r.regionLegend.el.innerHTML = legendHtml([t('Sales'), targetLabel], [c1, c2]);
+      chartFn(r.regionChart.el, data, ['sales', 'budget'], [c1, c2], [t('Sales'), targetLabel], chartOpts);
       r.regionNotes.el.innerHTML = regionOverride ? noteOverrideHtml(regionOverride) : categoryNarrativeSingle(data, dimLabel);
     }
     this.attachRegionDrillClicks();
@@ -866,64 +990,64 @@ export class PbiSalesDashboard extends Component {
     const r = this.refs;
 
     if (mode === 'compare') {
-      const cmpLabels = ['2025 Budget', '2025 Sales', '2024 Sales'];
+      const cmpLabels = [t('2025 Budget'), t('2025 Sales'), t('2024 Sales')];
       const cmpColors = [c3, c2, c1];
 
-      r.trendTitle.el.textContent = 'Monthly Sales — 2024 vs 2025 (with 2025 Budget)';
-      r.trendSubtitle.el.textContent = 'Sales amount by month';
+      r.trendTitle.el.textContent = t('Monthly Sales — 2024 vs 2025 (with 2025 Budget)');
+      r.trendSubtitle.el.textContent = t('Sales amount by month');
       r.trendLegend.el.innerHTML = legendHtml(cmpLabels, cmpColors);
 
       r.regionLegend.el.innerHTML = legendHtml(cmpLabels, cmpColors);
 
-      r.franchiseTitle.el.textContent = 'Sales by Franchise — 2024 vs 2025';
-      r.franchiseSubtitle.el.textContent = 'Sales amount, with 2025 budget';
+      r.franchiseTitle.el.textContent = t('Sales by Franchise — 2024 vs 2025');
+      r.franchiseSubtitle.el.textContent = t('Sales amount, with 2025 budget');
       r.franchiseLegend.el.innerHTML = legendHtml(cmpLabels, cmpColors);
 
-      r.customerTypeTitle.el.textContent = 'Sales by Customer Type — 2024 vs 2025';
-      r.customerTypeSubtitle.el.textContent = 'Sales amount, with 2025 budget';
+      r.customerTypeTitle.el.textContent = t('Sales by Customer Type — 2024 vs 2025');
+      r.customerTypeSubtitle.el.textContent = t('Sales amount, with 2025 budget');
       r.customerTypeLegend.el.innerHTML = legendHtml(cmpLabels, cmpColors);
 
-      r.productTitle.el.textContent = 'Top Product Groups — 2024 vs 2025';
-      r.productSubtitle.el.textContent = 'Sales amount, top 10, with 2025 budget';
+      r.productTitle.el.textContent = t('Top Product Groups — 2024 vs 2025');
+      r.productSubtitle.el.textContent = t('Sales amount, top 10, with 2025 budget');
       r.productLegend.el.innerHTML = legendHtml(cmpLabels, cmpColors);
 
-      r.salesmanTitle.el.textContent = 'Top 10 Salesmen — 2024 vs 2025';
-      r.salesmanSubtitle.el.textContent = 'Sales amount, with 2025 budget, year-over-year';
+      r.salesmanTitle.el.textContent = t('Top 10 Salesmen — 2024 vs 2025');
+      r.salesmanSubtitle.el.textContent = t('Sales amount, with 2025 budget, year-over-year');
     } else {
       // When the month is still syncing in, tag every "Target"/"This Year"/
       // "Last Year" label with what it actually covers — otherwise a full-
       // month budget dwarfing a few days of actuals reads as a bug rather
       // than the expected month-to-date effect (see the KPI row notice).
-      const targetLabel = isPartialMonth ? 'Target (Full Month)' : 'Target';
-      const thisYearLabel = isPartialMonth ? 'This Year (MTD)' : 'This Year';
-      const lastYearLabel = isPartialMonth ? 'Last Year (Same Days)' : 'Last Year';
-      const dimLabels = hasPrevYear ? [targetLabel, thisYearLabel, lastYearLabel] : ['Sales', 'Budget'];
+      const targetLabel = isPartialMonth ? t('Target (Full Month)') : t('Target');
+      const thisYearLabel = isPartialMonth ? t('This Year (MTD)') : t('This Year');
+      const lastYearLabel = isPartialMonth ? t('Last Year (Same Days)') : t('Last Year');
+      const dimLabels = hasPrevYear ? [targetLabel, thisYearLabel, lastYearLabel] : [t('Sales'), t('Budget')];
       const dimColors = hasPrevYear ? [c3, c2, c1] : [c1, c2];
-      const cmp3 = hasPrevYear ? (isPartialMonth ? ', target (full month) vs this year (MTD) vs last year' : ', vs target and last year') : '';
+      const cmp3 = hasPrevYear ? (isPartialMonth ? ', ' + t('target (full month) vs this year (MTD) vs last year') : ', ' + t('vs target and last year')) : '';
       const suffix = periodLabel ? ` — ${periodLabel}` : '';
 
-      r.trendTitle.el.textContent = 'Monthly Sales vs Budget' + suffix;
-      r.trendSubtitle.el.textContent = `Amount by month${yearLabel ? ', ' + yearLabel : ''}`;
-      r.trendLegend.el.innerHTML = legendHtml(hasPrevYear ? [thisYearLabel, targetLabel, lastYearLabel] : ['Sales Amount', 'Budget Amount'], hasPrevYear ? [c2, c3, c1] : [c1, c2]);
+      r.trendTitle.el.textContent = t('Monthly Sales vs Budget') + suffix;
+      r.trendSubtitle.el.textContent = `${t('Amount by month')}${yearLabel ? ', ' + yearLabel : ''}`;
+      r.trendLegend.el.innerHTML = legendHtml(hasPrevYear ? [thisYearLabel, targetLabel, lastYearLabel] : [t('Sales Amount'), t('Budget Amount')], hasPrevYear ? [c2, c3, c1] : [c1, c2]);
 
       r.regionLegend.el.innerHTML = legendHtml(dimLabels, dimColors);
 
-      r.franchiseTitle.el.textContent = 'Sales by Franchise' + suffix;
-      r.franchiseSubtitle.el.textContent = 'Amount vs budget' + cmp3;
+      r.franchiseTitle.el.textContent = t('Sales by Franchise') + suffix;
+      r.franchiseSubtitle.el.textContent = t('Amount vs budget') + cmp3;
       r.franchiseLegend.el.innerHTML = legendHtml(dimLabels, dimColors);
 
-      r.customerTypeTitle.el.textContent = 'Sales by Customer Type' + suffix;
-      r.customerTypeSubtitle.el.textContent = 'Amount vs budget' + cmp3;
+      r.customerTypeTitle.el.textContent = t('Sales by Customer Type') + suffix;
+      r.customerTypeSubtitle.el.textContent = t('Amount vs budget') + cmp3;
       r.customerTypeLegend.el.innerHTML = legendHtml(dimLabels, dimColors);
 
-      r.productTitle.el.textContent = 'Top Product Groups' + suffix;
-      r.productSubtitle.el.textContent = 'By sales amount, top 10' + cmp3;
+      r.productTitle.el.textContent = t('Top Product Groups') + suffix;
+      r.productSubtitle.el.textContent = t('By sales amount, top 10') + cmp3;
       r.productLegend.el.innerHTML = legendHtml(dimLabels, dimColors);
 
-      r.salesmanTitle.el.textContent = 'Top 10 Salesmen' + suffix;
+      r.salesmanTitle.el.textContent = t('Top 10 Salesmen') + suffix;
       r.salesmanSubtitle.el.textContent = hasPrevYear
-        ? (isPartialMonth ? 'Target (full month) vs this year (MTD) vs last year' : 'Target vs this year vs last year')
-        : 'Sales vs budget, achievement %';
+        ? (isPartialMonth ? t('Target (full month) vs this year (MTD) vs last year') : t('Target vs this year vs last year'))
+        : t('Sales vs budget, achievement %');
     }
   }
 
@@ -983,7 +1107,7 @@ export class PbiSalesDashboard extends Component {
         renderKpisCompare(r.kpiRow.el, json.kpis2024, json.kpis2025);
         const cmpKeys = ['budget2025', 'y2025', 'y2024'];
         const cmpColors = [c3, c2, c1];
-        const cmpLabels = ['2025 Budget', '2025 Sales', '2024 Sales'];
+        const cmpLabels = [t('2025 Budget'), t('2025 Sales'), t('2024 Sales')];
         lineChart(r.trendChart.el, json.trend, cmpKeys, cmpColors, cmpLabels);
         groupedBarChart(r.franchiseChart.el, json.franchise, cmpKeys, cmpColors, cmpLabels);
         groupedBarChart(r.customerTypeChart.el, json.customerType, cmpKeys, cmpColors, cmpLabels);
@@ -995,34 +1119,38 @@ export class PbiSalesDashboard extends Component {
         const monthMatch = MONTH_VALUE_RE.exec(this.state.year);
         let yearLabel;
         if (this.state.year === 'all') yearLabel = '2023–2025';
-        else if (monthMatch) yearLabel = `${monthMatch[1]} — ${MONTH_ABBR[parseInt(monthMatch[2], 10) - 1]} highlighted`;
+        else if (monthMatch) yearLabel = `${monthMatch[1]} — ${tDate(MONTH_ABBR[parseInt(monthMatch[2], 10) - 1])} ${t('highlighted')}`;
         else yearLabel = this.state.year;
         const hasPrevYear = json.kpis.prevYearSales != null;
         const isPartialMonth = !!json.kpis.isPartialMonth;
         const monthInfo = monthMatch
           ? { monthName: MONTH_NAMES_FULL[parseInt(monthMatch[2], 10) - 1], year: parseInt(monthMatch[1], 10) }
           : null;
-        const periodLabel = monthMatch ? `${MONTH_ABBR[parseInt(monthMatch[2], 10) - 1]} ${monthMatch[1]}` : (this.state.year === 'all' ? '2023–2025' : null);
+        // tDate() here converts just the month-abbreviation word, so both
+        // this.periodLabel and the periodLabel argument passed to setMode()
+        // (same value) come out pre-translated for every title/subtitle
+        // that appends it.
+        const periodLabel = monthMatch ? tDate(`${MONTH_ABBR[parseInt(monthMatch[2], 10) - 1]} ${monthMatch[1]}`) : (this.state.year === 'all' ? '2023–2025' : null);
         this.hasPrevYear = hasPrevYear;
         this.isPartialMonth = isPartialMonth;
         this.periodLabel = periodLabel;
         this.setMode('single', yearLabel, hasPrevYear, isPartialMonth, periodLabel);
         renderKpisSingle(r.kpiRow.el, json.kpis, monthInfo);
         const trendData = this.state.year === 'all' ? json.monthly
-          : json.monthly.map(d => ({ ...d, label: MONTH_ABBR[parseInt(d.label.split('-')[1], 10) - 1] }));
+          : json.monthly.map(d => ({ ...d, label: tDate(MONTH_ABBR[parseInt(d.label.split('-')[1], 10) - 1]) }));
         const highlightIndex = monthMatch
-          ? trendData.findIndex(d => d.label === MONTH_ABBR[parseInt(monthMatch[2], 10) - 1])
+          ? trendData.findIndex(d => d.label === tDate(MONTH_ABBR[parseInt(monthMatch[2], 10) - 1]))
           : null;
-        const targetLabel = isPartialMonth ? 'Target (Full Month)' : 'Target';
-        const thisYearLabel = isPartialMonth ? 'This Year (MTD)' : 'This Year';
-        const lastYearLabel = isPartialMonth ? 'Last Year (Same Days)' : 'Last Year';
+        const targetLabel = isPartialMonth ? t('Target (Full Month)') : t('Target');
+        const thisYearLabel = isPartialMonth ? t('This Year (MTD)') : t('This Year');
+        const lastYearLabel = isPartialMonth ? t('Last Year (Same Days)') : t('Last Year');
         const dimKeys = hasPrevYear ? ['budget', 'sales', 'prevYearSales'] : ['sales', 'budget'];
         const dimColors = hasPrevYear ? [c3, c2, c1] : [c1, c2];
-        const dimLabels = hasPrevYear ? [targetLabel, thisYearLabel, lastYearLabel] : ['Sales', 'Budget'];
+        const dimLabels = hasPrevYear ? [targetLabel, thisYearLabel, lastYearLabel] : [t('Sales'), t('Budget')];
         const productKeys = hasPrevYear ? ['budget', 'value', 'prevYearSales'] : ['value', 'budget'];
         const trendKeys = hasPrevYear ? ['sales', 'budget', 'prevYearSales'] : ['sales', 'budget'];
         const trendColors = hasPrevYear ? [c2, c3, c1] : [c1, c2];
-        const trendLabels = hasPrevYear ? [thisYearLabel, targetLabel, lastYearLabel] : ['Sales', 'Budget'];
+        const trendLabels = hasPrevYear ? [thisYearLabel, targetLabel, lastYearLabel] : [t('Sales'), t('Budget')];
         lineChart(r.trendChart.el, trendData, trendKeys, trendColors, trendLabels, { highlightIndex });
         groupedBarChart(r.franchiseChart.el, json.franchise, dimKeys, dimColors, dimLabels);
         groupedBarChart(r.customerTypeChart.el, json.customerType, dimKeys, dimColors, dimLabels);
@@ -1034,7 +1162,7 @@ export class PbiSalesDashboard extends Component {
 
       await this.updateRegionSection();
     } catch (e) {
-      this.state.error = 'Failed to load dashboard data — ' + e.message;
+      this.state.error = t('Failed to load dashboard data — ') + e.message;
     } finally {
       this.state.loading = false;
     }

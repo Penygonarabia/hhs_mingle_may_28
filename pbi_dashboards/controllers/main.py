@@ -84,29 +84,44 @@ def _pptx_marked_text(plain_text):
     return '\n'.join(lines)
 
 
-def _pptx_write_notes(slide, plain_text):
-    tf = slide.notes_slide.notes_text_frame
-    tf.clear()
+def _pptx_fill_marked_text(text_frame, plain_text, heading_size=Pt(14), body_size=None):
+    """Shared renderer for a **bold**/##heading## marked narrative into any
+    pptx text frame — PowerPoint's hidden Notes pane (_pptx_write_notes) or
+    a visible on-slide textbox (the sales-mail dashboards' notes sidebar,
+    mirroring the web page's `.narrative` column) both go through this."""
+    text_frame.clear()
     for i, line in enumerate(_pptx_marked_text(plain_text).split('\n')):
-        p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+        p = text_frame.paragraphs[0] if i == 0 else text_frame.add_paragraph()
         p.space_after = Pt(10)
         heading_m = re.fullmatch(r'##(.*)##', line)
         if heading_m:
             run = p.add_run()
             run.text = heading_m.group(1)
             run.font.bold = True
-            run.font.size = Pt(14)
+            run.font.size = heading_size
             continue
         pos = 0
         for m in PPTX_NOTES_BOLD_RUN_RE.finditer(line):
             if m.start() > pos:
-                p.add_run().text = line[pos:m.start()]
+                r = p.add_run()
+                r.text = line[pos:m.start()]
+                if body_size:
+                    r.font.size = body_size
             run = p.add_run()
             run.text = m.group(1)
             run.font.bold = True
+            if body_size:
+                run.font.size = body_size
             pos = m.end()
         if pos < len(line):
-            p.add_run().text = line[pos:]
+            r = p.add_run()
+            r.text = line[pos:]
+            if body_size:
+                r.font.size = body_size
+
+
+def _pptx_write_notes(slide, plain_text):
+    _pptx_fill_marked_text(slide.notes_slide.notes_text_frame, plain_text)
 
 
 def _pptx_read_notes_marked(text_frame):

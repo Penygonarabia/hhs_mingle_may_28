@@ -117,6 +117,13 @@ class DashboardRightsMatrix(models.TransientModel):
         default="",
         help="Search by Menu or Dashboard Name (case-insensitive substring).",
     )
+    access_status = fields.Char(
+        string="Dashboards Granted",
+        compute="_compute_access_status",
+        help="Live '<granted> / <total>' count across every loaded dashboard "
+             "row, for the smart button — a quick glance without opening "
+             "every group.",
+    )
 
     # ----- Users tab fields --------------------------------------------
     user_list_ids = fields.One2many(
@@ -144,6 +151,44 @@ class DashboardRightsMatrix(models.TransientModel):
         Rights = self.env["dashboard.rights"].sudo()
         for rec in self:
             rec.is_user_admin = Rights._is_admin_user(rec.user_id) if rec.user_id else False
+
+    @api.depends("line_ids.has_access", "line_ids.is_group", "line_ids.dashboard_id")
+    def _compute_access_status(self):
+        # Counts dashboard.rights-backed rows ONLY (dashboard_id set), not
+        # the Quick Access/Configuration menu_id rows also in line_ids —
+        # matching exactly what action_view_rights_summary's drill-down
+        # (res_model dashboard.rights) shows, so the badge and the list it
+        # opens always agree.
+        for rec in self:
+            children = rec.line_ids.filtered(lambda l: not l.is_group and l.dashboard_id)
+            granted = sum(1 for c in children if c.has_access)
+            rec.access_status = "%d / %d" % (granted, len(children))
+
+    # ------------------------------------------------------------------
+    # Smart button: read-only drill-down into everything this user has
+    # ------------------------------------------------------------------
+    def action_view_rights_summary(self):
+        self.ensure_one()
+        if not self.user_id:
+            raise ValidationError(_("Please select a User first."))
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Dashboard Rights — %s") % self.user_id.name,
+            "res_model": "dashboard.rights",
+            "view_mode": "tree,form",
+            "views": [
+                [self.env.ref("dashboard_rights.view_dashboard_rights_summary_list").id, "tree"],
+                [self.env.ref("dashboard_rights.view_dashboard_rights_form").id, "form"],
+            ],
+            "domain": [("user_id", "=", self.user_id.id)],
+            "search_view_id": [self.env.ref("dashboard_rights.view_dashboard_rights_search").id, "search"],
+            # Default to "Granted" only — a quick check of what the user CAN
+            # see, not the full grid including every revoked row too. The
+            # existing filter_granted filter (view_dashboard_rights_search)
+            # is still there to switch off.
+            "context": {"search_default_filter_granted": 1},
+            "target": "current",
+        }
 
     # ------------------------------------------------------------------
     # Save = the single commit point
@@ -433,6 +478,12 @@ class DashboardRightsMatrix(models.TransientModel):
                     "is_user_admin": is_admin,
                 })
 
+        # NB: Controlled Modules (general, non-dashboard business apps) are
+        # deliberately NOT injected here. This tab stays dashboard-only —
+        # KS boards, Quick Access, Configuration. Their per-user menu rights
+        # are managed on a separate page/model, access.rights.module.matrix
+        # ("Module Rights Setup"), so the two never mix in one list.
+
         if vals_list:
             Line.with_context(skip_propagation=True).create(vals_list)
 
@@ -660,16 +711,15 @@ class DashboardRightsMatrixLine(models.TransientModel):
         return res
 
     def _propagate_to_dashboard_rights(self):
-        Rights = self.env["dashboard.rights"].sudo()
         RightsMenu = self.env["dashboard.rights.menu"].sudo()
-        to_create = []
         menu_to_create = []
         for rec in self:
             if rec.is_group or not rec.matrix_id.user_id:
                 continue
             user = rec.matrix_id.user_id
             val = bool(rec.has_access)
-            # Menu-item row -> dashboard.rights.menu.
+            # Menu-item row (Quick Access / Configuration sub-item) ->
+            # dashboard.rights.menu only; these have no board counterpart.
             if rec.menu_id:
                 existing = RightsMenu.search(
                     [("user_id", "=", user.id),
@@ -686,25 +736,14 @@ class DashboardRightsMatrixLine(models.TransientModel):
                         "has_access": val,
                     })
                 continue
-            # Dashboard board row -> dashboard.rights.
+            # Dashboard board row -> dashboard.rights AND its leaf menu's
+            # dashboard.rights.menu row, kept identical (see
+            # dashboard.rights.menu._dr_sync_board_and_menu) since Module
+            # Rights Setup now also lists My Dashboard and would otherwise
+            # disagree with this page about the board's visibility.
             if not rec.dashboard_id:
                 continue
-            existing = Rights.search(
-                [("user_id", "=", user.id),
-                 ("dashboard_id", "=", rec.dashboard_id.id)],
-                limit=1,
-            )
-            if existing:
-                if existing.has_access != val:
-                    existing.has_access = val
-            else:
-                to_create.append({
-                    "user_id": user.id,
-                    "dashboard_id": rec.dashboard_id.id,
-                    "has_access": val,
-                })
-        if to_create:
-            Rights.create(to_create)
+            RightsMenu._dr_sync_board_and_menu(user, val, dashboard=rec.dashboard_id)
         if menu_to_create:
             RightsMenu.create(menu_to_create)
 

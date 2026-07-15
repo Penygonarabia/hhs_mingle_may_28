@@ -3,6 +3,57 @@
 import { Component, useState, useRef, onMounted, onWillUnmount } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
+import { t, addLabels, isArabicUI } from "./pbi_i18n";
+
+// EN -> AR for every static-chrome string this dashboard renders: the page
+// heading, the drill-chain description, filter labels, report card
+// headings, drill-level names (shown in the "· <level> level" subtitle
+// suffix), the transaction-list column headers, and the empty-state
+// messages. Never includes DB-row values (region/city/product/customer
+// names or the drilled breadcrumb values) — those already come correctly
+// localized from v_pbi_sales_analysis server side. Reuses shared chrome
+// keys (Period/All Regions/Source/PBI Dashboards/live from/...) already
+// registered by pbi_i18n.js / service_dashboard.js instead of redefining
+// them here.
+addLabels({
+  // header
+  "Sales Analysis": "تحليل المبيعات",
+  "Region -> City -> Main -> Main Sub -> Prod Group -> Product Sub Group -> Customer -> Transactions":
+    "المنطقة -> المدينة -> الرئيسي -> الفرعي الرئيسي -> مجموعة المنتج -> المجموعة الفرعية للمنتج -> العميل -> المعاملات",
+  // filters
+  "Date Range": "نطاق التاريخ",
+  "Range": "النطاق",
+  "to": "إلى",
+  "This Quarter": "هذا الربع",
+  "Last Quarter": "الربع الماضي",
+  "Custom Date": "تاريخ مخصص",
+  // report card headings
+  "Report 1 — Sales by Amount": "التقرير 1 — المبيعات حسب المبلغ",
+  "Report 2 — Sales by Qty": "التقرير 2 — المبيعات حسب الكمية",
+  // subtitle / value labels
+  "Total Amount": "إجمالي المبلغ",
+  "Total Qty": "إجمالي الكمية",
+  "Amount": "المبلغ",
+  "Qty": "الكمية",
+  "level": "المستوى",
+  "click a bar or label to drill in": "انقر على شريط أو تسمية للتعمق",
+  // drill-level names (LEVEL_LABELS — shown in the subtitle, e.g. "· City level")
+  "City": "المدينة",
+  "Main": "الرئيسي",
+  "Main Sub": "الفرعي الرئيسي",
+  "Prod Group": "مجموعة المنتج",
+  "Product Sub Group": "المجموعة الفرعية للمنتج",
+  "Customer": "العميل",
+  "Transaction List": "قائمة المعاملات",
+  // transaction table
+  "Transaction No": "رقم المعاملة",
+  "Date": "التاريخ",
+  "Warehouse": "المستودع",
+  "Part": "الصنف",
+  // empty states
+  "No transactions for this selection.": "لا توجد معاملات لهذا التحديد.",
+  "No data for this selection.": "لا توجد بيانات لهذا التحديد.",
+});
 
 // ---------------------------------------------------------------------
 // formatting/tooltip helpers — trimmed copy of the pattern in
@@ -64,14 +115,14 @@ function hBarChart(el, data, color, valueLabel) {
 
 function renderTransactionTable(el, rows) {
   if (!rows.length) {
-    el.innerHTML = `<p class="subtitle">No transactions for this selection.</p>`;
+    el.innerHTML = `<p class="subtitle">${t('No transactions for this selection.')}</p>`;
     return;
   }
   el.innerHTML = `
     <table class="data-table">
       <thead><tr>
-        <th>Transaction No</th><th>Date</th><th>Warehouse</th><th>Part</th>
-        <th class="num">Qty</th><th class="num">Amount</th>
+        <th>${t('Transaction No')}</th><th>${t('Date')}</th><th>${t('Warehouse')}</th><th>${t('Part')}</th>
+        <th class="num">${t('Qty')}</th><th class="num">${t('Amount')}</th>
       </tr></thead>
       <tbody>
         ${rows.map(r => `<tr>
@@ -122,6 +173,8 @@ export class PbiSalesAnalysisDashboard extends Component {
 
   setup() {
     this.rpc = useService("rpc");
+    this.t = t;
+    this.isArabicUI = isArabicUI;
     this.periodOptions = PERIOD_OPTIONS;
     this.reportConfigs = REPORT_CONFIGS;
     this.levelLabels = LEVEL_LABELS;
@@ -167,8 +220,8 @@ export class PbiSalesAnalysisDashboard extends Component {
     const cfg = REPORT_CONFIGS.find(c => c.key === key);
     const total = (this.reportData[key] && this.reportData[key].total) || 0;
     const level = this.state.reports[key].level;
-    this.refs[key].subtitle.el.textContent = `Total ${cfg.valueLabel}: ${fmt(total)} · ${LEVEL_LABELS[level]} level`
-      + (level === 'transactions' ? '' : ' · click a bar or label to drill in');
+    this.refs[key].subtitle.el.textContent = `${t('Total')} ${t(cfg.valueLabel)}: ${fmt(total)} · ${t(LEVEL_LABELS[level])} ${t('level')}`
+      + (level === 'transactions' ? '' : ` · ${t('click a bar or label to drill in')}`);
   }
 
   seriesColor() {
@@ -260,7 +313,7 @@ export class PbiSalesAnalysisDashboard extends Component {
   renderBreadcrumb(key) {
     const rep = this.state.reports[key];
     const el = this.refs[key].breadcrumb.el;
-    const parts = [{ label: 'All Regions', idx: -1 }, ...rep.path.map((p, i) => ({ label: p.label, idx: i }))];
+    const parts = [{ label: t('All Regions'), idx: -1 }, ...rep.path.map((p, i) => ({ label: p.label, idx: i }))];
     if (parts.length === 1) { el.innerHTML = ''; return; }
     el.innerHTML = parts.map((p, i) => {
       if (i === parts.length - 1) return `<span class="crumb current">${p.label}</span>`;
@@ -285,9 +338,9 @@ export class PbiSalesAnalysisDashboard extends Component {
     } else {
       const rows = data.rows || [];
       if (!rows.length) {
-        r.body.el.innerHTML = `<p class="subtitle">No data for this selection.</p>`;
+        r.body.el.innerHTML = `<p class="subtitle">${t('No data for this selection.')}</p>`;
       } else {
-        hBarChart(r.body.el, rows, this.seriesColor(), cfg.valueLabel);
+        hBarChart(r.body.el, rows, this.seriesColor(), t(cfg.valueLabel));
         r.body.el.querySelectorAll('[data-code]').forEach(elm => {
           elm.style.cursor = 'pointer';
           elm.addEventListener('click', () => {

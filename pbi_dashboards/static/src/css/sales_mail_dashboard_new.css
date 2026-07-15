@@ -1,0 +1,37 @@
+/*
+ * "Sales Analysis - New" — sibling of sales_mail_dashboard.js/.css. Root
+ * carries .pbi-sales-dashboard AND .pbi-sales-mail-dashboard (same as the
+ * original), so every shared rule there — KPI tile grid, toggle-bar/panel,
+ * card grids, donut/bar label styles, legend, filters-panel collapse and
+ * the whole @media print pagination system — applies here unchanged (a
+ * printed/PDF export still puts one .pbi-page per printed page, same as
+ * the original: that rule already forces display:block on every .pbi-page
+ * unconditionally, not gated by .active, so it needs no change here).
+ *
+ * The only thing this variant changes on screen is dropping the Prev/
+ * Next/page-picker nav: sales_mail_dashboard_new.js has no goToPage/
+ * nextPage/prevPage or activePageIndex, and the template has no .page-nav
+ * markup at all — every .pbi-page renders stacked, one after another in
+ * header order, instead of only the base file's .active one showing.
+ *
+ * MUST be @media screen-scoped: .pbi-page also matches every .toggle-page
+ * section (they carry both classes), and this file loads AFTER
+ * sales_mail_dashboard.css in the bundle. An unscoped rule here would tie
+ * with — and, being later in the cascade, beat — that file's own
+ * "@media print .toggle-page { display:flex }" rule, collapsing the
+ * intended 2x2 toggle-panel print grid (pages 4/5/13/14/15/16) into 4
+ * full-width blocks spilling across extra pages. Scoping to screen keeps
+ * print entirely governed by the base file's already-tuned pagination.
+ */
+@media screen {
+  .pbi-sales-mail-dashboard-new .pbi-page { display: block !important; }
+}
+
+/* Pages 2, 6, 7, 12, 13, 14, 17: on-screen only, stack the two-up chart
+   pairs into single full-width rows instead of side-by-side. Kept as an
+   added modifier (not a replacement of .two) so the print stylesheet's
+   .pbi-card-grid.two selectors (base file, @media print) still match and
+   the existing print pagination for these pages is untouched. */
+@media screen {
+  .pbi-sales-mail-dashboard-new .pbi-card-grid.stacked-full { grid-template-columns: 1fr; }
+}

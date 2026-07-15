@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!--
-        "PBI Dashboards > Sales Dashboard" — a standalone top-level app menu
-        (not nested under My Dashboard), holding a custom OWL dashboard (not
-        a ks_dashboard_ninja board).
+        "PBI Dashboards > Sales Dashboards > Sales Dashboard" — a custom OWL
+        dashboard (not a ks_dashboard_ninja board), nested under the
+        "Sales Dashboards" container alongside "Sales Analysis" (KPI tiles).
 
-        WHY TOP-LEVEL, NOT UNDER My Dashboard: it was originally nested under
+        WHY NOT UNDER My Dashboard: it was originally nested under
         ks_dashboard_ninja.board_menu_root ("My Dashboard"), but
         dashboard_rights_ninja_bridge/models/ir_ui_menu.py treats ANY menu
         under board_menu_root whose action is the shared
@@ -14,10 +14,12 @@
         unconditionally since it will never have accessible
         ks_dashboard_ninja.board children. Since this category will never
         contain a real board, that rule made it permanently invisible no
-        matter what access was granted. Making it its own top-level app
-        sidesteps that My-Dashboard-specific rule entirely. It is still
-        governed normally by dashboard.rights.menu's flat "every menu of
-        every top-level app" gating (see that model's docstring) — hidden
+        matter what access was granted. It was first made its own top-level
+        app to sidestep that My-Dashboard-specific rule, then later moved
+        under "Sales Dashboards" (a plain pbi_dashboards container, not
+        board_menu_root, so the ninja-bridge rule doesn't apply here). It is
+        still governed normally by dashboard.rights.menu's flat "every menu
+        of every top-level app" gating (see that model's docstring) — hidden
         until an admin grants it via Module Rights Setup, same as any other
         app's menus.
 
@@ -31,20 +33,9 @@
     -->
     <data noupdate="1">
 
-        <record id="action_pbi_sales_dashboard" model="ir.actions.client">
-            <field name="name">Sales Dashboard</field>
-            <field name="tag">pbi_dashboards.sales_dashboard</field>
-        </record>
-
         <menuitem id="pbi_dashboards_app_root"
                   name="PBI Dashboards"
                   sequence="55"/>
-
-        <menuitem id="menu_pbi_sales_dashboard_app"
-                  name="Sales Dashboard"
-                  parent="pbi_dashboards.pbi_dashboards_app_root"
-                  sequence="10"
-                  action="pbi_dashboards.action_pbi_sales_dashboard"/>
 
         <!--
             "Loyalty Dashboards" — an intermediate container menu under
@@ -57,7 +48,7 @@
         <menuitem id="menu_pbi_loyalty_dashboards"
                   name="Loyalty Dashboards"
                   parent="pbi_dashboards.pbi_dashboards_app_root"
-                  sequence="20"/>
+                  sequence="30"/>
 
         <record id="action_pbi_loyalty_dashboard" model="ir.actions.client">
             <field name="name">Loyalty Analysis</field>
@@ -80,41 +71,414 @@
             being a standalone sibling of Sales Dashboard/Loyalty Dashboards).
         -->
         <record id="action_pbi_sales_analysis" model="ir.actions.client">
-            <field name="name">Sales Analysis</field>
+            <field name="name">Loyalty Customers Sales Analysis</field>
             <field name="tag">pbi_dashboards.sales_analysis_dashboard</field>
         </record>
 
         <menuitem id="menu_pbi_sales_analysis"
-                  name="Sales Analysis"
+                  name="Loyalty Customers Sales Analysis"
                   parent="pbi_dashboards.menu_pbi_loyalty_dashboards"
                   sequence="20"
                   action="pbi_dashboards.action_pbi_sales_analysis"/>
 
         <!--
             "Sales Dashboards" — an intermediate container menu under PBI
-            Dashboards, holding "Sales Analysis" (KPI tiles + Customer Type
-            charts, live from v_bidata_live — see
-            pbi_dashboards/controllers/sales_kpi_main.py). Deliberately kept
-            as a SEPARATE leaf from the "Sales Analysis" drill-down above
-            (same display name, different menu/action/data source) rather
-            than merged or renamed — both are intentionally named "Sales
-            Analysis" in different places.
+            Dashboards, holding "Sales Dashboard" (KPI tiles + Sales Type
+            Group charts, live from bidata directly — see
+            pbi_dashboards/controllers/sales_kpi_main.py, tag
+            pbi_dashboards.sales_kpi_dashboard) and "Sales Analysis" (the
+            11-page report-style dashboard mirroring the client's monthly
+            PPTX sales report, tag pbi_dashboards.sales_mail_dashboard).
+            The original custom-OWL "Sales Dashboard"
+            (action_pbi_sales_dashboard / tag pbi_dashboards.sales_dashboard,
+            pbi_dashboards/static/src/js/sales_dashboard.js) was removed
+            from this menu; its "Sales Dashboard" name was reassigned to the
+            former "Sales Analysis" KPI-tiles leaf below, and that leaf's
+            former name was in turn reassigned to the former "Sales Mail
+            Content" leaf. "Sales Analysis" here is deliberately kept as a
+            SEPARATE leaf from the "Sales Analysis" drill-down under Loyalty
+            Dashboards above (same display name, different menu/action/data
+            source) rather than merged or renamed — both are intentionally
+            named "Sales Analysis" in different places.
         -->
         <menuitem id="menu_pbi_sales_dashboards"
                   name="Sales Dashboards"
                   parent="pbi_dashboards.pbi_dashboards_app_root"
-                  sequence="40"/>
+                  sequence="10"/>
 
         <record id="action_pbi_sales_kpi_dashboard" model="ir.actions.client">
-            <field name="name">Sales Analysis</field>
+            <field name="name">Sales Dashboard</field>
             <field name="tag">pbi_dashboards.sales_kpi_dashboard</field>
         </record>
 
         <menuitem id="menu_pbi_sales_kpi_analysis"
-                  name="Sales Analysis"
+                  name="Sales Dashboard"
                   parent="pbi_dashboards.menu_pbi_sales_dashboards"
                   sequence="10"
                   action="pbi_dashboards.action_pbi_sales_kpi_dashboard"/>
+
+        <record id="action_pbi_sales_mail_dashboard" model="ir.actions.client">
+            <field name="name">Sales Analysis</field>
+            <field name="tag">pbi_dashboards.sales_mail_dashboard</field>
+        </record>
+
+        <menuitem id="menu_pbi_sales_mail_dashboard"
+                  name="Sales Analysis"
+                  parent="pbi_dashboards.menu_pbi_sales_dashboards"
+                  sequence="20"
+                  action="pbi_dashboards.action_pbi_sales_mail_dashboard"/>
+
+        <!--
+            "Sales Analysis - New" — sibling of "Sales Analysis" above, same
+            17-page bidata-direct report data (own JSON route/PPTX-export/
+            notes-import, see pbi_dashboards/controllers/sales_mail_main.py's
+            _new-suffixed routes) but WITHOUT the Prev/Next/page-picker
+            navigation: every page renders stacked, one after another, in
+            the same order they're listed in the header over there (see
+            sales_mail_dashboard_new.js/.xml/.css) instead of showing only
+            one page at a time. Gated by its own menu grant, independent of
+            "Sales Analysis", per this module's one-grant-per-leaf
+            convention.
+        -->
+        <record id="action_pbi_sales_mail_dashboard_new" model="ir.actions.client">
+            <field name="name">Sales Analysis - New</field>
+            <field name="tag">pbi_dashboards.sales_mail_dashboard_new</field>
+        </record>
+
+        <menuitem id="menu_pbi_sales_mail_dashboard_new"
+                  name="Sales Analysis - New"
+                  parent="pbi_dashboards.menu_pbi_sales_dashboards"
+                  sequence="25"
+                  action="pbi_dashboards.action_pbi_sales_mail_dashboard_new"/>
+
+        <!--
+            "Sales Dashboard - New" — sibling of "Sales Dashboard" above,
+            same MTD/YTD KPI-tile + Sales Type Group chart data (same
+            bidata-direct engine, pbi_dashboards/controllers/sales_kpi_main.py)
+            but with an Amount/Qty toggle instead of always showing both
+            measures stacked: only the selected measure's 12 KPI tiles and
+            charts render at a time, and each chart row is a widened bar
+            chart paired with its contribution-% donut (MTD row, then a
+            second YTD row below it) instead of the original's 4-across
+            Bar/Donut/Bar/Donut grid. Own JSON route
+            (/pbi_dashboards/sales_kpi_new/data, tag
+            pbi_dashboards.sales_kpi_dashboard_new) and own menu grant, kept
+            fully independent of "Sales Dashboard" per this module's usual
+            one-grant-per-leaf convention.
+        -->
+        <record id="action_pbi_sales_kpi_dashboard_new" model="ir.actions.client">
+            <field name="name">Sales Dashboard - New</field>
+            <field name="tag">pbi_dashboards.sales_kpi_dashboard_new</field>
+        </record>
+
+        <menuitem id="menu_pbi_sales_kpi_analysis_new"
+                  name="Sales Dashboard - New"
+                  parent="pbi_dashboards.menu_pbi_sales_dashboards"
+                  sequence="15"
+                  action="pbi_dashboards.action_pbi_sales_kpi_dashboard_new"/>
+
+        <!--
+            "Service Dashboards" — an intermediate container menu under PBI
+            Dashboards, holding direct-table replicas of the
+            service_dashboards_ct ks_dashboard_ninja boards (see
+            pbi_dashboards/controllers/service_main.py + service_config.py).
+            Every leaf here reads live from project_task/machine_repair_support/
+            mail_message directly — no ks_dashboard_ninja or dbmodel.*.ct
+            dependency. All 15 leaves from the source app are represented
+            here (see service_config.py's BOARDS registry for the full
+            per-board item/domain/drill config).
+        -->
+        <menuitem id="menu_pbi_service_dashboards"
+                  name="Service Dashboards"
+                  parent="pbi_dashboards.pbi_dashboards_app_root"
+                  sequence="20"/>
+
+        <record id="action_pbi_service_analysis" model="ir.actions.client">
+            <field name="name">Service Analysis</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis"
+                  name="Service Analysis"
+                  parent="pbi_dashboards.menu_pbi_service_dashboards"
+                  sequence="10"
+                  action="pbi_dashboards.action_pbi_service_analysis"/>
+
+        <record id="action_pbi_service_analysis_c" model="ir.actions.client">
+            <field name="name">Service Analysis (C)</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_c</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_c"
+                  name="Service Analysis (C)"
+                  parent="pbi_dashboards.menu_pbi_service_dashboards"
+                  sequence="20"
+                  action="pbi_dashboards.action_pbi_service_analysis_c"/>
+
+        <record id="action_pbi_service_analysis_e" model="ir.actions.client">
+            <field name="name">Service Analysis (E)</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_e</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_e"
+                  name="Service Analysis (E)"
+                  parent="pbi_dashboards.menu_pbi_service_dashboards"
+                  sequence="30"
+                  action="pbi_dashboards.action_pbi_service_analysis_e"/>
+
+        <record id="action_pbi_service_analysis_w" model="ir.actions.client">
+            <field name="name">Service Analysis (W)</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_w</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_w"
+                  name="Service Analysis (W)"
+                  parent="pbi_dashboards.menu_pbi_service_dashboards"
+                  sequence="40"
+                  action="pbi_dashboards.action_pbi_service_analysis_w"/>
+
+        <record id="action_pbi_service_analysis_uwc" model="ir.actions.client">
+            <field name="name">Service Analysis (UWC)</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_uwc</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_uwc"
+                  name="Service Analysis (UWC)"
+                  parent="pbi_dashboards.menu_pbi_service_dashboards"
+                  sequence="50"
+                  action="pbi_dashboards.action_pbi_service_analysis_uwc"/>
+
+        <record id="action_pbi_service_analysis_jcs" model="ir.actions.client">
+            <field name="name">Service Analysis (JCs)</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_jcs</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_jcs"
+                  name="Service Analysis (JCs)"
+                  parent="pbi_dashboards.menu_pbi_service_dashboards"
+                  sequence="60"
+                  action="pbi_dashboards.action_pbi_service_analysis_jcs"/>
+
+        <record id="action_pbi_service_analysis_cc" model="ir.actions.client">
+            <field name="name">Service Analysis (CC)</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_cc</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_cc"
+                  name="Service Analysis (CC)"
+                  parent="pbi_dashboards.menu_pbi_service_dashboards"
+                  sequence="70"
+                  action="pbi_dashboards.action_pbi_service_analysis_cc"/>
+
+        <record id="action_pbi_service_analysis_crd" model="ir.actions.client">
+            <field name="name">Service Analysis (CRD)</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_crd</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_crd"
+                  name="Service Analysis (CRD)"
+                  parent="pbi_dashboards.menu_pbi_service_dashboards"
+                  sequence="80"
+                  action="pbi_dashboards.action_pbi_service_analysis_crd"/>
+
+        <record id="action_pbi_service_analysis_parts" model="ir.actions.client">
+            <field name="name">Service Analysis (Parts)</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_parts</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_parts"
+                  name="Service Analysis (Parts)"
+                  parent="pbi_dashboards.menu_pbi_service_dashboards"
+                  sequence="90"
+                  action="pbi_dashboards.action_pbi_service_analysis_parts"/>
+
+        <record id="action_pbi_technician_analysis" model="ir.actions.client">
+            <field name="name">Technician Analysis</field>
+            <field name="tag">pbi_dashboards.service_dashboard_technician_analysis</field>
+        </record>
+
+        <menuitem id="menu_pbi_technician_analysis"
+                  name="Technician Analysis"
+                  parent="pbi_dashboards.menu_pbi_service_dashboards"
+                  sequence="100"
+                  action="pbi_dashboards.action_pbi_technician_analysis"/>
+
+        <record id="action_pbi_sales_cost_analysis" model="ir.actions.client">
+            <field name="name">Sales &amp; Cost Analysis</field>
+            <field name="tag">pbi_dashboards.service_dashboard_sales_cost_analysis</field>
+        </record>
+
+        <menuitem id="menu_pbi_sales_cost_analysis"
+                  name="Sales &amp; Cost Analysis"
+                  parent="pbi_dashboards.menu_pbi_service_dashboards"
+                  sequence="110"
+                  action="pbi_dashboards.action_pbi_sales_cost_analysis"/>
+
+        <record id="action_pbi_service_analysis_cc_users" model="ir.actions.client">
+            <field name="name">Service Analysis - CC Users</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_cc_users</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_cc_users"
+                  name="Service Analysis - CC Users"
+                  parent="pbi_dashboards.menu_pbi_service_dashboards"
+                  sequence="120"
+                  action="pbi_dashboards.action_pbi_service_analysis_cc_users"/>
+
+        <record id="action_pbi_service_analysis_crd_users" model="ir.actions.client">
+            <field name="name">Service Analysis - CRD Users</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_crd_users</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_crd_users"
+                  name="Service Analysis - CRD Users"
+                  parent="pbi_dashboards.menu_pbi_service_dashboards"
+                  sequence="130"
+                  action="pbi_dashboards.action_pbi_service_analysis_crd_users"/>
+
+        <record id="action_pbi_service_analysis_parts_users" model="ir.actions.client">
+            <field name="name">Service Analysis - Parts Users</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_parts_users</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_parts_users"
+                  name="Service Analysis - Parts Users"
+                  parent="pbi_dashboards.menu_pbi_service_dashboards"
+                  sequence="140"
+                  action="pbi_dashboards.action_pbi_service_analysis_parts_users"/>
+
+        <record id="action_pbi_service_analysis_technicians" model="ir.actions.client">
+            <field name="name">Service Analysis - Technicians</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_technicians</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_technicians"
+                  name="Service Analysis - Technicians"
+                  parent="pbi_dashboards.menu_pbi_service_dashboards"
+                  sequence="150"
+                  action="pbi_dashboards.action_pbi_service_analysis_technicians"/>
+
+        <!--
+            "Contract Dashboards" — an intermediate container menu under PBI
+            Dashboards, sibling of "Promoter Dashboards" (sequence 27, right
+            next to it, between Promoter at 25 and Loyalty at 30). 1 leaf
+            ("Contract Analysis") reading live from subscription_contracts
+            directly (see pbi_dashboards/controllers/contract_main.py +
+            contract_config.py) — same generic engine as Service/Promoter
+            Dashboards (service_sql.py's "contracts" CTE), no
+            ks_dashboard_ninja or contract_dashboards module dependency.
+            Ports contract_dashboards' own "Contract Analysis" board 1:1 —
+            see contract_config.py's CONTRACT_BOARDS registry for the full
+            item/domain/drill config.
+        -->
+        <menuitem id="menu_pbi_contract_dashboards"
+                  name="Contract Dashboards"
+                  parent="pbi_dashboards.pbi_dashboards_app_root"
+                  sequence="27"/>
+
+        <record id="action_pbi_contract_analysis" model="ir.actions.client">
+            <field name="name">Contract Analysis</field>
+            <field name="tag">pbi_dashboards.contract_dashboard_contract_analysis</field>
+        </record>
+
+        <menuitem id="menu_pbi_contract_analysis"
+                  name="Contract Analysis"
+                  parent="pbi_dashboards.menu_pbi_contract_dashboards"
+                  sequence="10"
+                  action="pbi_dashboards.action_pbi_contract_analysis"/>
+
+        <!--
+            "Contract Analysis (PBI)" — a lightweight reference under "My
+            Dashboard" (ks_dashboard_ninja.board_menu_root) pointing at the
+            SAME action as above, so the Contract Dashboards feature is
+            reachable from both apps without duplicating any data/config —
+            same pattern as "Promoter Analysis" below. A single flat leaf
+            (not a container menu) since this feature has only 1 board,
+            unlike Promoter Dashboards' 2.
+
+            NAMED WITH THE "(PBI)" SUFFIX, unlike "Promoter Analysis":
+            the legacy contract_dashboards module (still installed,
+            unrelated to this feature) already owns its OWN "Contract
+            Dashboards" container + "Contract Analysis" ks_dashboard_ninja
+            board menu directly under this same My Dashboard root (see
+            that module's data/contract_dashboard_data.xml). A bare
+            "Contract Analysis" leaf here would sit as a sibling of that
+            container with an identical-looking nested leaf one level
+            in — real, not just theoretical, user confusion (verified live:
+            both rendered in the sidebar at the same depth). "(PBI)"
+            disambiguates without renaming the legacy board.
+        -->
+        <menuitem id="menu_my_dashboard_contract_analysis"
+                  name="Contract Analysis (PBI)"
+                  parent="ks_dashboard_ninja.board_menu_root"
+                  sequence="46"
+                  action="pbi_dashboards.action_pbi_contract_analysis"/>
+
+        <!--
+            "Promoter Dashboards" — an intermediate container menu under PBI
+            Dashboards, sibling of "Service Dashboards" (sequence 25, between
+            Service at 20 and Loyalty at 30). 2 leaves ("Promoters",
+            "Promoter - Sales Comparison") reading live from
+            promoter_showroom/promoter_showroom_sales/sales_target directly
+            (see pbi_dashboards/controllers/promoter_main.py +
+            promoter_config.py) — same generic engine as Service Dashboards
+            (service_sql.py's promoter_showrooms/promoter_sales/
+            sales_comparison CTEs), no ks_dashboard_ninja or
+            promoter_dashboards module dependency for this feature.
+        -->
+        <menuitem id="menu_pbi_promoter_dashboards"
+                  name="Promoter Dashboards"
+                  parent="pbi_dashboards.pbi_dashboards_app_root"
+                  sequence="25"/>
+
+        <record id="action_pbi_promoters" model="ir.actions.client">
+            <field name="name">Promoters</field>
+            <field name="tag">pbi_dashboards.promoter_dashboard_promoters</field>
+        </record>
+
+        <menuitem id="menu_pbi_promoters"
+                  name="Promoters"
+                  parent="pbi_dashboards.menu_pbi_promoter_dashboards"
+                  sequence="10"
+                  action="pbi_dashboards.action_pbi_promoters"/>
+
+        <record id="action_pbi_promoter_sales_comparison" model="ir.actions.client">
+            <field name="name">Promoter - Sales Comparison</field>
+            <field name="tag">pbi_dashboards.promoter_dashboard_promoter_sales_comparison</field>
+        </record>
+
+        <menuitem id="menu_pbi_promoter_sales_comparison"
+                  name="Promoter - Sales Comparison"
+                  parent="pbi_dashboards.menu_pbi_promoter_dashboards"
+                  sequence="20"
+                  action="pbi_dashboards.action_pbi_promoter_sales_comparison"/>
+
+        <!--
+            "Promoter Analysis" — a lightweight reference under "My
+            Dashboard" (ks_dashboard_ninja.board_menu_root) pointing at the
+            SAME 2 actions as above, so the Promoter Dashboards feature is
+            reachable from both apps without duplicating any data/config.
+            Named "Promoter Analysis" rather than "Promoter Dashboards" to
+            avoid colliding with the promoter_dashboards module's own
+            (separate, ks_dashboard_ninja-board-based) "Promoter Dashboards"
+            menu that already lives under My Dashboard.
+        -->
+        <menuitem id="menu_my_dashboard_promoter_analysis"
+                  name="Promoter Analysis"
+                  parent="ks_dashboard_ninja.board_menu_root"
+                  sequence="45"/>
+
+        <menuitem id="menu_my_dashboard_promoters"
+                  name="Promoters"
+                  parent="pbi_dashboards.menu_my_dashboard_promoter_analysis"
+                  sequence="10"
+                  action="pbi_dashboards.action_pbi_promoters"/>
+
+        <menuitem id="menu_my_dashboard_promoter_sales_comparison"
+                  name="Promoter - Sales Comparison"
+                  parent="pbi_dashboards.menu_my_dashboard_promoter_analysis"
+                  sequence="20"
+                  action="pbi_dashboards.action_pbi_promoter_sales_comparison"/>
 
     </data>
 </odoo>

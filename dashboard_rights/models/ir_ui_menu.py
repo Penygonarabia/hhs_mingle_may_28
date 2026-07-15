@@ -13,6 +13,11 @@ fully shadows this one — this copy never actually runs in practice. It is kept
 byte-for-byte in sync with the bridge's copy anyway so behavior never depends
 on load order or on the bridge being present. If you fix a bug here, fix it in
 dashboard_rights_ninja_bridge/models/ir_ui_menu.py too (or vice versa).
+
+Also enforces dashboard.rights.menu's "every other app" gating (Module
+Rights Setup's general, non-dashboard app gating — see that model's
+docstring). Same shadowing caveat applies: the bridge's copy is the one
+that actually runs.
 """
 
 from odoo import api, models
@@ -129,12 +134,14 @@ class IrUiMenu(models.Model):
 
         forbidden_menu_ids -= must_keep_menu_ids
 
-        # Step 2b: managed utility menus (Quick Access / Configuration sub-items)
-        # are plain ir.ui.menu records governed per-user via dashboard.rights.menu
-        # and, like dashboards, are hidden until granted. Forbid any the current
-        # user has not been granted. Added after the must-keep stripping (these
-        # menus are never board ancestors) so the walk-up below can hide their
-        # now-empty parent folders (Quick Access / Configuration).
+        # Step 2b: managed menus — Quick Access / Configuration sub-items AND
+        # every menu of every other top-level app (see
+        # dashboard.rights.menu._managed_menu_ids) — are plain ir.ui.menu
+        # records governed per-user via dashboard.rights.menu and, like
+        # dashboards, are hidden until granted. Forbid any the current user
+        # has not been granted. Added after the must-keep stripping (these
+        # menus are never board ancestors) so the walk-up below can hide
+        # their now-empty parent folders.
         RightsMenu = self.env["dashboard.rights.menu"].sudo()
         managed_menu_ids = RightsMenu._managed_menu_ids()
         if managed_menu_ids:

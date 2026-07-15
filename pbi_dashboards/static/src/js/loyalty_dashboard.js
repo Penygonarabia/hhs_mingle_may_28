@@ -3,6 +3,65 @@
 import { Component, useState, useRef, onMounted, onWillUnmount } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
+import { t, addLabels, isArabicUI } from "./pbi_i18n";
+
+// EN -> AR for every static chrome string this dashboard renders itself
+// (card titles/subtitles built via direct DOM textContent writes, table
+// headers, breadcrumb root, redirect-action name prefixes, filter option
+// labels not already covered by pbi_i18n.js's shared dict). Never covers
+// DB values (region/city/customer/tier names) — those already come back
+// correctly localized from the server.
+addLabels({
+  // dashboard/board titles
+  "Loyalty Analysis": "تحليل الولاء",
+  "Loyalty Dashboards": "لوحات معلومات الولاء",
+  // card titles (CHART_CONFIGS)
+  "Number of customers per tier": "عدد العملاء حسب الفئة",
+  "Points issued": "النقاط الصادرة",
+  "Points redeemed": "النقاط المستبدلة",
+  "Newly added users": "المستخدمون الجدد المضافون",
+  "Region wise": "حسب المنطقة",
+  "Region wise, for the selected period": "حسب المنطقة، للفترة المحددة",
+  "Promotion participation": "المشاركة في العروض الترويجية",
+  "Total loyalty customers vs. customers who used each promotion": "إجمالي عملاء الولاء مقابل العملاء الذين استخدموا كل عرض ترويجي",
+  "Salesman wise promotion participation": "المشاركة في العروض الترويجية حسب مندوب المبيعات",
+  "Total loyalty customers vs. customers who used each promotion, by salesman": "إجمالي عملاء الولاء مقابل العملاء الذين استخدموا كل عرض ترويجي، حسب مندوب المبيعات",
+  // drill subtitle phrase fragments
+  "click a bar to open": "انقر على عمود لفتح",
+  "click a bar or label to drill into": "انقر على عمود أو تسمية للتعمق في",
+  "the customer list": "قائمة العملاء",
+  "the loyalty points list": "قائمة نقاط الولاء",
+  "cities": "المدن",
+  "customers": "العملاء",
+  // filters
+  "Date Range": "النطاق الزمني",
+  "to": "إلى",
+  "Range": "النطاق",
+  "Export": "التصدير",
+  "Export PDF": "تصدير PDF",
+  // period options beyond the shared vocabulary
+  "This Quarter": "هذا الربع",
+  "Last Quarter": "الربع الماضي",
+  "Custom Date": "تاريخ مخصص",
+  // region filter option labels (work_center_group.name values stay as-is)
+  "Central": "الوسطى",
+  "Eastern": "الشرقية",
+  "Western": "الغربية",
+  // promotion participation table headers
+  "Salesman": "مندوب المبيعات",
+  "Promotion Ref": "مرجع العرض الترويجي",
+  "Promotion Name": "اسم العرض الترويجي",
+  "Date": "التاريخ",
+  "No. of Loyalty Customers": "عدد عملاء الولاء",
+  "No. of Utilised Customers": "عدد العملاء المستخدمين",
+  "Participation": "المشاركة",
+  "No promotions with recorded usage in this period.": "لا توجد عروض ترويجية مسجَّل استخدامها خلال هذه الفترة.",
+  // redirect action-name prefixes (row.label after the dash is a DB value)
+  "Customers": "العملاء",
+  "Loyalty Points": "نقاط الولاء",
+  // errors
+  "Failed to load": "فشل التحميل",
+});
 
 // ---------------------------------------------------------------------
 // formatting helpers (trimmed copy of the pattern in sales_dashboard.js —
@@ -141,17 +200,17 @@ function hBarChart(el, data, color, valueLabel) {
 function renderPromoParticipationTable(el, rows, opts = {}) {
   const withSalesman = !!opts.withSalesman;
   if (!rows.length) {
-    el.innerHTML = `<p class="subtitle">No promotions with recorded usage in this period.</p>`;
+    el.innerHTML = `<p class="subtitle">${t('No promotions with recorded usage in this period.')}</p>`;
     return;
   }
   el.innerHTML = `
     <table class="data-table">
       <thead><tr>
-        ${withSalesman ? '<th>Salesman</th>' : ''}
-        <th>Promotion Ref</th><th>Promotion Name</th><th>Date</th>
-        <th class="num">No. of Loyalty Customers</th>
-        <th class="num">No. of Utilised Customers</th>
-        <th style="width:160px">Participation</th>
+        ${withSalesman ? `<th>${t('Salesman')}</th>` : ''}
+        <th>${t('Promotion Ref')}</th><th>${t('Promotion Name')}</th><th>${t('Date')}</th>
+        <th class="num">${t('No. of Loyalty Customers')}</th>
+        <th class="num">${t('No. of Utilised Customers')}</th>
+        <th style="width:160px">${t('Participation')}</th>
       </tr></thead>
       <tbody>
         ${rows.map(r => {
@@ -210,6 +269,8 @@ export class PbiLoyaltyDashboard extends Component {
   setup() {
     this.rpc = useService("rpc");
     this.action = useService("action");
+    this.t = t;
+    this.isArabicUI = isArabicUI;
     this.periodOptions = PERIOD_OPTIONS;
     this.regionOptions = REGION_OPTIONS;
     this.chartConfigs = CHART_CONFIGS;
@@ -319,7 +380,7 @@ export class PbiLoyaltyDashboard extends Component {
       renderPromoParticipationTable(this.refs.promoParticipationTable.el, this.promoParticipation);
       renderPromoParticipationTable(this.refs.promoParticipationSalesmanTable.el, this.promoParticipationSalesman, { withSalesman: true });
     } catch (e) {
-      this.state.error = 'Failed to load — ' + e.message;
+      this.state.error = t('Failed to load') + ' — ' + e.message;
     } finally {
       this.state.loading = false;
     }
@@ -385,7 +446,7 @@ export class PbiLoyaltyDashboard extends Component {
       domain.push(['activation_date', '<=', this.state.resolvedTo]);
       this.action.doAction({
         type: 'ir.actions.act_window',
-        name: `Customers — ${row.label}`,
+        name: `${t('Customers')} — ${row.label}`,
         res_model: 'res.partner',
         views: [[false, 'list'], [false, 'form']],
         view_mode: 'list',
@@ -397,7 +458,7 @@ export class PbiLoyaltyDashboard extends Component {
       // points history list for the selected customer.
       this.action.doAction({
         type: 'ir.actions.act_window',
-        name: `Loyalty Points — ${row.label}`,
+        name: `${t('Loyalty Points')} — ${row.label}`,
         res_model: 'customer.loyalty.points.history',
         views: [[false, 'list'], [false, 'form']],
         view_mode: 'list',
@@ -412,7 +473,7 @@ export class PbiLoyaltyDashboard extends Component {
   // ------------------------------------------------------------------
   renderBreadcrumb(key) {
     const drill = this.state.drills[key];
-    const parts = [{ label: 'All Regions', level: 'region' }];
+    const parts = [{ label: t('All Regions'), level: 'region' }];
     if (drill.regionLabel) parts.push({ label: drill.regionLabel, level: 'city' });
     if (drill.cityLabel) parts.push({ label: drill.cityLabel, level: 'customer' });
     const el = this.refs[key].breadcrumb.el;
@@ -437,13 +498,13 @@ export class PbiLoyaltyDashboard extends Component {
     const isLeaf = levelIdx === cfg.levels.length - 1;
     const suffixParts = [drill.regionLabel, drill.cityLabel].filter(Boolean);
     const suffix = suffixParts.length ? ` — ${suffixParts.join(' / ')}` : '';
-    r.title.el.textContent = `${cfg.title}${suffix}`;
+    r.title.el.textContent = `${t(cfg.title)}${suffix}`;
 
     const leafNoun = cfg.levels[cfg.levels.length - 1] === 'city' ? 'the customer list' : 'the loyalty points list';
     const nextNoun = drill.level === 'region' ? 'cities' : 'customers';
     r.subtitle.el.textContent = isLeaf
-      ? `${cfg.subtitle} · click a bar to open ${leafNoun}`
-      : `${cfg.subtitle} · click a bar or label to drill into ${nextNoun}`;
+      ? `${t(cfg.subtitle)} · ${t('click a bar to open')} ${t(leafNoun)}`
+      : `${t(cfg.subtitle)} · ${t('click a bar or label to drill into')} ${t(nextNoun)}`;
 
     this.renderBreadcrumb(key);
 
@@ -454,10 +515,10 @@ export class PbiLoyaltyDashboard extends Component {
       });
     } else if (isLeaf && drill.level === 'customer') {
       r.legend.el.innerHTML = '';
-      hBarChart(r.chart.el, data, colors[0], cfg.title);
+      hBarChart(r.chart.el, data, colors[0], t(cfg.title));
     } else {
       r.legend.el.innerHTML = '';
-      groupedBarChart(r.chart.el, data, ['value'], [colors[0]], [cfg.title], {
+      groupedBarChart(r.chart.el, data, ['value'], [colors[0]], [t(cfg.title)], {
         onLabelClick: (label) => this.onBarClick(key, label),
       });
     }

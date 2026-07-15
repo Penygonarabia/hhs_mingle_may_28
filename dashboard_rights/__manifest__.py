@@ -1,6 +1,6 @@
 {
     "name": "Dashboard Rights",
-    "version": "17.0.1.0.25",
+    "version": "17.0.2.0.1",
     "category": "Settings",
     "summary": "Per-user, per-dashboard access rights (Settings page).",
     "description": """
@@ -18,6 +18,60 @@ which dashboards each user is allowed to see/use.
 * Admin: always has access to every dashboard (checkboxes ticked & readonly).
 * Enforcement: dashboards are hidden in menus and their action access is
   blocked server-side for users without the right.
+
+Module Rights Setup (17.0.2.0.0, replaces the 17.0.1.0.27-32 Rights Setup /
+Controlled Modules / Discover Candidate Modules pages)
+------------------------------------------------------------------------
+Settings > Module Rights > "Module Rights Setup" is a second per-user
+page, alongside Users Setup, covering every application's menus — every
+top-level app menu in the system (Machine Repair, Promoter, Payroll, My
+Dashboard, ...) plus every sub-menu beneath it, at any depth — EXCEPT
+Settings (governed by real Odoo groups). No registry/allow-list step is
+needed any more: every app just shows up. Each app is a group whose
+children are every menu it owns, each individually grantable/revocable,
+exactly like Quick Access/Configuration sub-items, enforced through the
+same dashboard.rights.menu._managed_menu_ids mechanism (no per-app
+enforcement code). Existing active users are grandfathered to every menu
+that existed at upgrade time, so nobody loses access to anything they
+already used; only new users / future revokes go through the normal grant
+flow. Model access.rights.module.matrix (+ .line) deliberately mirrors
+dashboard.rights.matrix's field names so the existing dr_access_toggle /
+dr_group_count / Grant-All-Revoke-All JS widgets work unchanged, with zero
+new client code.
+
+The standalone "Rights Setup" menu entry was removed — the same
+dashboard.rights.matrix wizard it opened is still reachable by clicking a
+user row in Users Setup, so no functionality was lost. The Settings menu
+category itself was renamed from "Dashboard Rights" to "Module Rights"
+(17.0.2.0.1).
+
+My Dashboard included, kept in sync (17.0.2.0.1)
+--------------------------------------------------
+Module Rights Setup now also lists the My Dashboard app itself (boards,
+Quick Access, Configuration), so an admin can see and grant everything
+from one page. A KS dashboard board has two grants — the board-level one
+in Users Setup (dashboard.rights) and the menu-level one here
+(dashboard.rights.menu) — and both models now write through
+dashboard.rights.menu._dr_sync_board_and_menu on every toggle, from either
+page, so the two never disagree about whether a board is visible. A
+migration corrects a transient earlier bug where My Dashboard's menus were
+briefly (and wrongly) blanket-granted to everyone regardless of their real
+per-board access.
+
+Copy Rights
+-----------
+"Copy Rights From…" button on both Users Setup's matrix and Module Rights
+Setup opens a wizard (dashboard.rights.copy.wizard) that copies EVERYTHING
+a source user can see — dashboards, Quick Access/Configuration, and every
+app menu — onto specific target user(s), everyone with the same role, or
+all users in one shot.
+
+Rights-check smart button
+--------------------------
+Both pages show a "<granted>/<total>" smart button once loaded — a quick
+glance at what the selected user currently has, without opening every
+group. Clicking it drills into a read-only list (dashboard.rights /
+dashboard.rights.menu), pre-filtered to Granted.
 """,
     "author": "Cielo Digital",
     # Drop the cached web.assets_* bundle on install AND on every upgrade (see
@@ -41,7 +95,13 @@ which dashboards each user is allowed to see/use.
         # blocked reinstall. The quick_access_menu/configuration_menu xmlids the
         # rest of the module references are governed independently.
         "views/dashboard_rights_views.xml",
+        # Loaded before dashboard_rights_matrix_views.xml / access_rights_module_
+        # matrix_views.xml: both reference action_dashboard_rights_copy_wizard
+        # by xmlid in a button, which must already exist in ir_model_data.
+        "views/dashboard_rights_copy_wizard_views.xml",
+        "views/dashboard_rights_menu_views.xml",
         "views/dashboard_rights_matrix_views.xml",
+        "views/access_rights_module_matrix_views.xml",
         "views/dashboard_rights_menus.xml",
     ],
     "assets": {
@@ -53,8 +113,6 @@ which dashboards each user is allowed to see/use.
             "dashboard_rights/static/src/xml/header_status_gate.xml",
             "dashboard_rights/static/src/xml/parent_breadcrumb_restore.xml",
             "dashboard_rights/static/src/js/grouped_user_list.js",
-            "dashboard_rights/static/src/js/email_copy_field.js",
-            "dashboard_rights/static/src/js/email_id_copy_field.js",
             "dashboard_rights/static/src/js/dashboard_rights_list.js",
             "dashboard_rights/static/src/js/dashboard_rights_matrix_list.js",
             "dashboard_rights/static/src/js/dashboard_bulk_buttons.js",
