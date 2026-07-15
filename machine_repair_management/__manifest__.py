@@ -500,6 +500,8 @@ workshop machine repair
         "views/dashboard_rights_views.xml",
         "report/contract_invoice_report_template.xml",
         "views/visit_count_pivot_view.xml",
+        "datas/subscription_contract_cron.xml",
+
     ],
     "installable": True,
     "application": True,

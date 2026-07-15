@@ -104,6 +104,85 @@ class SubscriptionContracts(models.Model):
     confirmation_date = fields.Date(string = "Confirmation Date")
     
     
+    
+    '''Cron Job Added on July 15 2026 by Vijaya Bhaskar'''
+    @api.model
+    def send_notification_salesman_for_sixty_day_cron_job(self):
+        today = fields.Date.today()
+
+
+        contracts = self.env['subscription.contracts'].search([
+            ("state", "=", "Ongoing"),
+            ("date_end", "!=", False),
+            ("notification_send_salesman", "=", False),
+        ])
+
+        manager_group = self.env.ref(
+            "hr_exit_process.group_genaral_manager_for_exit",
+            raise_if_not_found=False,
+        )
+
+        for rec in contracts:
+            reminder_date = rec.date_end - relativedelta(
+                days=rec.contract_reminder or 0
+            )
+
+            
+            if reminder_date != today:
+                continue
+
+            email_cc = ""
+            if manager_group:
+                email_cc = ",".join(
+                    manager.login
+                    for manager in manager_group.users
+                    if rec.project_id in manager.project_ids and manager.login
+                )
+
+            subject = f"Contract Notification - {rec.name}"
+
+            body_html = f"""
+                <p>Dear {rec.sales_person_user_id.name or ''},</p>
+
+                <p>
+                    The contract <b>{rec.name}</b> will expire on
+                    <b>{rec.date_end.strftime('%d-%m-%Y')}</b>.
+                </p>
+
+                <p>
+                    Please contact the customer regarding renewal.
+                </p>
+
+                <br/>
+                <p>
+                    Best Regards,<br/>
+                    Maintenance Department
+                </p>
+            """
+
+            mail = self.env["mail.mail"].create({
+                "subject": subject,
+                "body_html": body_html,
+                "email_from": self.env.user.email or self.env.company.email,
+                "email_to": rec.sales_person_user_id.login,
+                "email_cc": email_cc,
+            })
+
+            mail.send()
+
+            rec.notification_send_salesman = True
+
+            _logger.info(
+                "Notification sent successfully for contract %s",
+                rec.name,
+            )
+    
+    def _cron_send_notification_manager(self):
+        """Called by ir.cron to send renewal notifications to managers."""
+        contracts = self.env['subscription.contracts'].search([('state', '=', 'Ongoing')])
+        contracts.send_notification_manager()
+        
+    
     # def send_notification_salesman_for_sixty_day(self):
     #     today = fields.Date.today()
     #
@@ -149,43 +228,26 @@ class SubscriptionContracts(models.Model):
     def send_notification_salesman_for_sixty_day(self):
         today = fields.Date.today()
     
-        _logger.info("Salesman notification cron started on %s", today)
-        print("Salesman notification cron started on", today)
-    
+      
         for rec in self:
-            _logger.info(
-                "Processing Contract: %s, End Date: %s, Reminder Days: %s, State: %s",
-                rec.name,
-                rec.date_end,
-                rec.contract_reminder,
-                rec.state
-            )
-            print(
-                f"Processing Contract: {rec.name}, End Date: {rec.date_end}, "
-                f"Reminder Days: {rec.contract_reminder}, State: {rec.state}"
-            )
+           
     
             if not rec.date_end:
-                _logger.info("Skipping %s - No end date found", rec.name)
-                print(f"Skipping {rec.name} - No end date found")
+               
                 continue
     
             reminder_date = rec.date_end - relativedelta(days=rec.contract_reminder)
     
-            _logger.info(
-                "Contract: %s | Reminder Date: %s | Today: %s",
-                rec.name,
-                reminder_date,
-                today
+            manager_group = self.env.ref(
+            'hr_exit_process.group_genaral_manager_for_exit')
+
+            email_cc = ",".join(
+                manager.login
+                for manager in manager_group.users
+                if self.project_id in manager.project_ids and manager.login
             )
-            print(
-                f"Contract: {rec.name} | Reminder Date: {reminder_date} | Today: {today}"
-            )
-    
             if reminder_date == today and rec.state == 'Ongoing':
-                _logger.info("Sending notification for contract %s", rec.name)
-                print(f"Sending notification for contract {rec.name}")
-    
+               
                 subject = f"Contract Notification - {rec.name}"
     
                 body_html = f"""
@@ -212,32 +274,15 @@ class SubscriptionContracts(models.Model):
                     'body_html': body_html,
                     'email_from': self.env.user.email or self.env.company.email,
                     'email_to': rec.sales_person_user_id.login,
+                    'email_cc' :email_cc
                 })
     
-                _logger.info(
-                    "Mail created for %s (%s)",
-                    rec.sales_person_user_id.name,
-                    rec.sales_person_user_id.login
-                )
-                print(
-                    f"Mail created for {rec.sales_person_user_id.name} "
-                    f"({rec.sales_person_user_id.login})"
-                )
-    
+               
                 mail.send()
     
-                _logger.info("Mail sent successfully for contract %s", rec.name)
-                print(f"Mail sent successfully for contract {rec.name}")
-    
+               
                 rec.notification_send_salesman = True
     
-                _logger.info(
-                    "notification_send_salesman updated to True for %s",
-                    rec.name
-                )
-                print(
-                    f"notification_send_salesman updated to True for {rec.name}"
-                )
                             
     
     def send_notification_manager(self): 
@@ -263,8 +308,10 @@ class SubscriptionContracts(models.Model):
                 reminder_date = rec.date_end - relativedelta(days=renewal_days)
     
                 if reminder_date == today:
+                    managers = manager_group.users.filtered(lambda m: m.login and rec.project_id in m.project_ids
+                                    )
     
-                    for manager in manager_group.users:
+                    for manager in managers:
                         if not manager.login:
                             continue
     
