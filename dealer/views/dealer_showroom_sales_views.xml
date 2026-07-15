@@ -364,7 +364,7 @@
         <field name="name">Approve Shop Sales</field>
         <field name="res_model">dsales.showroom.sales</field>
         <field name="view_mode">tree,form</field>
-        <field name="domain">[]</field>
+        <field name="domain">[('state', '!=', 'draft')]</field>
         <field name="context">{'create': False, 'edit': False}</field>
         <field name="view_ids" eval="[(5, 0, 0),
             (0, 0, {'view_mode': 'tree', 'view_id': ref('view_tree_dealer_showroom_sales_approval')}),
