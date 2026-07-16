@@ -67,6 +67,12 @@ PPTX_TILE_BAD = RGBColor(0xff, 0xd2, 0xd2)
 PPTX_LINE_ACHIEVEMENT = RGBColor(0x4a, 0x3a, 0xa7)
 PPTX_LINE_YOY = RGBColor(0xe3, 0x49, 0x48)
 
+# Matches the web dashboard's own `.gridline { stroke: var(--grid) }`
+# (--grid: #e1e0d9 in sales_dashboard.css) — native pptx charts default to
+# a darker gray that competes with data labels sitting right at gridline
+# height, so every bar/column chart gets this lighter color explicitly.
+PPTX_GRIDLINE_COLOR = RGBColor(0xe1, 0xe0, 0xd9)
+
 # Base scope for every Amount/Qty aggregate in this dashboard — all 3
 # conditions are fixed/hardcoded per explicit instruction, not tied to the
 # Franchise selector: customer number pattern, franchise code, and the
@@ -88,33 +94,21 @@ BASE_SCOPE_PARAMS = [PRODUCT_SCOPE_CODES]
 # covers ~68%, so bi_amount alone silently under-counts actual sales.
 # bi_budgetamount (Target) is a separate, well-populated feed and is
 # deliberately NOT run through this formula — only actual This-Year/Last-
-# Year sales use it. The qty inside this formula is intentionally
-# ungated by _QTY_GATE_SQL (that gate only applies to the standalone Qty
-# measure, not this price-component usage). bi_qty itself must be
-# COALESCEd too: some sub-groups (e.g. CONG001, ELITE PLUS R22) have
-# bi_qty NULL on every in-scope row, which made this expression evaluate
-# to NULL rather than 0 — and since sum() over all-NULL inputs returns
-# NULL, every "ORDER BY <sales> DESC" (top-N breakdowns) sorted those
-# NULL groups AHEAD of real, large sales figures (Postgres's DESC default
-# is NULLS FIRST), silently corrupting every Top-N chart's ranking.
+# Year sales use it. bi_qty itself must be COALESCEd too: some sub-groups
+# (e.g. CONG001, ELITE PLUS R22) have bi_qty NULL on every in-scope row,
+# which made this expression evaluate to NULL rather than 0 — and since
+# sum() over all-NULL inputs returns NULL, every "ORDER BY <sales> DESC"
+# (top-N breakdowns) sorted those NULL groups AHEAD of real, large sales
+# figures (Postgres's DESC default is NULLS FIRST), silently corrupting
+# every Top-N chart's ranking.
 AMOUNT_EXPR = "(COALESCE(bi_qty, 0) * (COALESCE(bi_invprice, 0) - COALESCE(bi_invdisc, 0) - COALESCE(bi_invcstspldisc, 0)))"
 
-# Quantity-only gate: catalogflags.cat_flag = '02' marks countable-unit
-# parts. A given cat_part can carry several catalogflags rows simultaneously
-# (confirmed: e.g. MI-112T2/DHN1-BA5 has both flag '10' and flag '02' rows
-# on the same date, not a supersession history) — an EXISTS check is the
-# correct semantic ("does this part carry a '02' flag"), not a deduped
-# join. Amount is deliberately NOT gated by this (see _qty_gate/
-# BASE_SCOPE_SQL split below) — only the actual qty/prevYearQty CASE WHEN
-# branches get the extra "AND EXISTS (...)". budgetQty (Target) is
-# deliberately NEVER gated by this either, even where qty_gate is threaded
-# through: confirmed every bi_budgetqty>0 row across the whole table has an
-# empty bi_invpartno (targets are set at a coarser grain than individual
-# parts), so gating it the same way would silently zero out every Target
-# Qty figure.
-_QTY_GATE_SQL = """
-    AND EXISTS (SELECT 1 FROM catalogflags cgf WHERE cgf.cat_part = bidata.bi_invpartno AND cgf.cat_flag = '02')
-"""
+# NOTE: quantity used to be gated by an extra "catalogflags cat_flag='02'"
+# EXISTS check (countable-unit parts only), removed per explicit
+# instruction — catalogflags data lags for newer parts, which was silently
+# deflating This-Year Qty far more than Last-Year/Target Qty (Target was
+# already never gated). Qty now shares the exact same BASE_SCOPE_SQL/
+# dim-clause WHERE scope as Amount, no extra filter.
 
 FRANCHISE_OPTIONS = [
     {'v': 'all', 'l': 'All'}, {'v': 'Midea', 'l': 'Midea'}, {'v': 'BEKO', 'l': 'BEKO'}, {'v': 'CANDY', 'l': 'CANDY'},
@@ -126,15 +120,11 @@ FRANCHISE_OPTIONS = [
 # t_rptregionsdesc.rr_code (100/200/300/400/500) directly, so this maps to
 # the matching rr_code first, then looks up the formal desc text. Southern
 # (500) has no source data in bidata at all — it simply won't populate.
-REGION_EXPR = """
-    (SELECT rr_desc FROM t_rptregionsdesc WHERE rr_lang = 1 AND rr_code = (
-        CASE WHEN bi_cstsubregioncode = 'RYD' THEN '200'
-             WHEN bi_cstsubregioncode = 'QAS' THEN '100'
-             WHEN bi_cstregioncode = '20' THEN '300'
-             WHEN bi_cstregioncode = '30' THEN '400'
-             ELSE NULL END
-    ) LIMIT 1)
-"""
+# rrd is DIM_LOOKUP_JOINS' join alias for t_rptregionsdesc (see below) — a
+# plain column read off an already-joined 10-row table, not a per-row
+# correlated subquery (see DIM_LOOKUP_JOINS' docstring for why this
+# matters for _breakdown_ty_ly/_breakdown_ty_ly_multi's performance).
+REGION_EXPR = "rrd.rr_desc"
 REGION_FIXED = ['Qassim Region', 'Riyadh Region', 'Western Region', 'Eastern Region']
 # Single-region filter clauses, keyed the same as REGION_LABELS — used by
 # every per-region-toggle page (5, 15, 16). Still keyed on bidata's own raw
@@ -176,8 +166,38 @@ REGION_SLUG_EXPR = """
 # internal toggle slugs (dealers/mt/ws/projects) don't need renaming —
 # t_cstclasstypedesc's 02/03/04 are Modern Trade/Whole Sale/Projects, which
 # is what those slugs already meant before the t_salpurgroup detour.
-CHANNEL_DIM_EXPR = """
-    COALESCE((SELECT cs_desc FROM t_cstclasstypedesc WHERE cs_lang = '1' AND cs_code = bi_csttypecode LIMIT 1), 'Others')
+# cctd is DIM_LOOKUP_JOINS' join alias for t_cstclasstypedesc — see
+# REGION_EXPR's comment above and DIM_LOOKUP_JOINS' docstring below.
+CHANNEL_DIM_EXPR = "COALESCE(cctd.cs_desc, 'Others')"
+
+# _breakdown_ty_ly/_breakdown_ty_ly_multi splice this into their FROM
+# clause unconditionally (both t_cstclasstypedesc and t_rptregionsdesc
+# have exactly 10 rows each, verified live — one row per real code, no
+# duplicates — so joining them costs one cheap hash-table build per query
+# even on the calls that pass some OTHER dim_expr, e.g. "bi_psgroupname" or
+# MAIN_GROUP_EXPR_DERIVED, that never reference cctd/rrd at all).
+#
+# CHANNEL_DIM_EXPR/REGION_EXPR used to be correlated scalar subqueries
+# instead (SELECT cs_desc FROM t_cstclasstypedesc WHERE cs_code = bi_...
+# LIMIT 1) sitting directly in the SELECT list of a GROUP-BY-1 query — that
+# forces Postgres to evaluate the subquery once per INPUT row of bidata
+# (up to ~215k qualifying rows for a YTD query), not once per output
+# group, since the grouping key itself depends on the subquery's result.
+# Confirmed via a server-side per-query timing probe: those two
+# expressions alone cost 300-700ms each, out of a ~3.8s total page-load
+# for a December (full-year YTD) request — by far the single largest
+# contributor to the "changing Year/Month feels slow" complaint. Rewriting
+# them as a join lets Postgres hash the 10-row lookup table once and probe
+# it per bidata row, instead of re-planning/executing a subplan per row.
+DIM_LOOKUP_JOINS = """
+    LEFT JOIN t_cstclasstypedesc cctd ON cctd.cs_code = bidata.bi_csttypecode AND cctd.cs_lang = '1'
+    LEFT JOIN t_rptregionsdesc rrd ON rrd.rr_lang = 1 AND rrd.rr_code = (
+        CASE WHEN bidata.bi_cstsubregioncode = 'RYD' THEN '200'
+             WHEN bidata.bi_cstsubregioncode = 'QAS' THEN '100'
+             WHEN bidata.bi_cstregioncode = '20' THEN '300'
+             WHEN bidata.bi_cstregioncode = '30' THEN '400'
+             ELSE NULL END
+    )
 """
 CHANNEL_FIXED_CODES = [('01', 'Dealers'), ('02', 'Modern Trade'), ('03', 'Whole Sale'), ('04', 'Projects')]
 CHANNEL_CODES = {'dealers': '01', 'mt': '02', 'ws': '03', 'projects': '04'}
@@ -280,9 +300,8 @@ class PbiSalesMailController(http.Controller):
     17-page report-style dashboard rebuilt from the client's actual Power BI
     source file (HHS_SalesData_Analysis.pbix), reading live from ``bidata``
     directly (joined to ``t_rptregionsdesc``/``t_cstclasstypedesc`` for region
-    and channel/department display text, and ``catalogflags`` for the
-    qty-only cat_flag gate — see
-    BASE_SCOPE_SQL/REGION_EXPR/CHANNEL_DIM_EXPR/_QTY_GATE_SQL).
+    and channel/department display text — see
+    BASE_SCOPE_SQL/REGION_EXPR/CHANNEL_DIM_EXPR).
     Period (Year+Month) and Franchise filters only; every other dimension
     (channel, region, department toggle) is an in-page toggle, not a global
     filter. No drill-down.
@@ -330,19 +349,6 @@ class PbiSalesMailController(http.Controller):
             request.env.cr.rollback()
             return default
 
-    def _qty_gate(self):
-        """Probed once per request: returns _QTY_GATE_SQL (the catalogflags
-        cat_flag='02' EXISTS check) when catalogflags actually has '02' rows,
-        else '' (no gate) — a defensive fallback in case catalogflags is ever
-        empty again, matching the same probe pattern used elsewhere in this
-        controller rather than assuming the table is always populated."""
-        try:
-            rows = self._query("SELECT 1 FROM catalogflags WHERE cat_flag = '02' LIMIT 1")
-            return _QTY_GATE_SQL if rows else ""
-        except Exception:
-            request.env.cr.rollback()
-            return ""
-
     # ------------------------------------------------------------------
     # filter options
     # ------------------------------------------------------------------
@@ -384,7 +390,7 @@ class PbiSalesMailController(http.Controller):
     # ------------------------------------------------------------------
     # aggregates — conditional aggregation pulls TY+LY in one round trip.
     # ------------------------------------------------------------------
-    def _sums_ty_ly(self, year, month, mode, franchise, extra_clauses=(), extra_params=(), qty_gate=''):
+    def _sums_ty_ly(self, year, month, mode, franchise, extra_clauses=(), extra_params=()):
         gte, lte = self._period_window(month, mode)
         dim_clauses, dim_params = self._dim_clauses(franchise)
         years = [year, year - 1] if (year - 1) >= 2023 else [year]
@@ -395,10 +401,10 @@ class PbiSalesMailController(http.Controller):
             SELECT
               sum(CASE WHEN bi_year = %s THEN {AMOUNT_EXPR} ELSE 0 END) AS sales,
               sum(CASE WHEN bi_year = %s THEN bi_budgetamount ELSE 0 END) AS budget,
-              sum(CASE WHEN bi_year = %s {qty_gate} THEN COALESCE(bi_qty, 0) ELSE 0 END) AS qty,
+              sum(CASE WHEN bi_year = %s THEN COALESCE(bi_qty, 0) ELSE 0 END) AS qty,
               sum(CASE WHEN bi_year = %s THEN bi_budgetqty ELSE 0 END) AS budget_qty,
               sum(CASE WHEN bi_year = %s THEN {AMOUNT_EXPR} ELSE 0 END) AS prev_sales,
-              sum(CASE WHEN bi_year = %s {qty_gate} THEN COALESCE(bi_qty, 0) ELSE 0 END) AS prev_qty
+              sum(CASE WHEN bi_year = %s THEN COALESCE(bi_qty, 0) ELSE 0 END) AS prev_qty
             FROM bidata WHERE {where}
         """, [year, year, year, year, year - 1, year - 1] + params)[0]
         return {
@@ -408,7 +414,7 @@ class PbiSalesMailController(http.Controller):
         }
 
     def _breakdown_ty_ly(self, year, month, mode, franchise, dim_expr, extra_clauses=(), extra_params=(),
-                          fixed_labels=None, limit=20, qty_gate=''):
+                          fixed_labels=None, limit=20):
         dim_clauses, dim_params = self._dim_clauses(franchise)
         gte, lte = self._period_window(month, mode)
         years = [year, year - 1] if (year - 1) >= 2023 else [year]
@@ -420,11 +426,11 @@ class PbiSalesMailController(http.Controller):
             SELECT {dim_expr} AS label,
               sum(CASE WHEN bi_year = %s THEN {AMOUNT_EXPR} ELSE 0 END) AS sales,
               sum(CASE WHEN bi_year = %s THEN bi_budgetamount ELSE 0 END) AS budget,
-              sum(CASE WHEN bi_year = %s {qty_gate} THEN COALESCE(bi_qty, 0) ELSE 0 END) AS qty,
+              sum(CASE WHEN bi_year = %s THEN COALESCE(bi_qty, 0) ELSE 0 END) AS qty,
               sum(CASE WHEN bi_year = %s THEN bi_budgetqty ELSE 0 END) AS budget_qty,
               sum(CASE WHEN bi_year = %s THEN {AMOUNT_EXPR} ELSE 0 END) AS prev_sales,
-              sum(CASE WHEN bi_year = %s {qty_gate} THEN COALESCE(bi_qty, 0) ELSE 0 END) AS prev_qty
-            FROM bidata WHERE {where}
+              sum(CASE WHEN bi_year = %s THEN COALESCE(bi_qty, 0) ELSE 0 END) AS prev_qty
+            FROM bidata {DIM_LOOKUP_JOINS} WHERE {where}
             GROUP BY 1
             ORDER BY 2 DESC
             LIMIT %s
@@ -452,7 +458,7 @@ class PbiSalesMailController(http.Controller):
         return [_row(r['label'], r) for r in rows]
 
     def _breakdown_ty_ly_multi(self, year, month, mode, franchise, group_expr, group_keys, dim_expr,
-                                fixed_labels, extra_clauses=(), extra_params=(), qty_gate=''):
+                                fixed_labels, extra_clauses=(), extra_params=()):
         """Same shape/output as _breakdown_ty_ly(fixed_labels=...) called
         once per `group_keys` entry, but as ONE query grouped by both
         `group_expr` (e.g. channel code or region slug) and `dim_expr`
@@ -472,11 +478,11 @@ class PbiSalesMailController(http.Controller):
             SELECT {group_expr} AS grp, {dim_expr} AS label,
               sum(CASE WHEN bi_year = %s THEN {AMOUNT_EXPR} ELSE 0 END) AS sales,
               sum(CASE WHEN bi_year = %s THEN bi_budgetamount ELSE 0 END) AS budget,
-              sum(CASE WHEN bi_year = %s {qty_gate} THEN COALESCE(bi_qty, 0) ELSE 0 END) AS qty,
+              sum(CASE WHEN bi_year = %s THEN COALESCE(bi_qty, 0) ELSE 0 END) AS qty,
               sum(CASE WHEN bi_year = %s THEN bi_budgetqty ELSE 0 END) AS budget_qty,
               sum(CASE WHEN bi_year = %s THEN {AMOUNT_EXPR} ELSE 0 END) AS prev_sales,
-              sum(CASE WHEN bi_year = %s {qty_gate} THEN COALESCE(bi_qty, 0) ELSE 0 END) AS prev_qty
-            FROM bidata WHERE {where}
+              sum(CASE WHEN bi_year = %s THEN COALESCE(bi_qty, 0) ELSE 0 END) AS prev_qty
+            FROM bidata {DIM_LOOKUP_JOINS} WHERE {where}
             GROUP BY 1, 2
         """, [year, year, year, year, year - 1, year - 1] + params)
 
@@ -504,7 +510,7 @@ class PbiSalesMailController(http.Controller):
         return out
 
     def _breakdown_ty_ly_multi_topn(self, year, month, mode, franchise, group_expr, group_keys, dim_expr,
-                                     limit, extra_clauses=(), extra_params=(), qty_gate=''):
+                                     limit, extra_clauses=(), extra_params=()):
         """Same shape as _breakdown_ty_ly(limit=N) called once per
         `group_keys` entry, but as ONE query — top-N `dim_expr` rows per
         `group_expr` group via ROW_NUMBER(), instead of one full-table
@@ -529,10 +535,10 @@ class PbiSalesMailController(http.Controller):
                 SELECT {group_expr} AS grp, {dim_expr} AS label,
                   {sales_case} AS sales,
                   sum(CASE WHEN bi_year = %s THEN bi_budgetamount ELSE 0 END) AS budget,
-                  sum(CASE WHEN bi_year = %s {qty_gate} THEN COALESCE(bi_qty, 0) ELSE 0 END) AS qty,
+                  sum(CASE WHEN bi_year = %s THEN COALESCE(bi_qty, 0) ELSE 0 END) AS qty,
                   sum(CASE WHEN bi_year = %s THEN bi_budgetqty ELSE 0 END) AS budget_qty,
                   sum(CASE WHEN bi_year = %s THEN {AMOUNT_EXPR} ELSE 0 END) AS prev_sales,
-                  sum(CASE WHEN bi_year = %s {qty_gate} THEN COALESCE(bi_qty, 0) ELSE 0 END) AS prev_qty,
+                  sum(CASE WHEN bi_year = %s THEN COALESCE(bi_qty, 0) ELSE 0 END) AS prev_qty,
                   ROW_NUMBER() OVER (PARTITION BY {group_expr} ORDER BY {sales_case} DESC) AS rn
                 FROM bidata WHERE {where}
                 GROUP BY 1, 2
@@ -551,7 +557,7 @@ class PbiSalesMailController(http.Controller):
             })
         return out
 
-    def _breakdown_by_quarter(self, year, month, franchise, extra_clauses=(), extra_params=(), qty_gate=''):
+    def _breakdown_by_quarter(self, year, month, franchise, extra_clauses=(), extra_params=()):
         """Calendar-year quarterly progression up through the quarter that
         contains the selected month (Q1..current quarter only) — unlike
         every other breakdown here which is scoped to the selected month's
@@ -570,10 +576,10 @@ class PbiSalesMailController(http.Controller):
             SELECT ((bi_month - 1) / 3 + 1) AS quarter,
               sum(CASE WHEN bi_year = %s AND bi_month <= %s THEN {AMOUNT_EXPR} ELSE 0 END) AS sales,
               sum(CASE WHEN bi_year = %s THEN bi_budgetamount ELSE 0 END) AS budget,
-              sum(CASE WHEN bi_year = %s AND bi_month <= %s {qty_gate} THEN COALESCE(bi_qty, 0) ELSE 0 END) AS qty,
+              sum(CASE WHEN bi_year = %s AND bi_month <= %s THEN COALESCE(bi_qty, 0) ELSE 0 END) AS qty,
               sum(CASE WHEN bi_year = %s THEN bi_budgetqty ELSE 0 END) AS budget_qty,
               sum(CASE WHEN bi_year = %s THEN {AMOUNT_EXPR} ELSE 0 END) AS prev_sales,
-              sum(CASE WHEN bi_year = %s {qty_gate} THEN COALESCE(bi_qty, 0) ELSE 0 END) AS prev_qty
+              sum(CASE WHEN bi_year = %s THEN COALESCE(bi_qty, 0) ELSE 0 END) AS prev_qty
             FROM bidata WHERE {where}
             GROUP BY 1
         """, [year, month, year, year, month, year, year - 1, year - 1] + params)
@@ -594,7 +600,7 @@ class PbiSalesMailController(http.Controller):
         return out
 
     def _breakdown_by_quarter_multi(self, year, month, franchise, group_expr, group_keys,
-                                     extra_clauses=(), extra_params=(), qty_gate=''):
+                                     extra_clauses=(), extra_params=()):
         """Same shape/output as _breakdown_by_quarter (including the
         this-year-capped-at-selected-month behavior and clipping to quarters
         up through the one containing the selected month) called once per
@@ -611,10 +617,10 @@ class PbiSalesMailController(http.Controller):
             SELECT {group_expr} AS grp, ((bi_month - 1) / 3 + 1) AS quarter,
               sum(CASE WHEN bi_year = %s AND bi_month <= %s THEN {AMOUNT_EXPR} ELSE 0 END) AS sales,
               sum(CASE WHEN bi_year = %s THEN bi_budgetamount ELSE 0 END) AS budget,
-              sum(CASE WHEN bi_year = %s AND bi_month <= %s {qty_gate} THEN COALESCE(bi_qty, 0) ELSE 0 END) AS qty,
+              sum(CASE WHEN bi_year = %s AND bi_month <= %s THEN COALESCE(bi_qty, 0) ELSE 0 END) AS qty,
               sum(CASE WHEN bi_year = %s THEN bi_budgetqty ELSE 0 END) AS budget_qty,
               sum(CASE WHEN bi_year = %s THEN {AMOUNT_EXPR} ELSE 0 END) AS prev_sales,
-              sum(CASE WHEN bi_year = %s {qty_gate} THEN COALESCE(bi_qty, 0) ELSE 0 END) AS prev_qty
+              sum(CASE WHEN bi_year = %s THEN COALESCE(bi_qty, 0) ELSE 0 END) AS prev_qty
             FROM bidata WHERE {where}
             GROUP BY 1, 2
         """, [year, month, year, year, month, year, year - 1, year - 1] + params)
@@ -746,7 +752,6 @@ class PbiSalesMailController(http.Controller):
         month_label = f"{MONTH_NAMES[month - 1]} {year}"
         channel_labels = [l for _, l in CHANNEL_FIXED_CODES]
         mg_expr = MAIN_GROUP_EXPR_DERIVED
-        qty_gate = self._qty_gate()
 
         # KPI tiles — separate MTD/YTD-per-year queries, deliberately
         # matching sales_kpi_main.py's exact _sums pattern.
@@ -762,7 +767,7 @@ class PbiSalesMailController(http.Controller):
             where = " AND ".join(clauses)
             r = self._query(f"""
                 SELECT sum({AMOUNT_EXPR}) AS sales, sum(bi_budgetamount) AS budget,
-                       sum(CASE WHEN true {qty_gate} THEN COALESCE(bi_qty, 0) ELSE 0 END) AS qty,
+                       sum(COALESCE(bi_qty, 0)) AS qty,
                        sum(bi_budgetqty) AS budget_qty
                 FROM bidata WHERE {where}
             """, params)[0]
@@ -790,7 +795,7 @@ class PbiSalesMailController(http.Controller):
             return [{'code': 'x', 'label': ''}]
 
         def _total_company_period(mode):
-            row = {**self._sums_ty_ly(year, month, mode, franchise, qty_gate=qty_gate), 'code': 'x', 'label': ''}
+            row = {**self._sums_ty_ly(year, month, mode, franchise), 'code': 'x', 'label': ''}
             return [row]
 
         total_company = {
@@ -800,22 +805,20 @@ class PbiSalesMailController(http.Controller):
 
         # Page 2: dept-region-trends — 2 combo charts, + Total row + pct fields.
         dept_trend = self._safe('dept_trend', lambda: self._with_pct(self._append_total_row(
-            self._breakdown_ty_ly(year, month, 'ytd', franchise, CHANNEL_DIM_EXPR, fixed_labels=channel_labels,
-                                   qty_gate=qty_gate))), [])
+            self._breakdown_ty_ly(year, month, 'ytd', franchise, CHANNEL_DIM_EXPR, fixed_labels=channel_labels))), [])
         region_trend = self._safe('region_trend', lambda: self._with_pct(self._append_total_row(
             self._breakdown_ty_ly(year, month, 'ytd', franchise, REGION_EXPR,
-                                   extra_clauses=["bi_csttypecode = '01'"], fixed_labels=REGION_FIXED,
-                                   qty_gate=qty_gate))), [])
+                                   extra_clauses=["bi_csttypecode = '01'"], fixed_labels=REGION_FIXED))), [])
 
         # Page 3: quarterly-company.
         quarterly_company = self._safe('quarterly_company', lambda: self._breakdown_by_quarter(
-            year, month, franchise, qty_gate=qty_gate), [])
+            year, month, franchise), [])
 
         # Page 4: quarterly-department (toggle) — one grouped query for all
         # 4 states instead of one query per state (see
         # _breakdown_by_quarter_multi).
         _qdept_by_code = self._safe('quarterly_department', lambda: self._breakdown_by_quarter_multi(
-            year, month, franchise, "bi_csttypecode", list(CHANNEL_CODES.values()), qty_gate=qty_gate),
+            year, month, franchise, "bi_csttypecode", list(CHANNEL_CODES.values())),
             {code: [] for code in CHANNEL_CODES.values()})
         quarterly_department = {slug: _qdept_by_code.get(code, []) for slug, code in CHANNEL_CODES.items()}
 
@@ -823,37 +826,35 @@ class PbiSalesMailController(http.Controller):
         # grouped query for all 4 regions.
         quarterly_region = self._safe('quarterly_region', lambda: self._breakdown_by_quarter_multi(
             year, month, franchise, REGION_SLUG_EXPR, list(REGION_SUBQUERY.keys()),
-            extra_clauses=["bi_csttypecode = '01'"], qty_gate=qty_gate),
+            extra_clauses=["bi_csttypecode = '01'"]),
             {slug: [] for slug in REGION_SUBQUERY})
 
         # Page 6: main-groups — MTD, YTD (derived from bi_pgroupcode).
         main_groups = {
             'mtd': self._safe('main_groups.mtd', lambda: self._breakdown_ty_ly(
-                year, month, 'month', franchise, mg_expr, fixed_labels=MAIN_GROUP_FIXED, qty_gate=qty_gate), []),
+                year, month, 'month', franchise, mg_expr, fixed_labels=MAIN_GROUP_FIXED), []),
             'ytd': self._safe('main_groups.ytd', lambda: self._breakdown_ty_ly(
-                year, month, 'ytd', franchise, mg_expr, fixed_labels=MAIN_GROUP_FIXED, qty_gate=qty_gate), []),
+                year, month, 'ytd', franchise, mg_expr, fixed_labels=MAIN_GROUP_FIXED), []),
         }
 
         # Page 7: subgroups-top8 (YTD) — also feeds page 8's donuts.
         subgroups_top8 = self._safe('subgroups_top8', lambda: self._breakdown_ty_ly(
-            year, month, 'ytd', franchise, "bi_psgroupname", limit=8, qty_gate=qty_gate), [])
+            year, month, 'ytd', franchise, "bi_psgroupname", limit=8), [])
 
         # Page 10: departments — MTD, YTD — also feeds page 11's donuts.
         departments = {
             'mtd': self._safe('departments.mtd', lambda: self._breakdown_ty_ly(
-                year, month, 'month', franchise, CHANNEL_DIM_EXPR, fixed_labels=channel_labels, qty_gate=qty_gate), []),
+                year, month, 'month', franchise, CHANNEL_DIM_EXPR, fixed_labels=channel_labels), []),
             'ytd': self._safe('departments.ytd', lambda: self._breakdown_ty_ly(
-                year, month, 'ytd', franchise, CHANNEL_DIM_EXPR, fixed_labels=channel_labels, qty_gate=qty_gate), []),
+                year, month, 'ytd', franchise, CHANNEL_DIM_EXPR, fixed_labels=channel_labels), []),
         }
 
         # Page 12: lcac-subgroups — MTD, YTD, filtered Main Group = LCAC.
         lcac_subgroups = {
             'mtd': self._safe('lcac_subgroups.mtd', lambda: self._breakdown_ty_ly(
-                year, month, 'month', franchise, "bi_psgroupname", extra_clauses=[f"({mg_expr}) = 'LCAC'"],
-                qty_gate=qty_gate), []),
+                year, month, 'month', franchise, "bi_psgroupname", extra_clauses=[f"({mg_expr}) = 'LCAC'"]), []),
             'ytd': self._safe('lcac_subgroups.ytd', lambda: self._breakdown_ty_ly(
-                year, month, 'ytd', franchise, "bi_psgroupname", extra_clauses=[f"({mg_expr}) = 'LCAC'"],
-                qty_gate=qty_gate), []),
+                year, month, 'ytd', franchise, "bi_psgroupname", extra_clauses=[f"({mg_expr}) = 'LCAC'"]), []),
         }
 
         # Page 13: top3-by-channel (toggle) — one grouped top-N-per-channel
@@ -861,7 +862,7 @@ class PbiSalesMailController(http.Controller):
         # batching already applied to pages 14/15 via _breakdown_ty_ly_multi).
         _top3_by_code = self._safe('top3_by_channel', lambda: self._breakdown_ty_ly_multi_topn(
             year, month, 'ytd', franchise, "bi_csttypecode", list(CHANNEL_CODES.values()),
-            "bi_psgroupname", limit=3, qty_gate=qty_gate),
+            "bi_psgroupname", limit=3),
             {code: [] for code in CHANNEL_CODES.values()})
         top3_by_channel = {slug: _top3_by_code.get(code, []) for slug, code in CHANNEL_CODES.items()}
 
@@ -869,7 +870,7 @@ class PbiSalesMailController(http.Controller):
         # (channel, region) instead of one query per channel state.
         _rbc_by_code = self._safe('regions_by_channel', lambda: self._breakdown_ty_ly_multi(
             year, month, 'ytd', franchise, "bi_csttypecode", list(CHANNEL_CODES.values()),
-            REGION_EXPR, REGION_FIXED, qty_gate=qty_gate),
+            REGION_EXPR, REGION_FIXED),
             {code: [] for code in CHANNEL_CODES.values()})
         regions_by_channel = {slug: _rbc_by_code.get(code, []) for slug, code in CHANNEL_CODES.items()}
 
@@ -877,7 +878,7 @@ class PbiSalesMailController(http.Controller):
         # (region, main group) instead of one query per region state.
         dealers_region_maingroups = self._safe('dealers_region_maingroups', lambda: self._breakdown_ty_ly_multi(
             year, month, 'ytd', franchise, REGION_SLUG_EXPR, list(REGION_SUBQUERY.keys()),
-            mg_expr, MAIN_GROUP_FIXED, extra_clauses=["bi_csttypecode = '01'"], qty_gate=qty_gate),
+            mg_expr, MAIN_GROUP_FIXED, extra_clauses=["bi_csttypecode = '01'"]),
             {slug: [] for slug in REGION_SUBQUERY})
 
         # Page 16: dealers-region-subgroups (toggle, Main Group = Split) —
@@ -886,14 +887,12 @@ class PbiSalesMailController(http.Controller):
         # one full-table query per region state.
         dealers_region_subgroups = self._safe('dealers_region_subgroups', lambda: self._breakdown_ty_ly_multi_topn(
             year, month, 'ytd', franchise, REGION_SLUG_EXPR, list(REGION_SUBQUERY.keys()),
-            "bi_psgroupname", limit=8, extra_clauses=["bi_csttypecode = '01'", f"({mg_expr}) = 'Split'"],
-            qty_gate=qty_gate),
+            "bi_psgroupname", limit=8, extra_clauses=["bi_csttypecode = '01'", f"({mg_expr}) = 'Split'"]),
             {slug: [] for slug in REGION_SUBQUERY})
 
         # Page 17: projects-productgroups (YTD).
         projects_productgroups = self._safe('projects_productgroups', lambda: self._breakdown_ty_ly(
-            year, month, 'ytd', franchise, "bi_pgroupname", extra_clauses=["bi_csttypecode = '04'"], limit=8,
-            qty_gate=qty_gate), [])
+            year, month, 'ytd', franchise, "bi_pgroupname", extra_clauses=["bi_csttypecode = '04'"], limit=8), [])
 
         bundle = {
             'period': {'year': year, 'month': month, 'monthName': MONTH_NAMES[month - 1],
@@ -1154,6 +1153,15 @@ class PbiSalesMailController(http.Controller):
             ]
         raise ValueError(f"unsupported chart count for a grid slide: {n}")
 
+    def _pptx_style_gridlines(self, chart):
+        """Lightens the value axis's horizontal gridlines (default pptx gray
+        is dark enough to fight with data labels that land right at
+        gridline height) to the same light gray the web dashboard's own
+        SVG gridlines use — see PPTX_GRIDLINE_COLOR."""
+        gridlines = chart.value_axis.major_gridlines
+        gridlines.format.line.color.rgb = PPTX_GRIDLINE_COLOR
+        gridlines.format.line.width = Pt(0.75)
+
     def _pptx_add_bar_data_labels(self, chart, value_fmt):
         """Shows each bar/column's value above it, matching the web
         dashboard's `.bar-value` labels (groupedBarChart in
@@ -1266,7 +1274,7 @@ class PbiSalesMailController(http.Controller):
         plot_area.append(sec_cat_ax_el)
         plot_area.append(sec_val_ax_el)
 
-    def _pptx_add_notes_sidebar(self, slide, notes):
+    def _pptx_add_notes_sidebar(self, slide, notes, notes_already_marked=False):
         """Visible notes column to the right of the chart grid, mirroring
         the web page's `.chart-row` layout (chart-col + .narrative sidebar,
         grid-template-columns: 1fr 340px). This is the ONLY place notes
@@ -1282,9 +1290,10 @@ class PbiSalesMailController(http.Controller):
         # spill past the slide edge.
         box.text_frame.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
         if notes:
-            _pptx_fill_marked_text(box.text_frame, notes, heading_size=Pt(12), body_size=Pt(9))
+            _pptx_fill_marked_text(box.text_frame, notes, heading_size=Pt(12), body_size=Pt(9),
+                                    already_marked=notes_already_marked)
 
-    def _pptx_add_multi_chart_slide(self, prs, layout, title, notes, specs, stacked=False):
+    def _pptx_add_multi_chart_slide(self, prs, layout, title, notes, specs, stacked=False, notes_already_marked=False):
         """One slide per web PAGE (or per toggle state), with that page's
         1/2/4 charts arranged in a grid to the left and its narrative in a
         visible sidebar to the right — mirrors the on-screen `.chart-row`
@@ -1341,6 +1350,7 @@ class PbiSalesMailController(http.Controller):
                 # dashboard's M/K-abbreviated axis labels instead.
                 chart.value_axis.tick_labels.number_format = PPTX_AXIS_NUMBER_FORMAT[spec.get('value_fmt', 'M')]
                 chart.value_axis.tick_labels.number_format_is_linked = False
+                self._pptx_style_gridlines(chart)
                 self._pptx_add_bar_data_labels(chart, spec.get('value_fmt', 'M'))
                 if spec.get('lines'):
                     self._pptx_add_combo_lines(chart, spec['categories'], spec['lines'])
@@ -1350,7 +1360,7 @@ class PbiSalesMailController(http.Controller):
         # is intentionally left untouched/empty; _import_notes reads the
         # sidebar textbox back via _pptx_find_notes_sidebar instead of
         # slide.notes_slide.
-        self._pptx_add_notes_sidebar(slide, notes)
+        self._pptx_add_notes_sidebar(slide, notes, notes_already_marked=notes_already_marked)
         return slide
 
     def _qty_sorted(self, rows):
@@ -1403,6 +1413,13 @@ class PbiSalesMailController(http.Controller):
         # marks it internally. Using the already-marked bundle['narratives']
         # here would mark twice and corrupt the import round-trip.
         narratives = bundle['narrativesPlain']
+        # User-edited notes (pbi.dashboard.note) win over the auto-generated
+        # narrative for a given key — mirrors the web's putNarrative()
+        # (`this.lastJson.notes[key] || this.lastJson.narratives[key]`).
+        # Previously missing here, so a hand-edited note showed on the web
+        # page (and in PDF, which just prints that same page) but silently
+        # fell back to the stale auto-generated text in the PPTX export.
+        notes_override = self._fetch_notes_map(f"{year}-{month:02d}", franchise)
         period_label = bundle['period']['label']
 
         prs = Presentation()
@@ -1413,7 +1430,15 @@ class PbiSalesMailController(http.Controller):
         self._pptx_add_tiles_slide(prs, blank, bundle['kpis'], period_label, franchise, year)
 
         def page_slide(title, notes_key, specs, stacked=False):
-            self._pptx_add_multi_chart_slide(prs, blank, title, narratives.get(notes_key, ''), specs, stacked=stacked)
+            # notes_override values come back from pbi.dashboard.note
+            # already in canonical **bold** marked form (see
+            # _pptx_read_notes_marked) — tell _pptx_add_multi_chart_slide
+            # not to re-run the auto-figure-marking pass on them, or every
+            # bold span from the first stray '**' onward gets corrupted.
+            override = notes_override.get(notes_key)
+            text, marked = (override, True) if override else (narratives.get(notes_key, ''), False)
+            self._pptx_add_multi_chart_slide(prs, blank, title, text, specs, stacked=stacked,
+                                              notes_already_marked=marked)
 
         bar = self._bar_spec
         combo = self._combo_spec
@@ -1630,13 +1655,22 @@ class PbiSalesMailController(http.Controller):
             baseline = {}
 
         Note = request.env['pbi.dashboard.note'].sudo()
+        # One search covering every key in this deck instead of a separate
+        # Note.search() per slide (a full 36-slide export has ~30 note
+        # keys — each search is its own ORM round trip: query building,
+        # security-rule evaluation, etc. — that added up on top of the
+        # _fetch_bundle baseline call above).
+        db_keys = [f'sales_mail_{key}' for key in notes_map]
+        existing_by_key = {n.key: n for n in Note.search([
+            ('key', 'in', db_keys), ('year', '=', period), ('franchise', '=', franchise),
+            ('customer_type', '=', 'all'), ('region', '=', 'all'),
+        ])}
+
         applied = {}
+        to_create = []
         for key, text in notes_map.items():
             db_key = f'sales_mail_{key}'
-            existing = Note.search([
-                ('key', '=', db_key), ('year', '=', period), ('franchise', '=', franchise),
-                ('customer_type', '=', 'all'), ('region', '=', 'all'),
-            ], limit=1)
+            existing = existing_by_key.get(db_key)
             if text.strip() == (baseline.get(key) or '').strip():
                 if existing:
                     existing.unlink()
@@ -1645,8 +1679,10 @@ class PbiSalesMailController(http.Controller):
             if existing:
                 existing.text = text
             else:
-                Note.create({'key': db_key, 'year': period, 'franchise': franchise,
-                              'customer_type': 'all', 'region': 'all', 'text': text})
+                to_create.append({'key': db_key, 'year': period, 'franchise': franchise,
+                                   'customer_type': 'all', 'region': 'all', 'text': text})
+        if to_create:
+            Note.create(to_create)
 
         return _json({'period': period, 'franchise': franchise, 'notes': applied})
 

@@ -1,7 +1,7 @@
 from odoo import http
 from odoo.http import request
 
-from .sales_mail_main import AMOUNT_EXPR, _QTY_GATE_SQL, PRODUCT_SCOPE_CODES
+from .sales_mail_main import AMOUNT_EXPR, PRODUCT_SCOPE_CODES
 
 MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
                "July", "August", "September", "October", "November", "December"]
@@ -100,9 +100,8 @@ class PbiSalesKpiController(http.Controller):
     """Backs "PBI Dashboards > Sales Dashboards > Sales Analysis" — a KPI
     tile + chart dashboard (MTD/YTD sales vs target vs prior year) reading
     live from ``bidata`` directly, the same table sales_mail_main.py reads
-    from and the same AMOUNT_EXPR/qty-gate formula it uses (see that
-    module's docstrings for why: raw bi_amount is too sparse to sum on its
-    own, and Qty needs the catalogflags cat_flag='02' EXISTS gate). A
+    from and the same AMOUNT_EXPR formula it uses (see that module's
+    docstrings for why: raw bi_amount is too sparse to sum on its own). A
     sibling of the plain Sales Dashboard and of the separate drill-down also
     named "Sales Analysis" (pbi_dashboards/controllers/sales_analysis_main.py),
     nested under its own "Sales Dashboards" menu container.
@@ -151,18 +150,6 @@ class PbiSalesKpiController(http.Controller):
 
     def _has_access_new(self):
         return self._has_access_for("pbi_dashboards.menu_pbi_sales_kpi_analysis_new")
-
-    def _qty_gate(self):
-        """Probed once per request: returns _QTY_GATE_SQL (the catalogflags
-        cat_flag='02' EXISTS check) when catalogflags actually has '02' rows,
-        else '' (no gate) — same defensive probe as sales_mail_main.py's
-        identical helper, in case catalogflags is ever empty again."""
-        try:
-            rows = self._query("SELECT 1 FROM catalogflags WHERE cat_flag = '02' LIMIT 1")
-            return _QTY_GATE_SQL if rows else ""
-        except Exception:
-            request.env.cr.rollback()
-            return ""
 
     # ------------------------------------------------------------------
     # filter options
@@ -247,7 +234,7 @@ class PbiSalesKpiController(http.Controller):
     # ------------------------------------------------------------------
     # aggregates
     # ------------------------------------------------------------------
-    def _sums(self, year, franchise, customer_group, sales_type_group, drill_path, month=None, month_lte=None, qty_gate=''):
+    def _sums(self, year, franchise, customer_group, sales_type_group, drill_path, month=None, month_lte=None):
         clauses, params = self._period_clauses(year, month, month_lte)
         dim_clauses, dim_params = self._dim_clauses(franchise, customer_group, sales_type_group)
         drill_clauses, drill_params = self._drill_clauses(drill_path)
@@ -256,14 +243,14 @@ class PbiSalesKpiController(http.Controller):
         where = " AND ".join(clauses)
         r = self._query(f"""
             SELECT sum({AMOUNT_EXPR}) AS sales, sum(bi_budgetamount) AS budget,
-                   sum(CASE WHEN true {qty_gate} THEN bi_qty ELSE 0 END) AS qty,
+                   sum(bi_qty) AS qty,
                    sum(bi_budgetqty) AS budget_qty
             FROM bidata WHERE {where}
         """, params)[0]
         return {"sales": float(r["sales"] or 0), "budget": float(r["budget"] or 0),
                 "qty": int(r["qty"] or 0), "budgetQty": int(r["budget_qty"] or 0)}
 
-    def _breakdown(self, level, year, franchise, customer_group, sales_type_group, drill_path, month=None, month_lte=None, qty_gate=''):
+    def _breakdown(self, level, year, franchise, customer_group, sales_type_group, drill_path, month=None, month_lte=None):
         code_col, name_col = LEVEL_COLUMNS[level]
         clauses, params = self._period_clauses(year, month, month_lte)
         dim_clauses, dim_params = self._dim_clauses(franchise, customer_group, sales_type_group)
@@ -290,7 +277,7 @@ class PbiSalesKpiController(http.Controller):
         where = " AND ".join(clauses)
         rows = self._query(f"""
             SELECT {code_col} AS code, {name_col} AS label, sum({AMOUNT_EXPR}) AS sales, sum(bi_budgetamount) AS budget,
-                   sum(CASE WHEN true {qty_gate} THEN bi_qty ELSE 0 END) AS qty, sum(bi_budgetqty) AS budget_qty
+                   sum(bi_qty) AS qty, sum(bi_budgetqty) AS budget_qty
             FROM bidata WHERE {where}
             GROUP BY 1, 2
             ORDER BY 3 DESC
@@ -359,16 +346,15 @@ class PbiSalesKpiController(http.Controller):
         # no persistent/database-wide change) — same fix as
         # sales_mail_main.py's identical line, for the identical reason:
         # EXPLAIN ANALYZE showed Postgres JIT-compiling each of this bundle's
-        # multi-CASE-WHEN AMOUNT_EXPR/qty_gate aggregate queries (792ms of
-        # which ~620ms was JIT generation/inlining/optimization, confirmed on
-        # live dbprod data), even though the actual scan+aggregate only takes
+        # multi-CASE-WHEN AMOUNT_EXPR aggregate queries (792ms of which
+        # ~620ms was JIT generation/inlining/optimization, confirmed on live
+        # dbprod data), even though the actual scan+aggregate only takes
         # ~150ms. With ~10 such queries per request (sums x4, breakdown x4,
-        # plus the qty_gate probe and option-list queries), that overhead
-        # alone was the dominant cost behind slow initial loads and slow
-        # drill-down/level-nav clicks after the bidata-direct migration.
+        # plus the option-list queries), that overhead alone was the
+        # dominant cost behind slow initial loads and slow drill-down/
+        # level-nav clicks after the bidata-direct migration.
         request.env.cr.execute("SET LOCAL jit = off")
         has_prev_year = (year - 1) >= 2023
-        qty_gate = self._qty_gate()
         # view_level (set by the level-jump nav — "go straight to Regions"
         # etc. without drilling through every level in between) overrides
         # the natural next-level-after-what's-drilled default for JUST this
@@ -390,20 +376,20 @@ class PbiSalesKpiController(http.Controller):
         if level_filter_code not in (None, 'all', ''):
             effective_path.append({"level": level, "code": level_filter_code})
 
-        mtd_this = self._sums(year, franchise, customer_group, sales_type_group, effective_path, month=month, qty_gate=qty_gate)
-        ytd_this = self._sums(year, franchise, customer_group, sales_type_group, effective_path, month_lte=month, qty_gate=qty_gate)
+        mtd_this = self._sums(year, franchise, customer_group, sales_type_group, effective_path, month=month)
+        ytd_this = self._sums(year, franchise, customer_group, sales_type_group, effective_path, month_lte=month)
         if has_prev_year:
-            mtd_last = self._sums(year - 1, franchise, customer_group, sales_type_group, effective_path, month=month, qty_gate=qty_gate)
-            ytd_last = self._sums(year - 1, franchise, customer_group, sales_type_group, effective_path, month_lte=month, qty_gate=qty_gate)
+            mtd_last = self._sums(year - 1, franchise, customer_group, sales_type_group, effective_path, month=month)
+            ytd_last = self._sums(year - 1, franchise, customer_group, sales_type_group, effective_path, month_lte=month)
         else:
             mtd_last = {"sales": 0.0, "budget": 0.0, "qty": 0, "budgetQty": 0}
             ytd_last = {"sales": 0.0, "budget": 0.0, "qty": 0, "budgetQty": 0}
 
-        mtd_breakdown = self._breakdown(level, year, franchise, customer_group, sales_type_group, effective_path, month=month, qty_gate=qty_gate)
-        ytd_breakdown = self._breakdown(level, year, franchise, customer_group, sales_type_group, effective_path, month_lte=month, qty_gate=qty_gate)
+        mtd_breakdown = self._breakdown(level, year, franchise, customer_group, sales_type_group, effective_path, month=month)
+        ytd_breakdown = self._breakdown(level, year, franchise, customer_group, sales_type_group, effective_path, month_lte=month)
         if has_prev_year:
-            mtd_breakdown_prev = self._breakdown(level, year - 1, franchise, customer_group, sales_type_group, effective_path, month=month, qty_gate=qty_gate)
-            ytd_breakdown_prev = self._breakdown(level, year - 1, franchise, customer_group, sales_type_group, effective_path, month_lte=month, qty_gate=qty_gate)
+            mtd_breakdown_prev = self._breakdown(level, year - 1, franchise, customer_group, sales_type_group, effective_path, month=month)
+            ytd_breakdown_prev = self._breakdown(level, year - 1, franchise, customer_group, sales_type_group, effective_path, month_lte=month)
         else:
             mtd_breakdown_prev = []
             ytd_breakdown_prev = []
@@ -416,7 +402,7 @@ class PbiSalesKpiController(http.Controller):
         # unfiltered drill_path instead of reusing the (now single-row)
         # mtd_breakdown above. No extra query in the common unfiltered case.
         if level_filter_code not in (None, 'all', ''):
-            level_option_rows = self._breakdown(level, year, franchise, customer_group, sales_type_group, drill_path, month=month, qty_gate=qty_gate)
+            level_option_rows = self._breakdown(level, year, franchise, customer_group, sales_type_group, drill_path, month=month)
         else:
             level_option_rows = mtd_breakdown
         level_options = [{"v": str(r["code"]), "l": r["label"]} for r in level_option_rows]

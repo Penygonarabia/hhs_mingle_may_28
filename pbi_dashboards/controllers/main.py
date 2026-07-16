@@ -84,13 +84,22 @@ def _pptx_marked_text(plain_text):
     return '\n'.join(lines)
 
 
-def _pptx_fill_marked_text(text_frame, plain_text, heading_size=Pt(14), body_size=None):
+def _pptx_fill_marked_text(text_frame, plain_text, heading_size=Pt(14), body_size=None, already_marked=False):
     """Shared renderer for a **bold**/##heading## marked narrative into any
     pptx text frame — PowerPoint's hidden Notes pane (_pptx_write_notes) or
     a visible on-slide textbox (the sales-mail dashboards' notes sidebar,
-    mirroring the web page's `.narrative` column) both go through this."""
+    mirroring the web page's `.narrative` column) both go through this.
+    `already_marked=True` skips the auto-figure-marking pass for text that
+    is already in canonical **bold**/##heading## form — e.g. a hand-edited
+    note round-tripped back from pbi.dashboard.note via
+    _pptx_read_notes_marked, which already carries its own (possibly
+    non-figure, user-added) bold spans. Re-running _pptx_marked_text on
+    that would scan for numeric figures inside text that already has
+    literal '**' in it, doubling up the markers and corrupting every bold
+    span from the first stray match onward."""
     text_frame.clear()
-    for i, line in enumerate(_pptx_marked_text(plain_text).split('\n')):
+    marked = plain_text if already_marked else _pptx_marked_text(plain_text)
+    for i, line in enumerate(marked.split('\n')):
         p = text_frame.paragraphs[0] if i == 0 else text_frame.add_paragraph()
         p.space_after = Pt(10)
         heading_m = re.fullmatch(r'##(.*)##', line)

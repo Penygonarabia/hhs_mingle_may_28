@@ -334,6 +334,17 @@ function comboBarLineChart(el, data, barKeys, barColors, barLabels, lineKeys, li
   const W = Math.max(el.clientWidth || 480, data.length * perGroup), H = 260;
   const marginL = 54, marginR = 50, marginT = 10, marginB = 46;
   const plotW = W - marginL - marginR, plotH = H - marginT - marginB;
+  // The Achievement%/YoY% lines get their OWN reserved band across the top
+  // of the plot (not just a secondary scale sharing the bars' full
+  // height) — with a shared height, a line's pixel position depends on
+  // where its % value falls between 0 and niceMaxPct, which for typical
+  // 60-120% figures often lands right at/behind a tall bar's top,
+  // hiding the dot and its new value label behind the bar. Confining bars
+  // to barAreaTop/barAreaH (below the line band, same baseline as before)
+  // and lines to marginT/lineBandH (above it) guarantees the lines always
+  // sit above every bar regardless of the actual data.
+  const lineBandH = plotH * 0.32, lineBandGap = 22;
+  const barAreaTop = marginT + lineBandH + lineBandGap, barAreaH = plotH - lineBandH - lineBandGap;
   const maxRaw = Math.max(1, ...data.flatMap(d => barKeys.map(k => d[k] || 0)));
   const tickVals = niceAxisTicks(maxRaw, valueFmt);
   const maxVal = tickVals[tickVals.length - 1];
@@ -345,14 +356,14 @@ function comboBarLineChart(el, data, barKeys, barColors, barLabels, lineKeys, li
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" width="${W}px" height="${H}">`;
   tickVals.forEach(val => {
-    const y = marginT + plotH - (plotH * val / maxVal);
+    const y = barAreaTop + barAreaH - (barAreaH * val / maxVal);
     svg += `<line class="gridline" x1="${marginL}" x2="${W - marginR}" y1="${y}" y2="${y}"/>`;
     svg += `<text class="axis-label" x="${marginL - 8}" y="${y + 3}" text-anchor="end">${axisTickLabel(val, valueFmt)}</text>`;
   });
-  svg += `<line class="baseline" x1="${marginL}" x2="${W - marginR}" y1="${marginT + plotH}" y2="${marginT + plotH}"/>`;
+  svg += `<line class="baseline" x1="${marginL}" x2="${W - marginR}" y1="${barAreaTop + barAreaH}" y2="${barAreaTop + barAreaH}"/>`;
   const pctStep = niceMaxPct / 4;
   for (let p = 0; p <= niceMaxPct + 0.001; p += pctStep) {
-    const y = marginT + plotH - (plotH * p / niceMaxPct);
+    const y = marginT + lineBandH - (lineBandH * p / niceMaxPct);
     svg += `<text class="axis-label combo-pct-label" x="${W - marginR + 8}" y="${y + 3}" text-anchor="start">${Math.round(p)}%</text>`;
   }
 
@@ -360,29 +371,43 @@ function comboBarLineChart(el, data, barKeys, barColors, barLabels, lineKeys, li
     const groupX = marginL + gi * groupW + groupW / 2 - (barW * barKeys.length + gap * (barKeys.length - 1)) / 2;
     barKeys.forEach((k, si) => {
       const val = d[k] || 0;
-      const barH = plotH * (val / maxVal);
+      const barH = barAreaH * (val / maxVal);
       const x = groupX + si * (barW + gap);
-      const y = marginT + plotH - barH;
+      const y = barAreaTop + barAreaH - barH;
       svg += `<rect data-tip="${d.label}||${barLabels[si]}||${val}" rx="2" ry="2" x="${x}" y="${y}" width="${barW}" height="${Math.max(barH, 1)}" fill="${barColors[si]}"/>`;
+      svg += `<text class="bar-value" x="${x + barW / 2}" y="${y - 3}" text-anchor="middle">${valueFmt(val)}</text>`;
     });
     const label = truncateLabel(d.label, groupW - 8);
     svg += `<text class="axis-label" x="${marginL + gi * groupW + groupW / 2}" y="${H - 24}" text-anchor="middle"><title>${d.label}</title>${label}</text>`;
   });
 
+  const yAt = val => marginT + lineBandH - (lineBandH * Math.min(val, niceMaxPct) / niceMaxPct);
   lineKeys.forEach((k, li) => {
-    const pts = [];
-    data.forEach((d, gi) => {
-      const val = d[k];
-      if (val == null) return;
-      const x = marginL + gi * groupW + groupW / 2;
-      const y = marginT + plotH - (plotH * Math.min(val, niceMaxPct) / niceMaxPct);
-      pts.push({ x, y, val, label: d.label });
-    });
+    const pts = data.map((d, gi) => ({ x: marginL + gi * groupW + groupW / 2, y: yAt(d[k]), val: d[k] }))
+      .filter(p => p.val != null);
     if (!pts.length) return;
     const path = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
     svg += `<path class="combo-line" d="${path}" fill="none" stroke="${lineColors[li]}" stroke-width="2.5"/>`;
-    pts.forEach(p => {
-      svg += `<circle class="combo-dot" data-tip="${p.label}||${lineLabels[li]}||${p.val.toFixed(1)}%" cx="${p.x}" cy="${p.y}" r="4" fill="${lineColors[li]}"/>`;
+  });
+
+  // Dots + value labels are placed per DATA POINT (across both lines
+  // together), not per line — Vs. Target and Vs. Last Year cross over
+  // (sometimes one is higher, sometimes the other), so a label
+  // above/below assignment fixed to a line index can land both labels in
+  // the same cramped gap between two close, order-flipped dots. Sorting
+  // by actual y at each point instead guarantees the topmost dot always
+  // gets the "above" label and the bottom one always gets "below",
+  // regardless of which series that happens to be this time.
+  data.forEach((d, gi) => {
+    const x = marginL + gi * groupW + groupW / 2;
+    const here = lineKeys
+      .map((k, li) => (d[k] == null ? null : { li, x, y: yAt(d[k]), val: d[k] }))
+      .filter(Boolean)
+      .sort((a, b) => a.y - b.y);
+    here.forEach((p, order) => {
+      svg += `<circle class="combo-dot" data-tip="${d.label}||${lineLabels[p.li]}||${p.val.toFixed(1)}%" cx="${p.x}" cy="${p.y}" r="4" fill="${lineColors[p.li]}"/>`;
+      const labelY = order === 0 ? p.y - 8 : p.y + 14 + (order - 1) * 12;
+      svg += `<text class="combo-pct-value" x="${p.x}" y="${labelY}" text-anchor="middle" fill="${lineColors[p.li]}">${p.val.toFixed(1)}%</text>`;
     });
   });
   svg += `</svg>`;
@@ -467,13 +492,13 @@ const PAGE_DEFS = [
 // (distinct from the data-driven "narrative" business commentary in the
 // .narrative panels). Kept English-only (not run through addLabels/t()):
 // these are formula/column-name descriptions, not UI chrome. See
-// sales_mail_main.py (AMOUNT_EXPR, _QTY_GATE_SQL, BASE_SCOPE_SQL,
+// sales_mail_main.py (AMOUNT_EXPR, BASE_SCOPE_SQL,
 // MAIN_GROUP_EXPR_DERIVED, CHANNEL_DIM_EXPR, _breakdown_by_quarter,
 // _with_pct) for the source of every figure below.
 const PROCESS_NOTES = {
-  scope: `All figures here are scoped to Midea's AC product family (12 product-group codes) and exclude dealer accounts whose customer code starts with "V". <b>Value</b> = SUM(Quantity × (Unit Price − Discount − Special Discount)), not the raw Amount field (only ~14% populated). <b>Quantity</b> = SUM(bi_qty), restricted to countable-unit parts wherever shown as its own measure. Target = the separate budget feed. Selecting BEKO/CANDY in Franchise returns no data by design — this report is Midea-only.`,
+  scope: `All figures here are scoped to Midea's AC product family (12 product-group codes) and exclude dealer accounts whose customer code starts with "V". <b>Value</b> = SUM(Quantity × (Unit Price − Discount − Special Discount)), not the raw Amount field (only ~14% populated). <b>Quantity</b> = SUM(bi_qty), same scope/filters as Value — no extra countable-unit restriction. Target = the separate budget feed. Selecting BEKO/CANDY in Franchise returns no data by design — this report is Midea-only.`,
   'kpi-amount': `Company-wide Value totals for the selected Month (MTD) and Jan-through-Month (YTD): This Year, Target (budget) and Last Year. "vs LY" = This Year ÷ Last Year × 100; "Achv" = This Year ÷ Target × 100.`,
-  'kpi-qty': `Same MTD/YTD/This Year/Target/Last Year comparison as the Amount tiles above, but counting units (SUM of bi_qty) instead of value, and restricted to countable-unit parts only.`,
+  'kpi-qty': `Same MTD/YTD/This Year/Target/Last Year comparison as the Amount tiles above, but counting units (SUM of bi_qty) instead of value, same scope/filters as Value.`,
   'total-company': `4 separate totals for the selected Month (MTD) and Jan-through-Month (YTD), by Value and by Qty — same formulas and This Year/Target/Last Year comparison as the KPI tiles above, just re-shown as bars.`,
   'dept-region-trends': `YTD Value by Department (Dealers/Modern Trade/Whole Sale/Projects) and by Dealer Region (Riyadh/Qassim/Western/Eastern, Dealers channel only). Achievement % = YTD Actual ÷ YTD Target × 100; YoY % = YTD Actual ÷ Last-Year YTD × 100 (a ratio to last year, not a growth rate).`,
   'quarterly-company': `Calendar-year Q1 through the quarter containing the selected month. This-Year actual is capped at the selected month so later months in the current quarter don't leak in; Target and Last Year are shown for the full quarter.`,

@@ -87,6 +87,23 @@
   color: var(--text-secondary); background: var(--surface-1);
   border: 1px solid var(--border); border-radius: 999px;
   padding: 7px 14px; cursor: pointer; transition: background .12s, color .12s, border-color .12s;
+  /* Some unrelated third-party module in this Odoo install also defines a
+     bare, unnamespaced `.toggle-btn{width:30px;height:30px;border-radius:
+     30px;...}` rule (an FAQ/help-widget icon, nothing to do with this
+     dashboard). This selector's higher specificity (2 classes vs. 1) wins
+     every property THIS rule declares, but width/height weren't declared
+     here, so that foreign rule's fixed 30x30 box won by default — forcing
+     every label into an unreadable ~30px circle regardless of viewport
+     width (worst on mobile, where 4 buttons no longer fit their natural
+     size on one row and there's no room to notice/scroll around it).
+     Declaring width/height explicitly (not just leaving them at the
+     'auto' initial value) is what actually defeats the foreign rule —
+     "unset" alone wouldn't out-specificity it, an explicit value from a
+     higher-specificity selector is required. flex/white-space are then a
+     genuine (if secondary) belt-and-suspenders: without them a
+     flex-wrap:wrap container can still shrink a text-wrapping item below
+     its natural width instead of wrapping it to a new row. */
+  width: auto; height: auto; flex: 0 0 auto; white-space: nowrap;
 }
 .pbi-sales-mail-dashboard .toggle-btn:hover { border-color: var(--series-1); color: var(--series-1); }
 .pbi-sales-mail-dashboard .toggle-btn.active { background: var(--series-1); border-color: var(--series-1); color: #fff; }
@@ -128,6 +145,7 @@
 .pbi-sales-mail-dashboard .combo-line { fill: none; }
 .pbi-sales-mail-dashboard .combo-dot { cursor: default; stroke: var(--surface-1); stroke-width: 1.5; }
 .pbi-sales-mail-dashboard .combo-pct-label { fill: var(--text-muted); }
+.pbi-sales-mail-dashboard .combo-pct-value { font-size: 8px; font-weight: 700; }
 .pbi-sales-mail-dashboard .donut-pad { padding-bottom: 19px; }
 
 .pbi-sales-mail-dashboard .pbi-legend-wrap { display: flex; align-items: center; gap: 4px; margin-bottom: 10px; }

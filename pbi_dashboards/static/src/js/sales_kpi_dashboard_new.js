@@ -93,6 +93,12 @@ const fmtCompact = n => n == null ? "–" : new Intl.NumberFormat('en-US', { not
 function pct(part, total) { return total > 0 ? (part / total * 100) : null; }
 function fmtPct(p) { return p == null ? "–" : p.toFixed(1) + "%"; }
 function fmtPctPrecise(p) { return p == null ? "–" : p.toFixed(2) + "%"; }
+// Every breakdown array from the controller is ordered by This-Year SALES
+// descending (shared with the Amount chart). A Qty panel needs its OWN
+// This-Year-Qty-descending order instead — sorting a shallow copy here keeps
+// the Amount chart's array/order untouched. Same pattern as
+// sales_mail_dashboard_new.js's byQtyDesc.
+function byQtyDesc(rows) { return [...rows].sort((a, b) => (b.qty || 0) - (a.qty || 0)); }
 
 let tooltipEl = null;
 function showTip(evt, html) {
@@ -617,11 +623,13 @@ export class PbiSalesKpiDashboardNew extends Component {
     const valueFmt = isAmount ? fmtM : fmtK;
     const valueKey = isAmount ? 'sales' : 'qty';
     const onClick = this.state.canDrillFurther ? (code, label) => this.onCategoryClick(code, label) : null;
+    const mtdRows = isAmount ? this.lastJson.breakdown.mtd : byQtyDesc(this.lastJson.breakdown.mtd);
+    const ytdRows = isAmount ? this.lastJson.breakdown.ytd : byQtyDesc(this.lastJson.breakdown.ytd);
 
-    groupedBarChart(this.refs.mtdBar.el, this.lastJson.breakdown.mtd, seriesKeys, barColors, seriesLabels, onClick, valueFmt);
-    groupedBarChart(this.refs.ytdBar.el, this.lastJson.breakdown.ytd, seriesKeys, barColors, seriesLabels, onClick, valueFmt);
-    donutChart(this.refs.mtdDonut.el, this.lastJson.breakdown.mtd.map(d => ({ code: d.code, label: d.label, value: d[valueKey] })), colors, onClick, valueFmt);
-    donutChart(this.refs.ytdDonut.el, this.lastJson.breakdown.ytd.map(d => ({ code: d.code, label: d.label, value: d[valueKey] })), colors, onClick, valueFmt);
+    groupedBarChart(this.refs.mtdBar.el, mtdRows, seriesKeys, barColors, seriesLabels, onClick, valueFmt);
+    groupedBarChart(this.refs.ytdBar.el, ytdRows, seriesKeys, barColors, seriesLabels, onClick, valueFmt);
+    donutChart(this.refs.mtdDonut.el, mtdRows.map(d => ({ code: d.code, label: d.label, value: d[valueKey] })), colors, onClick, valueFmt);
+    donutChart(this.refs.ytdDonut.el, ytdRows.map(d => ({ code: d.code, label: d.label, value: d[valueKey] })), colors, onClick, valueFmt);
   }
 
   renderAll() {
