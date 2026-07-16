@@ -431,6 +431,28 @@
                                 المورد:
                             </td>
                         </tr>
+                        
+                        <!-- Row 6 -->
+                        <tr>
+                            <td class="label-cell"
+                                style="border: 1px solid black; background-color: white;
+                                       font-size: 11px; padding: 4px;">
+                                Visit Count:
+                            </td>
+                            <td class="value-cell"
+                                style="border: 1px solid black; background-color: white;
+                                       font-size: 11px; padding: 4px;">
+                                <span t-out="doc.technician_no_of_visit_count or ''"/>
+                            </td>
+                            <td class="label-cell"
+                                style="text-align:right; border: 1px solid black; background-color: white;
+                                       font-size: 11px; padding: 4px;"
+                                dir="rtl">
+                                عدد الزيارات:
+                            </td>
+                           
+                        </tr>
+                        
                         </tbody>
                     </table>
 
