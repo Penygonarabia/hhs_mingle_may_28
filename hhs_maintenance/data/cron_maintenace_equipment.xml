@@ -30,6 +30,17 @@
 	     	<field name = "active">True</field>
      
      </record>   
+     
+      <record id="ir_cron_send_email_alert_for_supervisor_next_visit" model="ir.cron">
+	    <field name="name">Email Alert For Supervisor Next Visit Maintenance</field>
+	    <field name="model_id" ref="model_maintenance_equipment"/>
+	    <field name="state">code</field>
+	    <field name="code">model.cron_send_supervisor_email_alert_maintenance()</field>
+	    <field name="interval_number">1</field>
+	    <field name="interval_type">days</field>
+	    <field name="numbercall">-1</field>
+	    <field name="active">True</field>
+	</record>
 		
 		
 	

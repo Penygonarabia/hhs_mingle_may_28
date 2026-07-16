@@ -416,6 +416,60 @@ class MaintenanceEquipment(models.Model):
     #         }
     #     }
     
+    '''Code Added on July 16 2026 for cron job automatically send when the next invocie schedule date is today  for email alert to supervisor'''
+    @api.model
+    def cron_send_supervisor_email_alert_maintenance(self):
+        today = fields.Date.today()
+        seven_days_after = today + relativedelta(days=7)
+    
+        equipment_search = self.env['maintenance.equipment'].search([
+            ('next_schedule_visit', '=', seven_days_after),
+            ('recurrent', '=', True),
+            ('contract_id', '!=', False),
+            ('contract_start_date', '<=', today),
+            ('contract_end_date', '>=', seven_days_after),
+        ])
+    
+        if not equipment_search:
+            return
+    
+        supervisor_group = self.env.ref(
+            'machine_repair_management.group_technical_allocation_user'
+        )
+        supervisors = supervisor_group.users
+    
+        for rec in equipment_search:
+            matching_supervisors = supervisors.filtered(
+                lambda u: rec.project_team_id in u.project_ids
+            )
+    
+            for user in matching_supervisors:
+                subject = f"Upcoming scheduled visit - {rec.name}"
+    
+                body_html = f"""
+                    <p>Dear {user.name},</p>
+                    <p>
+                        The next scheduled visit for <b>{rec.name}</b> is due on
+                        <b>{rec.next_schedule_visit.strftime('%d-%m-%Y')}</b>.
+                    </p>
+                    <p>Please contact the customer regarding renewal.</p>
+                    <br/>
+                    <p>
+                        Best Regards,<br/>
+                        Maintenance Department
+                    </p>
+                """
+    
+                self.env['mail.mail'].create({
+                    'subject': subject,
+                    'body_html': body_html,
+                    'email_from': self.env.user.email or self.env.company.email,
+                    'email_to': user.email or user.login,
+                }).send()
+                    
+    
+    
+    
     '''Code Added on July 16 2026 for  cron job automatically send when the next invocie schedule date is today '''
     @api.model
     def cron_create_single_service_request(self, from_cron=False):
