@@ -6,6 +6,7 @@ from odoo.exceptions import UserError, warnings, ValidationError
 import math
 
 from pygments.styles import default
+from psycopg2.errors import UniqueViolation
 
 _logger = logging.getLogger(__name__)
 
@@ -415,6 +416,173 @@ class MaintenanceEquipment(models.Model):
     #         }
     #     }
     
+    '''Code Added on July 16 2026 for  cron job automatically send when the next invocie schedule date is today '''
+    @api.model
+    def cron_create_single_service_request(self, from_cron=False):
+        today = fields.Date.today()
+        equipment_search = self.env['maintenance.equipment'].search(
+            [
+                ('next_schedule_visit', '=', today),
+                ('recurrent', '=', True),
+                ('contract_id', '!=', False),
+                ('contract_start_date', '<=', today),
+                ('contract_end_date', '>=', today),
+            ])
+
+        created_jobs = []
+        skipped_jobs = []
+
+        for rec in equipment_search:
+            try:
+                with self.env.cr.savepoint():
+
+                    if not rec.contract_id or not rec.contract_id.partner_id:
+                        skipped_jobs.append(f"{rec.display_name} → Missing contract/customer")
+                        continue
+
+                    if not rec.recurrent:
+                        skipped_jobs.append(f"{rec.display_name} → Recurrent not set")
+                        continue
+
+                    next_visit_schedule_date = rec.next_schedule_visit
+                    no_of_visits = rec.no_of_visits
+                    partner = rec.contract_id.partner_id
+
+                    address_parts = [
+                        rec.crm_lead_id.street,
+                        rec.crm_lead_id.street2,
+                        rec.crm_lead_id.customer_city_id.name if rec.crm_lead_id.customer_city_id else "",
+                        rec.crm_lead_id.state_id.name if rec.crm_lead_id.state_id else "",
+                        rec.crm_lead_id.country_id.name if rec.crm_lead_id.country_id else "",
+                        rec.crm_lead_id.district.name if rec.crm_lead_id.district else "",
+                        rec.crm_lead_id.zip or "",
+                    ]
+                    full_address = ",".join(filter(None, address_parts))
+
+                    project = self.env['project.project'].search(
+                        [('name', '=', 'HHS - AMC Project')], limit=1)
+
+                    service_nature = self.env['service.nature'].search(
+                        [('code', '=', '001')], limit=1)
+
+                    service_team_id = self.env['machine.support.team'].search(
+                        [('leader_id', '=', rec.technician_user_id.id)], limit=1)
+
+                    district_search_id = self.env['res.state.district'].search(
+                        [('id', '=', rec.crm_lead_id.district.id)], limit=1)
+
+                    if (not next_visit_schedule_date
+                            or not (rec.contract_start_date <= next_visit_schedule_date <= rec.contract_end_date)):
+                        skipped_jobs.append(f"{rec.display_name} → Invalid schedule date")
+                        continue
+
+                    next_count = rec.pm_service_count
+                    name = f"{rec.name}/{str(next_count).zfill(2)}"
+
+                    if self.env['machine.repair.support'].search_count([('name', '=', name)]):
+                        skipped_jobs.append(f"{rec.display_name} → {name} already exists, skipping")
+                        continue
+
+                    vals = {
+                        'name': name,
+                        'partner_id': partner.id,
+                        'customer_name': partner.name,
+                        'phone': partner.mobile or partner.phone,
+                        'email': partner.email,
+                        'customer_city_id': rec.crm_lead_id.customer_city_id.id or False,
+                        'country_district_id': district_search_id.id or False,
+                        'work_location_id': rec.crm_lead_id.customer_city_id.def_work_center_id.id or False,
+                        'contract_id': rec.contract_id.id,
+                        'asset_id': rec.id,
+                        'brand': rec.brand_id.name,
+                        'product_id': rec.service_products_code_id.id or False,
+                        'model': rec.model_id.model_code or False,
+                        'product_slno': rec.serial_no or False,
+                        'amc_project_id': rec.project_team_id.id or False,
+                        'nature_of_service_id': service_nature.id or False,
+                        'maintenance_type': 'preventive',
+                        'user_id': rec.technician_user_id.id or False,
+                        'team_id': service_team_id.id or False,
+                        'contract_date': rec.contract_start_date,
+                        'contract_expiry_date': rec.contract_end_date,
+                        'service_products_code_id': rec.service_products_code_id.id or False,
+                        'service_group_batch': rec.service_group_batch or False,
+                        'problem': 'AMC Maintenance',
+                        'work_center_group_id': rec.crm_lead_id.customer_city_id.def_work_center_id.work_center_group_id.id or False,
+                        'maintenance_contract_type_id': rec.maintenance_contract_type_id.id or False,
+                        'service_create_from_equipment_bool': True,
+                        'type_of_property': rec.crm_lead_id.type_of_property or False,
+                        'property_type_maintenance_details_id': rec.crm_lead_id.property_type_maintenance_details_id.id or False,
+                        'company_preventive_maintenance': rec.crm_lead_id.company_preventive_maintenance or False,
+                        'customer_identification_scheme': rec.contract_id.customer_identification_scheme or False,
+                        'customer_identification_number': rec.contract_id.customer_identification_number or False,
+                        'building_number': rec.contract_id.building_number or False,
+                        'plot_identification': rec.contract_id.plot_identification or False,
+                        'product_category': rec.brand_id.amc_product_category_id.id or False,
+                        'used_location_equipment': rec.location or False,
+                        'brand_id': rec.brand_id.id or False,
+                        'items_from_own_company_bool': rec.items_from_own_company_bool or False,
+                        'model_id': rec.model_id.id or False,
+                        'product_product_model_id': rec.product_product_model_id.id or False,
+                        'partner_name': rec.contract_id.partner_name or False,
+                    }
+
+                    service_request = self.env['machine.repair.support'].sudo().create(vals)
+
+                    service_request._compute_update_contract_line()
+                    service_request._send_whatsapp_greeting()
+                    service_request._onchange_customer_city_id()
+                    service_request.onchange_partner_id_check()
+
+                    scheduled_state = self.env['project.task.type'].search(
+                        [('code', '=', '101')], limit=1)
+
+                    service_request.write({
+                        'address_one': full_address,
+                        'address': full_address,
+                        'service_request_state_code': scheduled_state.code,
+                        'service_request_state': scheduled_state.name,
+                        'state': scheduled_state.id,
+                    })
+
+                    if service_request.task_id:
+                        service_request.task_id.write({
+                            'address_one': full_address,
+                            'address': full_address,
+                            'zip_code': rec.crm_lead_id.customer_city_id.zipcode or False,
+                            'country_state_id': rec.crm_lead_id.customer_city_id.state_id.id or False,
+                            'country_id': rec.crm_lead_id.customer_city_id.country_id.id or False,
+                            'job_card_state_code': scheduled_state.code,
+                            'job_card_state': scheduled_state.name,
+                            'job_state': scheduled_state.id
+                        })
+
+                        if service_request.task_id.name:
+                            created_jobs.append(service_request.task_id.name)
+
+                    service_request._create_res_partner()
+
+                    if service_request and next_visit_schedule_date and no_of_visits:
+                        interval = 12 / no_of_visits
+                        months = math.floor(interval)
+                        days = round((interval - months) * 30)
+
+                        rec.next_schedule_visit = next_visit_schedule_date + relativedelta(
+                            months=months,
+                            days=days
+                        )
+
+                    rec.pm_service_count += 1
+
+            except Exception as e:
+                _logger.exception(
+                    "Failed to create service request for %s", rec.display_name
+                )
+                skipped_jobs.append(f"{rec.display_name} → {e}")
+                continue
+
+        if from_cron:
+            return True
     
     def create_single_service_request(self):
     
@@ -480,7 +648,13 @@ class MaintenanceEquipment(models.Model):
                 continue
     
          
-            if not next_visit_schedule_date or next_visit_schedule_date > rec.contract_end_date:
+            # if not next_visit_schedule_date or next_visit_schedule_date > rec.contract_end_date:
+            #     skipped_jobs.append(f"{rec.display_name} → Invalid schedule date")
+            #     continue
+            
+            if (not next_visit_schedule_date
+                or not (rec.contract_start_date <= next_visit_schedule_date <= rec.contract_end_date)
+            ):
                 skipped_jobs.append(f"{rec.display_name} → Invalid schedule date")
                 continue
             next_count = rec.pm_service_count
@@ -846,82 +1020,82 @@ class MaintenanceEquipment(models.Model):
     #         }
             
         
-    @api.model
-    def _cron_service_request_creation(self):
-    
-        today = fields.Date.today()    
-    
-        recurrent = False
-    
-        maintenance_search = self.env['maintenance.equipment'].search([
-            ('recurrent','=',True),('next_schedule_visit','=',today),
-            ('contract_start_date','<=',today),
-            ('contract_end_date','>=',today)
-            
-            ])
-    
-        
-        for maintenance_equipment in maintenance_search:
-        # self.ensure_one()
-    
-            if not maintenance_equipment.contract_id or not maintenance_equipment.contract_id.partner_id:
-                raise UserError(_("Please set a valid contract and customer before creating a service request."))
-        
-            next_visit_schedule_date = maintenance_equipment.next_schedule_visit
-        
-            no_of_visits = maintenance_equipment.no_of_visits
-        
-            partner = maintenance_equipment.contract_id.partner_id
-            
-            recurrent  = maintenance_equipment.recurrent
-    
-        
-            work_location_id = False
-            if partner.customer_city_id and partner.customer_city_id.def_work_center_id:
-                work_location_id = partner.customer_city_id.def_work_center_id.id
-        
-            project = self.env['project.project'].search([('name', '=', 'HHS - AMC Project')], limit=1)
-            service_nature = self.env['service.nature'].search(
-                    [('code', '=', '001')],
-                    limit=1)
-            service_team_id = self.env['machine.support.team'].search([('leader_id','=',maintenance_equipment.technician_user_id.id)],limit=1)
-        
-            vals = {
-                'partner_id': partner.id,
-                'customer_name': partner.name,
-                'phone': partner.mobile or partner.phone,
-                'email': partner.email,
-                'customer_city_id': partner.customer_city_id.id if partner.customer_city_id else False,
-                'country_district_id' : partner.customer_city_id.country_district_id.id  if partner.customer_city_id.country_district_id else False,
-                'work_location_id': work_location_id,
-                'contract_id': maintenance_equipment.contract_id.id,
-                'asset_id': maintenance_equipment.id,
-                'brand' : maintenance_equipment.brand_id.name,
-                'product_id':maintenance_equipment.service_products_code_id.id or False,
-                "amc_project_id" : maintenance_equipment.project_team_id.id or False,
-                'nature_of_service_id' : service_nature.id or False,
-                'maintenance_type' :'preventive',
-                "user_id" : maintenance_equipment.technician_user_id.id or False,
-                "product_slno" : maintenance_equipment.serial_no or False,
-                "team_id" : service_team_id.id or False,
-                "contract_date" : maintenance_equipment.contract_start_date,
-                "contract_expiry_date":maintenance_equipment.contract_end_date,
-                "service_products_code_id":maintenance_equipment.service_products_code_id.id or False
-            }
-            if next_visit_schedule_date <= maintenance_equipment.contract_end_date:
-                service_request = self.env['machine.repair.support'].sudo().create(vals)
-                service_request._compute_update_contract_line()
-            
-                if service_request and next_visit_schedule_date and no_of_visits:
-                    interval = 12 / no_of_visits
-            
-                    months = math.floor(interval)
-                    days = round((interval - months) * 30)
-            
-                    maintenance_equipment.next_schedule_visit = next_visit_schedule_date + relativedelta(
-                        months=months,
-                        days=days
-                    )
+    # @api.model
+    # def _cron_service_request_creation(self):
+    #
+    #     today = fields.Date.today()    
+    #
+    #     recurrent = False
+    #
+    #     maintenance_search = self.env['maintenance.equipment'].search([
+    #         ('recurrent','=',True),('next_schedule_visit','=',today),
+    #         ('contract_start_date','<=',today),
+    #         ('contract_end_date','>=',today)
+    #
+    #         ])
+    #
+    #
+    #     for maintenance_equipment in maintenance_search:
+    #     # self.ensure_one()
+    #
+    #         if not maintenance_equipment.contract_id or not maintenance_equipment.contract_id.partner_id:
+    #             raise UserError(_("Please set a valid contract and customer before creating a service request."))
+    #
+    #         next_visit_schedule_date = maintenance_equipment.next_schedule_visit
+    #
+    #         no_of_visits = maintenance_equipment.no_of_visits
+    #
+    #         partner = maintenance_equipment.contract_id.partner_id
+    #
+    #         recurrent  = maintenance_equipment.recurrent
+    #
+    #
+    #         work_location_id = False
+    #         if partner.customer_city_id and partner.customer_city_id.def_work_center_id:
+    #             work_location_id = partner.customer_city_id.def_work_center_id.id
+    #
+    #         project = self.env['project.project'].search([('name', '=', 'HHS - AMC Project')], limit=1)
+    #         service_nature = self.env['service.nature'].search(
+    #                 [('code', '=', '001')],
+    #                 limit=1)
+    #         service_team_id = self.env['machine.support.team'].search([('leader_id','=',maintenance_equipment.technician_user_id.id)],limit=1)
+    #
+    #         vals = {
+    #             'partner_id': partner.id,
+    #             'customer_name': partner.name,
+    #             'phone': partner.mobile or partner.phone,
+    #             'email': partner.email,
+    #             'customer_city_id': partner.customer_city_id.id if partner.customer_city_id else False,
+    #             'country_district_id' : partner.customer_city_id.country_district_id.id  if partner.customer_city_id.country_district_id else False,
+    #             'work_location_id': work_location_id,
+    #             'contract_id': maintenance_equipment.contract_id.id,
+    #             'asset_id': maintenance_equipment.id,
+    #             'brand' : maintenance_equipment.brand_id.name,
+    #             'product_id':maintenance_equipment.service_products_code_id.id or False,
+    #             "amc_project_id" : maintenance_equipment.project_team_id.id or False,
+    #             'nature_of_service_id' : service_nature.id or False,
+    #             'maintenance_type' :'preventive',
+    #             "user_id" : maintenance_equipment.technician_user_id.id or False,
+    #             "product_slno" : maintenance_equipment.serial_no or False,
+    #             "team_id" : service_team_id.id or False,
+    #             "contract_date" : maintenance_equipment.contract_start_date,
+    #             "contract_expiry_date":maintenance_equipment.contract_end_date,
+    #             "service_products_code_id":maintenance_equipment.service_products_code_id.id or False
+    #         }
+    #         if next_visit_schedule_date <= maintenance_equipment.contract_end_date:
+    #             service_request = self.env['machine.repair.support'].sudo().create(vals)
+    #             service_request._compute_update_contract_line()
+    #
+    #             if service_request and next_visit_schedule_date and no_of_visits:
+    #                 interval = 12 / no_of_visits
+    #
+    #                 months = math.floor(interval)
+    #                 days = round((interval - months) * 30)
+    #
+    #                 maintenance_equipment.next_schedule_visit = next_visit_schedule_date + relativedelta(
+    #                     months=months,
+    #                     days=days
+    #                 )
             
 
         
