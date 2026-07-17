@@ -69,44 +69,64 @@ class LoyaltyInvoiceProcessor(models.TransientModel):
         failed_invoices = []
 
         for header in headers:
+            log_data = None
             try:
                 # Wrap each single invoice processing in a savepoint to ensure transactional isolation
                 with self.env.cr.savepoint():
-                    self._process_single_invoice(header)
+                    log_data = self._process_single_invoice(header)
                 success_invoices.append(header.trnh_no or '')
             except Exception as e:
                 failed_invoices.append(header.trnh_no or '')
-                # Standard rollback is handled automatically by the context manager on exception.
-                # Now record the error in the custom processed log table.
-                self.env['loyalty.points.processed.log'].sudo().create({
+                log_data = {
                     'type': 'error',
                     'doc_type': str(header.trnh_type).zfill(2) if header.trnh_type else '',
                     'warehouse': header.trnh_whouse or '',
                     'reference': header.trnh_no or '',
                     'error_message': str(e),
                     'sql_statement': f"Failed to process transaction header: {header.trnh_no}",
-                })
+                }
 
-        msg_lines = [f"Processed {len(success_invoices)} successfully. Failed {len(failed_invoices)}."]
+            # Always create the log OUTSIDE the savepoint so it is never rolled back
+            if log_data:
+                try:
+                    self.env['loyalty.points.processed.log'].sudo().create(log_data)
+                except Exception:
+                    pass  # Do not let a log failure block the overall result
+
+        msg_lines = []
         if success_invoices:
-            msg_lines.append(f"Success Invoices: {', '.join(success_invoices)}")
+            msg_lines.append('\n'.join(success_invoices))
+        else:
+            msg_lines.append('None')
+
+        failed_lines = []
         if failed_invoices:
-            msg_lines.append(f"Failed Invoices: {', '.join(failed_invoices)}")
+            failed_lines.append('\n'.join(failed_invoices))
+        else:
+            failed_lines.append('None')
+
+        result = self.env['loyalty.invoice.process.result'].sudo().create({
+            'total_records': len(success_invoices) + len(failed_invoices),
+            'success_count': len(success_invoices),
+            'failed_count': len(failed_invoices),
+            'success_invoices': '\n'.join(success_invoices) if success_invoices else '',
+            'failed_invoices': '\n'.join(failed_invoices) if failed_invoices else '',
+        })
 
         return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'Invoice Processing Completed',
-                'message': '\n'.join(msg_lines),
-                'sticky': True,
-            }
+            'type': 'ir.actions.act_window',
+            'name': 'Invoice Processing Result',
+            'res_model': 'loyalty.invoice.process.result',
+            'res_id': result.id,
+            'view_mode': 'form',
+            'target': 'new',
         }
 
     def _process_single_invoice(self, header):
         """
         Processes a single invoice header, its detail lines, computes loyalty & promo points,
         updates detail lines, creates audit records and logs execution.
+        Returns a log_data dict to be written by the caller OUTSIDE the savepoint.
         """
         # 1. Parse date (trnh_date is varchar in YYYYMMDD format)
         try:
@@ -119,10 +139,19 @@ class LoyaltyInvoiceProcessor(models.TransientModel):
         if not partner:
             raise ValueError(f"Customer with code/reference '{header.trnh_cstno}' not found in Odoo.")
 
-        # 3. Check if customer has loyalty active
+        doc_type_str = str(header.trnh_type).zfill(2) if header.trnh_type else ''
+
+        # 3. Check if customer has loyalty active - skip but still log
         if not partner.activate_loyalty_feature:
             header.sudo().write({'trnh_processed': 'Y'})
-            return
+            return {
+                'type': 'info',
+                'doc_type': doc_type_str,
+                'warehouse': header.trnh_whouse or '',
+                'reference': header.trnh_no or '',
+                'error_message': f"Skipped: Customer '{header.trnh_cstno}' does not have Loyalty Program active.",
+                'sql_statement': 'Marked as processed. No loyalty points calculated.',
+            }
 
         # 4. Fetch detail lines
         details = self.env['transaction.details'].sudo().search([
@@ -139,7 +168,6 @@ class LoyaltyInvoiceProcessor(models.TransientModel):
         Total_spldisc = 0.0
 
         # Type '01' is Invoice (sign=1), others (like credit note) are deduction (sign=-1)
-        doc_type_str = str(header.trnh_type).zfill(2) if header.trnh_type else ''
         sign = 1 if doc_type_str == '01' else -1
 
         for detail in details:
@@ -244,8 +272,6 @@ class LoyaltyInvoiceProcessor(models.TransientModel):
                 'trnd_bonuspts': Total_item_points_promovr
             })
 
-# History creation moved to aggregated block (single record per invoice)
-
         # Create aggregated loyalty points history record
         doc_type = header.trnh_type if header.trnh_type in ('01', '02') else ('01' if sign == 1 else '02')
         adj_type = '+' if sign == 1 else '-'
@@ -277,11 +303,11 @@ class LoyaltyInvoiceProcessor(models.TransientModel):
             new_balance = partner.loyalty_points + (Invoice_points_vr + Invoice_points_promovr) * sign
             partner.sudo().write({'loyalty_points': new_balance})
 
-        # 6. Mark header as processed
+        # Mark header as processed
         header.sudo().write({'trnh_processed': 'Y'})
 
-        # 7. Write success log record
-        self.env['loyalty.points.processed.log'].sudo().create({
+        # Return log data dict — log will be written by caller OUTSIDE the savepoint
+        return {
             'type': 'info',
             'doc_type': doc_type_str,
             'warehouse': header.trnh_whouse or '',
@@ -293,6 +319,9 @@ class LoyaltyInvoiceProcessor(models.TransientModel):
             'promotion_points': Invoice_points_promovr,
             'quantity': int(Total_qty * sign),
             'sales_value': Sales_value * sign,
-            'error_message': f"Processed OK. Sign: {sign}, Regular Pts: {Invoice_points_vr:.1f}, Promo Pts: {Invoice_points_promovr:.1f}, Qty: {int(Total_qty * sign)}, Sales Value: {Sales_value * sign:.2f} | Price: {Total_price:.2f}, Discount: {Total_disc:.2f}, Customer Spl Discount: {Total_spldisc:.2f}",
+            'error_message': f"Processed OK. Regular Pts: {Invoice_points_vr:.1f}, Promo Pts: {Invoice_points_promovr:.1f}, Qty: {int(Total_qty * sign)}, Sales Value: {Sales_value * sign:.2f}",
             'sql_statement': f"Processed successfully with sign {sign}.",
-        })
+        }
+
+
+

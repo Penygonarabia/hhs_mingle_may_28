@@ -127,7 +127,7 @@
                             <field name="display_regpoints" string="Regular Points" class="text-right" style="width:140px;"/>
                             <field name="display_bonuspoints" string="Bonus Points" style="width:140px;"/>
                             <field name="reason_type_id" style="width:140px;"/>
-                            <field name="clph_note" style="width:140px;"/>
+                            <field name="clph_note" column_invisible="1"/>
                         </tree>
                     </field>
                 </page>

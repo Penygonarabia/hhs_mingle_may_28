@@ -28,6 +28,7 @@
                 <field name="net_sales" sum="Total Net Sales" optional="hide"/>
                 <field name="net_sales_with_vat" sum="Total Net Sales (VAT)" optional="hide"/>
                 <field name="clph_promoref" optional="show"/>
+                <field name="promotion_name" optional="show"/>
                 <field name="clph_points" sum="Total Regular Points" optional="show"/>
                 <field name="clph_bonuspoint" sum="Total Bonus Points" optional="show"/>
                 <field name="total_points" sum="Total Points" optional="show"/>
@@ -41,8 +42,8 @@
         <field name="model">loyalty.sales.table.view</field>
         <field name="arch" type="xml">
             <pivot string="Sales Table View" sample="1">
-                <field name="trnh_date" type="row" interval="month"/>
-                <field name="trnh_type" type="col"/>
+                <field name="clph_promoref" type="row"/>
+                <field name="promotion_name" type="row"/>
                 <field name="qty" type="measure"/>
                 <field name="clph_points" type="measure"/>
                 <field name="clph_bonuspoint" type="measure"/>
@@ -62,6 +63,8 @@
                 <field name="trnh_cstname"/>
                 <field name="trnh_sman"/>
                 <field name="trnd_part"/>
+                <field name="clph_promoref"/>
+                <field name="promotion_name"/>
                 <field name="activate_loyalty_feature"/>
                 <separator/>
                 <filter string="Loyalty Active (Yes)" name="loyalty_active" domain="[('activate_loyalty_feature', '=', True)]"/>
@@ -84,6 +87,7 @@
                     <filter string="Product No" name="group_by_part" context="{'group_by':'trnd_part'}"/>
                     <filter string="Product Description" name="group_by_desc" context="{'group_by':'trnd_desc'}"/>
                     <filter string="Promo Ref" name="group_by_promo" context="{'group_by':'clph_promoref'}"/>
+                    <filter string="Promotion Name" name="group_by_promotion_name" context="{'group_by':'promotion_name'}"/>
                 </group>
             </search>
         </field>

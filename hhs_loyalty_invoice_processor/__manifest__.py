@@ -17,6 +17,7 @@
         'security/ir.model.access.csv',
         'data/ir_cron.xml',
         'views/loyalty_invoice_processor_views.xml',
+        'views/loyalty_invoice_process_result_views.xml',
     ],
     'installable': True,
     'application': True,

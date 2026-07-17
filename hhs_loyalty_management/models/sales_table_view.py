@@ -27,6 +27,7 @@ class LoyaltySalesTableView(models.Model):
     net_sales = fields.Float(string='Net Sales', readonly=True)
     net_sales_with_vat = fields.Float(string='Net Sales With VAT', readonly=True)
     clph_promoref = fields.Char(string='Promotion #', readonly=True)
+    promotion_name = fields.Char(string='Promotion Name', readonly=True)
     clph_points = fields.Integer(string='Regular Points', readonly=True)
     clph_bonuspoint = fields.Integer(string='Bonus Points', readonly=True)
     total_points = fields.Integer(string='Total Points', readonly=True)
@@ -87,9 +88,22 @@ class LoyaltySalesTableView(models.Model):
                     END as net_sales_with_vat,
 
                     NULLIF(TRIM(td.trnd_promoref), '') as clph_promoref,
-                    COALESCE(td.trnd_regularpts, 0) as clph_points,
-                    COALESCE(td.trnd_bonuspts, 0) as clph_bonuspoint,
-                    COALESCE(td.trnd_regularpts, 0) + COALESCE(td.trnd_bonuspts, 0) as total_points
+                    lsp.promotion_name as promotion_name,
+                    -- Regular Points (negate for Credit Notes)
+                    CASE 
+                        WHEN th.trnh_type = '02' THEN -ABS(COALESCE(td.trnd_regularpts, 0))
+                        ELSE COALESCE(td.trnd_regularpts, 0)
+                    END as clph_points,
+                    -- Bonus Points (negate for Credit Notes)
+                    CASE 
+                        WHEN th.trnh_type = '02' THEN -ABS(COALESCE(td.trnd_bonuspts, 0))
+                        ELSE COALESCE(td.trnd_bonuspts, 0)
+                    END as clph_bonuspoint,
+                    -- Total Points (negate for Credit Notes)
+                    CASE 
+                        WHEN th.trnh_type = '02' THEN -ABS(COALESCE(td.trnd_regularpts, 0) + COALESCE(td.trnd_bonuspts, 0))
+                        ELSE COALESCE(td.trnd_regularpts, 0) + COALESCE(td.trnd_bonuspts, 0)
+                    END as total_points
 
                 FROM transaction_header th
                 JOIN transaction_details td ON th.trnh_no = td.trnd_no
@@ -99,5 +113,6 @@ class LoyaltySalesTableView(models.Model):
                 LEFT JOIN product_template pt ON pt.id = pp.product_tmpl_id
                 LEFT JOIN product_category pc_subgroup ON pc_subgroup.id = pt.categ_id
                 LEFT JOIN product_category pc_group ON pc_group.id = pc_subgroup.parent_id
+                LEFT JOIN lp_setup_promotions lsp ON lsp.promotion_reference = NULLIF(TRIM(td.trnd_promoref), '')
             )
         """ % (self._table,))

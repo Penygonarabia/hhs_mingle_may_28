@@ -104,7 +104,7 @@ class LoyaltyAuditView(models.Model):
                     p.mobile AS mobile,
                     p.tier_name AS tier_name,
                     p.activate_loyalty_feature AS activate_loyalty_feature,
-            
+
                     CASE
                         WHEN h.clph_doctype = '99' THEN 'adjustment'
                         WHEN h.clph_doctype = '98' THEN 'redeem'
@@ -113,100 +113,76 @@ class LoyaltyAuditView(models.Model):
                         WHEN h.clph_doctype = '02' THEN 'credit note'
                         ELSE 'regular'
                     END AS transaction_type,
-            
+
                     CASE
                         WHEN h.clph_whouse ~ '^[0-9]+$' THEN h.clph_whouse::integer
                         ELSE NULL
                     END AS warehouse,
-            
+
                     h.clph_docnumber AS transaction_no,
                     h.clph_date AS transaction_date,
-            
+
                     -- Regular Points
                     CASE
+                        WHEN h.clph_regpoints < 0 THEN h.clph_regpoints
                         WHEN h.clph_doctype IN ('02', '98', '97') THEN -COALESCE(h.clph_regpoints, 0)
                         WHEN h.clph_doctype = '99' AND h.clph_adjtype = '-' THEN -COALESCE(h.clph_regpoints, 0)
                         ELSE COALESCE(h.clph_regpoints, 0)
                     END AS regular_points,
-            
+
                     -- Bonus Points
                     CASE
+                        WHEN h.clph_bonuspoints < 0 THEN h.clph_bonuspoints
                         WHEN h.clph_doctype IN ('02', '98', '97') THEN -COALESCE(h.clph_bonuspoints, 0)
                         WHEN h.clph_doctype = '99' AND h.clph_adjtype = '-' THEN -COALESCE(h.clph_bonuspoints, 0)
                         ELSE COALESCE(h.clph_bonuspoints, 0)
                     END AS bonus_points,
-            
+
                     -- Total Points
                     CASE
+                        WHEN (COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0)) < 0 THEN (COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0))
                         WHEN h.clph_doctype IN ('02', '98', '97') THEN -(COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0))
                         WHEN h.clph_doctype = '99' AND h.clph_adjtype = '-' THEN -(COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0))
                         ELSE COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0)
                     END AS total_points,
-            
-                    -- Redemption
+
+                    -- Redemption (absolute value for display)
                     CASE
                         WHEN h.clph_doctype = '98'
-                            THEN COALESCE(h.clph_regpoints, 0)
+                            THEN ABS(COALESCE(h.clph_regpoints, 0))
                         ELSE 0
                     END AS redemption_points,
-            
-                    -- Expired
+
+                    -- Expired (absolute value for display)
                     CASE
                         WHEN h.clph_doctype = '97'
-                            THEN COALESCE(h.clph_regpoints, 0)
+                            THEN ABS(COALESCE(h.clph_regpoints, 0))
                         ELSE 0
                     END AS expired_points,
-            
+
                     -- Net Balance Impact
                     CASE
-                        WHEN h.clph_doctype = '01' THEN
-                            COALESCE(h.clph_regpoints, 0) +
-                            COALESCE(h.clph_bonuspoints, 0)
-            
-                        WHEN h.clph_doctype = '02' THEN
-                            -(
-                                COALESCE(h.clph_regpoints, 0) +
-                                COALESCE(h.clph_bonuspoints, 0)
-                            )
-            
-                        WHEN h.clph_doctype = '98' THEN
-                            -COALESCE(h.clph_regpoints, 0)
-            
-                        WHEN h.clph_doctype = '97' THEN
-                            -COALESCE(h.clph_regpoints, 0)
-            
-                        WHEN h.clph_doctype = '99' THEN
-                            CASE
-                                WHEN h.clph_adjtype = '+'
-                                    THEN COALESCE(h.clph_regpoints, 0) +
-                                         COALESCE(h.clph_bonuspoints, 0)
-                                ELSE
-                                    -(
-                                        COALESCE(h.clph_regpoints, 0) +
-                                        COALESCE(h.clph_bonuspoints, 0)
-                                    )
-                            END
-            
-                        ELSE
-                            COALESCE(h.clph_regpoints, 0) +
-                            COALESCE(h.clph_bonuspoints, 0)
+                        WHEN (COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0)) < 0 THEN (COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0))
+                        WHEN h.clph_doctype IN ('02', '98', '97') THEN -(COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0))
+                        WHEN h.clph_doctype = '99' AND h.clph_adjtype = '-' THEN -(COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0))
+                        ELSE COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0)
                     END AS net_total_points,
-            
+
                     h.clph_reasoncode AS reason_type,
-            
+
                     CASE
                         WHEN h.clph_adjtype = '+' THEN 'Addition'
                         ELSE 'Deduction'
                     END AS adjustment_type,
-            
+
                     'approved'::varchar AS status,
-            
+
                     h.clph_note AS remarks,
                     h.create_uid AS created_by,
                     h.create_date AS created_date,
                     h.write_uid AS modified_by,
                     h.write_date AS modified_date
-            
+
                 FROM customer_loyalty_points_history h
                 LEFT JOIN res_partner p
                     ON p.id = h.clph_cstid
@@ -218,10 +194,11 @@ class LoyaltyAuditView(models.Model):
                     ON wcl.id = ccm.def_work_center_id
                 LEFT JOIN work_center_group wcg
                     ON wcg.id = wcl.work_center_group_id
-            
+
                 ORDER BY h.clph_date DESC
             )
         """ % self._table)
+
         # self.env.cr.execute("""
         #     CREATE OR REPLACE VIEW %s AS (
         #         SELECT

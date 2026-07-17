@@ -127,49 +127,37 @@ class LoyaltyPointsSummaryWizard(models.TransientModel):
                 COALESCE(p.tier_name, '')                       AS tier_name,
                 wcg.name                                        AS region,
 
-                -- OPENING BALANCE: net points before from_date
+                -- OPENING BALANCE: net points before from_date (sign already baked in)
                 COALESCE(SUM(
                     CASE WHEN h.clph_date < %(from_date)s THEN
-                        CASE WHEN h.clph_doctype = '02' THEN -(COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0))
-                             WHEN h.clph_doctype IN ('98', '97') THEN -(COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0))
-                             WHEN h.clph_doctype = '99' AND h.clph_adjtype = '-' THEN -(COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0))
-                             ELSE COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0)
-                        END
+                        COALESCE(h.clph_regpoints, 0) + COALESCE(h.clph_bonuspoints, 0)
                     ELSE 0 END
                 ), 0)                                           AS opening_balance,
 
-                -- REGULAR POINTS earned in range
+                -- REGULAR POINTS earned in range (excluding redeem and expiry)
                 COALESCE(SUM(
-                    CASE WHEN h.clph_date BETWEEN %(from_date)s AND %(to_date)s THEN
-                        CASE WHEN h.clph_doctype = '01' THEN COALESCE(h.clph_regpoints, 0)
-                             WHEN h.clph_doctype = '99' AND h.clph_adjtype = '+' THEN COALESCE(h.clph_regpoints, 0)
-                             WHEN h.clph_doctype = '99' AND h.clph_adjtype = '-' THEN -COALESCE(h.clph_regpoints, 0)
-                             WHEN h.clph_doctype = '02' THEN -COALESCE(h.clph_regpoints, 0)
-                             ELSE 0
-                        END
+                    CASE WHEN h.clph_date BETWEEN %(from_date)s AND %(to_date)s
+                              AND h.clph_doctype NOT IN ('97', '98')
+                         THEN COALESCE(h.clph_regpoints, 0)
                     ELSE 0 END
                 ), 0)                                           AS regular_points,
 
-                -- BONUS POINTS earned in range
+                -- BONUS POINTS earned in range (excluding redeem and expiry)
                 COALESCE(SUM(
-                    CASE WHEN h.clph_date BETWEEN %(from_date)s AND %(to_date)s THEN
-                        CASE WHEN h.clph_doctype = '01' THEN COALESCE(h.clph_bonuspoints, 0)
-                             WHEN h.clph_doctype = '99' AND h.clph_adjtype = '+' THEN COALESCE(h.clph_bonuspoints, 0)
-                             WHEN h.clph_doctype = '99' AND h.clph_adjtype = '-' THEN -COALESCE(h.clph_bonuspoints, 0)
-                             WHEN h.clph_doctype = '02' THEN -COALESCE(h.clph_bonuspoints, 0)
-                             ELSE 0
-                        END
+                    CASE WHEN h.clph_date BETWEEN %(from_date)s AND %(to_date)s
+                              AND h.clph_doctype NOT IN ('97', '98')
+                         THEN COALESCE(h.clph_bonuspoints, 0)
                     ELSE 0 END
                 ), 0)                                           AS bonus_points,
 
-                -- REDEEMED in range
+                -- REDEEMED in range (raw stored value, negative)
                 COALESCE(SUM(
                     CASE WHEN h.clph_date BETWEEN %(from_date)s AND %(to_date)s
                               AND h.clph_doctype = '98'
                          THEN COALESCE(h.clph_regpoints, 0) ELSE 0 END
                 ), 0)                                           AS redeemed_points,
 
-                -- EXPIRED in range
+                -- EXPIRED in range (raw stored value, negative)
                 COALESCE(SUM(
                     CASE WHEN h.clph_date BETWEEN %(from_date)s AND %(to_date)s
                               AND h.clph_doctype = '97'
@@ -209,8 +197,8 @@ class LoyaltyPointsSummaryWizard(models.TransientModel):
                 row.get('opening_balance', 0)
                 + row['regular_points']
                 + row['bonus_points']
-                - row['redeemed_points']
-                - row['expired_points']
+                + row['redeemed_points']
+                + row['expired_points']
             )
             report_lines.append(row)
 
@@ -370,7 +358,7 @@ class LoyaltyPointsSummaryWizard(models.TransientModel):
         totals = {k: sum(r.get(k, 0) for r in report_lines) for k in total_keys}
 
         total_values = [
-            'TOTALS', '', '', '', '', '', '', '',
+            'Grand Total', '', '', '', '', '', '', '',
             totals['opening_balance'],
             totals['regular_points'],
             totals['bonus_points'],
@@ -390,6 +378,14 @@ class LoyaltyPointsSummaryWizard(models.TransientModel):
                 cell.number_format = num_fmt
             else:
                 cell.alignment = center
+
+        # Merge columns 1 to 8 for the 'Grand Total' caption
+        ws.merge_cells(start_row=total_row, start_column=1, end_row=total_row, end_column=8)
+        # Align the merged cell to the right so it sits next to the numeric values
+        ws.cell(row=total_row, column=1).alignment = right
+
+        # Hide the 'Total Purchase Price' column (Column O / 15)
+        ws.column_dimensions['O'].hidden = True
 
         # Freeze panes below header
         ws.freeze_panes = ws.cell(row=header_row + 1, column=1)

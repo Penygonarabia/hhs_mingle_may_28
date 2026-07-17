@@ -397,6 +397,27 @@ class CustomerLoyaltyPointsHistory(models.Model):
     _name = 'customer.loyalty.points.history'
     _description = 'Customer Loyalty Points History'
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        """
+        Auto-negate clph_regpoints, clph_bonuspoints, and clph_totalpoints
+        when clph_adjtype == '-', so that balance calculations can use
+        a simple SUM() without needing CASE logic.
+        """
+        for vals in vals_list:
+            if vals.get('clph_adjtype') == '-':
+                reg = vals.get('clph_regpoints', 0) or 0
+                bonus = vals.get('clph_bonuspoints', 0) or 0
+                total = vals.get('clph_totalpoints', 0) or 0
+                # Only negate if values are currently positive (avoid double-negation)
+                if reg > 0:
+                    vals['clph_regpoints'] = -abs(reg)
+                if bonus > 0:
+                    vals['clph_bonuspoints'] = -abs(bonus)
+                if total > 0:
+                    vals['clph_totalpoints'] = -abs(total)
+        return super().create(vals_list)
+
     partner_id = fields.Many2one(
         'res.partner',
         string='Customer'
@@ -481,9 +502,15 @@ class CustomerLoyaltyPointsHistory(models.Model):
     @api.depends('clph_regpoints', 'clph_bonuspoints', 'clph_doctype', 'clph_adjtype')
     def _compute_display_points(self):
         for rec in self:
+            # If values in DB are already negative, keep them negative.
+            # Otherwise, if the transaction is a deduction/credit note/redeem/expiry, negate them.
             sign = -1 if (rec.clph_doctype in ['02', '98', '97'] or (rec.clph_doctype == '99' and rec.clph_adjtype == '-')) else 1
-            rec.display_regpoints = (rec.clph_regpoints or 0) * sign
-            rec.display_bonuspoints = (rec.clph_bonuspoints or 0) * sign
+            
+            reg = rec.clph_regpoints or 0
+            rec.display_regpoints = reg if reg < 0 else reg * sign
+            
+            bonus = rec.clph_bonuspoints or 0
+            rec.display_bonuspoints = bonus if bonus < 0 else bonus * sign
 
     # collected_points_regular = fields.Integer(
 
@@ -501,32 +528,9 @@ class CustomerLoyaltyPointsHistory(models.Model):
             history = self.env['customer.loyalty.points.history'].search([
                 ('clph_cstid', '=', rec.id)
             ])
-            total_points = 0
-
-            for line in history:
-
-                # Invoice
-                if line.clph_doctype == '01':
-                    total_points += line.clph_regpoints
-
-                # Redeem
-                elif line.clph_doctype == '98':
-                    total_points -= line.clph_regpoints
-
-                # Expiry
-                elif line.clph_doctype == '97':
-                    total_points -= line.clph_regpoints
-
-                # Credit Note
-                elif line.clph_doctype == '02':
-                    total_points -= line.clph_regpoints
-
-                # Adjustment
-                elif line.clph_doctype == '99':
-                    if line.clph_adjtype == '+':
-                        total_points += line.clph_regpoints
-                    elif line.clph_adjtype == '-':
-                        total_points -= line.clph_regpoints
+            # Values already carry the correct sign (negative for deductions)
+            # Simple sum gives the correct balance
+            total_points = sum(history.mapped('clph_regpoints'))
 
             rec.balance_points_regular = total_points
 
