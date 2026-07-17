@@ -26,6 +26,22 @@ class Product_service_type(models.Model):
     allowed_group_is_promoter = fields.Boolean('Use for Promoters', default=False)
     alternative_description = fields.Char('Alternative Description')
     allowed_is_contract = fields.Boolean('Use for Contract')
+    
+    @api.constrains('code')
+    def _check_code(self):
+        for rec in self:
+            if rec.code:
+                code_search = self.env['product.category'].search([
+                    ('code', '=', rec.code),
+                    ('id', '!=', rec.id),
+                ], limit=1)
+    
+                if code_search:
+                    raise ValidationError(
+                        "This code '%s' is already associated with another category. "
+                        "The category code must be unique. Please enter a different code."
+                        % rec.code
+                    )
 
 
 class ProductCategoryLocation(models.Model):

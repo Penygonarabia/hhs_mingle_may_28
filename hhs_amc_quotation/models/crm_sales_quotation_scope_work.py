@@ -43,13 +43,13 @@ class ServiceSaleOrder(models.Model):
     
     terms_of_execution = fields.Text(string="Terms of Execution", default = lambda self:(self.env['ir.config_parameter']
         .sudo()
-        .get_param('crm_custom_view.terms_of_execution')
+        .get_param('crm_custom_view.terms_of_execution',default='')
     ).replace('\\n', '\n'))
-    exclusions_text = fields.Text(string="Exclusions", default = lambda self:self.env['ir.config_parameter'].sudo().get_param('crm_custom_view.exclusions').replace('\\n', '\n'))
+    exclusions_text = fields.Text(string="Exclusions", default = lambda self:self.env['ir.config_parameter'].sudo().get_param('crm_custom_view.exclusions', default='').replace('\\n', '\n'))
     enable_scope = fields.Boolean(string="Enable Scope")
 
     '''Code Added on March 21 2026 by Vijaya bhaskar'''
-    others_text = fields.Text(string="Notes", default = lambda self:self.env['ir.config_parameter'].sudo().get_param('crm_custom_view.notes').replace('\\n', '\n'))
+    others_text = fields.Text(string="Notes", default = lambda self:self.env['ir.config_parameter'].sudo().get_param('crm_custom_view.notes',default='').replace('\\n', '\n'))
 
 
     @api.model
@@ -75,10 +75,10 @@ class ServiceSaleOrder(models.Model):
 
     # 20260408 Gokul
     subject = fields.Text(string="Subject", default=lambda self: self.env['ir.config_parameter'].sudo().get_param(
-        'crm_custom_view.subject').replace('\\n', '\n'))
-    scope_of_work = fields.Text(string="Scope of Work", default = lambda self : self.env['ir.config_parameter'].sudo().get_param('crm_custom_view.scope_of_work').replace('\\n', '\n'))
+        'crm_custom_view.subject', default='').replace('\\n', '\n'))
+    scope_of_work = fields.Text(string="Scope of Work", default = lambda self : self.env['ir.config_parameter'].sudo().get_param('crm_custom_view.scope_of_work',default='').replace('\\n', '\n'))
     
-    others = fields.Text(string="Others",default = lambda self : self.env['ir.config_parameter'].sudo().get_param('crm_custom_view.others_txt').replace('\\n', '\n'))
+    others = fields.Text(string="Others",default = lambda self : self.env['ir.config_parameter'].sudo().get_param('crm_custom_view.others_txt', default='').replace('\\n', '\n'))
 
 
     @api.depends('grand_total_amount')
