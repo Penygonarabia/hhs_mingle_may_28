@@ -8262,7 +8262,7 @@ class ProjectTask(models.Model):
                 #     return self.cancelled_reason_button_mobile()
         
         '''Code Added on May 08 2026 by Vijaya Bhaskar for the client asked the same job card and for same technician in same date need to update the other job card also'''
-        if 'job_state' in vals:
+        if 'job_state' in vals and not self.env.context.get('skip_amc_state_sync'):
 
             for rec in self:
     
@@ -8296,6 +8296,7 @@ class ProjectTask(models.Model):
                     ('planned_date_begin', '>=', start_datetime),
                     ('planned_date_begin', '<=', end_datetime),
                     ('id', '!=', rec.id),
+                    ('job_card_state_code' , 'in', ('102','103','108','109','110'))
                 ]
     
                 job_cards = self.env['project.task'].sudo().search(domain)
