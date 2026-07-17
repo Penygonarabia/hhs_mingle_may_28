@@ -16640,7 +16640,8 @@ class AccessToken(http.Controller):
             # =====================================================
             # Create Record
             # =====================================================
-
+            regular_points = -abs(regular_points)
+            
             vals = {
                 'clph_cstcode': customer_code,
                 'clph_cstid': customer.id,
@@ -16650,6 +16651,7 @@ class AccessToken(http.Controller):
                 'clph_type': transaction_type,
                 'clph_whouse': params.get('warehouse'),
                 'clph_regpoints': regular_points,
+                'clph_totalpoints': regular_points,
                 'clph_note': reason,
                 'clph_adjtype': adjustment_type,
             }
