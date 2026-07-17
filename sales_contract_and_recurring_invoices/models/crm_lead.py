@@ -175,7 +175,7 @@ class CrmLead(models.Model):
             
         '''Code Added on May 22 2026 by Vijaya Bhaskar'''     
         if vals.get('customer_code'):
-            partner.ref = vals.get('customer_code')
+            self.partner_id.ref = vals.get('customer_code')
         if vals.get('district'):
             district_search = self.env['res.state.district'].search([('id', '=', vals.get('district'))], limit=1)
             self.partner_id.district_id = district_search.id

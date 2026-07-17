@@ -5,8 +5,10 @@ class LoyaltySalesTableView(models.Model):
     _description = 'Sales Table View'
     _auto = False
 
-    trnh_region = fields.Char(string='Region', readonly=True)
-    trnh_city = fields.Char(string='City', readonly=True)
+    trnh_region = fields.Char(string='Region (TRN)', readonly=True)
+    trnh_city = fields.Char(string='City (TRN)', readonly=True)
+    region = fields.Char(string='Region', readonly=True)
+    city = fields.Char(string='City', readonly=True)
     trnh_sman = fields.Char(string='Salesman', readonly=True)
     trnh_cstno = fields.Char(string='Customer Code', readonly=True)
     trnh_cstname = fields.Char(string='Customer Name', readonly=True)
@@ -41,6 +43,8 @@ class LoyaltySalesTableView(models.Model):
                     row_number() OVER () as id,
                     th.trnh_region,
                     th.trnh_city,
+                    INITCAP(rd.r_desc) AS region,
+                    INITCAP(srd.sr_desc) AS city,
                     COALESCE(sm.sm_name, th.trnh_sman) as trnh_sman,
                     th.trnh_cstno,
                     th.trnh_cstname,
@@ -114,5 +118,9 @@ class LoyaltySalesTableView(models.Model):
                 LEFT JOIN product_category pc_subgroup ON pc_subgroup.id = pt.categ_id
                 LEFT JOIN product_category pc_group ON pc_group.id = pc_subgroup.parent_id
                 LEFT JOIN lp_setup_promotions lsp ON lsp.promotion_reference = NULLIF(TRIM(td.trnd_promoref), '')
+                LEFT JOIN customer c ON c.cst_no = th.trnh_cstno
+                LEFT JOIN t_subregions sub ON sub.sr_code = UPPER(TRIM(c.cst_subregion))
+                LEFT JOIN t_regionsdesc rd ON rd.r_code = sub.sr_region AND rd.r_lang = 1
+                LEFT JOIN t_subregionsdesc srd ON srd.sr_code = sub.sr_code AND srd.sr_lang = 1
             )
         """ % (self._table,))

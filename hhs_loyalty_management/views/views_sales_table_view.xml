@@ -7,8 +7,10 @@
         <field name="model">loyalty.sales.table.view</field>
         <field name="arch" type="xml">
             <tree string="Sales Table View" create="0" edit="0" delete="0">
-                <field name="trnh_region" optional="show"/>
-                <field name="trnh_city" optional="show"/>
+                <field name="region" optional="show"/>
+                <field name="city" optional="show"/>
+                <field name="trnh_region" optional="hide"/>
+                <field name="trnh_city" optional="hide"/>
                 <field name="trnh_sman" optional="show"/>
                 <field name="trnh_cstno" optional="show"/>
                 <field name="trnh_cstname" optional="show"/>
@@ -42,6 +44,8 @@
         <field name="model">loyalty.sales.table.view</field>
         <field name="arch" type="xml">
             <pivot string="Sales Table View" sample="1">
+                <field name="region" type="row"/>
+                <field name="city" type="row"/>
                 <field name="clph_promoref" type="row"/>
                 <field name="promotion_name" type="row"/>
                 <field name="qty" type="measure"/>
@@ -70,8 +74,8 @@
                 <filter string="Loyalty Active (Yes)" name="loyalty_active" domain="[('activate_loyalty_feature', '=', True)]"/>
                 <filter string="Loyalty Active (No)" name="loyalty_inactive" domain="[('activate_loyalty_feature', '=', False)]"/>
                 <group expand="1" string="Group By">
-                    <filter string="Region" name="group_by_region" context="{'group_by':'trnh_region'}"/>
-                    <filter string="City" name="group_by_city" context="{'group_by':'trnh_city'}"/>
+                    <filter string="Region" name="group_by_region" context="{'group_by':'region'}"/>
+                    <filter string="City" name="group_by_city" context="{'group_by':'city'}"/>
                     <filter string="Salesman" name="group_by_sman" context="{'group_by':'trnh_sman'}"/>
                     <filter string="Customer No" name="group_by_cstno" context="{'group_by':'trnh_cstno'}"/>
                     <filter string="Customer Name" name="group_by_customer" context="{'group_by':'trnh_cstname'}"/>

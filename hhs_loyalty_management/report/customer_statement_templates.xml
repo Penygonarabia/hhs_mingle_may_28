@@ -155,15 +155,11 @@
                                                     <span t-field="line.transaction_no"/>
                                                 </td>
                                                 <td>
-                                                    <!--                                                <span t-if="line.reason_type">-->
-                                                    <!--                                                    <span t-field="line.reason_type"/>-->
-                                                    <!--                                                </span>-->
-                                                    <span t-if="line.adjustment_type">
-                                                        <span t-field="line.adjustment_type"/>
-                                                    </span>
-                                                    <span t-else="">
-                                                        <span t-field="line.transaction_type"/>
-                                                    </span>
+                                                    <span t-field="line.display_type"/>
+                                                    <t t-if="line.reason_description and line.transaction_type == 'adjustment'">
+                                                        <br/>
+                                                        <small t-field="line.reason_description" style="color: #666;"/>
+                                                    </t>
                                                 </td>
                                                 <td class="text-end">
                                                     <span t-field="line.regular_points"

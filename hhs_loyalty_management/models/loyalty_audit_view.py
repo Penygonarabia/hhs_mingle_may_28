@@ -43,6 +43,8 @@ class LoyaltyAuditView(models.Model):
     reason_type = fields.Char(string='Reason Type', readonly=True)
     reason_name=fields.Char(string='Reason Name', readonly=True,compute='_compute_reason_name',store=False)
     adjustment_type = fields.Char(string='Adjustment Type', readonly=True)
+    display_type = fields.Char(string='Display Type', readonly=True)
+    reason_description = fields.Char(string='Reason Description', readonly=True)
 
     # Status Information
     status = fields.Selection([
@@ -113,6 +115,18 @@ class LoyaltyAuditView(models.Model):
                         WHEN h.clph_doctype = '02' THEN 'credit note'
                         ELSE 'regular'
                     END AS transaction_type,
+
+                    CASE
+                        WHEN h.clph_doctype = '01' THEN 'Earned'
+                        WHEN h.clph_doctype = '02' THEN 'Credit Note'
+                        WHEN h.clph_doctype = '97' THEN 'Expired'
+                        WHEN h.clph_doctype = '98' THEN 'Redeemed'
+                        WHEN h.clph_doctype = '99' AND h.clph_adjtype = '+' THEN 'Addition'
+                        WHEN h.clph_doctype = '99' AND h.clph_adjtype = '-' THEN 'Deduction'
+                        ELSE 'Other'
+                    END AS display_type,
+
+                    mrt.reason_name AS reason_description,
 
                     CASE
                         WHEN h.clph_whouse ~ '^[0-9]+$' THEN h.clph_whouse::integer
@@ -194,6 +208,8 @@ class LoyaltyAuditView(models.Model):
                     ON wcl.id = ccm.def_work_center_id
                 LEFT JOIN work_center_group wcg
                     ON wcg.id = wcl.work_center_group_id
+                LEFT JOIN manual_promotion_reason_types mrt
+                    ON mrt.reason_code = h.clph_reasoncode
 
                 ORDER BY h.clph_date DESC
             )
