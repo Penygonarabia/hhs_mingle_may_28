@@ -32,11 +32,10 @@ class Product_service_type(models.Model):
         for rec in self:
             if rec.code:
                 code_search = self.env['product.category'].search([
-                    ('code', '=', rec.code),
-                    ('id', '!=', rec.id),
-                ], limit=1)
+                    ('code', '=', rec.code)       
+                ])
     
-                if code_search:
+                if len(code_search) > 1:
                     raise ValidationError(
                         "This code '%s' is already associated with another category. "
                         "The category code must be unique. Please enter a different code."
