@@ -6530,14 +6530,14 @@ class ProjectTask(models.Model):
                 '''Code Added on July 08 2026 by Vijaya Bhaskar model and serial number validation for preventive and corrective'''
                 model_id = vals.get('model_id') or rec.model_id.id
                 product_product_model_id = vals.get('product_product_model_id') or rec.product_product_model_id.id
-                
-                if rec.items_from_own_company_bool:
-                    if not product_product_model_id:
-                        raise ValidationError(_("Please enter Model in the Job Card."))
-                else:
-                    if not model_id:
-                        raise ValidationError(_("Please enter Model in the Job Card."))
-                
+                if rec.project_related_amc_bool:
+                    if rec.items_from_own_company_bool:
+                        if not product_product_model_id:
+                            raise ValidationError(_("Please enter Model in the Job Card."))
+                    else:
+                        if not model_id:
+                            raise ValidationError(_("Please enter Model in the Job Card."))
+                    
                 
                 product_id = vals.get("product_id") or rec.product_id.id
                 if not product_id:
@@ -6913,13 +6913,14 @@ class ProjectTask(models.Model):
                 model_id = vals.get('model_id') or rec.model_id.id
                 product_product_model_id = vals.get('product_product_model_id') or rec.product_product_model_id.id
                 
-                if rec.items_from_own_company_bool:
-                    if not product_product_model_id:
-                        raise ValidationError(_("Please enter Model in the Job Card."))
-                else:
-                    if not model_id:
-                        raise ValidationError(_("Please enter Model in the Job Card."))
-                
+                if rec.project_related_amc_bool:
+                    if rec.items_from_own_company_bool:
+                        if not product_product_model_id:
+                            raise ValidationError(_("Please enter Model in the Job Card."))
+                    else:
+                        if not model_id:
+                            raise ValidationError(_("Please enter Model in the Job Card."))
+                    
                 
                 
                 purchase_invoice_no = (
