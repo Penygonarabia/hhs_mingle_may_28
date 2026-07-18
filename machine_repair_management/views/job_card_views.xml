@@ -1552,7 +1552,9 @@
                         <div class="o_row">
                             <div>
                                 <field name="maintenance_type" force_save="1" widget="radio" class="oe_inline"
-                                       readonly="service_create_from_equipment_bool"/>
+                                       readonly="1"/>
+                                 <!-- <field name="maintenance_type" force_save="1" widget="radio" class="oe_inline"
+                                       readonly="service_create_from_equipment_bool"/> -->
                             </div>
                             <div>
                                 <field name="actual_corrective" force_save="1" class="oe_inline" readonly="1"/>

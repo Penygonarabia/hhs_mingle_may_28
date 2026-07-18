@@ -9,6 +9,25 @@
 /* .modal.hide_wizard_close .modal-header .btn-close {
     display: none !important;
 } */
+
+.job_type_widget {
+    width: 260px;
+}
+
+.job_type_row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.job_type_counter {
+    width: 60px;
+    text-align: right;
+    font-weight: 600;
+}
+
+
 .text-500 {
     --color: rgb(18 18 19);
     color: var(--color) !important;

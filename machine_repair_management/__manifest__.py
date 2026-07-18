@@ -520,7 +520,7 @@ workshop machine repair
             "machine_repair_management/static/src/js/onhold_spare_parts.js",
             "machine_repair_management/static/src/xml/chatter_template.xml",
             "machine_repair_management/static/src/css/radio_inline.css",
-            "machine_repair_management/static/src/css/job_type_wrapper_mobile.css"
+            "machine_repair_management/static/src/css/job_type_wrapper_mobile.css",
 
             # '/machine_repair_management/static/src/css/fixed_navbar.css',
             # "machine_repair_management/static/src/js/popup_wizardclose.js",
@@ -529,6 +529,9 @@ workshop machine repair
             # 'machine_repair_management/static/src/js/custom_form_controller.js',
             # 'machine_repair_management/static/src/components/auto_trigger_jobcard.js',
             # "machine_repair_management/static/src/js/hide_archive_unarchive.js",
+             'machine_repair_management/static/src/js/maintenance_type_radio.js',
+             'machine_repair_management/static/src/xml/maintenance_type_radio.xml',
+             
         ],
     },
 }

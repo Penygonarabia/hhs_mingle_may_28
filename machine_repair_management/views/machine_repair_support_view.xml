@@ -163,10 +163,12 @@
                                 <field name="contract_expiry_date" force_save="1" readonly="1"/>
                                 <field name="asset_id" readonly="state == 'closed'" required="project_related_amc_bool" options ="{'no_create':True,'no_edit':True,'no_open':True}"/>
                                 <field name="service_products_code_id" options="{'no_open':True}" readonly="1" force_save="1"/>
-                                <!--                                <field name = "maintenance_type" widget="radio"/>-->
-                                <!--                                <field name="actual_corrective" readonly="1" class="oe_inline"/>-->
-                                <!--                                <field name="actual_preventive" readonly="1" class="oe_inline"/>-->
-                                <label for="maintenance_type" string="Job Type"/>
+                               
+                                
+                                 <field name="maintenance_type" widget="job_type_radio"/>
+                               	<field name="actual_corrective" invisible="1"/>
+								<field name="actual_preventive" invisible="1"/>
+                                <!-- <label for="maintenance_type" string="Job Type"/>
                                 <div class="o_row">
                                     <div>
                                         <field name="maintenance_type" widget="radio" class="oe_inline" readonly="service_create_from_equipment_bool"/>
@@ -176,7 +178,7 @@
                                         <br/>
                                         <field name="actual_preventive" class="oe_inline" readonly="1"/>
                                     </div>
-                                </div>
+                                </div> -->
                                 <field name="paid_service_bool" readonly="not paid_service_editable"/>
 								
 								 <field name="preventive_count_completed" invisible="1"/> 

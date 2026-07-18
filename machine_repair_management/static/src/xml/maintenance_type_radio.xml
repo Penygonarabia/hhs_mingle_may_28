@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="machine_repair_management.JobTypeRadioField">
+
+        <div class="job_type_widget">
+
+            <t t-foreach="items" t-as="item" t-key="item[0]">
+
+                <div class="job_type_row">
+
+                    <div class="form-check o_radio_item">
+
+                        <input
+                            type="radio"
+                            class="form-check-input"
+                            t-att-name="id"
+                            t-att-id="`${id}_${item[0]}`"
+                            t-att-checked="item[0] === value"
+                            t-att-disabled="isDisabled(item)"
+                            t-on-change="() => onChange(item)"
+                        />
+
+                        <label
+                            class="form-check-label"
+                            t-att-for="`${id}_${item[0]}`"
+                            t-esc="item[1]"
+                        />
+
+                    </div>
+
+                    <span class="job_type_counter">
+
+                        <t t-if="item[0] === 'corrective'">
+                            <t t-esc="correctiveCount"/>
+                        </t>
+
+                        <t t-if="item[0] === 'preventive'">
+                            <t t-esc="preventiveCount"/>
+                        </t>
+
+                    </span>
+
+                </div>
+
+            </t>
+
+        </div>
+
+    </t>
+
+</templates>
