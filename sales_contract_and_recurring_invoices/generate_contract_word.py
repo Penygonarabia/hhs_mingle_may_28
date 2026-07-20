@@ -3,15 +3,8 @@ HHS Contract Document - Word Generator
 Generates a bilingual EN/AR Word DOCX directly from contract JSON data.
 Usage: python generate_contract_word.py <data.json> <output.docx>
 """
-import sys
-import os
-import json
-from pathlib import Path
-
-# Optional custom library folder
-library_path = Path(__file__).resolve().parent / "Odoo_Libraries"
-if library_path.exists():
-    sys.path.insert(0, str(library_path))
+import sys, os, json
+sys.path.insert(0, r'C:\Odoo_Libraries')
 
 try:
     import docx
@@ -207,16 +200,29 @@ def make_run(para, text, bold=False, size=11, color=None, rtl=False, font_name='
     if size == 11:
         size = 10.5 if bold else 10.0
         
-    # Auto-detect English/numbers inside RTL runs to override direction to LTR
-    if rtl:
-        has_arabic = any(0x0600 <= ord(c) <= 0x06FF for c in text)
-        if not has_arabic:
-            rtl = False
+    # Auto-detect English/numbers inside RTL runs to override direction to LTR is disabled to maintain correct bidirectional order.
+    pass
             
     run = para.add_run(text)
     run.bold = bold
     run.font.name = font_name
     run.font.size = Pt(size)
+    
+    # Set complex script font size to match standard font size (Word uses half-points)
+    rPr = run._r.get_or_add_rPr()
+    szCs = rPr.find(qn('w:szCs'))
+    if szCs is None:
+        szCs = OxmlElement('w:szCs')
+        rPr.append(szCs)
+    szCs.set(qn('w:val'), str(int(size * 2)))
+    
+    # Set complex script bold to match standard bold
+    if bold:
+        bCs = rPr.find(qn('w:bCs'))
+        if bCs is None:
+            bCs = OxmlElement('w:bCs')
+            rPr.append(bCs)
+    
     if color:
         run.font.color.rgb = color
     if rtl:
@@ -364,7 +370,7 @@ for i, c in enumerate(t_hdr.row_cells(0)):
     clear_cell_borders(c)
     set_cell_border(c, bottom=NAVY_BORDER)
     set_cell_valign(c, 'top')
-set_col_widths(t_hdr, [Cm(8.8), Cm(1.8), Cm(8.8)])
+set_col_widths(t_hdr, [Cm(8.2), Cm(3.0), Cm(8.2)])
 
 # Set padding to zero on extreme sides
 set_cell_margins(t_hdr.cell(0, 0), top=0, bottom=0, left=0)
@@ -381,7 +387,7 @@ make_run(p2, 'For Modern Trading Co. Ltd.', bold=True, size=10.5, color=NAVY)
 p = t_hdr.cell(0,1).paragraphs[0]; p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 format_paragraph(p, before=0, after=0)
 if os.path.exists(LOGO_PATH):
-    p.add_run().add_picture(LOGO_PATH, height=Cm(1.6))
+    p.add_run().add_picture(LOGO_PATH, width=Cm(2.6))
 
 p1_ar = t_hdr.cell(0,2).paragraphs[0]; set_rtl_para(p1_ar)
 format_paragraph(p1_ar, before=0, after=0, rtl=True)
@@ -454,6 +460,10 @@ make_run(p, 'اتفاقية خدمة مجدولة', bold=True, size=16, color=NA
 if os.path.exists(COVER_IMG_PATH):
     pi = doc.add_paragraph(); pi.alignment = WD_ALIGN_PARAGRAPH.CENTER
     pi.add_run().add_picture(COVER_IMG_PATH, width=Cm(PAGE_W))
+
+# Push contact info to bottom of page
+spacer = doc.add_paragraph()
+para_space(spacer, before=180, after=0)
 
 # Contact info with icons matching PDF layout
 ICON_SIZE = Cm(0.8)  # Height matching PDF
@@ -554,7 +564,7 @@ p0 = sec2.header.paragraphs[0]
 p0._element.getparent().remove(p0._element)
 th.allow_autofit = False
 kill_table_borders(th)
-set_col_widths(th, [Cm(8.8), Cm(1.8), Cm(8.8)])
+set_col_widths(th, [Cm(8.2), Cm(3.0), Cm(8.2)])
 for i, c in enumerate(th.row_cells(0)):
     clear_cell_borders(c)
     set_cell_border(c, bottom=NAVY_BORDER)
@@ -571,7 +581,7 @@ make_run(p, 'Planned Service Agreement', bold=True, size=10.5, color=NAVY)
 p = th.cell(0,1).paragraphs[0]; p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 format_paragraph(p, before=0, after=0)
 if os.path.exists(LOGO_PATH):
-    p.add_run().add_picture(LOGO_PATH, height=Cm(1.6))
+    p.add_run().add_picture(LOGO_PATH, width=Cm(2.6))
 p = th.cell(0,2).paragraphs[0]; set_rtl_para(p)
 format_paragraph(p, before=0, after=0, rtl=True)
 make_run(p, 'اتفاقية الخدمة المخططة', bold=True, size=10.5, color=NAVY, rtl=True)
@@ -694,8 +704,8 @@ def bullets(en_items, ar_items):
             p = c.paragraphs[0] if first else c.add_paragraph()
             first = False
             set_rtl_para(p)
-            p.paragraph_format.right_indent = Cm(1.0)
-            p.paragraph_format.first_line_indent = Cm(-0.3)
+            p.paragraph_format.right_indent  = Cm(1.0)
+            p.paragraph_format.first_line_indent = Cm(0.3)   # positive = bullet hangs into right margin
             para_space(p, 0, 0)
             make_run(p, u'\u2022  ', size=11, rtl=True)
             if isinstance(item, list):
@@ -724,7 +734,7 @@ def numbered(num, en_lbl, en_txt, ar_lbl, ar_txt, sub_en=None, sub_ar=None):
     def fn_ar(c):
         p = c.paragraphs[0]; set_rtl_para(p)
         p.paragraph_format.right_indent = Cm(0.3)
-        p.paragraph_format.first_line_indent = Cm(-0.3)
+        p.paragraph_format.first_line_indent = Cm(0.3)   # positive = number hangs into right margin
         para_space(p, 0, 0)
         make_run(p, f'{num}. ', bold=True, size=11, color=NAVY, rtl=True)
         make_run(p, ar_lbl, bold=True, size=11, color=NAVY, rtl=True)
@@ -734,7 +744,7 @@ def numbered(num, en_lbl, en_txt, ar_lbl, ar_txt, sub_en=None, sub_ar=None):
                 sp = c.add_paragraph()
                 set_rtl_para(sp)
                 sp.paragraph_format.right_indent = Cm(1.0)
-                sp.paragraph_format.first_line_indent = Cm(-0.3)
+                sp.paragraph_format.first_line_indent = Cm(0.3)   # positive = bullet hangs into right margin
                 para_space(sp, 0, 0)
                 make_run(sp, u'\u2022  ' + s, size=11, rtl=True)
     add_row(fn_en, fn_ar)
@@ -758,16 +768,16 @@ def fn1e(c):
 def fn1a(c):
     p = c.paragraphs[0]; set_rtl_para(p); para_space(p, 1, 1)
     make_run(p, 'الطرف الأول: ', bold=True, size=11, color=NAVY, rtl=True)
-    make_run(p, 'شركة الأخوان حسين والحسن غازي شاكر للتجارة الحديثة المحدودة', bold=True, size=11, rtl=True)
-    make_run(p, ' ويمثلها في هذا العقد ', size=11, rtl=True)
+    make_run(p, 'شركة الإخوان حسين والحسن غازي شاكر للتجارة الحديثة المحدودة  ', bold=True, size=11, rtl=True)
+    make_run(p, 'ويمثلها في هذا العقد  ', size=11, rtl=True)
     make_run(p, 'Mr.Nouraldeen Riyad Nofal', bold=True, size=11, rtl=True)
-    make_run(p, ' بموجب الهوية / الإقامة رقم ', size=11, rtl=True)
+    make_run(p, ' رقم الهوية / الإقامة  ', size=11, rtl=True)
     make_run(p, '2396646263', bold=True, size=11, rtl=True)
-    make_run(p, ' بصفته ', size=11, rtl=True)
+    make_run(p, ' بصفته  ', size=11, rtl=True)
     make_run(p, 'National Service Manager', bold=True, size=11, rtl=True)
-    make_run(p, ' الجوال رقم ', size=11, rtl=True)
+    make_run(p, ' رقم الجوال  ', size=11, rtl=True)
     make_run(p, '+966550510416', bold=True, size=11, rtl=True)
-    make_run(p, ' والبريد الإلكتروني ', size=11, rtl=True)
+    make_run(p, ' والبريد الإلكتروني  ', size=11, rtl=True)
     make_run(p, 'nouraldeen@hh-shaker.com.sa', bold=True, size=11, rtl=True)
     make_run(p, ' (ويشار إليه فيما بعد بـ "الطرف الأول" أو باختصار HH Shaker ServicePro)', size=11, rtl=True)
 add_row(fn1e, fn1a)
@@ -839,6 +849,7 @@ bullets(['Response within 24 working hours (maximum).'],
         ['الاستجابة خلال 24 ساعة عمل كحد أقصى.'])
 bullets([[('Includes ', False), (f'{total_emergency} emergency visits', True), (' annually.', False)]],
         [[('يشمل ', False), (f'{total_emergency} زيارة طارئة', True), (' سنوياً.', False)]])
+insert_page_break()
 bullets(['Non Comprehensive contracts covers repairs that can be completed within 3 working hours without any additional spare parts.'],
         ['العقود غير الشاملة تشمل الإصلاحات التي يمكن إنجازها خلال 3 ساعات عمل دون الحاجة إلى قطع غيار إضافية.'])
 bullets(['Semi Comprehensive contracts covers repairs that can be completed within 3 working hours with additional spare parts except compressor and coils.'],
@@ -870,6 +881,7 @@ bullets(['Avoid damage to facilities or equipment of the Second Party.'], ['تج
 heading('3.2 Second Party\'s Obligations', '3.2 التزامات الطرف الثاني', indent=0.8)
 bullets(['Provide access and necessary resources (power, water, permits, safe access).'], ['توفير الوصول والموارد اللازمة (الكهرباء والمياه والتصاريح والوصول الآمن).'])
 bullets(['Pay dues as per the agreed terms.'], ['دفع المستحقات حسب الشروط المتفق عليها.'])
+insert_page_break()
 bullets(['Pay the amount of covering additional visits or services outside the scope of the contract.'], ['سداد قيمة تغطية الزيارات أو الخدمات الإضافية خارج نطاق العقد.'])
 bullets(['Issue purchase orders (POs) for corrective works as needed.'], ['إصدار أوامر الشراء (POs) للأعمال التصحيحية عند الحاجة.'])
 bullets(['Ensure units are in safe and operable condition before contract commencement.'], ['التأكد من أن جميع وحدات التكييف في حالة آمنة وقابلة للتشغيل قبل بدء العقد.'])
@@ -892,7 +904,7 @@ def fn4e(c):
         make_run(p2, u'\u2022  ' + txt, size=11)
 def fn4a(c):
     p = c.paragraphs[0]; set_rtl_para(p)
-    p.paragraph_format.right_indent = Cm(1.5); p.paragraph_format.first_line_indent = Cm(-0.4)
+    p.paragraph_format.right_indent = Cm(1.5); p.paragraph_format.first_line_indent = Cm(0.4)
     para_space(p, 0, 0)
     make_run(p, u'\u2022  تبدأ هذه الاتفاقية في ', size=11, rtl=True)
     make_run(p, date_start, bold=True, size=11, rtl=True)
@@ -902,7 +914,7 @@ def fn4a(c):
     for txt in ['قابلة للتجديد تلقائياً لمدة عام واحد (1) ما لم يقدم أي من الطرفين إشعاراً كتابياً قبل شهرين (2) على الأقل من انتهاء الصلاحية.',
                 'يمكن زيادة قيمة الاتفاقية بنسبة 5\u201310٪ سنوياً بموافقة الطرفين.']:
         p2 = c.add_paragraph(); set_rtl_para(p2)
-        p2.paragraph_format.right_indent = Cm(1.5); p2.paragraph_format.first_line_indent = Cm(-0.4)
+        p2.paragraph_format.right_indent = Cm(1.5); p2.paragraph_format.first_line_indent = Cm(0.4)
         para_space(p2, 0, 0); make_run(p2, u'\u2022  ' + txt, size=11, rtl=True)
 add_row(fn4e, fn4a)
 
@@ -928,26 +940,26 @@ def fn5e(c):
         make_run(ps, f" \u2013 ", size=11)
         make_run(ps, f"{s.get('payment_date','')}", bold=True, size=11)
         make_run(ps, f" \u2013 ", size=11)
-        make_run(ps, f"{s.get('amount',0):,.2f} SAR", bold=True, size=11)
+        make_run(ps, f"{s.get('amount',0):,.2f} SR", bold=True, size=11)
     p3 = c.add_paragraph(); p3.paragraph_format.left_indent = Cm(0.5)
     p3.paragraph_format.first_line_indent = Cm(-0.3); para_space(p3, 0, 0)
     make_run(p3, u'\u2022  Late payments may result in the suspension of services until the overdue dues are settled, and the first party has the right to terminate the contract if the second party does not commit to paying any of the financial dues.', size=11)
 def fn5a(c):
     p = c.paragraphs[0]; set_rtl_para(p)
-    p.paragraph_format.right_indent = Cm(0.5); p.paragraph_format.first_line_indent = Cm(-0.3)
+    p.paragraph_format.right_indent = Cm(0.5); p.paragraph_format.first_line_indent = Cm(0.3)
     para_space(p, 0, 0)
     make_run(p, u'\u2022  قيمة العقد السنوي: ', size=11, rtl=True)
     make_run(p, f'{amount_total:,.2f} ريال سعودي', bold=True, size=11, rtl=True)
     make_run(p, ' (شامل ضريبة القيمة المضافة).', size=11, rtl=True)
     p2 = c.add_paragraph(); set_rtl_para(p2)
-    p2.paragraph_format.right_indent = Cm(0.5); p2.paragraph_format.first_line_indent = Cm(-0.3)
+    p2.paragraph_format.right_indent = Cm(0.5); p2.paragraph_format.first_line_indent = Cm(0.3)
     para_space(p2, 0, 0)
     make_run(p2, u'\u2022  يتم الدفع ', size=11, rtl=True)
     make_run(p2, payment_term_text_ar, bold=True, size=11, rtl=True)
     make_run(p2, '.', size=11, rtl=True)
     for s in payment_schedule_lines:
         ps = c.add_paragraph(); set_rtl_para(ps)
-        ps.paragraph_format.right_indent = Cm(1.0); ps.paragraph_format.first_line_indent = Cm(-0.3)
+        ps.paragraph_format.right_indent = Cm(1.0); ps.paragraph_format.first_line_indent = Cm(0.3)
         para_space(ps, 0, 0)
         make_run(ps, f"\u2013  ", size=11, rtl=True)
         make_run(ps, f"{s.get('name_ara','')}", bold=True, size=11, rtl=True)
@@ -956,7 +968,7 @@ def fn5a(c):
         make_run(ps, f" \u2013 ", size=11, rtl=True)
         make_run(ps, f"{s.get('amount',0):,.2f} س.ر", bold=True, size=11, rtl=True)
     p3 = c.add_paragraph(); set_rtl_para(p3)
-    p3.paragraph_format.right_indent = Cm(0.5); p3.paragraph_format.first_line_indent = Cm(-0.3)
+    p3.paragraph_format.right_indent = Cm(0.5); p3.paragraph_format.first_line_indent = Cm(0.3)
     para_space(p3, 0, 0)
     make_run(p3, u'\u2022  قد يؤدي التأخر في المدفوعات إلى تعليق الخدمات حتى يتم تسوية المستحقات المتأخرة ويحق للطرف الأول إنهاء العقد في حال لم يلتزم الطرف الثاني بسداد أي من المستحقات المالية.', size=11, rtl=True)
 add_row(fn5e, fn5a)
@@ -974,31 +986,31 @@ numbered('3', 'Repairs & Spare Parts: ', 'Only First Party technicians are autho
 insert_page_break()
 numbered('4', 'Limitation of Liability: ', '',
          'حدود المسؤولية: ', '',
-         sub_en=['First Party shall not be responsible for delays or damages caused by force majeure.',
+         sub_en=['First Party shall not be responsible for delays or damages caused by force majeure (e.g., natural disasters, strikes, fires, unavailability of parts).',
                  'Liability does not cover units not included in this contract.',
                  'If force majeure prevents execution for four (4) months or more, either Party may terminate the agreement by written notice.'],
-         sub_ar=['لا يتحمل الطرف الأول المسؤولية عن التأخير أو الأضرار الناجمة عن القوة القاهرة.',
+         sub_ar=['لا يتحمل الطرف الأول المسؤولية عن التأخير أو الأضرار الناجمة عن القوة القاهرة (على سبيل المثال، الكوارث الطبيعية، الإضرابات، الحرائق، عدم توفر قطع الغيار).',
                  'لا تغطي المسؤولية الوحدات غير المدرجة في هذا العقد.',
                  'إذا حالت القوة القاهرة دون التنفيذ لمدة أربعة (4) أشهر أو أكثر، يجوز لأي من الطرفين إنهاء الاتفاقية عن طريق إشعار كتابي.'])
 numbered('5', 'Insurance: ', 'The Second Party shall insure its property and equipment against any risk of damage, fire, or accident. The First Party\'s liability is limited to workmanship only.',
          'التأمين: ', 'يلتزم الطرف الثاني بتأمين ممتلكاته ومعداته ضد أي خطر تلف أو حريق أو حادث. تقتصر مسؤولية الطرف الأول على جودة العمل فقط.')
 numbered('6', 'Confidentiality: ', 'All contract documents remain the property of the First Party and must not be shared without written approval.',
          'السرية: ', 'تظل جميع مستندات العقد ملكاً للطرف الأول ولا يجوز مشاركتها دون موافقة خطية.')
-numbered('7', 'Exclusion of Liabilities: ', 'The First Party, its branches, or its employees shall not be liable for any claim or any direct or indirect damages arising from the Second Party.',
-         'استبعاد المسؤوليات: ', 'لا يتحمل الطرف الأول أو فروعه أو العاملين لديه مسؤولية أي مطالبة أو أي أضرار مباشر أو غير مباشر تنشأ بسبب الطرف الثاني.')
-numbered('8', 'Waiver: ', 'Any delay or failure by the First Party to exercise any of its rights shall not constitute a waiver. No waiver shall be effective unless in writing and signed by the First Party.',
-         'التخلي: ', 'لا يشكل أي تأخير أو عدم ممارسة من الطرف الأول لأي حق من حقوقه تخلياً. ولا يسري أي تخلٍ ما لم يكن كتابياً وموقَّعاً من قِبل الطرف الأول.')
-numbered('9', 'Language: ', 'This contract has been prepared in two copies in Arabic and English. In the event of any conflict, the Arabic language shall prevail.',
-         'اللغة: ', 'تم تحرير هذا العقد من نسختين باللغة العربية والإنجليزية وفي حال التعارض تكون اللغة العربية هي الأساس في التفسير.')
+numbered('7', 'Exclusion of Liabilities: ', 'The First Party, its branches, or its employees shall not be liable for any claim or any direct or indirect damages arising from the Second Party, and it is the responsibility of the Second Party to prove otherwise.',
+         'استبعاد المسؤوليات: ', 'لا يتحمل الطرف الأول أو فروعه أو العاملين لديه مسؤولية أي مطالبة أو أي أضرار مباشر أو غير مباشر تنشأ بسبب الطرف الثاني وتقع مسؤولية إثبات عكس ذلك على الطرف الثاني.')
+numbered('8', 'Waiver: ', 'Any delay or failure by the First Party to exercise any of its rights under this Contract shall not constitute a waiver or loss of such right or rights. No waiver shall be effective unless it is in writing and signed by the First Party.',
+         'التخلي: ', 'لا يشكل أي تأخير أو عدم ممارسة من الطرف الأول لأي حق من حقوقه بموجب هذا العقد تخلياً عن هذا الحق أو الحقوق أو فقدانها ولا يسري أي تخلٍ ما لم يكن كتابياً وموقَّعاً من قِبل الطرف الأول.')
+numbered('9', 'Language: ', 'This contract has been prepared in two copies in Arabic and English. In the event of any conflict or interpretation, the Arabic language shall prevail.',
+         'اللغة: ', 'تم تحرير هذا العقد من نسختين باللغة العربية والإنجليزية وفي حال التعارض او التفسير تكون اللغة العربية هي الأساس في التفسير.')
 numbered('10', 'Calendar: ', 'The Gregorian calendar is adopted in this contract.',
          'التقويم: ', 'التقويم الميلادي هو المعتمد في هذا العقد.')
-numbered('11', 'Communications: ', 'All communications between the parties shall be made via the email address mentioned in the introduction to this contract.',
-         'المراسلات: ', 'تتم كل المراسلات بين الطرفين عبر البريد الإلكتروني المذكور في مقدمة هذا العقد.')
+numbered('11', 'Communications: ', 'All communications between the parties, including notifications, requests, approvals, offers or claims, shall be made via the email address mentioned in the introduction to this contract.',
+         'المراسلات: ', 'تتم كل المراسلات بين الطرفين بما في ذلك الإخطارات، أو الطلبات أو الموافقات أو العروض أو المطالبات عبر البريد الإلكتروني المذكور في مقدمة هذا العقد.')
 
 # ── Section 7: Dispute ──
 heading('7. Dispute Resolution', '7. تسوية المنازعات')
-text_row('In the event of a dispute, the parties must first attempt to resolve the dispute amicably through negotiation. If a solution is not reached within 10 business days, the dispute will be referred to the competent judicial authorities in Jeddah, Kingdom of Saudi Arabia.',
-         'في حالة وجود نزاع، يجب على الطرفين أولاً محاولة الحل الودي عن طريق التفاوض. وفي حال لم يتم التوصل لحل خلال 10 أيام عمل تحال المنازعات إلى الجهات القضائية المختصة في مدينة جدة بالمملكة العربية السعودية.')
+text_row('In the event of a dispute, the parties must first attempt to resolve the dispute amicably through negotiation. If a solution is not reached within 10 business days, the dispute will be referred to the competent judicial authorities in Jeddah, Kingdom of Saudi Arabia, in accordance with applicable laws.',
+         'في حالة وجود نزاع، يجب على الطرفين أولاً محاولة الحل الودي عن طريق التفاوض. وفي حال لم يتم التوصل لحل خلال 10 أيام عمل تحال المنازعات إلى الجهات القضائية المختصة في مدينة جدة بالمملكة العربية السعودية بموجب القوانين المعمول بها.')
 
 insert_page_break()
 
@@ -1138,10 +1150,13 @@ ct = rt.cells[0]
 for i in range(1,5): ct.merge(rt.cells[i])
 set_cell_w(ct, Cm(PAGE_W))
 clear_cell_borders(ct); set_cell_border(ct, top=NAVY_GRID_BORDER, bottom=NAVY_GRID_BORDER, left=NAVY_GRID_BORDER, right=NAVY_GRID_BORDER)
-p = ct.paragraphs[0]; p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+p = ct.paragraphs[0]; p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+from docx.enum.text import WD_TAB_ALIGNMENT as _WTAB
+from docx.shared import Cm as _Cm
+p.paragraph_format.tab_stops.add_tab_stop(_Cm(PAGE_W), _WTAB.RIGHT)
 make_run(p, 'Annex B \u2013 Site Details', bold=True, size=11, color=NAVY)
-make_run(p, '     /     ', size=11)
-make_run(p, 'الملحق ب - تفاصيل الموقع', bold=True, size=11, color=NAVY)
+make_run(p, '\t', size=11)
+make_run(p, 'الملحق ب - تفاصيل الموقع', bold=True, size=11, color=NAVY, rtl=True)
 
 # Headers
 rh = tB.add_row()
@@ -1169,7 +1184,13 @@ for i, line in enumerate(contract_lines):
     p = rd.cells[3].paragraphs[0]; p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     make_run(p, line.get('contract_type',''), bold=True, size=11)
     p = rd.cells[4].paragraphs[0]; p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    make_run(p, str(line.get('qty_ordered',0)), bold=True, size=11)
+    _qty_raw = line.get('qty_ordered', 0)
+    try:
+        _qty_f = float(_qty_raw)
+        _qty_str = str(int(_qty_f)) if _qty_f == int(_qty_f) else f"{_qty_f:,.2f}"
+    except (TypeError, ValueError):
+        _qty_str = str(_qty_raw)
+    make_run(p, _qty_str, bold=True, size=11)
 
 # Merge site address column
 if len(contract_lines) > 1:
