@@ -104,7 +104,7 @@ class JobCardExcel(models.AbstractModel):
                    'Date', 'Time', 'Customer Name', 'Mobile No', 'Address','Property Type','Function','PM Company',
                    'Brand', 'Group Type','Model No', 'Serial Number', 'Purchase No',
                    'Purchase Date', 'Dealer', 'Warranty Status', 'warranty Expiry Date',
-                   'Symptoms','Defects','Services','Freon Charge Qty', 'Job Done', 'Invoice No', 'Appoint Date','Appoint Time', 'Technician',
+                   'Symptoms','Defects','Services','Freon Charge Qty(Kg)', 'Job Done', 'Invoice No', 'Appoint Date','Appoint Time', 'Technician',
                    'No of Visits', 'Parts', 'Part Name', 'Qty', 'Parts - Warranty Cost', 'Parts Charge',
                    'Service Charge', 'Total', 'Status', 'Action Status','Jobcard Created User',
                    'Last Modified User', 'Month', 'Completion Date', 'Completion Time', 'RTAT', 'Engineer Comments','Remarks',
@@ -135,8 +135,6 @@ class JobCardExcel(models.AbstractModel):
         # Data rows
         row = 8
         no = 1
-        domain = []
-        support_domain = []
         domain = [('id', 'in',
                    wizard.job_card_ids.ids if wizard.job_card_ids else self.env['project.task'].search([]).ids)]
 
@@ -155,30 +153,21 @@ class JobCardExcel(models.AbstractModel):
                 ('request_date', '<=', wizard.to_date),
             ]
 
-            support_records = self.env['machine.repair.support'].sudo().search(
+            support_records = self.env['machine.repair.support'].search(
                 support_domain,
                 order="request_date asc"
             )
 
             names = support_records.mapped('name')
-           
-
             if names:
                 domain += [('name', 'in', names)]
-
-
             else:
                 # No matching records in machine.repair.support
                 domain += [('id', '=', 0)]
-           
 
         else:
             domain += [('service_created_datetime', '<=', wizard.to_date), ('service_created_datetime', '>=', wizard.from_date)]
-
-      
-
-        
-            
+     
         if wizard.job_card_ids:
             domain += [('id', 'in', wizard.job_card_ids.ids)]
         if wizard.product_category_ids:
@@ -194,6 +183,18 @@ class JobCardExcel(models.AbstractModel):
         if wizard.job_state_ids:
             domain += [('job_card_state_code','in', wizard.job_state_ids.mapped('code'))]
             
+        '''Code Added on June 10 2026 by Vijaya Bhaskar'''
+
+        if wizard.action_status:
+            if wizard.action_status == 'closed':
+                domain += [('job_card_state_code','=', '126')]
+                
+            elif wizard.action_status == 'cancelled':
+                domain += [('job_card_state_code','=', '154')]
+                
+            elif  wizard.action_status == 'not_closed':
+                domain += [('job_card_state_code','!=',('126','154'))]  
+       
         
         
         domain += [('work_center_id','in', wizard.env.user.default_work_center_id.ids if wizard.env.user.default_work_center_id else self.env['work.center.location'].search([]).ids)]  
@@ -419,8 +420,26 @@ class JobCardExcel(models.AbstractModel):
                 
                 '''Code Added on March 30 2026 by Vijaya bhaskar client asked to Parts - Warranty Cost Column'''
                 # product_unit_price.append(str(round(line.product_id.standard_price,2)) if line.product_id.standard_price and line.under_warranty_bool  else '0.00')
-                product_unit_price.append(str(round(line.qty * line.product_id.standard_price,2)) if line.product_id.standard_price and line.under_warranty_bool  else '0.00')
-
+                '''Code Added on July 04 2026 by Vijaya Bhaskar working correctly '''
+                # product_unit_price.append(str(round(line.qty * line.product_id.standard_price,2)) if line.product_id.standard_price and line.under_warranty_bool  else '0.00')
+                
+                
+                '''Code Added on July 04 2026 by Vijaya Bhaskar working correctly'''
+                if wizard.from_date and wizard.from_date < cutoff_date:
+                    # Before 01-02-2026 use line.standard_price
+                    product_unit_price.append(
+                        str(round(line.standard_price, 2))
+                        if line.standard_price and line.under_warranty_bool
+                        else '0.00'
+                    )
+                else:
+                    # On/After 01-02-2026 use product_id.standard_price
+                    product_unit_price.append(
+                        str(round(line.qty * line.product_id.standard_price, 2))
+                        if line.product_id.standard_price and line.under_warranty_bool
+                        else '0.00'
+                    )
+                
                 
                 product_cost_price_charge.append(str(round(line.total,2)) if line.product_id and not line.under_warranty_bool and not( line.product_id.service_product_price_edit_bool or line.product_id.service_type_bool) else '0.00')
                 
@@ -432,8 +451,17 @@ class JobCardExcel(models.AbstractModel):
 
                 ''' 
                 
-                spare_parts_warranty += (line.qty * line.product_id.standard_price) if line.product_id.standard_price and line.under_warranty_bool else 0.0
+                '''Code Added on July 07 2026 client asked to match old records'''
+                # spare_parts_warranty += (line.qty * line.product_id.standard_price) if line.product_id.standard_price and line.under_warranty_bool else 0.0
+
+                if wizard.from_date and wizard.from_date < cutoff_date:
+                    spare_parts_warranty += (line.qty *line.standard_price) if line.product_id.standard_price and line.under_warranty_bool else 0.0
                 
+                else:  
+                    spare_parts_warranty += (line.qty * line.product_id.standard_price) if line.product_id.standard_price and line.under_warranty_bool else 0.0
+                
+
+                            
                 ''' Code Added on April 01 2026 by Vijaya Bhaskar
                 spare_parts_warranty += line.product_id.standard_price if line.product_id.standard_price and line.under_warranty_bool else 0.0
                 '''
@@ -810,7 +838,12 @@ class JobCardExcel(models.AbstractModel):
         
         sheet.write(row, col, 'SVC Income', header_merge_format_left)
         col += 1
+        
+        '''Code Added on July 02 2026 client not matched svc and s/p so we sum directly
         sheet.write(row,col, f"{job_card_grand_total_amount:,.2f}", header_merge_format_right)
+        '''
+        sheet.write(row, col, f"{(spare_parts_price + service_charge_warranty):,.2f}",header_merge_format_right)
+        
         # sheet.write(row,col,f"{job_card_cancel_count:,.2f}", header_merge_format_right) 
         
         row += 1
