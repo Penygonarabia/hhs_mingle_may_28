@@ -20,6 +20,7 @@
 						<field name="region_id" invisible ="1"/>
 						<field name = "job_state_ids" widget = "many2many_tags" options = "{'no_create_edit':True,'no_edit':True,'no_create':True}"/>
 						<!-- <field name="status" /> -->
+						<field name = "action_status" />
 					</group>
 				</group>	
 				  <footer>
