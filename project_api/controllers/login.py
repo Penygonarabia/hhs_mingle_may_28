@@ -17110,9 +17110,11 @@ class AccessToken(http.Controller):
                 return {
                     "success": False,
                     "message": "Missing required parameter: customer_code"
-                }, 400
+                }
 
+            # -------------------------------------------------------
             # Customer
+            # -------------------------------------------------------
             customer = request.env["customer"].sudo().search([
                 ("cst_no", "=", customer_code)
             ], limit=1)
@@ -17121,14 +17123,32 @@ class AccessToken(http.Controller):
                 return {
                     "success": False,
                     "message": "Customer not found."
-                }, 404
+                }
 
-            # Partner (Tier)
+            # -------------------------------------------------------
+            # Partner
+            # -------------------------------------------------------
             partner = request.env["res.partner"].sudo().search([
                 ("ref", "=", customer_code)
             ], limit=1)
 
+            # -------------------------------------------------------
+            # City
+            # -------------------------------------------------------
+            city = request.env["res.city"].sudo().search([
+                ("name", "ilike", customer.cst_district)
+            ], limit=1)
+
+            # -------------------------------------------------------
+            # Region
+            # -------------------------------------------------------
+            region = request.env["res.region"].sudo().search([
+                ("name", "ilike", customer.cst_region)
+            ], limit=1)
+
+            # -------------------------------------------------------
             # Transaction Headers
+            # -------------------------------------------------------
             headers = request.env["transaction.header"].sudo().search([
                 ("trnh_cstno", "=", customer_code)
             ])
@@ -17137,17 +17157,33 @@ class AccessToken(http.Controller):
                 return {
                     "success": False,
                     "message": "No Transaction Header found for customer %s" % customer_code
-                }, 404
+                }
 
             updated = 0
 
             for th in headers:
 
-                salesman = request.env["sl.salesmandesc"].sudo().search([
+                # -----------------------------------------------
+                # Salesman Master
+                # -----------------------------------------------
+                salesman = request.env["sl.salesman"].sudo().search([
                     ("sm_code", "=", th.trnh_sman)
                 ], limit=1)
 
+                salesman_desc = request.env["sl.salesmandesc"].sudo().search([
+                    ("sm_code", "=", th.trnh_sman)
+                ], limit=1)
+
+                # -----------------------------------------------
+                # Report Region
+                # Change model if required
+                # -----------------------------------------------
+                report_region = request.env["res.region"].sudo().search([
+                    ("name", "ilike", customer.cst_region)
+                ], limit=1)
+
                 vals = {
+                    # Existing Fields
                     "trnh_cstname": customer.cst_name,
                     "trnh_cstadd": customer.cst_add,
                     "trnh_add2": customer.cst_add2,
@@ -17158,8 +17194,14 @@ class AccessToken(http.Controller):
                     "trnh_cstmobile": customer.cst_tele,
                     "trnh_cstemail": customer.cst_email,
                     "trnh_cstvatreg": customer.cst_vatreg,
-                    "trnh_salesmanname": salesman.sm_name if salesman else False,
-                    # "trnh_tiername": partner.tier_name if partner else False,   # Replace tier_name if your field is different
+                    "trnh_salesmanname": salesman_desc.sm_name if salesman_desc else False,
+
+                    # New Many2one Fields
+                    "trnh_partner_id": partner.id if partner else False,
+                    "trnh_cityid": city.id if city else False,
+                    "trnh_regionid": region.id if region else False,
+                    "trnh_smanid": salesman.id if salesman else False,
+                    "trnh_rptregionid": report_region.id if report_region else False,
                 }
 
                 th.sudo().write(vals)
@@ -17170,14 +17212,15 @@ class AccessToken(http.Controller):
                 "customer_code": customer_code,
                 "updated_records": updated,
                 "message": "%s Transaction Header record(s) updated successfully." % updated
-            }, 200
+            }
 
         except Exception as e:
             _logger.exception("Transaction Header Update Error")
+
             return {
                 "success": False,
                 "message": str(e)
-            }, 500
+            }
 
 
 # @http.route(["/api/auth/token"], methods=["DELETE"], type="http", auth="none", csrf=False)

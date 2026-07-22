@@ -133,6 +133,30 @@ class TransactionHeader(models.Model):
     trnh_export = fields.Char()
     trnh_arraiveddt = fields.Datetime()
     trnh_by = fields.Char()
+    trnh_partner_id = fields.Many2one(
+        'res.partner',
+        string='Customer'
+    )
+
+    trnh_cityid = fields.Many2one(
+        'res.city',
+        string='City'
+    )
+
+    trnh_regionid = fields.Many2one(
+        'res.region',
+        string='Region'
+    )
+
+    trnh_smanid = fields.Many2one(
+        'sl.salesman',
+        string='Salesman'
+    )
+
+    trnh_rptregionid = fields.Many2one(
+        'report.region',
+        string='Report Region'
+    )
 
 
     def init(self):
