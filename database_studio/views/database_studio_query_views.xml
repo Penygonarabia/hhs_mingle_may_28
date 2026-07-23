@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_sql_ms_query_tree" model="ir.ui.view">
+        <field name="name">database.studio.query.tree</field>
+        <field name="model">database.studio.query</field>
+        <field name="arch" type="xml">
+            <tree string="Query History" js_class="database_studio_history_list"
+                  create="0" multi_edit="1">
+                <header>
+                    <button name="action_open_analyser" type="object"
+                            string="Open Analyser" class="btn-primary"/>
+                </header>
+                <field name="query" column_invisible="1"/>
+                <field name="is_favorite" widget="boolean_favorite" nolabel="1" width="36px"/>
+                <field name="name" string="Name"/>
+                <field name="run_count" string="Runs" width="70px"/>
+                <field name="user_id" string="User" widget="many2one_avatar_user"
+                       optional="show" width="180px"/>
+                <field name="last_run" width="170px"/>
+                <button name="action_unlink" type="object" icon="fa-trash-o"
+                        title="Delete" class="text-danger"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_sql_ms_query_form" model="ir.ui.view">
+        <field name="name">database.studio.query.form</field>
+        <field name="model">database.studio.query</field>
+        <field name="arch" type="xml">
+            <form string="Saved Query">
+                <header>
+                    <button name="action_open_in_analyser" type="object"
+                            string="Open in Analyser" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Name this query..."/></h1>
+                    </div>
+                    <group>
+                        <field name="is_favorite"/>
+                        <field name="user_id"/>
+                        <field name="last_run"/>
+                        <field name="run_count"/>
+                    </group>
+                    <field name="query" widget="text"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sql_ms_query" model="ir.actions.act_window">
+        <field name="name">Query History</field>
+        <field name="res_model">database.studio.query</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No queries yet</p>
+            <p>Queries you execute in the Analyser are stored here.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_sql_ms_history"
+              name="History"
+              parent="menu_sql_ms_root"
+              action="action_sql_ms_query"
+              groups="database_studio.group_database_studio_user"
+              sequence="20"/>
+</odoo>

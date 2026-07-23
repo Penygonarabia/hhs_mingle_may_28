@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_database_studio_relation_tree" model="ir.ui.view">
+        <field name="name">database.studio.relation.tree</field>
+        <field name="model">database.studio.relation</field>
+        <field name="arch" type="xml">
+            <tree string="Relations" editable="bottom">
+                <field name="from_table" placeholder="e.g. bidata"/>
+                <field name="from_column" placeholder="e.g. bi_pgroupcode"/>
+                <field name="to_table" placeholder="e.g. t_productsdesc"/>
+                <field name="to_column" placeholder="e.g. p_code"/>
+                <field name="note" optional="show"/>
+                <field name="active" widget="boolean_toggle" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_database_studio_relation_form" model="ir.ui.view">
+        <field name="name">database.studio.relation.form</field>
+        <field name="model">database.studio.relation</field>
+        <field name="arch" type="xml">
+            <form string="Relation">
+                <sheet>
+                    <group>
+                        <group string="From">
+                            <field name="from_table"/>
+                            <field name="from_column"/>
+                        </group>
+                        <group string="To">
+                            <field name="to_table"/>
+                            <field name="to_column"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="note"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_database_studio_relation" model="ir.actions.act_window">
+        <field name="name">Relations</field>
+        <field name="res_model">database.studio.relation</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Define a relation</p>
+            <p>Declare how two tables join when there is no foreign key — for
+               example a business "code" column that maps to a master table.
+               Database Studio then uses it in Field Mapping and when building
+               join queries.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_database_studio_relation"
+              name="Relations"
+              parent="menu_sql_ms_root"
+              action="action_database_studio_relation"
+              groups="database_studio.group_database_studio_user"
+              sequence="30"/>
+</odoo>

@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="database_studio.SaveDialog">
+        <Dialog title="'Save query'" size="'md'">
+            <div class="mb-2">
+                <label class="form-label fw-bold">Name</label>
+                <input type="text" class="form-control" t-ref="input"
+                       placeholder="Name this query..."
+                       t-model="state.name" t-on-keydown="onKeydown"/>
+                <small class="text-muted">Saved to History and marked as favorite ★.</small>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-on-click="confirm">
+                    <i class="fa fa-star me-1"/>Save
+                </button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">
+                    Cancel
+                </button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="database_studio.Analyser">
+        <div class="sqlms-root" t-ref="rootEl">
+            <!-- Left: objects -->
+            <div class="sqlms-sidebar">
+                <div class="sqlms-search">
+                    <i class="fa fa-search"/>
+                    <input type="text" placeholder="Search table or view name..."
+                           t-model="state.filter"/>
+                    <button class="sqlms-hist-btn" title="Query history"
+                            t-on-click="openHistory">
+                        <i class="fa fa-history"/>
+                    </button>
+                </div>
+                <div class="sqlms-searchmode">
+                    <select t-model="state.searchMode" title="Search match mode">
+                        <option value="contains">Any where</option>
+                        <option value="start">Starts with</option>
+                        <option value="end">Ends with</option>
+                    </select>
+                </div>
+                <div class="sqlms-selbar" t-if="checkedCount">
+                    <button class="btn btn-primary btn-sm" t-on-click="buildQuery">
+                        <i class="fa fa-code-fork"/> Build query (<t t-esc="checkedCount"/>)
+                    </button>
+                    <button class="btn btn-link btn-sm" t-on-click="clearChecks">Clear</button>
+                </div>
+                <div class="sqlms-objects">
+                    <!-- FAVOURITES -->
+                    <div class="sqlms-group-title" t-on-click="toggleFavorites">
+                        <i class="fa" t-att-class="state.showFavorites ? 'fa-caret-down' : 'fa-caret-right'"/>
+                        <i class="fa fa-star"/> Favourites
+                        <span class="sqlms-count" t-esc="filteredFavorites.length"/>
+                    </div>
+                    <ul class="sqlms-list" t-if="state.showFavorites">
+                        <li t-if="!state.favorites.length" class="sqlms-favhint">
+                            No favourites yet — click the ☆ on a table or view.
+                        </li>
+                        <li t-foreach="filteredFavorites" t-as="fav" t-key="fav.name"
+                            t-att-class="{ 'sqlms-active': state.selected === fav.name }"
+                            t-on-click="() => this.selectObject(fav.name, fav.type)">
+                            <input type="checkbox" class="sqlms-check"
+                                   t-att-checked="state.checked[fav.name]"
+                                   t-on-click="(ev) => this.toggleCheck(fav.name, ev)"/>
+                            <span class="sqlms-name" t-esc="fav.name"/>
+                            <button class="sqlms-fav sqlms-fav-on" title="Remove from favourites"
+                                    t-on-click="(ev) => this.toggleFavorite(fav.name, fav.type, ev)">
+                                <i class="fa fa-star"/>
+                            </button>
+                            <button class="sqlms-insert" title="Insert into query"
+                                    t-on-click="(ev) => this.insertObject(fav.name, ev)">
+                                <i class="fa fa-code"/>
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- TABLES -->
+                    <div class="sqlms-group-title" t-on-click="toggleTables">
+                        <i class="fa" t-att-class="state.showTables ? 'fa-caret-down' : 'fa-caret-right'"/>
+                        <i class="fa fa-table"/> Tables
+                        <span class="sqlms-count" t-esc="filteredTables.length"/>
+                    </div>
+                    <ul class="sqlms-list" t-if="state.showTables">
+                        <li t-foreach="filteredTables" t-as="name" t-key="name"
+                            t-att-class="{ 'sqlms-active': state.selected === name }"
+                            t-on-click="() => this.selectObject(name, 'table')">
+                            <input type="checkbox" class="sqlms-check"
+                                   t-att-checked="state.checked[name]"
+                                   t-on-click="(ev) => this.toggleCheck(name, ev)"/>
+                            <span class="sqlms-name" t-esc="name"/>
+                            <button class="sqlms-fav" t-att-class="{ 'sqlms-fav-on': isFavorite(name) }"
+                                    t-att-title="isFavorite(name) ? 'Remove from favourites' : 'Add to favourites'"
+                                    t-on-click="(ev) => this.toggleFavorite(name, 'table', ev)">
+                                <i class="fa" t-att-class="isFavorite(name) ? 'fa-star' : 'fa-star-o'"/>
+                            </button>
+                            <button class="sqlms-insert" title="Insert into query"
+                                    t-on-click="(ev) => this.insertObject(name, ev)">
+                                <i class="fa fa-code"/>
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- VIEWS -->
+                    <div class="sqlms-group-title" t-on-click="toggleViews">
+                        <i class="fa" t-att-class="state.showViews ? 'fa-caret-down' : 'fa-caret-right'"/>
+                        <i class="fa fa-eye"/> Views
+                        <span class="sqlms-count" t-esc="filteredViews.length"/>
+                    </div>
+                    <ul class="sqlms-list" t-if="state.showViews">
+                        <li t-foreach="filteredViews" t-as="name" t-key="name"
+                            t-att-class="{ 'sqlms-active': state.selected === name }"
+                            t-on-click="() => this.selectObject(name, 'view')">
+                            <input type="checkbox" class="sqlms-check"
+                                   t-att-checked="state.checked[name]"
+                                   t-on-click="(ev) => this.toggleCheck(name, ev)"/>
+                            <span class="sqlms-name" t-esc="name"/>
+                            <button class="sqlms-fav" t-att-class="{ 'sqlms-fav-on': isFavorite(name) }"
+                                    t-att-title="isFavorite(name) ? 'Remove from favourites' : 'Add to favourites'"
+                                    t-on-click="(ev) => this.toggleFavorite(name, 'view', ev)">
+                                <i class="fa" t-att-class="isFavorite(name) ? 'fa-star' : 'fa-star-o'"/>
+                            </button>
+                            <button class="sqlms-insert" title="Insert into query"
+                                    t-on-click="(ev) => this.insertObject(name, ev)">
+                                <i class="fa fa-code"/>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Right: detail -->
+            <div class="sqlms-main">
+                <div class="sqlms-tabs">
+                    <button t-att-class="{ 'sqlms-tab-active': state.activeTab === 'query' }"
+                            t-on-click="() => this.setTab('query')">Query</button>
+                    <button t-att-class="{ 'sqlms-tab-active': state.activeTab === 'fields' }"
+                            t-on-click="() => this.setTab('fields')">Fields</button>
+                    <button t-att-class="{ 'sqlms-tab-active': state.activeTab === 'mapping' }"
+                            t-on-click="() => this.setTab('mapping')">Field Mapping</button>
+                    <span class="sqlms-selected" t-if="state.selected">
+                        <t t-esc="state.selectedType"/>: <b t-esc="state.selected"/>
+                    </span>
+                </div>
+
+                <div class="sqlms-content">
+                    <!-- FIELDS -->
+                    <div t-if="state.activeTab === 'fields'" class="sqlms-pane">
+                        <t t-if="!_fieldsTables().length">
+                            <div class="sqlms-empty">Click a table/view (or tick several) on the left to see its fields.</div>
+                        </t>
+                        <t t-elif="state.loading">
+                            <div class="sqlms-empty">Loading fields…</div>
+                        </t>
+                        <t t-else="">
+                            <div class="sqlms-toolbar">
+                                <button class="btn btn-secondary btn-sm" t-on-click="copyFields">
+                                    <i class="fa fa-clipboard"/> Copy fields
+                                </button>
+                                <span class="sqlms-info">
+                                    <t t-esc="fieldCount"/> field(s) in
+                                    <t t-esc="state.fieldGroups.length"/> table(s)
+                                </span>
+                            </div>
+                            <div class="sqlms-groupscroll">
+                                <div t-foreach="state.fieldGroups" t-as="g" t-key="g.table"
+                                     class="sqlms-fieldgroup">
+                                    <div class="sqlms-group-title2"
+                                         t-on-click="() => this.toggleFieldGroup(g.table)">
+                                        <i class="fa" t-att-class="!state.collapsedGroups[g.table] ? 'fa-caret-down' : 'fa-caret-right'"/>
+                                        <b t-esc="g.table"/>
+                                        <span class="sqlms-count" t-esc="g.fields.length"/>
+                                    </div>
+                                    <div class="sqlms-grouptablewrap" t-if="!state.collapsedGroups[g.table]">
+                                        <table class="sqlms-grid">
+                                            <thead>
+                                                <tr>
+                                                    <th>Field name</th>
+                                                    <th>Field type</th>
+                                                    <th>Precision / Length</th>
+                                                    <th>Nullable</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr t-foreach="g.fields" t-as="f" t-key="f.name">
+                                                    <td t-esc="f.name"/>
+                                                    <td t-esc="f.type"/>
+                                                    <td t-esc="f.precision"/>
+                                                    <td t-esc="f.nullable"/>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+
+                    <!-- FIELD MAPPING -->
+                    <div t-if="state.activeTab === 'mapping'" class="sqlms-pane">
+                        <t t-if="!_mappingTables().length">
+                            <div class="sqlms-empty">Select a table/view (or tick several) on the left, or write a query, to see the field mapping.</div>
+                        </t>
+                        <t t-elif="state.loading">
+                            <div class="sqlms-empty">Loading field mapping…</div>
+                        </t>
+                        <t t-elif="state.mapping">
+                            <div class="sqlms-toolbar">
+                                <button class="btn btn-secondary btn-sm" t-on-click="copyMapping"
+                                        t-if="state.mapping.rows.length">
+                                    <i class="fa fa-clipboard"/> Copy mapping
+                                </button>
+                                <span class="sqlms-info">
+                                    <t t-esc="state.mapping.rows.length"/> mapping(s) for
+                                    <b t-esc="_mappingTables().join(', ')"/>
+                                </span>
+                            </div>
+                            <div class="sqlms-tablewrap" t-if="state.mapping.rows.length">
+                                <table class="sqlms-grid">
+                                    <thead>
+                                        <tr>
+                                            <th>From table</th>
+                                            <th>From column</th>
+                                            <th/>
+                                            <th>To table</th>
+                                            <th>To column</th>
+                                            <th>Via</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="state.mapping.rows" t-as="m" t-key="m_index">
+                                            <td t-esc="m.from_table"/>
+                                            <td t-esc="m.from_column"/>
+                                            <td class="sqlms-arrow">&#8594;</td>
+                                            <td t-esc="m.to_table"/>
+                                            <td t-esc="m.to_column"/>
+                                            <td>
+                                                <span t-att-class="'sqlms-via sqlms-via-' + m.via"
+                                                      t-esc="m.via"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="sqlms-unrelated" t-if="state.mapping.unrelated.length">
+                                <div class="sqlms-unrelated-head">
+                                    <i class="fa fa-exclamation-triangle"/>
+                                    No relationship detected for these selected table(s).
+                                    Their code/key columns are shown below — define a mapping under
+                                    <b>Database Studio ▸ Relations</b> to join them.
+                                </div>
+                                <div class="sqlms-unrelated-item" t-foreach="state.mapping.unrelated"
+                                     t-as="ut" t-key="ut">
+                                    <b t-esc="ut"/>:
+                                    <span class="sqlms-cand"
+                                          t-esc="(state.mapping.candidates[ut] or []).join(', ') or 'no code/key-like columns'"/>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+
+                    <!-- QUERY -->
+                    <div t-if="state.activeTab === 'query'" class="sqlms-pane sqlms-querypane">
+                        <div class="sqlms-toolbar">
+                            <button class="btn btn-primary btn-sm" t-on-click="() => this.runQuery(1)">
+                                <i class="fa fa-play"/> Execute
+                            </button>
+                            <button class="btn btn-secondary btn-sm" t-on-click="formatQuery">
+                                <i class="fa fa-indent"/> Format
+                            </button>
+                            <button class="btn btn-secondary btn-sm" t-on-click="saveQuery">
+                                <i class="fa fa-star"/> Save
+                            </button>
+                            <button class="btn btn-secondary btn-sm" t-on-click="copyQuery">
+                                <i class="fa fa-clipboard"/> Copy query
+                            </button>
+                            <button class="btn btn-secondary btn-sm" t-on-click="clearQuery">
+                                <i class="fa fa-eraser"/> Clear
+                            </button>
+                            <span class="sqlms-info">Tip: select part of the query to run only that; click a table/view on the left to insert it.</span>
+                        </div>
+                        <div class="sqlms-editor">
+                            <pre class="sqlms-highlight" t-ref="highlight"/>
+                            <textarea class="sqlms-textarea" t-ref="editor" spellcheck="false"
+                                      placeholder="Type or paste a query..."
+                                      t-on-input="onQueryInput" t-on-scroll="onQueryScroll"/>
+                        </div>
+                        <t t-if="state.queryResult">
+                            <div class="sqlms-ran" t-if="state.execQuery">
+                                <span class="sqlms-ran-label">
+                                    <t t-if="state.execWasSelection">Executed selection:</t>
+                                    <t t-else="">Executed:</t>
+                                </span>
+                                <code t-esc="state.execQuery"/>
+                            </div>
+                            <div class="sqlms-toolbar">
+                                <button class="btn btn-secondary btn-sm" t-on-click="copyQueryResult"
+                                        t-if="state.queryResult.columns.length">
+                                    <i class="fa fa-clipboard"/> Copy result
+                                </button>
+                                <span class="sqlms-info" t-if="state.queryResult.message"
+                                      t-esc="state.queryResult.message"/>
+                                <t t-if="state.queryResult.columns.length">
+                                    <t t-call="database_studio.Pager">
+                                        <t t-set="res" t-value="state.queryResult"/>
+                                        <t t-set="go" t-value="(p) => this.runQuery(p)"/>
+                                    </t>
+                                </t>
+                            </div>
+                            <t t-if="state.queryResult.columns.length"
+                               t-call="database_studio.ResultGrid">
+                                <t t-set="res" t-value="state.queryResult"/>
+                            </t>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- Reusable pager -->
+    <t t-name="database_studio.Pager">
+        <span class="sqlms-pager">
+            <button class="btn btn-sm btn-light" t-att-disabled="res.page &lt;= 1"
+                    t-on-click="() => go(1)" title="First">
+                <i class="fa fa-angle-double-left"/>
+            </button>
+            <button class="btn btn-sm btn-light" t-att-disabled="res.page &lt;= 1"
+                    t-on-click="() => go(res.page - 1)" title="Previous">
+                <i class="fa fa-angle-left"/>
+            </button>
+            <span class="sqlms-pageinfo">
+                Page <b t-esc="res.page"/> / <t t-esc="res.pages"/>
+                (<t t-esc="res.total"/> rows)
+            </span>
+            <button class="btn btn-sm btn-light" t-att-disabled="res.page &gt;= res.pages"
+                    t-on-click="() => go(res.page + 1)" title="Next">
+                <i class="fa fa-angle-right"/>
+            </button>
+            <button class="btn btn-sm btn-light" t-att-disabled="res.page &gt;= res.pages"
+                    t-on-click="() => go(res.pages)" title="Last">
+                <i class="fa fa-angle-double-right"/>
+            </button>
+        </span>
+    </t>
+
+    <!-- Reusable result grid -->
+    <t t-name="database_studio.ResultGrid">
+        <div class="sqlms-tablewrap">
+            <table class="sqlms-grid">
+                <thead>
+                    <tr>
+                        <th class="sqlms-rownum">#</th>
+                        <th t-foreach="res.columns" t-as="col" t-key="col_index" t-esc="col"/>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="res.rows" t-as="row" t-key="row_index">
+                        <td class="sqlms-rownum"
+                            t-esc="(res.page - 1) * res.limit + row_index + 1"/>
+                        <t t-foreach="row" t-as="val" t-key="val_index">
+                            <td t-if="val === null" class="sqlms-null">NULL</td>
+                            <td t-else="" t-esc="val"/>
+                        </t>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </t>
+</templates>

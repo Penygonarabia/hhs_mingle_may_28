@@ -1,0 +1,345 @@
+.sqlms-root {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    background: #f8f9fa;
+    font-size: 13px;
+    overflow: hidden;
+}
+
+/* ---- Query History list: keep the selector/star columns tight so the
+   surplus width goes to the Name column instead of leaving a gap. ---- */
+.o_database_studio_history_list_view .o_list_record_selector {
+    width: 42px !important;
+    max-width: 42px !important;
+}
+.o_database_studio_history_list_view .o_boolean_favorite_cell {
+    width: 40px !important;
+    max-width: 40px !important;
+}
+
+/* ---- sidebar ---- */
+.sqlms-sidebar {
+    width: 300px;
+    min-width: 240px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #dee2e6;
+    background: #ffffff;
+}
+.sqlms-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+.sqlms-search i { color: #868e96; }
+.sqlms-search input {
+    flex: 1;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 4px 8px;
+    outline: none;
+}
+.sqlms-hist-btn {
+    border: 1px solid #ced4da;
+    background: #fff;
+    border-radius: 4px;
+    color: #495057;
+    padding: 3px 8px;
+    cursor: pointer;
+}
+.sqlms-hist-btn:hover { background: #eef4fb; color: #1a73e8; }
+.sqlms-selbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #e7f5ff;
+    border-bottom: 1px solid #d0ebff;
+}
+.sqlms-check { cursor: pointer; margin: 0; flex: 0 0 auto; }
+.sqlms-searchmode {
+    padding: 0 10px 8px;
+    border-bottom: 1px solid #e9ecef;
+}
+.sqlms-searchmode select {
+    width: 100%;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 3px 6px;
+    background: #fff;
+    outline: none;
+}
+.sqlms-objects { overflow-y: auto; flex: 1; }
+
+/* field groups (multi-table) */
+.sqlms-groupscroll { flex: 1; min-height: 0; overflow: auto; }
+.sqlms-fieldgroup {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+.sqlms-group-title2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #eceff1;
+    cursor: pointer;
+    user-select: none;
+    font-family: monospace;
+    border-bottom: 1px solid #dee2e6;
+}
+.sqlms-group-title2 .sqlms-count { margin-left: auto; }
+.sqlms-grouptablewrap { overflow-x: auto; }
+.sqlms-fieldgroup .sqlms-grid thead th { position: static; }
+.sqlms-group-title {
+    position: sticky;
+    top: 0;
+    background: #f1f3f5;
+    padding: 6px 10px;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: .04em;
+    color: #495057;
+    border-bottom: 1px solid #e9ecef;
+    z-index: 1;
+}
+.sqlms-count {
+    float: right;
+    background: #dee2e6;
+    border-radius: 10px;
+    padding: 0 7px;
+    font-weight: 600;
+}
+.sqlms-list { list-style: none; margin: 0; padding: 0; }
+.sqlms-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f3f5;
+}
+.sqlms-list li:hover { background: #eef4fb; }
+.sqlms-list li.sqlms-active { background: #d7e9fb; font-weight: 600; }
+.sqlms-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: monospace;
+}
+.sqlms-insert {
+    border: none;
+    background: transparent;
+    color: #868e96;
+    opacity: 0;
+    cursor: pointer;
+}
+.sqlms-list li:hover .sqlms-insert { opacity: 1; }
+.sqlms-insert:hover { color: #1a73e8; }
+
+.sqlms-fav {
+    border: none;
+    background: transparent;
+    color: #adb5bd;
+    opacity: 0;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+.sqlms-list li:hover .sqlms-fav { opacity: 1; }
+.sqlms-fav.sqlms-fav-on { opacity: 1; color: #f7b731; }
+.sqlms-fav:hover { color: #f7b731; }
+.sqlms-favhint {
+    color: #adb5bd;
+    font-style: italic;
+    cursor: default;
+    justify-content: flex-start;
+}
+.sqlms-favhint:hover { background: transparent; }
+
+/* ---- main ---- */
+.sqlms-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.sqlms-tabs {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 10px 0;
+    border-bottom: 1px solid #dee2e6;
+    background: #ffffff;
+}
+.sqlms-tabs button {
+    border: 1px solid transparent;
+    border-bottom: none;
+    background: transparent;
+    padding: 6px 16px;
+    cursor: pointer;
+    border-radius: 4px 4px 0 0;
+    color: #495057;
+}
+.sqlms-tabs button.sqlms-tab-active {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    font-weight: 600;
+    color: #212529;
+}
+.sqlms-selected { margin-left: auto; color: #868e96; font-family: monospace; }
+
+.sqlms-content { flex: 1; min-height: 0; overflow: hidden; display: flex; }
+.sqlms-pane {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    overflow: hidden;
+}
+.sqlms-empty { color: #868e96; padding: 30px; text-align: center; }
+
+.sqlms-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+.sqlms-info { color: #868e96; }
+
+/* ---- grid ---- */
+.sqlms-tablewrap {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: #fff;
+}
+/* width:auto so each column sizes to its own content instead of the whole
+   table being stretched to 100% (which pushed short columns far apart). */
+.sqlms-grid { border-collapse: collapse; width: auto; font-family: monospace; }
+.sqlms-grid th, .sqlms-grid td {
+    border: 1px solid #e9ecef;
+    padding: 4px 8px;
+    text-align: left;
+    white-space: nowrap;
+    max-width: 520px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sqlms-grid thead th {
+    position: sticky;
+    top: 0;
+    background: #eceff1;
+    z-index: 1;
+    font-weight: 600;
+}
+.sqlms-grid tbody tr:nth-child(even) { background: #f8f9fa; }
+.sqlms-grid tbody tr:hover { background: #eef4fb; }
+.sqlms-rownum { color: #adb5bd; text-align: right; background: #f1f3f5; }
+.sqlms-arrow { color: #adb5bd; text-align: center; }
+.sqlms-via {
+    display: inline-block;
+    padding: 0 6px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.sqlms-via-FK { background: #d0ebff; color: #1971c2; }
+.sqlms-via-custom { background: #eebefa; color: #9c36b5; }
+.sqlms-via-name { background: #e9ecef; color: #495057; }
+.sqlms-unrelated {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ffe066;
+    background: #fff9db;
+    border-radius: 4px;
+}
+.sqlms-unrelated-head { color: #856404; margin-bottom: 6px; }
+.sqlms-unrelated-head .fa { margin-right: 6px; }
+.sqlms-unrelated-item { font-family: monospace; padding: 2px 0; }
+.sqlms-cand { color: #1971c2; }
+.sqlms-null { color: #c92a2a; font-style: italic; }
+
+/* executed-query banner above the query result */
+.sqlms-ran {
+    margin-bottom: 8px;
+    padding: 6px 8px;
+    background: #f1f3f5;
+    border-left: 3px solid #5b899e;
+    border-radius: 3px;
+    max-height: 72px;
+    overflow: auto;
+}
+.sqlms-ran-label { font-weight: 600; color: #495057; margin-right: 6px; }
+.sqlms-ran code { color: #212529; white-space: pre-wrap; word-break: break-word; }
+
+/* ---- pager ---- */
+.sqlms-pager { display: inline-flex; align-items: center; gap: 4px; }
+.sqlms-pageinfo { padding: 0 6px; }
+
+/* ---- editor ---- */
+.sqlms-querypane { min-height: 0; }
+.sqlms-editor {
+    position: relative;
+    height: 220px;
+    min-height: 140px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fdfdfd;
+    margin-bottom: 8px;
+    flex: 0 0 auto;
+}
+.sqlms-highlight, .sqlms-textarea {
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    border: 0 !important;
+    padding: 10px !important;
+    font-family: monospace !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
+    line-height: 1.5 !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    text-indent: 0 !important;
+    text-transform: none !important;
+    font-variant-ligatures: none !important;
+    white-space: pre !important;
+    word-wrap: normal !important;
+    overflow: auto !important;
+    width: 100%;
+    height: 100%;
+    tab-size: 4;
+    -moz-tab-size: 4;
+}
+.sqlms-highlight {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    color: #212529;
+    z-index: 0;
+}
+.sqlms-textarea {
+    position: absolute;
+    inset: 0;
+    background: transparent;
+    color: transparent;
+    caret-color: #212529;
+    resize: none;
+    outline: none;
+    z-index: 1;
+}
+.sqlms-kw { color: #1971c2; font-weight: 600; }
+.sqlms-str { color: #2f9e44; }
+.sqlms-ident { color: #9c36b5; }
+.sqlms-num { color: #e8590c; }
+.sqlms-comment { color: #868e96; font-style: italic; }

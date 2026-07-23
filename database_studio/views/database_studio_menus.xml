@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_sql_ms_analyser" model="ir.actions.client">
+        <field name="name">Analyser</field>
+        <field name="tag">database_studio.analyser</field>
+    </record>
+
+    <menuitem id="menu_sql_ms_root"
+              name="Database Studio"
+              web_icon="database_studio,static/description/icon.svg"
+              groups="database_studio.group_database_studio_user"
+              sequence="-10"/>
+
+    <menuitem id="menu_sql_ms_analyser"
+              name="Analyser"
+              parent="menu_sql_ms_root"
+              action="action_sql_ms_analyser"
+              groups="database_studio.group_database_studio_user"
+              sequence="10"/>
+</odoo>
