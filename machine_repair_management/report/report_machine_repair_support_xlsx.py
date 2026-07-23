@@ -428,14 +428,14 @@ class JobCardExcel(models.AbstractModel):
                 if wizard.from_date and wizard.from_date < cutoff_date:
                     # Before 01-02-2026 use line.standard_price
                     product_unit_price.append(
-                        str(round(line.standard_price, 2))
+                        str(round(line.standard_price, 3))
                         if line.standard_price and line.under_warranty_bool
                         else '0.00'
                     )
                 else:
                     # On/After 01-02-2026 use product_id.standard_price
                     product_unit_price.append(
-                        str(round(line.qty * line.product_id.standard_price, 2))
+                        str(round(line.qty * line.product_id.standard_price, 3))
                         if line.product_id.standard_price and line.under_warranty_bool
                         else '0.00'
                     )
