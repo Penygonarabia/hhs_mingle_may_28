@@ -2,53 +2,7 @@
 <odoo>
 
     <!-- ======================================================
-         USERS SETUP LIST VIEW — compact: role, user, status only
-         ====================================================== -->
-    <record id="view_dashboard_rights_users_list" model="ir.ui.view">
-        <field name="name">dashboard.rights.users.list</field>
-        <field name="model">dashboard.rights</field>
-        <field name="arch" type="xml">
-            <tree string="Users Setup"
-                  js_class="dashboard_rights_list"
-                  class="dr_rights_list_view"
-                  create="0"
-                  delete="0"
-                  default_order="user_role, user_id">
-                <field name="user_role" string="User Role" readonly="1"/>
-                <field name="user_id" string="User" readonly="1"/>
-                <field name="access_status" string="Status" readonly="1"/>
-                <!-- invisible fields needed by JS -->
-                <field name="has_access_int" column_invisible="1"/>
-            </tree>
-        </field>
-    </record>
-
-    <!-- ======================================================
-         SUMMARY LIST — plain, non-collapsing; used ONLY by the "Dashboards
-         Granted" smart button on Rights Setup. view_dashboard_rights_list
-         below is deliberately NOT reused here: its js_class="dashboard_rights_list"
-         auto-collapses to one row per user whenever its "optional" columns
-         are hidden — which is their default state — so it always shows a
-         single row regardless of domain. Fine for the "By Role" directory
-         use case; wrong for "show me every one of this user's dashboards".
-         ====================================================== -->
-    <record id="view_dashboard_rights_summary_list" model="ir.ui.view">
-        <field name="name">dashboard.rights.summary.list</field>
-        <field name="model">dashboard.rights</field>
-        <field name="arch" type="xml">
-            <tree string="Dashboard Rights Summary"
-                  create="0"
-                  delete="0"
-                  default_order="dashboard_top_menu_id, dashboard_id">
-                <field name="dashboard_top_menu_id" string="Category" readonly="1"/>
-                <field name="dashboard_id" readonly="1"/>
-                <field name="has_access" widget="boolean_toggle"/>
-            </tree>
-        </field>
-    </record>
-
-    <!-- ======================================================
-         LIST (tree) VIEW — full view kept for other actions
+         LIST (tree) VIEW — main surface for Dashboard Rights
          ====================================================== -->
     <record id="view_dashboard_rights_list" model="ir.ui.view">
         <field name="name">dashboard.rights.list</field>
@@ -56,22 +10,16 @@
         <field name="arch" type="xml">
             <tree string="Dashboard Rights"
                   js_class="dashboard_rights_list"
-                  class="dr_rights_list_view"
-                  create="0"
-                  delete="0"
-                  default_order="user_role, user_id, dashboard_id">
-                <field name="user_role" readonly="1"/>
+                  delete="false"
+                  default_order="user_id, dashboard_id">
                 <field name="user_id" readonly="1"/>
+                <field name="user_role" readonly="1"/>
                 <field name="dashboard_top_menu_id"
                        string="Category"
-                       optional="hide"
+                       optional="show"
                        readonly="1"/>
-                <field name="dashboard_id"
-                       optional="hide"
-                       options="{'no_create': True, 'no_open': True}"/>
-                <field name="has_access"
-                       optional="hide"
-                       widget="boolean_toggle"/>
+                <field name="dashboard_id" readonly="1"/>
+                <field name="has_access" widget="boolean_toggle"/>
                 <field name="has_access_int" column_invisible="1"/>
             </tree>
         </field>
@@ -155,52 +103,27 @@
     <!-- ======================================================
          MAIN ACTION — tree + form, grouped by role by default
          ====================================================== -->
-    <!-- ======================================================
-         MAIN ACTIONS — tree + form, with various groupings
-         ====================================================== -->
     <record id="action_dashboard_rights_list" model="ir.actions.act_window">
-        <field name="name">Module Rights</field>
+        <field name="name">Dashboard Rights</field>
         <field name="res_model">dashboard.rights</field>
         <field name="view_mode">tree,form</field>
         <field name="view_ids" eval="[(5, 0, 0),
             (0, 0, {'view_mode': 'tree', 'view_id': ref('view_dashboard_rights_list')}),
             (0, 0, {'view_mode': 'form', 'view_id': ref('view_dashboard_rights_form')})]"/>
         <field name="search_view_id" ref="view_dashboard_rights_search"/>
-        <field name="context">{'search_default_group_user_role': 1, 'unique_users_only': True}</field>
+        <field name="context">{'search_default_group_user_role': 1}</field>
     </record>
 
     <!-- Legacy aliases kept so existing references still resolve -->
     <record id="action_dashboard_rights_grid" model="ir.actions.act_window">
-        <field name="name">Users Setup</field>
-        <field name="res_model">dashboard.rights</field>
-        <field name="view_mode">tree,form</field>
-        <field name="view_ids" eval="[(5, 0, 0),
-            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_dashboard_rights_users_list')}),
-            (0, 0, {'view_mode': 'form', 'view_id': ref('view_dashboard_rights_form')})]"/>
-        <field name="search_view_id" ref="view_dashboard_rights_search"/>
-        <field name="context">{'unique_users_only': True, 'search_default_group_user_role': 1}</field>
-    </record>
-
-    <record id="action_dashboard_rights_by_category" model="ir.actions.act_window">
-        <field name="name">Dashboard Rights (By Category)</field>
+        <field name="name">Dashboard Rights</field>
         <field name="res_model">dashboard.rights</field>
         <field name="view_mode">tree,form</field>
         <field name="view_ids" eval="[(5, 0, 0),
             (0, 0, {'view_mode': 'tree', 'view_id': ref('view_dashboard_rights_list')}),
             (0, 0, {'view_mode': 'form', 'view_id': ref('view_dashboard_rights_form')})]"/>
         <field name="search_view_id" ref="view_dashboard_rights_search"/>
-        <field name="context">{'search_default_group_category': 1}</field>
-    </record>
-
-    <record id="action_dashboard_rights_by_dashboard" model="ir.actions.act_window">
-        <field name="name">Dashboard Rights (By Dashboard)</field>
-        <field name="res_model">dashboard.rights</field>
-        <field name="view_mode">tree,form</field>
-        <field name="view_ids" eval="[(5, 0, 0),
-            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_dashboard_rights_list')}),
-            (0, 0, {'view_mode': 'form', 'view_id': ref('view_dashboard_rights_form')})]"/>
-        <field name="search_view_id" ref="view_dashboard_rights_search"/>
-        <field name="context">{'search_default_group_dashboard': 1}</field>
+        <field name="context">{'search_default_group_user': 1}</field>
     </record>
 
     <record id="action_dashboard_rights_raw" model="ir.actions.act_window">
