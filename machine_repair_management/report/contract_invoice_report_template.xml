@@ -677,7 +677,8 @@
 												                        
 												                        <t t-else="">
 												                            <span style="font-size:16px !important;">
-												                                <t t-esc="move.partner_id.name"/>
+												                               <t t-if="move.subscription_contract_id" t-esc="move.subscription_contract_id.customer_name"/>
+												                               <!--  <t t-esc="move.partner_id.name"/> -->
 												                            </span>
 												                        </t>
 
