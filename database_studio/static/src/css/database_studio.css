@@ -287,6 +287,55 @@
 
 /* ---- editor ---- */
 .sqlms-querypane { min-height: 0; }
+/* ---- query sub-tabs ---- */
+.sqlms-qtabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+.sqlms-qtab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px 4px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: #ffffff;
+    cursor: pointer;
+    color: #495057;
+    font-size: 13px;
+    user-select: none;
+}
+.sqlms-qtab-active {
+    background: #e7f1ff;
+    border-color: #86b7fe;
+    color: #212529;
+    font-weight: 600;
+}
+.sqlms-qtab-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    color: #868e96;
+    font-size: 14px;
+    line-height: 1;
+}
+.sqlms-qtab-close:hover { background: #f1aeb5; color: #842029; }
+.sqlms-qtab-add {
+    border: 1px dashed #ced4da;
+    background: transparent;
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    color: #495057;
+}
+.sqlms-qtab-add:hover { background: #f8f9fa; color: #212529; }
 .sqlms-editor {
     position: relative;
     height: 220px;

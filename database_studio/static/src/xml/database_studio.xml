@@ -20,6 +20,31 @@
         </Dialog>
     </t>
 
+    <t t-name="database_studio.CloseTabDialog">
+        <Dialog title="'Close query tab'" size="'md'">
+            <div class="mb-2">
+                <p>Save <b t-esc="props.tabName"/> before closing? Unsaved query text
+                   will be lost.</p>
+                <label class="form-label fw-bold">Name</label>
+                <input type="text" class="form-control" t-ref="input"
+                       placeholder="Name this query..."
+                       t-model="state.name" t-on-keydown="(ev) => ev.key === 'Enter' &amp;&amp; this.save()"/>
+                <small class="text-muted">Saved to History and marked as favorite ★.</small>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-on-click="save">
+                    <i class="fa fa-star me-1"/>Save &amp; close
+                </button>
+                <button class="btn btn-danger" t-on-click="discard">
+                    Close without saving
+                </button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">
+                    Cancel
+                </button>
+            </t>
+        </Dialog>
+    </t>
+
     <t t-name="database_studio.Analyser">
         <div class="sqlms-root" t-ref="rootEl">
             <!-- Left: objects -->
@@ -261,6 +286,20 @@
 
                     <!-- QUERY -->
                     <div t-if="state.activeTab === 'query'" class="sqlms-pane sqlms-querypane">
+                        <div class="sqlms-qtabs">
+                            <div t-foreach="state.qtabs" t-as="qt" t-key="qt.id"
+                                 class="sqlms-qtab"
+                                 t-att-class="{ 'sqlms-qtab-active': qt.id === state.activeQtabId }"
+                                 t-on-click="() => this.switchQtab(qt.id)">
+                                <span class="sqlms-qtab-name" t-esc="qt.name"/>
+                                <span class="sqlms-qtab-close" title="Close tab"
+                                      t-on-click="(ev) => this.removeQtab(qt.id, ev)">&#215;</span>
+                            </div>
+                            <button class="sqlms-qtab-add" title="New query tab"
+                                    t-on-click="addQtab">
+                                <i class="fa fa-plus"/>
+                            </button>
+                        </div>
                         <div class="sqlms-toolbar">
                             <button class="btn btn-primary btn-sm" t-on-click="() => this.runQuery(1)">
                                 <i class="fa fa-play"/> Execute

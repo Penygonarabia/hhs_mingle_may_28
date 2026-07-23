@@ -35,6 +35,38 @@ SqlMsSaveDialog.props = {
     defaultName: { type: String, optional: true },
 };
 
+// Shown when closing a query tab that still holds unsaved text: lets the user
+// save it to history (with a name) or discard it before the tab is removed.
+export class SqlMsCloseTabDialog extends Component {
+    setup() {
+        this.state = useState({ name: this.props.defaultName || "" });
+        this.inputRef = useRef("input");
+        onMounted(() => {
+            if (this.inputRef.el) {
+                this.inputRef.el.focus();
+                this.inputRef.el.select();
+            }
+        });
+    }
+    save() {
+        this.props.onSave((this.state.name || "").trim());
+        this.props.close();
+    }
+    discard() {
+        this.props.onDiscard();
+        this.props.close();
+    }
+}
+SqlMsCloseTabDialog.template = "database_studio.CloseTabDialog";
+SqlMsCloseTabDialog.components = { Dialog };
+SqlMsCloseTabDialog.props = {
+    close: Function,
+    onSave: Function,
+    onDiscard: Function,
+    tabName: { type: String, optional: true },
+    defaultName: { type: String, optional: true },
+};
+
 const KEYWORDS = [
     "SELECT", "FROM", "WHERE", "INSERT", "INTO", "VALUES", "UPDATE", "SET",
     "DELETE", "CREATE", "ALTER", "DROP", "TABLE", "VIEW", "INDEX", "JOIN",
@@ -151,6 +183,11 @@ export class SqlMsAnalyser extends Component {
             execQuery: "",
             execWasSelection: false,
             queryResult: null,
+            // Query sub-tabs. state.query/execQuery/queryResult always mirror
+            // the active tab; switching snapshots them back into their tab.
+            qtabs: [],
+            activeQtabId: null,
+            _qtabSeq: 0,
             loading: false,
             favorites: [],
             showFavorites: true,
@@ -163,12 +200,18 @@ export class SqlMsAnalyser extends Component {
         const act = this.props.action || {};
         const incoming = (act.params && act.params.query) ||
             (act.context && act.context.default_query);
+        // Start with one query tab (seeded with any preloaded query).
+        const first = this._makeQtab(incoming || "");
+        this.state.qtabs.push(first);
+        this.state.activeQtabId = first.id;
+        this.state.query = first.query;
         if (incoming) {
-            this.state.query = incoming;
             this.state.activeTab = "query";
         }
 
         onMounted(() => this.loadObjects());
+        // Populate the textarea/highlight from the initial active tab.
+        onMounted(() => this._syncEditor());
         // The query editor's <textarea> is destroyed/recreated whenever the
         // user leaves and returns to the Query tab. Re-sync its value and the
         // highlight overlay from state so the typed query is never lost.
@@ -410,6 +453,107 @@ export class SqlMsAnalyser extends Component {
         }
     }
 
+    // -- query sub-tabs ------------------------------------------------
+    _makeQtab(query) {
+        const id = ++this.state._qtabSeq;
+        return {
+            id,
+            name: "Query " + id,
+            query: query || "",
+            execQuery: "",
+            execWasSelection: false,
+            queryResult: null,
+        };
+    }
+    get qtab() {
+        return this.state.qtabs.find((t) => t.id === this.state.activeQtabId);
+    }
+    // Copy the live editor state back into the active tab so nothing is lost
+    // when we switch to or close another tab.
+    _snapshotActiveQtab() {
+        const t = this.qtab;
+        if (t) {
+            t.query = this.state.query;
+            t.execQuery = this.state.execQuery;
+            t.execWasSelection = this.state.execWasSelection;
+            t.queryResult = this.state.queryResult;
+        }
+    }
+    _loadQtab(t) {
+        this.state.activeQtabId = t.id;
+        this.state.query = t.query;
+        this.state.execQuery = t.execQuery;
+        this.state.execWasSelection = t.execWasSelection;
+        this.state.queryResult = t.queryResult;
+        this._syncEditor();
+    }
+    addQtab() {
+        this._snapshotActiveQtab();
+        const t = this._makeQtab("");
+        this.state.qtabs.push(t);
+        this.state.activeTab = "query";
+        this._loadQtab(t);
+    }
+    switchQtab(id) {
+        this.state.activeTab = "query";
+        if (id === this.state.activeQtabId) {
+            return;
+        }
+        this._snapshotActiveQtab();
+        const t = this.state.qtabs.find((x) => x.id === id);
+        if (t) {
+            this._loadQtab(t);
+        }
+    }
+    removeQtab(id, ev) {
+        if (ev) {
+            ev.stopPropagation();
+        }
+        const t = this.state.qtabs.find((x) => x.id === id);
+        if (!t) {
+            return;
+        }
+        // Make sure we test the up-to-date text of the active tab.
+        if (id === this.state.activeQtabId) {
+            this._snapshotActiveQtab();
+        }
+        const query = (t.query || "").trim();
+        if (!query) {
+            this._doRemoveQtab(id);
+            return;
+        }
+        // Unsaved content — ask whether to save before closing.
+        this.dialog.add(SqlMsCloseTabDialog, {
+            tabName: t.name,
+            defaultName: query.replace(/\s+/g, " ").slice(0, 60),
+            onSave: async (name) => {
+                await this.orm.call("database.studio.query", "save_query", [query, name || false]);
+                this.notification.add("Query saved ★", { type: "success" });
+                this._doRemoveQtab(id);
+            },
+            onDiscard: () => this._doRemoveQtab(id),
+        });
+    }
+    _doRemoveQtab(id) {
+        const idx = this.state.qtabs.findIndex((t) => t.id === id);
+        if (idx === -1) {
+            return;
+        }
+        const wasActive = id === this.state.activeQtabId;
+        this.state.qtabs.splice(idx, 1);
+        // Never leave the editor with zero tabs.
+        if (!this.state.qtabs.length) {
+            const t = this._makeQtab("");
+            this.state.qtabs.push(t);
+            this._loadQtab(t);
+            return;
+        }
+        if (wasActive) {
+            const next = this.state.qtabs[Math.min(idx, this.state.qtabs.length - 1)];
+            this._loadQtab(next);
+        }
+    }
+
     // -- query editor --------------------------------------------------
     setQuery(text) {
         this.state.query = text;
@@ -463,12 +607,11 @@ export class SqlMsAnalyser extends Component {
             ev.stopPropagation();
         }
         this.state.activeTab = "query";
-        const snippet = '"' + name + '"';
-        this.setQuery(
-            this.state.query
-                ? this.state.query + " " + snippet
-                : 'SELECT * FROM ' + snippet
-        );
+        const stmt = 'SELECT * FROM "' + name + '"';
+        // Each click builds a full SELECT for the clicked table. Stack it as a
+        // separate statement instead of dropping the bare name after FROM.
+        const cur = this.state.query.replace(/;\s*$/, "").trimEnd();
+        this.setQuery(cur ? cur + ";\n" + stmt : stmt);
     }
 
     _activeQuery() {
