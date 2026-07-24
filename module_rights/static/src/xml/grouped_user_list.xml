@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Email field with robust copy (HTTP + HTTPS) -->
+    <t t-name="module_rights.EmailCopyField" owl="1">
+        <div class="d-flex align-items-center gap-2">
+            <span class="o_field_char" t-esc="displayValue"/>
+            <button class="btn btn-sm btn-light border px-2"
+                    t-on-click="onCopy"
+                    t-att-title="state.copied ? 'Copied!' : 'Copy to clipboard'">
+                <i t-attf-class="fa {{ state.copied ? 'fa-check text-success' : 'fa-copy text-muted' }}"/>
+            </button>
+        </div>
+    </t>
+
+    <t t-name="module_rights.GroupedUserList" owl="1">
+        <div class="dr_grouped_user_list">
+
+            <t t-if="groups.length === 0">
+                <div class="text-muted fst-italic p-2">
+                    No users loaded yet. Click "Load Dashboards" first.
+                </div>
+            </t>
+
+            <t t-foreach="groups" t-as="group" t-key="group.role">
+
+                <!-- Group header row -->
+                <div class="dr_group_header"
+                     t-on-click="() => this.toggleGroup(group.role)">
+                    <i t-attf-class="fa me-2 {{ isCollapsed(group.role) ? 'fa-caret-right' : 'fa-caret-down' }}"/>
+                    <strong t-esc="group.role"/>
+                    <span class="dr_group_count ms-2 text-muted">
+                        (<t t-esc="group.users.length"/>)
+                    </span>
+                </div>
+
+                <!-- User rows (hidden when group is collapsed) -->
+                <t t-if="!isCollapsed(group.role)">
+                    <table class="dr_group_table table table-sm table-borderless mb-0">
+                        <thead>
+                            <tr class="dr_col_header">
+                                <th></th>
+                                <th>User Name</th>
+                                <th>Email</th>
+                                <th>User Role</th>
+                                <th>Rights Given Dashboards</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="group.users" t-as="user" t-key="user.resId">
+                                <tr class="dr_user_row">
+                                    <td class="dr_user_select">
+                                        <button class="btn btn-sm btn-primary"
+                                                t-on-click.stop="() => this.onSelectUser(user)"
+                                                title="Select this user">
+                                            <i class="fa fa-check-circle"/>
+                                        </button>
+                                    </td>
+                                    <td t-esc="user.data.user_name"/>
+                                    <td t-esc="user.data.user_email"/>
+                                    <td t-esc="user.data.user_role"/>
+                                    <td t-esc="user.data.dashboard_rights_given"/>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </t>
+
+            </t>
+        </div>
+    </t>
+
+</templates>

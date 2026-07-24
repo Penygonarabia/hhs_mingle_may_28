@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- All menus gated by group_dashboard_rights_admin (bootstrap Admin only).
+         Other system administrators need to be added to that group explicitly. -->
+
+    <!-- Settings ▸ Dashboard Rights  →  list view (main surface) -->
+    <menuitem id="menu_dashboard_rights_root"
+              name="Dashboard Rights"
+              parent="base.menu_administration"
+              action="module_rights.action_dashboard_rights_list"
+              sequence="50"
+              groups="module_rights.group_dashboard_rights_admin"/>
+
+    <!-- Settings ▸ Technical ▸ Dashboard Rights  →  same list view -->
+    <menuitem id="menu_dashboard_rights_technical"
+              name="Dashboard Rights"
+              parent="base.menu_custom"
+              action="module_rights.action_dashboard_rights_list"
+              sequence="60"
+              groups="module_rights.group_dashboard_rights_admin"/>
+
+    <!-- Settings ▸ Technical ▸ Manage User Rights  →  wizard form -->
+    <menuitem id="menu_dashboard_rights_wizard"
+              name="Manage User Rights"
+              parent="base.menu_custom"
+              action="module_rights.action_dashboard_rights_matrix"
+              sequence="61"
+              groups="module_rights.group_dashboard_rights_admin"/>
+
+    <!-- Settings ▸ Manage User Rights  →  wizard form (setup screen).
+         Parented to the Administration/Settings root (NOT Technical) so it is
+         visible without developer mode, unlike menu_dashboard_rights_wizard. -->
+    <menuitem id="menu_dashboard_rights_setup"
+              name="Manage User Rights"
+              parent="base.menu_administration"
+              action="module_rights.action_dashboard_rights_matrix"
+              sequence="51"
+              groups="module_rights.group_dashboard_rights_admin"/>
+
+</odoo>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===== Header + detail form ============================== -->
+    <record id="view_dashboard_rights_matrix_form" model="ir.ui.view">
+        <field name="name">dashboard.rights.matrix.form</field>
+        <field name="model">dashboard.rights.matrix</field>
+        <field name="arch" type="xml">
+            <form string="Dashboard Rights Setup"
+                  autocomplete="off"
+                  class="dr_matrix_form">
+                <sheet>
+                    <!-- Screen usage hint — shown until the user loads dashboards (covers both
+                         a fresh form open and the list "New" path, which pre-creates a wizard record). -->
+                    <div class="alert alert-info d-flex align-items-start gap-2 mb-3 py-2 px-3" role="alert" style="font-size:0.9rem;" invisible="lines_loaded">
+                        <i class="fa fa-info-circle mt-1" style="flex-shrink:0;"/>
+                        <span>
+                            Select a user, then click <strong>Load Dashboards</strong> to view all available dashboards.
+                            Toggle <strong>Has Access</strong> on each row to grant or revoke access, or use
+                            <strong>Grant Access to All</strong> / <strong>Revoke Access from All</strong> to update in bulk.
+                        </span>
+                    </div>
+
+                    <!-- ===== HEADER ===== -->
+                    <group>
+                        <group string="User">
+                            <!-- Not required at the view level: the back-link button is type="object"
+                                 and would otherwise trigger a save → required-validation failure → dirty
+                                 form (native save/refresh icons appear in the breadcrumb). The Load
+                                 Dashboards button below is already hidden until user_id is picked. -->
+                            <field name="user_id"
+                                   string="User Name"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <!-- email_copy_char is our HTTP-safe copy widget: uses
+                                 navigator.clipboard when available and falls back to
+                                 document.execCommand("copy") on plain-HTTP servers where
+                                 navigator.clipboard is undefined. The stock-based
+                                 email_id_copy widget has no such fallback and throws
+                                 "Cannot read properties of undefined (reading 'writeText')". -->
+                            <field name="user_email"
+                                   string="Email"
+                                   widget="email_copy_char"
+                                   readonly="1"/>
+                            <field name="user_role"
+                                   string="User Role"
+                                   readonly="1"/>
+                            <field name="lines_loaded" invisible="1"/>
+                            <field name="is_user_admin" invisible="1"/>
+                            <!-- Hides native save/refresh icons until Load Dashboards is clicked. -->
+                            <widget name="header_status_gate"/>
+                            <!-- Restores the Dashboard Rights parent breadcrumb after a URL refresh. -->
+                            <widget name="parent_breadcrumb_restore"/>
+                        </group>
+                    </group>
+
+                    <!-- ===== Load button ===== -->
+                    <div class="mb16 d-flex gap-2"
+                         invisible="not user_id">
+                        <button name="action_load_dashboards"
+                                type="object"
+                                string="Load Dashboards"
+                                class="btn btn-primary"/>
+                    </div>
+
+                    <!-- ===== DETAIL ===== -->
+                    <notebook invisible="not lines_loaded">
+
+                        <!-- ── Dashboards tab — FIRST so Grant/Revoke All stays here on reload ── -->
+                        <page string="Dashboards" name="dashboards">
+                            <div class="mb8 d-flex gap-2 align-items-center">
+                                <widget name="dashboard_bulk_buttons"/>
+                            </div>
+
+                            <div class="input-group mb8" style="max-width: 480px;">
+                                <span class="input-group-text">
+                                    <i class="fa fa-search" role="img" aria-label="Search"/>
+                                </span>
+                                <field name="search_text"
+                                       nolabel="1"
+                                       placeholder="Search by Menu or Dashboard Name…"
+                                       class="form-control"/>
+                            </div>
+
+                            <field name="line_ids" invisible="1"/>
+                            <field name="visible_line_ids"
+                                   nolabel="1"
+                                   mode="tree"
+                                   options="{'no_create': True, 'no_open': True}">
+                                <tree string="Dashboards"
+                                      editable="bottom"
+                                      create="false"
+                                      delete="false"
+                                      default_order="menu_name, dashboard_name">
+                                    <field name="dashboard_id" column_invisible="1"/>
+                                    <field name="is_user_admin" column_invisible="1"/>
+                                    <field name="menu_name" string="Menu" readonly="1"/>
+                                    <field name="dashboard_name" string="Dashboard Name" readonly="1"/>
+                                    <field name="has_access"
+                                           string="Has Access"
+                                           widget="boolean_toggle"
+                                           readonly="is_user_admin"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <!-- ── Users tab ─────────────────────────────── -->
+                        <page string="Users" name="users_tab">
+                            <widget name="users_tab_refresh"/>
+                            <div class="input-group mb8" style="max-width: 480px;">
+                                <span class="input-group-text">
+                                    <i class="fa fa-search" role="img" aria-label="Search"/>
+                                </span>
+                                <field name="user_search_text_tab"
+                                       nolabel="1"
+                                       placeholder="Search by Name, Email or Role…"
+                                       class="form-control"/>
+                            </div>
+
+                            <!-- No view-level domain: the grouped_user_list widget does
+                                 its own JS-side filtering on user_search_text_tab. An ilike
+                                 domain here would exclude users whose user_role is NULL,
+                                 hiding the "Role Not Assigned Users" group. -->
+                            <field name="user_list_ids"
+                                   nolabel="1"
+                                   widget="grouped_user_list"
+                                   options="{'no_create': True, 'no_open': True}">
+                                <!-- tree arch kept for field loading; rendering is done by the custom widget.
+                                     limit="9999" disables pagination — without it, users with NULL
+                                     user_role (sorted last by default_order) get cut off when the
+                                     total user count exceeds the default page size of 40. -->
+                                <tree string="Users"
+                                      create="false"
+                                      delete="false"
+                                      default_order="user_role, user_name"
+                                      limit="9999">
+                                    <field name="user_id" column_invisible="1"/>
+                                    <field name="user_name" string="User Name" readonly="1"/>
+                                    <field name="user_email" string="Email" readonly="1"/>
+                                    <field name="user_role" string="User Role" readonly="1"/>
+                                    <field name="dashboard_rights_given" string="Rights Given Dashboards" readonly="1"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===== Menu action — wizard form ================================ -->
+    <record id="action_dashboard_rights_matrix" model="ir.actions.act_window">
+        <field name="name">Dashboard Rights Setup</field>
+        <field name="res_model">dashboard.rights.matrix</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_dashboard_rights_matrix_form"/>
+        <field name="target">current</field>
+    </record>
+
+    <!-- ===== Server action: list-view binding to open the setup form === -->
+    <record id="action_open_rights_wizard" model="ir.actions.server">
+        <field name="name">Dashboard Rights Setup</field>
+        <field name="model_id" ref="module_rights.model_dashboard_rights"/>
+        <field name="binding_model_id" ref="module_rights.model_dashboard_rights"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+action = {
+    'type': 'ir.actions.act_window',
+    'name': 'Dashboard Rights Setup',
+    'res_model': 'dashboard.rights.matrix',
+    'view_mode': 'form',
+    'view_id': env.ref('module_rights.view_dashboard_rights_matrix_form').id,
+    'views': [[env.ref('module_rights.view_dashboard_rights_matrix_form').id, 'form']],
+    'target': 'current',
+}
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,38 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+<odoo>
+	
+	
+	<record id ="user_selection_view_dashboard_inherit" model="ir.ui.view">
+    	<field name = "name" >res.users.inherit.dashboard.form</field>
+    	<field name = "model">res.users</field>
+    	<field name ="inherit_id" ref="base.view_users_form"/>
+    	<field name ="arch" type ="xml">
+    		
+    			
+    		<xpath expr="//notebook" position="inside">
+    			
+    			<page id = "dashboard_selection_user" string = "Dashboard Rights" groups = "base.group_no_one">
+    					
+    				<group>
+    					<group col = "2">
+    						<field name = "user_rights_roles_ids" widget = "many2many_tags" options = "{'no_create_edit':True,'no_create':True,'no_edit':True}"/>
+    					</group>
+    					<group col = "2">
+    						<field name = "dashboard_type_selection" />
+    					</group>
+    					<group col = "2">
+    						<field name = "work_center_group_ids"  widget = "many2many_tags" options = "{'no_create_edit':True,'no_create':True,'no_edit':True}"/>
+    					</group>
+    					
+    				
+    				</group>	
+    				
+    			</page>
+    		
+    		</xpath>	
+    		
+    		
+    	</field>
+    </record>
+
+</odoo>
