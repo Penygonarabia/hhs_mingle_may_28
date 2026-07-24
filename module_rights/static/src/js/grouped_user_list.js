@@ -3,6 +3,7 @@
 import { registry } from "@web/core/registry";
 import { useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
+import { copyToClipboard } from "./copy_to_clipboard";
 import { X2ManyField, x2ManyField } from "@web/views/fields/x2many/x2many_field";
 
 export class GroupedUserList extends X2ManyField {
@@ -12,7 +13,21 @@ export class GroupedUserList extends X2ManyField {
         super.setup();
         this.actionService = useService("action");
         this.orm = useService("orm");
+        this.notification = useService("notification");
         this.state = useState({ collapsed: {} });
+    }
+
+    /** Copy a user's email to the clipboard (http-safe, see copyToClipboard). */
+    async copyEmail(email) {
+        email = (email || "").trim();
+        if (!email) {
+            return;
+        }
+        const ok = await copyToClipboard(email);
+        this.notification.add(
+            ok ? `Copied: ${email}` : "Could not copy the email.",
+            { type: ok ? "success" : "danger" }
+        );
     }
 
     get groups() {
@@ -77,6 +92,14 @@ export class GroupedUserList extends X2ManyField {
             // header reflects the newly-selected user_id.
             await this.props.record.load();
         }
+
+        // Focus back to the Dashboards tab after user selection
+        setTimeout(() => {
+            const dashboardTab = document.querySelector('.dr_matrix_form .o_notebook a.nav-link[name="dashboards"]');
+            if (dashboardTab) {
+                dashboardTab.click();
+            }
+        }, 150);
     }
 }
 

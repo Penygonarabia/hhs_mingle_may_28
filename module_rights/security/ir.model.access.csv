@@ -1,6 +1,11 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_dashboard_rights_admin,dashboard.rights admin,model_dashboard_rights,module_rights.group_dashboard_rights_admin,1,1,1,1
 access_dashboard_rights_user,dashboard.rights user,model_dashboard_rights,base.group_user,1,0,0,0
+access_dashboard_rights_menu_admin,dashboard.rights.menu admin,model_dashboard_rights_menu,module_rights.group_dashboard_rights_admin,1,1,1,1
+access_dashboard_rights_menu_user,dashboard.rights.menu user,model_dashboard_rights_menu,base.group_user,1,0,0,0
 access_dashboard_rights_matrix_admin,dashboard.rights.matrix admin,model_dashboard_rights_matrix,module_rights.group_dashboard_rights_admin,1,1,1,1
 access_dashboard_rights_matrix_line_admin,dashboard.rights.matrix.line admin,model_dashboard_rights_matrix_line,module_rights.group_dashboard_rights_admin,1,1,1,1
 access_dashboard_rights_matrix_user_admin,dashboard.rights.matrix.user admin,model_dashboard_rights_matrix_user,module_rights.group_dashboard_rights_admin,1,1,1,1
+access_rights_module_matrix_admin,access.rights.module.matrix admin,model_access_rights_module_matrix,module_rights.group_dashboard_rights_admin,1,1,1,1
+access_rights_module_matrix_line_admin,access.rights.module.matrix.line admin,model_access_rights_module_matrix_line,module_rights.group_dashboard_rights_admin,1,1,1,1
+access_dashboard_rights_copy_wizard_admin,dashboard.rights.copy.wizard admin,model_dashboard_rights_copy_wizard,module_rights.group_dashboard_rights_admin,1,1,1,1

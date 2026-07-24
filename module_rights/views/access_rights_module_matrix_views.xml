@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===== Header + detail form ============================== -->
+    <!-- Separate page from dashboard.rights.matrix (Users Setup's matrix):
+         this one shows every app's menu tree, including My Dashboard's own
+         (kept in sync with Users Setup's board-level grants) — see
+         access_rights_module_matrix.py. -->
+    <record id="view_access_rights_module_matrix_form" model="ir.ui.view">
+        <field name="name">access.rights.module.matrix.form</field>
+        <field name="model">access.rights.module.matrix</field>
+        <field name="arch" type="xml">
+            <form string="Module Rights Setup"
+                  autocomplete="off"
+                  class="dr_matrix_form">
+                <sheet>
+                    <!-- Smart button: quick check of what this user currently has access
+                         to, without opening every group. Read-only drill-down into
+                         dashboard.rights.menu, pre-filtered to Granted. -->
+                    <div class="oe_button_box" name="button_box" invisible="not lines_loaded">
+                        <button name="action_view_rights_summary"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-check-circle">
+                            <field name="access_status" string="Menus Granted" widget="statinfo"/>
+                        </button>
+                    </div>
+
+                    <div class="alert alert-info d-flex align-items-start gap-2 mb-3 py-2 px-3" role="alert" style="font-size:0.9rem;" invisible="lines_loaded">
+                        <i class="fa fa-info-circle mt-1" style="flex-shrink:0;"/>
+                        <span>
+                            Select a user, then click <strong>Load Modules</strong> to view every menu and
+                            sub-menu of every application, including My Dashboard (Settings is managed
+                            elsewhere). Toggle <strong>Has Access</strong> on each row to grant or revoke access,
+                            or use <strong>Grant Access to All</strong> / <strong>Revoke Access from All</strong>
+                            to update in bulk. A My Dashboard board's access here always matches Users Setup.
+                        </span>
+                    </div>
+
+                    <!-- ===== HEADER ===== -->
+                    <group>
+                        <group string="User">
+                            <field name="role_filter"
+                                   string="User Role"/>
+                            <field name="role_user_ids" invisible="1"/>
+                            <field name="user_id"
+                                   string="User Name"
+                                   domain="[('id', 'in', role_user_ids)]"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="user_email"
+                                   string="Email"
+                                   widget="copy_email_char"
+                                   readonly="1"/>
+                            <field name="lines_loaded" invisible="1"/>
+                            <field name="is_user_admin" invisible="1"/>
+                            <widget name="header_status_gate"/>
+                            <widget name="parent_breadcrumb_restore"/>
+                        </group>
+                    </group>
+
+                    <!-- ===== Load button ===== -->
+                    <div class="mb16 d-flex gap-2"
+                         invisible="not user_id">
+                        <button name="action_load_modules"
+                                type="object"
+                                string="Load Modules"
+                                class="btn btn-primary"/>
+                        <button name="%(module_rights.action_dashboard_rights_copy_wizard)d"
+                                type="action"
+                                string="Copy Rights From…"
+                                class="btn btn-secondary"
+                                context="{'default_source_user_id': user_id}"/>
+                    </div>
+
+                    <!-- ===== DETAIL ===== -->
+                    <div invisible="not lines_loaded">
+                        <div class="mb8 d-flex gap-2 align-items-center">
+                            <widget name="dashboard_bulk_buttons"/>
+                        </div>
+
+                        <div class="input-group mb8" style="max-width: 480px;">
+                            <span class="input-group-text">
+                                <i class="fa fa-search" role="img" aria-label="Search"/>
+                            </span>
+                            <field name="search_text"
+                                   nolabel="1"
+                                   placeholder="Search by Module or Menu Name…"
+                                   class="form-control dr_matrix_search_input"/>
+                        </div>
+
+                        <field name="line_ids"
+                               nolabel="1"
+                               mode="tree"
+                               widget="dashboard_rights_matrix_list_field"
+                               options="{'no_create': True, 'no_open': True}">
+                            <!-- Intentionally NOT editable="bottom" — see
+                                 dashboard_rights_matrix_views.xml's Dashboards
+                                 tab for why (column-width growth on edit mode). -->
+                            <tree string="Modules"
+                                  create="0"
+                                  delete="0"
+                                  limit="9999"
+                                  decoration-bf="is_group"
+                                  default_order="menu_sequence, menu_name, sub_sequence, dashboard_name">
+                                <field name="menu_id" column_invisible="1"/>
+                                <field name="parent_menu_id" column_invisible="1"/>
+                                <field name="is_group" column_invisible="1"/>
+                                <field name="is_user_admin" column_invisible="1"/>
+                                <field name="has_access_prev" column_invisible="1"/>
+                                <field name="menu_sequence" column_invisible="1"/>
+                                <field name="sub_sequence" column_invisible="1"/>
+                                <field name="menu_name" string="Module" readonly="1"/>
+                                <field name="dashboard_name" string="Menu Name" widget="dr_group_count" readonly="1"/>
+                                <field name="has_access"
+                                       string="Has Access"
+                                       widget="dr_access_toggle"/>
+                            </tree>
+                        </field>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===== Menu action — wizard form ================================ -->
+    <record id="action_access_rights_module_matrix" model="ir.actions.act_window">
+        <field name="name">Module Rights Setup</field>
+        <field name="res_model">access.rights.module.matrix</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_access_rights_module_matrix_form"/>
+        <field name="target">current</field>
+    </record>
+
+</odoo>

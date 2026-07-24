@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="module_rights.CopyEmailChar" owl="1">
+        <span class="o_field_copy_email d-inline-flex align-items-center">
+            <span t-esc="email"/>
+            <button t-if="email"
+                    type="button"
+                    class="btn btn-link btn-sm p-0 ms-1 dr_copy_email"
+                    t-on-click.stop="onCopy"
+                    title="Copy email">
+                <i class="fa fa-clone"/>
+            </button>
+        </span>
+    </t>
+
+</templates>

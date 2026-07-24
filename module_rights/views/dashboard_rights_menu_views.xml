@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Read-only drill-down views for dashboard.rights.menu, used by the
+         "Menus Granted" smart button on Module Rights Setup. Not exposed as
+         its own top-level menu — reached only via that button, pre-filtered
+         to the selected user. -->
+    <record id="view_dashboard_rights_menu_list" model="ir.ui.view">
+        <field name="name">dashboard.rights.menu.list</field>
+        <field name="model">dashboard.rights.menu</field>
+        <field name="arch" type="xml">
+            <tree string="Module Rights" create="0" delete="0">
+                <field name="user_id" readonly="1"/>
+                <field name="menu_id" string="Menu" readonly="1"/>
+                <field name="has_access" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_dashboard_rights_menu_form" model="ir.ui.view">
+        <field name="name">dashboard.rights.menu.form</field>
+        <field name="model">dashboard.rights.menu</field>
+        <field name="arch" type="xml">
+            <form string="Module Right">
+                <sheet>
+                    <group>
+                        <field name="user_id" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="menu_id" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="has_access"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_dashboard_rights_menu_search" model="ir.ui.view">
+        <field name="name">dashboard.rights.menu.search</field>
+        <field name="model">dashboard.rights.menu</field>
+        <field name="arch" type="xml">
+            <search string="Module Rights">
+                <field name="user_id"/>
+                <field name="menu_id"/>
+                <filter name="filter_granted" string="Granted" domain="[('has_access', '=', True)]"/>
+                <filter name="filter_revoked" string="Revoked" domain="[('has_access', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+</odoo>

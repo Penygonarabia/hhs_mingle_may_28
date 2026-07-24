@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-    <!-- Email field with robust copy (HTTP + HTTPS) -->
-    <t t-name="module_rights.EmailCopyField" owl="1">
-        <div class="d-flex align-items-center gap-2">
-            <span class="o_field_char" t-esc="displayValue"/>
-            <button class="btn btn-sm btn-light border px-2"
-                    t-on-click="onCopy"
-                    t-att-title="state.copied ? 'Copied!' : 'Copy to clipboard'">
-                <i t-attf-class="fa {{ state.copied ? 'fa-check text-success' : 'fa-copy text-muted' }}"/>
-            </button>
-        </div>
-    </t>
-
     <t t-name="module_rights.GroupedUserList" owl="1">
         <div class="dr_grouped_user_list">
 
@@ -57,7 +45,17 @@
                                         </button>
                                     </td>
                                     <td t-esc="user.data.user_name"/>
-                                    <td t-esc="user.data.user_email"/>
+                                    <td>
+                                        <t t-if="user.data.user_email">
+                                            <span t-esc="user.data.user_email"/>
+                                            <button type="button"
+                                                    class="btn btn-link btn-sm p-0 ms-1 dr_copy_email"
+                                                    t-on-click.stop="() => this.copyEmail(user.data.user_email)"
+                                                    title="Copy email">
+                                                <i class="fa fa-clone"/>
+                                            </button>
+                                        </t>
+                                    </td>
                                     <td t-esc="user.data.user_role"/>
                                     <td t-esc="user.data.dashboard_rights_given"/>
                                 </tr>
