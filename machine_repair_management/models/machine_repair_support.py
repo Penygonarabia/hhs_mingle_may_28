@@ -1861,37 +1861,38 @@ class MachineRepairSupport(models.Model):
                         )
                         for li in lines:
                             '''Code Commented on May 30 2026 by Vijaya Bhaskar because client asked overall qty is over then only count was updated '''
-                            if (
-                                rec.task_id.planned_date_begin.date() >= rec.contract_id.date_start
-                                and rec.task_id.planned_date_begin.date() <= rec.contract_id.date_end
-                                and li.qty_ordered
-                            ):
-                                contract_search = self.env['machine.repair.support'].search_count([
-                                    ('id', '!=', rec.id),
-                                    ('contract_id', '=', rec.contract_id.id),
-                                    ('service_products_code_id', '=', rec.service_products_code_id.id),
-                                    ('service_request_state_code', '=', '126'),
-                                    ('maintenance_type', '=', 'preventive'),
-                                ])
-                    
-                                # completed_jobs = contract_search + 1
-                                # visit_count = completed_jobs // li.qty_ordered
-                                #
-                                # li.actual_prevent_count = min(
-                                #     visit_count,
-                                #     li.days_require_rpm_round_off
-                                # )
-                                
-                                completed_jobs = contract_search + 1
+                            #code Commented on July 23 2026 by Vijaya Bhaskar because client asked to If the Contract Start Date is in the future, but the Job Card Creation Date is an earlier date, the system should still allow the visit count to be updated.
+                            # if (
+                            #     rec.task_id.planned_date_begin.date() >= rec.contract_id.date_start
+                            #     and rec.task_id.planned_date_begin.date() <= rec.contract_id.date_end
+                            #     and li.qty_ordered
+                            # ):
+                            contract_search = self.env['machine.repair.support'].search_count([
+                                ('id', '!=', rec.id),
+                                ('contract_id', '=', rec.contract_id.id),
+                                ('service_products_code_id', '=', rec.service_products_code_id.id),
+                                ('service_request_state_code', '=', '126'),
+                                ('maintenance_type', '=', 'preventive'),
+                            ])
+                
+                            # completed_jobs = contract_search + 1
+                            # visit_count = completed_jobs // li.qty_ordered
+                            #
+                            # li.actual_prevent_count = min(
+                            #     visit_count,
+                            #     li.days_require_rpm_round_off
+                            # )
+                            
+                            completed_jobs = contract_search + 1
 
-                                '''Code Added on June 18 2026 by Vijaya Bhaskar'''
-                                li.write({
-                                'actual_prevent_count': min(
-                                    completed_jobs // li.qty_ordered,
-                                    li.no_of_visits_per_year
-                                )
-                            })
-                                print("................first",li.actual_prevent_count)
+                            '''Code Added on June 18 2026 by Vijaya Bhaskar'''
+                            li.write({
+                            'actual_prevent_count': min(
+                                completed_jobs // li.qty_ordered,
+                                li.no_of_visits_per_year
+                            )
+                        })
+                            print("................first",li.actual_prevent_count)
 
                             '''Code Commented on May 30 2026 by Vijaya Bhaskar because client asked overall qty is over then only count was updated
                             if li.actual_prevent_count < li.days_require_rpm_round_off:
