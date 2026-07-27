@@ -4,66 +4,49 @@
     <t t-name="module_rights.GroupedUserList" owl="1">
         <div class="dr_grouped_user_list">
 
-            <t t-if="groups.length === 0">
+            <t t-if="users.length === 0">
                 <div class="text-muted fst-italic p-2">
                     No users loaded yet. Click "Load Dashboards" first.
                 </div>
             </t>
 
-            <t t-foreach="groups" t-as="group" t-key="group.role">
-
-                <!-- Group header row -->
-                <div class="dr_group_header"
-                     t-on-click="() => this.toggleGroup(group.role)">
-                    <i t-attf-class="fa me-2 {{ isCollapsed(group.role) ? 'fa-caret-right' : 'fa-caret-down' }}"/>
-                    <strong t-esc="group.role"/>
-                    <span class="dr_group_count ms-2 text-muted">
-                        (<t t-esc="group.users.length"/>)
-                    </span>
-                </div>
-
-                <!-- User rows (hidden when group is collapsed) -->
-                <t t-if="!isCollapsed(group.role)">
-                    <table class="dr_group_table table table-sm table-borderless mb-0">
-                        <thead>
-                            <tr class="dr_col_header">
-                                <th></th>
-                                <th>User Name</th>
-                                <th>Email</th>
-                                <th>User Role</th>
-                                <th>Rights Given Dashboards</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <t t-foreach="group.users" t-as="user" t-key="user.resId">
-                                <tr class="dr_user_row">
-                                    <td class="dr_user_select">
-                                        <button class="btn btn-sm btn-primary"
-                                                t-on-click.stop="() => this.onSelectUser(user)"
-                                                title="Select this user">
-                                            <i class="fa fa-check-circle"/>
+            <t t-else="">
+                <table class="dr_group_table table table-sm table-borderless mb-0">
+                    <thead>
+                        <tr class="dr_col_header">
+                            <th></th>
+                            <th>User Name</th>
+                            <th>Email</th>
+                            <th>Rights Given Dashboards</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="users" t-as="user" t-key="user.resId">
+                            <tr class="dr_user_row">
+                                <td class="dr_user_select">
+                                    <button class="btn btn-sm btn-primary"
+                                            t-on-click.stop="() => this.onSelectUser(user)"
+                                            title="Select this user">
+                                        <i class="fa fa-check-circle"/>
+                                    </button>
+                                </td>
+                                <td t-esc="user.data.user_name"/>
+                                <td>
+                                    <t t-if="user.data.user_email">
+                                        <span t-esc="user.data.user_email"/>
+                                        <button type="button"
+                                                class="btn btn-link btn-sm p-0 ms-1 dr_copy_email"
+                                                t-on-click.stop="() => this.copyEmail(user.data.user_email)"
+                                                title="Copy email">
+                                            <i class="fa fa-clone"/>
                                         </button>
-                                    </td>
-                                    <td t-esc="user.data.user_name"/>
-                                    <td>
-                                        <t t-if="user.data.user_email">
-                                            <span t-esc="user.data.user_email"/>
-                                            <button type="button"
-                                                    class="btn btn-link btn-sm p-0 ms-1 dr_copy_email"
-                                                    t-on-click.stop="() => this.copyEmail(user.data.user_email)"
-                                                    title="Copy email">
-                                                <i class="fa fa-clone"/>
-                                            </button>
-                                        </t>
-                                    </td>
-                                    <td t-esc="user.data.user_role"/>
-                                    <td t-esc="user.data.dashboard_rights_given"/>
-                                </tr>
-                            </t>
-                        </tbody>
-                    </table>
-                </t>
-
+                                    </t>
+                                </td>
+                                <td t-esc="user.data.dashboard_rights_given"/>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
             </t>
         </div>
     </t>

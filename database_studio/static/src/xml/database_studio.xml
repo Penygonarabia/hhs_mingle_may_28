@@ -301,7 +301,8 @@
                             </button>
                         </div>
                         <div class="sqlms-toolbar">
-                            <button class="btn btn-primary btn-sm" t-on-click="() => this.runQuery(1)">
+                            <button class="btn btn-primary btn-sm" t-on-click="() => this.runQuery(1, true)"
+                                    t-att-disabled="state.loading">
                                 <i class="fa fa-play"/> Execute
                             </button>
                             <button class="btn btn-secondary btn-sm" t-on-click="formatQuery">
@@ -333,9 +334,11 @@
                                 <code t-esc="state.execQuery"/>
                             </div>
                             <div class="sqlms-toolbar">
-                                <button class="btn btn-secondary btn-sm" t-on-click="copyQueryResult"
-                                        t-if="state.queryResult.columns.length">
-                                    <i class="fa fa-clipboard"/> Copy result
+                                <button class="btn btn-secondary btn-sm" t-on-click="exportExcel"
+                                        t-if="state.queryResult.columns.length"
+                                        t-att-disabled="state.exporting"
+                                        title="Export every row of this query's result to an Excel file">
+                                    <i class="fa fa-file-excel-o"/> Export Excel
                                 </button>
                                 <span class="sqlms-info" t-if="state.queryResult.message"
                                       t-esc="state.queryResult.message"/>
@@ -343,6 +346,7 @@
                                     <t t-call="database_studio.Pager">
                                         <t t-set="res" t-value="state.queryResult"/>
                                         <t t-set="go" t-value="(p) => this.runQuery(p)"/>
+                                        <t t-set="busy" t-value="state.loading"/>
                                     </t>
                                 </t>
                             </div>
@@ -360,11 +364,11 @@
     <!-- Reusable pager -->
     <t t-name="database_studio.Pager">
         <span class="sqlms-pager">
-            <button class="btn btn-sm btn-light" t-att-disabled="res.page &lt;= 1"
+            <button class="btn btn-sm btn-light" t-att-disabled="res.page &lt;= 1 || busy"
                     t-on-click="() => go(1)" title="First">
                 <i class="fa fa-angle-double-left"/>
             </button>
-            <button class="btn btn-sm btn-light" t-att-disabled="res.page &lt;= 1"
+            <button class="btn btn-sm btn-light" t-att-disabled="res.page &lt;= 1 || busy"
                     t-on-click="() => go(res.page - 1)" title="Previous">
                 <i class="fa fa-angle-left"/>
             </button>
@@ -372,11 +376,11 @@
                 Page <b t-esc="res.page"/> / <t t-esc="res.pages"/>
                 (<t t-esc="res.total"/> rows)
             </span>
-            <button class="btn btn-sm btn-light" t-att-disabled="res.page &gt;= res.pages"
+            <button class="btn btn-sm btn-light" t-att-disabled="res.page &gt;= res.pages || busy"
                     t-on-click="() => go(res.page + 1)" title="Next">
                 <i class="fa fa-angle-right"/>
             </button>
-            <button class="btn btn-sm btn-light" t-att-disabled="res.page &gt;= res.pages"
+            <button class="btn btn-sm btn-light" t-att-disabled="res.page &gt;= res.pages || busy"
                     t-on-click="() => go(res.pages)" title="Last">
                 <i class="fa fa-angle-double-right"/>
             </button>

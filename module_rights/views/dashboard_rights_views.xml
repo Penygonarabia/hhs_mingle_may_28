@@ -2,7 +2,7 @@
 <odoo>
 
     <!-- ======================================================
-         USERS SETUP LIST VIEW — compact: role, user, status only
+         USERS SETUP LIST VIEW — compact: user, status only
          ====================================================== -->
     <record id="view_dashboard_rights_users_list" model="ir.ui.view">
         <field name="name">dashboard.rights.users.list</field>
@@ -13,8 +13,7 @@
                   class="dr_rights_list_view"
                   create="0"
                   delete="0"
-                  default_order="user_role, user_id">
-                <field name="user_role" string="User Role" readonly="1"/>
+                  default_order="user_id">
                 <field name="user_id" string="User" readonly="1"/>
                 <field name="access_status" string="Status" readonly="1"/>
                 <!-- invisible fields needed by JS -->
@@ -29,7 +28,7 @@
          below is deliberately NOT reused here: its js_class="dashboard_rights_list"
          auto-collapses to one row per user whenever its "optional" columns
          are hidden — which is their default state — so it always shows a
-         single row regardless of domain. Fine for the "By Role" directory
+         single row regardless of domain. Fine for the "By User" directory
          use case; wrong for "show me every one of this user's dashboards".
          ====================================================== -->
     <record id="view_dashboard_rights_summary_list" model="ir.ui.view">
@@ -59,8 +58,7 @@
                   class="dr_rights_list_view"
                   create="0"
                   delete="0"
-                  default_order="user_role, user_id, dashboard_id">
-                <field name="user_role" readonly="1"/>
+                  default_order="user_id, dashboard_id">
                 <field name="user_id" readonly="1"/>
                 <field name="dashboard_top_menu_id"
                        string="Category"
@@ -100,7 +98,6 @@
                         <group string="User">
                             <field name="user_id"
                                    options="{'no_create': True, 'no_open': True}"/>
-                            <field name="user_role" readonly="1"/>
                         </group>
                         <group string="Dashboard">
                             <field name="dashboard_id"
@@ -135,9 +132,6 @@
                         domain="[('has_access', '=', False)]"/>
                 <separator/>
                 <group expand="1" string="Group By">
-                    <filter name="group_user_role"
-                            string="User Role"
-                            context="{'group_by': 'user_role'}"/>
                     <filter name="group_user"
                             string="User"
                             context="{'group_by': 'user_id'}"/>
@@ -153,9 +147,6 @@
     </record>
 
     <!-- ======================================================
-         MAIN ACTION — tree + form, grouped by role by default
-         ====================================================== -->
-    <!-- ======================================================
          MAIN ACTIONS — tree + form, with various groupings
          ====================================================== -->
     <record id="action_dashboard_rights_list" model="ir.actions.act_window">
@@ -166,7 +157,7 @@
             (0, 0, {'view_mode': 'tree', 'view_id': ref('view_dashboard_rights_list')}),
             (0, 0, {'view_mode': 'form', 'view_id': ref('view_dashboard_rights_form')})]"/>
         <field name="search_view_id" ref="view_dashboard_rights_search"/>
-        <field name="context">{'search_default_group_user_role': 1, 'unique_users_only': True}</field>
+        <field name="context">{'unique_users_only': True}</field>
     </record>
 
     <!-- Legacy aliases kept so existing references still resolve -->
@@ -178,7 +169,7 @@
             (0, 0, {'view_mode': 'tree', 'view_id': ref('view_dashboard_rights_users_list')}),
             (0, 0, {'view_mode': 'form', 'view_id': ref('view_dashboard_rights_form')})]"/>
         <field name="search_view_id" ref="view_dashboard_rights_search"/>
-        <field name="context">{'unique_users_only': True, 'search_default_group_user_role': 1}</field>
+        <field name="context">{'unique_users_only': True}</field>
     </record>
 
     <record id="action_dashboard_rights_by_category" model="ir.actions.act_window">

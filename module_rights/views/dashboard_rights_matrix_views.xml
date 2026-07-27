@@ -47,9 +47,6 @@
                                    string="Email"
                                    widget="copy_email_char"
                                    readonly="1"/>
-                            <field name="user_role"
-                                   string="User Role"
-                                   readonly="1"/>
                             <field name="lines_loaded" invisible="1"/>
                             <field name="is_user_admin" invisible="1"/>
                             <!-- Hides native save/refresh icons until Load Dashboards is clicked. -->
@@ -137,31 +134,25 @@
                                 </span>
                                 <field name="user_search_text_tab"
                                        nolabel="1"
-                                       placeholder="Search by Name, Email or Role…"
+                                       placeholder="Search by Name or Email…"
                                        class="form-control"/>
                             </div>
 
-                            <!-- No view-level domain: the grouped_user_list widget does
-                                 its own JS-side filtering on user_search_text_tab. An ilike
-                                 domain here would exclude users whose user_role is NULL,
-                                 hiding the "Role Not Assigned Users" group. -->
                             <field name="user_list_ids"
                                    nolabel="1"
                                    widget="grouped_user_list"
                                    options="{'no_create': True, 'no_open': True}">
                                 <!-- tree arch kept for field loading; rendering is done by the custom widget.
-                                     limit="9999" disables pagination — without it, users with NULL
-                                     user_role (sorted last by default_order) get cut off when the
-                                     total user count exceeds the default page size of 40. -->
+                                     limit="9999" disables pagination — without it, users get cut off
+                                     when the total user count exceeds the default page size of 40. -->
                                 <tree string="Users"
                                       create="0"
                                       delete="0"
-                                      default_order="user_role, user_name"
+                                      default_order="user_name"
                                       limit="9999">
                                     <field name="user_id" column_invisible="1"/>
                                     <field name="user_name" string="User Name" readonly="1"/>
                                     <field name="user_email" string="Email" widget="copy_email_char" readonly="1"/>
-                                    <field name="user_role" string="User Role" readonly="1"/>
                                     <field name="dashboard_rights_given" string="Rights Given Dashboards" readonly="1"/>
                                 </tree>
                             </field>

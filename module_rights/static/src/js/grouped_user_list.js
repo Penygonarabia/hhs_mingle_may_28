@@ -1,7 +1,6 @@
 /** @odoo-module **/
 
 import { registry } from "@web/core/registry";
-import { useState } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { copyToClipboard } from "./copy_to_clipboard";
 import { X2ManyField, x2ManyField } from "@web/views/fields/x2many/x2many_field";
@@ -14,7 +13,6 @@ export class GroupedUserList extends X2ManyField {
         this.actionService = useService("action");
         this.orm = useService("orm");
         this.notification = useService("notification");
-        this.state = useState({ collapsed: {} });
     }
 
     /** Copy a user's email to the clipboard (http-safe, see copyToClipboard). */
@@ -30,7 +28,7 @@ export class GroupedUserList extends X2ManyField {
         );
     }
 
-    get groups() {
+    get users() {
         // Read the search text from the parent form record — this is reactive in OWL,
         // so the getter re-runs whenever the user types in the search box.
         const q = (this.props.record.data.user_search_text_tab || "").toLowerCase().trim();
@@ -38,32 +36,12 @@ export class GroupedUserList extends X2ManyField {
         // this.list is X2ManyField's getter: returns this.props.value (the StaticList)
         const records = this.list?.records ?? [];
 
-        const filtered = q
+        return q
             ? records.filter(rec =>
                 (rec.data.user_name  || "").toLowerCase().includes(q) ||
-                (rec.data.user_email || "").toLowerCase().includes(q) ||
-                (rec.data.user_role  || "").toLowerCase().includes(q)
+                (rec.data.user_email || "").toLowerCase().includes(q)
             )
             : records;
-
-        const map = {};
-        for (const rec of filtered) {
-            // Match the list view's group label for users without a role.
-            const role = rec.data.user_role || "Role Not Assigned Users";
-            if (!map[role]) map[role] = [];
-            map[role].push(rec);
-        }
-        return Object.entries(map)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([role, users]) => ({ role, users }));
-    }
-
-    toggleGroup(role) {
-        this.state.collapsed[role] = !this.state.collapsed[role];
-    }
-
-    isCollapsed(role) {
-        return !!this.state.collapsed[role];
     }
 
     async onSelectUser(record) {

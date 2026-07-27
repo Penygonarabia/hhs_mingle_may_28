@@ -31,13 +31,6 @@ class DashboardRightsListRenderer extends ListRenderer {
         this.actionService = useService("action");
     }
 
-    getGroupDisplayName(group) {
-        if (group.groupByField.name === "user_role" && !group.value) {
-            return "Role Not Assigned Users";
-        }
-        return super.getGroupDisplayName(group);
-    }
-
     async onCellClicked(record, column, ev) {
         // Let boolean_toggle clicks (has_access) pass through unchanged
         if (ev.target.closest(".o_boolean_toggle") || ev.target.closest(".o_field_boolean")) {

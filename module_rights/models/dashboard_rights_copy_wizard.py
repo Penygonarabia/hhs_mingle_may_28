@@ -22,15 +22,9 @@ class DashboardRightsCopyWizard(models.TransientModel):
         required=True,
         domain=[("share", "=", False), ("active", "=", True)],
     )
-    source_role = fields.Char(
-        string="Source User Role",
-        compute="_compute_source_role",
-        readonly=True,
-    )
     copy_scope = fields.Selection(
         [
             ("users", "Specific User(s)"),
-            ("role", "Everyone With the Same Role"),
             ("all", "All Users"),
         ],
         string="Copy To",
@@ -44,12 +38,6 @@ class DashboardRightsCopyWizard(models.TransientModel):
         help="Used only when 'Copy To' is 'Specific User(s)'.",
     )
 
-    @api.depends("source_user_id", "source_user_id.groups_id")
-    def _compute_source_role(self):
-        Rights = self.env["dashboard.rights"].sudo()
-        for rec in self:
-            rec.source_role = Rights._dr_role_for_user(rec.source_user_id) if rec.source_user_id else False
-
     def _target_users(self):
         self.ensure_one()
         Users = self.env["res.users"].sudo()
@@ -57,13 +45,6 @@ class DashboardRightsCopyWizard(models.TransientModel):
                         ("id", "!=", self.source_user_id.id)]
         if self.copy_scope == "all":
             return Users.search(base_domain)
-        if self.copy_scope == "role":
-            Rights = self.env["dashboard.rights"].sudo()
-            role = Rights._dr_role_for_user(self.source_user_id)
-            candidates = Users.search(base_domain)
-            return candidates.filtered(
-                lambda u: Rights._dr_role_for_user(u) == role
-            )
         return (self.target_user_ids - self.source_user_id)
 
     def action_copy_rights(self):

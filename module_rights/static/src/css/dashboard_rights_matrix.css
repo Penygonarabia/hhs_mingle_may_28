@@ -48,31 +48,6 @@ body.dr_matrix_pre_load .o_form_status_indicator_buttons {
     overflow: hidden;
 }
 
-.dr_group_header {
-    display: flex;
-    align-items: center;
-    padding: 8px 12px;
-    background-color: #e8f4f4;
-    border-bottom: 1px solid #dee2e6;
-    cursor: pointer;
-    user-select: none;
-    font-size: 0.95rem;
-}
-
-.dr_group_header:hover {
-    background-color: #d4ecec;
-}
-
-.dr_group_header .fa-caret-down,
-.dr_group_header .fa-caret-right {
-    color: #5a7a7a;
-    width: 14px;
-}
-
-.dr_group_count {
-    font-size: 0.85rem;
-}
-
 .dr_group_table {
     width: 100%;
     margin-bottom: 0 !important;

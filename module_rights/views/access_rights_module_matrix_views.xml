@@ -40,12 +40,8 @@
                     <!-- ===== HEADER ===== -->
                     <group>
                         <group string="User">
-                            <field name="role_filter"
-                                   string="User Role"/>
-                            <field name="role_user_ids" invisible="1"/>
                             <field name="user_id"
                                    string="User Name"
-                                   domain="[('id', 'in', role_user_ids)]"
                                    options="{'no_create': True, 'no_open': True}"/>
                             <field name="user_email"
                                    string="Email"

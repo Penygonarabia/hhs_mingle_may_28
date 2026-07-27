@@ -25,17 +25,15 @@
 
 ## 2. What the page shows
 
-A compact, **one-row-per-user** list with three visible columns:
+A compact, **one-row-per-user** list with two visible columns:
 
 | Column | Field | Source |
 |---|---|---|
-| User Role | `user_role` | Computed from `machine_repair_management` groups → Parts / Coordinator / Call Center / Technician (comma-joined for multi-role users; blank shows as **"Role Not Assigned Users"**) |
 | User | `user_id` | Internal, non-shared, active user |
 | Status | `access_status` | `"granted / total"` count of dashboards the user can access (e.g. `5 / 12`) |
 
-- Default ordering: `user_role, user_id`.
-- Search view defaults to **Group By User Role** (`search_default_group_user_role`).
-- `read_group` is overridden so group counts show the **distinct user count** per role, not the raw row count.
+- Default ordering: `user_id`.
+- The module has no dependency on `machine_repair_management` (or any other app) — the earlier "User Role" column/grouping derived from its groups was removed in 17.0.2.0.3.
 
 ---
 
@@ -70,7 +68,7 @@ The underlying data is per-(user, dashboard), so the compact view must show only
 ## 6. End-to-end flow
 
 1. Admin opens **Settings ▸ Dashboard Rights ▸ Users Setup**.
-2. List load auto-syncs missing (user, dashboard) rows, then collapses to one row per user (grouped by role), showing each user's role and "granted / total" status.
+2. List load auto-syncs missing (user, dashboard) rows, then collapses to one row per user, showing each user's "granted / total" status.
 3. Admin clicks a user row → the **matrix wizard** opens, pre-loaded for that user, to grant/revoke individual dashboards.
 4. Access decisions are enforced elsewhere via `user_has_dashboard_access` / `allowed_dashboard_ids`.
 
@@ -78,7 +76,7 @@ The underlying data is per-(user, dashboard), so the compact view must show only
 
 ## 7. Notes
 
-- Other groupings (By Role / By Category / By Dashboard / Raw) and their actions exist in the same view file, but their sub-menus are **commented out**.
+- Other groupings (By User / By Category / By Dashboard / Raw) and their actions exist in the same view file, but their sub-menus are **commented out**.
 - Only **Users Setup** and the technical **Manage User Rights** wizard menu are currently active.
 
 ---

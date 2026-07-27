@@ -52,26 +52,11 @@ class AccessRightsModuleMatrix(models.TransientModel):
         return record._reload_self()
 
     # ----- Header fields -----------------------------------------------
-    role_filter = fields.Selection(
-        selection="_selection_role_filter",
-        string="User Role",
-        default="all",
-        help="Filter the User Name list by role. Select All to see every user.",
-    )
     user_id = fields.Many2one(
         "res.users",
         string="User Name",
+        domain=[("share", "=", False), ("active", "=", True)],
         help="Select an internal user to manage their module-menu access.",
-    )
-    role_user_ids = fields.Many2many(
-        "res.users",
-        compute="_compute_role_user_ids",
-        help="Users matching the selected role — the view's user_id field "
-             "domain references this field by name so the User Name "
-             "dropdown re-filters whenever User Role changes. (A plain "
-             "onchange 'domain' return is ignored by this Odoo version's "
-             "onchange dispatcher, so the filter is expressed declaratively "
-             "against a computed field instead.)",
     )
     user_email = fields.Char(
         string="Email",
@@ -104,48 +89,6 @@ class AccessRightsModuleMatrix(models.TransientModel):
              "row, for the smart button — a quick glance without opening "
              "every group.",
     )
-
-    # ------------------------------------------------------------------
-    # Role filter — options + the domain it drives on user_id
-    # ------------------------------------------------------------------
-    @api.model
-    def _selection_role_filter(self):
-        options = [("all", _("All"))]
-        options += [
-            (label, label)
-            for _xmlid, label in self.env["dashboard.rights"]._DR_ROLE_GROUPS
-        ]
-        return options
-
-    def _dr_user_domain_for_role(self, role):
-        """Base user_id domain, narrowed to ``role`` (a label from
-        ``dashboard.rights._DR_ROLE_GROUPS``) unless ``role`` is falsy/"all"."""
-        domain = [("share", "=", False), ("active", "=", True)]
-        if not role or role == "all":
-            return domain
-        xmlid = next(
-            (x for x, label in self.env["dashboard.rights"]._DR_ROLE_GROUPS if label == role),
-            None,
-        )
-        group = self.env.ref(xmlid, raise_if_not_found=False) if xmlid else False
-        if group:
-            domain.append(("groups_id", "in", group.id))
-        return domain
-
-    @api.depends("role_filter")
-    def _compute_role_user_ids(self):
-        Users = self.env["res.users"].sudo()
-        for rec in self:
-            rec.role_user_ids = Users.search(rec._dr_user_domain_for_role(rec.role_filter))
-
-    @api.onchange("role_filter")
-    def _onchange_role_filter(self):
-        # Deselect a chosen user who no longer matches the new role filter —
-        # the dropdown's own domain (see role_user_ids) already keeps future
-        # searches restricted, but an already-picked user must be cleared
-        # explicitly since it's not re-validated on its own.
-        if self.user_id and self.user_id not in self.role_user_ids:
-            self.user_id = False
 
     # ------------------------------------------------------------------
     # Computes

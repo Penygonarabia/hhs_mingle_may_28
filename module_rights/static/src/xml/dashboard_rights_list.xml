@@ -7,11 +7,6 @@
         Replaces the entire d-flex header div so we fully control the
         "(count)" display without relying on adjacent text-node preservation.
 
-        Grouped by user_role  → count = distinct users (Python read_group
-                                already sets __count to that value).
-                                Null role label → "Role Not Assigned Users"
-                                (handled in getGroupDisplayName override).
-
         Grouped by user_id    → count = granted/total dashboards
                                 group.aggregates.has_access_int = SUM granted
                                 group.count = total dashboards for that user

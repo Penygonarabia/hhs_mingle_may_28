@@ -315,6 +315,10 @@ class SqlMsAnalyser(models.AbstractModel):
             self.env["database.studio.query"]._log(query)
         return result
 
+    # Hard cap on rows written to an "Export Excel" file, so a huge result
+    # set can't exhaust worker memory. Used by the export controller.
+    _EXPORT_MAX_ROWS = 200000
+
     @api.model
     def build_join_query(self, tables):
         """Build a starter SELECT joining the given tables using foreign keys,

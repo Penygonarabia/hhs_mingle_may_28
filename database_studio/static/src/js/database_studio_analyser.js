@@ -3,6 +3,7 @@
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Dialog } from "@web/core/dialog/dialog";
+import { download } from "@web/core/network/download";
 import { Component, useState, useRef, onMounted, onPatched, onWillUnmount } from "@odoo/owl";
 
 // Small dialog to name a query before saving it to history.
@@ -189,6 +190,7 @@ export class SqlMsAnalyser extends Component {
             activeQtabId: null,
             _qtabSeq: 0,
             loading: false,
+            exporting: false,
             favorites: [],
             showFavorites: true,
             showTables: true,
@@ -627,22 +629,41 @@ export class SqlMsAnalyser extends Component {
         return { query: this.state.query, isSelection: false };
     }
 
-    async runQuery(page = 1) {
-        // Capture the query to run once, at execute time, so paging through
-        // results keeps using it even after the selection/focus is lost.
-        if (page === 1) {
+    // `fresh` distinguishes a real Execute click (re-capture the editor's
+    // selection/text as the query to run) from a pager click (First/Previous/
+    // Next/Last must keep paging through the already-executed query, even
+    // though First also requests page 1).
+    async runQuery(page = 1, fresh = false) {
+        if (fresh) {
             const active = this._activeQuery();
             this.state.execQuery = active.query;
             this.state.execWasSelection = active.isSelection;
         }
         const query = this.state.execQuery || this.state.query;
+        const execQuery = this.state.execQuery;
+        const execWasSelection = this.state.execWasSelection;
+        // Remember which tab this run belongs to: if the user switches query
+        // tabs before the RPC resolves, the result must land on that tab
+        // instead of clobbering whatever tab is active by then.
+        const qtabId = this.state.activeQtabId;
         this.state.loading = true;
+        let result;
         try {
-            this.state.queryResult = await this.orm.call(
+            result = await this.orm.call(
                 "database.studio.analyser", "run_query", [query, page, 100]
             );
         } finally {
             this.state.loading = false;
+        }
+        if (qtabId === this.state.activeQtabId) {
+            this.state.queryResult = result;
+        } else {
+            const t = this.state.qtabs.find((x) => x.id === qtabId);
+            if (t) {
+                t.execQuery = execQuery;
+                t.execWasSelection = execWasSelection;
+                t.queryResult = result;
+            }
         }
     }
 
@@ -701,18 +722,25 @@ export class SqlMsAnalyser extends Component {
         }
         this._copy(lines.join("\n"), "Fields");
     }
-    _copyResult(res, label) {
-        if (!res || !res.columns.length) {
+    // Full, unpaginated result set as a downloaded .xlsx — a normal file
+    // download isn't bound by clipboard permissions/activation, so it works
+    // regardless of result size or origin security.
+    async exportExcel() {
+        const query = this.state.execQuery || this.state.query;
+        if (!query || !query.trim()) {
             return;
         }
-        const header = res.columns.join("\t");
-        const body = res.rows
-            .map((r) => r.map((v) => (v === null ? "" : v)).join("\t"))
-            .join("\n");
-        this._copy(header + "\n" + body, label);
-    }
-    copyQueryResult() {
-        this._copyResult(this.state.queryResult, "Result");
+        this.state.exporting = true;
+        try {
+            await download({
+                url: "/database_studio/export_xlsx",
+                data: { query },
+            });
+        } catch (e) {
+            this.notification.add("Could not export to Excel", { type: "danger" });
+        } finally {
+            this.state.exporting = false;
+        }
     }
 }
 

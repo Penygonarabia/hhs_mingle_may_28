@@ -7,7 +7,6 @@ User flow on the page:
     ──────
     User Name : [ Alice Smith   ▼ ]
     Email     : alice@example.com     (read-only)
-    User Role : Technician            (read-only)
                                       [ Load Dashboards ]
 
     Detail — Dashboards tab (one row per dashboard)
@@ -93,11 +92,6 @@ class DashboardRightsMatrix(models.TransientModel):
         related="user_id.login",
         readonly=True,
     )
-    user_role = fields.Char(
-        string="User Role",
-        compute="_compute_user_role",
-        readonly=True,
-    )
     is_user_admin = fields.Boolean(
         string="Is Admin",
         compute="_compute_is_user_admin",
@@ -134,18 +128,12 @@ class DashboardRightsMatrix(models.TransientModel):
     user_search_text_tab = fields.Char(
         string="Search Users",
         default="",
-        help="Search by User Name, Email or User Role (case-insensitive substring).",
+        help="Search by User Name or Email (case-insensitive substring).",
     )
 
     # ------------------------------------------------------------------
     # Computes
     # ------------------------------------------------------------------
-    @api.depends("user_id", "user_id.groups_id")
-    def _compute_user_role(self):
-        Rights = self.env["dashboard.rights"].sudo()
-        for rec in self:
-            rec.user_role = Rights._dr_role_for_user(rec.user_id) if rec.user_id else False
-
     @api.depends("user_id", "user_id.groups_id")
     def _compute_is_user_admin(self):
         Rights = self.env["dashboard.rights"].sudo()
@@ -754,7 +742,7 @@ class DashboardRightsMatrixLine(models.TransientModel):
 class DashboardRightsMatrixUser(models.TransientModel):
     _name = "dashboard.rights.matrix.user"
     _description = "Dashboard Rights — User Row"
-    _order = "user_role, user_name"
+    _order = "user_name"
 
     matrix_id = fields.Many2one(
         "dashboard.rights.matrix",
@@ -782,23 +770,11 @@ class DashboardRightsMatrixUser(models.TransientModel):
         store=True,
         readonly=True,
     )
-    user_role = fields.Char(
-        string="User Role",
-        compute="_compute_user_role",
-        store=True,
-        readonly=True,
-    )
     dashboard_rights_given = fields.Char(
         string="Rights Given Dashboards",
         compute="_compute_dashboard_rights_given",
         readonly=True,
     )
-
-    @api.depends("user_id", "user_id.groups_id")
-    def _compute_user_role(self):
-        Rights = self.env["dashboard.rights"].sudo()
-        for rec in self:
-            rec.user_role = Rights._dr_role_for_user(rec.user_id) or False
 
     @api.depends("matrix_id.line_ids.has_access")
     def _compute_dashboard_rights_given(self):

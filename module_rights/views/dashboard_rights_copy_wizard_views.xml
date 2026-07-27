@@ -17,7 +17,6 @@
                 </div>
                 <group>
                     <field name="source_user_id" options="{'no_create': True, 'no_open': True}"/>
-                    <field name="source_role" readonly="1"/>
                     <field name="copy_scope" widget="radio"/>
                     <field name="target_user_ids"
                            widget="many2many_tags"

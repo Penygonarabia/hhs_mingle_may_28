@@ -29,12 +29,6 @@ class DashboardRights(models.Model):
         ondelete="cascade",
         index=True,
     )
-    user_role = fields.Char(
-        string="User Role",
-        compute="_compute_user_role",
-        store=True,
-        readonly=True,
-    )
     dashboard_id = fields.Many2one(
         "ks_dashboard_ninja.board",
         string="Dashboard",
@@ -83,37 +77,6 @@ class DashboardRights(models.Model):
     # ------------------------------------------------------------------
     # Computes
     # ------------------------------------------------------------------
-    # Mapping mirrors ``dbmodel.jobcards.analysis.user_role_map`` in
-    # ``service_dashboard``: the user's role label is derived from the
-    # four service-side groups defined in ``machine_repair_management``.
-    # Multi-role users get a comma-joined string.
-    _DR_ROLE_GROUPS = (
-        ("machine_repair_management.group_parts_user",                "Parts"),
-        ("machine_repair_management.group_technical_allocation_user", "Coordinator"),
-        ("machine_repair_management.group_call_center_user",          "Call Center"),
-        ("machine_repair_management.group_job_card_mobile_user",      "Technician"),
-    )
-
-    @api.model
-    def _dr_role_for_user(self, user):
-        """Return the same role label that service_dashboard charts show.
-
-        Resolved from ``machine_repair_management`` group memberships.
-        Falls back to ``False`` when the user is in none of those groups
-        (matches the chart behaviour, which leaves user_role NULL).
-        """
-        if not user:
-            return False
-        labels = []
-        for xmlid, label in self._DR_ROLE_GROUPS:
-            try:
-                if user.has_group(xmlid):
-                    labels.append(label)
-            except ValueError:
-                # Group not present in this DB — ignore.
-                continue
-        return ", ".join(labels) if labels else False
-
     @api.depends("has_access")
     def _compute_has_access_int(self):
         for rec in self:
@@ -162,11 +125,6 @@ class DashboardRights(models.Model):
                 rec.dashboard_top_menu_id = my_dashboard_menu.id if my_dashboard_menu else False
             else:
                 rec.dashboard_top_menu_id = rec.dashboard_id.ks_dashboard_top_menu_id.id if rec.dashboard_id else False
-
-    @api.depends("user_id", "user_id.groups_id")
-    def _compute_user_role(self):
-        for rec in self:
-            rec.user_role = self._dr_role_for_user(rec.user_id)
 
     # ------------------------------------------------------------------
     # CRUD — invalidate the menu visibility cache on any rights change
@@ -253,31 +211,6 @@ class DashboardRights(models.Model):
             "res_id": matrix.id,
             "target": "current",
         }
-
-    @api.model
-    def read_group(self, domain, fields, groupby, offset=0, limit=None,
-                   orderby=False, lazy=True):
-        result = super().read_group(
-            domain, fields, groupby,
-            offset=offset, limit=limit, orderby=orderby, lazy=lazy,
-        )
-        if not groupby:
-            return result
-        first_gb = groupby[0].split(":")[0]
-        if first_gb == "user_role":
-            # Replace __count with the number of distinct users in each group
-            all_ids = self.search(domain).ids
-            if all_ids:
-                self.env.cr.execute(
-                    "SELECT COALESCE(user_role, ''), COUNT(DISTINCT user_id) "
-                    "FROM dashboard_rights WHERE id = ANY(%s) GROUP BY user_role",
-                    [all_ids],
-                )
-                role_user_count = {r[0]: r[1] for r in self.env.cr.fetchall()}
-                for grp in result:
-                    role_key = grp.get("user_role") or ""
-                    grp["__count"] = role_user_count.get(role_key, 0)
-        return result
 
     @api.model
     def _sync_missing_records(self):

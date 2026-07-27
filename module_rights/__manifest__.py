@@ -1,6 +1,6 @@
 {
     "name": "Module Rights",
-    "version": "17.0.2.0.2",
+    "version": "17.0.2.0.3",
     "category": "Settings",
     "summary": "Per-user, per-dashboard access rights (Settings page).",
     "description": """
@@ -63,8 +63,7 @@ Copy Rights
 "Copy Rights From…" button on both Users Setup's matrix and Module Rights
 Setup opens a wizard (dashboard.rights.copy.wizard) that copies EVERYTHING
 a source user can see — dashboards, Quick Access/Configuration, and every
-app menu — onto specific target user(s), everyone with the same role, or
-all users in one shot.
+app menu — onto specific target user(s) or all users in one shot.
 
 Rights-check smart button
 --------------------------
@@ -72,6 +71,22 @@ Both pages show a "<granted>/<total>" smart button once loaded — a quick
 glance at what the selected user currently has, without opening every
 group. Clicking it drills into a read-only list (dashboard.rights /
 dashboard.rights.menu), pre-filtered to Granted.
+
+Fully independent of machine_repair_management (17.0.2.0.3)
+-------------------------------------------------------------
+The "User Role" column/filter (Parts / Coordinator / Call Center /
+Technician, derived from machine_repair_management group membership) has
+been removed everywhere — Users Setup, Module Rights Setup, the Copy
+Rights wizard, and the Users-tab widget. This was the module's only
+dependency on another app's data; the module now works fully standalone
+regardless of whether machine_repair_management is installed.
+
+A fresh install on a server that already has the older hide_menu_user
+module's per-user menu restrictions (table ``ir_ui_menu_res_users_rel``)
+now grandfathers each user's CURRENT effective menu visibility into
+dashboard.rights.menu — granted for every managed menu except the ones
+that table says are hidden for them — so switching a server onto this
+module doesn't silently take away access nobody meant to revoke.
 """,
     "author": "Cielo Digital",
     # Drop the cached web.assets_* bundle on install AND on every upgrade (see
