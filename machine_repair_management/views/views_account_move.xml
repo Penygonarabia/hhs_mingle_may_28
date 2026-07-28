@@ -9,7 +9,8 @@
 		<field name = "arch" type ="xml">
 		
 			<xpath expr = "//group[@id='header_right_group']" position = "inside">
-            	<field name  = "customer_code" invisible = "1"/>
+			            <field name="subscription_contract_id" invisible="1"/>
+            	  <field name  = "customer_code" invisible = "1"/>
                  <field name = "warehouse_id" invisible = "1"/>
                  
                  <field name = "work_center_id" invisible = "1"/>
