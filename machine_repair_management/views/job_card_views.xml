@@ -70,7 +70,7 @@
                                         <field name="service_products_code_id" options="{'no_open':True}" readonly="1"
                                                force_save="1"/>
                                                
-                                       	<field name = "used_location_equipment" readonly="0" force_save="1"/>       
+                                       	<field name = "used_location_equipment" readonly="inspection_started_status_check != True" force_save="1"/>       
                                         <label for="maintenance_type" string="Job Type"/>
                                         <!--                                        <div class="o_row">-->
                                         <!--                                            <div>-->
@@ -124,7 +124,7 @@
                                         <field name="service_group_batch" invisible="1"/>
                                         <field name="brand" readonly="state == 'closed'"/>
                                         <field name="model" readonly="state == 'closed'"/>
-                                        <field name="product_slno" force_save="1"
+                                        <field name="product_slno" force_save="1" required="inspection_started_status_check"
                                                readonly="inspection_started_status_check != True"/>
                                     </group>
                                 </group>

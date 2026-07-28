@@ -709,6 +709,14 @@ class SubscriptionContracts(models.Model):
             'sales_person_user_id' : self.sales_person_user_id.id or False,
             'invoice_txt' :self.invoice_txt,
             'partner_name' : self.partner_name or False,
+            'customer_name' : self.amc_quotation_id.partner_name if self.partner_id.additional_identification_scheme == 'TIN' and self.amc_quotation_id else self.customer_name,
+            'street' : self.street or '',
+            'street2' : self.street2 or '',
+            'customer_city_id' : self.customer_city_id.id or '',
+            'district_id' : self.district_id.id or '',
+            'state_id' : self.state_id.id or '',
+            'country_id' : self.country_id.id or '',
+            'zip' : self.zip or '',
         })
 
         # ---------------------------------------------------------

@@ -40,9 +40,50 @@
             </xpath>
             
             <xpath expr = "//group[@id='header_left_group']/label[@for='partner_id'][1]" position="before">
-	            <label for = "partner_name" string = "Company Name"/>
-	            <field name = "partner_name" nolabel = "1" readonly = "1" />
+	            <label for="partner_name" string="Company Name" invisible = "not subscription_contract_id"/>
+	            <field name="partner_name" nolabel="1" readonly = "1"  invisible = "not subscription_contract_id"/>
+	            
+	            <field name = "customer_name" readonly ="1" invisible = "not subscription_contract_id"/>
+	             <label for="street" string="Address" invisible = "not subscription_contract_id"/>
+	                <div class="o_address_format" invisible = "not subscription_contract_id">
+	                    <field name="street" placeholder="Street..." class="o_address_street" invisible = "not subscription_contract_id" readonly = "1"/>
+	                    <field name="street2" placeholder="Street 2..." class="o_address_street" invisible = "not subscription_contract_id" readonly = "1"/>
+	                    <field name="customer_city_id" placeholder="City" class="o_address_city" invisible = "not subscription_contract_id" readonly = "1"/>
+	                    <field name = "district_id" placeholder="District" class="o_address_city" domain ="[('city_id','=',customer_city_id)]" invisible = "not subscription_contract_id" readonly = "1"/>
+	                    <field name="state_id" class="o_address_state" placeholder="State" readonly = "1"
+	                           options="{&quot;no_open&quot;: True}" invisible = "not subscription_contract_id"/>
+	                    <field name="zip" placeholder="ZIP" class="o_address_zip" invisible = "not subscription_contract_id" readonly = "1"/>
+	                    <field name="country_id" placeholder="Country" class="o_address_country" invisible = "not subscription_contract_id" readonly = "1"
+	                           options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+	                </div>   
+	            
 	        </xpath>
+	        
+	        <xpath expr = "//group[@id = 'header_left_group']/field[@name = 'partner_shipping_id']" position = "attributes" >
+            	<attribute name = "invisible">subscription_contract_id != False</attribute>
+            </xpath>
+            
+            <!-- Customer Label -->
+			<xpath expr="//label[@for='partner_id']" position="attributes">
+			    <attribute name="invisible">
+			        move_type not in ('out_invoice', 'out_refund', 'out_receipt') or subscription_contract_id
+			    </attribute>
+			</xpath>
+			
+			<!-- Vendor Label -->
+			<xpath expr="//label[@for='partner_id']" position="attributes">
+			    <attribute name="invisible">
+			        move_type not in ('in_invoice', 'in_refund', 'in_receipt') or subscription_contract_id
+			    </attribute>
+			</xpath>
+			
+			<!-- Partner Field Container -->
+			<xpath expr="//div[field[@name='partner_id']]" position="attributes">
+			    <attribute name="invisible">
+			        move_type not in ('out_invoice', 'out_refund', 'out_receipt', 'in_invoice', 'in_refund', 'in_receipt') or subscription_contract_id
+			    </attribute>
+			</xpath>
+	        
     
 		</field>
 	

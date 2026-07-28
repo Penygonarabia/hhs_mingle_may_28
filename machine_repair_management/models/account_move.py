@@ -53,6 +53,24 @@ class AccountMove(models.Model):
     
     '''Code Added on June 25 2026 by Vijaya Bhaskar'''
     partner_name = fields.Char(string = "Company Name")
+    
+    '''Code Added on July 28 2026 by Vijaya Bhaskar''' 
+    street = fields.Char(string = "Street")
+    
+    street2 = fields.Char(string = "Street2")
+    
+    customer_city_id = fields.Many2one('res.city', string = "Customer City")
+    
+    district_id  = fields.Many2one('res.state.district',string = "District")
+    
+    state_id = fields.Many2one('res.country.state', string = "State")
+    
+    country_id = fields.Many2one('res.country', string = "Country")
+    
+    zip = fields.Char(string = "Zip")
+    
+    customer_name = fields.Char('Customer')
+    
 
     def _generate_qr_code(self):
         for record in self:
