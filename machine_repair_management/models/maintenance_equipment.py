@@ -51,7 +51,7 @@ class MaintenanceEquipmentViews(models.Model):
     
     district = fields.Many2one('res.state.district',string = "District")
     
-    partner_name = fields.Char(string = "Company Name")
+    partner_name = fields.Char(string = "Company Name", related = "contract_id.partner_name", store = True)
 
     
     '''Code Added on May 26 2026 by Vijaya Bhaskar '''

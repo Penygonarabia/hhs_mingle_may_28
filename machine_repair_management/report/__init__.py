@@ -5,6 +5,7 @@ from . import report_machine_repair_support_xlsx
 from . import amc_quotation_report
 from . import contract_invoice_report
 from . import quotation_excel
+from . import contract_proforma_invoice_report
 # import weekly_time_sheet_report_render
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

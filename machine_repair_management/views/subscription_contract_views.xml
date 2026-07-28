@@ -35,7 +35,7 @@
 	                </div>   
                     
                  <field name = "customer_code"  required = "0"/>
-                 <field name = "warehouse_id" required = "1" domain ="[('id','in',warehouse_lst_ids)]"/>
+                 <field name = "warehouse_id" required = "0" domain ="[('id','in',warehouse_lst_ids)]"/>
                  <field name = "district" invisible = "1"/>
                  <field name = "work_center_id" invisible = "1" />
                  <field name = "work_center_group_id" invisible = "1" />

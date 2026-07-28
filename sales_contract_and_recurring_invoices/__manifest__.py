@@ -24,6 +24,7 @@
         'report/subscription_contract_templates.xml',
         'report/report_contract_bilingual.xml',
         'data/sequence.xml',
+        "wizard/contract_termination_wizard_views.xml",
     ],
     'assets': {
         'web.report_assets_common': [

@@ -204,6 +204,49 @@ class SubscriptionContracts(models.Model):
         default=lambda self: self.env["project.project"].search([("related_to_amc", "=", True)], limit=1).id if "project.project" in self.env else False,
     )
     
+    '''Code Added on July 24 2026 by vijaya bhaskar client asked the Termination date and reason'''
+    
+    termination_reason = fields.Text(string = "Reason for Termination")
+    
+    termination_date = fields.Date(string = "Termination Date")
+    
+    termination_button_click_bool = fields.Boolean(default = False)
+    
+    def action_to_termination(self):
+        # if not self.termination_reason:
+        #     raise ValidationError("Please Enter Reason for Termination")
+        #
+        # self.write({
+        #             'state':'terminate',
+        #             'termination_date' : fields.Date.today()
+        #             })
+        
+        self.ensure_one()
+        return {
+            
+            'name' : 'Termination Wizard',
+            'res_model' : 'contract.termination.wizard',
+            'view_mode' :'form',
+            'target' : 'new',
+            'type' :'ir.actions.act_window',
+            'context' :{
+                'default_contract_id':self.id,
+                }
+            
+                 
+            } 
+    
+   
+    additional_document_attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="subscription_contract_additional_document_rel",
+        column1="contract_id",
+        column2="attach_document_id",
+        string="Additional Document Attached",
+        help="Multiple Images and Pdf is attached here",
+        domain="[('mimetype','in',['image/jpeg','image/png','image/gif','application/pdf'])]",
+    )
+    
     attachment_ids = fields.Many2many(
         comodel_name="ir.attachment",
         relation="subscription_contract_rel",
@@ -425,6 +468,61 @@ class SubscriptionContracts(models.Model):
         if not self.customer_code:
             raise ValidationError(_("Please create the customer in the Penygon Application and enter the same customer code here  "))
         
+        '''Code Added on July 27 2026 by Vijaya Bhaskar client asked for warwhouse Remove mandatory in save . It should applicable in Confirm (Same as Customer code) '''
+        if not self.warehouse_id:
+            raise ValidationError(_("Please enter the warehouse")) 
+        
+        missing = []
+        required_fields = {
+            'customer_name' : _("Customer Name"),
+            'mobile_no' : _("Mobile No."),
+            'email' :_('Email Id'),
+            'job_position' : _('Job Position'),
+            'contact_persons' : _('Contact Person'),
+            'contact_persons_mobile' : _('Contact Person Mobile'),
+            'service_coordinator_person' : _('Service Coordinator Contact Person'),
+            'service_coordinator_mobile' :_('Service Coordinator Mobile Number'),
+         
+            }
+        
+        for field_name,label in required_fields.items():
+            if not self[field_name]:
+                missing.append(label)
+                
+        if missing:
+            raise ValidationError(
+                _("Please fill the following Company Representative fields before confirming:\n\n- %s")
+            % "\n- ".join(missing)
+                )        
+        
+        
+        missing_attachment = []
+        
+        attachment_required_field = {
+            
+            'attachment1_filename' : _('Quotation'),
+            'attachment2_filename' : _('Contract'),
+            'attachment3_filename' : _('C.R.'),
+            'attachment4_filename' : _('VAT'),
+            'attachment5_filename' : _('National Address'),
+            'attachment6_filename' : _('Company Representative'),
+            
+            
+            }
+        
+        for field_name,label in attachment_required_field.items():
+            if not self[field_name]:
+                missing_attachment.append(label)
+                
+        if  missing_attachment:
+            raise ValidationError(
+                _("Please fill the following Attachment fields before confirming:\n\n- %s")
+            % "\n- ".join(missing_attachment)
+                )        
+        
+                   
+        
+        
         '''Client Asked same Bring Number Auto Number generation Original one Code Added on June 25 2026 '''
         # '''Code Added on June 22 2026 by Vijaya bhaskar due to original name is updated when we create the contract'''
         # if self.date_start and self.name:
@@ -485,6 +583,10 @@ class SubscriptionContracts(models.Model):
         '''Code Added on June 09 2026 by Vijaya Bhaskar'''
         if not self.customer_code:
             raise ValidationError(_("Please create the customer in the Penygon Application and enter the same customer code here"))
+        
+        '''Code Added on July 27 2026 by Vijaya Bhaskar client asked for warwhouse Remove mandatory in save . It should applicable in Confirm (Same as Customer code) '''
+        if not self.warehouse_id:
+            raise ValidationError(_("Please enter the warehouse")) 
         
         
         # Prevent duplicate invoice

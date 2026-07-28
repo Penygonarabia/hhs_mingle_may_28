@@ -501,6 +501,7 @@ workshop machine repair
         "report/contract_invoice_report_template.xml",
         "views/visit_count_pivot_view.xml",
         "datas/subscription_contract_cron.xml",
+        "report/contract_proforma_invoice_report_template.xml",
 
     ],
     "installable": True,
