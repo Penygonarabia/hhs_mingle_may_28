@@ -1059,7 +1059,7 @@
                 <button class="oe_highlight" name="duplicate_service_job_card_create" string="Create Copy Work Order"
                         type="object"
                         groups="machine_repair_management.group_job_card_mobile_user, machine_repair_management.group_job_card_back_office_user"
-                        invisible="job_card_state_code not in ('121','129', '117','130', '116','107') or duplicate_service_button_clicked == True  or parts_user_bool == True"/>
+                        invisible="job_card_state_code not in ('121','129','125', '117','130', '116','107') or duplicate_service_button_clicked == True  or parts_user_bool == True"/>
 
 
                 <!-- <button class = "oe_highlight" name ="duplicate_service_job_card_create" invisible = "job_card_state_code != '126'" string = "Create New Service Request" type = "object"/> -->
@@ -1566,7 +1566,7 @@
                         <field name="service_group_batch" invisible="1"/>
                         <field name="maintenance_contract_type_id" force_save="1" readonly="1" invisible="1"/>
                         <field name="service_create_from_equipment_bool" readonly="1" invisible="1"/>
-                        <field name="used_location_equipment" readonly="1" force_save="1"/>
+                        <field name="used_location_equipment" readonly="1" force_save="1" invisible="not project_related_amc_bool"/>
 
                     </group>
                 </group>

@@ -2633,11 +2633,11 @@ class ServiceSaleOrder(models.Model):
             phone_number = phone_number.replace("+", "").replace(" ", "")
             phone_number = f"{country_code}{phone_number}"
 
-            if not self.crm_id.partner_id.x_whatsapp_opt_in:
-                _logger.info(
-                    "❌ No WhatsApp opt-in for Customer %s", self.customer_name
-                )
-                return False
+            # if not self.crm_id.partner_id.x_whatsapp_opt_in:
+            #     _logger.info(
+            #         "❌ No WhatsApp opt-in for Customer %s", self.customer_name
+            #     )
+            #     return False
 
             whatsapp_phone_number_id = (
                 self.env["ir.config_parameter"]
@@ -2698,11 +2698,20 @@ class ServiceSaleOrder(models.Model):
             # --- Step 2: Generate PDF ---
             try:
 
+                # pdf_content, _ = (
+                #     self.env["ir.actions.report"]
+                #     .sudo()
+                #     ._render_qweb_pdf(
+                #         "machine_repair_management.report_service_saleorder_document_hhs",
+                #         [self.id],
+                #     )
+                # )
+                '''Code Added on July 28 2026 by Vijaya Bhaskar '''
                 pdf_content, _ = (
                     self.env["ir.actions.report"]
                     .sudo()
                     ._render_qweb_pdf(
-                        "machine_repair_management.report_service_saleorder_document_hhs",
+                        "machine_repair_management.report_saleorder_amcquotation",
                         [self.id],
                     )
                 )
