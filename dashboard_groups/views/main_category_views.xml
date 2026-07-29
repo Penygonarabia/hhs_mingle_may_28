@@ -46,4 +46,7 @@
         <field name="res_model">main_category</field>
         <field name="view_mode">tree,form</field>
     </record>
+
+    <menuitem id="menu_main_category" name="Main Category" parent="menu_sales_type_groups" action="action_main_category" sequence="30"/>
+   
 </odoo>

@@ -48,4 +48,6 @@
         <field name="res_model">sub_category</field>
         <field name="view_mode">tree,form</field>
     </record>
+     <menuitem id="menu_sub_category" name="Sub Category" parent="menu_sales_type_groups" action="action_sub_category" sequence="40"/>
+
 </odoo>

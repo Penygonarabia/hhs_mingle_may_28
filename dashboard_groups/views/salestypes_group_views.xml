@@ -46,4 +46,9 @@
         <field name="res_model">salestypes_group</field>
         <field name="view_mode">tree,form</field>
     </record>
+       <menuitem id="menu_sales_type_groups" name="Sales Type Groups" parent="stock.menu_stock_config_settings" sequence="100"/>
+
+    <!-- Actions -->
+    <menuitem id="menu_salestypes_group" name="Sales Type Group" parent="menu_sales_type_groups" action="action_salestypes_group" sequence="10"/>
+    
 </odoo>

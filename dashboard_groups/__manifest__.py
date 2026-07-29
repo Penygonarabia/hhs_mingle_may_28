@@ -17,7 +17,7 @@ A custom module for managing Dashboard Groups.
         'views/main_category_views.xml',
         'views/sub_category_views.xml',
         'views/product_category_views.xml',
-        'views/menu_views.xml',
+        # 'views/menu_views.xml',
     ],
     'installable': True,
     'application': True,
