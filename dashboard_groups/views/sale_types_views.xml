@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sale_types_tree" model="ir.ui.view">
+        <field name="name">sale_types.tree</field>
+        <field name="model">sale_types</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sal_ref"/>
+                <field name="saltype_name"/>
+                <field name="saltype_name2"/>
+                <field name="saltype_group"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_sale_types_form" model="ir.ui.view">
+        <field name="name">sale_types.form</field>
+        <field name="model">sale_types</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="sal_ref"/>
+                            <field name="saltype_name"/>
+                            <field name="saltype_name2"/>
+                            <field name="saltype_group"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_sale_types_search" model="ir.ui.view">
+        <field name="name">sale_types.search</field>
+        <field name="model">sale_types</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="saltype_name"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_sale_types" model="ir.actions.act_window">
+        <field name="name">Sales Type</field>
+        <field name="res_model">sale_types</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

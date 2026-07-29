@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_main_category_tree" model="ir.ui.view">
+        <field name="name">main_category.tree</field>
+        <field name="model">main_category</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="maincat_ref"/>
+                <field name="maincat_name"/>
+                <field name="maincat_name2"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_main_category_form" model="ir.ui.view">
+        <field name="name">main_category.form</field>
+        <field name="model">main_category</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="maincat_ref"/>
+                            <field name="maincat_name"/>
+                            <field name="maincat_name2"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_main_category_search" model="ir.ui.view">
+        <field name="name">main_category.search</field>
+        <field name="model">main_category</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="maincat_name"/>
+                <field name="maincat_ref"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_main_category" model="ir.actions.act_window">
+        <field name="name">Main Category</field>
+        <field name="res_model">main_category</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

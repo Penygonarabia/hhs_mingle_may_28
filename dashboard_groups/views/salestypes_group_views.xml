@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_salestypes_group_tree" model="ir.ui.view">
+        <field name="name">salestypes_group.tree</field>
+        <field name="model">salestypes_group</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="salgrp_ref"/>
+                <field name="salgrp_name"/>
+                <field name="salgrp_name2"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_salestypes_group_form" model="ir.ui.view">
+        <field name="name">salestypes_group.form</field>
+        <field name="model">salestypes_group</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="salgrp_ref"/>                        
+                            <field name="salgrp_name"/>
+                            <field name="salgrp_name2"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_salestypes_group_search" model="ir.ui.view">
+        <field name="name">salestypes_group.search</field>
+        <field name="model">salestypes_group</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="salgrp_name"/>
+                <field name="salgrp_ref"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_salestypes_group" model="ir.actions.act_window">
+        <field name="name">Sales Type Group</field>
+        <field name="res_model">salestypes_group</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

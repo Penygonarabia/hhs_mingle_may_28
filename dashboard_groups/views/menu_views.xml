@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_sales_type_groups" name="Sales Type Groups" parent="stock.menu_stock_config_settings" sequence="100"/>
+
+    <!-- Actions -->
+    <menuitem id="menu_salestypes_group" name="Sales Type Group" parent="menu_sales_type_groups" action="action_salestypes_group" sequence="10"/>
+    <menuitem id="menu_sale_types" name="Sales Type" parent="menu_sales_type_groups" action="action_sale_types" sequence="20"/>
+    <menuitem id="menu_main_category" name="Main Category" parent="menu_sales_type_groups" action="action_main_category" sequence="30"/>
+    <menuitem id="menu_sub_category" name="Sub Category" parent="menu_sales_type_groups" action="action_sub_category" sequence="40"/>
+    <menuitem id="menu_product_category" name="Product Category" parent="menu_sales_type_groups" action="action_product_category" sequence="50"/>
+</odoo>
