@@ -249,6 +249,25 @@ class ServiceSaleOrder(models.Model):
                 }))
 
             revised.quotation_payment_term_ids = schedule_vals
+            
+        '''Code Added on July 29 2026 by Vijaya Bhaskar'''
+        if self.pm_checklist_ids and not revised.pm_checklist_ids:
+            
+            checklist_vals = []
+            
+            for line in self.pm_checklist_ids:
+                checklist_vals.append((0,0,{
+                    
+                    'service_unit_type_id' : line.service_unit_type_id.id or '',
+                    'unit_sub_type_id' : line.unit_sub_type_id or '',
+                    'service_type_id' : line.service_type_id or '',
+                    'is_selected' : line.is_selected or '',
+                    'print_always_default' : line.print_always_default or '',
+                    
+               
+                    }))
+                
+            revised.pm_checklist_ids = checklist_vals    
 
         return {
             "type": "ir.actions.act_window",

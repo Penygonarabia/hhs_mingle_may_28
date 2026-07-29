@@ -26,6 +26,15 @@
                 <field name="def_work_center_id" groups='machine_repair_management.group_machine_repair_manager_work_center'/>
                 <field name="country_district_id" column_invisible="1"/>
             </xpath>
+            
+            <xpath expr = "//field[@name = 'name']" position = "before">
+            	 <field name = "code" />
+            	
+            </xpath>
+            <xpath expr = "//field[@name = 'state_id']" position = "after">
+            	<field name = "report_region" />
+            </xpath>
+            
         </field>
     </record>
 

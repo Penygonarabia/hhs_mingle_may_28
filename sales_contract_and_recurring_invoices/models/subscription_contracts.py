@@ -103,6 +103,8 @@ class SubscriptionContracts(models.Model):
         ('Expire Soon', 'Expire Soon'),
         ('Expired', 'Expired'),
         ('Cancelled', 'Cancelled'),
+        ('terminate','Terminate')
+        
     ], string='Stage', default='New', copy=False, tracking=True,
         readonly=True, help='Status of subscription contract')
     contract_line_ids = fields.One2many(
@@ -242,7 +244,7 @@ class SubscriptionContracts(models.Model):
         relation="subscription_contract_additional_document_rel",
         column1="contract_id",
         column2="attach_document_id",
-        string="Additional Document Attached",
+        string="Additional Document(s)",
         help="Multiple Images and Pdf is attached here",
         domain="[('mimetype','in',['image/jpeg','image/png','image/gif','application/pdf'])]",
     )

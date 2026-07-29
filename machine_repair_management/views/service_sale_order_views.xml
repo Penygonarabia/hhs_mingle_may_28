@@ -443,10 +443,10 @@
                                         <field name="margin" column_invisible="parent.job_task_id"/>
                                         <field name="margin_percent" column_invisible="parent.job_task_id"/>
                                         <field name="discount" column_invisible="parent.job_task_id" optional="hide"/>
-                                        <field name="vat" column_invisible="not parent.amc_quotation"/>
+                                        <field name="vat" column_invisible="not parent.amc_quotation" force_save = "1" readonly = "1"/>
                                         <field name="vat_percent" column_invisible="not parent.amc_quotation"
                                                sum="Total" digits="[16,2]"/>
-                                        <field name="vat" column_invisible="parent.amc_quotation"/>
+                                        <field name="vat" column_invisible="parent.amc_quotation" force_save = "1" readonly = "1"/>
                                         <field name="tax_amount" column_invisible="1"/>
                                         <field name="total" column_invisible="not parent.job_task_id"/>
                                         <field name="total_amc" column_invisible="parent.job_task_id" digits="[16,2]"
