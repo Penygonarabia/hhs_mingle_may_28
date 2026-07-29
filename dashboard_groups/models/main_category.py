@@ -12,3 +12,10 @@ class MainCategory(models.Model):
     _sql_constraints = [
         ('maincat_ref_unique', 'unique(maincat_ref)', 'Reference must be unique!')
     ]
+
+    def unlink(self):
+        for record in self:
+            if self.env['sub_category'].search_count([('subcat_maincategory_id', '=', record.id)]) > 0:
+                from odoo.exceptions import UserError
+                raise UserError(f"You cannot delete the Main Category '{record.maincat_name}' because it is currently assigned to one or more Sub Categories. Please reassign or delete the associated Sub Categories first.")
+        return super(MainCategory, self).unlink()

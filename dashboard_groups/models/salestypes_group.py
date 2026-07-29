@@ -12,3 +12,10 @@ class SalesTypesGroup(models.Model):
     _sql_constraints = [
         ('salgrp_ref_unique', 'unique(salgrp_ref)', 'Reference must be unique!')
     ]
+
+    def unlink(self):
+        for record in self:
+            if self.env['sale_types'].search_count([('saltype_group', '=', record.id)]) > 0:
+                from odoo.exceptions import UserError
+                raise UserError(f"You cannot delete the Sales Type Group '{record.salgrp_name}' because it is currently assigned to one or more Sale Types. Please reassign or delete the associated Sale Types first.")
+        return super(SalesTypesGroup, self).unlink()
