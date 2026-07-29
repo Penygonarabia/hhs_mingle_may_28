@@ -1,8 +1,7 @@
 from odoo import models, fields
 
 class ProductCategory(models.Model):
-    _name = 'product_category'
-    _description = 'Product Category'
+    _inherit = 'product.category'
 
     name_ar = fields.Char(string='Name AR')
     sub_category = fields.Char(string='Sub Category')

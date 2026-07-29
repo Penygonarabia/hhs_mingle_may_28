@@ -1,48 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="view_product_category_tree" model="ir.ui.view">
-        <field name="name">product_category.tree</field>
-        <field name="model">product_category</field>
+    <record id="view_product_category_form_inherit" model="ir.ui.view">
+        <field name="name">product.category.form.inherit.dashboard_groups</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view"/>
         <field name="arch" type="xml">
-            <tree>                
-                <field name="name_ar"/>
+            <xpath expr="//field[@name='name']" position="after">
+                <br/>
+                <field name="name_ar" placeholder="e.g. مصابيح" class="oe_inline"/>
+            </xpath>
+            <xpath expr="//field[@name='parent_id']" position="after">
                 <field name="sub_category"/>
                 <field name="merged_subcategory"/>
-            </tree>
+            </xpath>
         </field>
-    </record>
-
-    <record id="view_product_category_form" model="ir.ui.view">
-        <field name="name">product_category.form</field>
-        <field name="model">product_category</field>
-        <field name="arch" type="xml">
-            <form>
-                <sheet>
-                    <group>
-                        <group>
-                            <field name="name_ar"/>
-                            <field name="sub_category"/>
-                            <field name="merged_subcategory"/>
-                        </group>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
-
-    <record id="view_product_category_search" model="ir.ui.view">
-        <field name="name">product_category.search</field>
-        <field name="model">product_category</field>
-        <field name="arch" type="xml">
-            <search>
-                <field name="name_ar"/>
-            </search>
-        </field>
-    </record>
-
-    <record id="action_product_category" model="ir.actions.act_window">
-        <field name="name">Product Category</field>
-        <field name="res_model">product_category</field>
-        <field name="view_mode">tree,form</field>
     </record>
 </odoo>
