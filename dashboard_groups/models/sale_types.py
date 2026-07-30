@@ -3,6 +3,7 @@ from odoo import models, fields
 class SaleTypes(models.Model):
     _name = 'sale_types'
     _description = 'Sale Types'
+    _rec_name = 'saltype_name'
 
     sal_ref = fields.Char(string='Reference', required=True)
     saltype_name = fields.Char(string='Name', required=True)
