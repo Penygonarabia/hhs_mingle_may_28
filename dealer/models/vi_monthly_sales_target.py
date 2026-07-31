@@ -133,7 +133,7 @@ SELECT
     g.name  AS group_name,
     sg.name AS subgroup_name,
 
-    COALESCE(r.name, t.region::text) AS region_name,
+    COALESCE(r.name->>'en_US', t.region::text) AS region_name,
     COALESCE(c.name->>'en_US', t.city->>'en_US') AS city_name,
 
     COALESCE(t.year, s.year)   AS year,

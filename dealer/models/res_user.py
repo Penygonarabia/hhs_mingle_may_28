@@ -38,8 +38,7 @@ class ResUsers(models.Model):
 
     default_authority = fields.Boolean(string="Default Authority", default=False)
     
-    # Legacy field kept to prevent parse errors during module upgrade
-    default_authority_id = fields.Many2one('res.users', string="Legacy Authority (Do Not Use)")
+    # Legacy field removed to prevent UndefinedColumn error
 
     @api.constrains('default_authority')
     def _check_single_default_authority(self):
