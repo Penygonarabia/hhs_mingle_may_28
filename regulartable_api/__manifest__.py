@@ -1,7 +1,7 @@
 {
     'name': 'Regular table to API Module',
-    'version': '1.0',
-    'depends': ['base'],
+    'version': '1.1',
+    'depends': ['base', 'project'],
     'author':'Ramesh Manivannan',
     'data': [
         'security/ir.model.access.csv',
