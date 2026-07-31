@@ -1,0 +1,18 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+<odoo>
+	
+	<record id = "salesman_res_users_inherit_form" model = "ir.ui.view">
+		<field name = "name">res.users.salesman.inherit.form</field>
+		<field name = "model">res.users</field>
+		<field name = "inherit_id" ref = "base.view_users_form" />
+		<field name = "arch" type = "xml">
+			 <xpath expr = "//div[@class ='oe_title']/group/field[@name ='share']" position = "after">
+			 	<field name = "is_salesman" />
+			 </xpath>
+		
+		</field>
+	
+	</record>
+
+
+</odoo>
