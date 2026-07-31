@@ -334,6 +334,11 @@
                                 <code t-esc="state.execQuery"/>
                             </div>
                             <div class="sqlms-toolbar">
+                                <button class="btn btn-secondary btn-sm" t-on-click="copyResults"
+                                        t-if="state.queryResult.columns.length"
+                                        title="Copy the currently shown page as tab-separated text">
+                                    <i class="fa fa-clipboard"/> Copy
+                                </button>
                                 <button class="btn btn-secondary btn-sm" t-on-click="exportExcel"
                                         t-if="state.queryResult.columns.length"
                                         t-att-disabled="state.exporting"

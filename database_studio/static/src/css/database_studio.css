@@ -242,7 +242,13 @@
 }
 .sqlms-grid tbody tr:nth-child(even) { background: #f8f9fa; }
 .sqlms-grid tbody tr:hover { background: #eef4fb; }
-.sqlms-rownum { color: #adb5bd; text-align: right; background: #f1f3f5; }
+.sqlms-rownum {
+    color: #adb5bd;
+    text-align: right;
+    background: #f1f3f5;
+    width: 1%;
+    white-space: nowrap;
+}
 .sqlms-arrow { color: #adb5bd; text-align: center; }
 .sqlms-via {
     display: inline-block;

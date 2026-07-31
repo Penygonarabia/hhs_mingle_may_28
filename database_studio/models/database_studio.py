@@ -309,10 +309,6 @@ class SqlMsAnalyser(models.AbstractModel):
         else:
             result["message"] = _("%s row(s) affected") % rowcount
 
-        # Log the executed query into history once per execution (not per page).
-        # Runs only after the cursor's result set has been fully fetched.
-        if int(page) == 1:
-            self.env["database.studio.query"]._log(query)
         return result
 
     # Hard cap on rows written to an "Export Excel" file, so a huge result
@@ -393,21 +389,6 @@ class SqlMsQuery(models.Model):
         return self.search(
             [("user_id", "=", self.env.uid), ("query", "=", query)], limit=1
         )
-
-    @api.model
-    def _log(self, query):
-        """Record an executed query, or bump its counter if already stored."""
-        query = (query or "").strip()
-        if not query:
-            return
-        existing = self._find_own(query)
-        if existing:
-            existing.write({
-                "last_run": fields.Datetime.now(),
-                "run_count": existing.run_count + 1,
-            })
-        else:
-            self.create({"query": query, "name": self._snippet(query)})
 
     @api.model
     def save_query(self, query, name=None):

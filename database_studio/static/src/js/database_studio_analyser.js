@@ -722,6 +722,20 @@ export class SqlMsAnalyser extends Component {
         }
         this._copy(lines.join("\n"), "Fields");
     }
+    // Copies only the currently displayed page (unlike Export Excel, which
+    // pulls the full, unpaginated result set) since clipboard copy is meant
+    // for pasting a quick look, not the whole result set.
+    copyResults() {
+        const res = this.state.queryResult;
+        if (!res || !res.columns.length) {
+            return;
+        }
+        const header = res.columns.join("\t");
+        const lines = (res.rows || []).map(
+            (row) => row.map((v) => (v === null ? "" : v)).join("\t")
+        );
+        this._copy([header, ...lines].join("\n"), "Results");
+    }
     // Full, unpaginated result set as a downloaded .xlsx — a normal file
     // download isn't bound by clipboard permissions/activation, so it works
     // regardless of result size or origin security.
