@@ -53,6 +53,10 @@
         <field name="name">Query History</field>
         <field name="res_model">database.studio.query</field>
         <field name="view_mode">tree,form</field>
+        <!-- Opens on the "Saved" tab (see SqlMsHistoryController's Saved /
+             On-the-fly toggle); the toggle buttons switch this client-side
+             without touching the action's own domain. -->
+        <field name="domain">[('is_favorite', '=', True)]</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">No queries yet</p>
             <p>Queries you execute in the Analyser are stored here.</p>

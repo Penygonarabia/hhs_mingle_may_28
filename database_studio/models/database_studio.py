@@ -407,6 +407,39 @@ class SqlMsQuery(models.Model):
             rec = self.create(dict(vals, query=query))
         return {"id": rec.id, "name": rec.name}
 
+    @api.model
+    def save_query_id(self, record_id, query, name=None):
+        """Save/star a query tab that is already linked to a History record
+        (opened from History, or a prior Save) by updating that same record
+        in place, instead of save_query's upsert-by-text — so editing the
+        query and re-saving doesn't fork off a duplicate row."""
+        rec = self.browse(record_id).exists()
+        if not rec or rec.user_id.id != self.env.uid:
+            return self.save_query(query, name)
+        query = (query or "").strip()
+        if not query:
+            return False
+        vals = {"is_favorite": True, "query": query}
+        if name:
+            vals["name"] = name
+        rec.write(vals)
+        return {"id": rec.id, "name": rec.name}
+
+    @api.model
+    def log_query_run(self, query):
+        """Log an Execute click to History without marking it a favorite, so
+        it shows up under the 'On the fly' tab. Bumps run stats on an
+        existing record (favorite or not) rather than duplicating it."""
+        query = (query or "").strip()
+        if not query:
+            return False
+        rec = self._find_own(query)
+        if rec:
+            rec.write({"run_count": rec.run_count + 1, "last_run": fields.Datetime.now()})
+        else:
+            rec = self.create({"query": query, "name": self._snippet(query)})
+        return {"id": rec.id, "name": rec.name, "is_favorite": rec.is_favorite}
+
     def action_unlink(self):
         """Per-row delete button in the history list."""
         self.unlink()

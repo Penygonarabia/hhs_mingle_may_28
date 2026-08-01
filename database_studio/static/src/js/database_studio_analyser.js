@@ -159,14 +159,137 @@ function formatSql(text) {
     return out.replace(/[ \t]+\n/g, "\n");
 }
 
+// Splits a query's text into top-level statements on ';', ignoring
+// semicolons inside string literals, quoted identifiers, and comments so a
+// query tab can render (and collapse) each statement as its own block.
+// Rejoining the returned parts with ";" reconstructs the original text
+// exactly (the separator characters themselves are not included in a part).
+function splitStatements(text) {
+    const parts = [];
+    let cur = "";
+    let i = 0;
+    const n = text.length;
+    while (i < n) {
+        const ch = text[i];
+        if (ch === "'") {
+            let j = i + 1;
+            while (j < n) {
+                if (text[j] === "'") {
+                    if (text[j + 1] === "'") {
+                        j += 2;
+                        continue;
+                    }
+                    j += 1;
+                    break;
+                }
+                j += 1;
+            }
+            cur += text.slice(i, j);
+            i = j;
+        } else if (ch === '"') {
+            let j = i + 1;
+            while (j < n && text[j] !== '"') {
+                j += 1;
+            }
+            j = Math.min(j + 1, n);
+            cur += text.slice(i, j);
+            i = j;
+        } else if (ch === "-" && text[i + 1] === "-") {
+            let j = text.indexOf("\n", i);
+            j = j === -1 ? n : j;
+            cur += text.slice(i, j);
+            i = j;
+        } else if (ch === "/" && text[i + 1] === "*") {
+            let j = text.indexOf("*/", i + 2);
+            j = j === -1 ? n : j + 2;
+            cur += text.slice(i, j);
+            i = j;
+        } else if (ch === ";") {
+            parts.push(cur);
+            cur = "";
+            i += 1;
+        } else {
+            cur += ch;
+            i += 1;
+        }
+    }
+    if (cur.trim() || !parts.length) {
+        parts.push(cur);
+    }
+    return parts;
+}
+
+// Tab/block ids only need to be unique within one page load, and the History
+// list needs to mint them without an Analyser instance to hand a counter out
+// from — so these live at module scope rather than on component state.
+let _qtabIdSeq = 0;
+let _blockIdSeq = 0;
+
+function makeBlocks(text) {
+    return splitStatements(text || "").map((t) => ({
+        id: ++_blockIdSeq,
+        text: t,
+        collapsed: false,
+    }));
+}
+
+// History names can run long; the qtab bar has room for a short label only.
+function truncateName(name, max = 20) {
+    if (!name) {
+        return name;
+    }
+    return name.length > max ? name.slice(0, max) + "..." : name;
+}
+
+// opts.historyId links this tab to a database.studio.query record (it was
+// either opened from History or has since been Saved): Save then updates
+// that same record instead of upserting a new one, and closing the tab
+// skips the "save before closing?" prompt once opts.isSaved is true.
+// opts.name is the record's full (untruncated) name, kept as fullName so a
+// later Save can prefill it — qt.name is the truncated label actually shown
+// on the tab.
+export function makeQtab(query, opts) {
+    opts = opts || {};
+    const id = ++_qtabIdSeq;
+    return {
+        id,
+        name: opts.name ? truncateName(opts.name) : "Query " + id,
+        fullName: opts.name || null,
+        query: query || "",
+        blocks: makeBlocks(query),
+        execQuery: "",
+        execWasSelection: false,
+        queryResult: null,
+        selectedCols: [],
+        historyId: opts.historyId || null,
+        isSaved: !!opts.isSaved,
+    };
+}
+
+// Lets a query opened from the History list land in a new tab of whatever
+// Analyser it was opened from, instead of losing other open tabs. This holds
+// actual tab *data*, not a component reference: navigating to History fully
+// destroys the Analyser component (Odoo doesn't keep client-action
+// controllers alive off-screen the way it does act_window breadcrumbs), so
+// by the time a history row is clicked there is no live instance left to
+// call back into — only a plain object surviving in this module can bridge
+// the trip to History and back.
+export const analyserRegistry = { pending: null };
+
+// If the user leaves for History and then wanders off elsewhere instead of
+// coming back (e.g. switches to an unrelated app), the snapshot above would
+// otherwise sit around indefinitely and resurface as a surprise the next
+// time an Analyser happens to open. Only honor it within this window of it
+// being set.
+const PENDING_TTL_MS = 5 * 60 * 1000;
+
 export class SqlMsAnalyser extends Component {
     setup() {
         this.orm = useService("orm");
         this.notification = useService("notification");
         this.action = useService("action");
         this.dialog = useService("dialog");
-        this.editorRef = useRef("editor");
-        this.highlightRef = useRef("highlight");
+        this.blocksRef = useRef("blocksContainer");
         this.rootRef = useRef("rootEl");
 
         this.state = useState({
@@ -188,7 +311,6 @@ export class SqlMsAnalyser extends Component {
             // the active tab; switching snapshots them back into their tab.
             qtabs: [],
             activeQtabId: null,
-            _qtabSeq: 0,
             loading: false,
             exporting: false,
             favorites: [],
@@ -196,19 +318,35 @@ export class SqlMsAnalyser extends Component {
             showTables: true,
             showViews: true,
             checked: {},
+            selectedCols: [],
         });
 
-        // Preload a query when opened from the History list / a record button.
+        // A query passed directly by a record button (action_open_in_analyser)
+        // is an explicit, one-off request — it always wins over any leftover
+        // registry snapshot. Otherwise, a still-fresh snapshot left by a
+        // history-list click (this Analyser's own tabs, plus the newly picked
+        // query) is restored instead of starting blank.
         const act = this.props.action || {};
         const incoming = (act.params && act.params.query) ||
             (act.context && act.context.default_query);
-        // Start with one query tab (seeded with any preloaded query).
-        const first = this._makeQtab(incoming || "");
-        this.state.qtabs.push(first);
-        this.state.activeQtabId = first.id;
-        this.state.query = first.query;
-        if (incoming) {
+        const pending = analyserRegistry.pending;
+        analyserRegistry.pending = null;
+        const usePending = !incoming && pending && pending.qtabs && pending.qtabs.length &&
+            (Date.now() - pending.ts) < PENDING_TTL_MS;
+        if (usePending) {
+            this.state.qtabs = pending.qtabs;
+            const active = pending.qtabs.find((t) => t.id === pending.activeQtabId) ||
+                pending.qtabs[pending.qtabs.length - 1];
+            this._loadQtab(active);
             this.state.activeTab = "query";
+        } else {
+            const first = this._makeQtab(incoming || "");
+            this.state.qtabs.push(first);
+            this.state.activeQtabId = first.id;
+            this.state.query = first.query;
+            if (incoming) {
+                this.state.activeTab = "query";
+            }
         }
 
         onMounted(() => this.loadObjects());
@@ -239,12 +377,32 @@ export class SqlMsAnalyser extends Component {
         }
     }
 
+    // Each statement block has its own textarea/highlight <pre>, found by
+    // data-block-id rather than a static t-ref (the number of blocks is
+    // dynamic). Re-sync all of them from state whenever the editor DOM is
+    // (re)created (e.g. switching back to the Query tab, or a block just
+    // got split on blur). A block's own text is written into its textarea's
+    // .value verbatim by onBlockInput before this runs, so on a plain
+    // keystroke ta.value already equals blk.text and this is a no-op —
+    // it never fights the user's typing or moves the caret.
     _syncEditor() {
-        if (this.editorRef.el && this.editorRef.el.value !== this.state.query) {
-            this.editorRef.el.value = this.state.query;
+        const root = this.blocksRef.el;
+        if (!root) {
+            return;
         }
-        if (this.highlightRef.el) {
-            this.highlightRef.el.innerHTML = highlightSql(this.state.query) + "\n";
+        for (const blk of this.queryBlocks) {
+            const ta = root.querySelector(
+                '.sqlms-block-textarea[data-block-id="' + blk.id + '"]'
+            );
+            if (ta && ta.value !== blk.text) {
+                ta.value = blk.text;
+            }
+            const pre = root.querySelector(
+                '.sqlms-block-highlight[data-block-id="' + blk.id + '"]'
+            );
+            if (pre) {
+                pre.innerHTML = highlightSql(blk.text) + "\n";
+            }
         }
     }
 
@@ -295,6 +453,15 @@ export class SqlMsAnalyser extends Component {
     }
 
     openHistory() {
+        // Snapshot our tabs so that, if the user picks a row there, this
+        // Analyser's work isn't lost even though the component itself is
+        // about to be destroyed (see analyserRegistry's docstring above).
+        this._snapshotActiveQtab();
+        analyserRegistry.pending = {
+            qtabs: this.state.qtabs,
+            activeQtabId: this.state.activeQtabId,
+            ts: Date.now(),
+        };
         this.action.doAction("database_studio.action_sql_ms_query");
     }
 
@@ -457,15 +624,7 @@ export class SqlMsAnalyser extends Component {
 
     // -- query sub-tabs ------------------------------------------------
     _makeQtab(query) {
-        const id = ++this.state._qtabSeq;
-        return {
-            id,
-            name: "Query " + id,
-            query: query || "",
-            execQuery: "",
-            execWasSelection: false,
-            queryResult: null,
-        };
+        return makeQtab(query);
     }
     get qtab() {
         return this.state.qtabs.find((t) => t.id === this.state.activeQtabId);
@@ -479,6 +638,7 @@ export class SqlMsAnalyser extends Component {
             t.execQuery = this.state.execQuery;
             t.execWasSelection = this.state.execWasSelection;
             t.queryResult = this.state.queryResult;
+            t.selectedCols = this.state.selectedCols;
         }
     }
     _loadQtab(t) {
@@ -487,6 +647,7 @@ export class SqlMsAnalyser extends Component {
         this.state.execQuery = t.execQuery;
         this.state.execWasSelection = t.execWasSelection;
         this.state.queryResult = t.queryResult;
+        this.state.selectedCols = t.selectedCols || [];
         this._syncEditor();
     }
     addQtab() {
@@ -519,6 +680,12 @@ export class SqlMsAnalyser extends Component {
         if (id === this.state.activeQtabId) {
             this._snapshotActiveQtab();
         }
+        // Already saved (starred) — it's persisted, so there's nothing this
+        // close could lose. Don't ask again.
+        if (t.isSaved) {
+            this._doRemoveQtab(id);
+            return;
+        }
         const query = (t.query || "").trim();
         if (!query) {
             this._doRemoveQtab(id);
@@ -527,14 +694,31 @@ export class SqlMsAnalyser extends Component {
         // Unsaved content — ask whether to save before closing.
         this.dialog.add(SqlMsCloseTabDialog, {
             tabName: t.name,
-            defaultName: query.replace(/\s+/g, " ").slice(0, 60),
+            defaultName: t.fullName || query.replace(/\s+/g, " ").slice(0, 60),
             onSave: async (name) => {
-                await this.orm.call("database.studio.query", "save_query", [query, name || false]);
+                await this._persistSave(t, query, name);
                 this.notification.add("Query saved ★", { type: "success" });
                 this._doRemoveQtab(id);
             },
             onDiscard: () => this._doRemoveQtab(id),
         });
+    }
+    // Saves `query` under `name`, updating the tab's linked History record in
+    // place if it already has one (opened from History, or a prior Save) so
+    // editing + re-saving doesn't fork off a duplicate row; otherwise
+    // upserts by exact query text as before. Updates the tab's own link/name
+    // fields from the result either way.
+    async _persistSave(t, query, name) {
+        const result = t.historyId
+            ? await this.orm.call("database.studio.query", "save_query_id", [t.historyId, query, name || false])
+            : await this.orm.call("database.studio.query", "save_query", [query, name || false]);
+        if (t && result) {
+            t.historyId = result.id;
+            t.fullName = result.name;
+            t.name = truncateName(result.name);
+            t.isSaved = true;
+        }
+        return result;
     }
     _doRemoveQtab(id) {
         const idx = this.state.qtabs.findIndex((t) => t.id === id);
@@ -543,9 +727,12 @@ export class SqlMsAnalyser extends Component {
         }
         const wasActive = id === this.state.activeQtabId;
         this.state.qtabs.splice(idx, 1);
-        // Never leave the editor with zero tabs.
+        // Never leave the editor with zero tabs. Its name always resets to
+        // "Query 1" here rather than continuing the running counter, since
+        // from the user's perspective this is a fresh start, not tab N+1.
         if (!this.state.qtabs.length) {
             const t = this._makeQtab("");
+            t.name = "Query 1";
             this.state.qtabs.push(t);
             this._loadQtab(t);
             return;
@@ -557,26 +744,87 @@ export class SqlMsAnalyser extends Component {
     }
 
     // -- query editor --------------------------------------------------
+    // A query tab's text as a list of persistent ';'-separated statement
+    // blocks, each individually collapsible/foldable (view built from the
+    // active tab's stable block objects — see makeBlocks).
+    get queryBlocks() {
+        const blocks = (this.qtab && this.qtab.blocks) || [];
+        return blocks.map((b, index) => ({
+            id: b.id,
+            index,
+            text: b.text,
+            collapsed: b.collapsed,
+            preview: b.text.trim().replace(/\s+/g, " ").slice(0, 80) || "(empty)",
+            lineCount: (b.text.match(/\n/g) || []).length + 1,
+        }));
+    }
+    toggleBlockCollapse(id) {
+        const blk = this.qtab && this.qtab.blocks.find((b) => b.id === id);
+        if (blk) {
+            blk.collapsed = !blk.collapsed;
+        }
+    }
     setQuery(text) {
         this.state.query = text;
-        if (this.editorRef.el) {
-            this.editorRef.el.value = text;
+        const t = this.qtab;
+        if (t) {
+            t.blocks = makeBlocks(text);
         }
-        this._renderHighlight();
+        this._syncEditor();
     }
-    onQueryInput(ev) {
-        this.state.query = ev.target.value;
-        this._renderHighlight();
-    }
-    onQueryScroll(ev) {
-        if (this.highlightRef.el) {
-            this.highlightRef.el.scrollTop = ev.target.scrollTop;
-            this.highlightRef.el.scrollLeft = ev.target.scrollLeft;
+    // Fired on every keystroke in a block's own textarea: just record its
+    // new text verbatim (no re-splitting, no touching other blocks) so the
+    // block's DOM node is never restructured mid-edit — see _syncEditor.
+    onBlockInput(id, ev) {
+        const t = this.qtab;
+        const blk = t && t.blocks.find((b) => b.id === id);
+        if (!blk) {
+            return;
         }
+        blk.text = ev.target.value;
+        this.state.query = t.blocks.map((b) => b.text).join(";");
     }
-    _renderHighlight() {
-        if (this.highlightRef.el) {
-            this.highlightRef.el.innerHTML = highlightSql(this.state.query) + "\n";
+    // Only on losing focus (not every keystroke) do we check whether the
+    // user finished typing a new statement (a ';' now sits inside this
+    // block) and, if so, fold it into separate blocks.
+    onBlockBlur(id) {
+        const t = this.qtab;
+        if (!t) {
+            return;
+        }
+        const idx = t.blocks.findIndex((b) => b.id === id);
+        if (idx === -1) {
+            return;
+        }
+        // An emptied-out statement collapses away entirely instead of
+        // lingering as a blank section, as long as it isn't the tab's only
+        // block (a single empty block is just the normal empty-editor state).
+        if (!t.blocks[idx].text.trim() && t.blocks.length > 1) {
+            t.blocks.splice(idx, 1);
+            this.state.query = t.blocks.map((b) => b.text).join(";");
+            return;
+        }
+        const pieces = splitStatements(t.blocks[idx].text);
+        if (pieces.length <= 1) {
+            return;
+        }
+        const fresh = pieces.map((text) => ({
+            id: ++_blockIdSeq,
+            text,
+            collapsed: false,
+        }));
+        t.blocks.splice(idx, 1, ...fresh);
+        this.state.query = t.blocks.map((b) => b.text).join(";");
+    }
+    onBlockScroll(ev) {
+        const id = ev.target.dataset.blockId;
+        const root = this.blocksRef.el;
+        const pre = root && root.querySelector(
+            '.sqlms-block-highlight[data-block-id="' + id + '"]'
+        );
+        if (pre) {
+            pre.scrollTop = ev.target.scrollTop;
+            pre.scrollLeft = ev.target.scrollLeft;
         }
     }
     formatQuery() {
@@ -596,10 +844,11 @@ export class SqlMsAnalyser extends Component {
         if (!q) {
             return;
         }
+        const t = this.qtab;
         this.dialog.add(SqlMsSaveDialog, {
-            defaultName: q.replace(/\s+/g, " ").slice(0, 60),
+            defaultName: (t && t.fullName) || q.replace(/\s+/g, " ").slice(0, 60),
             onConfirm: async (name) => {
-                await this.orm.call("database.studio.query", "save_query", [q, name || false]);
+                await this._persistSave(t, q, name);
                 this.notification.add("Query saved ★", { type: "success" });
             },
         });
@@ -618,15 +867,36 @@ export class SqlMsAnalyser extends Component {
 
     _activeQuery() {
         // Run only the highlighted selection when the user has one, like a
-        // real query analyser; otherwise run the whole editor content.
-        const ta = this.editorRef.el;
-        if (ta && ta.selectionEnd > ta.selectionStart) {
-            const sel = ta.value.substring(ta.selectionStart, ta.selectionEnd).trim();
-            if (sel) {
-                return { query: sel, isSelection: true };
+        // real query analyser; otherwise run the whole editor content. A
+        // textarea keeps its selectionStart/End after it is blurred (e.g. by
+        // clicking the Execute button), so check every block's textarea
+        // rather than requiring one to still have focus.
+        const root = this.blocksRef.el;
+        const textareas = root ? root.querySelectorAll(".sqlms-block-textarea") : [];
+        for (const ta of textareas) {
+            if (ta.selectionEnd > ta.selectionStart) {
+                const sel = ta.value.substring(ta.selectionStart, ta.selectionEnd).trim();
+                if (sel) {
+                    return { query: sel, isSelection: true };
+                }
             }
         }
-        return { query: this.state.query, isSelection: false };
+        return { query: this._fullQueryForExec(), isSelection: false };
+    }
+    // Joins the active tab's statement blocks for execution, skipping any
+    // that are blank. A block can end up empty from a stray double ';' (or a
+    // fresh, not-yet-typed-into one) — sending that straight to Postgres as
+    // "...; ; ..." is a guaranteed syntax error, so it's dropped here rather
+    // than surfacing as a confusing failure on Execute.
+    _fullQueryForExec() {
+        const t = this.qtab;
+        if (!t) {
+            return this.state.query;
+        }
+        return t.blocks
+            .filter((b) => b.text.trim())
+            .map((b) => b.text)
+            .join(";");
     }
 
     // `fresh` distinguishes a real Execute click (re-capture the editor's
@@ -638,6 +908,9 @@ export class SqlMsAnalyser extends Component {
             const active = this._activeQuery();
             this.state.execQuery = active.query;
             this.state.execWasSelection = active.isSelection;
+            // A new run may have a different column set; don't carry a
+            // column selection over from whatever was run before.
+            this.state.selectedCols = [];
         }
         const query = this.state.execQuery || this.state.query;
         const execQuery = this.state.execQuery;
@@ -664,6 +937,12 @@ export class SqlMsAnalyser extends Component {
                 t.execWasSelection = execWasSelection;
                 t.queryResult = result;
             }
+        }
+        // A successful Execute (not a pager click) logs to History under the
+        // "On the fly" tab, same as the old always-log behavior — but never
+        // lets logging failures surface as if the query itself had failed.
+        if (fresh && query && query.trim()) {
+            this.orm.call("database.studio.query", "log_query_run", [query]).catch(() => {});
         }
     }
 
@@ -722,17 +1001,40 @@ export class SqlMsAnalyser extends Component {
         }
         this._copy(lines.join("\n"), "Fields");
     }
+    // -- result column selection ---------------------------------------
+    // Clicking a column header toggles it in/out of the selection (no
+    // modifier key needed, several columns can be picked this way). Copy
+    // then exports only the selected columns; with none selected it exports
+    // every column, same as before.
+    toggleColumn(index, ev) {
+        if (ev) {
+            ev.stopPropagation();
+        }
+        const i = this.state.selectedCols.indexOf(index);
+        if (i === -1) {
+            this.state.selectedCols.push(index);
+        } else {
+            this.state.selectedCols.splice(i, 1);
+        }
+    }
+    clearColumnSelection() {
+        this.state.selectedCols = [];
+    }
     // Copies only the currently displayed page (unlike Export Excel, which
     // pulls the full, unpaginated result set) since clipboard copy is meant
-    // for pasting a quick look, not the whole result set.
+    // for pasting a quick look, not the whole result set. Restricted to the
+    // selected column(s) when any are picked, else every column.
     copyResults() {
         const res = this.state.queryResult;
         if (!res || !res.columns.length) {
             return;
         }
-        const header = res.columns.join("\t");
+        const cols = this.state.selectedCols.length
+            ? this.state.selectedCols.slice().sort((a, b) => a - b)
+            : res.columns.map((c, i) => i);
+        const header = cols.map((i) => res.columns[i]).join("\t");
         const lines = (res.rows || []).map(
-            (row) => row.map((v) => (v === null ? "" : v)).join("\t")
+            (row) => cols.map((i) => (row[i] === null ? "" : row[i])).join("\t")
         );
         this._copy([header, ...lines].join("\n"), "Results");
     }

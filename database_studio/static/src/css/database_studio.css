@@ -5,6 +5,10 @@
     background: #f8f9fa;
     font-size: 13px;
     overflow: hidden;
+    /* A horizontal scroll (results grid, sidebar list, editor) that hits its
+       edge would otherwise chain into the browser's own back/forward swipe
+       gesture, navigating away and losing the query/results. Contain it. */
+    overscroll-behavior: contain;
 }
 
 /* ---- Query History list: keep the selector/star columns tight so the
@@ -17,15 +21,26 @@
     width: 40px !important;
     max-width: 40px !important;
 }
+.sqlms-hist-tabs {
+    display: flex;
+    gap: 6px;
+}
 
 /* ---- sidebar ---- */
 .sqlms-sidebar {
     width: 300px;
     min-width: 240px;
+    max-width: 70vw;
     display: flex;
     flex-direction: column;
     border-right: 1px solid #dee2e6;
     background: #ffffff;
+    /* Table/view names are often long and truncated at this default width;
+       drag the right edge to widen it. Its own children (search, list)
+       already scroll independently, so hidden here just clips the resize
+       boundary itself. */
+    resize: horizontal;
+    overflow: hidden;
 }
 .sqlms-search {
     display: flex;
@@ -72,10 +87,10 @@
     background: #fff;
     outline: none;
 }
-.sqlms-objects { overflow-y: auto; flex: 1; }
+.sqlms-objects { overflow-y: auto; flex: 1; overscroll-behavior: contain; }
 
 /* field groups (multi-table) */
-.sqlms-groupscroll { flex: 1; min-height: 0; overflow: auto; }
+.sqlms-groupscroll { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
 .sqlms-fieldgroup {
     border: 1px solid #dee2e6;
     border-radius: 4px;
@@ -220,6 +235,10 @@
     border: 1px solid #dee2e6;
     border-radius: 4px;
     background: #fff;
+    /* Wide result grids/field tables scroll horizontally; without this a
+       trackpad swipe that runs out of room at either edge continues as the
+       browser's back/forward gesture instead of just stopping. */
+    overscroll-behavior: contain;
 }
 /* width:auto so each column sizes to its own content instead of the whole
    table being stretched to 100% (which pushed short columns far apart). */
@@ -242,6 +261,10 @@
 }
 .sqlms-grid tbody tr:nth-child(even) { background: #f8f9fa; }
 .sqlms-grid tbody tr:hover { background: #eef4fb; }
+.sqlms-colhead { cursor: pointer; user-select: none; }
+.sqlms-colhead:hover { background: #dde3e8; }
+.sqlms-grid .sqlms-col-selected { background: #d0ebff !important; }
+.sqlms-grid thead th.sqlms-col-selected { color: #1971c2; }
 .sqlms-rownum {
     color: #adb5bd;
     text-align: right;
@@ -346,12 +369,67 @@
     position: relative;
     height: 220px;
     min-height: 140px;
+    max-height: 70vh;
     border: 1px solid #ced4da;
     border-radius: 4px;
     overflow: hidden;
     background: #fdfdfd;
     margin-bottom: 8px;
     flex: 0 0 auto;
+    /* Drag the bottom-right corner to grow/shrink the query box. */
+    resize: vertical;
+}
+
+/* ---- statement blocks (fold each ';'-separated statement) ---- */
+.sqlms-blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex: 0 0 auto;
+}
+.sqlms-blocks-multi {
+    max-height: 440px;
+    overflow-y: auto;
+    padding-right: 2px;
+    resize: vertical;
+    min-height: 140px;
+}
+.sqlms-block {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    overflow: hidden;
+    flex: 0 0 auto;
+}
+.sqlms-block-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    background: #eceff1;
+    cursor: pointer;
+    user-select: none;
+    font-family: monospace;
+}
+.sqlms-block-label { font-weight: 600; color: #495057; flex: 0 0 auto; }
+.sqlms-block-preview {
+    color: #868e96;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+.sqlms-block-lines { margin-left: auto; color: #868e96; font-size: 11px; flex: 0 0 auto; }
+.sqlms-blocks-multi .sqlms-block .sqlms-editor {
+    height: 160px;
+    margin-bottom: 0;
+    border: none;
+    border-top: 1px solid #dee2e6;
+    border-radius: 0;
+    /* The outer .sqlms-blocks-multi is already resizable; a resize handle
+       per statement block too would just be confusing nested UI. */
+    resize: none;
 }
 .sqlms-highlight, .sqlms-textarea {
     box-sizing: border-box !important;
@@ -371,6 +449,7 @@
     white-space: pre !important;
     word-wrap: normal !important;
     overflow: auto !important;
+    overscroll-behavior: contain;
     width: 100%;
     height: 100%;
     tab-size: 4;

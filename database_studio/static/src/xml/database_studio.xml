@@ -291,7 +291,7 @@
                                  class="sqlms-qtab"
                                  t-att-class="{ 'sqlms-qtab-active': qt.id === state.activeQtabId }"
                                  t-on-click="() => this.switchQtab(qt.id)">
-                                <span class="sqlms-qtab-name" t-esc="qt.name"/>
+                                <span class="sqlms-qtab-name" t-esc="qt.name" t-att-title="qt.fullName || qt.name"/>
                                 <span class="sqlms-qtab-close" title="Close tab"
                                       t-on-click="(ev) => this.removeQtab(qt.id, ev)">&#215;</span>
                             </div>
@@ -319,11 +319,28 @@
                             </button>
                             <span class="sqlms-info">Tip: select part of the query to run only that; click a table/view on the left to insert it.</span>
                         </div>
-                        <div class="sqlms-editor">
-                            <pre class="sqlms-highlight" t-ref="highlight"/>
-                            <textarea class="sqlms-textarea" t-ref="editor" spellcheck="false"
-                                      placeholder="Type or paste a query..."
-                                      t-on-input="onQueryInput" t-on-scroll="onQueryScroll"/>
+                        <div class="sqlms-blocks" t-ref="blocksContainer"
+                             t-att-class="{ 'sqlms-blocks-multi': queryBlocks.length > 1 }">
+                            <div t-foreach="queryBlocks" t-as="blk" t-key="blk.id" class="sqlms-block">
+                                <div t-if="queryBlocks.length > 1" class="sqlms-block-head"
+                                     t-on-click="() => this.toggleBlockCollapse(blk.id)">
+                                    <i class="fa" t-att-class="blk.collapsed ? 'fa-caret-right' : 'fa-caret-down'"/>
+                                    <span class="sqlms-block-label">Statement <t t-esc="blk.index + 1"/></span>
+                                    <span class="sqlms-block-preview" t-esc="blk.collapsed ? blk.preview : ''"/>
+                                    <span class="sqlms-block-lines"><t t-esc="blk.lineCount"/> line(s)</span>
+                                </div>
+                                <div class="sqlms-editor" t-if="!blk.collapsed">
+                                    <pre class="sqlms-highlight sqlms-block-highlight"
+                                         t-att-data-block-id="blk.id"/>
+                                    <textarea class="sqlms-textarea sqlms-block-textarea"
+                                              t-att-data-block-id="blk.id"
+                                              spellcheck="false"
+                                              placeholder="Type or paste a query..."
+                                              t-on-input="(ev) => this.onBlockInput(blk.id, ev)"
+                                              t-on-blur="() => this.onBlockBlur(blk.id)"
+                                              t-on-scroll="onBlockScroll"/>
+                                </div>
+                            </div>
                         </div>
                         <t t-if="state.queryResult">
                             <div class="sqlms-ran" t-if="state.execQuery">
@@ -336,8 +353,13 @@
                             <div class="sqlms-toolbar">
                                 <button class="btn btn-secondary btn-sm" t-on-click="copyResults"
                                         t-if="state.queryResult.columns.length"
-                                        title="Copy the currently shown page as tab-separated text">
+                                        t-att-title="state.selectedCols.length ? ('Copy the ' + state.selectedCols.length + ' selected column(s)') : 'Copy the currently shown page as tab-separated text'">
                                     <i class="fa fa-clipboard"/> Copy
+                                    <t t-if="state.selectedCols.length">(<t t-esc="state.selectedCols.length"/>)</t>
+                                </button>
+                                <button class="btn btn-link btn-sm" t-if="state.selectedCols.length"
+                                        t-on-click="clearColumnSelection">
+                                    Clear column selection
                                 </button>
                                 <button class="btn btn-secondary btn-sm" t-on-click="exportExcel"
                                         t-if="state.queryResult.columns.length"
@@ -399,7 +421,12 @@
                 <thead>
                     <tr>
                         <th class="sqlms-rownum">#</th>
-                        <th t-foreach="res.columns" t-as="col" t-key="col_index" t-esc="col"/>
+                        <th t-foreach="res.columns" t-as="col" t-key="col_index"
+                            class="sqlms-colhead"
+                            t-att-class="{ 'sqlms-col-selected': state.selectedCols.includes(col_index) }"
+                            title="Click to select this column (click again to deselect, click others to select several)"
+                            t-on-click="(ev) => this.toggleColumn(col_index, ev)"
+                            t-esc="col"/>
                     </tr>
                 </thead>
                 <tbody>
@@ -407,8 +434,11 @@
                         <td class="sqlms-rownum"
                             t-esc="(res.page - 1) * res.limit + row_index + 1"/>
                         <t t-foreach="row" t-as="val" t-key="val_index">
-                            <td t-if="val === null" class="sqlms-null">NULL</td>
-                            <td t-else="" t-esc="val"/>
+                            <td t-if="val === null" class="sqlms-null"
+                                t-att-class="{ 'sqlms-col-selected': state.selectedCols.includes(val_index) }">NULL</td>
+                            <td t-else=""
+                                t-att-class="{ 'sqlms-col-selected': state.selectedCols.includes(val_index) }"
+                                t-esc="val"/>
                         </t>
                     </tr>
                 </tbody>
