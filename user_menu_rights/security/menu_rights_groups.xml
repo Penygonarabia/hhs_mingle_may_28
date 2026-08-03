@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="0">
+
+    <!-- Dedicated group that gates the Menu Rights screens. Membership is
+         intentionally limited to the bootstrap admin user (base.user_admin)
+         by default — other administrators must be added explicitly. -->
+    <record id="group_menu_rights_admin" model="res.groups">
+        <field name="name">Menu Rights Admin</field>
+        <field name="category_id" ref="base.module_category_administration"/>
+        <field name="users" eval="[(6, 0, [ref('base.user_admin')])]"/>
+        <field name="comment">Only members of this group can open
+            Settings ▸ User Menu Rights. By default only the built-in
+            Administrator user is a member.
+        </field>
+    </record>
+
+</odoo>

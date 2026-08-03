@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_menu_access_matrix_form" model="ir.ui.view">
+        <field name="name">menu.access.matrix.form</field>
+        <field name="model">menu.access.matrix</field>
+        <field name="arch" type="xml">
+            <!-- No <sheet>: this is a full-bleed two-panel working screen
+                 (like Database Studio), not a document form. create/delete/
+                 duplicate are off — they'd act on a throwaway transient. -->
+            <form string="Menu Access Rights" class="mar_matrix_form"
+                  create="0" delete="0" duplicate="0">
+                <field name="lines_loaded" invisible="1"/>
+                <field name="is_user_admin" invisible="1"/>
+                <field name="user_id" invisible="1"/>
+                <field name="has_pending_bulk" invisible="1"/>
+
+                <div class="mar_page">
+
+                    <!-- ===== Left: users ===== -->
+                    <div class="mar_side">
+                        <div class="mar_side_head">
+                            <div class="mar_search_input">
+                                <i class="fa fa-search" title="Search"/>
+                                <input type="text" class="mar_user_search_box"
+                                       placeholder="Search user or email…"
+                                       autocomplete="off"/>
+                            </div>
+                        </div>
+                        <div class="mar_side_list">
+                            <field name="user_list_ids" nolabel="1"
+                                   widget="mar_user_list_field">
+                                <tree create="0" delete="0" edit="0" limit="9999"
+                                      class="mar_user_list">
+                                    <field name="user_id" column_invisible="1"/>
+                                    <field name="user_email" column_invisible="1"/>
+                                    <field name="is_selected" column_invisible="1"/>
+                                    <field name="user_name" string="User"
+                                           widget="mar_user_cell" readonly="1"/>
+                                </tree>
+                            </field>
+                        </div>
+                    </div>
+
+                    <!-- ===== Right: that user's menus ===== -->
+                    <div class="mar_main">
+
+                        <div class="mar_empty" invisible="user_id">
+                            <i class="fa fa-hand-o-left" title="Select a user"/>
+                            <span>Select a user on the left to manage their menu access.</span>
+                        </div>
+
+                        <div invisible="not user_id" class="mar_main_inner">
+                            <div class="mar_toolbar">
+                                <div class="mar_toolbar_left">
+                                    <div class="mar_search_input">
+                                        <i class="fa fa-search" title="Search"/>
+                                        <input type="text" class="mar_search_box"
+                                               placeholder="Search menu or sub-menu…"
+                                               autocomplete="off"/>
+                                    </div>
+                                    <!-- Plain <a>, not Odoo <button>: <button> is a reserved
+                                         arch tag validated strictly, and a type="object" button
+                                         force-saves the form first — exactly what a purely
+                                         visual expand/collapse must never do. -->
+                                    <a href="#" role="button" class="btn mar_btn mar_btn_ghost mar_expand_all">Expand All</a>
+                                    <a href="#" role="button" class="btn mar_btn mar_btn_ghost mar_collapse_all">Collapse All</a>
+                                </div>
+                                <div class="mar_toolbar_right">
+                                    <field name="access_status" widget="badge"
+                                           nolabel="1" class="mar_status_badge"/>
+                                    <button name="%(user_menu_rights.action_menu_access_copy_wizard)d"
+                                            type="action" string="Copy Rights From…"
+                                            class="btn mar_btn mar_btn_ghost"
+                                            context="{'default_source_user_id': user_id}"/>
+                                    <button name="action_revoke_all" type="object"
+                                            string="Revoke All" class="btn mar_btn mar_btn_ghost"
+                                            invisible="has_pending_bulk"
+                                            confirm="Revoke every listed menu from this user? Nothing is written until you press Save Changes."/>
+                                    <button name="action_grant_all" type="object"
+                                            string="Grant All" class="btn mar_btn mar_btn_ghost"
+                                            invisible="has_pending_bulk"
+                                            confirm="Grant every listed menu to this user? Nothing is written until you press Save Changes."/>
+                                    <!-- Shown only while a bulk change is staged. These
+                                         replace Grant/Revoke All rather than sitting
+                                         beside them, so there is one obvious next step
+                                         and no way to stack a second bulk action on top
+                                         of an uncommitted one. -->
+                                    <button name="action_discard_pending" type="object"
+                                            string="Discard" class="btn mar_btn mar_btn_ghost"
+                                            invisible="not has_pending_bulk"/>
+                                    <button name="action_save_pending" type="object"
+                                            string="Save Changes" class="btn mar_btn mar_btn_primary"
+                                            invisible="not has_pending_bulk"/>
+                                    <!-- Odoo's own breadcrumb save/discard still covers
+                                         the form's own dirty state; it cannot cover the
+                                         staged rows, because a type="object" button
+                                         force-saves the form before its method runs. -->
+                                </div>
+                            </div>
+
+                            <!-- Nothing about a toggled row says "not saved yet" on its
+                                 own, and the staged state survives a page reload (the
+                                 rows are real transient records), so it needs saying
+                                 explicitly. -->
+                            <div class="mar_pending_banner" invisible="not has_pending_bulk">
+                                <i class="fa fa-exclamation-triangle" title="Unsaved"/>
+                                <span>Bulk change staged — nothing has been written yet.
+                                      Press <b>Save Changes</b> to apply it to this user,
+                                      or <b>Discard</b> to put the list back.</span>
+                            </div>
+
+                            <div class="mar_tree_wrap">
+                                <field name="line_ids" nolabel="1" readonly="is_user_admin"
+                                       widget="mar_matrix_list_field">
+                                    <tree editable="bottom" create="0" delete="0" limit="9999"
+                                          decoration-bf="is_group" default_order="sequence"
+                                          class="mar_matrix_list">
+                                        <field name="menu_id" column_invisible="1"/>
+                                        <field name="menu_path" column_invisible="1"/>
+                                        <field name="depth" column_invisible="1"/>
+                                        <field name="sequence" column_invisible="1"/>
+                                        <field name="is_group" column_invisible="1"/>
+                                        <field name="is_user_admin" column_invisible="1"/>
+                                        <field name="display_label" string="Menu" readonly="1"/>
+                                        <field name="count_label" string="Status" readonly="1"
+                                               widget="badge"/>
+                                        <field name="has_access" string="Has Access"
+                                               widget="boolean_toggle"/>
+                                    </tree>
+                                </field>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- The page always needs a live record with its user list populated, so
+         the menu points at a server action that creates one, rather than at a
+         bare act_window that would open an empty transient form. -->
+    <record id="action_menu_access_rights_page" model="ir.actions.server">
+        <field name="name">Menu Access Rights</field>
+        <field name="model_id" ref="model_menu_access_matrix"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_page()</field>
+    </record>
+
+</odoo>

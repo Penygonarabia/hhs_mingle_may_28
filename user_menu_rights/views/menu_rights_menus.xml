@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Settings ▸ Menu Rights Setup ▸ User Menu Rights.
+
+         Moved back out of Settings ▸ Technical ▸ User Interface. That parent
+         (base.menu_custom) carries base.group_no_one, so the page only
+         appeared with developer mode on — fine for a technical screen, wrong
+         for one an administrator is meant to use day to day. Under Settings
+         the only gate left is this module's own group_menu_rights_admin.
+
+         Sequence 55 puts the container between Custom Shortcuts (50) and
+         Technical (110).
+
+         base.menu_administration is the parent, and managed_menu_ids()
+         excludes that whole subtree — so this page can never hide itself. -->
+    <menuitem id="menu_menu_rights_root"
+              name="Menu Rights Setup"
+              parent="base.menu_administration"
+              sequence="55"
+              groups="user_menu_rights.group_menu_rights_admin"/>
+
+    <!-- The container must open nothing when clicked. Omitting the "action"
+         attribute above is not enough on an upgrade: _tag_menuitem only
+         writes the action field when the attribute is present, so a row that
+         previously carried an action would keep it. Clear it explicitly. -->
+    <record id="menu_menu_rights_root" model="ir.ui.menu">
+        <field name="action" eval="False"/>
+    </record>
+
+    <!-- The page itself. One entry, one screen: the users list and the
+         per-user matrix are the two panels of a single form. -->
+    <menuitem id="menu_user_menu_rights"
+              name="User Menu Rights"
+              parent="menu_menu_rights_root"
+              action="action_menu_access_rights_page"
+              sequence="10"
+              groups="user_menu_rights.group_menu_rights_admin"/>
+
+</odoo>

@@ -1,0 +1,531 @@
+/* Menu Access Rights — single-page master/detail screen.
+ * Everything is scoped under .mar_matrix_form so none of it can leak onto
+ * any other Odoo view. */
+
+.mar_matrix_form {
+    --mar-accent: #4c5fd5;
+    --mar-accent-soft: #edeffc;
+    --mar-success: #1f9d55;
+    --mar-success-soft: #e8f7ee;
+    --mar-info-soft: #edeffc;
+    --mar-text-faint: #9aa1ae;
+    --mar-border: #e1e4ea;
+    --mar-surface: #ffffff;
+    --mar-ground: #f2f3f6;
+}
+
+@media (prefers-color-scheme: dark) {
+    .mar_matrix_form {
+        --mar-accent: #8390f0;
+        --mar-accent-soft: rgba(131, 144, 240, 0.16);
+        --mar-success: #35c777;
+        --mar-success-soft: rgba(53, 199, 119, 0.16);
+        --mar-info-soft: rgba(131, 144, 240, 0.16);
+        --mar-text-faint: #9098a8;
+        --mar-border: #2c303c;
+        --mar-surface: #1b1e26;
+        --mar-ground: #14161b;
+    }
+}
+
+/* The record pager ("1 / 1") and cog are meaningless on this transient
+ * one-record page. Scoped inside .mar_matrix_form, which is the
+ * o_form_view element itself, so other views keep their own pagers. */
+.mar_matrix_form .o_cp_pager {
+    display: none !important;
+}
+
+/* ---- Two-panel shell --------------------------------------------- */
+/* Fill the available height by flexing down Odoo's own container chain
+ * (o_content > o_form_renderer > .mar_page) rather than doing viewport
+ * math. A calc(100vh - …) guess was wrong by 14px — the page starts 124px
+ * down but only 110px was subtracted, so it ran past the bottom of the
+ * viewport and the last rows were unreachable. Flexing has no magic
+ * numbers to get wrong and survives a taller/shorter control panel. */
+/* !important throughout: this deployment ships a heavy custom backend theme
+ * whose own rules on Odoo's containers are more specific than a plain class
+ * selector. Without it, .o_form_renderer stayed display:block, .mar_page's
+ * flex sizing was therefore ignored, and the page grew to 6200px — the
+ * whole screen scrolled instead of the two panels scrolling internally. */
+.mar_matrix_form .o_content {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0;
+    overflow: hidden !important;
+    padding: 0 !important;
+}
+/* Height comes from .o_content's flex, and .mar_page then takes 100% of it.
+ * Deliberately NOT relying on this element being a flex container itself —
+ * the theme wins that one, and height:100% works against a plain block. */
+.mar_matrix_form .o_form_renderer {
+    flex: 1 1 auto !important;
+    min-height: 0;
+    overflow: hidden !important;
+    padding: 0.5rem !important;
+    margin: 0 !important;
+}
+.mar_matrix_form .mar_page {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    height: 100%;
+    min-height: 0;
+    margin: 0;
+    background: var(--mar-surface);
+    border: 1px solid var(--mar-border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.mar_matrix_form .mar_side {
+    display: flex;
+    flex-direction: column;
+    /* Wide enough for a full work address — at 320px addresses like
+     * "abdulrahman.alharbi@hh-shaker.com.sa" were being clipped. */
+    width: 360px;
+    flex: none;
+    border-right: 1px solid var(--mar-border);
+    min-height: 0;
+}
+.mar_matrix_form .mar_side_head {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--mar-border);
+}
+.mar_matrix_form .mar_side_list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+/* Odoo wraps list views in .table-responsive (overflow-x: auto), which drew
+ * a horizontal scrollbar across the bottom of the user panel even though
+ * the single fixed-layout column never actually overflows. */
+.mar_matrix_form .mar_user_list.o_list_renderer,
+.mar_matrix_form .mar_side_list .table-responsive {
+    overflow-x: hidden !important;
+}
+
+.mar_matrix_form .mar_main {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+.mar_matrix_form .mar_main_inner {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1;
+}
+.mar_matrix_form .mar_empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    color: var(--mar-text-faint);
+    font-size: 0.95rem;
+}
+
+/* ---- Search boxes ------------------------------------------------- */
+.mar_matrix_form .mar_search_input {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--mar-ground);
+    border: 1px solid var(--mar-border);
+    border-radius: 999px;
+    padding: 0.35rem 0.9rem;
+    color: var(--mar-text-faint);
+}
+.mar_matrix_form .mar_toolbar .mar_search_input {
+    min-width: 260px;
+}
+.mar_matrix_form .mar_search_input input {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    padding: 0 !important;
+    font-size: 0.85rem;
+    color: inherit;
+    width: 100%;
+}
+
+/* ---- Toolbar ------------------------------------------------------ */
+.mar_matrix_form .mar_toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--mar-border);
+}
+.mar_matrix_form .mar_toolbar_left,
+.mar_matrix_form .mar_toolbar_right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.mar_matrix_form .mar_btn {
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--mar-border);
+}
+.mar_matrix_form .mar_btn_primary {
+    background: var(--mar-accent);
+    border-color: var(--mar-accent);
+    color: #fff;
+}
+.mar_matrix_form .mar_btn_primary:hover {
+    filter: brightness(0.94);
+    color: #fff;
+}
+.mar_matrix_form .mar_btn_ghost {
+    background: transparent;
+    color: var(--mar-accent);
+}
+.mar_matrix_form .mar_btn_ghost:hover {
+    background: var(--mar-accent-soft);
+    color: var(--mar-accent);
+}
+/* Staged Grant All / Revoke All warning strip, between the toolbar and the
+   tree. Amber rather than red: nothing is wrong, something is merely
+   unfinished. */
+.mar_matrix_form .mar_pending_banner {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0 0 0.5rem;
+    padding: 0.55rem 0.9rem;
+    border: 1px solid #e0b050;
+    border-left-width: 4px;
+    border-radius: 6px;
+    background: #fdf6e6;
+    color: #6b4e12;
+    font-size: 0.85rem;
+    line-height: 1.35;
+}
+.mar_matrix_form .mar_pending_banner .fa {
+    font-size: 1rem;
+    flex: 0 0 auto;
+}
+@media (prefers-color-scheme: dark) {
+    .mar_matrix_form .mar_pending_banner {
+        background: #3a2f14;
+        border-color: #8a6a20;
+        color: #f0dcae;
+    }
+}
+.mar_matrix_form .mar_status_badge .badge {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    background-color: var(--mar-success-soft) !important;
+    color: var(--mar-success) !important;
+    border-radius: 999px;
+    padding: 0.35rem 0.7rem;
+}
+.mar_matrix_form .mar_status_badge .badge::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    margin-right: 0.4rem;
+    vertical-align: middle;
+}
+
+/* ---- Menu tree ---------------------------------------------------- */
+.mar_matrix_form .mar_tree_wrap {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+.mar_matrix_form .mar_matrix_list .o_data_row {
+    font-size: 0.85rem;
+}
+.mar_matrix_form .mar_matrix_list .o_data_row.fw-bold {
+    background: var(--mar-accent-soft);
+}
+.mar_matrix_form .mar_matrix_list .o_data_row.fw-bold:hover {
+    background: var(--mar-accent-soft);
+    filter: brightness(0.97);
+}
+/* Expand/collapse caret on group rows. Direction flips via .mar_collapsed,
+ * added by the renderer; rotating one glyph avoids a layout jump. */
+.mar_matrix_form .mar_matrix_list .o_data_row.fw-bold td:first-child {
+    cursor: pointer;
+    white-space: nowrap;
+}
+.mar_matrix_form .mar_matrix_list .o_data_row.fw-bold td:first-child::before {
+    content: "▾";
+    display: inline-block;
+    width: 1em;
+    margin-right: 0.35rem;
+    color: var(--mar-accent);
+    transition: transform 0.12s ease;
+    vertical-align: middle;
+}
+/* A row that enters edit mode stops rendering its label as a bare text node
+ * and wraps it in a BLOCK-level <div class="o_field_widget">. Next to the
+ * inline caret above, that block pushed the menu name onto a second line and
+ * doubled the row height. Forcing the wrapper inline-block keeps the caret
+ * and the name on one line in every row state. */
+.mar_matrix_form .mar_matrix_list .o_data_row.fw-bold td:first-child > * {
+    display: inline-block;
+    vertical-align: middle;
+    max-width: calc(100% - 1.5em);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.mar_matrix_form .mar_matrix_list .o_data_row.fw-bold.mar_collapsed td:first-child::before {
+    transform: rotate(-90deg);
+}
+.mar_matrix_form .mar_matrix_list td {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+}
+.mar_matrix_form .mar_matrix_list .badge {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-weight: 700;
+    border-radius: 999px;
+    background-color: var(--mar-info-soft) !important;
+    color: var(--mar-accent) !important;
+}
+.mar_matrix_form .mar_matrix_list .badge:empty {
+    display: none;
+}
+.mar_matrix_form .mar_matrix_list .form-check-input:checked {
+    background-color: var(--mar-accent);
+    border-color: var(--mar-accent);
+}
+
+/* ---- User list (left panel) --------------------------------------- */
+/* table-layout: fixed — under the default "auto", an explicit width on a
+ * <th> is only advisory and the browser re-balances columns against row
+ * content, which made the checkbox column drift with name length. */
+.mar_matrix_form .mar_user_list table.o_list_table,
+.mar_matrix_form .mar_matrix_list table.o_list_table {
+    table-layout: fixed !important;
+}
+/* No column headers or record selectors in the user picker — it reads as a
+ * list of people, not a data grid. */
+.mar_matrix_form .mar_user_list thead {
+    display: none;
+}
+.mar_matrix_form .mar_user_list th.o_list_record_selector,
+.mar_matrix_form .mar_user_list td.o_list_record_selector {
+    display: none;
+}
+.mar_matrix_form .mar_user_list td {
+    padding: 0.5rem 0.75rem !important;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+}
+.mar_matrix_form .mar_user_list .o_data_row:hover td {
+    background: var(--mar-accent-soft);
+}
+.mar_matrix_form .mar_user_list .o_data_row.mar_user_selected td {
+    background: var(--mar-accent-soft);
+    border-left-color: var(--mar-accent);
+}
+
+/* Avatar + stacked name/email cell */
+.mar_user_cell {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+.mar_avatar {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--mar-accent-soft);
+    color: var(--mar-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+.mar_user_text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+    min-width: 0;
+}
+.mar_user_name {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.mar_user_email {
+    font-size: 0.78rem;
+    color: var(--mar-text-faint);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Copy email button in breadcrumbs */
+.mar_copy_email_btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-left: 8px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    color: var(--mar-accent);
+    background: transparent;
+    transition: all 0.2s ease;
+    opacity: 0.8;
+}
+.mar_copy_email_btn:hover {
+    opacity: 1;
+    background: var(--mar-accent-soft);
+    transform: scale(1.05);
+}
+.mar_copy_email_btn .fa-check {
+    color: var(--mar-success);
+}
+
+/* Tree Indentation by Depth */
+
+/* Depth 0 (Leaf offset to match parent text start width) */
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_0:not(.fw-bold) td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_0:not(.fw-bold) td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_0:not(.fw-bold) td:first-child {
+    padding-left: 2rem !important;
+}
+
+/* Depth 1 */
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_1.fw-bold td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_1.fw-bold td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_1.fw-bold td:first-child {
+    padding-left: 2rem !important;
+}
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_1:not(.fw-bold) td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_1:not(.fw-bold) td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_1:not(.fw-bold) td:first-child {
+    padding-left: 3.25rem !important;
+}
+
+/* Depth 2 */
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_2.fw-bold td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_2.fw-bold td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_2.fw-bold td:first-child {
+    padding-left: 3.25rem !important;
+}
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_2:not(.fw-bold) td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_2:not(.fw-bold) td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_2:not(.fw-bold) td:first-child {
+    padding-left: 4.5rem !important;
+}
+
+/* Depth 3 */
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_3.fw-bold td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_3.fw-bold td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_3.fw-bold td:first-child {
+    padding-left: 4.5rem !important;
+}
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_3:not(.fw-bold) td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_3:not(.fw-bold) td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_3:not(.fw-bold) td:first-child {
+    padding-left: 5.75rem !important;
+}
+
+/* Depth 4 */
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_4.fw-bold td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_4.fw-bold td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_4.fw-bold td:first-child {
+    padding-left: 5.75rem !important;
+}
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_4:not(.fw-bold) td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_4:not(.fw-bold) td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_4:not(.fw-bold) td:first-child {
+    padding-left: 7rem !important;
+}
+
+/* Depth 5 */
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_5.fw-bold td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_5.fw-bold td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_5.fw-bold td:first-child {
+    padding-left: 7rem !important;
+}
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_5:not(.fw-bold) td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_5:not(.fw-bold) td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_5:not(.fw-bold) td:first-child {
+    padding-left: 8.25rem !important;
+}
+
+/* Depth 6 */
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_6.fw-bold td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_6.fw-bold td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_6.fw-bold td:first-child {
+    padding-left: 8.25rem !important;
+}
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_6:not(.fw-bold) td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_6:not(.fw-bold) td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_6:not(.fw-bold) td:first-child {
+    padding-left: 9.5rem !important;
+}
+
+/* Depth 7 */
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_7.fw-bold td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_7.fw-bold td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_7.fw-bold td:first-child {
+    padding-left: 9.5rem !important;
+}
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_7:not(.fw-bold) td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_7:not(.fw-bold) td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_7:not(.fw-bold) td:first-child {
+    padding-left: 10.75rem !important;
+}
+
+/* Depth 8 */
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_8.fw-bold td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_8.fw-bold td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_8.fw-bold td:first-child {
+    padding-left: 10.75rem !important;
+}
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_8:not(.fw-bold) td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_8:not(.fw-bold) td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_8:not(.fw-bold) td:first-child {
+    padding-left: 12rem !important;
+}
+
+/* Depth 9 */
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_9.fw-bold td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_9.fw-bold td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_9.fw-bold td:first-child {
+    padding-left: 12rem !important;
+}
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_9:not(.fw-bold) td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_9:not(.fw-bold) td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_9:not(.fw-bold) td:first-child {
+    padding-left: 13.25rem !important;
+}
+
+/* Depth 10 */
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_10.fw-bold td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_10.fw-bold td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_10.fw-bold td:first-child {
+    padding-left: 13.25rem !important;
+}
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_10:not(.fw-bold) td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_10:not(.fw-bold) td.o_data_cell:first-child,
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_10:not(.fw-bold) td:first-child {
+    padding-left: 14.5rem !important;
+}
+
+
