@@ -68,11 +68,11 @@ class dealerShowroomSales(models.Model):
         required=True
     )
 
-    # product_category_id = fields.Many2one('t.groupsdesc', string='Category',required=True)
-    # group_id = fields.Many2one('t.productsdesc', string='Group',required=True) 
-    # subgroup_id = fields.Many2one('vi.product.subgroup', string='Sub Group', required=True)
+    # product_category_id = fields.Many2one('dsales.t.groupsdesc', string='Category',required=True)
+    # group_id = fields.Many2one('dsales.t.productsdesc', string='Group',required=True) 
+    # subgroup_id = fields.Many2one('dsales.vi.product.subgroup', string='Sub Group', required=True)
     # group_code = fields.Char(related='group_id.p_grp', store=True)
-    # product_id = fields.Many2one('vi.product.catalog', string='Product', required=True)
+    # product_id = fields.Many2one('dsales.vi.product.catalog', string='Product', required=True)
     # product_code = fields.Char(related='subgroup_id.psubgroup_code', store=True)
 
     product_category_id = fields.Many2one(
@@ -190,6 +190,116 @@ class dealerShowroomSales(models.Model):
             if rec.invoice_no:
                 if self.search_count([('invoice_no', '=', rec.invoice_no)]) > 1:
                     raise ValidationError(_("Invoice Number must be unique! Duplicate found: %s") % rec.invoice_no)
+
+    
+    # OCR Scan Fields
+    scan_attachment_ids = fields.Many2many('ir.attachment', string='Upload document/image scanner')
+    scan_file_type = fields.Selection([('pdf', 'PDF'), ('image', 'Image')], string='File Type', default='pdf')
+    
+    def action_populate_from_scan(self):
+        for rec in self:
+            if not rec.attachment_ids:
+                raise UserError("No file detected!\n\n1. Make sure you wait for the file to finish uploading (its name will appear under the Attachments button).\n2. If this is a new record, please Save it first (click the cloud icon at the top) before clicking Auto-Extract.")
+            
+            # Simple logic to call Ollama for OCR
+            import requests
+            import json
+            import base64
+            
+            # Loop through attachments to build the payload
+            # === Google Gemini API Integration ===
+            API_KEY = self.env['ir.config_parameter'].sudo().get_param('dealer.gemini_api_key', '').strip()
+            url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent"
+            
+            parts = [
+                {"text": "Extract the line items from these invoice images. The invoices might be in Arabic or English. Look for the product model codes (which are usually a mix of uppercase English letters and numbers like MSTMX24CRNAGI, MSTE30CRN, etc) and the quantity. Return ONLY a JSON array of objects with keys 'model' (product code/model) and 'qty' (quantity). Combine items from all images into one single array. DO NOT return the example data. If no items are found across all images, return []. Example format: [{\"model\": \"EXAMPLE-MODEL-123\", \"qty\": 1}]"}
+            ]
+            
+            for attachment in rec.attachment_ids:
+                mime_type = attachment.mimetype if attachment.mimetype else "image/jpeg"
+                parts.append({
+                    "inline_data": {
+                        "mime_type": mime_type,
+                        "data": attachment.datas.decode('utf-8')
+                    }
+                })
+                
+            payload = {
+                "contents": [{"parts": parts}],
+                "generationConfig": {"temperature": 0.1}
+            }
+            
+            headers = {'Content-Type': 'application/json', 'x-goog-api-key': API_KEY}
+            lines_data = []
+            
+            try:
+                response = requests.post(url, json=payload, headers=headers, timeout=60)
+                if response.status_code == 200:
+                    res_json = response.json()
+                    response_text = res_json.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
+                    import re
+                    json_match = re.search(r'\[.*\]', response_text, re.DOTALL)
+                    if json_match:
+                        lines_data = json.loads(json_match.group(0))
+                    else:
+                        raise UserError(f"Gemini responded, but couldn't find line items. Gemini said:\n{response_text}")
+                else:
+                    if response.status_code == 404:
+                        models_url = "https://generativelanguage.googleapis.com/v1beta/models"
+                        models_resp = requests.get(models_url, headers={'x-goog-api-key': API_KEY})
+                        if models_resp.status_code == 200:
+                            avail_models = [m['name'] for m in models_resp.json().get('models', []) if 'generateContent' in m.get('supportedGenerationMethods', [])]
+                            raise UserError(f"Gemini API Model Not Found. The model gemini-1.5-flash-latest is not available for your API key.\n\nAvailable models for your key are:\n" + "\n".join(avail_models))
+                        else:
+                            raise UserError(f"Gemini API Error (HTTP 404): Model not found, and failed to fetch model list.")
+                    else:
+                        raise UserError(f"Gemini API Error (HTTP {response.status_code}): {response.text}")
+            except Exception as e:
+                if isinstance(e, UserError):
+                    raise e
+                raise UserError(f"OCR Processing Error: {str(e)}")
+            
+            if not lines_data:
+                raise UserError("OCR failed to extract any readable line items.")
+            
+            # Populate lines
+            new_lines = []
+            for item in lines_data:
+                model_str = item.get('model')
+                qty_val = int(item.get('qty', 1))
+                if model_str:
+                    # Clean model_str to ignore dot suffix (e.g. MSTMX24CRNAGI.C -> MSTMX24CRNAGI)
+                    clean_model_str = model_str.split('.')[0].strip()
+                    
+                    # search for product by name or default_code ignoring the dot suffix
+                    product = self.env['product.product'].search([
+                        ('show_in_dealer_app', '=', True),
+                        '|', 
+                        ('default_code', '=ilike', f"{clean_model_str}%"), 
+                        ('name', 'ilike', clean_model_str)
+                    ], limit=1)
+                    
+                    line_vals = {
+                        'qty': qty_val
+                    }
+                    if product:
+                        line_vals['product_id'] = product.id
+                        if product.categ_id:
+                            categ = product.categ_id
+                            line_vals['product_subgroup_id'] = categ.id
+                            if categ.parent_id:
+                                line_vals['product_group_id'] = categ.parent_id.id
+                                if categ.parent_id.parent_id:
+                                    line_vals['product_category_id'] = categ.parent_id.parent_id.id
+                                else:
+                                    line_vals['product_category_id'] = False
+                            else:
+                                line_vals['product_group_id'] = False
+                                line_vals['product_category_id'] = False
+                    new_lines.append((0, 0, line_vals))
+            
+            if new_lines:
+                rec.line_ids = new_lines
 
     state = fields.Selection([
         ('draft', 'Draft'),
@@ -527,7 +637,7 @@ class dealerShowroomSales(models.Model):
     )
 
     district_id = fields.Many2one(
-        'res.state.district', 
+        'dsales.res.state.district', 
         string="District", 
         compute="_compute_location_fields", 
         store=True, 
@@ -535,7 +645,7 @@ class dealerShowroomSales(models.Model):
     )
 
     region_id = fields.Many2one(
-        'res.region', 
+        'dsales.res.region', 
         string="Region", 
         compute="_compute_location_fields", 
         store=True, 

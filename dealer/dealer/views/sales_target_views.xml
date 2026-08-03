@@ -1,0 +1,59 @@
+<odoo>
+    <!-- Action -->
+    <record id="action_sales_target" model="ir.actions.act_window">
+        <field name="name">Sales Targets</field>
+        <field name="res_model">sales.target</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_sales_target"
+              name="Sales Target"
+              parent="menu_dealer_root"
+              action="action_sales_target"                          
+              sequence="40"/>
+
+    <!-- Form View -->
+    <record id="view_sales_target_form" model="ir.ui.view">
+        <field name="name">sales.target.form</field>
+        <field name="model">sales.target</field>
+        <field name="arch" type="xml">
+            <form string="Sales Target">
+                <sheet>
+                    <group>
+                        <field name="franchise_id"  domain="[('parent_id','=',False),('name', '!=', 'All')]"/>
+                        <field name="group_id"  domain="[('parent_id','=',franchise_id)]"/>
+                        <field name="subgroup_id"  domain="[('parent_id','=',group_id)]"/>
+                        <field name="product_id"
+                               domain="[('categ_id','child_of',
+                                         (subgroup_id if subgroup_id else (group_id if group_id else franchise_id)))]"/>
+                        <field name="capacity"/>
+                        <field name="year"/>
+                        <field name="month"/>
+                        <field name="target_qty"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree View -->
+    <record id="view_sales_target_tree" model="ir.ui.view">
+        <field name="name">sales.target.tree</field>
+        <field name="model">sales.target</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="franchise_id"/>
+                <field name="group_id"/>
+                <field name="subgroup_id"/>
+                <field name="product_id"/>
+                <field name="capacity"/>
+                <field name="year"/>
+                <field name="month"/>
+                <field name="target_qty"/>
+            </tree>
+        </field>
+    </record>
+</odoo>
+
+

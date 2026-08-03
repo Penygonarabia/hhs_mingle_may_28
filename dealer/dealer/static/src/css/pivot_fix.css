@@ -1,0 +1,50 @@
+/* Fix Measures button width */
+.o_pivot_buttons .o_dropdown.o_pivot_measures {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Default (desktop) → keep buttons in one row with scroll */
+.o_pivot_buttons {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    overflow-x: auto;
+    align-items: center;
+}
+
+.o_pivot_buttons > .btn,
+.o_pivot_buttons > .o_dropdown {
+    flex: 0 0 auto;
+}
+
+/* Mobile screens → allow wrapping instead of scrolling */
+@media (max-width: 768px) {
+    .o_pivot_buttons {
+        flex-wrap: wrap;      /* allow buttons to move to new line */
+        overflow-x: visible;  /* disable horizontal scroll */
+        justify-content: flex-start;
+    }
+
+    .o_pivot_buttons > .btn,
+    .o_pivot_buttons > .o_dropdown {
+        flex: 1 1 auto;       /* buttons can grow/shrink */
+    }
+
+    /* Fix Pivot row headers missing text on mobile when expanded */
+    .o_pivot table tbody tr th.o_pivot_header_cell_opened, 
+    .o_pivot table tbody tr th.o_pivot_header_cell_closed,
+    .o_pivot table tbody tr td.o_pivot_header_cell_opened, 
+    .o_pivot table tbody tr td.o_pivot_header_cell_closed {
+        white-space: normal !important;
+        min-width: 150px !important;
+        width: 150px !important;
+        max-width: none !important;
+        color: #212529 !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        text-align: left !important;
+    }
+}

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_hide_fields" model="ir.ui.view">
+        <field name="name">res.partner.form.hide.fields</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Hide Only Base View Fields -->
+            <field name="function" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="website" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="title" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="lang" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="category_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+
+            <!-- Tabs -->
+            <xpath expr="//page[1]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//page[2]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+             <xpath expr="//page[3]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+             <xpath expr="//page[4]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+             <xpath expr="//page[@name='internal_notes']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>    
+            <xpath expr="//page[@name='geo_location']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath> 
+        </field>
+    </record>
+
+    <record id="view_partner_form_hide_fields_blockedcustomer" model="ir.ui.view">
+        <field name="name">res.partner.form.hide.fields</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="machine_repair_management.view_partner_form_inherit_view"/>
+        <field name="arch" type="xml">
+            <field name="blocked_customer" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>           
+        </field>
+    </record>
+
+<record id="view_partner_form_hide_fields_whatsapp" model="ir.ui.view">
+        <field name="name">res.partner.form.hide.fields</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="partner_whatsapp.res_partner_inherit_for_whatsapp"/>
+        <field name="arch" type="xml">
+            <field name="x_whatsapp_opt_in" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+        </field>
+    </record>       
+
+</odoo>

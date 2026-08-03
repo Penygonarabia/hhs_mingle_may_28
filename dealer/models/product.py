@@ -3,6 +3,13 @@ from odoo import models, fields,api
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
+    # Patches to force these fields to be Text so Odoo does not crash on '*'
+    category_template_group_type = fields.Char(string="Category Template Group Type")
+    category_group_type = fields.Char(string="Category Group Type")
+    sub_group_code = fields.Char(string="Sub Group Code")
+    group_code = fields.Char(string="Group Code")
+    product_arabic_name = fields.Char(string="Product Arabic Name")
+
     fsm_loyalty_points = fields.Float(
         string="Salesman Loyalty Point",
         help="Loyalty points earned per unit sale"
@@ -29,6 +36,13 @@ class ProductTemplate(models.Model):
 
 class ProductProduct(models.Model):
     _inherit = 'product.product'
+
+    # Patches to force these fields to be Text so Odoo does not crash on '*'
+    category_template_group_type = fields.Char(string="Category Template Group Type")
+    category_group_type = fields.Char(string="Category Group Type")
+    sub_group_code = fields.Char(string="Sub Group Code")
+    group_code = fields.Char(string="Group Code")
+    product_arabic_name = fields.Char(string="Product Arabic Name")
 
     fsm_loyalty_points = fields.Float(
         related='product_tmpl_id.fsm_loyalty_points',

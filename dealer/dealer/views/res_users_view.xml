@@ -1,0 +1,25 @@
+
+<odoo>
+<record id="view_users_form_inherit_dealer" model="ir.ui.view">
+    <field name="name">res.users.form.inherit.dealer</field>
+    <field name="model">res.users</field>
+    <field name="inherit_id" ref="base.view_users_form"/>
+    
+    <field name="arch" type="xml">
+        <xpath expr="//page[@name='access_rights']" position="inside">
+            <group string="Dealer Information">
+                <field name="dealer_salesman"/>
+                <field name="dealer_city_id"
+                       readonly="not dealer_salesman" required="dealer_salesman"/>
+                <field name="floor_sales_approval_auth" string="Floor Sales Invoice Approval Authority"/>
+                <field name="default_authority" invisible="1"/>
+            </group>
+            <group string="Dealer Roles" groups="base.group_no_one">
+                <field name="groups_id" widget="many2many_tags" options="{'no_create': True}"
+                       domain="[('category_id', '=', %(dealer.module_category_dealer)d)]"
+                       string="Dealer Groups"/>
+            </group>
+        </xpath>
+    </field>
+</record>
+</odoo>

@@ -1,0 +1,18 @@
+<odoo>
+  <data>
+    <record id="view_users_form_promoter_inherit" model="ir.ui.view">
+      <field name="name">res.users.form.promoter</field>
+      <field name="model">res.users</field>
+      <field name="inherit_id" ref="base.view_users_form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='groups_id']" position="after">
+          <field name="groups_id" widget="many2many_checkboxes" context="{'default_category_id': ref('promoter.module_category_promoter')}"
+                 domain="[('id', 'in', [ref('promoter.group_promoter_backoffice_user'),
+                                       ref('promoter.group_promoter_mobile_user'),
+                                       ref('promoter.group_promoter_module_user')])]"
+                 />
+        </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>

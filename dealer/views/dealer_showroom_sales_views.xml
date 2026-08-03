@@ -27,6 +27,11 @@
                         <field name="notes" colspan="2" readonly="state != 'draft'"/>
                         <field name="invoice_attachment_name" invisible="1"/>
                         <field name="attachment_ids" widget="many2many_binary" readonly="state != 'draft'" options="{'accepted_file_extensions': 'image/*,application/pdf'}"/>
+                        
+                        <div class="o_row" style="margin-top: 5px;">
+                            <button name="action_populate_from_scan" string="Auto-Extract AI OCR" type="object" class="btn-info" invisible="state != 'draft'" icon="fa-magic" help="Extract line items from the uploaded attachments above."/>
+                        </div>
+
                         <field name="user_id" invisible="1" force_save="1"/>
                         <field name="dealer_access_bool" invisible="1"/> 
                         <field name="current_latitude" invisible="1"/>
