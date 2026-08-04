@@ -145,12 +145,19 @@ body.o_web_client .o_action_manager .o_content:has(.mar_matrix_form) .o_form_vie
     scrollbar-width: thin;
     scrollbar-color: rgba(154, 161, 174, 0.45) transparent;
 }
-/* Odoo wraps list views in .table-responsive (overflow-x: auto), which drew
- * a horizontal scrollbar across the bottom of the user panel even though
- * the single fixed-layout column never actually overflows. */
+/* Ensure inner list/table wrappers never create their own scrollbars or restrict height,
+ * leaving .mar_side_list as the ONLY vertical scroll container for the left panel. */
 .mar_matrix_form .mar_user_list.o_list_renderer,
-.mar_matrix_form .mar_side_list .table-responsive {
+.mar_matrix_form .mar_side_list .table-responsive,
+.mar_matrix_form .mar_side_list .o_field_widget,
+.mar_matrix_form .mar_side_list .o_field_x2many,
+.mar_matrix_form .mar_side_list .o_list_renderer,
+.mar_matrix_form .mar_side_list .o_list_view {
+    overflow: visible !important;
     overflow-x: hidden !important;
+    overflow-y: visible !important;
+    height: auto !important;
+    max-height: none !important;
 }
 
 .mar_matrix_form .mar_main {
@@ -295,8 +302,23 @@ body.o_web_client .o_action_manager .o_content:has(.mar_matrix_form) .o_form_vie
     flex: 1 !important;
     min-height: 0 !important;
     overflow-y: auto !important;
+    overflow-x: hidden !important;
     scrollbar-width: thin;
     scrollbar-color: rgba(154, 161, 174, 0.45) transparent;
+}
+/* Ensure inner list/table wrappers never create their own scrollbars or restrict height,
+ * leaving .mar_tree_wrap as the ONLY vertical scroll container for the right panel. */
+.mar_matrix_form .mar_matrix_list.o_list_renderer,
+.mar_matrix_form .mar_tree_wrap .table-responsive,
+.mar_matrix_form .mar_tree_wrap .o_field_widget,
+.mar_matrix_form .mar_tree_wrap .o_field_x2many,
+.mar_matrix_form .mar_tree_wrap .o_list_renderer,
+.mar_matrix_form .mar_tree_wrap .o_list_view {
+    overflow: visible !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    height: auto !important;
+    max-height: none !important;
 }
 .mar_matrix_form .mar_matrix_list .o_data_row {
     font-size: 0.85rem;
