@@ -7039,9 +7039,11 @@ class ProjectTask(models.Model):
                         )
 
                 if rec.balance_paid != 0.0:
-                    raise ValidationError(
-                        "Balance Payment is there.Please Do the balance payment. "
-                    )
+                    '''Code Added on August 04 2026 by Vijaya Bhaskar if the emergency visit they don't have the option to balance paid bool tick.so that the validation is worked only for HHS Project not amc'''
+                    if not rec.project_related_amc_bool:
+                        raise ValidationError(
+                            "Balance Payment is there.Please Do the balance payment. "
+                        )
 
                 if rec.hyperpay_line_ids:
                     for line in rec.hyperpay_line_ids:
