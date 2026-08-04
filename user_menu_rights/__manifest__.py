@@ -1,6 +1,6 @@
 {
     "name": "User Menu Rights",
-    "version": "17.0.1.11.0",
+    "version": "17.0.1.23.0",
     "category": "Settings",
     "summary": "Per-user, per-menu access rights — standalone, no dependency on any other app.",
     "description": """

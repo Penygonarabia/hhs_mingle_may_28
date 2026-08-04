@@ -14,6 +14,9 @@ through the Menu Rights screens.
 
 def post_init_hook(env):
     Rights = env["menu.access.rights"].sudo()
+    # Clear any existing records from previous incomplete uninstalls to prevent unique constraint violations
+    Rights.search([]).unlink()
+
     managed_ids = Rights.managed_menu_ids()
     if not managed_ids:
         return

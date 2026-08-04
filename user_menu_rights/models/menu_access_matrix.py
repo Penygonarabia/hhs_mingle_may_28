@@ -165,11 +165,25 @@ class MenuAccessMatrix(models.TransientModel):
             ]).mapped("menu_id").ids
         )
 
+        # Build parent mapping to resolve ancestors
+        parent_map = {}
+        for m in menus:
+            if m.parent_id and m.parent_id.id in managed_ids:
+                parent_map[m.id] = m.parent_id.id
+
+        # Expand to include all parent menu ancestors of any granted menu
+        all_granted_ids = set(granted_ids)
+        for g_id in granted_ids:
+            cur = g_id
+            while cur in parent_map:
+                cur = parent_map[cur]
+                all_granted_ids.add(cur)
+
         vals_list = []
 
         def walk(menu, parent_path, depth):
             path = "%s%d/" % (parent_path, menu.id)
-            has_access = True if is_admin else (menu.id in granted_ids)
+            has_access = True if is_admin else (menu.id in all_granted_ids)
             kids = children_of.get(menu.id, [])
             vals_list.append({
                 "matrix_id": self.id,
@@ -352,7 +366,7 @@ class MenuAccessMatrixLine(models.TransientModel):
     def _compute_display_label(self):
         for rec in self:
             indent = "    " * (rec.depth or 0)
-            rec.display_label = "%s%s" % (indent, rec.menu_id.name or "") if rec.menu_id else ""
+            rec.display_label = "%s%s" % (indent, rec.menu_id.sudo().name or "") if rec.menu_id else ""
 
     @api.depends("matrix_id.line_ids.has_access")
     def _compute_count_label(self):
@@ -539,22 +553,3 @@ class MenuAccessMatrixLine(models.TransientModel):
                 turn_off.write({"has_access": False})
             if to_create:
                 Rights.create(to_create)
-
-            # Synchronize with hide_menu_user module
-            user = self.env["res.users"].browse(user_id)
-            if hasattr(user, "hide_menu_ids"):
-                menus_to_show = self.env["ir.ui.menu"].browse([mid for mid, val in wanted.items() if val])
-                if menus_to_show:
-                    user.write({"hide_menu_ids": [fields.Command.unlink(m.id) for m in menus_to_show]})
-                    if hasattr(menus_to_show, "restrict_user_ids"):
-                        for menu in menus_to_show:
-                            if user_id in menu.restrict_user_ids.ids:
-                                menu.write({"restrict_user_ids": [fields.Command.unlink(user_id)]})
-                
-                menus_to_hide = self.env["ir.ui.menu"].browse([mid for mid, val in wanted.items() if not val])
-                if menus_to_hide:
-                    user.write({"hide_menu_ids": [fields.Command.link(m.id) for m in menus_to_hide]})
-                    if hasattr(menus_to_hide, "restrict_user_ids"):
-                        for menu in menus_to_hide:
-                            if user_id not in menu.restrict_user_ids.ids:
-                                menu.write({"restrict_user_ids": [fields.Command.link(user_id)]})

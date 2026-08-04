@@ -28,3 +28,5 @@ from . import db_project_task
 from . import vi_product_task_view_name_list
 from . import vi_tranaction_header
 from . import vi_transaction_details
+from . import account_move
+

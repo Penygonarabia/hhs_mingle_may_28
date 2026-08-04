@@ -36,45 +36,91 @@
 }
 
 /* ---- Two-panel shell --------------------------------------------- */
-/* Fill the available height by flexing down Odoo's own container chain
- * (o_content > o_form_renderer > .mar_page) rather than doing viewport
- * math. A calc(100vh - …) guess was wrong by 14px — the page starts 124px
- * down but only 110px was subtracted, so it ran past the bottom of the
- * viewport and the last rows were unreachable. Flexing has no magic
- * numbers to get wrong and survives a taller/shorter control panel. */
-/* !important throughout: this deployment ships a heavy custom backend theme
- * whose own rules on Odoo's containers are more specific than a plain class
- * selector. Without it, .o_form_renderer stayed display:block, .mar_page's
- * flex sizing was therefore ignored, and the page grew to 6200px — the
- * whole screen scrolled instead of the two panels scrolling internally. */
-.mar_matrix_form .o_content {
+/* Fill the available height by flexing down Odoo's own container chain.
+ * We extend the flex/overflow-hidden chain all the way up to .o_view_controller
+ * and .o_form_view to handle servers where those wrapper elements are
+ * block-displayed without a defined height. Without anchoring every level,
+ * height:100% on .mar_page resolves to "auto" (content height) on those
+ * servers, which causes the outer viewport to scroll AND both inner panels
+ * to scroll — the double-scrollbar / bottom-gap bug. */
+/* !important throughout: some deployed servers ship a heavy custom backend
+ * theme whose rules on Odoo's containers are more specific than a plain
+ * class selector. */
+
+/* Extend the flex chain to the layout wrapper (.o_content) and descendants.
+ * We target the wrapper using :has() so it only runs when this specific
+ * form is open, preventing interference with other Odoo views.
+ * Prepended with high-specificity selectors to override Clarity theme's overrides. */
+body.o_web_client .wrapper-container-bits .content-wrapper-bits .o_action_manager:has(.mar_matrix_form),
+body.o_web_client .o_action_manager:has(.mar_matrix_form),
+.o_action_manager:has(.mar_matrix_form),
+body.o_web_client .wrapper-container-bits .content-wrapper-bits .o_view_controller:has(.mar_matrix_form),
+body.o_web_client .o_view_controller:has(.mar_matrix_form),
+.o_view_controller:has(.mar_matrix_form) {
+    height: 100% !important;
+    max-height: 100% !important;
     display: flex !important;
     flex-direction: column !important;
-    min-height: 0;
     overflow: hidden !important;
-    padding: 0 !important;
+    min-height: 0 !important;
 }
-/* Height comes from .o_content's flex, and .mar_page then takes 100% of it.
- * Deliberately NOT relying on this element being a flex container itself —
- * the theme wins that one, and height:100% works against a plain block. */
-.mar_matrix_form .o_form_renderer {
+
+body.o_web_client .wrapper-container-bits .content-wrapper-bits .o_action_manager .o_content:has(.mar_matrix_form),
+body.o_web_client .wrapper-container-bits .content-wrapper-bits .o_content:has(.mar_matrix_form),
+body.o_web_client .o_action_manager .o_content:has(.mar_matrix_form),
+.o_content:has(.mar_matrix_form) {
     flex: 1 1 auto !important;
-    min-height: 0;
+    height: 100% !important;
+    max-height: 100% !important;
+    margin-bottom: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+}
+
+body.o_web_client .wrapper-container-bits .content-wrapper-bits .o_action_manager .o_content:has(.mar_matrix_form) .o_form_view_container,
+body.o_web_client .o_action_manager .o_content:has(.mar_matrix_form) .o_form_view_container,
+.o_content:has(.mar_matrix_form) .o_form_view_container,
+body.o_web_client .wrapper-container-bits .content-wrapper-bits .o_action_manager .o_content:has(.mar_matrix_form) .o_form_view,
+body.o_web_client .o_action_manager .o_content:has(.mar_matrix_form) .o_form_view,
+.o_content:has(.mar_matrix_form) .o_form_view {
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+}
+
+/* Force the form itself and form renderer to fill height and not scroll */
+.mar_matrix_form,
+.mar_matrix_form.o_form_renderer,
+.mar_matrix_form .o_form_renderer {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
     overflow: hidden !important;
     padding: 0.5rem !important;
     margin: 0 !important;
 }
+
 .mar_matrix_form .mar_page {
-    display: flex;
-    align-items: stretch;
-    gap: 0;
-    height: 100%;
-    min-height: 0;
-    margin: 0;
+    display: flex !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
     background: var(--mar-surface);
     border: 1px solid var(--mar-border);
     border-radius: 12px;
-    overflow: hidden;
+    overflow: hidden !important;
 }
 
 .mar_matrix_form .mar_side {
@@ -92,10 +138,12 @@
     border-bottom: 1px solid var(--mar-border);
 }
 .mar_matrix_form .mar_side_list {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(154, 161, 174, 0.45) transparent;
 }
 /* Odoo wraps list views in .table-responsive (overflow-x: auto), which drew
  * a horizontal scrollbar across the bottom of the user panel even though
@@ -244,9 +292,11 @@
 
 /* ---- Menu tree ---------------------------------------------------- */
 .mar_matrix_form .mar_tree_wrap {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(154, 161, 174, 0.45) transparent;
 }
 .mar_matrix_form .mar_matrix_list .o_data_row {
     font-size: 0.85rem;
@@ -528,4 +578,25 @@
     padding-left: 14.5rem !important;
 }
 
+/* Custom sleek webkit scrollbars for the user list and menu rights matrix panels */
+.mar_matrix_form .mar_side_list::-webkit-scrollbar,
+.mar_matrix_form .mar_tree_wrap::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
 
+.mar_matrix_form .mar_side_list::-webkit-scrollbar-track,
+.mar_matrix_form .mar_tree_wrap::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.mar_matrix_form .mar_side_list::-webkit-scrollbar-thumb,
+.mar_matrix_form .mar_tree_wrap::-webkit-scrollbar-thumb {
+    background: rgba(154, 161, 174, 0.45);
+    border-radius: 999px;
+}
+
+.mar_matrix_form .mar_side_list::-webkit-scrollbar-thumb:hover,
+.mar_matrix_form .mar_tree_wrap::-webkit-scrollbar-thumb:hover {
+    background: rgba(154, 161, 174, 0.7);
+}
