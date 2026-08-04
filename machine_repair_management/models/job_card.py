@@ -6663,7 +6663,9 @@ class ProjectTask(models.Model):
                 )
                 if rec.final_balance_amount != 0.0:
                     if not mode_of_payment_balance_amount:
-                        raise ValidationError(_("Please give the method of Payment"))
+                        '''Code Added on August 04 2026 by Vijaya Bhaskar if the emergency visit they don't have the option to balance paid bool tick.so that the validation is worked only for HHS Project not amc'''
+                        if not rec.project_related_amc_bool:
+                            raise ValidationError(_("Please give the method of Payment"))
 
                 online_payment_attachment_vals = (
                     vals.get("online_payment_invoice_attachment_ids")
@@ -7070,7 +7072,9 @@ class ProjectTask(models.Model):
                 )
                 if rec.final_balance_amount != 0.0:
                     if not mode_of_payment_balance_amount:
-                        raise ValidationError(_("Please give the method of Payment"))
+                        '''Code Added on August 04 2026 by Vijaya Bhaskar if the emergency visit they don't have the option to balance paid bool tick.so that the validation is worked only for HHS Project not amc'''
+                        if not rec.project_related_amc_bool:
+                            raise ValidationError(_("Please give the method of Payment"))
 
                 online_payment_attachment_vals = (
                     vals.get("online_payment_invoice_attachment_ids")
