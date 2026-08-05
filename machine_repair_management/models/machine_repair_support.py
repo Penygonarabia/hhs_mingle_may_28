@@ -129,6 +129,11 @@ class MachineRepairSupport(models.Model):
                 #     else "machine.repair.support"
                 # )
                 project_id = vals.get("project_id")
+                '''Code added on August 04 2026 by Vijaya bhaskar Service Request screen and job scheduling screen if user rights has one project show it as default and disable other. IF more than 1 no default let user select the project.'''
+                projects = self.env.user.project_ids
+                if not vals.get("amc_project_id") and len(projects) == 1:
+                    vals["amc_project_id"] = projects.id
+                
                 amc_id = vals.get("amc_project_id")
                 project_search = self.env['project.project'].search([('id','=',amc_id),("name", "=", "HHS")],limit=1)
             
