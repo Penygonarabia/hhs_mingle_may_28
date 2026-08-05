@@ -2888,9 +2888,18 @@ class MachineRepairSupport(models.Model):
     #                 raise ValidationError("%s is Blocked Customer.So Don't Service Him/Her" % rec.partner_id.name)
 
     """code added on Nov 19 2025"""
+    # amc_project_id = fields.Many2one(
+    #     "project.project",
+    #     string="Project",
+    # )
+    '''Code added on August 04 2026 by Vijaya bhaskar Service Request screen and job scheduling screen if user rights has one project show it as default and disable other. IF more than 1 no default let user select the project.'''
     amc_project_id = fields.Many2one(
         "project.project",
         string="Project",
+        default = lambda self : self.env.user.project_ids.id
+        if len(self.env.user.project_ids) == 1
+        else False,
+        
     )
 
     project_related_amc_bool = fields.Boolean(
@@ -2932,7 +2941,19 @@ class MachineRepairSupport(models.Model):
             if rec.paid_service_bool and rec.contract_id.add_paid_service_price > 0.0:
                 rec.paid_service_amount = rec.contract_id.add_paid_service_price
 
-
+    
+    '''Code added on August 04 2026 by Vijaya bhaskar Service Request screen and job scheduling screen if user rights has one project show it as default and disable other. IF more than 1 no default let user select the project.'''
+  
+    project_readonly = fields.Boolean( compute="_compute_allowed_projects")   
+ 
+    # @api.depends_context("uid")
+    @api.depends('priority')
+    def _compute_allowed_projects(self):
+        projects = self.env.user.project_ids
+        for rec in self:
+            rec.project_readonly = len(projects) == 1
+    
+    
 class HrTimesheetSheet(models.Model):
     _inherit = "account.analytic.line"
 
