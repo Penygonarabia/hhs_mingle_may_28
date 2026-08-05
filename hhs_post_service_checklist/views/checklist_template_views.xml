@@ -61,6 +61,7 @@
                                             class="btn-link"
                                             invisible="field_type != 'multiple'"/>
                                     <field name="sequence" string="Sort Order"/>
+                                	<field name = "mandatory_checklist" />
                                 </tree>
                             </field>
                         </page>
@@ -71,6 +72,7 @@
                                     <field name="section"/>
                                     <field name="caption"/>
                                     <field name="sequence" string="Sort Order"/>
+                                	 <field name = "mandatory_photo" />
                                 </tree>
                             </field>
                         </page>

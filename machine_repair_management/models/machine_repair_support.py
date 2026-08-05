@@ -921,6 +921,14 @@ class MachineRepairSupport(models.Model):
             )
             if fallback_state:
                 res["state"] = fallback_state.id
+        
+        '''Code added on August 04 2026 by Vijaya bhaskar Service Request screen and job scheduling screen if user rights has one project show it as default and disable other. IF more than 1 no default let user select the project.'''
+        projects = self.env.user.project_ids
+        if len(projects) == 1:
+            project = projects[0]
+            res['amc_project_id'] = project.id
+            res['project_related_amc_bool'] = project.related_to_amc        
+                
         return res
 
     """ This code is commented by Vijaya bhaskar on Jun-11-2025 for time being because name field is not shown in the Import/Export because it is readonly"""
@@ -2920,7 +2928,7 @@ class MachineRepairSupport(models.Model):
     service_create_from_equipment_bool = fields.Boolean(string = 'Service Create Equipment bool', default = False)
     
 
-    @api.depends("amc_project_id")
+    @api.depends("amc_project_id","amc_project_id.related_to_amc")
     def _compute_project_related_amc_bool(self):
         for rec in self:
             rec.project_related_amc_bool = False

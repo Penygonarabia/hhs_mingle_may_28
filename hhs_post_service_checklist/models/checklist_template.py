@@ -112,6 +112,11 @@ class PostServiceChecklistLine(models.Model):
         'post.service.checklist.option', 'line_id',
         string='Options',
     )
+    
+    '''Code Added on August 05 2026 by Vijaya bhaskar client asked mandatory in the jobcard checklist'''
+
+    mandatory_checklist = fields.Boolean(string = "Mandatory", default = False)
+    
 
     def action_setup_options(self):
         """Open the options master for this checklist item."""
@@ -173,6 +178,8 @@ class PostServiceChecklistPhoto(models.Model):
         help='Description of what this photo shows (e.g., Air Filter, Evaporator Coil)',
     )
 
+    '''Code Added on August 05 2026 by Vijaya bhaskar client asked mandatory in the jobcard checklist'''
+    mandatory_photo = fields.Boolean(string = "Mandatory", default = False)
 
 
 # ========================================================

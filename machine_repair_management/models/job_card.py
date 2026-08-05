@@ -6805,7 +6805,44 @@ class ProjectTask(models.Model):
                     if rec.service_sale_id.state not in ('sale','done','cancel'):
                         raise ValidationError("Please Confirm the Sale Quotation %s" %rec.service_sale_id.name)
                                            
+                
+                '''Code added on August 05 2026 by Vijaya Bhaskar Client asked if the AMC project the mandatory photo and mandatory checklist is added'''
+                if rec.project_related_amc_bool and rec.maintenance_type == "preventive":
+                    for checklist in rec.checklist_line_ids.filtered('mandatory_checklist'):
 
+                        if checklist.field_type == 'yes_no':
+                            answered = bool(checklist.answer_selection_id)
+                    
+                        elif checklist.field_type == 'multiple':
+                            answered = bool(checklist.answer_selection_id)
+                    
+                        elif checklist.field_type == 'numeric':
+                            answered = checklist.answer_numeric not in (False, None)
+                    
+                        elif checklist.field_type == 'text':
+                            answered = bool(checklist.answer_text and checklist.answer_text.strip())
+                    
+                        elif checklist.field_type == 'date':
+                            answered = bool(checklist.answer_date)
+                    
+                        elif checklist.field_type == 'calculated':
+                            answered = checklist.answer_numeric not in (False, None)
+                    
+                        else:
+                            answered = False
+                    
+                        if not answered:
+                            raise ValidationError(
+                                _("Please provide an answer for '%s'. It is mandatory.")
+                                % checklist.check_item
+                            )
+                                        
+                    for photo in rec.checklist_photo_ids:
+                        if photo.mandatory_photo:
+                            if not photo.photo_filename:
+                                raise ValidationError(_("Please upload the Photo in the Caption '%s'" % photo.caption))
+                                
+                
                 # for line in rec.product_line_ids:
                 #     if line.product_id:
                 #         if line.price_unit > 0 and not line.under_warranty_bool:
