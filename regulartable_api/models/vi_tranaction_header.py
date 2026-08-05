@@ -158,6 +158,10 @@ class TransactionHeader(models.Model):
         string='Report Region'
     )
 
+    trnh_xfaceid = fields.Many2one(
+        'sale.types',
+        string='Sale Type'
+    )
 
     def init(self):
         tools.drop_view_if_exists(self._cr, 'vi_transaction_header')
