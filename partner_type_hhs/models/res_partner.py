@@ -32,7 +32,7 @@ class ResPartner(models.Model):
     sub_partner_type = fields.Selection([
         ('retail','Retail Customer'),
         ('dealer','Dealer'),
-    ], string="Sub Partner Type", store=True,
+    ], string="Partner Sub-type", store=True,
        default=lambda self: self._context.get('default_sub_partner_type') or False)
     
     
