@@ -1,0 +1,27 @@
+<?xml version  = "1.0" encoding = "utf-8" ?>
+<odoo>
+
+	<record id = "res_partner_partner_classification_form" model = "ir.ui.view">
+		<field name = "name">res.partner.partner.classification.form.view</field>
+		<field name = "model">res.partner</field>
+		<field name = "inherit_id" ref = "base.view_partner_form"/>
+		<field name = "arch" type = "xml">
+		
+			<xpath expr = "//field[@name = 'category_id']" position = "after">
+				<field name="partner_type_hhs" invisible="1"/>
+    			<field name="sub_partner_type" invisible="1"/>
+				<field name  = "partner_classification_id"  
+					domain = "[('pc_partner_type' ,'=', partner_type_hhs),
+								('pc_partner_sub_type' ,'=',sub_partner_type)]"
+					options = "{'no_create':True,'no_edit':True,'no_open':True}"					
+				
+				/>
+			
+			</xpath>
+		
+		</field>
+		
+		
+	</record>
+
+</odoo>
