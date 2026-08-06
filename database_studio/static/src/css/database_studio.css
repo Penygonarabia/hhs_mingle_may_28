@@ -111,6 +111,7 @@
 .sqlms-group-title2 .sqlms-count { margin-left: auto; }
 .sqlms-grouptablewrap { overflow-x: auto; }
 .sqlms-fieldgroup .sqlms-grid thead th { position: static; }
+.sqlms-check-col { width: 32px; min-width: 32px; max-width: 32px; text-align: center !important; }
 .sqlms-group-title {
     position: sticky;
     top: 0;
@@ -226,6 +227,40 @@
     flex-wrap: wrap;
 }
 .sqlms-info { color: #868e96; }
+.sqlms-tab-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 3px 8px;
+    min-width: 200px;
+    max-width: 300px;
+}
+.sqlms-tab-search i.fa-search {
+    color: #868e96;
+}
+.sqlms-tab-search input {
+    border: none;
+    outline: none;
+    padding: 0;
+    font-size: 12px;
+    width: 100%;
+    background: transparent;
+}
+.sqlms-clear-btn {
+    border: none;
+    background: transparent;
+    color: #868e96;
+    cursor: pointer;
+    padding: 0 2px;
+    display: flex;
+    align-items: center;
+}
+.sqlms-clear-btn:hover {
+    color: #343a40;
+}
 
 /* ---- grid ---- */
 .sqlms-tablewrap {
@@ -365,6 +400,22 @@
     color: #495057;
 }
 .sqlms-qtab-add:hover { background: #f8f9fa; color: #212529; }
+.sqlms-qtab-close-all {
+    margin-left: auto;
+    border: 1px solid #f5c2c7;
+    background: #f8d7da;
+    color: #842029;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 3px 10px;
+    border-radius: 4px;
+    transition: all 0.15s ease-in-out;
+}
+.sqlms-qtab-close-all:hover {
+    background: #ea868f;
+    border-color: #ea868f;
+    color: #ffffff;
+}
 .sqlms-editor {
     position: relative;
     height: 220px;
@@ -477,3 +528,30 @@
 .sqlms-ident { color: #9c36b5; }
 .sqlms-num { color: #e8590c; }
 .sqlms-comment { color: #868e96; font-style: italic; }
+
+/* Autocomplete suggestions popup */
+.sqlms-autocomplete {
+    position: absolute;
+    z-index: 1050;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    max-height: 200px;
+    overflow-y: auto;
+    width: 280px;
+}
+.sqlms-ac-item {
+    padding: 6px 10px;
+    cursor: pointer;
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+}
+.sqlms-ac-item:hover, .sqlms-ac-item-active {
+    background-color: #e0f2fe;
+    color: #0284c7;
+}

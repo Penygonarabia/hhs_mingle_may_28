@@ -3,6 +3,7 @@
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Dialog } from "@web/core/dialog/dialog";
+import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { download } from "@web/core/network/download";
 import { Component, useState, useRef, onMounted, onPatched, onWillUnmount } from "@odoo/owl";
 
@@ -68,6 +69,86 @@ SqlMsCloseTabDialog.props = {
     defaultName: { type: String, optional: true },
 };
 
+// Dialog for configuring field selection sequence and Order By #
+export class SqlMsOrderByDialog extends Component {
+    setup() {
+        const fields = (this.props.fields || []).map((item) => ({
+            table: item.table,
+            field: item.field,
+            order: item.order != null ? String(item.order).trim() : "",
+            dir: item.dir || "NONE",
+        }));
+        this.state = useState({ items: fields, filter: "" });
+    }
+    get filteredItems() {
+        const f = (this.state.filter || "").trim().toLowerCase();
+        if (!f) return this.state.items;
+        return this.state.items.filter(
+            (i) => i.table.toLowerCase().includes(f) || i.field.toLowerCase().includes(f)
+        );
+    }
+    confirm() {
+        this.props.onConfirm(this.state.items);
+        this.props.close();
+    }
+}
+SqlMsOrderByDialog.template = "database_studio.OrderByDialog";
+SqlMsOrderByDialog.components = { Dialog };
+SqlMsOrderByDialog.props = {
+    close: Function,
+    onConfirm: Function,
+    fields: Array,
+};
+
+export function isNumericFieldType(type) {
+    if (!type) return false;
+    const t = String(type).toLowerCase();
+    return (
+        t.includes("int") ||
+        t.includes("float") ||
+        t.includes("num") ||
+        t.includes("dec") ||
+        t.includes("monetary") ||
+        t.includes("double") ||
+        t.includes("real")
+    );
+}
+
+// Dialog for configuring field Group By and Aggregation functions
+export class SqlMsGroupByDialog extends Component {
+    setup() {
+        const fields = (this.props.fields || []).map((item) => ({
+            table: item.table,
+            field: item.field,
+            type: item.type || "unknown",
+            isNumeric: isNumericFieldType(item.type),
+            func: item.func || "NONE",
+        }));
+        this.state = useState({ items: fields, filter: "" });
+    }
+    get filteredItems() {
+        const f = (this.state.filter || "").trim().toLowerCase();
+        if (!f) return this.state.items;
+        return this.state.items.filter(
+            (i) =>
+                i.table.toLowerCase().includes(f) ||
+                i.field.toLowerCase().includes(f) ||
+                (i.type && i.type.toLowerCase().includes(f))
+        );
+    }
+    confirm() {
+        this.props.onConfirm(this.state.items);
+        this.props.close();
+    }
+}
+SqlMsGroupByDialog.template = "database_studio.GroupByDialog";
+SqlMsGroupByDialog.components = { Dialog };
+SqlMsGroupByDialog.props = {
+    close: Function,
+    onConfirm: Function,
+    fields: Array,
+};
+
 const KEYWORDS = [
     "SELECT", "FROM", "WHERE", "INSERT", "INTO", "VALUES", "UPDATE", "SET",
     "DELETE", "CREATE", "ALTER", "DROP", "TABLE", "VIEW", "INDEX", "JOIN",
@@ -97,6 +178,64 @@ const TOKEN_RE = new RegExp(
     "|([A-Za-z_][A-Za-z0-9_$]*)", // 5: identifier / keyword
     "g"
 );
+
+function getClauseContext(textBefore) {
+    const upper = textBefore.toUpperCase();
+    const keywords = [
+        "SELECT", "FROM", "JOIN", "WHERE", "HAVING",
+        "GROUP BY", "ORDER BY", "SET", "INTO", "UPDATE"
+    ];
+    let lastKw = null;
+    let maxPos = -1;
+
+    for (const kw of keywords) {
+        const regex = new RegExp("\\b" + kw.replace(/\s+/g, "\\s+") + "\\b", "gi");
+        let match;
+        while ((match = regex.exec(upper)) !== null) {
+            if (match.index > maxPos) {
+                maxPos = match.index;
+                lastKw = kw;
+            }
+        }
+    }
+
+    if (!lastKw) return "GENERAL";
+
+    if (["SELECT", "WHERE", "HAVING", "GROUP BY", "ORDER BY", "SET"].includes(lastKw)) {
+        return "FIELDS_ONLY";
+    }
+    if (["FROM", "JOIN", "INTO", "UPDATE"].includes(lastKw)) {
+        return "TABLES_ONLY";
+    }
+    return "GENERAL";
+}
+
+function getTablesInStatement(textBefore, stateTables) {
+    const tables = [];
+    const stateTableSet = new Set((stateTables || []).map((t) => String(t).toLowerCase()));
+
+    const fromMatch = textBefore.match(/FROM\s+([\s\S]*?)(?=\b(WHERE|GROUP|ORDER|HAVING|LIMIT|SELECT|UNION|SET)\b|$)/i);
+    if (fromMatch) {
+        const fromClause = fromMatch[1];
+        const idMatches = fromClause.matchAll(/(?:"([^"]+)"|([a-zA-Z0-9_]+))/g);
+        for (const m of idMatches) {
+            const t = (m[1] || m[2] || "").toLowerCase();
+            if (t && stateTableSet.has(t) && !tables.includes(t)) {
+                tables.push(t);
+            }
+        }
+    }
+
+    const joinMatches = textBefore.matchAll(/JOIN\s+(?:"([^"]+)"|([a-zA-Z0-9_]+))/gi);
+    for (const m of joinMatches) {
+        const t = (m[1] || m[2] || "").toLowerCase();
+        if (t && stateTableSet.has(t) && !tables.includes(t)) {
+            tables.push(t);
+        }
+    }
+
+    return tables;
+}
 
 function escapeHtml(text) {
     return text
@@ -319,6 +458,17 @@ export class SqlMsAnalyser extends Component {
             showViews: true,
             checked: {},
             selectedCols: [],
+            fieldsFilter: "",
+            mappingFilter: "",
+            selectedFields: {},
+            autocomplete: {
+                visible: false,
+                items: [],
+                selectedIndex: 0,
+                userNavigated: false,
+                blockId: null,
+                style: "",
+            },
         });
 
         // A query passed directly by a record button (action_open_in_analyser)
@@ -340,6 +490,7 @@ export class SqlMsAnalyser extends Component {
             this._loadQtab(active);
             this.state.activeTab = "query";
         } else {
+            _qtabIdSeq = 0;
             const first = this._makeQtab(incoming || "");
             this.state.qtabs.push(first);
             this.state.activeQtabId = first.id;
@@ -423,6 +574,7 @@ export class SqlMsAnalyser extends Component {
         } else {
             this.state.checked[name] = true;
         }
+        this.clearSelectedFields();
         if (this.state.activeTab === "mapping") {
             this.loadMapping();
         } else if (this.state.activeTab === "fields") {
@@ -432,8 +584,10 @@ export class SqlMsAnalyser extends Component {
     get checkedCount() {
         return Object.keys(this.state.checked).length;
     }
-    clearChecks() {
+    async clearChecks() {
         this.state.checked = {};
+        this.clearSelectedFields();
+        await Promise.all([this.loadFields(), this.loadMapping()]);
     }
     async buildQuery() {
         const tables = Object.keys(this.state.checked);
@@ -445,8 +599,16 @@ export class SqlMsAnalyser extends Component {
             const res = await this.orm.call(
                 "database.studio.analyser", "build_join_query", [tables]
             );
+            this._snapshotActiveQtab();
+            const curQuery = (this.state.query || "").trim();
             this.state.activeTab = "query";
-            this.setQuery(res.query);
+            if (!curQuery) {
+                this.setQuery(res.query);
+            } else {
+                const t = this._makeQtab(res.query);
+                this.state.qtabs.push(t);
+                this._loadQtab(t);
+            }
         } finally {
             this.state.loading = false;
         }
@@ -470,6 +632,7 @@ export class SqlMsAnalyser extends Component {
         this.state.tables = res.tables;
         this.state.views = res.views;
         this.state.favorites = res.favorites || [];
+        this.loadFields();
     }
 
     // -- favourites ----------------------------------------------------
@@ -518,13 +681,22 @@ export class SqlMsAnalyser extends Component {
     async selectObject(name, type) {
         this.state.selected = name;
         this.state.selectedType = type;
-        if (this.state.activeTab === "mapping") {
-            await this.loadMapping();
+        this.state.checked[name] = true;
+        this.clearSelectedFields();
+
+        const stmt = 'SELECT * FROM "' + name + '"';
+        this._snapshotActiveQtab();
+
+        const curQuery = (this.state.query || "").trim();
+        if (!curQuery) {
+            this.setQuery(stmt);
         } else {
-            // Clicking a table always shows its fields.
-            this.state.activeTab = "fields";
-            await this.loadFields();
+            const t = this._makeQtab(stmt);
+            this.state.qtabs.push(t);
+            this._loadQtab(t);
         }
+
+        await Promise.all([this.loadFields(), this.loadMapping()]);
     }
 
     async setTab(tab) {
@@ -540,16 +712,31 @@ export class SqlMsAnalyser extends Component {
         }
     }
 
-    // Fields are shown for the checked tables if any, else the clicked table.
+    // Fields are shown for the checked tables if any, else for the selected table(s) in query.
     _fieldsTables() {
         const checked = Object.keys(this.state.checked);
         if (checked.length) {
             return checked;
         }
-        return this.state.selected ? [this.state.selected] : [];
+        const set = [];
+        if (this.state.selected) {
+            set.push(this.state.selected);
+        }
+        for (const t of this._tablesInQuery()) {
+            if (!set.includes(t)) {
+                set.push(t);
+            }
+        }
+        return set;
     }
     async loadFields() {
         const tables = this._fieldsTables();
+        const tableSet = new Set(tables);
+        for (const tbl of Object.keys(this.state.selectedFields)) {
+            if (!tableSet.has(tbl)) {
+                delete this.state.selectedFields[tbl];
+            }
+        }
         if (!tables.length) {
             this.state.fieldGroups = [];
             return;
@@ -570,8 +757,386 @@ export class SqlMsAnalyser extends Component {
             this.state.collapsedGroups[table] = true;
         }
     }
+    get filteredFieldGroups() {
+        const filter = (this.state.fieldsFilter || "").trim().toLowerCase();
+        if (!filter) {
+            return this.state.fieldGroups || [];
+        }
+        const result = [];
+        for (const group of (this.state.fieldGroups || [])) {
+            const tableMatches = (group.table || "").toLowerCase().includes(filter);
+            const matchingFields = (group.fields || []).filter((f) => {
+                const nameMatch = (f.name || "").toLowerCase().includes(filter);
+                const typeMatch = (f.type || "").toLowerCase().includes(filter);
+                const precMatch = (f.precision != null ? String(f.precision) : "").toLowerCase().includes(filter);
+                const nullMatch = (f.nullable != null ? String(f.nullable) : "").toLowerCase().includes(filter);
+                return nameMatch || typeMatch || precMatch || nullMatch;
+            });
+            if (tableMatches) {
+                result.push(group);
+            } else if (matchingFields.length > 0) {
+                result.push({
+                    ...group,
+                    fields: matchingFields,
+                });
+            }
+        }
+        return result;
+    }
     get fieldCount() {
-        return (this.state.fieldGroups || []).reduce((n, g) => n + g.fields.length, 0);
+        return (this.filteredFieldGroups || []).reduce((n, g) => n + g.fields.length, 0);
+    }
+    // -- field selection helper methods --------------------------------
+    isFieldSelected(table, field) {
+        return !!(this.state.selectedFields[table] && this.state.selectedFields[table][field]);
+    }
+    toggleFieldSelect(table, field, ev) {
+        if (ev) {
+            ev.stopPropagation();
+        }
+        if (!this.state.selectedFields[table]) {
+            this.state.selectedFields[table] = {};
+        }
+        if (this.state.selectedFields[table][field]) {
+            delete this.state.selectedFields[table][field];
+            if (!Object.keys(this.state.selectedFields[table]).length) {
+                delete this.state.selectedFields[table];
+            }
+        } else {
+            this.state.selectedFields[table][field] = { order: "", dir: "NONE" };
+        }
+    }
+    isGroupAllSelected(group) {
+        if (!group || !group.fields || !group.fields.length) {
+            return false;
+        }
+        const tblMap = this.state.selectedFields[group.table];
+        if (!tblMap) {
+            return false;
+        }
+        return group.fields.every((f) => tblMap[f.name]);
+    }
+    toggleGroupSelect(group, ev) {
+        if (ev) {
+            ev.stopPropagation();
+        }
+        const allSelected = this.isGroupAllSelected(group);
+        if (allSelected) {
+            delete this.state.selectedFields[group.table];
+        } else {
+            if (!this.state.selectedFields[group.table]) {
+                this.state.selectedFields[group.table] = {};
+            }
+            for (const f of group.fields) {
+                if (!this.state.selectedFields[group.table][f.name]) {
+                    this.state.selectedFields[group.table][f.name] = { order: "", dir: "NONE" };
+                }
+            }
+        }
+    }
+    clearSelectedFields() {
+        this.state.selectedFields = {};
+    }
+    getSelectedFieldsList() {
+        const result = [];
+        const typeMap = {};
+        for (const g of (this.state.fieldGroups || [])) {
+            if (!typeMap[g.table]) typeMap[g.table] = {};
+            for (const f of (g.fields || [])) {
+                typeMap[g.table][f.name] = f.type;
+            }
+        }
+        for (const [table, fieldsMap] of Object.entries(this.state.selectedFields)) {
+            for (const [field, meta] of Object.keys(fieldsMap).map((f) => [f, fieldsMap[f]])) {
+                if (meta) {
+                    const orderVal = (typeof meta === "object" && meta.order != null) ? String(meta.order) : "";
+                    const dirVal = (typeof meta === "object" && meta.dir) ? meta.dir : "NONE";
+                    const funcVal = (typeof meta === "object" && meta.func) ? meta.func : "NONE";
+                    const fieldType = (typeMap[table] && typeMap[table][field]) || "";
+                    result.push({ table, field, type: fieldType, order: orderVal, dir: dirVal, func: funcVal });
+                }
+            }
+        }
+        return result;
+    }
+    get queryFieldsList() {
+        const selected = this.getSelectedFieldsList();
+        if (selected.length) {
+            return selected;
+        }
+
+        const query = (this.state.query || "").trim();
+        if (!query) {
+            return [];
+        }
+
+        const tables = getTablesInStatement(query, this.state.tables);
+        if (!tables.length && this.state.selected) {
+            tables.push(this.state.selected.toLowerCase());
+        }
+        if (!tables.length) {
+            return [];
+        }
+
+        const typeMap = {};
+        for (const g of (this.state.fieldGroups || [])) {
+            if (!typeMap[g.table.toLowerCase()]) typeMap[g.table.toLowerCase()] = {};
+            for (const f of (g.fields || [])) {
+                typeMap[g.table.toLowerCase()][f.name.toLowerCase()] = f.type;
+            }
+        }
+
+        const result = [];
+        const selectMatch = query.match(/SELECT\s+([\s\S]*?)\s+FROM\b/i);
+
+        if (selectMatch) {
+            const rawProj = selectMatch[1].trim();
+            if (rawProj === "*") {
+                for (const g of (this.state.fieldGroups || [])) {
+                    if (tables.includes(g.table.toLowerCase())) {
+                        for (const f of (g.fields || [])) {
+                            result.push({
+                                table: g.table,
+                                field: f.name,
+                                type: f.type || "field",
+                                order: "",
+                                dir: "NONE",
+                                func: "NONE",
+                            });
+                        }
+                    }
+                }
+            } else {
+                const cols = rawProj.split(",");
+                for (const rawCol of cols) {
+                    const cleanCol = rawCol.trim();
+                    const m = cleanCol.match(/(?:"([^"]+)"|([a-zA-Z0-9_]+))\.(?:"([^"]+)"|([a-zA-Z0-9_]+))/) ||
+                              cleanCol.match(/(?:"([^"]+)"|([a-zA-Z0-9_]+))/);
+                    if (m) {
+                        let tbl = "";
+                        let fld = "";
+                        if (m[3] || m[4]) {
+                            tbl = m[1] || m[2];
+                            fld = m[3] || m[4];
+                        } else {
+                            fld = m[1] || m[2];
+                            tbl = tables[0] || (this.state.selected || "");
+                        }
+                        if (fld && fld.toUpperCase() !== "SELECT" && fld.toUpperCase() !== "DISTINCT") {
+                            const fType = (typeMap[tbl.toLowerCase()] && typeMap[tbl.toLowerCase()][fld.toLowerCase()]) || "";
+                            result.push({
+                                table: tbl,
+                                field: fld,
+                                type: fType,
+                                order: "",
+                                dir: "NONE",
+                                func: "NONE",
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!result.length && tables.length) {
+            for (const g of (this.state.fieldGroups || [])) {
+                if (tables.includes(g.table.toLowerCase())) {
+                    for (const f of (g.fields || [])) {
+                        result.push({
+                            table: g.table,
+                            field: f.name,
+                            type: f.type || "field",
+                            order: "",
+                            dir: "NONE",
+                            func: "NONE",
+                        });
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+    get availableFieldsCount() {
+        return this.selectedFieldCount || this.queryFieldsList.length;
+    }
+    saveFieldOrders(orderedItems) {
+        for (const item of orderedItems) {
+            if (this.state.selectedFields[item.table] && this.state.selectedFields[item.table][item.field]) {
+                const existing = this.state.selectedFields[item.table][item.field];
+                const meta = typeof existing === "object" ? existing : { order: "", dir: "NONE" };
+                meta.order = item.order != null ? String(item.order).trim() : "";
+                meta.dir = item.dir || "NONE";
+                this.state.selectedFields[item.table][item.field] = meta;
+            }
+        }
+    }
+    saveFieldGroups(groupByItems) {
+        for (const item of groupByItems) {
+            if (this.state.selectedFields[item.table] && this.state.selectedFields[item.table][item.field]) {
+                const existing = this.state.selectedFields[item.table][item.field];
+                const meta = typeof existing === "object" ? existing : { order: "", dir: "NONE" };
+                meta.func = item.func || "NONE";
+                this.state.selectedFields[item.table][item.field] = meta;
+            }
+        }
+    }
+    get selectedFieldCount() {
+        let count = 0;
+        for (const fieldsMap of Object.values(this.state.selectedFields)) {
+            count += Object.keys(fieldsMap).length;
+        }
+        return count;
+    }
+    openOrderByDialog() {
+        const fields = this.queryFieldsList;
+        if (!fields.length) {
+            return;
+        }
+        this.dialog.add(SqlMsOrderByDialog, {
+            fields: fields,
+            onConfirm: (orderedFields) => {
+                this.buildFieldsQuery(orderedFields);
+            },
+        });
+    }
+    openGroupByDialog() {
+        const fields = this.queryFieldsList;
+        if (!fields.length) {
+            return;
+        }
+        this.dialog.add(SqlMsGroupByDialog, {
+            fields: fields,
+            onConfirm: (groupByFields) => {
+                this.buildFieldsQuery(groupByFields);
+            },
+        });
+    }
+    async buildFieldsQuery(customList = null) {
+        if (customList) {
+            if (customList.length && customList[0].func !== undefined) {
+                this.saveFieldGroups(customList);
+            }
+            if (customList.length && customList[0].order !== undefined) {
+                this.saveFieldOrders(customList);
+            }
+        }
+        const selected = this.getSelectedFieldsList();
+        if (!selected.length) {
+            return;
+        }
+        const tables = [];
+        for (const item of selected) {
+            if (!tables.includes(item.table)) {
+                tables.push(item.table);
+            }
+        }
+        const multiTable = tables.length > 1;
+
+        const projectionList = [...selected].sort((a, b) => {
+            const numA = parseFloat(a.order);
+            const numB = parseFloat(b.order);
+            const hasA = !isNaN(numA) && String(a.order).trim() !== "";
+            const hasB = !isNaN(numB) && String(b.order).trim() !== "";
+            if (hasA && hasB) return numA - numB;
+            if (hasA) return -1;
+            if (hasB) return 1;
+            return 0;
+        });
+
+        const projection = projectionList
+            .map((item) => {
+                const col = multiTable ? `"${item.table}"."${item.field}"` : `"${item.field}"`;
+                switch (item.func) {
+                    case "COUNT":
+                        return `COUNT(${col}) AS "${item.field}_count"`;
+                    case "COUNT_DISTINCT":
+                        return `COUNT(DISTINCT ${col}) AS "${item.field}_count_distinct"`;
+                    case "SUM":
+                        return `SUM(${col}) AS "${item.field}_sum"`;
+                    case "AVG":
+                        return `AVG(${col}) AS "${item.field}_avg"`;
+                    case "MIN":
+                        return `MIN(${col}) AS "${item.field}_min"`;
+                    case "MAX":
+                        return `MAX(${col}) AS "${item.field}_max"`;
+                    default:
+                        return col;
+                }
+            })
+            .join(", ");
+
+        const hasGroupingOrAgg = selected.some(
+            (item) => item.func && item.func !== "NONE"
+        );
+
+        let groupByClause = "";
+        if (hasGroupingOrAgg) {
+            const groupCols = selected
+                .filter((item) => !item.func || item.func === "NONE")
+                .map((item) => (multiTable ? `"${item.table}"."${item.field}"` : `"${item.field}"`));
+            if (groupCols.length) {
+                groupByClause = "\nGROUP BY " + groupCols.join(", ");
+            }
+        }
+
+        const orderByFields = selected
+            .filter((item) => {
+                const hasOrder = String(item.order).trim() !== "";
+                const hasDir = item.dir && item.dir !== "NONE";
+                return hasOrder || hasDir;
+            })
+            .sort((a, b) => {
+                const numA = parseFloat(a.order);
+                const numB = parseFloat(b.order);
+                const hasA = !isNaN(numA) && String(a.order).trim() !== "";
+                const hasB = !isNaN(numB) && String(b.order).trim() !== "";
+                if (hasA && hasB) return numA - numB;
+                if (hasA) return -1;
+                if (hasB) return 1;
+                return 0;
+            });
+
+        const orderByItems = orderByFields.map((item) => {
+            const col = multiTable ? `"${item.table}"."${item.field}"` : `"${item.field}"`;
+            return item.dir && item.dir !== "NONE" ? `${col} ${item.dir}` : col;
+        });
+
+        const orderByClause = orderByItems.length ? "\nORDER BY " + orderByItems.join(", ") : "";
+
+        this.state.loading = true;
+        try {
+            const res = await this.orm.call(
+                "database.studio.analyser", "build_join_query", [tables]
+            );
+            let rawQuery = res.query || "";
+            if (rawQuery.startsWith("SELECT *")) {
+                let body = rawQuery.slice(8);
+                const clauseSuffix = groupByClause + orderByClause;
+                if (clauseSuffix) {
+                    if (body.includes("\nLIMIT ")) {
+                        body = body.replace("\nLIMIT ", clauseSuffix + "\nLIMIT ");
+                    } else {
+                        body += clauseSuffix;
+                    }
+                }
+                rawQuery = "SELECT " + projection + body;
+            } else {
+                rawQuery = `SELECT ${projection}\nFROM "${tables[0]}"${groupByClause}${orderByClause}\nLIMIT 100`;
+            }
+            this._snapshotActiveQtab();
+            const curQuery = (this.state.query || "").trim();
+            this.state.activeTab = "query";
+            if (!curQuery) {
+                this.setQuery(rawQuery);
+            } else {
+                const t = this._makeQtab(rawQuery);
+                this.state.qtabs.push(t);
+                this._loadQtab(t);
+            }
+        } finally {
+            this.state.loading = false;
+        }
     }
 
     // Tables referenced after FROM/JOIN in the current query (only those that
@@ -621,6 +1186,38 @@ export class SqlMsAnalyser extends Component {
             this.state.loading = false;
         }
     }
+    get filteredMapping() {
+        if (!this.state.mapping) {
+            return null;
+        }
+        const filter = (this.state.mappingFilter || "").trim().toLowerCase();
+        const rows = this.state.mapping.rows || [];
+        const unrelated = this.state.mapping.unrelated || [];
+        if (!filter) {
+            return this.state.mapping;
+        }
+        const filteredRows = rows.filter((m) => {
+            return (
+                (m.from_table || "").toLowerCase().includes(filter) ||
+                (m.from_column || "").toLowerCase().includes(filter) ||
+                (m.to_table || "").toLowerCase().includes(filter) ||
+                (m.to_column || "").toLowerCase().includes(filter) ||
+                (m.via || "").toLowerCase().includes(filter)
+            );
+        });
+        const filteredUnrelated = unrelated.filter((ut) => {
+            const candidates = (this.state.mapping.candidates && this.state.mapping.candidates[ut]) || [];
+            return (
+                ut.toLowerCase().includes(filter) ||
+                candidates.some((c) => c.toLowerCase().includes(filter))
+            );
+        });
+        return {
+            ...this.state.mapping,
+            rows: filteredRows,
+            unrelated: filteredUnrelated,
+        };
+    }
 
     // -- query sub-tabs ------------------------------------------------
     _makeQtab(query) {
@@ -656,6 +1253,29 @@ export class SqlMsAnalyser extends Component {
         this.state.qtabs.push(t);
         this.state.activeTab = "query";
         this._loadQtab(t);
+    }
+    removeAllQtabs() {
+        this._snapshotActiveQtab();
+        const unsaved = this.state.qtabs.some(
+            (t) => !t.isSaved && (t.query || "").trim().length > 0
+        );
+        if (unsaved) {
+            this.dialog.add(ConfirmationDialog, {
+                title: "Close All Without Save",
+                body: "Are you sure you want to close all query tabs without saving? Unsaved queries will be lost.",
+                confirm: () => this._doRemoveAllQtabs(),
+                cancel: () => {},
+            });
+        } else {
+            this._doRemoveAllQtabs();
+        }
+    }
+    _doRemoveAllQtabs() {
+        _qtabIdSeq = 0;
+        const fresh = this._makeQtab("");
+        fresh.name = "Query 1";
+        this.state.qtabs = [fresh];
+        this._loadQtab(fresh);
     }
     switchQtab(id) {
         this.state.activeTab = "query";
@@ -731,6 +1351,7 @@ export class SqlMsAnalyser extends Component {
         // "Query 1" here rather than continuing the running counter, since
         // from the user's perspective this is a fresh start, not tab N+1.
         if (!this.state.qtabs.length) {
+            _qtabIdSeq = 0;
             const t = this._makeQtab("");
             t.name = "Query 1";
             this.state.qtabs.push(t);
@@ -783,6 +1404,218 @@ export class SqlMsAnalyser extends Component {
         }
         blk.text = ev.target.value;
         this.state.query = t.blocks.map((b) => b.text).join(";");
+        this.checkAutocomplete(id, ev.target);
+    }
+    onBlockKeydown(id, ev) {
+        if (this.state.autocomplete.visible && this.state.autocomplete.blockId === id) {
+            const items = this.state.autocomplete.items;
+            if (ev.key === "ArrowDown") {
+                ev.preventDefault();
+                this.state.autocomplete.userNavigated = true;
+                this.state.autocomplete.selectedIndex =
+                    (this.state.autocomplete.selectedIndex + 1) % items.length;
+                return;
+            }
+            if (ev.key === "ArrowUp") {
+                ev.preventDefault();
+                this.state.autocomplete.userNavigated = true;
+                this.state.autocomplete.selectedIndex =
+                    (this.state.autocomplete.selectedIndex - 1 + items.length) % items.length;
+                return;
+            }
+            if (ev.key === "Tab" || (ev.key === "Enter" && this.state.autocomplete.userNavigated)) {
+                ev.preventDefault();
+                const item = items[this.state.autocomplete.selectedIndex];
+                if (item) {
+                    this.insertAutocomplete(item, ev.target);
+                }
+                return;
+            }
+            if (ev.key === "Escape") {
+                ev.preventDefault();
+                this.state.autocomplete.visible = false;
+                return;
+            }
+            if (ev.key === "Enter") {
+                this.state.autocomplete.visible = false;
+            }
+        }
+    }
+    checkAutocomplete(blkId, taEl) {
+        if (!taEl) {
+            this.state.autocomplete.visible = false;
+            return;
+        }
+        const caretPos = taEl.selectionStart;
+        const textBefore = taEl.value.slice(0, caretPos);
+
+        const match = textBefore.match(/([a-zA-Z0-9_".]+)$/);
+        if (!match) {
+            this.state.autocomplete.visible = false;
+            return;
+        }
+        const fullTyped = match[1];
+        const typedWord = fullTyped.replace(/"/g, "").toLowerCase();
+
+        if (!typedWord) {
+            this.state.autocomplete.visible = false;
+            return;
+        }
+
+        const clauseCtx = getClauseContext(textBefore);
+        const candidates = [];
+
+        const fromTables = getTablesInStatement(textBefore, this.state.tables);
+        if (!this.state.fieldGroups || !this.state.fieldGroups.length) {
+            this.loadFields();
+        } else if (fromTables.length) {
+            const loadedSet = new Set((this.state.fieldGroups || []).map((g) => (g.table || "").toLowerCase()));
+            if (fromTables.some((t) => !loadedSet.has(t))) {
+                this.loadFields();
+            }
+        }
+
+        const checkedNames = Object.keys(this.state.checked).filter((k) => this.state.checked[k]);
+        const targetTables = fromTables.length
+            ? fromTables
+            : (checkedNames.length ? checkedNames.map((t) => t.toLowerCase()) : (this.state.selected ? [this.state.selected.toLowerCase()] : []));
+
+        if (clauseCtx === "TABLES_ONLY") {
+            const allTables = this.state.tables || [];
+            const allViews = this.state.views || [];
+            for (const t of allTables) {
+                candidates.push({
+                    label: t,
+                    table: t,
+                    type: "table",
+                    display: `"${t}"`,
+                });
+            }
+            for (const v of allViews) {
+                candidates.push({
+                    label: v,
+                    table: v,
+                    type: "view",
+                    display: `"${v}"`,
+                });
+            }
+        } else if (clauseCtx === "FIELDS_ONLY") {
+            const allGroups = this.state.fieldGroups || [];
+            const multiTable = targetTables.length > 1;
+
+            for (const g of allGroups) {
+                const gTable = (g.table || "").toLowerCase();
+                if (!targetTables.length || targetTables.includes(gTable)) {
+                    for (const f of (g.fields || [])) {
+                        const label = multiTable ? `${g.table}.${f.name}` : f.name;
+                        const display = multiTable ? `"${g.table}"."${f.name}"` : `"${f.name}"`;
+                        candidates.push({
+                            label: label,
+                            field: f.name,
+                            table: g.table,
+                            type: f.type || "field",
+                            display: display,
+                        });
+                    }
+                }
+            }
+        } else {
+            const allGroups = this.state.fieldGroups || [];
+            const multiTable = targetTables.length > 1;
+
+            for (const g of allGroups) {
+                const gTable = (g.table || "").toLowerCase();
+                if (!targetTables.length || targetTables.includes(gTable)) {
+                    for (const f of (g.fields || [])) {
+                        const label = multiTable ? `${g.table}.${f.name}` : f.name;
+                        const display = multiTable ? `"${g.table}"."${f.name}"` : `"${f.name}"`;
+                        candidates.push({
+                            label: label,
+                            field: f.name,
+                            table: g.table,
+                            type: f.type || "field",
+                            display: display,
+                        });
+                    }
+                }
+            }
+            for (const t of this.state.tables || []) {
+                candidates.push({
+                    label: t,
+                    table: t,
+                    type: "table",
+                    display: `"${t}"`,
+                });
+            }
+        }
+
+        // Deduplicate and filter candidates
+        const seen = new Set();
+        const filtered = [];
+        for (const c of candidates) {
+            if (seen.has(c.label)) continue;
+            const matchTarget = (c.label + " " + (c.table || "") + " " + (c.type || "")).toLowerCase();
+            if (matchTarget.includes(typedWord)) {
+                seen.add(c.label);
+                filtered.push(c);
+            }
+        }
+
+        if (filtered.length > 0) {
+            const lines = textBefore.split("\n");
+            const lineIndex = lines.length - 1;
+            const colIndex = lines[lineIndex].length;
+
+            const editorHeight = taEl.clientHeight || 200;
+            let topPos = lineIndex * 20 + 26;
+            if (topPos + 180 > editorHeight && lineIndex * 20 > 180) {
+                topPos = lineIndex * 20 - 180;
+            }
+            const leftPos = Math.min(colIndex * 7.5, Math.max((taEl.clientWidth || 400) - 300, 10));
+
+            this.state.autocomplete.visible = true;
+            this.state.autocomplete.items = filtered.slice(0, 30);
+            this.state.autocomplete.selectedIndex = 0;
+            this.state.autocomplete.userNavigated = false;
+            this.state.autocomplete.blockId = blkId;
+            this.state.autocomplete.style = `top: ${topPos}px; left: ${leftPos}px;`;
+        } else {
+            this.state.autocomplete.visible = false;
+        }
+    }
+    insertAutocomplete(item, taEl) {
+        if (!item) return;
+        const blkId = this.state.autocomplete.blockId;
+        const root = this.blocksRef.el;
+        const ta = taEl || (root && root.querySelector(`.sqlms-textarea[data-block-id="${blkId}"]`));
+        if (!ta) {
+            this.state.autocomplete.visible = false;
+            return;
+        }
+        const caretPos = ta.selectionStart;
+        const textBefore = ta.value.slice(0, caretPos);
+        const textAfter = ta.value.slice(caretPos);
+
+        const match = textBefore.match(/([a-zA-Z0-9_".]*)$/);
+        const wordLen = match ? match[1].length : 0;
+
+        const prefix = textBefore.slice(0, textBefore.length - wordLen);
+        const inserted = item.display;
+        const newText = prefix + inserted + textAfter;
+
+        ta.value = newText;
+        const newCaret = prefix.length + inserted.length;
+        ta.setSelectionRange(newCaret, newCaret);
+
+        const t = this.qtab;
+        const blk = t && t.blocks.find((b) => b.id === blkId);
+        if (blk) {
+            blk.text = newText;
+            this.state.query = t.blocks.map((b) => b.text).join(";");
+        }
+        this.state.autocomplete.visible = false;
+        this._syncEditor();
+        ta.focus();
     }
     // Only on losing focus (not every keystroke) do we check whether the
     // user finished typing a new statement (a ';' now sits inside this
@@ -984,14 +1817,15 @@ export class SqlMsAnalyser extends Component {
     }
     copyMapping() {
         const header = ["from_table", "from_column", "to_table", "to_column", "via"].join("\t");
-        const rows = (this.state.mapping && this.state.mapping.rows) || [];
+        const mapping = this.filteredMapping;
+        const rows = (mapping && mapping.rows) || [];
         const body = rows
             .map((m) => [m.from_table, m.from_column, m.to_table, m.to_column, m.via].join("\t"))
             .join("\n");
         this._copy(header + "\n" + body, "Mapping");
     }
     copyFields() {
-        const groups = this.state.fieldGroups || [];
+        const groups = this.filteredFieldGroups || [];
         const header = ["table", "name", "type", "precision/length", "nullable"].join("\t");
         const lines = [header];
         for (const g of groups) {
