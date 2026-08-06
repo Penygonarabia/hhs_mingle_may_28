@@ -1,0 +1,31 @@
+/*
+ * "Sales Dashboard (Q)" — adapted from sales_kpi_dashboard_new.css.
+ * Root carries .pbi-sales-dashboard AND .pbi-sales-kpi-dashboard (same as the
+ * original), so every shared rule there — KPI tile grid/colors, donut/bar
+ * label styles, legend, drill-bar, level-nav, toolbar collapse — applies
+ * here unchanged.
+ */
+
+.pbi-sales-kpi-dashboard-q .measure-toggle {
+  display: flex; gap: 8px; margin-bottom: 14px;
+}
+.pbi-sales-kpi-dashboard-q .measure-btn {
+  font-family: inherit; font-size: 13px; font-weight: 700; line-height: 1;
+  color: var(--text-secondary); background: var(--surface-1);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 9px 22px; cursor: pointer; transition: background .12s, color .12s, border-color .12s;
+}
+.pbi-sales-kpi-dashboard-q .measure-btn:hover { border-color: var(--series-1); color: var(--series-1); }
+.pbi-sales-kpi-dashboard-q .measure-btn.active {
+  background: var(--series-1); border-color: var(--series-1); color: #fff;
+}
+
+.pbi-sales-kpi-dashboard-q .pbi-card-grid-wide {
+  display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px;
+  align-items: start;
+}
+.pbi-sales-kpi-dashboard-q .pbi-card-grid-wide .pbi-card { margin-bottom: 0; min-width: 0; overflow: hidden; }
+
+@media (max-width: 900px) {
+  .pbi-sales-kpi-dashboard-q .pbi-card-grid-wide { grid-template-columns: 1fr; }
+}

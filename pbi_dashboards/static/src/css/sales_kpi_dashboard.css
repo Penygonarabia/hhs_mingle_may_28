@@ -1,0 +1,161 @@
+/*
+ * Sales Analysis (KPI) dashboard — deliberately reuses .pbi-sales-dashboard's
+ * CSS variables/card/legend/tooltip rules (see sales_dashboard.css) by
+ * carrying that class on its root alongside .pbi-sales-kpi-dashboard, same
+ * convention as sales_analysis_dashboard.css. Only the 12-tile KPI grid,
+ * the 4-across chart grid and the donut-chart-specific label styles (no
+ * equivalent in sales_dashboard.css, which only ever draws bar/line charts)
+ * are styled here.
+ */
+.pbi-sales-kpi-dashboard {
+  /* 4th of 5 categorical colors (Customer Type "Projects" in the donut
+     charts — see SALES_TYPE_GROUP_COLORS in sales_kpi_dashboard.js) — kept
+     distinct from --series-6 (red), which sales_dashboard.js/css reserve for
+     "bad"/negative narrative text. The 5th ("Others") reuses the globally
+     defined --series-5 (violet, sales_dashboard.css) as-is — no override
+     needed since nothing else in this category context uses it. */
+  --series-4: #17a2b8;
+}
+
+/* Hard guarantee that nothing inside — a wide chart-scroll SVG, an
+   unshrinkable KPI tile row, a long legend — can ever push the overall
+   page wider than .wrap's own max-width (unchanged from before this
+   drill-down/legend work). Every place content genuinely needs more room
+   than its box scrolls WITHIN itself (chart-scroll, pbi-kpi-row.twelve,
+   pbi-legend) instead of leaking out here. */
+.pbi-sales-kpi-dashboard .wrap { overflow-x: hidden; }
+
+/* minmax(…, 1fr) instead of a plain 1fr: columns grow to fill wide screens
+   but never shrink below a readable width — narrower viewports scroll
+   horizontally (on the row itself) instead of wrapping each tile's caption
+   onto two lines. */
+.pbi-sales-kpi-dashboard .pbi-kpi-row.twelve {
+  grid-template-columns: repeat(6, minmax(170px, 1fr));
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.pbi-sales-kpi-dashboard .pbi-kpi { text-align: center; overflow: hidden; min-width: 0; }
+.pbi-sales-kpi-dashboard .pbi-kpi .value { font-size: 20px; }
+.pbi-sales-kpi-dashboard .pbi-kpi .label {
+  margin-top: 6px; margin-bottom: 0; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Column-keyed tile colors — column 1-6 keeps the same color on both KPI
+   rows (This Year=blue, Target/Last Year=teal, %=orange, YTD This Year=
+   green, YTD Target/Last Year=teal, YTD %=purple), matching the reference
+   PowerBI tile layout. */
+.pbi-sales-kpi-dashboard .tile-color-0, .pbi-sales-kpi-dashboard .tile-color-6 { background: var(--series-1); border-color: var(--series-1); }
+.pbi-sales-kpi-dashboard .tile-color-1, .pbi-sales-kpi-dashboard .tile-color-7 { background: #16a2a6; border-color: #16a2a6; }
+.pbi-sales-kpi-dashboard .tile-color-2, .pbi-sales-kpi-dashboard .tile-color-8 { background: var(--series-3); border-color: var(--series-3); }
+.pbi-sales-kpi-dashboard .tile-color-3, .pbi-sales-kpi-dashboard .tile-color-9 { background: var(--series-2); border-color: var(--series-2); }
+.pbi-sales-kpi-dashboard .tile-color-4, .pbi-sales-kpi-dashboard .tile-color-10 { background: #0c8599; border-color: #0c8599; }
+.pbi-sales-kpi-dashboard .tile-color-5, .pbi-sales-kpi-dashboard .tile-color-11 { background: var(--series-5); border-color: var(--series-5); }
+.pbi-sales-kpi-dashboard [class*="tile-color-"] .value,
+.pbi-sales-kpi-dashboard [class*="tile-color-"] .label { color: #fff; }
+
+.pbi-sales-kpi-dashboard .pbi-card-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px;
+  /* Grid's default align-items:stretch forces every card in a row to match
+     the tallest one — the donut cards (334px SVG, for the leader-line
+     labels) are taller than the bar-chart cards (230px SVG), so without
+     this the shorter cards get ~120px of dead space at the bottom. */
+  align-items: start;
+}
+/* min-width:0 overrides the grid item default of min-width:auto, which
+   otherwise stretches the column ("grid blowout") to fit an unshrinkable
+   child — the nowrap legend or the wide chart-scroll SVG — defeating the
+   fixed 4-across layout and the legend/chart-scroll overflow rules below.
+   overflow:hidden is the hard backstop: whatever a chart/legend needs
+   beyond the card's own width is only ever reachable via that element's
+   OWN scrollbar (chart-scroll, pbi-legend), never by the card growing. */
+.pbi-sales-kpi-dashboard .pbi-card-grid .pbi-card { margin-bottom: 0; min-width: 0; overflow: hidden; }
+
+.pbi-sales-kpi-dashboard .bar-value { fill: var(--text-secondary); font-size: 8px; font-weight: 600; }
+.pbi-sales-kpi-dashboard .donut-label { fill: var(--text-secondary); font-size: 9.5px; font-weight: 600; }
+.pbi-sales-kpi-dashboard .donut-total { fill: var(--text-primary); font-size: 15px; font-weight: 700; }
+.pbi-sales-kpi-dashboard .donut-total-label { fill: var(--text-muted); font-size: 10px; }
+.pbi-sales-kpi-dashboard .donut-leader { stroke: var(--axis); stroke-width: 1; }
+
+/* Bar charts are drawn wider than their card once there are several
+   categories (see the `perGroup` sizing in groupedBarChart), so axis
+   captions and value labels never overlap — this wrapper scrolls
+   horizontally instead of the chart being squeezed to fit. */
+.pbi-sales-kpi-dashboard .chart-scroll { overflow-x: auto; padding-bottom: 4px; }
+
+/* A donut chart never needs to scroll, so unlike .chart-scroll it never
+   grows a horizontal scrollbar — but that scrollbar's own height
+   (~15px, measured) plus chart-scroll's 4px padding-bottom is exactly
+   why a donut card otherwise ends up ~19px SHORTER than its neighboring
+   bar-chart card even with identical 230px SVGs. Reserving the same
+   space here (never actually scrolling) keeps both cards the same
+   height without hardcoding a height on either. */
+.pbi-sales-kpi-dashboard .donut-pad { padding-bottom: 19px; }
+
+/* Legend as a single non-wrapping line with a "▶" button that scrolls
+   further right on click when the items overflow — mirrors the reference
+   PowerBI legend instead of wrapping onto a second line. */
+.pbi-sales-kpi-dashboard .pbi-legend-wrap { display: flex; align-items: center; gap: 4px; margin-bottom: 10px; }
+.pbi-sales-kpi-dashboard .pbi-legend-wrap .pbi-legend {
+  flex-wrap: nowrap; overflow-x: hidden; scroll-behavior: smooth;
+  min-width: 0; margin-bottom: 0;
+}
+.pbi-sales-kpi-dashboard .pbi-legend-wrap .pbi-legend .item { white-space: nowrap; flex: none; }
+.pbi-sales-kpi-dashboard .legend-more {
+  flex: none; border: none; background: var(--grid); color: var(--text-secondary);
+  border-radius: 50%; width: 20px; height: 20px; font-size: 9px; cursor: pointer;
+  visibility: hidden;
+}
+.pbi-sales-kpi-dashboard .legend-more:hover { background: var(--series-1); color: #fff; }
+
+.pbi-sales-kpi-dashboard .drill-bar {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  gap: 8px; margin-bottom: 10px; min-height: 20px;
+}
+.pbi-sales-kpi-dashboard .drill-bar .drill-breadcrumb { margin-bottom: 0; }
+.pbi-sales-kpi-dashboard .drill-hint { font-size: 12px; color: var(--text-muted); }
+
+/* Level-jump nav (jumpToLevel) — a direct shortcut to any of the 6 levels,
+   alongside (not replacing) the breadcrumb/click-to-drill flow. Pill/tab
+   row so the currently active level reads clearly against the other 5. */
+.pbi-sales-kpi-dashboard .level-nav {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;
+}
+.pbi-sales-kpi-dashboard .level-nav-btn {
+  font-family: inherit; font-size: 12px; font-weight: 600; line-height: 1;
+  color: var(--text-secondary); background: var(--surface-1);
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 7px 14px; cursor: pointer; transition: background .12s, color .12s, border-color .12s;
+}
+.pbi-sales-kpi-dashboard .level-nav-btn:hover { border-color: var(--series-1); color: var(--series-1); }
+.pbi-sales-kpi-dashboard .level-nav-btn.active {
+  background: var(--series-1); border-color: var(--series-1); color: #fff;
+}
+
+/* Expand/collapse wrapper around the filters row ONLY (see toggleToolbar in
+   sales_kpi_dashboard.js) — the level-jump nav below it stays put, always
+   visible, since it's the primary way to move around the drill chain, not
+   just a filter. Collapsing the filters row still lets more chart cards be
+   reached "in one look" without scrolling past that chrome first. */
+.pbi-sales-kpi-dashboard .pbi-toolbar { margin-bottom: 12px; }
+.pbi-sales-kpi-dashboard .toolbar-toggle-btn {
+  display: flex; align-items: center; gap: 6px;
+  font-family: inherit; font-size: 12.5px; font-weight: 600;
+  color: var(--text-secondary); background: none; border: none;
+  padding: 4px 2px; margin-bottom: 8px; cursor: pointer;
+}
+.pbi-sales-kpi-dashboard .toolbar-toggle-btn:hover { color: var(--series-1); }
+.pbi-sales-kpi-dashboard .toolbar-toggle-icon {
+  display: inline-block; transition: transform .15s;
+}
+.pbi-sales-kpi-dashboard .pbi-toolbar.collapsed .toolbar-toggle-icon { transform: rotate(-90deg); }
+.pbi-sales-kpi-dashboard .pbi-toolbar .filters { margin-bottom: 8px; }
+.pbi-sales-kpi-dashboard .pbi-toolbar .level-nav { margin-bottom: 0; }
+
+@media (max-width: 1100px) {
+  .pbi-sales-kpi-dashboard .pbi-card-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 900px) {
+  .pbi-sales-kpi-dashboard .pbi-kpi-row.twelve { grid-template-columns: repeat(3, 1fr); }
+  .pbi-sales-kpi-dashboard .pbi-card-grid { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,519 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+  <t t-name="pbi_dashboards.sales_analysis_q">
+    <div class="pbi-sales-dashboard pbi-sales-mail-dashboard pbi-sales-analysis-q" t-ref="root" t-att-dir="isArabicUI() ? 'rtl' : 'ltr'">
+      <div class="wrap">
+        <header>
+          <h1><t t-esc="t('Sales Analysis (Q)')"/></h1>
+          <p><t t-esc="t('Source')"/>: <code>transaction_header / transaction_details</code> · <t t-esc="state.periodLabel"/>
+            <span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'scope')" t-on-mouseleave="onInfoLeave">i</span>
+          </p>
+        </header>
+
+        <div class="filters-panel" t-att-class="state.filtersCollapsed ? 'collapsed' : ''">
+          <button type="button" class="filters-toggle-btn" t-on-click="toggleFilters"
+                  t-att-aria-expanded="state.filtersCollapsed ? 'false' : 'true'">
+            <span class="filters-toggle-icon">▾</span>
+            <t t-esc="t('Filters &amp; Export')"/>
+          </button>
+          <div class="filters" t-if="!state.filtersCollapsed">
+            <div class="filter-row filter-row-inline">
+              <div class="filter-group">
+                <span class="filter-label"><t t-esc="t('Year')"/></span>
+                <select class="filter-select" t-on-change="(ev) => this.selectYear(ev.target.value)">
+                  <t t-foreach="state.yearOptions" t-as="opt" t-key="opt.v">
+                    <option t-att-value="opt.v" t-att-selected="opt.v === state.year ? true : undefined">
+                      <t t-esc="opt.l"/>
+                    </option>
+                  </t>
+                </select>
+              </div>
+              <div class="filter-group">
+                <span class="filter-label"><t t-esc="t('Month')"/></span>
+                <select class="filter-select" t-on-change="(ev) => this.selectMonth(ev.target.value)">
+                  <t t-foreach="monthOptions" t-as="opt" t-key="opt.v">
+                    <option t-att-value="opt.v" t-att-selected="opt.v === state.month ? true : undefined">
+                      <t t-esc="t(opt.l)"/>
+                    </option>
+                  </t>
+                </select>
+              </div>
+              <div class="filter-group">
+                <span class="filter-label"><t t-esc="t('Franchise')"/></span>
+                <select class="filter-select" t-on-change="(ev) => this.selectFranchise(ev.target.value)">
+                  <t t-foreach="franchiseOptions" t-as="opt" t-key="opt.v">
+                    <option t-att-value="opt.v" t-att-selected="opt.v === state.franchise ? true : undefined">
+                      <t t-esc="t(opt.l)"/>
+                    </option>
+                  </t>
+                </select>
+              </div>
+            </div>
+            <div class="filter-row export-actions">
+              <span class="filter-label"><t t-esc="t('Export')"/></span>
+              <div class="pill-filter">
+                <button t-on-click="exportPdf"><t t-esc="t('Export PDF')"/></button>
+                <button t-on-click="exportPptx"><t t-esc="t('Export PowerPoint')"/></button>
+                <button t-on-click="() => this.refs.importNotesInput.el.click()"><t t-esc="t('Import Notes')"/></button>
+                <input type="file" accept=".pptx" class="d-none" t-ref="importNotesInput" t-on-change="importNotes"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="error-banner" t-if="state.error">
+          <t t-esc="state.error"/>
+        </div>
+
+        <div class="dashboard" t-att-class="state.loading ? 'loading' : ''">
+          <h3 class="kpi-heading"><t t-esc="t('Value')"/><span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'kpi-amount')" t-on-mouseleave="onInfoLeave">i</span></h3>
+          <div class="pbi-kpi-row six" t-ref="kpiAmountRow"/>
+          <h3 class="kpi-heading"><t t-esc="t('Quantity')"/><span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'kpi-qty')" t-on-mouseleave="onInfoLeave">i</span></h3>
+          <div class="pbi-kpi-row six" t-ref="kpiQtyRow"/>
+
+          <!-- Page 1: Total Company -->
+          <section class="pbi-page">
+            <h2>1. <t t-esc="t('Total Company')"/><span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'total-company')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two">
+                  <div class="pbi-card"><h3><t t-esc="state.periodLabel"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="totalCompanyMtdValueChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.periodLabel"/> - <t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="totalCompanyMtdQtyChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/> <t t-esc="t('YTD')"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="totalCompanyYtdValueChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/> <t t-esc="t('YTD')"/> - <t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="totalCompanyYtdQtyChart"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="totalCompanyNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 2: Department & Region Performance Trends -->
+          <section class="pbi-page">
+            <h2>2. <t t-esc="t('Department &amp; Region Performance Trends (YTD)')"/><span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'dept-region-trends')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two stacked-full">
+                  <div class="pbi-card"><h3><t t-esc="t('By Department — Achievement % / YoY %')"/></h3><div class="chart-scroll" t-ref="deptTrendChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="t('By Dealer Region — Achievement % / YoY %')"/></h3><div class="chart-scroll" t-ref="regionTrendChart"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="deptRegionTrendsNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 3: Quarterly Sales Progression — Company -->
+          <section class="pbi-page">
+            <h2>3. <t t-esc="t('Quarterly Sales Progression — Company')"/> (<t t-esc="state.year"/>)<span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'quarterly-company')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card">
+                  <div class="chart-scroll" t-ref="quarterlyCompanyChart"/>
+                </div>
+              </div>
+              <div class="narrative" t-ref="quarterlyCompanyNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 4: Quarterly Progression by Department — one PRINTED page per
+               tab (per-tab-print, see @media print), unlike every other
+               toggle-page which consolidates all 4 states onto one page
+               without notes. Each .tab-panel-title is screen-hidden (the
+               screen view already has the section h2 + toggle bar for
+               context) and only shown in print, repeating the full section
+               title so every printed page is self-contained. -->
+          <section class="pbi-page toggle-page per-tab-print">
+            <h2>4. <t t-esc="t('Quarterly Progression by Department')"/> (<t t-esc="state.year"/>)<span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'quarterly-department')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="toggle-bar">
+              <t t-foreach="pages[3].toggle.options" t-as="opt" t-key="opt.v">
+                <button type="button" t-att-class="'toggle-btn' + (state.toggleState.quarterlyDepartment === opt.v ? ' active' : '')" t-on-click="() => this.setToggle('quarterlyDepartment', opt.v)"><t t-esc="opt.l"/></button>
+              </t>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.quarterlyDepartment === 'dealers' ? ' active' : '')">
+              <h3 class="tab-panel-title">4. <t t-esc="t('Quarterly Progression by Department')"/> — Dealers (<t t-esc="state.year"/>)</h3>
+              <div class="chart-row">
+                <div class="chart-col"><div class="pbi-card"><div class="chart-scroll" t-ref="quarterlyDepartmentChart_dealers"/></div></div>
+                <div class="narrative" t-ref="quarterlyDepartmentNotes_dealers"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.quarterlyDepartment === 'mt' ? ' active' : '')">
+              <h3 class="tab-panel-title">4. <t t-esc="t('Quarterly Progression by Department')"/> — Modern Trade (<t t-esc="state.year"/>)</h3>
+              <div class="chart-row">
+                <div class="chart-col"><div class="pbi-card"><div class="chart-scroll" t-ref="quarterlyDepartmentChart_mt"/></div></div>
+                <div class="narrative" t-ref="quarterlyDepartmentNotes_mt"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.quarterlyDepartment === 'ws' ? ' active' : '')">
+              <h3 class="tab-panel-title">4. <t t-esc="t('Quarterly Progression by Department')"/> — Whole Sale (<t t-esc="state.year"/>)</h3>
+              <div class="chart-row">
+                <div class="chart-col"><div class="pbi-card"><div class="chart-scroll" t-ref="quarterlyDepartmentChart_ws"/></div></div>
+                <div class="narrative" t-ref="quarterlyDepartmentNotes_ws"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.quarterlyDepartment === 'projects' ? ' active' : '')">
+              <h3 class="tab-panel-title">4. <t t-esc="t('Quarterly Progression by Department')"/> — Projects (<t t-esc="state.year"/>)</h3>
+              <div class="chart-row">
+                <div class="chart-col"><div class="pbi-card"><div class="chart-scroll" t-ref="quarterlyDepartmentChart_projects"/></div></div>
+                <div class="narrative" t-ref="quarterlyDepartmentNotes_projects"/>
+              </div>
+            </div>
+          </section>
+
+          <!-- Page 5: Quarterly Progression by Region (Dealers) — same
+               one-page-per-tab print treatment as page 4. -->
+          <section class="pbi-page toggle-page per-tab-print">
+            <h2>5. <t t-esc="t('Quarterly Progression by Region — Dealers')"/> (<t t-esc="state.year"/>)<span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'quarterly-region')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="toggle-bar">
+              <t t-foreach="pages[4].toggle.options" t-as="opt" t-key="opt.v">
+                <button type="button" t-att-class="'toggle-btn' + (state.toggleState.quarterlyRegion === opt.v ? ' active' : '')" t-on-click="() => this.setToggle('quarterlyRegion', opt.v)"><t t-esc="opt.l"/></button>
+              </t>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.quarterlyRegion === 'riyadh' ? ' active' : '')">
+              <h3 class="tab-panel-title">5. <t t-esc="t('Quarterly Progression by Region — Dealers')"/> — Riyadh (<t t-esc="state.year"/>)</h3>
+              <div class="chart-row">
+                <div class="chart-col"><div class="pbi-card"><div class="chart-scroll" t-ref="quarterlyRegionChart_riyadh"/></div></div>
+                <div class="narrative" t-ref="quarterlyRegionNotes_riyadh"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.quarterlyRegion === 'qassim' ? ' active' : '')">
+              <h3 class="tab-panel-title">5. <t t-esc="t('Quarterly Progression by Region — Dealers')"/> — Qassim (<t t-esc="state.year"/>)</h3>
+              <div class="chart-row">
+                <div class="chart-col"><div class="pbi-card"><div class="chart-scroll" t-ref="quarterlyRegionChart_qassim"/></div></div>
+                <div class="narrative" t-ref="quarterlyRegionNotes_qassim"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.quarterlyRegion === 'western' ? ' active' : '')">
+              <h3 class="tab-panel-title">5. <t t-esc="t('Quarterly Progression by Region — Dealers')"/> — Western (<t t-esc="state.year"/>)</h3>
+              <div class="chart-row">
+                <div class="chart-col"><div class="pbi-card"><div class="chart-scroll" t-ref="quarterlyRegionChart_western"/></div></div>
+                <div class="narrative" t-ref="quarterlyRegionNotes_western"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.quarterlyRegion === 'eastern' ? ' active' : '')">
+              <h3 class="tab-panel-title">5. <t t-esc="t('Quarterly Progression by Region — Dealers')"/> — Eastern (<t t-esc="state.year"/>)</h3>
+              <div class="chart-row">
+                <div class="chart-col"><div class="pbi-card"><div class="chart-scroll" t-ref="quarterlyRegionChart_eastern"/></div></div>
+                <div class="narrative" t-ref="quarterlyRegionNotes_eastern"/>
+              </div>
+            </div>
+          </section>
+
+          <!-- Page 6: Main Groups — MTD & YTD -->
+          <section class="pbi-page">
+            <h2>6. <t t-esc="t('Main Groups')"/> <span class="derived-tag"><t t-esc="t('Main Group')"/></span><span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'main-groups')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two stacked-full">
+                  <div class="pbi-card"><h3><t t-esc="state.periodLabel"/></h3><div class="chart-scroll" t-ref="mainGroupsMtdChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/> <t t-esc="t('YTD')"/></h3><div class="chart-scroll" t-ref="mainGroupsYtdChart"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="mainGroupsNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 7: Product Sub-Groups — Top 8 (YTD) -->
+          <section class="pbi-page">
+            <h2>7. <t t-esc="t('Product Sub-Groups — Top 8 (YTD)')"/><span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'subgroups-top8')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two stacked-full">
+                  <div class="pbi-card"><h3><t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="subgroupsTop8ValueChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="subgroupsTop8QtyChart"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="subgroupsTop8Notes"/>
+            </div>
+          </section>
+
+          <!-- Page 8: Sub-Groups Distribution — LY vs TY -->
+          <section class="pbi-page">
+            <h2>8. <t t-esc="t('Sub-Groups Distribution — LY vs TY (Top 8, YTD)')"/><span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'subgroups-distribution')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two">
+                  <div class="pbi-card"><h3><t t-esc="t('Last Year')"/></h3><div class="donut-pad" t-ref="subgroupsDistributionDonutLY"/></div>
+                  <div class="pbi-card"><h3><t t-esc="t('This Year')"/></h3><div class="donut-pad" t-ref="subgroupsDistributionDonutTY"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="subgroupsDistributionNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 9: Main Groups Distribution — LY vs TY -->
+          <section class="pbi-page">
+            <h2>9. <t t-esc="t('Main Groups Distribution — LY vs TY (YTD)')"/> <span class="derived-tag"><t t-esc="t('Main Group')"/></span><span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'maingroups-distribution')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two">
+                  <div class="pbi-card"><h3><t t-esc="t('Last Year')"/></h3><div class="donut-pad" t-ref="maingroupsDistributionDonutLY"/></div>
+                  <div class="pbi-card"><h3><t t-esc="t('This Year')"/></h3><div class="donut-pad" t-ref="maingroupsDistributionDonutTY"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="maingroupsDistributionNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 10: Departments — MTD & YTD -->
+          <section class="pbi-page">
+            <h2>10. <t t-esc="t('Departments')"/><span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'departments')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two">
+                  <div class="pbi-card"><h3><t t-esc="state.periodLabel"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="departmentsMtdValueChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.periodLabel"/> - <t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="departmentsMtdQtyChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/> <t t-esc="t('YTD')"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="departmentsYtdValueChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/> <t t-esc="t('YTD')"/> - <t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="departmentsYtdQtyChart"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="departmentsNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 11: Departments Distribution — LY vs TY -->
+          <section class="pbi-page">
+            <h2>11. <t t-esc="t('Departments Distribution — LY vs TY (YTD)')"/><span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'departments-distribution')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two">
+                  <div class="pbi-card"><h3><t t-esc="t('Value')"/> — <t t-esc="t('Last Year')"/></h3><div class="donut-pad" t-ref="departmentsDistributionDonutValueLY"/></div>
+                  <div class="pbi-card"><h3><t t-esc="t('Value')"/> — <t t-esc="t('This Year')"/></h3><div class="donut-pad" t-ref="departmentsDistributionDonutValueTY"/></div>
+                  <div class="pbi-card"><h3><t t-esc="t('Quantity')"/> — <t t-esc="t('Last Year')"/></h3><div class="donut-pad" t-ref="departmentsDistributionDonutQtyLY"/></div>
+                  <div class="pbi-card"><h3><t t-esc="t('Quantity')"/> — <t t-esc="t('This Year')"/></h3><div class="donut-pad" t-ref="departmentsDistributionDonutQtyTY"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="departmentsDistributionNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 12: LCAC Sub-Groups -->
+          <section class="pbi-page">
+            <h2>12. <t t-esc="t('LCAC Sub-Groups')"/> <span class="derived-tag"><t t-esc="t('Main Group')"/> = LCAC</span><span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'lcac-subgroups')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two stacked-full">
+                  <div class="pbi-card"><h3><t t-esc="state.periodLabel"/></h3><div class="chart-scroll" t-ref="lcacSubgroupsMtdChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/> <t t-esc="t('YTD')"/></h3><div class="chart-scroll" t-ref="lcacSubgroupsYtdChart"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="lcacSubgroupsNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 13: Top-3 Sub-Groups by Channel — one PRINTED page per tab
+               (per-tab-print, see @media print), same treatment as pages 4/5. -->
+          <section class="pbi-page toggle-page per-tab-print">
+            <h2>13. <t t-esc="t('Top-3 Sub-Groups by Channel (YTD)')"/><span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'top3-by-channel')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="toggle-bar">
+              <t t-foreach="pages[12].toggle.options" t-as="opt" t-key="opt.v">
+                <button type="button" t-att-class="'toggle-btn' + (state.toggleState.top3ByChannel === opt.v ? ' active' : '')" t-on-click="() => this.setToggle('top3ByChannel', opt.v)"><t t-esc="opt.l"/></button>
+              </t>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.top3ByChannel === 'dealers' ? ' active' : '')">
+              <h3 class="tab-panel-title">13. <t t-esc="t('Top-3 Sub-Groups by Channel (YTD)')"/> — Dealers</h3>
+              <div class="chart-row">
+                <div class="chart-col">
+                  <div class="pbi-card-grid two stacked-full">
+                    <div class="pbi-card"><h3><t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="top3ByChannelValueChart_dealers"/></div>
+                    <div class="pbi-card"><h3><t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="top3ByChannelQtyChart_dealers"/></div>
+                  </div>
+                </div>
+                <div class="narrative" t-ref="top3ByChannelNotes_dealers"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.top3ByChannel === 'mt' ? ' active' : '')">
+              <h3 class="tab-panel-title">13. <t t-esc="t('Top-3 Sub-Groups by Channel (YTD)')"/> — Modern Trade</h3>
+              <div class="chart-row">
+                <div class="chart-col">
+                  <div class="pbi-card-grid two stacked-full">
+                    <div class="pbi-card"><h3><t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="top3ByChannelValueChart_mt"/></div>
+                    <div class="pbi-card"><h3><t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="top3ByChannelQtyChart_mt"/></div>
+                  </div>
+                </div>
+                <div class="narrative" t-ref="top3ByChannelNotes_mt"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.top3ByChannel === 'ws' ? ' active' : '')">
+              <h3 class="tab-panel-title">13. <t t-esc="t('Top-3 Sub-Groups by Channel (YTD)')"/> — Whole Sale</h3>
+              <div class="chart-row">
+                <div class="chart-col">
+                  <div class="pbi-card-grid two stacked-full">
+                    <div class="pbi-card"><h3><t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="top3ByChannelValueChart_ws"/></div>
+                    <div class="pbi-card"><h3><t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="top3ByChannelQtyChart_ws"/></div>
+                  </div>
+                </div>
+                <div class="narrative" t-ref="top3ByChannelNotes_ws"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.top3ByChannel === 'projects' ? ' active' : '')">
+              <h3 class="tab-panel-title">13. <t t-esc="t('Top-3 Sub-Groups by Channel (YTD)')"/> — Projects</h3>
+              <div class="chart-row">
+                <div class="chart-col">
+                  <div class="pbi-card-grid two stacked-full">
+                    <div class="pbi-card"><h3><t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="top3ByChannelValueChart_projects"/></div>
+                    <div class="pbi-card"><h3><t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="top3ByChannelQtyChart_projects"/></div>
+                  </div>
+                </div>
+                <div class="narrative" t-ref="top3ByChannelNotes_projects"/>
+              </div>
+            </div>
+          </section>
+
+          <!-- Page 14: Regions by Channel — one PRINTED page per tab
+               (per-tab-print, see @media print), same treatment as pages 4/5. -->
+          <section class="pbi-page toggle-page per-tab-print">
+            <h2>14. <t t-esc="t('Regions by Channel (YTD)')"/><span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'regions-by-channel')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="toggle-bar">
+              <t t-foreach="pages[13].toggle.options" t-as="opt" t-key="opt.v">
+                <button type="button" t-att-class="'toggle-btn' + (state.toggleState.regionsByChannel === opt.v ? ' active' : '')" t-on-click="() => this.setToggle('regionsByChannel', opt.v)"><t t-esc="opt.l"/></button>
+              </t>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.regionsByChannel === 'dealers' ? ' active' : '')">
+              <h3 class="tab-panel-title">14. <t t-esc="t('Regions by Channel (YTD)')"/> — Dealers</h3>
+              <div class="chart-row">
+                <div class="chart-col">
+                  <div class="pbi-card-grid two stacked-full">
+                    <div class="pbi-card"><h3><t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="regionsByChannelValueChart_dealers"/></div>
+                    <div class="pbi-card"><h3><t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="regionsByChannelQtyChart_dealers"/></div>
+                  </div>
+                </div>
+                <div class="narrative" t-ref="regionsByChannelNotes_dealers"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.regionsByChannel === 'mt' ? ' active' : '')">
+              <h3 class="tab-panel-title">14. <t t-esc="t('Regions by Channel (YTD)')"/> — Modern Trade</h3>
+              <div class="chart-row">
+                <div class="chart-col">
+                  <div class="pbi-card-grid two stacked-full">
+                    <div class="pbi-card"><h3><t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="regionsByChannelValueChart_mt"/></div>
+                    <div class="pbi-card"><h3><t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="regionsByChannelQtyChart_mt"/></div>
+                  </div>
+                </div>
+                <div class="narrative" t-ref="regionsByChannelNotes_mt"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.regionsByChannel === 'ws' ? ' active' : '')">
+              <h3 class="tab-panel-title">14. <t t-esc="t('Regions by Channel (YTD)')"/> — Whole Sale</h3>
+              <div class="chart-row">
+                <div class="chart-col">
+                  <div class="pbi-card-grid two stacked-full">
+                    <div class="pbi-card"><h3><t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="regionsByChannelValueChart_ws"/></div>
+                    <div class="pbi-card"><h3><t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="regionsByChannelQtyChart_ws"/></div>
+                  </div>
+                </div>
+                <div class="narrative" t-ref="regionsByChannelNotes_ws"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.regionsByChannel === 'projects' ? ' active' : '')">
+              <h3 class="tab-panel-title">14. <t t-esc="t('Regions by Channel (YTD)')"/> — Projects</h3>
+              <div class="chart-row">
+                <div class="chart-col">
+                  <div class="pbi-card-grid two stacked-full">
+                    <div class="pbi-card"><h3><t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="regionsByChannelValueChart_projects"/></div>
+                    <div class="pbi-card"><h3><t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="regionsByChannelQtyChart_projects"/></div>
+                  </div>
+                </div>
+                <div class="narrative" t-ref="regionsByChannelNotes_projects"/>
+              </div>
+            </div>
+          </section>
+
+          <!-- Page 15: Dealers by Region — Main Groups — one PRINTED page per
+               tab (per-tab-print, see @media print), same treatment as pages 4/5. -->
+          <section class="pbi-page toggle-page per-tab-print">
+            <h2>15. <t t-esc="t('Dealers by Region — Main Groups (YTD)')"/> <span class="derived-tag"><t t-esc="t('Main Group')"/></span><span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'dealers-region-maingroups')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="toggle-bar">
+              <t t-foreach="pages[14].toggle.options" t-as="opt" t-key="opt.v">
+                <button type="button" t-att-class="'toggle-btn' + (state.toggleState.dealersRegionMaingroups === opt.v ? ' active' : '')" t-on-click="() => this.setToggle('dealersRegionMaingroups', opt.v)"><t t-esc="opt.l"/></button>
+              </t>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.dealersRegionMaingroups === 'riyadh' ? ' active' : '')">
+              <h3 class="tab-panel-title">15. <t t-esc="t('Dealers by Region — Main Groups (YTD)')"/> — Riyadh</h3>
+              <div class="chart-row">
+                <div class="chart-col"><div class="pbi-card"><div class="chart-scroll" t-ref="dealersRegionMaingroupsChart_riyadh"/></div></div>
+                <div class="narrative" t-ref="dealersRegionMaingroupsNotes_riyadh"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.dealersRegionMaingroups === 'qassim' ? ' active' : '')">
+              <h3 class="tab-panel-title">15. <t t-esc="t('Dealers by Region — Main Groups (YTD)')"/> — Qassim</h3>
+              <div class="chart-row">
+                <div class="chart-col"><div class="pbi-card"><div class="chart-scroll" t-ref="dealersRegionMaingroupsChart_qassim"/></div></div>
+                <div class="narrative" t-ref="dealersRegionMaingroupsNotes_qassim"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.dealersRegionMaingroups === 'western' ? ' active' : '')">
+              <h3 class="tab-panel-title">15. <t t-esc="t('Dealers by Region — Main Groups (YTD)')"/> — Western</h3>
+              <div class="chart-row">
+                <div class="chart-col"><div class="pbi-card"><div class="chart-scroll" t-ref="dealersRegionMaingroupsChart_western"/></div></div>
+                <div class="narrative" t-ref="dealersRegionMaingroupsNotes_western"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.dealersRegionMaingroups === 'eastern' ? ' active' : '')">
+              <h3 class="tab-panel-title">15. <t t-esc="t('Dealers by Region — Main Groups (YTD)')"/> — Eastern</h3>
+              <div class="chart-row">
+                <div class="chart-col"><div class="pbi-card"><div class="chart-scroll" t-ref="dealersRegionMaingroupsChart_eastern"/></div></div>
+                <div class="narrative" t-ref="dealersRegionMaingroupsNotes_eastern"/>
+              </div>
+            </div>
+          </section>
+
+          <!-- Page 16: Dealers by Region — Split Sub-Groups — one PRINTED page
+               per tab (per-tab-print, see @media print), same treatment as
+               pages 4/5. -->
+          <section class="pbi-page toggle-page per-tab-print">
+            <h2>16. <t t-esc="t('Dealers by Region — Split Sub-Groups (YTD)')"/> <span class="derived-tag"><t t-esc="t('Main Group')"/> = Split</span><span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'dealers-region-subgroups')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="toggle-bar">
+              <t t-foreach="pages[15].toggle.options" t-as="opt" t-key="opt.v">
+                <button type="button" t-att-class="'toggle-btn' + (state.toggleState.dealersRegionSubgroups === opt.v ? ' active' : '')" t-on-click="() => this.setToggle('dealersRegionSubgroups', opt.v)"><t t-esc="opt.l"/></button>
+              </t>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.dealersRegionSubgroups === 'riyadh' ? ' active' : '')">
+              <h3 class="tab-panel-title">16. <t t-esc="t('Dealers by Region — Split Sub-Groups (YTD)')"/> — Riyadh</h3>
+              <div class="chart-row">
+                <div class="chart-col"><div class="pbi-card"><div class="chart-scroll" t-ref="dealersRegionSubgroupsChart_riyadh"/></div></div>
+                <div class="narrative" t-ref="dealersRegionSubgroupsNotes_riyadh"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.dealersRegionSubgroups === 'qassim' ? ' active' : '')">
+              <h3 class="tab-panel-title">16. <t t-esc="t('Dealers by Region — Split Sub-Groups (YTD)')"/> — Qassim</h3>
+              <div class="chart-row">
+                <div class="chart-col"><div class="pbi-card"><div class="chart-scroll" t-ref="dealersRegionSubgroupsChart_qassim"/></div></div>
+                <div class="narrative" t-ref="dealersRegionSubgroupsNotes_qassim"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.dealersRegionSubgroups === 'western' ? ' active' : '')">
+              <h3 class="tab-panel-title">16. <t t-esc="t('Dealers by Region — Split Sub-Groups (YTD)')"/> — Western</h3>
+              <div class="chart-row">
+                <div class="chart-col"><div class="pbi-card"><div class="chart-scroll" t-ref="dealersRegionSubgroupsChart_western"/></div></div>
+                <div class="narrative" t-ref="dealersRegionSubgroupsNotes_western"/>
+              </div>
+            </div>
+            <div t-att-class="'toggle-panel' + (state.toggleState.dealersRegionSubgroups === 'eastern' ? ' active' : '')">
+              <h3 class="tab-panel-title">16. <t t-esc="t('Dealers by Region — Split Sub-Groups (YTD)')"/> — Eastern</h3>
+              <div class="chart-row">
+                <div class="chart-col"><div class="pbi-card"><div class="chart-scroll" t-ref="dealersRegionSubgroupsChart_eastern"/></div></div>
+                <div class="narrative" t-ref="dealersRegionSubgroupsNotes_eastern"/>
+              </div>
+            </div>
+          </section>
+
+          <!-- Page 17: Projects — Product Groups (YTD) -->
+          <section class="pbi-page">
+            <h2>17. <t t-esc="t('Projects — Product Groups (YTD)')"/><span class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'projects-productgroups')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two stacked-full">
+                  <div class="pbi-card"><h3><t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="projectsProductgroupsValueChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="projectsProductgroupsQtyChart"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="projectsProductgroupsNotes"/>
+            </div>
+          </section>
+        </div>
+
+        <footer><t t-esc="t('PBI Dashboards')"/> &gt; <t t-esc="t('Quarterly Sales Dashboards')"/> &gt; <t t-esc="t('Sales Analysis (Q)')"/> — <t t-esc="t('live from')"/> transaction_header / transaction_details</footer>
+      </div>
+      <div class="pbi-tooltip" t-ref="tooltip"/>
+    </div>
+  </t>
+</templates>

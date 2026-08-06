@@ -1,0 +1,20 @@
+/*
+ * Loyalty Analysis dashboard — deliberately reuses .pbi-sales-dashboard's
+ * CSS variables/card/legend/chart/tooltip/pill-filter rules (see
+ * sales_dashboard.css) by carrying that class on its root alongside
+ * .pbi-loyalty-dashboard, so both dashboards read as one visual family.
+ * Only the bits with no Sales Dashboard equivalent — the resolved date
+ * range readout and the custom date-range inputs — are styled here.
+ */
+.pbi-loyalty-dashboard .resolved-range {
+  font-size: 12.5px; font-weight: 600; color: var(--text-primary);
+}
+.pbi-loyalty-dashboard .date-range-inputs {
+  display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-secondary);
+}
+.pbi-loyalty-dashboard .date-range-inputs input[type="date"] {
+  font-family: inherit; font-size: 12.5px; color: var(--text-primary);
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;
+  padding: 6px 10px;
+}
+.pbi-loyalty-dashboard .bar-value { fill: var(--text-secondary); font-size: 8px; font-weight: 600; }
