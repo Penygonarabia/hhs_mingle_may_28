@@ -76,18 +76,97 @@ class MenuAccessRights(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
+        records._mar_sync_hide_list()
         self.env.registry.clear_cache()
         return records
 
     def write(self, values):
         res = super().write(values)
+        # user_id/menu_id are included because either one moves a row to a
+        # different (user, menu) pair, which is a different hide-list entry.
+        if {"has_access", "user_id", "menu_id"} & set(values):
+            self._mar_sync_hide_list()
         self.env.registry.clear_cache()
         return res
 
     def unlink(self):
+        # Deliberately NOT synced. The only caller that deletes rights rows is
+        # post_init_hook, which clears the table before re-seeding it; syncing
+        # here would push every menu onto every user's hide list a moment
+        # before create() takes them all off again — a large pointless write,
+        # and a half-installed database if anything failed in between. A
+        # revoke in normal operation is has_access=False, not a delete, and
+        # that path IS synced by write() above.
         res = super().unlink()
         self.env.registry.clear_cache()
         return res
+
+    # ------------------------------------------------------------------
+    # Mirror into hide_menu_user's deny list
+    # ------------------------------------------------------------------
+    # Why this exists: menu.access.rights is dropped outright when this module
+    # is uninstalled (ir_model.unlink -> _drop_table), taking every grant with
+    # it. Mirroring each change onto res.users.hide_menu_ids leaves the
+    # decisions recorded in a table this module does not own, so they survive.
+    #
+    # The two systems enforce independently and agree only because this keeps
+    # them in step: has_access=True removes the menu from the user's hide
+    # list, has_access=False adds it.
+    #
+    # No dependency is declared on hide_menu_user — the manifest is still
+    # base-only — so every call is guarded on the field actually existing.
+    # ------------------------------------------------------------------
+    _MAR_HIDE_FIELD = "hide_menu_ids"
+
+    @api.model
+    def _mar_hide_sync_available(self):
+        return self._MAR_HIDE_FIELD in self.env["res.users"]._fields
+
+    def _mar_sync_hide_list(self):
+        if not self or self.env.context.get("mar_skip_hide_sync"):
+            return
+        if not self._mar_hide_sync_available():
+            return
+
+        # A menu-rights admin must never be able to hide this module's own
+        # page from themselves. Enforcement already exempts that chain (see
+        # _mar_restricted_menu_ids' lockout guard), but hide_menu_user's
+        # ir.rule has no such notion — pushing those menus onto the hide list
+        # would route around the guard and lock the admin out for real, with
+        # only raw SQL to undo it.
+        protected = self.self_access_menu_ids()
+
+        by_user = {}
+        for rec in self:
+            if not rec.user_id or not rec.menu_id:
+                continue
+            by_user.setdefault(rec.user_id.id, {})[rec.menu_id.id] = rec.has_access
+
+        Users = self.env["res.users"].sudo()
+        for user_id, wanted in by_user.items():
+            user = Users.browse(user_id)
+            if not user.exists():
+                continue
+            guarded = user.has_group("user_menu_rights.group_menu_rights_admin")
+            hidden_now = set(user[self._MAR_HIDE_FIELD].ids)
+
+            commands = []
+            for menu_id, granted in wanted.items():
+                should_hide = not granted
+                if should_hide and guarded and menu_id in protected:
+                    should_hide = False
+                if should_hide and menu_id not in hidden_now:
+                    commands.append(fields.Command.link(menu_id))
+                elif not should_hide and menu_id in hidden_now:
+                    commands.append(fields.Command.unlink(menu_id))
+
+            # One write per user, not per row: a Grant All is ~860 rows and
+            # the install hook creates ~100k, so a per-row write would make
+            # both unusable.
+            if commands:
+                user.with_context(mar_skip_hide_sync=True).write(
+                    {self._MAR_HIDE_FIELD: commands}
+                )
 
     # ------------------------------------------------------------------
     # Helpers used by enforcement, the matrix wizard, and the install hook.

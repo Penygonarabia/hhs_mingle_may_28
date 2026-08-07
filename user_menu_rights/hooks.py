@@ -14,9 +14,6 @@ through the Menu Rights screens.
 
 def post_init_hook(env):
     Rights = env["menu.access.rights"].sudo()
-    # Clear any existing records from previous incomplete uninstalls to prevent unique constraint violations
-    Rights.search([]).unlink()
-
     managed_ids = Rights.managed_menu_ids()
     if not managed_ids:
         return
@@ -32,10 +29,29 @@ def post_init_hook(env):
         if Rights._is_admin_user(user):
             # The true superuser bypasses the check entirely; no rows needed.
             continue
+        # debug=True is REQUIRED, not a debugging aid. Odoo's signature is
+        # _visible_menu_ids(self, debug=False), and when debug is false it
+        # does `groups = groups - base.group_no_one`, hiding every
+        # developer-mode menu — Technical and its whole subtree. Seeding from
+        # that view grandfathers those menus as REVOKED for everyone, so a
+        # user who switches developer mode on finds them gone: access taken
+        # away by an install that promises to take nothing away.
+        #
+        # This is the exact defect migrations/17.0.1.4.0 exists to repair, and
+        # it chose the same fix — the maximal, group-based visibility. A
+        # migration only runs on upgrade though, so until this line carried
+        # debug=True a FRESH install on a new server reproduced the bug the
+        # migration had already fixed elsewhere.
+        #
+        # Granting more than the user sees today is safe in the other
+        # direction: Odoo still applies its own debug filter at render time,
+        # so a menu gated on group_no_one stays hidden until that user
+        # actually turns developer mode on. The grant only decides whether
+        # THIS module additionally forbids it.
         visible_ids = set(
             IrUiMenu.with_user(user)
             .with_context(mar_skip_enforcement=True)
-            ._visible_menu_ids()
+            ._visible_menu_ids(debug=True)
         )
         granted_ids = visible_ids & managed_ids
         for menu_id in managed_ids:

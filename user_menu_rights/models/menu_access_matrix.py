@@ -35,15 +35,11 @@ class MenuAccessMatrix(models.TransientModel):
 
     # This is what the breadcrumb shows. depends on user_id so picking
     # someone on the left re-renders the title with their name appended.
-    @api.depends("user_id", "user_id.name", "user_id.login")
+    @api.depends("user_id")
     def _compute_display_name(self):
         title = _("Menu Access Rights")
         for rec in self:
-            if rec.user_id:
-                email = rec.user_id.login or ""
-                rec.display_name = "%s - %s / %s" % (title, rec.user_id.name, email) if email else "%s - %s" % (title, rec.user_id.name)
-            else:
-                rec.display_name = title
+            rec.display_name = "%s - %s" % (title, rec.user_id.name) if rec.user_id else title
 
     user_id = fields.Many2one(
         "res.users",
@@ -165,25 +161,11 @@ class MenuAccessMatrix(models.TransientModel):
             ]).mapped("menu_id").ids
         )
 
-        # Build parent mapping to resolve ancestors
-        parent_map = {}
-        for m in menus:
-            if m.parent_id and m.parent_id.id in managed_ids:
-                parent_map[m.id] = m.parent_id.id
-
-        # Expand to include all parent menu ancestors of any granted menu
-        all_granted_ids = set(granted_ids)
-        for g_id in granted_ids:
-            cur = g_id
-            while cur in parent_map:
-                cur = parent_map[cur]
-                all_granted_ids.add(cur)
-
         vals_list = []
 
         def walk(menu, parent_path, depth):
             path = "%s%d/" % (parent_path, menu.id)
-            has_access = True if is_admin else (menu.id in all_granted_ids)
+            has_access = True if is_admin else (menu.id in granted_ids)
             kids = children_of.get(menu.id, [])
             vals_list.append({
                 "matrix_id": self.id,
@@ -212,19 +194,16 @@ class MenuAccessMatrix(models.TransientModel):
     # ------------------------------------------------------------------
     # Grant / Revoke all
     # ------------------------------------------------------------------
-    # These two are STAGED: they set every row on screen but write nothing to
-    # menu.access.rights until Save Changes. A mis-aimed "Revoke All" on the
-    # wrong user is a 800-row mistake, so it gets a way back that does not
-    # depend on remembering the previous state.
+    # Unlike a single row toggle, these two are STAGED: they set every row on
+    # screen but write nothing to menu.access.rights until Save Changes. A
+    # mis-aimed "Revoke All" on the wrong user is a 800-row mistake, so it
+    # gets a way back that does not depend on remembering the previous state.
     #
-    # A single row toggle is staged too, but through Odoo's own dirty state —
-    # the switch calls record.update() and the breadcrumb Save / Discard take
-    # it from there (see MarAccessToggleField). These two buttons cannot use
-    # that: a type="object" button force-saves the form before the method even
-    # runs, so there is no unsaved client state left for those controls to act
-    # on. Their staging therefore lives in the transient lines (which the
-    # button IS allowed to write) plus the has_pending_bulk flag, with an
-    # explicit Save/Discard pair of our own.
+    # Why not Odoo's own Save/Discard: a type="object" button force-saves the
+    # form before the method even runs, so there is no unsaved client state
+    # left for those controls to act on. The staging therefore lives in the
+    # transient lines (which the button IS allowed to write) plus the
+    # has_pending_bulk flag, with an explicit Save/Discard pair of our own.
     #
     # skip_cascade: every row is being set to the SAME value, so the per-row
     # cascade has nothing to work out — and without this it would run once
@@ -369,7 +348,7 @@ class MenuAccessMatrixLine(models.TransientModel):
     def _compute_display_label(self):
         for rec in self:
             indent = "    " * (rec.depth or 0)
-            rec.display_label = "%s%s" % (indent, rec.menu_id.sudo().name or "") if rec.menu_id else ""
+            rec.display_label = "%s%s" % (indent, rec.menu_id.name or "") if rec.menu_id else ""
 
     @api.depends("matrix_id.line_ids.has_access")
     def _compute_count_label(self):
@@ -426,11 +405,10 @@ class MenuAccessMatrixLine(models.TransientModel):
     def write(self, vals):
         res = super().write(vals)
         if "has_access" in vals:
-            # skip_propagate: the caller is Grant All / Revoke All, which
-            # stages into these transient rows and waits for its own Save
-            # Changes. A single row toggle reaches here only once Odoo saves
-            # the form, i.e. the user has already pressed Save, so it does
-            # not pass the flag and lands in menu.access.rights right away.
+            # skip_propagate: the caller is STAGING (Grant All / Revoke All),
+            # so the new value lives only on these transient rows until the
+            # user presses Save Changes. Individual row toggles never pass it
+            # and so still persist on click, as before.
             if not self.env.context.get("skip_propagate"):
                 self._propagate_to_rights()
             if not self.env.context.get("skip_cascade"):
@@ -439,6 +417,9 @@ class MenuAccessMatrixLine(models.TransientModel):
 
     def _cascade_has_access(self):
         Line = self.env["menu.access.matrix.line"]
+        # Menus that open something of their own (see the roll-up below).
+        self.env.cr.execute("SELECT id FROM ir_ui_menu WHERE action IS NOT NULL")
+        opens_something = {r[0] for r in self.env.cr.fetchall()}
         for rec in self:
             if not rec.matrix_id or not rec.menu_path:
                 continue
@@ -459,34 +440,10 @@ class MenuAccessMatrixLine(models.TransientModel):
             if descendants:
                 descendants.with_context(skip_cascade=True).write({"has_access": value})
 
-            # Up: an ancestor is ticked while ANY of its direct children is —
-            # a parent menu has to be reachable for a granted child under it
-            # to be reachable at all, so "all" would make granting a single
-            # sub-menu impossible. This matches how action_load_menus seeds
-            # groups (all_granted_ids walks a grant up to its ancestors).
-            # Collected first, then written as at most two batches.
+            # Up: an ancestor is ticked only while ALL of its direct children
+            # are. Collected first, then written as at most two batches.
             turn_on = Line.browse()
             turn_off = Line.browse()
-            # Roll-up values decided so far, keyed by menu_path. The loop runs
-            # nearest-ancestor-first, so each step needs the value the step
-            # below it just decided — that ancestor has not been written yet.
-            #
-            # This used to be done with `ancestor.has_access = new_val`, on
-            # the comment "keep the in-memory value in sync". It is not in
-            # memory: assigning to a field on an ORM record IS a write(), so
-            # it re-entered this very method for the ancestor WITHOUT
-            # skip_cascade — and the first thing that does is push the
-            # ancestor's value DOWN over its whole sub-tree. Ticking one
-            # sub-menu therefore granted every menu in the app (verified:
-            # Sales Dashboards turned on all 33 rows under PBI Dashboards).
-            # A plain dict cannot write anything.
-            rolled_up = {}
-
-            def effective(line):
-                if line.menu_path in rolled_up:
-                    return rolled_up[line.menu_path]
-                return line.has_access
-
             segment_ids = [s for s in path.strip("/").split("/") if s]
             for i in range(len(segment_ids) - 1, 0, -1):
                 ancestor_path = "/" + "/".join(segment_ids[:i]) + "/"
@@ -502,14 +459,27 @@ class MenuAccessMatrixLine(models.TransientModel):
                 )
                 if not direct_children:
                     continue
-                new_val = any(effective(c) for c in direct_children)
-                rolled_up[ancestor_path] = new_val
+                new_val = all(c.has_access for c in direct_children)
+                # Turning an ancestor OFF is only right for a pure FOLDER,
+                # which is worthless with nothing under it. A parent that
+                # carries its own action is a screen in its own right —
+                # revoking it because its sub-menus are revoked takes away
+                # access the user legitimately has, and leaves the matrix
+                # showing a parent unticked while the user can still open it.
+                # Discuss is the case in point: one sub-menu, and it owns
+                # ir.actions.client. Matches the same guard in
+                # ir_ui_menu._mar_restricted_menu_ids.
+                if not new_val and ancestor.menu_id.id in opens_something:
+                    continue
                 if ancestor.has_access == new_val:
                     continue
                 if new_val:
                     turn_on |= ancestor
                 else:
                     turn_off |= ancestor
+                # Keep the in-memory value in sync so the next (higher)
+                # ancestor rolls up against the corrected state.
+                ancestor.has_access = new_val
             if turn_on:
                 turn_on.with_context(skip_cascade=True).write({"has_access": True})
             if turn_off:

@@ -28,109 +28,155 @@
     }
 }
 
-/* The record pager ("1 / 1") and cog are meaningless on this transient
- * one-record page. Scoped inside .mar_matrix_form, which is the
- * o_form_view element itself, so other views keep their own pagers. */
-.mar_matrix_form .o_cp_pager {
+/* The record pager ("1 / 1") is meaningless on this transient one-record
+ * page. The control panel is a SIBLING of the form renderer, not a child of
+ * it, so this has to reach up to the container and back down — matched with
+ * :has() so every other view keeps its own pager. */
+.o_form_view_container:has(.mar_matrix_form) .o_cp_pager {
     display: none !important;
 }
 
 /* ---- Two-panel shell --------------------------------------------- */
-/* Fill the available height by flexing down Odoo's own container chain.
- * We extend the flex/overflow-hidden chain all the way up to .o_view_controller
- * and .o_form_view to handle servers where those wrapper elements are
- * block-displayed without a defined height. Without anchoring every level,
- * height:100% on .mar_page resolves to "auto" (content height) on those
- * servers, which causes the outer viewport to scroll AND both inner panels
- * to scroll — the double-scrollbar / bottom-gap bug. */
-/* !important throughout: some deployed servers ship a heavy custom backend
- * theme whose rules on Odoo's containers are more specific than a plain
- * class selector. */
+/* Fill the available height by flexing down Odoo's own container chain
+ * rather than doing viewport math. A calc(100vh - …) guess was wrong by
+ * 14px — the page starts 124px down but only 110px was subtracted, so it
+ * ran past the bottom of the viewport and the last rows were unreachable.
+ * Flexing has no magic numbers to get wrong and survives a taller/shorter
+ * control panel.
+ *
+ * Every level from .o_action_manager down is anchored, not just .o_content.
+ * On a server whose theme leaves .o_view_controller / .o_form_view_container
+ * block-displayed with no height, an un-anchored level makes height:100% on
+ * .mar_page resolve to "auto" (content height) — the whole page then scrolls
+ * AND each panel scrolls, which is the double-scrollbar report. The wrapper
+ * levels are matched with :has() so the rules only bite while this one form
+ * is on screen and can never leak onto another view. */
+/* !important throughout: some deployments ship a heavy custom backend theme
+ * whose own rules on Odoo's containers are more specific than a plain class
+ * selector. Without it, .o_form_renderer stayed display:block, .mar_page's
+ * flex sizing was therefore ignored, and the page grew to 6200px. */
+/* The DOM being anchored, top to bottom (Odoo 17):
+ *   .o_form_view.o_view_controller
+ *     .o_form_view_container
+ *       .o_control_panel
+ *       .o_content
+ *         .o_form_renderer.o_form_nosheet
+ *           .mar_page
+ *
+ * WHICH element carries "mar_matrix_form" is not fixed. Odoo's form compiler
+ * attaches the arch's class to .o_form_renderer, but some builds hand it to
+ * the .o_form_view controller root instead — an ANCESTOR of .o_content rather
+ * than a descendant. Verified on a live server: the class was on .o_form_view,
+ * so every `X:has(.mar_matrix_form)` selector silently matched nothing. Each
+ * rule is therefore written BOTH ways: `.mar_matrix_form X` for when the class
+ * sits above X, and `X:has(.mar_matrix_form)` for when it sits below. */
 
-/* Extend the flex chain to the layout wrapper (.o_content) and descendants.
- * We target the wrapper using :has() so it only runs when this specific
- * form is open, preventing interference with other Odoo views. */
-.o_action_manager:has(.mar_matrix_form),
-.o_view_controller:has(.mar_matrix_form) {
-    height: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-.o_content:has(.mar_matrix_form) {
-    flex: 1 1 auto !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    margin-bottom: 0 !important;
-    overflow: hidden !important;
-    display: flex !important;
-    flex-direction: column !important;
-    padding: 0 !important;
-}
-
-.o_content:has(.mar_matrix_form) .o_form_view_container {
-    flex: 1 1 auto !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    overflow: hidden !important;
-    display: flex !important;
-    flex-direction: column !important;
-    padding: 0 !important;
-}
-
-/* Force the form itself to fill height and not scroll */
-.mar_matrix_form {
-    height: 100% !important;
-    max-height: 100% !important;
-    overflow: hidden !important;
+/* height:100% is wrong for .o_action_manager under a theme that re-parents it.
+ * Measured on the live server: its parent was a display:block wrapper that
+ * ALSO held the 46px navbar, so 100% resolved to the whole viewport and the
+ * page hung exactly one navbar past the bottom of the window. Making that
+ * parent a column flex box and letting the action manager take what is left
+ * needs no magic number and survives a navbar of any height. */
+*:has(> .o_action_manager):has(.mar_matrix_form) {
     display: flex !important;
     flex-direction: column !important;
     min-height: 0 !important;
+}
+.o_action_manager:has(.mar_matrix_form) {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+}
+.o_view_controller:has(.mar_matrix_form),
+.o_view_controller.mar_matrix_form,
+.o_form_view:has(.mar_matrix_form),
+.o_form_view.mar_matrix_form {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+/* width/align-self are load-bearing, not decoration. Turning these into flex
+ * containers makes them size to their CONTENT on the cross axis, and
+ * .o_form_view's align-items resolves to `normal`, so nothing stretches them
+ * back. With .mar_page carrying overflow:hidden over min-width:0 children,
+ * their min-content width is ~0 — the whole screen collapsed to a 1px column.
+ *
+ * margin-bottom is the one that shows up as the reported "footer space": the
+ * theme hangs a 60px bottom margin on .o_content, leaving a dead band under
+ * both panels. */
+.mar_matrix_form .o_form_view_container,
+.o_form_view_container:has(.mar_matrix_form),
+.mar_matrix_form .o_content,
+.o_content:has(.mar_matrix_form) {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    align-self: stretch !important;
+    margin-bottom: 0 !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+}
+/* Deliberately over-specified. The renderer arrives with Bootstrap's
+ * `d-block` (display:block !important) and this deployment's theme carries
+ * `.o_form_view .o_form_renderer { … !important }`, so a lone .mar_matrix_form
+ * would lose even with !important. Leading with .o_form_view and compounding
+ * on .o_form_renderer puts this rule ahead of both. */
+.o_form_view .o_form_renderer.mar_matrix_form,
+.o_form_renderer.mar_matrix_form,
+.mar_matrix_form .o_form_renderer,
+.mar_matrix_form {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    overflow: hidden !important;
     padding: 0 !important;
     margin: 0 !important;
-    background: var(--mar-surface) !important;
 }
-
+/* No <sheet> is declared, so o_form_nosheet sits on the renderer itself; the
+ * sheet variants are matched too in case a theme re-introduces that chrome
+ * (its max-width is what pins the shell to ~1140px instead of full width). */
+.mar_matrix_form.o_form_nosheet,
 .mar_matrix_form .o_form_sheet_bg,
-.mar_matrix_form .o_form_sheet,
-.mar_matrix_form .o_form_nosheet {
+.mar_matrix_form .o_form_sheet {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
     padding: 0 !important;
     margin: 0 !important;
     border: none !important;
     border-radius: 0 !important;
     background: transparent !important;
     box-shadow: none !important;
-    max-width: none !important;
-    height: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-    flex: 1 1 auto !important;
 }
-
-/* Force form renderer to fill height and not scroll */
-.mar_matrix_form .o_form_renderer {
-    display: flex !important;
-    flex-direction: column !important;
-    flex: 1 1 auto !important;
-    height: 100% !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    background: transparent !important;
-}
-
 .mar_matrix_form .mar_page {
     display: flex !important;
     align-items: stretch !important;
     gap: 0 !important;
     flex: 1 1 auto !important;
+    width: 100% !important;
     height: 100% !important;
     min-height: 0 !important;
     margin: 0 !important;
     background: var(--mar-surface);
-    border: none !important;
-    border-radius: 0 !important;
     overflow: hidden !important;
 }
 
@@ -148,23 +194,61 @@
     padding: 0.75rem;
     border-bottom: 1px solid var(--mar-border);
 }
+/* Exactly one scroll container per panel, and it is always the list renderer.
+ *
+ * Odoo's .o_list_renderer also carries Bootstrap's .table-responsive
+ * (overflow-x: auto) and, from the md breakpoint up, height: 100%. Per the
+ * overflow spec a computed value other than "visible" on one axis forces the
+ * other axis from "visible" to "auto", so the renderer is a scroll box on
+ * BOTH axes — the earlier `overflow-x: hidden` never stopped that. Wherever
+ * the theme gives the renderer's ancestors a resolved height, it therefore
+ * grew its own vertical scrollbar right next to the wrapper's: the two
+ * scrollbars per panel in the report. Letting the wrapper clip and the
+ * renderer scroll gives one scrollbar on every server, and keeps Odoo's
+ * sticky <thead> working, since it pins to the renderer's own scrollport. */
 .mar_matrix_form .mar_side_list {
-    flex: 1;
+    flex: 1 1 0%;
     min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
 }
-/* Odoo wraps list views in .table-responsive (overflow-x: auto), which drew
- * a horizontal scrollbar across the bottom of the user panel even though
- * the single fixed-layout column never actually overflows. */
-.mar_matrix_form .mar_user_list.o_list_renderer,
-.mar_matrix_form .mar_side_list .table-responsive {
+/* Direct child only for .o_field_widget — every cell widget inside a row
+ * carries that class too, and a descendant selector would turn each one into
+ * an overflow-hidden flex column. */
+.mar_matrix_form .mar_side_list > .o_field_widget,
+.mar_matrix_form .mar_side_list .o_field_x2many,
+.mar_matrix_form .mar_side_list .o_list_view {
+    flex: 1 1 0%;
+    min-height: 0;
+    width: 100% !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.mar_matrix_form .mar_side_list .o_list_renderer {
+    flex: 1 1 0%;
+    min-height: 0;
+    height: auto !important;
+    width: 100% !important;
+    /* overflow-x hidden, not auto: the single fixed-layout column never
+     * overflows sideways, and "auto" drew a stray horizontal scrollbar
+     * across the bottom of the user panel. */
+    overflow-y: auto !important;
     overflow-x: hidden !important;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
 }
 
 .mar_matrix_form .mar_main {
-    flex: 1;
+    flex: 1 1 auto;
     min-width: 0;
+    /* The panel owns every pixel the side list leaves. Without it a theme
+     * that shrink-wraps flex items leaves the grid hugging its content and
+     * a band of dead space on the right. */
+    width: auto;
     min-height: 0;
     display: flex;
     flex-direction: column;
@@ -173,6 +257,7 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
+    width: 100%;
     flex: 1;
 }
 .mar_matrix_form .mar_empty {
@@ -300,19 +385,24 @@
 }
 
 /* ---- Menu tree ---------------------------------------------------- */
+/* Same one-scroller-per-panel rule as .mar_side_list above: the wrapper
+ * clips, the renderer scrolls. */
 .mar_matrix_form .mar_tree_wrap {
     flex: 1 1 0%;
     min-height: 0;
+    width: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden !important;
     position: relative;
 }
-.mar_matrix_form .mar_tree_wrap .o_field_widget,
+/* Direct child only — see the note on .mar_side_list above. */
+.mar_matrix_form .mar_tree_wrap > .o_field_widget,
 .mar_matrix_form .mar_tree_wrap .o_field_x2many,
 .mar_matrix_form .mar_tree_wrap .o_list_view {
     flex: 1 1 0%;
     min-height: 0;
+    width: 100% !important;
     display: flex;
     flex-direction: column;
     overflow: hidden !important;
@@ -322,65 +412,31 @@
 .mar_matrix_form .mar_tree_wrap .o_list_renderer {
     flex: 1 1 0%;
     min-height: 0;
+    height: auto !important;
+    width: 100% !important;
     overflow-y: auto !important;
     overflow-x: auto !important;
     position: relative;
     overscroll-behavior: contain;
     scrollbar-width: thin;
 }
-.mar_matrix_form .mar_matrix_list thead {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
+/* The header has to stay opaque now that rows scroll underneath it. */
 .mar_matrix_form .mar_matrix_list thead th {
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 2;
     background-color: var(--mar-surface) !important;
     box-shadow: inset 0 -1px 0 var(--mar-border);
 }
-/* Matrix Grid Rows: uniform background for child rows, light gray for main menu rows */
-.mar_matrix_form .mar_matrix_list table.o_list_table,
-.mar_matrix_form .mar_matrix_list table.o_list_table tbody,
-.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr,
-.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr > td,
-.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr:nth-of-type(odd) > *,
-.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr:nth-of-type(even) > *,
-.mar_matrix_form .mar_matrix_list table.o_list_table .o_data_row td {
-    --bs-table-accent-bg: transparent !important;
-    --bs-table-striped-bg: transparent !important;
-    background-color: #ffffff !important;
-    background: #ffffff !important;
+.mar_matrix_form .mar_matrix_list .o_data_row {
     font-size: 0.85rem;
 }
-
-/* Light Gray Background for Main Menu / Group rows (is_group = True / .fw-bold) */
-.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr.fw-bold,
-.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr.fw-bold > td,
-.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr.fw-bold:nth-of-type(odd) > *,
-.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr.fw-bold:nth-of-type(even) > *,
-.mar_matrix_form .mar_matrix_list table.o_list_table .o_data_row.fw-bold td {
-    background-color: #e9ecef !important;
-    background: #e9ecef !important;
-    color: #212529 !important;
-    font-weight: 600 !important;
+.mar_matrix_form .mar_matrix_list .o_data_row.fw-bold {
+    background: var(--mar-accent-soft);
 }
-
-/* Hover state for Main Menu (group) rows */
-.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr.fw-bold:hover,
-.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr.fw-bold:hover > td,
-.mar_matrix_form .mar_matrix_list table.o_list_table .o_data_row.fw-bold:hover td {
-    background-color: #dde3e8 !important;
-    background: #dde3e8 !important;
-}
-
-/* Hover state for Standard / Child rows */
-.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr:not(.fw-bold):hover,
-.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr:not(.fw-bold):hover > td,
-.mar_matrix_form .mar_matrix_list table.o_list_table .o_data_row:not(.fw-bold):hover td {
-    background-color: #f8f9fa !important;
-    background: #f8f9fa !important;
+.mar_matrix_form .mar_matrix_list .o_data_row.fw-bold:hover {
+    background: var(--mar-accent-soft);
+    filter: brightness(0.97);
 }
 /* Expand/collapse caret on group rows. Direction flips via .mar_collapsed,
  * added by the renderer; rotating one glyph avoids a layout jump. */
@@ -393,7 +449,7 @@
     display: inline-block;
     width: 1em;
     margin-right: 0.35rem;
-    color: #495057;
+    color: var(--mar-accent);
     transition: transform 0.12s ease;
     vertical-align: middle;
 }
@@ -416,6 +472,46 @@
     padding-top: 0.5rem !important;
     padding-bottom: 0.5rem !important;
 }
+
+/* ---- Tree indentation --------------------------------------------- */
+/* The model indents display_label with four spaces per level, but HTML
+ * collapses leading whitespace, so on its own the whole tree renders
+ * flush-left and a sub-menu is indistinguishable from a top-level app.
+ * The indent is therefore paid out as cell padding, one step per level,
+ * off the mar_depth_N class the renderer stamps on each row.
+ *
+ * Leaf rows get one extra step. Only group rows carry the ▾ caret, so
+ * without it a leaf's text would start one caret-width to the LEFT of its
+ * own parent's text and the tree would read inside-out. One step is exactly
+ * the caret's footprint: 1em glyph + 0.35rem margin at this font size.
+ *
+ * The base is Odoo's own first-cell padding variable rather than a copied
+ * constant, so a depth-0 group still lines up with the column header. */
+.mar_matrix_form .mar_matrix_list .o_data_row {
+    --mar-indent-step: 1.25rem;
+    --mar-depth: 0;
+    --mar-leaf: 0;
+}
+.mar_matrix_form .mar_matrix_list .o_data_row:not(.fw-bold) {
+    --mar-leaf: 1;
+}
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_1 { --mar-depth: 1; }
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_2 { --mar-depth: 2; }
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_3 { --mar-depth: 3; }
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_4 { --mar-depth: 4; }
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_5 { --mar-depth: 5; }
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_6 { --mar-depth: 6; }
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_7 { --mar-depth: 7; }
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_8 { --mar-depth: 8; }
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_9 { --mar-depth: 9; }
+.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_10 { --mar-depth: 10; }
+.mar_matrix_form .mar_matrix_list .o_data_row td[name="display_label"],
+.mar_matrix_form .mar_matrix_list .o_data_row td:first-child {
+    padding-left: calc(
+        var(--ListRenderer-table-padding-x, 0.75rem)
+        + (var(--mar-depth) + var(--mar-leaf)) * var(--mar-indent-step)
+    ) !important;
+}
 .mar_matrix_form .mar_matrix_list .badge {
     font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
     font-weight: 700;
@@ -431,71 +527,66 @@
     border-color: var(--mar-accent);
 }
 
-/* ---- User list (left panel) & Matrix list table layout ----------------- */
+/* ---- List footer -------------------------------------------------- */
+/* Odoo's ListRenderer always emits <tfoot class="o_list_footer">, filled
+ * with one <td> per column that holds a column aggregate. Not one column on
+ * this page declares sum= or avg=, so every one of those cells is empty on
+ * every render. Stock Odoo collapses the row to nothing via
+ * `> tr > :empty { padding: 0 }` — but the row-height rule below
+ * (`.mar_matrix_list td { padding-top/bottom: 0.5rem !important }`) matches
+ * tfoot's cells just as happily as tbody's, and its !important beats that
+ * collapse. The result is a ~15px dead strip pinned under both panels, on a
+ * plain Odoo install as much as a themed one. Removed rather than
+ * un-padded, so a future change to the row-height rule cannot bring it back.
+ * Scoped to this form: every other list keeps its totals. */
+.mar_matrix_form .mar_user_list tfoot,
+.mar_matrix_form .mar_matrix_list tfoot,
+.mar_matrix_form .o_list_renderer tfoot.o_list_footer {
+    display: none !important;
+}
+
+/* ---- Table layout (both panels) ----------------------------------- */
+/* table-layout: fixed — under the default "auto", an explicit width on a
+ * <th> is only advisory and the browser re-balances columns against row
+ * content, which made the checkbox column drift with name length.
+ *
+ * width: 100% has to be spelled out with it. Bootstrap's .table supplies it
+ * by default, but a theme that resets .o_list_table to width:auto leaves a
+ * fixed-layout table free to shrink-wrap its columns — the squeezed matrix
+ * grid, with dead space to the right of it, in the report. */
 .mar_matrix_form .mar_user_list table.o_list_table,
 .mar_matrix_form .mar_matrix_list table.o_list_table {
     table-layout: fixed !important;
     width: 100% !important;
+    min-width: 100% !important;
+    max-width: none !important;
 }
-
-/* Matrix table columns: Menu (dynamic), Status (fixed 130px), Has Access (fixed 140px) */
+/* Menu takes whatever the two fixed columns leave. Pinning Status and
+ * Has Access keeps the toggles in one column on every screen width instead
+ * of drifting with the longest menu label.
+ * Note the asymmetric attributes: Odoo's list renderer writes data-name on
+ * the <th> but a bare name on the <td>. */
 .mar_matrix_form .mar_matrix_list table.o_list_table th[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list table.o_list_table td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list table.o_list_table th:nth-child(1),
-.mar_matrix_form .mar_matrix_list table.o_list_table td:nth-child(1) {
+.mar_matrix_form .mar_matrix_list table.o_list_table td[name="display_label"] {
     width: auto !important;
 }
-
 .mar_matrix_form .mar_matrix_list table.o_list_table th[data-name="count_label"],
-.mar_matrix_form .mar_matrix_list table.o_list_table td[data-name="count_label"],
-.mar_matrix_form .mar_matrix_list table.o_list_table th:nth-child(2),
-.mar_matrix_form .mar_matrix_list table.o_list_table td:nth-child(2) {
+.mar_matrix_form .mar_matrix_list table.o_list_table td[name="count_label"] {
     width: 130px !important;
     min-width: 130px !important;
     max-width: 130px !important;
     text-align: center !important;
 }
-
 .mar_matrix_form .mar_matrix_list table.o_list_table th[data-name="has_access"],
-.mar_matrix_form .mar_matrix_list table.o_list_table td[data-name="has_access"],
-.mar_matrix_form .mar_matrix_list table.o_list_table th:nth-child(3),
-.mar_matrix_form .mar_matrix_list table.o_list_table td:nth-child(3) {
+.mar_matrix_form .mar_matrix_list table.o_list_table td[name="has_access"] {
     width: 140px !important;
     min-width: 140px !important;
     max-width: 140px !important;
     text-align: center !important;
 }
-
-.mar_matrix_form .mar_matrix_list table.o_list_table td[data-name="has_access"] .form-check,
-.mar_matrix_form .mar_matrix_list table.o_list_table td:nth-child(3) .form-check {
+.mar_matrix_form .mar_matrix_list table.o_list_table td[name="has_access"] .form-check {
     display: inline-block;
     margin: 0 auto;
-}
-
-/* Make the Has Access switch clickable.
- *
- * web's list_renderer.scss kills pointer events on every .form-check inside a
- * row that is not in edit mode:
- *
- *   .o_data_row:not(.o_selected_row) .o_data_cell .form-check {
- *       pointer-events: none;
- *   }
- *
- * and puts them back only for a hard-coded list of cell classes —
- * o_boolean_button_cell, o_boolean_favorite_cell, o_boolean_toggle_cell,
- * o_toggle_button_cell. The cell class is derived from the widget NAME
- * (o_<widget>_cell), and this column uses the module's own mar_access_toggle
- * widget, so its cell is o_mar_access_toggle_cell and misses the allowlist.
- * This list is also deliberately non-editable (see the view arch), so no row
- * is ever .o_selected_row and the switch was dead on every row: the click
- * landed on the <td> and never reached the checkbox, so MarAccessToggleField
- * .onChange never ran and no RPC was sent.
- *
- * Same rule as web's, scoped to this one cell. The admin-user case still
- * locks correctly — that comes from the input's own disabled attribute, not
- * from pointer-events. */
-.mar_matrix_form .mar_matrix_list table.o_list_table .o_data_row .o_data_cell.o_mar_access_toggle_cell > .o_field_widget:not(.o_readonly_modifier) .form-check {
-    pointer-events: auto;
 }
 /* No column headers or record selectors in the user picker — it reads as a
  * list of people, not a data grid. */
@@ -557,157 +648,3 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
-/* Copy email button in breadcrumbs */
-.mar_copy_email_btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    margin-left: 8px;
-    padding: 2px 4px;
-    border-radius: 4px;
-    color: var(--mar-accent);
-    background: transparent;
-    transition: all 0.2s ease;
-    opacity: 0.8;
-}
-.mar_copy_email_btn:hover {
-    opacity: 1;
-    background: var(--mar-accent-soft);
-    transform: scale(1.05);
-}
-.mar_copy_email_btn .fa-check {
-    color: var(--mar-success);
-}
-
-/* Tree Indentation by Depth */
-
-/* Depth 0 (Leaf offset to match parent text start width) */
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_0:not(.fw-bold) td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_0:not(.fw-bold) td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_0:not(.fw-bold) td:first-child {
-    padding-left: 2rem !important;
-}
-
-/* Depth 1 */
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_1.fw-bold td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_1.fw-bold td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_1.fw-bold td:first-child {
-    padding-left: 2rem !important;
-}
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_1:not(.fw-bold) td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_1:not(.fw-bold) td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_1:not(.fw-bold) td:first-child {
-    padding-left: 3.25rem !important;
-}
-
-/* Depth 2 */
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_2.fw-bold td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_2.fw-bold td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_2.fw-bold td:first-child {
-    padding-left: 3.25rem !important;
-}
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_2:not(.fw-bold) td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_2:not(.fw-bold) td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_2:not(.fw-bold) td:first-child {
-    padding-left: 4.5rem !important;
-}
-
-/* Depth 3 */
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_3.fw-bold td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_3.fw-bold td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_3.fw-bold td:first-child {
-    padding-left: 4.5rem !important;
-}
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_3:not(.fw-bold) td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_3:not(.fw-bold) td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_3:not(.fw-bold) td:first-child {
-    padding-left: 5.75rem !important;
-}
-
-/* Depth 4 */
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_4.fw-bold td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_4.fw-bold td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_4.fw-bold td:first-child {
-    padding-left: 5.75rem !important;
-}
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_4:not(.fw-bold) td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_4:not(.fw-bold) td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_4:not(.fw-bold) td:first-child {
-    padding-left: 7rem !important;
-}
-
-/* Depth 5 */
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_5.fw-bold td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_5.fw-bold td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_5.fw-bold td:first-child {
-    padding-left: 7rem !important;
-}
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_5:not(.fw-bold) td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_5:not(.fw-bold) td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_5:not(.fw-bold) td:first-child {
-    padding-left: 8.25rem !important;
-}
-
-/* Depth 6 */
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_6.fw-bold td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_6.fw-bold td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_6.fw-bold td:first-child {
-    padding-left: 8.25rem !important;
-}
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_6:not(.fw-bold) td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_6:not(.fw-bold) td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_6:not(.fw-bold) td:first-child {
-    padding-left: 9.5rem !important;
-}
-
-/* Depth 7 */
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_7.fw-bold td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_7.fw-bold td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_7.fw-bold td:first-child {
-    padding-left: 9.5rem !important;
-}
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_7:not(.fw-bold) td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_7:not(.fw-bold) td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_7:not(.fw-bold) td:first-child {
-    padding-left: 10.75rem !important;
-}
-
-/* Depth 8 */
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_8.fw-bold td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_8.fw-bold td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_8.fw-bold td:first-child {
-    padding-left: 10.75rem !important;
-}
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_8:not(.fw-bold) td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_8:not(.fw-bold) td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_8:not(.fw-bold) td:first-child {
-    padding-left: 12rem !important;
-}
-
-/* Depth 9 */
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_9.fw-bold td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_9.fw-bold td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_9.fw-bold td:first-child {
-    padding-left: 12rem !important;
-}
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_9:not(.fw-bold) td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_9:not(.fw-bold) td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_9:not(.fw-bold) td:first-child {
-    padding-left: 13.25rem !important;
-}
-
-/* Depth 10 */
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_10.fw-bold td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_10.fw-bold td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_10.fw-bold td:first-child {
-    padding-left: 13.25rem !important;
-}
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_10:not(.fw-bold) td[data-name="display_label"],
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_10:not(.fw-bold) td.o_data_cell:first-child,
-.mar_matrix_form .mar_matrix_list .o_data_row.mar_depth_10:not(.fw-bold) td:first-child {
-    padding-left: 14.5rem !important;
-}
-
-

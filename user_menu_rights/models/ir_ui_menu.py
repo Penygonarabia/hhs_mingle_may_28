@@ -45,14 +45,18 @@ class IrUiMenu(models.Model):
         if not forbidden:
             return forbidden
 
-        self.env.cr.execute(
-            "SELECT id, parent_id FROM ir_ui_menu WHERE parent_id IS NOT NULL"
-        )
+        # `action` is read too: a menu that opens something of its own is NOT
+        # a folder, and must survive the walk-up below.
+        self.env.cr.execute("SELECT id, parent_id, action FROM ir_ui_menu")
         parent_of = {}
         children_of = {}
-        for mid, pid in self.env.cr.fetchall():
-            parent_of[mid] = pid
-            children_of.setdefault(pid, set()).add(mid)
+        opens_something = set()
+        for mid, pid, action in self.env.cr.fetchall():
+            if pid:
+                parent_of[mid] = pid
+                children_of.setdefault(pid, set()).add(mid)
+            if action:
+                opens_something.add(mid)
 
         changed = True
         while changed:
@@ -60,6 +64,14 @@ class IrUiMenu(models.Model):
             for mid in list(forbidden):
                 pid = parent_of.get(mid)
                 if not pid or pid in forbidden or pid not in managed_ids:
+                    continue
+                # Only fold away an empty FOLDER. Sweeping up a parent that
+                # carries its own action takes away a screen the user was
+                # granted outright — Discuss is the case that surfaced this:
+                # it owns ir.actions.client and has one sub-menu, so revoking
+                # that single child silently hid Discuss itself from all 117
+                # users while the matrix went on showing it ticked.
+                if pid in opens_something:
                     continue
                 if children_of.get(pid, set()) <= forbidden:
                     forbidden.add(pid)

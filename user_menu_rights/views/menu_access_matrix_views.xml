@@ -113,20 +113,7 @@
                             <div class="mar_tree_wrap">
                                 <field name="line_ids" nolabel="1" readonly="is_user_admin"
                                        widget="mar_matrix_list_field">
-                                    <!-- Deliberately NOT editable. An editable list
-                                         keeps every field readonly until its row is
-                                         put into edit mode, so the Has Access switch
-                                         renders disabled and the first click is spent
-                                         only entering edit mode — the reported "works
-                                         on the 2nd click". Entering edit mode also
-                                         focuses the cell, and the browser scrolls that
-                                         focus into view, which is what threw the
-                                         viewport to the bottom on every toggle.
-                                         Nothing here needs inline editing: the switch
-                                         stages itself through record.update() (see
-                                         MarAccessToggleField) and every other column
-                                         is readonly. -->
-                                    <tree create="0" delete="0" limit="9999"
+                                    <tree editable="bottom" create="0" delete="0" limit="9999"
                                           decoration-bf="is_group" default_order="sequence"
                                           class="mar_matrix_list">
                                         <field name="menu_id" column_invisible="1"/>
@@ -138,13 +125,8 @@
                                         <field name="display_label" string="Menu" readonly="1"/>
                                         <field name="count_label" string="Status" readonly="1"
                                                widget="badge"/>
-                                        <!-- mar_access_toggle, not boolean_toggle:
-                                             boolean_toggle renders itself disabled
-                                             outside an editable row, and autosaves
-                                             rather than leaving the change staged —
-                                             see static/src/js/menu_access_matrix_search.js. -->
                                         <field name="has_access" string="Has Access"
-                                               widget="mar_access_toggle"/>
+                                               widget="boolean_toggle"/>
                                     </tree>
                                 </field>
                             </div>
