@@ -94,71 +94,85 @@ class ServiceSaleOrder(models.Model):
                     == "True"
             ):
                 if vals.get("name", "New") in ["New", False]:
-                    now = datetime.now()
-                    current_month = now.month
-                    current_year = now.year
-                    year_str = now.strftime("%y")
-                    month_str = now.strftime("%m")
-
-                    # project_id = vals.get("project_id")
-                    # amc_id = vals.get("amc_project_id")
-                    # is_quotation = vals.get("is_quotation")
-                    #
-                    # if is_quotation:
-                    #     sequence_code = "quotation.machine.repair.support"
-                    # elif amc_id and amc_id != project_id:
-                    #     sequence_code = "amc.machine.repair.support"
-                    # else:
-                    #     sequence_code = "machine.repair.support"
-                    sequence_code = "quotation.machine.repair.support"
-                    sequence = self.env["ir.sequence"].search(
-                        [("code", "=", sequence_code)], limit=1
-                    )
-
-                    loc = "AMC-"
-                    number = 1
-                    crm_search = self.env['crm.lead'].search([('id', '=', vals.get('crm_id'))], limit=1)
-                    location_id = crm_search.customer_city_id.def_work_center_id.id
-                    if sequence and sequence.use_date_range and sequence.use_location_wise:
-                        for date_range in sequence.date_range_ids:
-                            if (
-                                    date_range.date_from.year == current_year
-                                    and date_range.work_center_id.id == location_id
-                            ):
-                                loc = date_range.location_code
-                                number = date_range.number_next_actual
-                                date_range.number_next_actual += 1
-                                break
-
-                        seq = f"{sequence.prefix}{loc}{year_str}{str(number).zfill(5)}"
-
-                        if self.env["service.sale.order"].search([("name", "=", seq)], limit=1):
-                            raise ValidationError(f"Sequence '{seq}' already exists.")
-
-                        vals["name"] = seq
-
-                    elif sequence and sequence.use_date_range:
-                        for date_range in sequence.date_range_ids:
-                            if (
-                                    date_range.date_from.year == current_year
-                            ):
-                                loc = date_range.location_code
-                                number = date_range.number_next_actual
-                                date_range.number_next_actual += 1
-                                break
-
-                        seq = f"{sequence.prefix}{loc}{year_str}{str(number).zfill(5)}"
-
-                        if self.env["service.sale.order"].search([("name", "=", seq)], limit=1):
-                            raise ValidationError(f"Sequence '{seq}' already exists.")
-
-                        vals["name"] = seq
-
-                    else:
+                    
+                    # -------------------------------------------------
+                    # Service Sale Order created from Job Card
+                    # -------------------------------------------------
+                    
+                    '''Code Added on August 06 2026 by Vijaya Bhaskar from the Job card create a quotation'''
+                    
+                    if vals.get("job_task_id"):
                         vals["name"] = (
-                                self.env["ir.sequence"].next_by_code(sequence_code)
-                                or "New"
+                            self.env["ir.sequence"].next_by_code("service.sale.order")
+                            or "New"
                         )
+    
+                    else:
+                        now = datetime.now()
+                        current_month = now.month
+                        current_year = now.year
+                        year_str = now.strftime("%y")
+                        month_str = now.strftime("%m")
+    
+                        # project_id = vals.get("project_id")
+                        # amc_id = vals.get("amc_project_id")
+                        # is_quotation = vals.get("is_quotation")
+                        #
+                        # if is_quotation:
+                        #     sequence_code = "quotation.machine.repair.support"
+                        # elif amc_id and amc_id != project_id:
+                        #     sequence_code = "amc.machine.repair.support"
+                        # else:
+                        #     sequence_code = "machine.repair.support"
+                        sequence_code = "quotation.machine.repair.support"
+                        sequence = self.env["ir.sequence"].search(
+                            [("code", "=", sequence_code)], limit=1
+                        )
+    
+                        loc = "AMC-"
+                        number = 1
+                        crm_search = self.env['crm.lead'].search([('id', '=', vals.get('crm_id'))], limit=1)
+                        location_id = crm_search.customer_city_id.def_work_center_id.id
+                        if sequence and sequence.use_date_range and sequence.use_location_wise:
+                            for date_range in sequence.date_range_ids:
+                                if (
+                                        date_range.date_from.year == current_year
+                                        and date_range.work_center_id.id == location_id
+                                ):
+                                    loc = date_range.location_code
+                                    number = date_range.number_next_actual
+                                    date_range.number_next_actual += 1
+                                    break
+    
+                            seq = f"{sequence.prefix}{loc}{year_str}{str(number).zfill(5)}"
+    
+                            if self.env["service.sale.order"].search([("name", "=", seq)], limit=1):
+                                raise ValidationError(f"Sequence '{seq}' already exists.")
+    
+                            vals["name"] = seq
+    
+                        elif sequence and sequence.use_date_range:
+                            for date_range in sequence.date_range_ids:
+                                if (
+                                        date_range.date_from.year == current_year
+                                ):
+                                    loc = date_range.location_code
+                                    number = date_range.number_next_actual
+                                    date_range.number_next_actual += 1
+                                    break
+    
+                            seq = f"{sequence.prefix}{loc}{year_str}{str(number).zfill(5)}"
+    
+                            if self.env["service.sale.order"].search([("name", "=", seq)], limit=1):
+                                raise ValidationError(f"Sequence '{seq}' already exists.")
+    
+                            vals["name"] = seq
+    
+                        else:
+                            vals["name"] = (
+                                    self.env["ir.sequence"].next_by_code(sequence_code)
+                                    or "New"
+                            )
 
         return super().create(vals_list)
 

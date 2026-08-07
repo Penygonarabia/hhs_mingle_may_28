@@ -8,7 +8,7 @@
         <field name="inherit_id" ref="service_sale_approvals.view_service_order_form_inherit_approval"/>
         <field name="arch" type="xml">
             <xpath expr="//page[@name='terms_of_execution']" position="after">
-                <page name="pm_service_checklist" string="PM Service Check List">
+                <page name="pm_service_checklist" string="PM Service Check List"  invisible = "job_task_id">
                     <!-- MUST WRAP IN pm_checklist_ids -->
                     <field name="pm_checklist_ids" nolabel="1">
                         <tree editable="bottom" create="0" delete="0" edit="1" default_order="service_type_id asc">

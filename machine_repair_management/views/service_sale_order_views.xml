@@ -258,28 +258,28 @@
                     <group class="deskvw">
                         <!--20260408 Gokul -->
                         <group>
-                            <field name="partner_name"
+                            <field name="partner_name" invisible = "job_task_id"
                                    readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
                             <field name="customer_name"
                                    readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
-                            <field name="mobile"
+                            <field name="mobile" invisible = "job_task_id"
                                    readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
-                            <field name="email_from"
+                            <field name="email_from" invisible = "job_task_id"
                                    readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
-                            <field name="job_position"
+                            <field name="job_position" invisible = "job_task_id"
                                    readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
                             
-                            <label for="street" string="Address"/>
-				                <div class="o_address_format" >
-				                    <field name="street" placeholder="Street..." class="o_address_street" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
-				                    <field name="street2" placeholder="Street 2..." class="o_address_street" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
-				                    <field name="customer_city_id" placeholder="City" class="o_address_city" readonly="state in ('approve','sent','sale','done','cancel','reject')" options ="{'no_create':True,'no_edit':True,'no_open':True}"/>
-				                    <field name = "district_id" placeholder="District" class="o_address_city" domain ="[('city_id','=',customer_city_id)]" readonly="state in ('approve','sent','sale','done','cancel','reject')" options ="{'no_create':True,'no_edit':True,'no_open':True}"/>
-				                    <field name="state_id" class="o_address_state" placeholder="State"
+                            <label for="street" string="Address" invisible = "job_task_id"/>
+				                <div class="o_address_format"  invisible = "job_task_id">
+				                    <field name="street" placeholder="Street..." class="o_address_street" readonly="state in ('approve','sent','sale','done','cancel','reject')" invisible = "job_task_id"/>
+				                    <field name="street2" placeholder="Street 2..." class="o_address_street" readonly="state in ('approve','sent','sale','done','cancel','reject')" invisible = "job_task_id"/>
+				                    <field name="customer_city_id" placeholder="City" class="o_address_city" readonly="state in ('approve','sent','sale','done','cancel','reject')" options ="{'no_create':True,'no_edit':True,'no_open':True}" invisible = "job_task_id"/>
+				                    <field name = "district_id" placeholder="District" class="o_address_city" domain ="[('city_id','=',customer_city_id)]" readonly="state in ('approve','sent','sale','done','cancel','reject')" options ="{'no_create':True,'no_edit':True,'no_open':True}" invisible = "job_task_id"/>
+				                    <field name="state_id" class="o_address_state" placeholder="State" invisible = "job_task_id"
 				                           options="{&quot;no_open&quot;: True}" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
-				                    <field name="zip" placeholder="ZIP" class="o_address_zip" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
+				                    <field name="zip" placeholder="ZIP" class="o_address_zip" readonly="state in ('approve','sent','sale','done','cancel','reject')" invisible = "job_task_id"/>
 				                    <field name="country_id" placeholder="Country" class="o_address_country" readonly="state in ('approve','sent','sale','done','cancel','reject')"
-				                           options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+				                           options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"  invisible = "job_task_id"/>
 				                </div>
                             
                             <field name="customer_address" widget="text" invisible = "1"
@@ -288,7 +288,7 @@
                                    readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
                             <field name="contract_interval" invisible="amc_quotation == False"
                                    readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
-                            <field name="contract_duration_days"
+                            <field name="contract_duration_days" invisible = "job_task_id"
                                    readonly="1" force_save="1"/>
                             <field name="no_of_prevent_service" invisible="1"/>
                             <field name="add_paid_service_price" invisible="amc_quotation == False"
@@ -338,7 +338,7 @@
                                         class="oe_highlight btn-lg"
                                         style="width:100% !important;
                                         min-height:80px !important;
-                                font-size:15px !important;"/>
+                                font-size:15px !important;" invisible = "job_task_id"/>
                             </div>
 
                             <field name="customer_code" invisible="1"/>
@@ -429,7 +429,7 @@
                                         <field name="days_required_for_rpm"
                                                column_invisible="not parent.show_standard_hours or not parent.amc_quotation"
                                                width="195px" sum="Total"/>
-                                        <field name="standard_hours" force_save="1" width="85px"/>
+                                        <field name="standard_hours" force_save="1" width="85px" invisible = "parent.job_task_id"/>
                                         <field name="total_hr"
                                                column_invisible="not parent.show_standard_hours or not parent.amc_quotation"
                                                width="85px" sum="Total"/>
