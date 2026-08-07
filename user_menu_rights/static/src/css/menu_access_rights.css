@@ -49,25 +49,14 @@
 
 /* Extend the flex chain to the layout wrapper (.o_content) and descendants.
  * We target the wrapper using :has() so it only runs when this specific
- * form is open, preventing interference with other Odoo views.
- * Prepended with high-specificity selectors to override Clarity theme's overrides. */
-body.o_web_client .wrapper-container-bits .content-wrapper-bits .o_action_manager:has(.mar_matrix_form),
-body.o_web_client .o_action_manager:has(.mar_matrix_form),
+ * form is open, preventing interference with other Odoo views. */
 .o_action_manager:has(.mar_matrix_form),
-body.o_web_client .wrapper-container-bits .content-wrapper-bits .o_view_controller:has(.mar_matrix_form),
-body.o_web_client .o_view_controller:has(.mar_matrix_form),
 .o_view_controller:has(.mar_matrix_form) {
     height: 100% !important;
-    max-height: 100% !important;
     display: flex !important;
     flex-direction: column !important;
-    overflow: hidden !important;
-    min-height: 0 !important;
 }
 
-body.o_web_client .wrapper-container-bits .content-wrapper-bits .o_action_manager .o_content:has(.mar_matrix_form),
-body.o_web_client .wrapper-container-bits .content-wrapper-bits .o_content:has(.mar_matrix_form),
-body.o_web_client .o_action_manager .o_content:has(.mar_matrix_form),
 .o_content:has(.mar_matrix_form) {
     flex: 1 1 auto !important;
     height: 100% !important;
@@ -76,37 +65,59 @@ body.o_web_client .o_action_manager .o_content:has(.mar_matrix_form),
     overflow: hidden !important;
     display: flex !important;
     flex-direction: column !important;
-    min-height: 0 !important;
+    padding: 0 !important;
 }
 
-body.o_web_client .wrapper-container-bits .content-wrapper-bits .o_action_manager .o_content:has(.mar_matrix_form) .o_form_view_container,
-body.o_web_client .o_action_manager .o_content:has(.mar_matrix_form) .o_form_view_container,
-.o_content:has(.mar_matrix_form) .o_form_view_container,
-body.o_web_client .wrapper-container-bits .content-wrapper-bits .o_action_manager .o_content:has(.mar_matrix_form) .o_form_view,
-body.o_web_client .o_action_manager .o_content:has(.mar_matrix_form) .o_form_view,
-.o_content:has(.mar_matrix_form) .o_form_view {
+.o_content:has(.mar_matrix_form) .o_form_view_container {
     flex: 1 1 auto !important;
     height: 100% !important;
     max-height: 100% !important;
     overflow: hidden !important;
     display: flex !important;
     flex-direction: column !important;
-    min-height: 0 !important;
+    padding: 0 !important;
 }
 
-/* Force the form itself and form renderer to fill height and not scroll */
-.mar_matrix_form,
-.mar_matrix_form.o_form_renderer,
+/* Force the form itself to fill height and not scroll */
+.mar_matrix_form {
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: var(--mar-surface) !important;
+}
+
+.mar_matrix_form .o_form_sheet_bg,
+.mar_matrix_form .o_form_sheet,
+.mar_matrix_form .o_form_nosheet {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    max-width: none !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+}
+
+/* Force form renderer to fill height and not scroll */
 .mar_matrix_form .o_form_renderer {
     display: flex !important;
     flex-direction: column !important;
     flex: 1 1 auto !important;
     height: 100% !important;
-    max-height: 100% !important;
     min-height: 0 !important;
     overflow: hidden !important;
-    padding: 0.5rem !important;
+    padding: 0 !important;
     margin: 0 !important;
+    background: transparent !important;
 }
 
 .mar_matrix_form .mar_page {
@@ -118,8 +129,8 @@ body.o_web_client .o_action_manager .o_content:has(.mar_matrix_form) .o_form_vie
     min-height: 0 !important;
     margin: 0 !important;
     background: var(--mar-surface);
-    border: 1px solid var(--mar-border);
-    border-radius: 12px;
+    border: none !important;
+    border-radius: 0 !important;
     overflow: hidden !important;
 }
 
@@ -138,26 +149,17 @@ body.o_web_client .o_action_manager .o_content:has(.mar_matrix_form) .o_form_vie
     border-bottom: 1px solid var(--mar-border);
 }
 .mar_matrix_form .mar_side_list {
-    flex: 1 !important;
-    min-height: 0 !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(154, 161, 174, 0.45) transparent;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
-/* Ensure inner list/table wrappers never create their own scrollbars or restrict height,
- * leaving .mar_side_list as the ONLY vertical scroll container for the left panel. */
+/* Odoo wraps list views in .table-responsive (overflow-x: auto), which drew
+ * a horizontal scrollbar across the bottom of the user panel even though
+ * the single fixed-layout column never actually overflows. */
 .mar_matrix_form .mar_user_list.o_list_renderer,
-.mar_matrix_form .mar_side_list .table-responsive,
-.mar_matrix_form .mar_side_list .o_field_widget,
-.mar_matrix_form .mar_side_list .o_field_x2many,
-.mar_matrix_form .mar_side_list .o_list_renderer,
-.mar_matrix_form .mar_side_list .o_list_view {
-    overflow: visible !important;
+.mar_matrix_form .mar_side_list .table-responsive {
     overflow-x: hidden !important;
-    overflow-y: visible !important;
-    height: auto !important;
-    max-height: none !important;
 }
 
 .mar_matrix_form .mar_main {
@@ -299,36 +301,86 @@ body.o_web_client .o_action_manager .o_content:has(.mar_matrix_form) .o_form_vie
 
 /* ---- Menu tree ---------------------------------------------------- */
 .mar_matrix_form .mar_tree_wrap {
-    flex: 1 !important;
-    min-height: 0 !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(154, 161, 174, 0.45) transparent;
+    flex: 1 1 0%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+    position: relative;
 }
-/* Ensure inner list/table wrappers never create their own scrollbars or restrict height,
- * leaving .mar_tree_wrap as the ONLY vertical scroll container for the right panel. */
-.mar_matrix_form .mar_matrix_list.o_list_renderer,
-.mar_matrix_form .mar_tree_wrap .table-responsive,
 .mar_matrix_form .mar_tree_wrap .o_field_widget,
 .mar_matrix_form .mar_tree_wrap .o_field_x2many,
-.mar_matrix_form .mar_tree_wrap .o_list_renderer,
 .mar_matrix_form .mar_tree_wrap .o_list_view {
-    overflow: visible !important;
-    overflow-x: hidden !important;
-    overflow-y: visible !important;
-    height: auto !important;
-    max-height: none !important;
+    flex: 1 1 0%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
-.mar_matrix_form .mar_matrix_list .o_data_row {
+.mar_matrix_form .mar_tree_wrap .o_list_renderer {
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+    position: relative;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+.mar_matrix_form .mar_matrix_list thead {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.mar_matrix_form .mar_matrix_list thead th {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: var(--mar-surface) !important;
+    box-shadow: inset 0 -1px 0 var(--mar-border);
+}
+/* Matrix Grid Rows: uniform background for child rows, light gray for main menu rows */
+.mar_matrix_form .mar_matrix_list table.o_list_table,
+.mar_matrix_form .mar_matrix_list table.o_list_table tbody,
+.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr,
+.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr > td,
+.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr:nth-of-type(odd) > *,
+.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr:nth-of-type(even) > *,
+.mar_matrix_form .mar_matrix_list table.o_list_table .o_data_row td {
+    --bs-table-accent-bg: transparent !important;
+    --bs-table-striped-bg: transparent !important;
+    background-color: #ffffff !important;
+    background: #ffffff !important;
     font-size: 0.85rem;
 }
-.mar_matrix_form .mar_matrix_list .o_data_row.fw-bold {
-    background: var(--mar-accent-soft);
+
+/* Light Gray Background for Main Menu / Group rows (is_group = True / .fw-bold) */
+.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr.fw-bold,
+.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr.fw-bold > td,
+.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr.fw-bold:nth-of-type(odd) > *,
+.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr.fw-bold:nth-of-type(even) > *,
+.mar_matrix_form .mar_matrix_list table.o_list_table .o_data_row.fw-bold td {
+    background-color: #e9ecef !important;
+    background: #e9ecef !important;
+    color: #212529 !important;
+    font-weight: 600 !important;
 }
-.mar_matrix_form .mar_matrix_list .o_data_row.fw-bold:hover {
-    background: var(--mar-accent-soft);
-    filter: brightness(0.97);
+
+/* Hover state for Main Menu (group) rows */
+.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr.fw-bold:hover,
+.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr.fw-bold:hover > td,
+.mar_matrix_form .mar_matrix_list table.o_list_table .o_data_row.fw-bold:hover td {
+    background-color: #dde3e8 !important;
+    background: #dde3e8 !important;
+}
+
+/* Hover state for Standard / Child rows */
+.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr:not(.fw-bold):hover,
+.mar_matrix_form .mar_matrix_list table.o_list_table tbody tr:not(.fw-bold):hover > td,
+.mar_matrix_form .mar_matrix_list table.o_list_table .o_data_row:not(.fw-bold):hover td {
+    background-color: #f8f9fa !important;
+    background: #f8f9fa !important;
 }
 /* Expand/collapse caret on group rows. Direction flips via .mar_collapsed,
  * added by the renderer; rotating one glyph avoids a layout jump. */
@@ -341,7 +393,7 @@ body.o_web_client .o_action_manager .o_content:has(.mar_matrix_form) .o_form_vie
     display: inline-block;
     width: 1em;
     margin-right: 0.35rem;
-    color: var(--mar-accent);
+    color: #495057;
     transition: transform 0.12s ease;
     vertical-align: middle;
 }
@@ -379,13 +431,71 @@ body.o_web_client .o_action_manager .o_content:has(.mar_matrix_form) .o_form_vie
     border-color: var(--mar-accent);
 }
 
-/* ---- User list (left panel) --------------------------------------- */
-/* table-layout: fixed — under the default "auto", an explicit width on a
- * <th> is only advisory and the browser re-balances columns against row
- * content, which made the checkbox column drift with name length. */
+/* ---- User list (left panel) & Matrix list table layout ----------------- */
 .mar_matrix_form .mar_user_list table.o_list_table,
 .mar_matrix_form .mar_matrix_list table.o_list_table {
     table-layout: fixed !important;
+    width: 100% !important;
+}
+
+/* Matrix table columns: Menu (dynamic), Status (fixed 130px), Has Access (fixed 140px) */
+.mar_matrix_form .mar_matrix_list table.o_list_table th[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list table.o_list_table td[data-name="display_label"],
+.mar_matrix_form .mar_matrix_list table.o_list_table th:nth-child(1),
+.mar_matrix_form .mar_matrix_list table.o_list_table td:nth-child(1) {
+    width: auto !important;
+}
+
+.mar_matrix_form .mar_matrix_list table.o_list_table th[data-name="count_label"],
+.mar_matrix_form .mar_matrix_list table.o_list_table td[data-name="count_label"],
+.mar_matrix_form .mar_matrix_list table.o_list_table th:nth-child(2),
+.mar_matrix_form .mar_matrix_list table.o_list_table td:nth-child(2) {
+    width: 130px !important;
+    min-width: 130px !important;
+    max-width: 130px !important;
+    text-align: center !important;
+}
+
+.mar_matrix_form .mar_matrix_list table.o_list_table th[data-name="has_access"],
+.mar_matrix_form .mar_matrix_list table.o_list_table td[data-name="has_access"],
+.mar_matrix_form .mar_matrix_list table.o_list_table th:nth-child(3),
+.mar_matrix_form .mar_matrix_list table.o_list_table td:nth-child(3) {
+    width: 140px !important;
+    min-width: 140px !important;
+    max-width: 140px !important;
+    text-align: center !important;
+}
+
+.mar_matrix_form .mar_matrix_list table.o_list_table td[data-name="has_access"] .form-check,
+.mar_matrix_form .mar_matrix_list table.o_list_table td:nth-child(3) .form-check {
+    display: inline-block;
+    margin: 0 auto;
+}
+
+/* Make the Has Access switch clickable.
+ *
+ * web's list_renderer.scss kills pointer events on every .form-check inside a
+ * row that is not in edit mode:
+ *
+ *   .o_data_row:not(.o_selected_row) .o_data_cell .form-check {
+ *       pointer-events: none;
+ *   }
+ *
+ * and puts them back only for a hard-coded list of cell classes —
+ * o_boolean_button_cell, o_boolean_favorite_cell, o_boolean_toggle_cell,
+ * o_toggle_button_cell. The cell class is derived from the widget NAME
+ * (o_<widget>_cell), and this column uses the module's own mar_access_toggle
+ * widget, so its cell is o_mar_access_toggle_cell and misses the allowlist.
+ * This list is also deliberately non-editable (see the view arch), so no row
+ * is ever .o_selected_row and the switch was dead on every row: the click
+ * landed on the <td> and never reached the checkbox, so MarAccessToggleField
+ * .onChange never ran and no RPC was sent.
+ *
+ * Same rule as web's, scoped to this one cell. The admin-user case still
+ * locks correctly — that comes from the input's own disabled attribute, not
+ * from pointer-events. */
+.mar_matrix_form .mar_matrix_list table.o_list_table .o_data_row .o_data_cell.o_mar_access_toggle_cell > .o_field_widget:not(.o_readonly_modifier) .form-check {
+    pointer-events: auto;
 }
 /* No column headers or record selectors in the user picker — it reads as a
  * list of people, not a data grid. */
@@ -600,25 +710,4 @@ body.o_web_client .o_action_manager .o_content:has(.mar_matrix_form) .o_form_vie
     padding-left: 14.5rem !important;
 }
 
-/* Custom sleek webkit scrollbars for the user list and menu rights matrix panels */
-.mar_matrix_form .mar_side_list::-webkit-scrollbar,
-.mar_matrix_form .mar_tree_wrap::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
 
-.mar_matrix_form .mar_side_list::-webkit-scrollbar-track,
-.mar_matrix_form .mar_tree_wrap::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.mar_matrix_form .mar_side_list::-webkit-scrollbar-thumb,
-.mar_matrix_form .mar_tree_wrap::-webkit-scrollbar-thumb {
-    background: rgba(154, 161, 174, 0.45);
-    border-radius: 999px;
-}
-
-.mar_matrix_form .mar_side_list::-webkit-scrollbar-thumb:hover,
-.mar_matrix_form .mar_tree_wrap::-webkit-scrollbar-thumb:hover {
-    background: rgba(154, 161, 174, 0.7);
-}

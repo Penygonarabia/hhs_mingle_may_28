@@ -25,9 +25,9 @@ def generate_report():
     registry = Registry(db_name)
     with registry.cursor() as cr:
         env = Environment(cr, odoo.SUPERUSER_ID, {})
-        from odoo.addons.pbi_dashboards.controllers.service_config import BOARDS
-        from odoo.addons.pbi_dashboards.controllers import service_sql
-        from odoo.addons.pbi_dashboards.controllers.service_sql import (
+        from odoo.addons.pbi_service_dashboards.controllers.service_config import BOARDS
+        from odoo.addons.pbi_service_dashboards.controllers import service_sql
+        from odoo.addons.pbi_service_dashboards.controllers.service_sql import (
             ParamBinder, _source_ctx, compile_domain, _technician_guard_clause, _promoter_guard_clause
         )
 

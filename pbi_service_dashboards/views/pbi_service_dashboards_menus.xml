@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <menuitem id="menu_pbi_service_dashboards"
+                  name="Service Dashboards"
+                  parent="pbi_dashboards.pbi_dashboards_app_root"
+                  sequence="20"/>
+
+        <record id="action_pbi_service_analysis" model="ir.actions.client">
+            <field name="name">Service Analysis</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis"
+                  name="Service Analysis"
+                  parent="pbi_service_dashboards.menu_pbi_service_dashboards"
+                  sequence="10"
+                  action="pbi_service_dashboards.action_pbi_service_analysis"/>
+
+        <record id="action_pbi_service_analysis_c" model="ir.actions.client">
+            <field name="name">Service Analysis (C)</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_c</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_c"
+                  name="Service Analysis (C)"
+                  parent="pbi_service_dashboards.menu_pbi_service_dashboards"
+                  sequence="20"
+                  action="pbi_service_dashboards.action_pbi_service_analysis_c"/>
+
+        <record id="action_pbi_service_analysis_e" model="ir.actions.client">
+            <field name="name">Service Analysis (E)</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_e</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_e"
+                  name="Service Analysis (E)"
+                  parent="pbi_service_dashboards.menu_pbi_service_dashboards"
+                  sequence="30"
+                  action="pbi_service_dashboards.action_pbi_service_analysis_e"/>
+
+        <record id="action_pbi_service_analysis_w" model="ir.actions.client">
+            <field name="name">Service Analysis (W)</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_w</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_w"
+                  name="Service Analysis (W)"
+                  parent="pbi_service_dashboards.menu_pbi_service_dashboards"
+                  sequence="40"
+                  action="pbi_service_dashboards.action_pbi_service_analysis_w"/>
+
+        <record id="action_pbi_service_analysis_uwc" model="ir.actions.client">
+            <field name="name">Service Analysis (UWC)</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_uwc</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_uwc"
+                  name="Service Analysis (UWC)"
+                  parent="pbi_service_dashboards.menu_pbi_service_dashboards"
+                  sequence="50"
+                  action="pbi_service_dashboards.action_pbi_service_analysis_uwc"/>
+
+        <record id="action_pbi_service_analysis_jcs" model="ir.actions.client">
+            <field name="name">Service Analysis - Job Cards</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_jcs</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_jcs"
+                  name="Service Analysis - Job Cards"
+                  parent="pbi_service_dashboards.menu_pbi_service_dashboards"
+                  sequence="60"
+                  action="pbi_service_dashboards.action_pbi_service_analysis_jcs"/>
+
+        <record id="action_pbi_service_analysis_cc" model="ir.actions.client">
+            <field name="name">Service Analysis - CC</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_cc</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_cc"
+                  name="Service Analysis - CC"
+                  parent="pbi_service_dashboards.menu_pbi_service_dashboards"
+                  sequence="70"
+                  action="pbi_service_dashboards.action_pbi_service_analysis_cc"/>
+
+        <record id="action_pbi_service_analysis_crd" model="ir.actions.client">
+            <field name="name">Service Analysis - CRD</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_crd</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_crd"
+                  name="Service Analysis - CRD"
+                  parent="pbi_service_dashboards.menu_pbi_service_dashboards"
+                  sequence="80"
+                  action="pbi_service_dashboards.action_pbi_service_analysis_crd"/>
+
+        <record id="action_pbi_service_analysis_parts" model="ir.actions.client">
+            <field name="name">Service Analysis - Parts</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_parts</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_parts"
+                  name="Service Analysis - Parts"
+                  parent="pbi_service_dashboards.menu_pbi_service_dashboards"
+                  sequence="90"
+                  action="pbi_service_dashboards.action_pbi_service_analysis_parts"/>
+
+        <record id="action_pbi_technician_analysis" model="ir.actions.client">
+            <field name="name">Technician Analysis</field>
+            <field name="tag">pbi_dashboards.service_dashboard_technician_analysis</field>
+        </record>
+
+        <menuitem id="menu_pbi_technician_analysis"
+                  name="Technician Analysis"
+                  parent="pbi_service_dashboards.menu_pbi_service_dashboards"
+                  sequence="100"
+                  action="pbi_service_dashboards.action_pbi_technician_analysis"/>
+
+        <record id="action_pbi_sales_cost_analysis" model="ir.actions.client">
+            <field name="name">Sales &amp; Cost Analysis</field>
+            <field name="tag">pbi_dashboards.service_dashboard_sales_cost_analysis</field>
+        </record>
+
+        <menuitem id="menu_pbi_sales_cost_analysis"
+                  name="Sales &amp; Cost Analysis"
+                  parent="pbi_service_dashboards.menu_pbi_service_dashboards"
+                  sequence="110"
+                  action="pbi_service_dashboards.action_pbi_sales_cost_analysis"/>
+
+        <record id="action_pbi_service_analysis_cc_users" model="ir.actions.client">
+            <field name="name">Service Analysis - CC Users</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_cc_users</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_cc_users"
+                  name="Service Analysis - CC Users"
+                  parent="pbi_service_dashboards.menu_pbi_service_dashboards"
+                  sequence="120"
+                  action="pbi_service_dashboards.action_pbi_service_analysis_cc_users"/>
+
+        <record id="action_pbi_service_analysis_crd_users" model="ir.actions.client">
+            <field name="name">Service Analysis - CRD Users</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_crd_users</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_crd_users"
+                  name="Service Analysis - CRD Users"
+                  parent="pbi_service_dashboards.menu_pbi_service_dashboards"
+                  sequence="130"
+                  action="pbi_service_dashboards.action_pbi_service_analysis_crd_users"/>
+
+        <record id="action_pbi_service_analysis_parts_users" model="ir.actions.client">
+            <field name="name">Service Analysis - Parts Users</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_parts_users</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_parts_users"
+                  name="Service Analysis - Parts Users"
+                  parent="pbi_service_dashboards.menu_pbi_service_dashboards"
+                  sequence="140"
+                  action="pbi_service_dashboards.action_pbi_service_analysis_parts_users"/>
+
+        <record id="action_pbi_service_analysis_technicians" model="ir.actions.client">
+            <field name="name">Service Analysis - Technicians</field>
+            <field name="tag">pbi_dashboards.service_dashboard_service_analysis_technicians</field>
+        </record>
+
+        <menuitem id="menu_pbi_service_analysis_technicians"
+                  name="Service Analysis - Technicians"
+                  parent="pbi_service_dashboards.menu_pbi_service_dashboards"
+                  sequence="150"
+                  action="pbi_service_dashboards.action_pbi_service_analysis_technicians"/>
+    </data>
+</odoo>

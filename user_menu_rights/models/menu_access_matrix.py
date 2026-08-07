@@ -212,16 +212,19 @@ class MenuAccessMatrix(models.TransientModel):
     # ------------------------------------------------------------------
     # Grant / Revoke all
     # ------------------------------------------------------------------
-    # Unlike a single row toggle, these two are STAGED: they set every row on
-    # screen but write nothing to menu.access.rights until Save Changes. A
-    # mis-aimed "Revoke All" on the wrong user is a 800-row mistake, so it
-    # gets a way back that does not depend on remembering the previous state.
+    # These two are STAGED: they set every row on screen but write nothing to
+    # menu.access.rights until Save Changes. A mis-aimed "Revoke All" on the
+    # wrong user is a 800-row mistake, so it gets a way back that does not
+    # depend on remembering the previous state.
     #
-    # Why not Odoo's own Save/Discard: a type="object" button force-saves the
-    # form before the method even runs, so there is no unsaved client state
-    # left for those controls to act on. The staging therefore lives in the
-    # transient lines (which the button IS allowed to write) plus the
-    # has_pending_bulk flag, with an explicit Save/Discard pair of our own.
+    # A single row toggle is staged too, but through Odoo's own dirty state —
+    # the switch calls record.update() and the breadcrumb Save / Discard take
+    # it from there (see MarAccessToggleField). These two buttons cannot use
+    # that: a type="object" button force-saves the form before the method even
+    # runs, so there is no unsaved client state left for those controls to act
+    # on. Their staging therefore lives in the transient lines (which the
+    # button IS allowed to write) plus the has_pending_bulk flag, with an
+    # explicit Save/Discard pair of our own.
     #
     # skip_cascade: every row is being set to the SAME value, so the per-row
     # cascade has nothing to work out — and without this it would run once
@@ -423,10 +426,11 @@ class MenuAccessMatrixLine(models.TransientModel):
     def write(self, vals):
         res = super().write(vals)
         if "has_access" in vals:
-            # skip_propagate: the caller is STAGING (Grant All / Revoke All),
-            # so the new value lives only on these transient rows until the
-            # user presses Save Changes. Individual row toggles never pass it
-            # and so still persist on click, as before.
+            # skip_propagate: the caller is Grant All / Revoke All, which
+            # stages into these transient rows and waits for its own Save
+            # Changes. A single row toggle reaches here only once Odoo saves
+            # the form, i.e. the user has already pressed Save, so it does
+            # not pass the flag and lands in menu.access.rights right away.
             if not self.env.context.get("skip_propagate"):
                 self._propagate_to_rights()
             if not self.env.context.get("skip_cascade"):
@@ -455,10 +459,34 @@ class MenuAccessMatrixLine(models.TransientModel):
             if descendants:
                 descendants.with_context(skip_cascade=True).write({"has_access": value})
 
-            # Up: an ancestor is ticked only while ALL of its direct children
-            # are. Collected first, then written as at most two batches.
+            # Up: an ancestor is ticked while ANY of its direct children is —
+            # a parent menu has to be reachable for a granted child under it
+            # to be reachable at all, so "all" would make granting a single
+            # sub-menu impossible. This matches how action_load_menus seeds
+            # groups (all_granted_ids walks a grant up to its ancestors).
+            # Collected first, then written as at most two batches.
             turn_on = Line.browse()
             turn_off = Line.browse()
+            # Roll-up values decided so far, keyed by menu_path. The loop runs
+            # nearest-ancestor-first, so each step needs the value the step
+            # below it just decided — that ancestor has not been written yet.
+            #
+            # This used to be done with `ancestor.has_access = new_val`, on
+            # the comment "keep the in-memory value in sync". It is not in
+            # memory: assigning to a field on an ORM record IS a write(), so
+            # it re-entered this very method for the ancestor WITHOUT
+            # skip_cascade — and the first thing that does is push the
+            # ancestor's value DOWN over its whole sub-tree. Ticking one
+            # sub-menu therefore granted every menu in the app (verified:
+            # Sales Dashboards turned on all 33 rows under PBI Dashboards).
+            # A plain dict cannot write anything.
+            rolled_up = {}
+
+            def effective(line):
+                if line.menu_path in rolled_up:
+                    return rolled_up[line.menu_path]
+                return line.has_access
+
             segment_ids = [s for s in path.strip("/").split("/") if s]
             for i in range(len(segment_ids) - 1, 0, -1):
                 ancestor_path = "/" + "/".join(segment_ids[:i]) + "/"
@@ -474,16 +502,14 @@ class MenuAccessMatrixLine(models.TransientModel):
                 )
                 if not direct_children:
                     continue
-                new_val = any(c.has_access for c in direct_children)
+                new_val = any(effective(c) for c in direct_children)
+                rolled_up[ancestor_path] = new_val
                 if ancestor.has_access == new_val:
                     continue
                 if new_val:
                     turn_on |= ancestor
                 else:
                     turn_off |= ancestor
-                # Keep the in-memory value in sync so the next (higher)
-                # ancestor rolls up against the corrected state.
-                ancestor.has_access = new_val
             if turn_on:
                 turn_on.with_context(skip_cascade=True).write({"has_access": True})
             if turn_off:
