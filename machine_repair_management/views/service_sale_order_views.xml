@@ -516,13 +516,13 @@
         </field>
     </record>
 
-    <!-- <record id="action_service_sale_order_form" model="ir.actions.act_window">
+    <record id="action_service_sale_order_form" model="ir.actions.act_window">
         <field name="name">Quotation</field>
         <field name="res_model">service.sale.order</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('amc_quotation', '=', False)]</field>
         <field name="view_id" ref="service_sale_order_tree"/>
-    </record> -->
+    </record>
 
     <record id="action_amc_service_sale_order_form" model="ir.actions.act_window">
         <field name="name">AMC Quotation</field>
@@ -532,7 +532,7 @@
         <field name="view_mode">tree,form</field>
     </record>
 
-    <!-- <menuitem id="menu_action_service_sale_order" name="Quotation" action="action_service_sale_order_form" parent="machine_repair_management.menu_machine_repair_support" sequence="99"/> -->
+    <menuitem id="menu_action_service_sale_order" name="Quotation" action="action_service_sale_order_form" parent="machine_repair_management.menu_machine_repair_support" sequence="99"/>
 
     <menuitem id="menu_action_amc_service_sale_order" name="AMC Quotation" action="action_amc_service_sale_order_form"
               parent="crm.crm_menu_sales" sequence="100"/>
