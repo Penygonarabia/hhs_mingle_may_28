@@ -1781,7 +1781,14 @@ class ProjectTask(models.Model):
         # if not self.whatsapp_send_bool:
         #     _logger.info("❌ No WhatsApp set in res Config Settings")
         #     return False
-
+        
+        '''Code Added on August 07 2026 by Vijaya bhaskar Client asked if the project is AMC need not send every whatsapp to customer.so stop to sent whatsaapp to customer'''
+        if self.project_related_amc_bool:
+            _logger.info(
+            "❌ WhatsApp scheduled message skipped for AMC job card: %s",
+            self.name)
+            return False
+        
         if (
             not self.env["ir.config_parameter"]
             .sudo()
