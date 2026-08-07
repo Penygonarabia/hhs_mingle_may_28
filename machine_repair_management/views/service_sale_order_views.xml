@@ -282,7 +282,7 @@
 				                           options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"  invisible = "job_task_id"/>
 				                </div>
                             
-                            <field name="customer_address" widget="text" invisible = "1"
+                            <field name="customer_address" widget="text" invisible = "not job_task_id"
                                    readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
                             <field name="contract_period" invisible="amc_quotation == False"
                                    readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
