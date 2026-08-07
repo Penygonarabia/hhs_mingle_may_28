@@ -216,7 +216,7 @@
                                 </group>
                                 <group>
                                     <field name="additional_info" readonly="state not in 'New' "/>
-                                    <field name="site_address" readonly="1" force_save = "1"/>
+                                    <field name="site_address" readonly="state not in 'New' "  force_save = "1"/>
                                     <field name="service_coordinator_person"/>
                                     <field name="service_coordinator_mobile"/>
                                 </group>

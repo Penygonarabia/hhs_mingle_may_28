@@ -336,7 +336,8 @@
                             <div>
                                 <strong style="font-size:14pt !important;">Subject</strong>
                                 :
-                                <span style="font-size:14pt !important; font-weight:bold !important;" t-esc="subject"/>
+                                <!-- <span style="font-size:14pt !important; font-weight:bold !important;" t-esc="subject"/> -->
+                            	<span style="font-size:14pt !important;" t-esc="subject"/>
                             </div>
                         </div>
                         <table style="width:100%; margin-top:48px; margin-bottom:0; border-collapse:collapse;">
