@@ -37,71 +37,87 @@
 
 import { registry } from "@web/core/registry";
 import { X2ManyField, x2ManyField } from "@web/views/fields/x2many/x2many_field";
+import {
+    BooleanToggleField,
+    booleanToggleField,
+} from "@web/views/fields/boolean_toggle/boolean_toggle_field";
 import { ListRenderer } from "@web/views/list/list_renderer";
-import { onMounted, onWillUnmount } from "@odoo/owl";
+import { CheckBox } from "@web/core/checkbox/checkbox";
+import { onMounted, onWillUnmount, onPatched, xml } from "@odoo/owl";
 
 const MAR_SEARCH_SELECTOR = ".mar_matrix_form .mar_search_box";
 const MAR_EXPAND_ALL_SELECTOR = ".mar_matrix_form .mar_expand_all";
 const MAR_COLLAPSE_ALL_SELECTOR = ".mar_matrix_form .mar_collapse_all";
+const MAR_TREE_WRAP_SELECTOR = ".mar_matrix_form .mar_tree_wrap";
 const MAR_SEARCH_DEBOUNCE_MS = 180;
 
 /**
- * Expand/collapse state, held per list rather than per renderer instance.
+ * Expand/collapse state, held outside the component AND outside the list.
  *
- * Owl can tear down and re-create this renderer while the user is working
- * (any form re-render can do it). Keeping the collapsed set on `this` meant
- * setup() ran again and re-folded everything, so a search's expanded
- * results silently snapped back to "all collapsed". A WeakMap keyed by the
- * list survives that; keying also on record count means Load Menus (which
- * swaps the whole record set) correctly starts fresh at the collapsed
- * default instead of reusing stale paths.
+ * Owl can tear down and re-create this renderer while the user is working,
+ * and a toggle now reloads the whole form (see MarAccessToggleField), which
+ * hands the renderer a brand-new list object with brand-new record ids.
+ * Keying the state on the list (a WeakMap) therefore threw the user's
+ * expand/collapse away on every single tick — the tree snapped back to
+ * fully-folded under their cursor. Keying on the row COUNT instead survives
+ * a reload of the same tree, while still resetting when a different user's
+ * tree (a different number of rows) is loaded.
  */
-const MAR_STATE = new WeakMap();
+let MAR_STATE = null;
 
 function marGetState(list) {
-    let state = MAR_STATE.get(list);
-    if (!state || state.count !== list.records.length) {
-        state = { collapsed: new Set(), lastQuery: "", count: list.records.length };
+    const count = list.records.length;
+    if (!MAR_STATE || MAR_STATE.count !== count) {
+        MAR_STATE = { collapsed: new Set(), lastQuery: "", count };
         for (const r of list.records) {
             if (r.data.is_group && r.data.menu_path) {
-                state.collapsed.add(r.data.menu_path);
+                MAR_STATE.collapsed.add(r.data.menu_path);
             }
         }
-        MAR_STATE.set(list, state);
     }
-    return state;
+    return MAR_STATE;
 }
 
 /**
- * How deep a materialized path sits. "/12/" -> 0, "/12/45/" -> 1.
+ * Scroll offset of the tree panel, held across a reload.
  *
- * The model already indents display_label with four spaces per level, but
- * HTML collapses leading whitespace, so that indent renders as nothing and
- * the whole tree comes out flush-left. The depth is therefore turned into a
- * class here and paid out as cell padding in CSS.
- *
- * Counted by character rather than split()/filter(): this runs once per row
- * per render on a ~760-row list, and the split allocated two arrays each
- * time. menu_path is used rather than the `depth` field because this file
- * already relies on menu_path being present, and Odoo does not guarantee
- * that a column_invisible field is fetched at all.
- *
- * MAR_MAX_DEPTH caps the class, not the data: past it, rows keep the last
- * indent step the stylesheet defines instead of falling back to none.
+ * A toggle reloads the whole form, which tears the tree's rows out of the DOM
+ * and puts new ones back. While the container is briefly short, the browser
+ * clamps scrollTop, so restoring once — even in a single requestAnimationFrame
+ * — lands on a container that has not finished settling and the panel ends up
+ * at the bottom. The value is therefore parked here, re-applied on every frame
+ * until it sticks, and re-applied again from the renderer's onPatched (Owl
+ * re-renders asynchronously, so the patch can land after the frames run out).
  */
-const MAR_MAX_DEPTH = 10;
+let MAR_PENDING_SCROLL = null;
+let MAR_SCROLL_FRAME = null;
 
-function marPathDepth(path) {
-    if (!path) {
-        return 0;
+function marRememberScrollTop() {
+    const wrap = document.querySelector(MAR_TREE_WRAP_SELECTOR);
+    MAR_PENDING_SCROLL = wrap ? wrap.scrollTop : null;
+}
+
+function marApplyPendingScroll() {
+    // A second caller must not start a competing loop — they would fight over
+    // scrollTop and the last writer would win at a random frame.
+    if (MAR_PENDING_SCROLL === null || MAR_SCROLL_FRAME !== null) {
+        return;
     }
-    let slashes = 0;
-    for (let i = 0; i < path.length; i++) {
-        if (path.charCodeAt(i) === 47 /* "/" */) {
-            slashes++;
+    const target = MAR_PENDING_SCROLL;
+    let frames = 0;
+    const apply = () => {
+        const wrap = document.querySelector(MAR_TREE_WRAP_SELECTOR);
+        if (wrap && wrap.scrollTop !== target) {
+            wrap.scrollTop = target;
         }
-    }
-    return Math.min(Math.max(slashes - 2, 0), MAR_MAX_DEPTH);
+        if (++frames < 10) {
+            MAR_SCROLL_FRAME = requestAnimationFrame(apply);
+        } else {
+            MAR_SCROLL_FRAME = null;
+            MAR_PENDING_SCROLL = null;
+        }
+    };
+    MAR_SCROLL_FRAME = requestAnimationFrame(apply);
 }
 
 /**
@@ -117,11 +133,105 @@ function marAncestorPaths(path) {
     return out;
 }
 
+/**
+ * Helper to copy text to the clipboard. Supports both secure (navigator.clipboard)
+ * and non-secure (document.execCommand) contexts.
+ */
+function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text);
+    } else {
+        return new Promise((resolve, reject) => {
+            try {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.left = '-9999px';
+                textarea.style.top = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textarea);
+                if (successful) {
+                    resolve();
+                } else {
+                    reject(new Error('execCommand copy was unsuccessful'));
+                }
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+}
+
+/**
+ * Searches for the active Odoo breadcrumb or page title, parses the user's
+ * email, and appends a clickable copy button with visual feedback.
+ */
+function updateHeaderCopyIcon() {
+    const selectors = [
+        '.o_last_breadcrumb_item',
+        '.breadcrumb-item.active',
+        '.o_control_panel_breadcrumbs .active',
+        '.o_control_panel_title',
+        '.o_breadcrumb .active'
+    ];
+    let titleEl = null;
+    for (const selector of selectors) {
+        titleEl = document.querySelector(selector);
+        if (titleEl) break;
+    }
+    if (!titleEl) return;
+
+    // Avoid duplicating copy button
+    if (titleEl.querySelector('.mar_copy_email_btn')) return;
+
+    const fullText = (titleEl.textContent || '').trim();
+    if (!fullText.includes('Menu Access Rights -')) return;
+
+    const parts = fullText.split(' / ');
+    if (parts.length < 2) return;
+
+    const email = parts[parts.length - 1].trim();
+    if (!email || !email.includes('@')) return;
+
+    const btn = document.createElement('span');
+    btn.className = 'mar_copy_email_btn';
+    btn.setAttribute('title', 'Copy Email');
+    btn.innerHTML = '<i class="fa fa-copy"></i>';
+
+    // Completely isolate button events from Odoo's handlers
+    const preventAndStop = (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        ev.stopImmediatePropagation();
+    };
+    btn.addEventListener('click', (ev) => {
+        preventAndStop(ev);
+        copyToClipboard(email).then(() => {
+            const icon = btn.querySelector('.fa');
+            if (icon) {
+                icon.className = 'fa fa-check';
+                setTimeout(() => {
+                    icon.className = 'fa fa-copy';
+                }, 1500);
+            }
+        }).catch(err => {
+            console.error('Clipboard copy failed:', err);
+        });
+    });
+    btn.addEventListener('mousedown', preventAndStop);
+    btn.addEventListener('mouseup', preventAndStop);
+
+    titleEl.appendChild(btn);
+}
+
 class MenuAccessMatrixListRenderer extends ListRenderer {
     setup() {
         super.setup();
-        this._state = marGetState(this.props.list);
         this._matchCache = null;
+        this._titleObserver = null;
 
         this._onSearchInput = () => {
             clearTimeout(this._searchTimer);
@@ -152,7 +262,23 @@ class MenuAccessMatrixListRenderer extends ListRenderer {
             if (this._collapseAllEl) {
                 this._collapseAllEl.addEventListener("click", this._onCollapseAll);
             }
+
+            // Set up MutationObserver to watch for title changes in the DOM and inject/re-inject copy button
+            if (typeof MutationObserver !== 'undefined') {
+                const targetNode = document.body;
+                const config = { childList: true, subtree: true, characterData: true };
+                const callback = () => {
+                    updateHeaderCopyIcon();
+                };
+                this._titleObserver = new MutationObserver(callback);
+                this._titleObserver.observe(targetNode, config);
+            }
+            updateHeaderCopyIcon();
         });
+        // The reload after a toggle finishes as an Owl patch, which can land
+        // after marApplyPendingScroll's frames have run out. Re-arming here is
+        // what makes the restore reliable rather than racy.
+        onPatched(() => marApplyPendingScroll());
         onWillUnmount(() => {
             clearTimeout(this._searchTimer);
             if (this._searchEl) {
@@ -163,6 +289,10 @@ class MenuAccessMatrixListRenderer extends ListRenderer {
             }
             if (this._collapseAllEl) {
                 this._collapseAllEl.removeEventListener("click", this._onCollapseAll);
+            }
+            if (this._titleObserver) {
+                this._titleObserver.disconnect();
+                this._titleObserver = null;
             }
         });
     }
@@ -247,6 +377,14 @@ class MenuAccessMatrixListRenderer extends ListRenderer {
     // ------------------------------------------------------------------
     // Expand / collapse
     // ------------------------------------------------------------------
+    // Read through marGetState every time rather than caching the object in
+    // setup(): a toggle reloads the form, and the renderer often survives
+    // that with a new props.list, so a cached reference would silently point
+    // at the state of a list that no longer exists.
+    get _state() {
+        return marGetState(this.props.list);
+    }
+
     get _collapsed() {
         return this._state.collapsed;
     }
@@ -293,13 +431,20 @@ class MenuAccessMatrixListRenderer extends ListRenderer {
         return false;
     }
 
+    /**
+     * A group's name folds/unfolds it; every other cell does nothing.
+     *
+     * super is deliberately never called. The list is not editable, and in a
+     * non-editable x2many ListRenderer.onCellClicked asks the field to OPEN
+     * the row — a form dialog on a throwaway transient line, which is not a
+     * thing this screen has. The Has Access switch is unaffected either way:
+     * it handles its own click and stops propagation before reaching here.
+     */
     async onCellClicked(record, column, ev) {
         if (record.data.is_group && column.name === "display_label") {
             ev.stopPropagation();
             this.toggleCollapse(record.data.menu_path);
-            return;
         }
-        return super.onCellClicked(record, column, ev);
     }
 
     // ------------------------------------------------------------------
@@ -308,9 +453,13 @@ class MenuAccessMatrixListRenderer extends ListRenderer {
     getRowClass(record) {
         let classes = super.getRowClass(record) || "";
         const path = record.data.menu_path;
-        // Added before any early return so a row that is currently filtered
-        // out still carries its indent when it comes back.
-        classes += ` mar_depth_${marPathDepth(path)}`;
+        
+        // Calculate depth from display_label's leading spaces to bypass Odoo optimization on hidden columns
+        const label = record.data.display_label || "";
+        const leadingSpaces = (label.match(/^ */) || [""])[0].length;
+        const depth = Math.floor(leadingSpaces / 4);
+        
+        classes += ` mar_depth_${depth}`;
         if (path && this._collapsed.has(path)) {
             classes += " mar_collapsed";
         }
@@ -343,6 +492,91 @@ class MenuAccessMatrixListRenderer extends ListRenderer {
         return `${classes} d-none`;
     }
 }
+
+// ---------------------------------------------------------------------------
+// The Has Access toggle
+//
+// The cascade hangs off the toggle itself, not off the list renderer. Two
+// earlier attempts failed for reasons worth recording:
+//
+//   1. ListRenderer.onCellClicked — never fires for this cell. Odoo's
+//      BooleanToggleField template binds t-on-click.stop, so the click is
+//      consumed before it reaches the row.
+//   2. Diffing has_access across renders in onPatched — it *worked*, but it
+//      is a guess: it has to infer "the user toggled this one row" from the
+//      shape of a re-render, and it cannot tell a user toggle apart from a
+//      reload that brings back different data. Overriding onChange removes
+//      the guessing entirely: this method runs if and only if a human
+//      clicked this row's toggle.
+//
+// A toggle now STAGES the row instead of writing it. record.update() marks
+// the form dirty, which is what puts Odoo's own Save / Discard back in the
+// breadcrumb — an earlier version called menu.access.matrix.action_cascade_
+// toggle straight from here and reloaded the form, so every tick was written
+// on the spot and the form was never dirty. There was then nothing on screen
+// saying a change had happened, and no way to back one out.
+//
+// Only the clicked row is updated here. The cascade to descendants and the
+// ancestor roll-up stay server-side in MenuAccessMatrixLine.write, which runs
+// when Odoo saves the o2m command; the reload Odoo does after a save is what
+// brings the cascaded rows and the server-computed count_label /
+// access_status back. Cascading client-side instead would mean one
+// record.update() per affected row, and each one costs an onchange round-trip
+// — a top-level app can carry 100+ descendants.
+//
+// Consequence worth knowing: between the click and Save, only the clicked row
+// moves. Its children and parents follow when you press Save.
+// ---------------------------------------------------------------------------
+class MarAccessToggleField extends BooleanToggleField {
+    /**
+     * Own template, for one reason: stock web.BooleanField renders the switch
+     * as `disabled="props.readonly"`, and this list is not editable, so
+     * props.readonly is ALWAYS true here and the switch would never be
+     * clickable at all. Readonly is a statement about inline editing, which
+     * this field does not use — it stages through record.update() below and
+     * Odoo's own Save is what writes. The one
+     * case that really must lock is a user who is an Odoo administrator (they
+     * implicitly have every menu, so the rows are informational); that is read
+     * straight off the row instead.
+     */
+    static template = xml`
+        <CheckBox
+            id="props.id"
+            value="state.value"
+            className="'o_field_boolean o_boolean_toggle form-switch'"
+            disabled="isLocked"
+            onChange.bind="onChange">
+            ​
+        </CheckBox>
+    `;
+    static components = { CheckBox };
+
+    get isLocked() {
+        return Boolean(this.props.record.data.is_user_admin);
+    }
+
+    async onChange(newValue) {
+        this.state.value = newValue;
+        // The update re-renders the list, and the tree panel is a scroll
+        // container of its own — without this the panel jumps.
+        marRememberScrollTop();
+        try {
+            await this.props.record.update({ [this.props.name]: newValue });
+        } catch (err) {
+            // Put the switch back so the screen never claims a grant the
+            // record does not carry.
+            this.state.value = !newValue;
+            MAR_PENDING_SCROLL = null;
+            throw err;
+        }
+        marApplyPendingScroll();
+    }
+}
+
+registry.category("fields").add("mar_access_toggle", {
+    ...booleanToggleField,
+    component: MarAccessToggleField,
+});
 
 class MenuAccessMatrixListField extends X2ManyField {}
 MenuAccessMatrixListField.components = {

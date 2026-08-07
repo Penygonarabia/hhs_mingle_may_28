@@ -18,7 +18,10 @@
  *                         right-hand panel to that user.
  */
 
+import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
+import { useService } from "@web/core/utils/hooks";
+import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { charField } from "@web/views/fields/char/char_field";
 import { X2ManyField, x2ManyField } from "@web/views/fields/x2many/x2many_field";
 import { ListRenderer } from "@web/views/list/list_renderer";
@@ -59,6 +62,7 @@ registry.category("fields").add("mar_user_cell", {
 class MarUserListRenderer extends ListRenderer {
     setup() {
         super.setup();
+        this.marDialog = useService("dialog");
         this._onUserSearchInput = () => {
             clearTimeout(this._userSearchTimer);
             this._userSearchTimer = setTimeout(() => this.render(), MAR_USER_SEARCH_DEBOUNCE_MS);
@@ -103,8 +107,8 @@ class MarUserListRenderer extends ListRenderer {
      *
      * Goes straight to the ORM rather than through an Odoo <button>: a
      * type="object" button force-saves the form first, and this list sits in
-     * the same form as the (editable) menu tree, so an in-progress edit would
-     * be committed just because someone clicked a different user.
+     * the same form as the menu tree, so staged grants would be committed
+     * just because someone clicked a different user.
      */
     async onCellClicked(record, column, ev) {
         if (ev) {
@@ -117,13 +121,45 @@ class MarUserListRenderer extends ListRenderer {
         if (!userId || !root.resId) {
             return;
         }
-        // Drop any pending form state BEFORE switching. Selecting a user
+        // Pending form state has to go BEFORE switching. Selecting a user
         // replaces the whole menu tree server-side, so edits still staged
         // against the previous user's rows would otherwise be saved against
         // the incoming user — the corruption path guarded server-side in
-        // menu.access.matrix.line._propagate_to_rights. Nothing is lost:
-        // toggles already persist the moment they're clicked, so a dirty
-        // form here only ever holds the "row is being edited" marker.
+        // menu.access.matrix.line._propagate_to_rights.
+        //
+        // Since a toggle now stages rather than writes (see
+        // MarAccessToggleField), that pending state is real unsaved grants,
+        // not just an "editing this row" marker — so it is worth a question
+        // rather than a silent discard.
+        if (await root.isDirty()) {
+            const switchAnyway = await new Promise((resolve) => {
+                this.marDialog.add(
+                    ConfirmationDialog,
+                    {
+                        // No name in the body: the title bar behind this
+                        // dialog already says whose rights are on screen, and
+                        // reading it off root.data.user_id here is not
+                        // reliable enough to risk showing the wrong one.
+                        title: _t("Unsaved menu changes"),
+                        body: _t(
+                            "The menu changes for the user on screen have not "
+                            + "been saved yet. Switching user now throws them away.",
+                        ),
+                        confirmLabel: _t("Switch and lose them"),
+                        cancelLabel: _t("Stay here"),
+                        confirm: () => resolve(true),
+                        cancel: () => resolve(false),
+                    },
+                    // Closing the dialog by the X or Escape must read as
+                    // "stay", not as an unanswered promise that leaves the
+                    // click hanging forever.
+                    { onClose: () => resolve(false) },
+                );
+            });
+            if (!switchAnyway) {
+                return;
+            }
+        }
         if (typeof root.discard === "function") {
             await root.discard();
         }

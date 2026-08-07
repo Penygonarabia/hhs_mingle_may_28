@@ -14,6 +14,9 @@ through the Menu Rights screens.
 
 def post_init_hook(env):
     Rights = env["menu.access.rights"].sudo()
+    # Clear any existing records from previous incomplete uninstalls to prevent unique constraint violations
+    Rights.search([]).unlink()
+
     managed_ids = Rights.managed_menu_ids()
     if not managed_ids:
         return
@@ -35,13 +38,14 @@ def post_init_hook(env):
         # developer-mode menu — Technical and its whole subtree. Seeding from
         # that view grandfathers those menus as REVOKED for everyone, so a
         # user who switches developer mode on finds them gone: access taken
-        # away by an install that promises to take nothing away.
+        # away by an install that promises to take nothing away. Measured on
+        # this database, that was 8,582 revoked rows across 75 menus.
         #
         # This is the exact defect migrations/17.0.1.4.0 exists to repair, and
         # it chose the same fix — the maximal, group-based visibility. A
         # migration only runs on upgrade though, so until this line carried
-        # debug=True a FRESH install on a new server reproduced the bug the
-        # migration had already fixed elsewhere.
+        # debug=True a fresh install (or the uninstall/reinstall this hook's
+        # own unlink() above anticipates) reproduced the bug.
         #
         # Granting more than the user sees today is safe in the other
         # direction: Odoo still applies its own debug filter at render time,
