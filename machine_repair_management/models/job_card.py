@@ -1770,7 +1770,9 @@ class ProjectTask(models.Model):
                 if rec.team_id and rec.planned_date_begin:
                     rec.whatsapp_scheduled_message_sent_bool = True
                     if rec.whatsapp_scheduled_message_sent_bool:
-                        rec._send_whatsapp_scheduled_message()
+                        '''Code Added on August 07 2026 by Vijaya bhaskar Client asked if the project is AMC need not send every whatsapp to customer.so stop to sent whatsaapp to customer'''
+                        if not rec.project_related_amc_bool:
+                            rec._send_whatsapp_scheduled_message()
                         # rec._send_whatsapp_scheduled_technician_message()
                         rec.whatsapp_scheduled_message_sent_bool = False
 
