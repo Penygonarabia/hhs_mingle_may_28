@@ -428,7 +428,7 @@ workshop machine repair
         "report/job_card_invoice_template_report.xml",
         "report/job_card_receipt_template_report.xml",
         "report/inspection_charge_receipt_template_report.xml",
-        "report/sale_order_quotation_report.xml",
+        # "report/sale_order_quotation_report.xml",
         "report/report_service_sale_order_report.xml",
         "report/report_ac_unit_service_receipt_report.xml",
         "report/service_job_card_report.xml",

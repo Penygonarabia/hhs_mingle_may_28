@@ -471,17 +471,56 @@
         </template>
  -->
         <!-- Override Default Report Action -->
-    <record id="service_sale_order_quotation_report" model="ir.actions.report">
+    <!-- <record id="service_sale_order_quotation_report" model="ir.actions.report">
         <field name="name">Quotation</field>
         <field name="model">service.sale.order</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">machine_repair_management.report_service_saleorder_document_hhs</field>
         <field name="report_file">machine_repair_management.report_service_saleorder_document_hhs</field>
 
-        <!-- <field name="binding_model_id" ref="machine_repair_management.model_service_sale_order"/> -->
+        <field name="binding_model_id" ref="machine_repair_management.model_service_sale_order"/>
         <field name="binding_model_id" eval="False"/>
         <field name="binding_type">report</field>
-    </record>
+    </record> -->
+    
+    
+     <record id="service_sale_order_quotation_report" model="ir.actions.report">
+	    <field name="name">Quotation</field>
+	    <field name="model">service.sale.order</field>
+	    <field name="report_type">qweb-pdf</field>
+	    <field name="report_name">machine_repair_management.report_ssorder_dynamic</field>
+	    <field name="report_file">machine_repair_management.report_ssorder_dynamic</field>
+	
+	    <field name="binding_model_id"
+	           ref="machine_repair_management.model_service_sale_order"/>
+	    <field name="binding_type">report</field>
+	</record>    
+	
+	
+	<template id="report_ssorder_dynamic">
+
+	    <t t-call="web.html_container">
+	
+	        <t t-foreach="docs" t-as="doc">
+	
+	            <t t-if="doc.job_task_id">
+	
+	                <t t-call="machine_repair_management.report_service_saleorder_document_hhs"/>
+	
+	            </t>
+	
+	            <t t-else="">
+	
+	                <t t-call="machine_repair_management.report_saleorder_amcquotation"/>
+	
+	            </t>
+	
+	        </t>
+	
+	    </t>
+	
+	</template>  
+	        
             
         
         

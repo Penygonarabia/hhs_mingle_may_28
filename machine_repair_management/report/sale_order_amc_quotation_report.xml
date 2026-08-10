@@ -15,7 +15,7 @@
             <field name="header_spacing">25</field>
             <field name="dpi">130</field>
         </record>
-        <record id="sale_order_amc_quotation_report_details" model="ir.actions.report">
+       <!--  <record id="sale_order_amc_quotation_report_details" model="ir.actions.report">
             <field name="name">AMC Quotation</field>
             <field name="model">service.sale.order</field>
             <field name="report_type">qweb-pdf</field>
@@ -26,7 +26,7 @@
             <field name="binding_type">report</field>
             <field name="paperformat_id" ref="machine_repair_management.paperformat_amc_quotation_hhs"/>
 
-        </record>
+        </record> -->
         <template id="service_amc_quotation_internal_layout_service_amc_header_pager">
             <div class="article" t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id"
                  t-att-data-oe-lang="o and o.env.context.get('lang')">
