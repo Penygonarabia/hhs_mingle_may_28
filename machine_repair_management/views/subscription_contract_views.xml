@@ -79,9 +79,55 @@
                 <field name="project_id" invisible="1"/>
             </xpath>
             
+            <xpath expr  ="//field[@name = 'service_coordinator_person']" position = "before">
+            	
+            	<label for="site_street" string="Site Address"/>
+                <div class="o_address_format">
+                    <field name = "site_street" placeholder="Street..." class="o_address_street" readonly="state not in 'New' "/>
+                    <field name = "site_street2" placeholder="Street 2..." class="o_address_street" readonly="state not in 'New' "/>
+                    <field name = "site_customer_city_id" placeholder="City" class="o_address_city" readonly="state not in 'New' "/>
+                    <field name = "site_district_id" placeholder="District" class="o_address_city" domain ="[('city_id','=',site_customer_city_id)]" readonly="state not in 'New' "/>
+                    <field name = "site_state_id" class="o_address_state" placeholder="State"
+                           options="{&quot;no_open&quot;: True}" readonly="state not in 'New' "/>
+                    <field name = "site_zip" placeholder="ZIP" class="o_address_zip" readonly="state not in 'New' "/>
+                    <field name = "site_country_id" placeholder="Country" class="o_address_country"
+                           options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}" readonly="state not in 'New' "/>
+                </div>
+            	
+            </xpath>
+            
             
         </field>
     </record>
+    
+    	<record id = "subscription_contract_partner_name_search" model = "ir.ui.view">
+    	<field name = "name">subscription.contracts.view.inherit.tree</field>
+    	<field name = "model">subscription.contracts</field>
+    	<field name = "inherit_id" ref = "sales_contract_and_recurring_invoices.subscription_contracts_view_tree" />
+    	<field name = "arch" type = "xml" >
+    		<xpath expr = "//field[@name ='partner_id']" position = "after">
+    			<field name = "partner_name" optional="hide"/>
+    			
+    		
+    		</xpath>
+    	
+    	</field>
+    </record>
+    
+    
+    <record id = "subscription_contract_partner_search_form_inherit" model = "ir.ui.view">
+    	<field name = "name">subscription.contracts.view.inherit.search</field>
+    	<field name = "model">subscription.contracts</field>
+    	<field name = "inherit_id" ref = "sales_contract_and_recurring_invoices.subscription_contracts_view_search" />
+    	<field name = "arch" type = "xml" >
+    		<xpath expr = "//field[@name ='partner_id']" position = "after">
+    			<field name = "partner_name"/>
+    		
+    		</xpath>
+    	
+    	</field>
+    </record>
+    
         
 
 

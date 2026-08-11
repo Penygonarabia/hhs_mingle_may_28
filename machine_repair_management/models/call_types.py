@@ -121,6 +121,27 @@ class MachineRepairSupport(models.Model):
                         rec.partner_id = partner_search.id
 
                         # rec.customer_name = partner_search.name
+                        '''Code Added on August 10 2026 client f call center user type the user’s alternative mobile number or contract screen'''
+                    elif not partner_search:
+                        contract_search = self.env['subscription.contracts'].search([('contact_persons_mobile','=', rec.phone)],limit = 1)
+                        if contract_search:
+                            rec.customer_name = contract_search.contact_persons or False
+                            rec.address_one = contract_search.site_address or False
+                            rec.address_two = False
+                            rec.customer_city_id = contract_search.site_customer_city_id.id or False
+                            rec.country_district_id = contract_search.site_district_id.id or False
+                            rec.country_state_id = contract_search.site_state_id.id or False
+                            rec.country_id = contract_search.site_country_id.id or False
+                            rec.zip_code = contract_search.site_zip or False
+                            rec.work_location_id = None
+                            rec.customer_identification_scheme = contract_search.customer_identification_scheme or False
+                            rec.customer_identification_number = contract_search.customer_identification_number or False
+                            rec.building_number = contract_search.building_number or False
+                            rec.plot_identification = contract_search.plot_identification or False
+                            rec.partner_name  = contract_search.partner_name or False
+               
+                        
+                        
                     else:
                         rec.customer_name = None
                         rec.email = False

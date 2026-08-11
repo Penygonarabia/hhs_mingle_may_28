@@ -206,6 +206,58 @@ class SubscriptionContracts(models.Model):
         default=lambda self: self.env["project.project"].search([("related_to_amc", "=", True)], limit=1).id if "project.project" in self.env else False,
     )
     
+    
+    '''Code Added on August 10 2026 by Vijaya bhaskar'''
+    @api.constrains('contact_persons_mobile')
+    def _check_contact_persons_mobile(self):
+        for rec in self:
+            if rec.contact_persons_mobile:
+                if not rec.contact_persons_mobile.isdigit():
+                    raise ValidationError(
+                        "Please enter Only Numbers in the Contact Person Mobile"
+                    )
+                if len(rec.contact_persons_mobile) != 10:
+                    raise ValidationError(_("Contact Person Mobile number must be 10 digits."))
+
+    '''Code Added on August 10 2026 by Vijaya bhaskar'''
+    @api.constrains('mobile_no')
+    def _check_mobile_no(self):
+        for rec in self:
+            if rec.mobile_no:
+                if not rec.mobile_no.isdigit():
+                    raise ValidationError(
+                        "Please enter Only Numbers in the Mobile No."
+                    )
+                if len(rec.mobile_no) != 10:
+                    raise ValidationError(_("Mobile No. must be 10 digits."))
+
+    '''Code Added on August 10 2026 by Vijaya bhaskar'''
+    @api.constrains('service_coordinator_mobile')
+    def _check_service_coordinator_mobile(self):
+        for rec in self:
+            if rec.service_coordinator_mobile:
+                if not rec.service_coordinator_mobile.isdigit():
+                    raise ValidationError("Please enter Only Numbers in the Service Coordinator Mobile Number")
+                if len(rec.service_coordinator_mobile) != 10:
+                    raise ValidationError(_("Service Coordinator Mobile Number must be 10 digits."))
+
+    '''Code Added on August 10 2026 by Vijaya bhaskar'''
+    @api.constrains('email')
+    def _check_company_email(self):
+        for rec in self:
+            if rec.email:
+                if "@" not in rec.email or "." not in rec.email:
+                    raise ValidationError(
+                        "Please enter a valid email address must contain @ and ."
+                    )
+                if not re.match(
+                    r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", rec.email
+                ):
+                    raise ValidationError(
+                        "Please enter a properly formatted email address"
+                    )
+                    
+    
     '''Code Added on July 24 2026 by vijaya bhaskar client asked the Termination date and reason'''
     
     termination_reason = fields.Text(string = "Reason for Termination")

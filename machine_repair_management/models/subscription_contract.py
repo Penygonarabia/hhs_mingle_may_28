@@ -104,6 +104,40 @@ class SubscriptionContracts(models.Model):
     confirmation_date = fields.Date(string = "Confirmation Date")
     
     
+    '''Code Added on August 10 2026 by Vijaya bhaskar'''
+    site_street = fields.Char(string = "Street")
+    
+    site_street2 = fields.Char(string = "Street2")
+    
+    site_customer_city_id = fields.Many2one('res.city', string = "Customer City")
+    
+    site_district_id  = fields.Many2one('res.state.district',string = "District")
+    
+    site_state_id = fields.Many2one('res.country.state', string = "State")
+    
+    site_country_id = fields.Many2one('res.country', string = "Country")
+    
+    site_zip = fields.Char(string = "Zip")
+    
+    
+    @api.onchange('site_street', 'site_street2','site_customer_city_id','site_district_id',
+                  'site_state_id','site_country_id','site_zip')
+    
+    def _onchange_site_address_online(self):
+        
+        address = [
+                self.site_street or False,
+                self.site_street2 or False,
+                self.site_district_id.name or False,
+                self.site_customer_city_id.name or False,
+                # order.crm_id.site_state_id.name or False,
+                self.site_country_id.name or False,
+                self.site_zip or False
+                
+                ]
+        self.site_address =", ".join(filter(None,address))
+        
+    
     
     '''Cron Job Added on July 15 2026 by Vijaya Bhaskar'''
     @api.model

@@ -2960,7 +2960,14 @@ class ServiceSaleOrder(models.Model):
                     'district_id': order.district_id.id or '',
                     'state_id': order.state_id.id or '',
                     'country_id':order.country_id.id or '',
-                    'zip': order.zip or '',           
+                    'zip': order.zip or '', 
+                     'site_street' :  order.crm_id.site_street or False,
+                    'site_street2' :  order.crm_id.site_street2 or False,
+                    'site_district_id' : order.crm_id.site_district_id.id or False,
+                    'site_customer_city_id' : order.crm_id.site_customer_city_id.id or False,
+                     'site_country_id' : order.crm_id.site_country_id.id or Fasle,
+                     'site_zip' : order.crm_id.site_zip or False,
+                     'site_state_id' :order.crm_id.site_state_id.id or False,   
                 
 
                 }
