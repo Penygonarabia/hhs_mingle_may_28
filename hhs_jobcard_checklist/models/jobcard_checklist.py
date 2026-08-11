@@ -27,6 +27,7 @@ class JobCardChecklistLine(models.Model):
         ('condition', 'Good / Partial / Damaged'),
         ('numeric', 'Numeric'),
         ('text', 'Text'),
+        ('date', 'Date'),
         ('calculated', 'Calculated'),
     ], string='Type', default='yes_no')
 
