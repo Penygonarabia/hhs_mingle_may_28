@@ -47,7 +47,7 @@ class PMService(models.Model):
     #     ('service_unit_unique', 'unique(service_unit_type_id)', 'A PM Service configuration already exists for this Service Unit Type!')
     # ]
 
-    line_ids = fields.One2many("pm.service.line", "pm_service_id", string="Parameters")
+    line_ids = fields.One2many("pm.service.line", "pm_service_id", string="Parameters" , copy=True)
     sort_order_header = fields.Integer(
         string="Sort",
     )
