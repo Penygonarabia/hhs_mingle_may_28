@@ -502,15 +502,26 @@ class MaintenanceEquipment(models.Model):
                     no_of_visits = rec.no_of_visits
                     partner = rec.contract_id.partner_id
 
+                    # address_parts = [
+                    #     rec.crm_lead_id.street,
+                    #     rec.crm_lead_id.street2,
+                    #     rec.crm_lead_id.customer_city_id.name if rec.crm_lead_id.customer_city_id else "",
+                    #     rec.crm_lead_id.state_id.name if rec.crm_lead_id.state_id else "",
+                    #     rec.crm_lead_id.country_id.name if rec.crm_lead_id.country_id else "",
+                    #     rec.crm_lead_id.district.name if rec.crm_lead_id.district else "",
+                    #     rec.crm_lead_id.zip or "",
+                    # ]
+                    
                     address_parts = [
-                        rec.crm_lead_id.street,
-                        rec.crm_lead_id.street2,
-                        rec.crm_lead_id.customer_city_id.name if rec.crm_lead_id.customer_city_id else "",
-                        rec.crm_lead_id.state_id.name if rec.crm_lead_id.state_id else "",
-                        rec.crm_lead_id.country_id.name if rec.crm_lead_id.country_id else "",
-                        rec.crm_lead_id.district.name if rec.crm_lead_id.district else "",
-                        rec.crm_lead_id.zip or "",
-                    ]
+                            rec.contract_id.site_street,
+                            rec.contract_id.site_street2,
+                            rec.contract_id.site_customer_city_id.name if rec.contract_id.site_customer_city_id else "",
+                            rec.contract_id.site_district_id.name if rec.contract_id.site_district_id else "",
+                            rec.contract_id.site_country_id.name if rec.contract_id.site_country_id else "",
+                            rec.contract_id.site_district_id.name if rec.contract_id.site_district_id else "",
+                            rec.contract_id.site_zip or "",
+                        ]
+                        
                     full_address = ",".join(filter(None, address_parts))
 
                     project = self.env['project.project'].search(
@@ -540,12 +551,20 @@ class MaintenanceEquipment(models.Model):
                     vals = {
                         'name': name,
                         'partner_id': partner.id,
-                        'customer_name': partner.name,
-                        'phone': partner.mobile or partner.phone,
-                        'email': partner.email,
-                        'customer_city_id': rec.crm_lead_id.customer_city_id.id or False,
-                        'country_district_id': district_search_id.id or False,
-                        'work_location_id': rec.crm_lead_id.customer_city_id.def_work_center_id.id or False,
+                        # 'customer_name': partner.name,
+                        # 'phone': partner.mobile or partner.phone,
+                        # 'email': partner.email,
+                        # 'customer_city_id': rec.crm_lead_id.customer_city_id.id or False,
+                        # 'country_district_id': district_search_id.id or False,
+                        # 'work_location_id': rec.crm_lead_id.customer_city_id.def_work_center_id.id or False,
+                        
+                        'customer_name': rec.contract_id.contact_persons or False,
+                        'phone' : rec.contract_id.contact_persons_mobile or False,
+                        'email': rec.contract_id.email,
+                        'customer_city_id': rec.contract_id.site_customer_city_id.id or False,
+                        'country_district_id': rec.contract_id.site_district_id.id or False,
+                        'work_location_id': rec.contract_id.site_customer_city_id.def_work_center_id.id or False,
+                        
                         'contract_id': rec.contract_id.id,
                         'asset_id': rec.id,
                         'brand': rec.brand_id.name,
@@ -562,7 +581,9 @@ class MaintenanceEquipment(models.Model):
                         'service_products_code_id': rec.service_products_code_id.id or False,
                         'service_group_batch': rec.service_group_batch or False,
                         'problem': 'AMC Maintenance',
-                        'work_center_group_id': rec.crm_lead_id.customer_city_id.def_work_center_id.work_center_group_id.id or False,
+                        'work_center_group_id': rec.contract_id.site_customer_city_id.def_work_center_id.work_center_group_id.id or False,
+
+                        # 'work_center_group_id': rec.crm_lead_id.customer_city_id.def_work_center_id.work_center_group_id.id or False,
                         'maintenance_contract_type_id': rec.maintenance_contract_type_id.id or False,
                         'service_create_from_equipment_bool': True,
                         'type_of_property': rec.crm_lead_id.type_of_property or False,
@@ -600,15 +621,26 @@ class MaintenanceEquipment(models.Model):
                     })
 
                     if service_request.task_id:
+                        # service_request.task_id.write({
+                        #     'address_one': full_address,
+                        #     'address': full_address,
+                        #     'zip_code': rec.crm_lead_id.customer_city_id.zipcode or False,
+                        #     'country_state_id': rec.crm_lead_id.customer_city_id.state_id.id or False,
+                        #     'country_id': rec.crm_lead_id.customer_city_id.country_id.id or False,
+                        #     'job_card_state_code': scheduled_state.code,
+                        #     'job_card_state': scheduled_state.name,
+                        #     'job_state': scheduled_state.id
+                        # })
+                        
                         service_request.task_id.write({
-                            'address_one': full_address,
-                            'address': full_address,
-                            'zip_code': rec.crm_lead_id.customer_city_id.zipcode or False,
-                            'country_state_id': rec.crm_lead_id.customer_city_id.state_id.id or False,
-                            'country_id': rec.crm_lead_id.customer_city_id.country_id.id or False,
-                            'job_card_state_code': scheduled_state.code,
-                            'job_card_state': scheduled_state.name,
-                            'job_state': scheduled_state.id
+                        'address_one': full_address,
+                        'address': full_address,
+                        'zip_code': rec.contract_id.site_zip or False,
+                        'country_state_id':rec.contract_id.site_state_id.id or False,
+                        'country_id': rec.contract_id.site_country_id.id or False,
+                        'job_card_state_code': scheduled_state.code,
+                        'job_card_state': scheduled_state.name,
+                        'job_state': scheduled_state.id
                         })
 
                         if service_request.task_id.name:
@@ -659,15 +691,26 @@ class MaintenanceEquipment(models.Model):
             partner = rec.contract_id.partner_id
     
           
+            # address_parts = [
+            #     rec.crm_lead_id.street,
+            #     rec.crm_lead_id.street2,
+            #     rec.crm_lead_id.customer_city_id.name if rec.crm_lead_id.customer_city_id else "",
+            #     rec.crm_lead_id.state_id.name if rec.crm_lead_id.state_id else "",
+            #     rec.crm_lead_id.country_id.name if rec.crm_lead_id.country_id else "",
+            #     rec.crm_lead_id.district.name if rec.crm_lead_id.district else "",
+            #     rec.crm_lead_id.zip or "",
+            # ]
+            
             address_parts = [
-                rec.crm_lead_id.street,
-                rec.crm_lead_id.street2,
-                rec.crm_lead_id.customer_city_id.name if rec.crm_lead_id.customer_city_id else "",
-                rec.crm_lead_id.state_id.name if rec.crm_lead_id.state_id else "",
-                rec.crm_lead_id.country_id.name if rec.crm_lead_id.country_id else "",
-                rec.crm_lead_id.district.name if rec.crm_lead_id.district else "",
-                rec.crm_lead_id.zip or "",
+                rec.contract_id.site_street,
+                rec.contract_id.site_street2,
+                rec.contract_id.site_customer_city_id.name if rec.contract_id.site_customer_city_id else "",
+                rec.contract_id.site_district_id.name if rec.contract_id.site_district_id else "",
+                rec.contract_id.site_country_id.name if rec.contract_id.site_country_id else "",
+                rec.contract_id.site_district_id.name if rec.contract_id.site_district_id else "",
+                rec.contract_id.site_zip or "",
             ]
+                        
             full_address = ",".join(filter(None, address_parts))
     
             
@@ -717,12 +760,19 @@ class MaintenanceEquipment(models.Model):
                 # 'name' : f"{rec.name}/{rec.pm_service_count}",
                 'name': f"{rec.name}/{str(next_count).zfill(2)}",
                 'partner_id': partner.id,
-                'customer_name': partner.name,
-                'phone': partner.mobile or partner.phone,
-                'email': partner.email,
-                'customer_city_id': rec.crm_lead_id.customer_city_id.id or False,
-                'country_district_id': district_search_id.id or False,
-                'work_location_id': rec.crm_lead_id.customer_city_id.def_work_center_id.id or False,
+                # 'customer_name': partner.name,
+                # 'phone': partner.mobile or partner.phone,
+                # 'email': partner.email,
+                # 'customer_city_id': rec.crm_lead_id.customer_city_id.id or False,
+                # 'country_district_id': district_search_id.id or False,
+                # 'work_location_id': rec.crm_lead_id.customer_city_id.def_work_center_id.id or False,
+                'customer_name': rec.contract_id.contact_persons or False,
+                'phone' : rec.contract_id.contact_persons_mobile or False,
+                'email': rec.contract_id.email,
+                'customer_city_id': rec.contract_id.site_customer_city_id.id or False,
+                'country_district_id': rec.contract_id.site_district_id.id or False,
+                'work_location_id': rec.contract_id.site_customer_city_id.def_work_center_id.id or False,
+                        
                 'contract_id': rec.contract_id.id,
                 'asset_id': rec.id,
                 'brand': rec.brand_id.name,
@@ -739,8 +789,8 @@ class MaintenanceEquipment(models.Model):
                 'service_products_code_id': rec.service_products_code_id.id or False,
                 'service_group_batch': rec.service_group_batch or False,
                 'problem': 'AMC Maintenance',
-                'work_center_group_id': rec.crm_lead_id.customer_city_id.def_work_center_id.work_center_group_id.id or False,
-                'maintenance_contract_type_id': rec.maintenance_contract_type_id.id or False,
+                'work_center_group_id': rec.contract_id.site_customer_city_id.def_work_center_id.work_center_group_id.id or False,
+                 # 'work_center_group_id': rec.crm_lead_id.customer_city_id.def_work_center_id.work_center_group_id.id or False,                'maintenance_contract_type_id': rec.maintenance_contract_type_id.id or False,
                 'service_create_from_equipment_bool': True,
                 'type_of_property': rec.crm_lead_id.type_of_property or False,
                 'property_type_maintenance_details_id': rec.crm_lead_id.property_type_maintenance_details_id.id or False,
@@ -781,15 +831,15 @@ class MaintenanceEquipment(models.Model):
     
             if service_request.task_id:
                 service_request.task_id.write({
-                    'address_one': full_address,
-                    'address': full_address,
-                    'zip_code': rec.crm_lead_id.customer_city_id.zipcode or False,
-                    'country_state_id': rec.crm_lead_id.customer_city_id.state_id.id or False,
-                    'country_id': rec.crm_lead_id.customer_city_id.country_id.id or False,
-                    'job_card_state_code': scheduled_state.code,
-                    'job_card_state': scheduled_state.name,
-                    'job_state': scheduled_state.id
-                })
+                        'address_one': full_address,
+                        'address': full_address,
+                        'zip_code': rec.contract_id.site_zip or False,
+                        'country_state_id':rec.contract_id.site_state_id.id or False,
+                        'country_id': rec.contract_id.site_country_id.id or False,
+                        'job_card_state_code': scheduled_state.code,
+                        'job_card_state': scheduled_state.name,
+                        'job_state': scheduled_state.id
+                    })
     
                 if service_request.task_id.name:
                     created_jobs.append(service_request.task_id.name)
