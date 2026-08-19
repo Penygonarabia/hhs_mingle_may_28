@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
-  <t t-name="pbi_dashboards.service_dashboard">
-    <div class="pbi-sales-dashboard pbi-service-dashboard" t-ref="root" t-att-dir="isArabicUI() ? 'rtl' : 'ltr'">
+  <t t-name="pbi_dashboards.promoter_dashboard">
+    <div class="pbi-sales-dashboard pbi-promoter-dashboard" t-ref="root" t-att-dir="isArabicUI() ? 'rtl' : 'ltr'">
       <div class="wrap">
         <header>
           <h1><t t-esc="state.title"/></h1>
-          <p t-if="isDebugMode"><t t-esc="t('Source')"/>: <code>project_task</code> · <t t-esc="state.periodLabel"/>
-            <span t-if="state.scopeInfo" class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, state.scopeInfo)" t-on-mouseleave="onInfoLeave">i</span>
-          </p>
+          <p t-if="isDebugMode"><t t-esc="t('Source')"/>: <code>promoter</code> · <t t-esc="state.periodLabel"/></p>
           <p t-else=""><t t-esc="state.periodLabel"/></p>
         </header>
 
@@ -61,10 +59,7 @@
           <div class="pbi-card-grid-dynamic">
             <t t-foreach="chartItems" t-as="item" t-key="item.key">
               <div class="pbi-card" t-att-data-item-key="item.key">
-                <h2>
-                  <t t-esc="t(item.name)"/>
-                  <span t-if="isDebugMode &amp;&amp; item.info" class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, item.info)" t-on-mouseleave="onInfoLeave">i</span>
-                </h2>
+                <h2><t t-esc="t(item.name)"/></h2>
                 <div class="drill-breadcrumb" t-if="state.charts[item.key] and state.charts[item.key].breadcrumb.length">
                   <span class="crumb" t-on-click="() => this.drillTo(item.key, -1)"><t t-esc="t('All')"/></span>
                   <span class="crumb-sep">›</span>
@@ -82,7 +77,7 @@
           </div>
         </div>
 
-        <footer><t t-esc="t('PBI Dashboards')"/> &gt; <t t-esc="t('Service Dashboards')"/> &gt; <t t-esc="state.title"/> — <t t-esc="t('live from')"/> project_task</footer>
+        <footer><t t-esc="t('PBI Dashboards')"/> &gt; <t t-esc="t('Promoter Dashboards')"/> &gt; <t t-esc="state.title"/> — <t t-esc="t('live from')"/> promoter data</footer>
       </div>
       <div class="pbi-tooltip" t-ref="tooltip"/>
     </div>

@@ -1,0 +1,76 @@
+/*
+ * Promoter Dashboards (PBI Dashboards > Promoter Dashboards) — identical
+ * rule set to service_dashboard.css (see that file's own header comment
+ * for the full rationale), just scoped to .pbi-promoter-dashboard instead
+ * of .pbi-service-dashboard: same dynamic auto-fit/auto-fill KPI-row/
+ * card-grid layout (a board here has 2-4 items, same "no fixed column
+ * count" reasoning applies), same drill-breadcrumb/bar-value/donut
+ * styling, reusing .pbi-sales-dashboard's shared CSS variables/card/
+ * legend/tooltip rules (see sales_dashboard.css) via that class also
+ * being on the root.
+ */
+.pbi-promoter-dashboard .wrap { overflow-x: hidden; }
+
+.pbi-promoter-dashboard .pbi-kpi-row-dynamic {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px; margin-bottom: 12px;
+}
+.pbi-promoter-dashboard .pbi-kpi-slot { min-width: 0; }
+.pbi-promoter-dashboard .pbi-kpi { text-align: center; overflow: hidden; min-width: 0; height: 100%; }
+.pbi-promoter-dashboard .pbi-kpi .value, .pbi-promoter-dashboard .pbi-kpi .value-dual { font-size: 20px; }
+.pbi-promoter-dashboard .pbi-kpi .value-dual .sep { margin: 0 4px; opacity: .7; font-weight: 400; }
+.pbi-promoter-dashboard .pbi-kpi .label {
+  margin-top: 6px; margin-bottom: 0; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+
+.pbi-promoter-dashboard .tile-color-0 { background: var(--series-1); border-color: var(--series-1); }
+.pbi-promoter-dashboard .tile-color-1 { background: #16a2a6; border-color: #16a2a6; }
+.pbi-promoter-dashboard .tile-color-2 { background: var(--series-3); border-color: var(--series-3); }
+.pbi-promoter-dashboard .tile-color-3 { background: var(--series-2); border-color: var(--series-2); }
+.pbi-promoter-dashboard .tile-color-4 { background: #0c8599; border-color: #0c8599; }
+.pbi-promoter-dashboard .tile-color-5 { background: var(--series-5); border-color: var(--series-5); }
+.pbi-promoter-dashboard [class*="tile-color-"] .value,
+.pbi-promoter-dashboard [class*="tile-color-"] .value-dual,
+.pbi-promoter-dashboard [class*="tile-color-"] .label { color: #fff; }
+
+.pbi-promoter-dashboard .pbi-card-grid-dynamic {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 12px; margin-bottom: 12px; align-items: stretch;
+}
+.pbi-promoter-dashboard .pbi-card-grid-dynamic .pbi-card {
+  margin-bottom: 0; min-width: 0; overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.pbi-promoter-dashboard .pbi-card-grid-dynamic .pbi-card .chart-scroll,
+.pbi-promoter-dashboard .pbi-card-grid-dynamic .pbi-card .donut-pad {
+  flex: 1; display: flex; flex-direction: column; justify-content: center;
+}
+.pbi-promoter-dashboard .pbi-card .drill-breadcrumb { margin: -2px 0 8px; }
+
+.pbi-promoter-dashboard .bar-value { fill: var(--text-secondary); font-size: 8px; font-weight: 600; }
+.pbi-promoter-dashboard .donut-label { fill: var(--text-secondary); font-size: 9.5px; font-weight: 600; }
+.pbi-promoter-dashboard .donut-total { fill: var(--text-primary); font-size: 15px; font-weight: 700; }
+.pbi-promoter-dashboard .donut-total-label { fill: var(--text-muted); font-size: 10px; }
+.pbi-promoter-dashboard .donut-leader { stroke: var(--axis); stroke-width: 1; }
+
+.pbi-promoter-dashboard .chart-scroll { overflow-x: auto; padding-bottom: 4px; }
+.pbi-promoter-dashboard .donut-pad { padding-bottom: 19px; }
+
+.pbi-promoter-dashboard .pbi-legend-wrap { display: flex; align-items: center; gap: 4px; margin-bottom: 10px; }
+.pbi-promoter-dashboard .pbi-legend-wrap .pbi-legend {
+  flex-wrap: nowrap; overflow-x: hidden; scroll-behavior: smooth;
+  min-width: 0; margin-bottom: 0;
+}
+.pbi-promoter-dashboard .pbi-legend-wrap .pbi-legend .item { white-space: nowrap; flex: none; }
+.pbi-promoter-dashboard .legend-more {
+  flex: none; border: none; background: var(--grid); color: var(--text-secondary);
+  border-radius: 50%; width: 20px; height: 20px; font-size: 9px; cursor: pointer;
+  visibility: hidden;
+}
+.pbi-promoter-dashboard .legend-more:hover { background: var(--series-1); color: #fff; }
+
+@media (max-width: 900px) {
+  .pbi-promoter-dashboard .pbi-kpi-row-dynamic { grid-template-columns: repeat(2, 1fr); }
+  .pbi-promoter-dashboard .pbi-card-grid-dynamic { grid-template-columns: 1fr; }
+}
