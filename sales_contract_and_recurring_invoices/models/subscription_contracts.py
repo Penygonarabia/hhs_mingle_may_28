@@ -104,7 +104,6 @@ class SubscriptionContracts(models.Model):
         ('Expired', 'Expired'),
         ('Cancelled', 'Cancelled'),
         ('terminate','Terminate')
-        
     ], string='Stage', default='New', copy=False, tracking=True,
         readonly=True, help='Status of subscription contract')
     contract_line_ids = fields.One2many(
@@ -206,6 +205,25 @@ class SubscriptionContracts(models.Model):
         default=lambda self: self.env["project.project"].search([("related_to_amc", "=", True)], limit=1).id if "project.project" in self.env else False,
     )
     
+    additional_document_attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="subscription_contract_additional_document_rel",
+        column1="contract_id",
+        column2="attach_document_id",
+        string="Additional Document(s)",
+        help="Multiple Images and Pdf is attached here",
+        domain="[('mimetype','in',['image/jpeg','image/png','image/gif','application/pdf'])]",
+    )
+    
+    attachment_ids = fields.Many2many(
+        comodel_name="ir.attachment",
+        relation="subscription_contract_rel",
+        column1="contract_id",
+        column2="attachment_id",
+        string="Payment Attachment",
+        help="Multiple Images and Pdf is attached here",
+        domain="[('mimetype','in',['image/jpeg','image/png','image/gif','application/pdf'])]",
+    )
     
     '''Code Added on August 10 2026 by Vijaya bhaskar'''
     @api.constrains('contact_persons_mobile')
@@ -257,6 +275,7 @@ class SubscriptionContracts(models.Model):
                         "Please enter a properly formatted email address"
                     )
                     
+    
     
     '''Code Added on July 24 2026 by vijaya bhaskar client asked the Termination date and reason'''
     
@@ -289,79 +308,6 @@ class SubscriptionContracts(models.Model):
             
                  
             } 
-    
-   
-    additional_document_attachment_ids = fields.Many2many(
-        comodel_name="ir.attachment",
-        relation="subscription_contract_additional_document_rel",
-        column1="contract_id",
-        column2="attach_document_id",
-        string="Additional Document(s)",
-        help="Multiple Images and Pdf is attached here",
-        domain="[('mimetype','in',['image/jpeg','image/png','image/gif','application/pdf'])]",
-    )
-    
-    attachment_ids = fields.Many2many(
-        comodel_name="ir.attachment",
-        relation="subscription_contract_rel",
-        column1="contract_id",
-        column2="attachment_id",
-        string="Payment Attachment",
-        help="Multiple Images and Pdf is attached here",
-        domain="[('mimetype','in',['image/jpeg','image/png','image/gif','application/pdf'])]",
-    )
-    
-    
-    '''Code Added on August 10 2026 by Vijaya bhaskar'''
-    @api.constrains('contact_persons_mobile')
-    def _check_contact_persons_mobile(self):
-        for rec in self:
-            if rec.contact_persons_mobile:
-                if not rec.contact_persons_mobile.isdigit():
-                    raise ValidationError(
-                        "Please enter Only Numbers in the Contact Person Mobile"
-                    )
-                if len(rec.contact_persons_mobile) != 10:
-                    raise ValidationError(_("Contact Person Mobile number must be 10 digits."))
-
-    '''Code Added on August 10 2026 by Vijaya bhaskar'''
-    @api.constrains('mobile_no')
-    def _check_mobile_no(self):
-        for rec in self:
-            if rec.mobile_no:
-                if not rec.mobile_no.isdigit():
-                    raise ValidationError(
-                        "Please enter Only Numbers in the Mobile No."
-                    )
-                if len(rec.mobile_no) != 10:
-                    raise ValidationError(_("Mobile No. must be 10 digits."))
-
-    '''Code Added on August 10 2026 by Vijaya bhaskar'''
-    @api.constrains('service_coordinator_mobile')
-    def _check_service_coordinator_mobile(self):
-        for rec in self:
-            if rec.service_coordinator_mobile:
-                if not rec.service_coordinator_mobile.isdigit():
-                    raise ValidationError("Please enter Only Numbers in the Service Coordinator Mobile Number")
-                if len(rec.service_coordinator_mobile) != 10:
-                    raise ValidationError(_("Service Coordinator Mobile Number must be 10 digits."))
-
-    '''Code Added on August 10 2026 by Vijaya bhaskar'''
-    @api.constrains('email')
-    def _check_company_email(self):
-        for rec in self:
-            if rec.email:
-                if "@" not in rec.email or "." not in rec.email:
-                    raise ValidationError(
-                        "Please enter a valid email address must contain @ and ."
-                    )
-                if not re.match(
-                    r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", rec.email
-                ):
-                    raise ValidationError(
-                        "Please enter a properly formatted email address"
-                    )
-                    
     
     
     # Internal mapping used for conversion between duration label and months to add
@@ -477,6 +423,7 @@ class SubscriptionContracts(models.Model):
             else:
                 rec.contract_duration_days = 0
 
+    '''Code Commented on August 14 2026 by Vijaya bhaskar becuase call center people also shown
     @api.model
     def search_fetch(self, domain, field_names, offset=0, limit=None, order=None):
         user = self.env.user
@@ -499,7 +446,7 @@ class SubscriptionContracts(models.Model):
                 ])
 
         return super(SubscriptionContracts, self).search_fetch(domain, field_names, offset, limit, order)
-
+    '''
     def _compute_show_product_fields(self):
         if self.env.user.has_group('selling_cost_price_restrict.group_product_price_user'):
             self.show_product_fields = True
@@ -587,6 +534,12 @@ class SubscriptionContracts(models.Model):
             'contact_persons_mobile' : _('Contact Person Mobile'),
             'service_coordinator_person' : _('Service Coordinator Contact Person'),
             'service_coordinator_mobile' :_('Service Coordinator Mobile Number'),
+            'site_customer_city_id' : _('Site Address City'),
+            'site_district_id' : _('Site Address District'),
+            'site_state_id' : _('Site Address State'),
+            'site_country_id' : _('Site Address Country'),
+            'site_zip' : _('Site Address Zip'),
+         
          
             }
         
@@ -606,11 +559,11 @@ class SubscriptionContracts(models.Model):
         attachment_required_field = {
             
             'attachment1_filename' : _('Quotation'),
-            'attachment2_filename' : _('Contract'),
-            'attachment3_filename' : _('C.R.'),
-            'attachment4_filename' : _('VAT'),
-            'attachment5_filename' : _('National Address'),
-            'attachment6_filename' : _('Company Representative'),
+             'attachment2_filename' : _('Contract'),
+              'attachment3_filename' : _('C.R.'),
+               'attachment4_filename' : _('VAT'),
+                'attachment5_filename' : _('National Address'),
+                 'attachment6_filename' : _('Company Representative'),
             
             
             }
@@ -626,6 +579,7 @@ class SubscriptionContracts(models.Model):
                 )        
         
                    
+                
         
         
         '''Client Asked same Bring Number Auto Number generation Original one Code Added on June 25 2026 '''
@@ -688,10 +642,6 @@ class SubscriptionContracts(models.Model):
         '''Code Added on June 09 2026 by Vijaya Bhaskar'''
         if not self.customer_code:
             raise ValidationError(_("Please create the customer in the Penygon Application and enter the same customer code here"))
-        
-        '''Code Added on July 27 2026 by Vijaya Bhaskar client asked for warwhouse Remove mandatory in save . It should applicable in Confirm (Same as Customer code) '''
-        if not self.warehouse_id:
-            raise ValidationError(_("Please enter the warehouse")) 
         
         
         # Prevent duplicate invoice
@@ -822,6 +772,8 @@ class SubscriptionContracts(models.Model):
             'state_id' : self.state_id.id or '',
             'country_id' : self.country_id.id or '',
             'zip' : self.zip or '',
+            
+            
         })
 
         # ---------------------------------------------------------

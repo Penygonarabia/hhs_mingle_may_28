@@ -53,10 +53,10 @@
                             </div>
                         </div>
                         <h2>
-                            <center>Service Quotation</center>
+                            <center style="font-size:35px;">Service Quotation / عرض سعر الخدمة</center>
                         </h2>
                     </div>
-                    <div class="page" style="page-break-after: always;">
+                    <div class="page" style="page-break-after: always; font-size:16px !important;">
                         <div class="row mt32 mb32">
                             <div class="col-6">
                                 <table class="table table-bordered border-dark">
@@ -68,106 +68,70 @@
                                     <tbody>
                                         <tr>
                                             <td>
-                                                <strong>Warehouse :</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">Warehouse :</strong>
                                             </td>
                                             <td>
-                                                <span t-if="doc['warehouse_id']" t-esc="doc['warehouse_id']"/>
+                                                <span style="font-size:16px !important;" t-if="doc['warehouse_id']" t-esc="doc['warehouse_id']"/>
                                             </td>
                                             <td style="text-align:right">
-                                                <strong>: مستودع</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">: مستودع</strong>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
-                                                <strong>Customer Name:</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">Customer Name:</strong>
                                             </td>
                                             <td>
-                                                <span t-if="doc['customer_name']"
+                                                <span style="font-size:16px !important;" t-if="doc['customer_name']"
                                                       t-esc="doc['customer_name']"/>
                                             </td>
                                             <td style="text-align:right">
-                                                <strong>:اسم العميل</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">:اسم العميل</strong>
                                             </td>
 
                                         </tr>
                                         <tr>
                                             <td>
-                                                <strong>Customer Address :</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">Customer Address :</strong>
                                             </td>
                                             <td>
-                                                <span t-if="doc['address']"
+                                                <span style="font-size:16px !important;" t-if="doc['address']"
                                                       t-esc="doc['address']"/>
                                             </td>
                                             <td style="text-align:right">
-                                                <strong>: عنوان العميل</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">: اسم العميل</strong>
                                             </td>
 
                                         </tr>
                                         <tr>
                                             <td>
-                                                <strong>VAT # :</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">VAT No.:</strong>
                                             </td>
                                             <td>
-                                                <span t-if="doc['vat']"
+                                                <span style="font-size:16px !important;" t-if="doc['vat']"
                                                       t-esc="doc['vat']"/>
                                             </td>
                                             <td style="text-align:right">
-                                                <strong>:ضريبة القيمة المضافة</strong>
+<!--                                                <strong style="font-size:18px !important; font-weight:bold !important;">:ضريبة القيمة المضافة</strong>-->
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">:الرقم الضريبي</strong>
                                             </td>
 
                                         </tr>
+                                       
                                         <tr>
                                             <td>
-                                                <strong>CIC Ref.No. :</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">Job Card No.:</strong>
                                             </td>
                                             <td>
-                                                <span t-if="doc['cic_ref_no']"
-                                                      t-esc="doc['cic_ref_no']"/>
-                                            </td>
-                                            <td style="text-align:right">
-                                                <strong>:رقم المرجع</strong>
-                                            </td>
-
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <strong>Job Card No. :</strong>
-                                            </td>
-                                            <td>
-                                                <span t-if="doc['job_card_no']"
+                                                <span style="font-size:16px !important;" t-if="doc['job_card_no']"
                                                       t-esc="doc['job_card_no']"/>
                                             </td>
                                             <td colspan="3" style="text-align:right">
-                                                <strong>:رقم بطاقة العمل</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">:رقم بطاقة العمل</strong>
                                             </td>
 
                                         </tr>
-                                       <!--  <tr>
-                                            <td>
-                                                <strong>Remarks :</strong>
-                                            </td>
-                                            <td colspan="6">
-                                                <span t-if="doc['remarks']"
-                                                      t-esc="doc['remarks']"/>
-                                            </td>
-                                            <td colspan="5" style="text-align:right">
-                                                <strong>:رقم بطاقة العمل</strong>
-                                            </td>
-
-                                        </tr> -->
-                                        <!--                                    <tr style="font-size:22px">-->
-                                        <!--                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Joining Date</strong></td>-->
-                                        <!--                                        <td>-->
-                                        <!--                                            <span t-if="o.joining_date"-->
-                                        <!--                                                  t-esc="o.joining_date" t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>-->
-                                        <!--                                        </td>-->
-                                        <!--                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Date</strong></td>-->
-                                        <!--                                        <td>-->
-                                        <!--                                            <span t-if="o.date"-->
-                                        <!--                                                  t-esc="o.date" t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>-->
-                                        <!--                                        </td>-->
-                                        <!--                                    </tr>-->
-
+                                    
                                     </tbody>
                                 </table>
                             </div>
@@ -183,69 +147,69 @@
                                     <tbody>
                                         <tr>
                                             <td>
-                                                <strong>Quotation No:</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">Quotation No:</strong>
                                             </td>
                                             <td>
-                                                <span t-if="doc['quotation_no']"
+                                                <span style="font-size:16px !important;" t-if="doc['quotation_no']"
                                                       t-esc="doc['quotation_no']"/>
                                             </td>
                                             <td style="text-align:right">
-<!--                                                <strong>: رقم الاقتباس</strong>-->
-                                                <strong>:رقم عرض السعر</strong>
+<!--                                                <strong style="font-size:18px !important; font-weight:bold !important;">: رقم الاقتباس</strong>-->
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">:رقم عرض السعر</strong>
                                             </td>
 
                                         </tr>
                                         <tr>
                                             <td>
-                                                <strong>Quotation Date:</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">Date Quotation:</strong>
                                             </td>
                                             <td>
-                                                <span t-if="doc['quotation_date']"
+                                                <span style="font-size:16px !important;" t-if="doc['quotation_date']"
                                                       t-esc="doc['quotation_date']"
                                                       t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
                                             </td>
                                             <td style="text-align:right">
-                                                <strong>:تاريخ عرض السعر</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">:تاريخ عرض سعر الخدمة</strong>
                                             </td>
 
                                         </tr>
                                        <!--  <tr>
                                             <td>
-                                                <strong>Quotation Expiry Date:</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">Quotation Expiry Date:</strong>
                                             </td>
                                             <td>
-                                                <span t-if="doc['quotation_expiry_date']"
+                                                <span style="font-size:16px !important;" t-if="doc['quotation_expiry_date']"
                                                       t-esc="doc['quotation_expiry_date']"
                                                       t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
                                             </td>
                                             <td style="text-align:right">
-                                                <strong>:تاريخ انتهاء صلاحية عرض السعر</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">:تاريخ انتهاء صلاحية عرض السعر</strong>
                                             </td>
 
                                         </tr> -->
                                         <tr>
                                             <td>
-                                                <strong>Technician Name:</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">Technician Name:</strong>
                                             </td>
                                             <td>
-                                                <span t-if="doc['technician_name']"
+                                                <span style="font-size:16px !important;" t-if="doc['technician_name']"
                                                       t-esc="doc['technician_name']"/>
                                             </td>
                                             <td style="text-align:right">
-                                                <strong>:اسم الفني</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">:اسم الفني</strong>
                                             </td>
 
                                         </tr>
                                          <tr>
                                             <td>
-                                                <strong>Model No:</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">Model No:</strong>
                                             </td>
                                             <td>
-                                                <span t-if="doc['model_no']"
+                                                <span style="font-size:16px !important;" t-if="doc['model_no']"
                                                       t-esc="doc['model_no']"/>
                                             </td>
                                             <td style="text-align: right;">
-                                              <strong>:رقم الموديل</strong>
+                                              <strong style="font-size:18px !important; font-weight:bold !important;">:رقم الموديل</strong>
 
                                             </td>
                                             
@@ -254,14 +218,14 @@
                                         
                                          <tr>
                                             <td>
-                                                <strong>Serial No:</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">Serial No:</strong>
                                             </td>
                                             <td>
-                                                <span t-if="doc['serial_no']"
+                                                <span style="font-size:16px !important;" t-if="doc['serial_no']"
                                                       t-esc="doc['serial_no']"/>
                                             </td>
                                             <td style="text-align: right;">
-                                              <strong>:الرقم التسلسلي</strong>
+                                              <strong style="font-size:18px !important; font-weight:bold !important;">:الرقم التسلسلي</strong>
 
                                             </td>
                                             
@@ -270,29 +234,18 @@
                                         
                                         <tr>
                                             <td>
-                                                <strong>VAT Registration:</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">VAT Registration:</strong>
                                             </td>
                                             <td>
-                                                <span t-if="doc['company_vat']"
+                                                <span style="font-size:16px !important;" t-if="doc['company_vat']"
                                                       t-esc="doc['company_vat']"/>
                                             </td>
                                             <td style="text-align: right;">
-                                                <strong>: ضريبة القيمة المضافة</strong>
+                                                <strong style="font-size:18px !important; font-weight:bold !important;">: ضريبة القيمة المضافة</strong>
                                             </td>
 
                                         </tr>
-                                        <!--                                    <tr style="font-size:22px">-->
-                                        <!--                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Joining Date</strong></td>-->
-                                        <!--                                        <td>-->
-                                        <!--                                            <span t-if="o.joining_date"-->
-                                        <!--                                                  t-esc="o.joining_date" t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>-->
-                                        <!--                                        </td>-->
-                                        <!--                                        <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Date</strong></td>-->
-                                        <!--                                        <td>-->
-                                        <!--                                            <span t-if="o.date"-->
-                                        <!--                                                  t-esc="o.date" t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>-->
-                                        <!--                                        </td>-->
-                                        <!--                                    </tr>-->
+                                      
 
                                     </tbody>
                                 </table>
@@ -304,114 +257,122 @@
 
 
                         <table class="table table-bordered border-dark">
-                            <thead>
-                                <tr style="text-align:center">
-                                    <th width="2%" style="vertical-align:text-top">
-                                        <strong>قم</strong>
-                                        <br/>
-                                        <strong>No</strong>
-                                    </th>
-                                    <th width="8%" style="vertical-align:text-top">
-                                        <strong>الفئة</strong>
-                                        <br/>
-                                        <strong>Stock Group</strong>
-                                    </th>
-                                    <th width="10%" style="vertical-align:text-top">
-                                        <strong>رقم الصنف</strong>
-                                        <br/>
-                                        <strong>Stock Number</strong>
-                                    </th>
-                                    <th width="29%" style="vertical-align:text-top">
-                                        <strong>الوصف</strong>
-                                        <br/>
-                                        <strong>Description</strong>
-                                    </th>
-                                    <th width="5%" style="vertical-align:text-top">
-                                        <strong>الكمية</strong>
-                                        <br/>
-                                        <strong>Qty</strong>
-                                    </th>
-                                    <th width="6%" style="vertical-align:text-top">
-                                        <strong>سعر الوحدة</strong>
-                                        <br/>
-                                        <strong>Unit Price</strong>
-                                    </th>
-                                    <th width="6%" style="vertical-align:text-top">
-                                        <strong>خصم الوحدة</strong>
-                                        <br/>
-                                        <strong>Unit Discount</strong>
-                                    </th>
-                                    <th width="7%" style="vertical-align:text-top">
-                                        <strong>سعر الوحدة الصافي</strong>
-                                        <br/>
-                                        <strong>Net Unit Price</strong>
-                                    </th>
-                                    <th width="7%" style="vertical-align:text-top">
-                                        <strong>السعر الإجمالي</strong>
-                                        <br/>
-                                        <strong>Extended Price</strong>
-                                    </th>
-                                    <th width="6%" style="vertical-align:text-top">
-                                        <strong>نسبة الضريبة</strong>
-                                        <br/>
-                                        <strong>Vat %</strong>
-                                    </th>
-                                    <th width="7%" style="vertical-align:text-top">
-                                        <strong>قيمة الضريبة</strong>
-                                        <br/>
-                                        <strong>Vat Amount</strong>
-                                    </th>
-                                    <th width="7%" style="vertical-align:text-top">
-                                        <strong>الإجمالي</strong>
-                                        <br/>
-                                        <strong>Amount</strong>
-                                    </th>
-                                </tr>
+                            <thead style="font-size:17px !important; font-weight:bold !important;">
+                            
+                            	 <tr style="text-align:center">
+							        <th style="font-size:17px !important; font-weight:bold !important;vertical-align:text-top;" width="3%" >
+							            <strong style="font-size:18px !important; font-weight:bold !important;">تسلسل</strong>
+							            <br/>
+							            <strong style="font-size:18px !important; font-weight:bold !important;">S/N</strong>
+							        </th>
+							
+							        <th style="font-size:17px !important; font-weight:bold !important;vertical-align:text-top;" width="10%" >
+							            <strong style="font-size:18px !important; font-weight:bold !important;">فئة الصنف</strong>
+							            <br/>
+							            <strong style="font-size:18px !important; font-weight:bold !important;">Stock Group</strong>
+							        </th>
+							
+							        <th style="font-size:17px !important; font-weight:bold !important; vertical-align:text-top;" width="35%" >
+							            <strong style="font-size:18px !important; font-weight:bold !important;">الوصف</strong>
+							            <br/>
+							            <strong style="font-size:18px !important; font-weight:bold !important;">Description</strong>
+							        </th>
+							
+							        <th style="font-size:17px !important; font-weight:bold !important;vertical-align:text-top;" width="5%" >
+							            <strong style="font-size:18px !important; font-weight:bold !important;">الكمية</strong>
+							            <br/>
+							            <strong style="font-size:18px !important; font-weight:bold !important;">Qty</strong>
+							        </th>
+							
+							        <th style="font-size:17px !important; font-weight:bold !important;vertical-align:text-top;" width="7%" >
+							            <strong style="font-size:18px !important; font-weight:bold !important;">سعر الوحدة</strong>
+							            <br/>
+							            <strong style="font-size:18px !important; font-weight:bold !important;">Unit Price</strong>
+							        </th>
+							
+							        <th style="font-size:17px !important; font-weight:bold !important;vertical-align:text-top;" width="7%" >
+							            <strong style="font-size:18px !important; font-weight:bold !important;">خصم الوحدة</strong>
+							            <br/>
+							            <strong style="font-size:18px !important; font-weight:bold !important;">Unit Discount</strong>
+							        </th>
+							
+							        <th style="font-size:17px !important; font-weight:bold !important;vertical-align:text-top;" width="8%" >
+							            <strong style="font-size:18px !important; font-weight:bold !important;">سعر الوحدة الصافي</strong>
+							            <br/>
+							            <strong style="font-size:18px !important; font-weight:bold !important;">Net Unit Price</strong>
+							        </th>
+							
+							        <th style="font-size:17px !important; font-weight:bold !important;vertical-align:text-top;" width="8%">
+							            <strong style="font-size:18px !important; font-weight:bold !important;">السعر الإجمالي</strong>
+							            <br/>
+							            <strong style="font-size:18px !important; font-weight:bold !important;">Extended Price</strong>
+							        </th>
+							
+							        <th style="font-size:17px !important; font-weight:bold !important;vertical-align:text-top;" width="5%">
+							            <strong style="font-size:18px !important; font-weight:bold !important;">نسبة الضريبة</strong>
+							            <br/>
+							            <strong style="font-size:18px !important; font-weight:bold !important;">Vat %</strong>
+							        </th>
+							
+							        <th style="font-size:17px !important; font-weight:bold !important;vertical-align:text-top;" width="6%" >
+							            <strong style="font-size:18px !important; font-weight:bold !important;">قيمة الضريبة</strong>
+							            <br/>
+							            <strong style="font-size:18px !important; font-weight:bold !important;">Vat Amount</strong>
+							        </th>
+							
+							        <th style="font-size:17px !important; font-weight:bold !important;vertical-align:text-top;" width="6%">
+							            <strong style="font-size:18px !important; font-weight:bold !important;">الإجمالي</strong>
+							            <br/>
+							            <strong style="font-size:18px !important; font-weight:bold !important;">Amount</strong>
+							        </th>
+							    </tr>
+                            	
+                                
                             </thead>
                             <tbody>
                                 <t t-set="counter" t-value="1"/>
                                 <t t-foreach="product_lines" t-as="product">
                                     <tr>
                                         <td class="text-right">
-                                            <span t-esc="counter"/>
+                                            <span style="font-size:16px !important;" t-esc="counter"/>
                                         </td>
                                         <td>
-                                            <span t-esc="product['stock_group']"/>
+                                            <span style="font-size:16px !important;" t-esc="product['stock_group']"/>
                                         </td>
-                                        <td class="text-right">
-                                            <span t-esc="product['stock_number']"/>
-                                        </td>
+                                        <!-- <td class="text-right">
+                                            <span style="font-size:16px !important;" t-esc="product['stock_number']"/>
+                                        </td> -->
                                         <td>
-                                            <span t-esc="product['description']"/>
+                                            <span style="font-size:16px !important;" t-esc="product['description']"/>
                                         </td>
                                         <td class="text-right" style="text-align: right;">
-                                            <span t-esc="product['qty']"/>
+                                            <span style="font-size:16px !important;" t-esc="product['qty']"/>
                                         </td>
                                         <td style="text-align: right;">
-                                            <span t-esc="product['unit_price']"
+                                            <span style="font-size:16px !important;" t-esc="product['unit_price']"
                                                   t-options="{'widget': 'float', 'precision': 2}"/>
                                         </td>
                                         <td>
-                                            <span t-esc="product['unit_discount']"/>
+                                            <span style="font-size:16px !important;" t-esc="product['unit_discount']"/>
                                         </td>
                                         <td class="text-right" style="text-align: right;">
-                                            <span t-esc="product['net_unit_price']"
+                                            <span style="font-size:16px !important;" t-esc="product['net_unit_price']"
                                                   t-options="{'widget': 'float', 'precision': 2}"/>
                                         </td>
                                         <td class="text-right" style="text-align: right;">
-                                            <span t-esc="product['extended_price']"
+                                            <span style="font-size:16px !important;" t-esc="product['extended_price']"
                                                   t-options="{'widget': 'float', 'precision': 2}"/>
                                         </td>
                                         <td class="text-right" style="text-align: right;">
-                                            <span t-esc="product['vat_percent']"/>
+                                            <span style="font-size:16px !important;" t-esc="product['vat_percent']"/>
                                             %
                                         </td>
                                         <td class="text-right" style="text-align: right;">
-                                            <span t-esc="product['vat_amount']"
+                                            <span style="font-size:16px !important;" t-esc="product['vat_amount']"
                                                   t-options="{'widget': 'float', 'precision': 2}"/>
                                         </td>
                                         <td class="text-right" style="text-align: right;">
-                                            <span t-esc="product['total']"
+                                            <span style="font-size:16px !important;" t-esc="product['total']"
                                                   t-options="{'widget': 'float', 'precision': 2}"/>
                                         </td>
                                     </tr>
@@ -419,353 +380,137 @@
                                     <t t-set="counter" t-value="counter+1"/>
                                 </t>
                                 <t t-foreach="totals" t-as="total">
-                                    <tr>
-                                        <td colspan="8" style="text-align:right">
-                                            <strong>Total</strong>
-                                        </td>
-                                        <td style="text-align:right">
-                                            <strong>
-                                                <span t-esc="total['total_extended_price']"
-                                                      t-options="{'widget': 'float', 'precision': 2}"/>
-                                            </strong>
-                                        </td>
-                                        <td/>
-                                        <td style="text-align:right">
-                                            <strong>
-                                                <span t-esc="total['total_vat_amt']"
-                                                      t-options="{'widget': 'float', 'precision': 2}"/>
-                                            </strong>
-                                        </td>
-                                        <td  rowspan="2" style="text-align:right">
-                                            <strong>
-                                                <span t-esc="total['grand_total']"
-                                                      t-options="{'widget': 'float', 'precision': 2}"/>
-                                            </strong>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="11"   style="text-align:right">
-                                            <strong>
-                                                <span t-esc="total['amount_words']"/>
-                                                Only
-                                            </strong>
-                                        </td>
-                                       
-                                    </tr>
+                                
+                                	<tr>
+									    <td colspan="7" style="text-align:right">
+									        <strong style="font-size:18px !important; font-weight:bold !important;">Total</strong>
+									    </td>
+									    <td style="text-align:right">
+									        <strong style="font-size:18px !important; font-weight:bold !important;">
+									            <span style="font-size:16px !important;" t-esc="total['total_extended_price']"
+									                  t-options="{'widget': 'float', 'precision': 2}"/>
+									        </strong>
+									    </td>
+									    <td/>
+									    <td style="text-align:right">
+									        <strong style="font-size:18px !important; font-weight:bold !important;">
+									            <span style="font-size:16px !important;" t-esc="total['total_vat_amt']"
+									                  t-options="{'widget': 'float', 'precision': 2}"/>
+									        </strong>
+									    </td>
+									    <td rowspan="2" style="text-align:right">
+									        <strong style="font-size:18px !important; font-weight:bold !important;">
+									            <span style="font-size:16px !important;" t-esc="total['grand_total']"
+									                  t-options="{'widget': 'float', 'precision': 2}"/>
+									        </strong>
+									    </td>
+									</tr>
+									
+									<tr>
+									    <td colspan="10" style="text-align:right">
+									        <strong style="font-size:18px !important; font-weight:bold !important;">
+									            <span style="font-size:16px !important;" t-esc="total['amount_words']"/>
+									            Only
+									        </strong>
+									    </td>
+									</tr>
+                                    
                                 </t>
                             </tbody>
 
                         </table>
+                        
+                        <br/>
+						<br/>
+						
+						    <table width="100%" style="border-collapse: collapse; border: 1px solid #000;">
+						        <tbody>
+						    
+						            <tr>
+						    
+						                <!-- English -->
+						                <td style="text-align: left; width: 50%; padding: 5px;">
+						                    <strong style="font-size:18px !important; font-weight:bold !important;">Quotation Validity:</strong>
+						                    <!-- <span style="font-size:16px !important;" t-esc="quotation_expiry_date"/> -->
+						                </td>
+						    
+						                <!-- Arabic -->
+						                <td style="text-align: right; width: 50%; padding: 5px;" dir="rtl">
+						                    <strong style="font-size:18px !important; font-weight:bold !important;">صلاحية عرض السعر :</strong>
+						    
+						                    <!--
+						                    <span style="font-size:16px !important;" dir="ltr" style="display:inline-block;">
+						                        <span style="font-size:16px !important;" t-esc="quotation_expiry_date"/>
+						                    </span>
+						                    -->
+						                </td>
+						    
+						            </tr>
+						    
+						         
+						            <tr>
+										
+										    <td style="text-align: left; padding: 5px;">
+										        <span style="font-size:15px !important; ">
+										            This quotation is valid for 2 weeks from the date of issuance.
+										        </span>
+										    </td>
+										
+										    <td style="text-align: right; padding: 5px;" dir="rtl">
+										        <span style="font-size:15px !important; ">
+										            صلاحية عرض السعر سارية لمدة أسبوعين من تاريخ إصدار عرض السعر.
+										        </span>
+										    </td>
+										
+										</tr>
+						    
+						        </tbody>
+						    </table>
+						    <br/>
+						  <br/>
+						  <table width="100%" style="border-collapse: collapse; border: 1px solid #000;">
+				                <tr>
+				                    <td style="text-align: left; width: 50%; padding: 5px;">
+				                        <strong style="font-size:18px !important; font-weight:bold !important;">Payment Terms: 100% Advance</strong> 
+				                    </td>
+				                    <td style="text-align: right; width: 50%; padding: 5px;" dir="rtl">
+				                        <strong style="font-size:18px !important; font-weight:bold !important;">شروط الدفع: 100% دفعة مقدمة
+				                    	</strong>
+				                    </td>
+				                </tr>
+				              
+				                <tr>
 
+							    <td style="text-align: left; padding: 5px;">
+							        <span style="font-size:15px !important; ">
+							            Repair work will commence only after the full payment has been received.
+							        </span>
+							    </td>
+							
+							    <td style="text-align: right; padding: 5px;" dir="rtl">
+							        <span style="font-size:15px !important;">
+							            سيبدأ تنفيذ أعمال الإصلاح فقط بعد استلام المبلغ بالكامل.
+							        </span>
+							    </td>
+							
+							</tr>
+				            </table>
+                        
+						
+						
 
-                        <!--                        <p style="margin-left:60%">Amount in words : <span t-field="o.amount_words"/> </p>-->
-                        <div class="row mt32 mb32">
-                            <div class="col-4 text-left">
-                                <p style="font-size:18px;">المستلم</p>
-                                <P style="font-size:18px;">Receiver</P>
-                            </div>
-                            <div class="col-4">
-                                <p style="font-size:18px;">المحاسب / أمين الصندوق</p>
-                                <P style="font-size:18px;">Accountant/Cashier</P>
-                            </div>
-                            <div class="col-4" align="right">
-		                        <p style="font-size:18px;">اسم الفني</p>
-		                        <p style="font-size:18px;">Technician Name</p>
-		                    </div>
-                        </div>
                     </div>
                     
                      <div class="footer">
                         <img src="machine_repair_management/static/src/img/JobCard_Footer_img.png"
                              style="width:100%;"/>
                     </div>
-                    <!-- <div class="footer">
-                        <div>
-                            <img src="machine_repair_management/static/src/img/Arabic_Text_1.png" alt="img"
-                                 style="height:60px; width:100%;"/>
-                        </div>
-                        <br/>
-                        <div>
-                            <img src="machine_repair_management/static/src/img/Footer.jpg" alt="img"
-                                 style="height:80px; width: 100%"/>
-                        </div>
-                    </div> -->
+                   
                 </t>
             </t>
         </t>
     </template>
 
-	<!-- <template id="job_card_document_template">
-		    <t t-call="web.html_container">
-		     <t t-call="web.external_layout">
-				<t t-foreach="jobs" t-as="doc">
-
-				<t t-call="machine_repair_management.job_card_print_document_template_internal_layout">
-				<div class="header">
-						<div class="row mt32 mb32">
-							<div class="col-4 text-left">
-								<img src="machine_repair_management/static/src/img/HHS_Header_Left.png" alt="img" style="height: 115px; width: 190px; " />
-							</div>
-							<div class="col-4" style="margin-left:50px">
-								<img src="machine_repair_management/static/src/img/HHS_Header_Middle.png" alt="img" style="height: 115px; width: 190px;" />
-							</div>
-							<div class="col-4 text-right " style="vertical-align:text-top;margin-left:50px">
-								<img src="machine_repair_management/static/src/img/HHS_Header_Right.png" alt="img" style="height: 115px; width: 190px;" />
-							</div>
-						</div>
-					</div>
-		                <div class="page" style="page-break-after: always;">
-							<h2><center>Service Quotation</center></h2>
-
-							<div class="row mt32 mb32">
-							<div class="col-6">
-							<table class="table table-sm table-bordered">
-								<colgroup>
-                                    <col width='30%'/>
-                                    <col width='50%'/>
-									<col width='20%'/>
-                                </colgroup>
-                                <tbody>
-                                    <tr>
-                                        <td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Warehouse :</strong></td>
-                                        <td>
-                                            <span t-if="doc['warehouse_id']" t-esc="doc['warehouse_id']"/>
-                                        </td>
-                                        <td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right;"><strong>:  مستودع</strong></td>
-									</tr>
-									<tr>
-                                        <td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Customer Name :</strong></td>
-                                        <td>
-                                            <span t-if="doc['partner_id']"
-                                                  t-esc="doc['partner_id']"/>
-                                        </td>
-										<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right;"><strong>:اسم العميل</strong></td>
-
-                                    </tr>
-                                    <tr>
-                                        <td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Customer Address :</strong></td>
-                                        <td>
-                                            <span t-if="doc['address']"
-                                                  t-esc="doc['address']"/>
-                                        </td>
-										<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong>: عنوان العميل </strong></td>
-
-                                    </tr>
-									 <tr>
-                                        <td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>VAT # :</strong></td>
-                                        <td>
-                                            <span t-if="doc['vat']"
-                                                  t-esc="doc['vat']"/>
-                                        </td>
-										<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong>:ضريبة القيمة المضافة </strong></td>
-
-                                    </tr>
-                                    <tr>
-                                        <td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>CIC Ref.No. :</strong></td>
-                                        <td>
-                                            <span t-if="doc['cic_ref_no']"
-                                                  t-esc="doc['cic_ref_no']"/>
-                                        </td>
-										<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong>:رقم المرجع</strong></td>
-
-									</tr>
-									<tr>
-                                        <td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Job Card No. :</strong></td>
-                                        <td>
-                                            <span t-if="doc['job_card_no']"
-                                                  t-esc="doc['job_card_no']"/>
-                                        </td>
-										<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong>:رقم بطاقة العمل</strong></td>
-
-                                    </tr>
-									<tr>
-                                        <td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Remarks :</strong></td>
-                                        <td>
-                                            <span t-if="doc['remarks']"
-                                                  t-esc="doc['remarks']"/>
-                                        </td>
-										<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong>:رقم بطاقة العمل</strong></td>
-
-                                    </tr>
-                                   <tr style="font-size:22px">
-                                       <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Joining Date</strong></td>
-                                       <td>
-                                           <span t-if="o.joining_date"
-                                                 t-esc="o.joining_date" t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
-                                       </td>
-                                       <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Date</strong></td>
-                                       <td>
-                                           <span t-if="o.date"
-                                                 t-esc="o.date" t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
-                                       </td>
-                                   </tr>
-
-                                </tbody>
-                            </table>
-							</div>
-								<div class="col-2"/>
-								<div class="col-6">
-									<table class="table table-sm table-bordered">
-										<colgroup>
-											<col width='30%'/>
-											<col width='50%'/>
-											<col width='20%'/>
-										</colgroup>
-
-										<tbody>
-											<tr>
-												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Quotation No :</strong></td>
-												<td>
-													<span t-if="doc['quotation_no']"
-														  t-esc="doc['quotation_no']"/>
-												</td>
-												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong>: رقم الاقتباس </strong></td>
-
-											</tr>
-											<tr>
-												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Quotation Date :</strong></td>
-												<td>
-													<span t-if="doc['quotation_date']"
-														  t-esc="doc['quotation_date']" t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
-												</td>
-												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; text-align: right;"><strong>: تاريخ عرض الأسعار</strong></td>
-
-											</tr>
-											<tr>
-												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Quotation Expiry Date :</strong></td>
-												<td>
-													<span t-if="doc['quotation_expiry_date']"
-														  t-esc="doc['quotation_expiry_date']" t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
-												</td>
-												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong> : تاريخ انتهاء صلاحية عرض الأسعار</strong></td>
-
-											</tr>
-											<tr>
-												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Technician Name :</strong></td>
-												<td>
-													<span t-if="doc['technician_name']"
-														  t-esc="doc['technician_name']"/>
-												</td>
-												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong>: اسم الفني</strong></td>
-
-											</tr>
-											<tr>
-												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>VAT Registration:</strong></td>
-												<td>
-													<span t-if="doc['company_vat']"
-														  t-esc="doc['company_vat']"/>
-												</td>
-												<td style="background-color:#464343 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important;text-align: right; "><strong>: ضريبة القيمة المضافة </strong></td>
-
-											</tr>
-		                                   <tr style="font-size:22px">
-		                                       <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Joining Date</strong></td>
-		                                       <td>
-		                                           <span t-if="o.joining_date"
-		                                                 t-esc="o.joining_date" t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
-		                                       </td>
-		                                       <td style="background-color:#893b74 !important;border: 1px !important; border-style: solid !important; border-color: #fff; color:#fff !important; "><strong>Date</strong></td>
-		                                       <td>
-		                                           <span t-if="o.date"
-		                                                 t-esc="o.date" t-options='{"widget": "date","format": "dd-MM-yyyy"}'/>
-		                                       </td>
-		                                   </tr>
-
-										</tbody>
-                            </table>
-
-								</div>
-
-
-							</div>
-
-
-		                    <table class="table table-sm table-bordered">
-								<thead>
-									<tr style="background-color:#464343;color:white;text-align:center">
-										<th width="2%" style="vertical-align:text-top"><strong>قم</strong><br/><strong>No</strong></th>
-										<th width="8%" style="vertical-align:text-top"><strong>الفئة</strong><br/><strong>Stock Group</strong></th>
-										<th width="10%" style="vertical-align:text-top"><strong>رقم الصنف</strong><br/><strong>Stock Number</strong></th>
-										<th width="29%" style="vertical-align:text-top"><strong>الوصف</strong><br/><strong>Description</strong></th>
-										<th width="5%" style="vertical-align:text-top"><strong>الكمية</strong><br/><strong>Qty</strong></th>
-										<th width="6%" style="vertical-align:text-top"><strong>سعر الوحدة</strong><br/><strong>Unit Price</strong></th>
-										<th width="6%" style="vertical-align:text-top"><strong>خصم الوحدة</strong><br/><strong>Unit Discount</strong></th>
-										<th width="7%" style="vertical-align:text-top"><strong>سعر الوحدة الصافي</strong><br/><strong>Net Unit Price</strong></th>
-										<th width="7%" style="vertical-align:text-top"><strong>السعر الإجمالي</strong><br/><strong>Extended Price</strong></th>
-										<th width="6%" style="vertical-align:text-top"><strong>نسبة الضريبة</strong><br/><strong>Vat %</strong></th>
-										<th width="7%" style="vertical-align:text-top"><strong>قيمة الضريبة</strong><br/><strong>Vat Amount</strong></th>
-										<th width="7%" style="vertical-align:text-top"><strong>الإجمالي</strong><br/><strong>Amount</strong></th>
-									</tr>
-								</thead>
-                        <tbody>
-                            <t t-set="counter" t-value="1"/>
-                            <t t-foreach="product_lines" t-as="product">
-                                <tr>
-                                    <td class="text-right"><span t-esc="counter"/></td>
-                                    <td><span t-esc="product['stock_group']"/></td>
-                                    <td class="text-right"><span t-esc="product['stock_number']"/></td>
-                                    <td><span t-esc="product['description']"/></td>
-                                    <td class="text-right" style="text-align: right;"><span t-esc="product['qty']"/></td>
-                                    <td  style="text-align: right;"><span t-esc="product['unit_price']" t-options="{'widget': 'float', 'precision': 2}"/></td>
-                                    <td><span t-esc="product['unit_discount']"/></td>
-                                    <td class="text-right" style="text-align: right;"><span t-esc="product['net_unit_price']" t-options="{'widget': 'float', 'precision': 2}"/></td>
-                                    <td class="text-right" style="text-align: right;"><span t-esc="product['extended_price']" t-options="{'widget': 'float', 'precision': 2}"/></td>
-                                    <td class="text-right" style="text-align: right;"><span t-esc="product['vat_percent']"/> %</td>
-                                    <td class="text-right" style="text-align: right;"><span t-esc="product['vat_amount']" t-options="{'widget': 'float', 'precision': 2}"/></td>
-                                    <td class="text-right" style="text-align: right;"><span t-esc="product['total']" t-options="{'widget': 'float', 'precision': 2}"/></td>
-                                </tr>
-
-                                <t t-set="counter" t-value="counter+1"/>
-                            </t>
-							 <t t-foreach="totals" t-as="total">
-								<tr>
-								<td colspan="8" style="text-align:right"><strong>Grand Total</strong></td>
-								<td style="text-align:right"><strong><span t-esc="total['total_extended_price']" t-options="{'widget': 'float', 'precision': 2}"/></strong></td>
-                                <td/>
-								<td style="text-align:right"><strong><span t-esc="total['total_vat_amt']" t-options="{'widget': 'float', 'precision': 2}"/></strong></td>
-                                <td style="text-align:right"><strong><span t-esc="total['grand_total']" t-options="{'widget': 'float', 'precision': 2}"/></strong></td>
-                            </tr>
-								 <tr>
-								<td colspan="11" style="text-align:right"><strong><span t-esc="total['amount_words']"/>  Only</strong></td>
-                                <td/>
-                            </tr>
-								 </t>
-                        </tbody>
-
-		                    </table>
-
-
-                       <p style="margin-left:60%">Amount in words : <span t-field="o.amount_words"/> </p>
-							<div class="row mt32 mb32">
-							<div class="col-4 text-left">
-								 <p style="font-size:18px;">المستلم</p>
-								<P style="font-size:18px;">Receiver</P>
-							</div>
-							<div class="col-4">
-								 <p style="font-size:18px;">المحاسب / أمين الصندوق</p>
-								<P style="font-size:18px;">Accountant/Cashier</P>
-							</div>
-							<div class="col-4 text-right">
-								 <p style="font-size:18px;">البـــائــع</p>
-								<P style="font-size:18px;">Salesman</P>
-							</div>
-						</div>
-						</div>
-					<div class="footer">
-							<div>
-								<img src="machine_repair_management/static/src/img/Arabic_Text.png" alt="img" style="height:60px; width: 1060px;"/>
-							</div>
-						<br/>
-							<div>
-								<img src="machine_repair_management/static/src/img/Footer_Address.png" alt="img" style="height:60px; width: 1080px;"/>
-							</div>
-						</div>
-		            </t>
-		        </t>
-		    </t>
-		</template>
-			 -->
 	
-
 
 </odoo>

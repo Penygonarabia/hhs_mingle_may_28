@@ -47,6 +47,9 @@
                     <field name="security_warranty_expiry" invisible="1"/>
                     <field name="text_warranty_expiry" invisible="1"/>
                     <field name="user_expiry_check_bool" invisible="1"/>
+                    
+                    <field name = "available_manufacturing_product_ids" invisible = "1" widget = "many2many_tags"/>	
+                    
 
                     <button name="action_check_wizard" string="Check Wizard" type="object" class="oe_highlight"
                             invisible="1"/>
@@ -124,7 +127,7 @@
                                         <field name="service_group_batch" invisible="1"/>
                                         <field name="brand" readonly="state == 'closed'"/>
                                         <field name="model" readonly="state == 'closed'"/>
-                                        <field name="product_slno" force_save="1" required="inspection_started_status_check"
+                                        <field name="product_slno" force_save="1"
                                                readonly="inspection_started_status_check != True"/>
                                     </group>
                                 </group>
@@ -141,7 +144,7 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; flex-direction: column;" invisible="cancel_status_check != True">
+                    <div style="display: flex; flex-direction: column;" invisible = "not cancelled_inspection_charges_bool and not cancellation_reason_id">
                         <hr class="hr-5"/>
                         <div class="FAQ" id="cancellation_reason">
                             <div class="toggle-btn" onclick="toggleFaq(this)">
@@ -154,8 +157,8 @@
 
                                         <!--  <field name = "cancellation_reason_id"   readonly = "job_card_state_code == '124'" force_save = "1"
                                           options = "{'no_create':True,'no_edit':True,'no_open':True}" /> -->
-                                        <field name="cancellation_reason_id" readonly="job_card_state_code == '124'"
-                                               invisible="not cancel_status_check and not cancelled_inspection_charges_bool and not cancellation_reason_id"
+                                         <field name="cancellation_reason_id" readonly="job_card_state_code == '124' or cancelled_inspection_charges_bool == True"
+                                               invisible="not cancelled_inspection_charges_bool and not cancellation_reason_id"
                                                options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                                     </group>
                                 </group>
@@ -333,13 +336,21 @@
                                                readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or inspection_started_status_check != True"
                                                placeholder=" " class="underline-empty"
                                                options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}"/>
+                                               
+                                               <field name = "manufacturing_country_select" widget = "radio" options="{'horizontal': true}"   invisible="(not show_manufacturing_country) or project_related_amc_bool" readonly="job_card_state_code in ('124','125','126') or (warranty_verfication_status_check != True and inspection_started_status_check != True)"/>
+						                        <field name="show_manufacturing_country" invisible="1"/>
+						                		<field name ="product_id" options = "{'no_create_edit':True,'no_create':True,'no_open':True}" class="underline-empty"
+						                			domain = "[('id','in',available_manufacturing_product_ids)]"
+						                			readonly="job_card_state_code in ('124','125','126') or warranty_verfication_status_check != True  or inspection_started_status_check != True"
+						                			invisible="project_related_amc_bool"
+						                		 />	
 
-                                        <field name="product_id" invisible="project_related_amc_bool" required="0"
+                                        <!-- <field name="product_id" invisible="project_related_amc_bool" required="0"
                                                placeholder=" "
                                                readonly="job_card_state_code in ('124','125','126') or technician_accepted_status_check == True or inspection_started_status_check != True"
                                                domain="[('categ_id', 'child_of', product_sub_group_id or product_group_id or product_category_id)]"
                                                options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}"
-                                               class="underline-empty"/>
+                                               class="underline-empty"/> -->
                                         <field name="brand" readonly="0" invisible="not maintenance_tab_show_bool"/>
                                         <field name="model" readonly="0" invisible="not maintenance_tab_show_bool"/>
                                         <field name="product_slno"
@@ -1120,6 +1131,8 @@
                 <field name="emergency_count_exceed" invisible="1"/>
                 <field name="preventive_completed" invisible="1"/>
                 <field name="corrective_completed" invisible="1"/>
+               	<field name = "available_manufacturing_product_ids" invisible = "1" widget = "many2many_tags"/>	
+                
 
 
             </xpath>
@@ -1388,10 +1401,15 @@
 
                         <!--  <field name = "cancellation_reason_id"   readonly = "job_card_state_code == '124'"  force_save = "1"
                             options = "{'no_create':True,'no_edit':True,'no_open':True}" /> -->
-                        <field name="cancellation_reason_id" readonly="job_card_state_code == '124'"
+                        <!-- <field name="cancellation_reason_id" readonly="job_card_state_code == '124'"
                                invisible="not cancel_status_check and not cancelled_inspection_charges_bool or cancellation_reason_id == False"
-                               options="{'no_create':True,'no_edit':True,'no_open':True}"/>
-
+                               options="{'no_create':True,'no_edit':True,'no_open':True}"/> -->
+						
+						<field name = "cancellation_reason_id"   readonly = "job_card_state_code == '124' or cancelled_inspection_charges_bool == True" 
+                       	 	 invisible = "not cancelled_inspection_charges_bool and cancellation_reason_id == False"
+                        	options = "{'no_create':True,'no_edit':True,'no_open':True}"
+                       	 />   
+						
                         <field name="onhold_spareparts_reason_id" readonly="1" force_save="1"
                                invisible="not onhold_spareparts_reason_show"
                                options="{'no_create':True,'no_edit':True,'no_open':True}"/>
@@ -1593,22 +1611,32 @@
                                placeholder=" " class="underline-empty"
                                options="{'no_create_edit':True,'no_create':True,'no_open':True}"/>
 
-                        <field name="product_id" invisible="project_related_amc_bool" required="0"
+						<field name = "manufacturing_country_select" widget = "radio" options="{'horizontal': true}"  invisible="not show_manufacturing_country or project_related_amc_bool"/>
+                        <field name="show_manufacturing_country" invisible="1"/>
+                        
+                		<field name ="product_id" options = "{'no_create_edit':True,'no_create':True,'no_open':True}" class="underline-empty"
+                			domain = "[('id','in',available_manufacturing_product_ids)]"
+                			readonly="state_status == True" 
+                			invisible="project_related_amc_bool"
+                		 />		
+							
+							
+                        <!-- <field name="product_id" invisible="project_related_amc_bool" required="0"
                                readonly="state_status == True" placeholder=" "
                                domain="[('categ_id', 'child_of', product_sub_group_id or product_group_id or product_category_id)]"
                                options="{'no_create_edit':True,'no_create':True,'no_open':True}"
-                               class="underline-empty"/>
+                               class="underline-empty"/> -->
 
                         <field name="brand" readonly="state_status == True" placeholder=" " class="underline-empty"
                                invisible="not maintenance_tab_show_bool"/>
-                        <field name="model" rreadonly="state_status == True" placeholder=" " class="underline-empty"
+                        <field name="model" readonly="state_status == True" placeholder=" " class="underline-empty"
                                invisible="not maintenance_tab_show_bool"/>
                         <field name="product_slno" readonly="state_status == True" force_save="1" placeholder=" "
                                class="underline-empty"/>
                         <field name="job_card_state" invisible="1" force_save="1"/>
                         <field name="job_card_state_code" invisible="1" force_save="1"/>
                         <field name="project_id" invisible="1"/>
-                        <field name="amc_project_id" invisible="0" readonly="1"/>
+                        <field name="amc_project_id" invisible="1" readonly="1"/>
                     </group>
 
                     <group string="Purchase Information" name="purchase_information"
@@ -2367,7 +2395,7 @@
                 <field name="product_group_id" column_invisible="1"/>
                 <field name="product_sub_group_id" column_invisible="1"/>
 
-                <field name="amc_project_id" column_invisible="0"/>
+                <field name="amc_project_id" column_invisible="1"/>
             </xpath>
 
             <!--  new Button is hide in the form to create the new receipt from the job card by Vijaya bhaskar on may 9 2025  -->
@@ -2642,6 +2670,7 @@
                 <field name="job_state"/>
                 <field name="name"/>
                 <field name="partner_id"/>
+                <field name = "customer_name" />
                 <field name="phone" widget="phone" options="{'enable_sms': false}"/>
                 <field name="location_id"/>
                 <field name="address"/>
@@ -2689,7 +2718,8 @@
                                 <!-- Customer Details -->
                                 <div style="margin-bottom: 5px;">
                                     <strong>
-                                        <t t-esc="record.partner_id.value"/>
+                                        <!-- <t t-esc="record.partner_id.value"/> -->
+                                        <t t-esc="record.customer_name.value"/>
                                     </strong>
                                 </div>
                                 <div style="margin-bottom: 5px;">
@@ -2698,14 +2728,13 @@
                                 <div style="margin-bottom: 5px;">
                                     <t t-esc="record.address.value"/>
                                 </div>
-                                
                                 <t t-if = "record.used_location_equipment.value">
 	                                <div style="margin-bottom: 5px;">
 	                                    <span t-att-style="'background-color: ' + (record.stage_kanban_color.value or '#6C757D') + '; color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.9rem; display: inline-block;'">
 	                                        <t t-esc="record.used_location_equipment.value"/>
 	                                    </span>
 	                                </div>
-                               </t> 
+	                             </t>   
 
                             </div>
 
@@ -2758,6 +2787,7 @@
 	    </field>
 	</record>
     
+    
     <record id="action_job_card_form_view" model="ir.actions.act_window">
         <field name="name">Job Cards</field>
         <field name="res_model">project.task</field>
@@ -2766,18 +2796,26 @@
         <field name="context">{'create': False}</field>
     </record>
 
-    <record id="action_job_card_kanban" model="ir.actions.act_window">
+    <!-- <record id="action_job_card_kanban" model="ir.actions.act_window">
         <field name="name">Job Cards</field>
         <field name="res_model">project.task</field>
         <field name="view_mode">kanban,form</field>
+        <field name="context">{'create': False}</field>
         <field name="view_id" ref="view_project_task_kanban_mobile"/>
-        <field name="context">
+    </record> -->
+    
+     <record id="action_job_card_kanban" model="ir.actions.act_window">
+	    <field name="name">Job Cards</field>
+	    <field name="res_model">project.task</field>
+	    <field name="view_mode">kanban,form</field>
+	    <field name="view_id" ref="view_project_task_kanban_mobile"/>
+	    <field name="context">
 	        {
 	            'create': False,
 	            'search_default_today_planned': 1
 	        }
 	    </field>
-    </record>
+	</record>
 
     <menuitem id="menu_project_task_kanban" name="Job Card List"
               parent="machine_repair_management.menu_machine_repair_support" action="action_job_card_kanban"
@@ -2808,5 +2846,28 @@
               parent="machine_repair_management.menu_machine_repair_support"
               action="action_job_card_parts_user_without_damaged_parts" sequence="15"
               groups="machine_repair_management.group_parts_user"/>
+              
+              
+        <record id = "action_job_card_parts_user_damaged_parts_only" model = "ir.actions.act_window">
+    		
+    		<field name = "name">Job Cards</field>
+    		<field name = "res_model">project.task</field>
+    		<field name = "view_mode">tree,form</field>
+    		<field name = "view_id" ref = "view_project_task_tree"/>
+    		<field name = "context">{'parts_menu':'damaged_parts_only'}</field>
+    	
+    	</record>
+    	
+    	
+    	<menuitem 
+    		id = "menu_job_card_parts_user_damaged_parts_only"
+    		name  = "Job card – Waiting for Damaged Parts"
+    		action = "action_job_card_parts_user_damaged_parts_only"
+    		parent = "machine_repair_management.menu_machine_repair_support"
+    		sequence = "18"
+    		groups = "machine_repair_management.group_parts_user"
+    	
+    	
+    	/>               
 
 </odoo>

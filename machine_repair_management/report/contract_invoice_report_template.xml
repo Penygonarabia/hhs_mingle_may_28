@@ -585,8 +585,8 @@
                                                 <td style="border: 0px transparent !important;text-align:center;width:300px;font-size:14px;">
 
                                                     <span style="font-size:16px !important;">
-                                                        <!-- <t t-esc="move.invoice_no"/> -->
-                                                        <t t-esc="move.name"/>
+                                                        <t t-esc="move.invoice_no"/>
+                                                        
                                                     </span>
                                                 </td>
                                                 <td style="text-align: right; border: 0px transparent !important;">
@@ -677,8 +677,8 @@
 												                        
 												                        <t t-else="">
 												                            <span style="font-size:16px !important;">
-												                               <t t-if="move.subscription_contract_id" t-esc="move.subscription_contract_id.customer_name"/>
-												                               <!--  <t t-esc="move.partner_id.name"/> -->
+												                                <t t-if="move.subscription_contract_id" t-esc="move.subscription_contract_id.customer_name"/>
+												           <!--  <t t-esc="move.partner_id.name"/> -->
 												                            </span>
 												                        </t>
 

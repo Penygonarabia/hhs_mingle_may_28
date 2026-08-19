@@ -2,13 +2,13 @@ from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
 
+
 class UsersCity(models.Model):
     _inherit = "res.city"
 
     def_work_center_id = fields.Many2one('work.center.location', string="Default Work Center")
 
     country_district_id = fields.Many2one('res.state.district', string="District")
-
 
     code = fields.Char(string = "Code")
     
@@ -27,7 +27,7 @@ class UsersCity(models.Model):
                 raise ValidationError(f"The Code '{rec.code}' must be unique")
 
     
-
+    
     # @api.model
     # def name_search(self, name='', args=None, operator='ilike', limit=100):
     #     args = args or []

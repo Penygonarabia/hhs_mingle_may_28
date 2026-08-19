@@ -915,22 +915,16 @@ td {
                                         </td>
                   </tr>
                   <tr class="para">
-                    <td width="50%" style="text-align:left; padding:10px;">
+                    <td width="50%" style="text-align:left; padding:10px; padding-bottom:0px; vertical-align:top;">
                       <ul style="padding-left:90px; margin:0;">
                         <li>This Agreement shall commence on
                                                     <strong><t t-esc="o.date_start.strftime('%d-%m-%Y')" t-if="o.date_start"/></strong>
                                                     and end on
                                                     <strong><t t-esc="o.date_end.strftime('%d-%m-%Y')" t-if="o.date_end"/></strong>.
                                                 </li>
-                        <li>Automatically renewable for one (1) year unless either Party gives
-                                                    written notice at least two (2) months before expiry.
-                                                </li>
-                        <li>Agreement value may be increased by 5–10% annually upon mutual
-                                                    approval.
-                                                </li>
                       </ul>
                     </td>
-                    <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px;">
+                    <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px; padding-bottom:0px; vertical-align:top;">
                       <ul style="padding-right:90px; margin:0;">
                         <li>
                                                     تبدأ هذه الاتفاقية في
@@ -938,9 +932,35 @@ td {
                                                     وتنتهي في
                                                     <span style="direction:ltr; display:inline-block;"><strong><t t-esc="o.date_end.strftime('%d-%m-%Y')" t-if="o.date_end"/></strong></span>.
                                                 </li>
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr class="para">
+                    <td width="50%" style="text-align:left; padding:10px; padding-top:0px; padding-bottom:0px; vertical-align:top;">
+                      <ul style="padding-left:90px; margin:0;">
+                        <li>Automatically renewable for one (1) year unless either Party gives
+                                                    written notice at least two (2) months before expiry.
+                                                </li>
+                      </ul>
+                    </td>
+                    <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px; padding-top:0px; padding-bottom:0px; vertical-align:top;">
+                      <ul style="padding-right:90px; margin:0;">
                         <li>قابلة للتجديد تلقائياً لمدة عام واحد (1) ما لم يقدم أي من الطرفين
                                                     إشعاراً كتابياً قبل شهرين (2) على الأقل من انتهاء الصلاحية.
                                                 </li>
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr class="para">
+                    <td width="50%" style="text-align:left; padding:10px; padding-top:0px; vertical-align:top;">
+                      <ul style="padding-left:90px; margin:0;">
+                        <li>Agreement value may be increased by 5–10% annually upon mutual
+                                                    approval.
+                                                </li>
+                      </ul>
+                    </td>
+                    <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px; padding-top:0px; vertical-align:top;">
+                      <ul style="padding-right:90px; margin:0;">
                         <li>يمكن زيادة قيمة الاتفاقية بنسبة 5–10٪ سنوياً بموافقة الطرفين.</li>
                       </ul>
                     </td>
@@ -954,25 +974,74 @@ td {
                                         </td>
                   </tr>
                   <tr class="para">
-                    <td width="50%" style="text-align:left; padding:10px;">
+                    <td width="50%" style="text-align:left; padding:10px; padding-bottom:0px; vertical-align:top;">
                       <ul style="padding-left:90px; margin:0;">
                         <li>Annual contract value: <strong>SAR
                                                     <t t-esc="'{0:,.2f}'.format(o.amount_total)"/></strong>
                                                     (including VAT).
                                                 </li>
+                      </ul>
+                    </td>
+                    <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px; padding-bottom:0px; vertical-align:top;">
+                      <ul style="padding-right:90px; margin:0;">
+                        <li>قيمة العقد السنوي:
+                                                    <strong><t t-esc="'{0:,.2f}'.format(o.amount_total)"/>ريال سعودي</strong>
+                                                     ( شامل ضريبة القيمة المضافة).
+                                                </li>
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr class="para">
+                    <td width="50%" style="text-align:left; padding:10px; padding-top:0px; padding-bottom:0px; vertical-align:top;">
+                      <ul style="padding-left:90px; margin:0;">
                         <li>
                           <t t-foreach="docs" t-as="doc">
                                                         Payment shall be made
                                                         <strong><t t-esc="doc.get_payment_term_text()"/></strong>.
                                                     </t>
-                          <ul style="padding-left:10px; margin:0;">
-                            <t t-foreach="o.payment_schedule_line_ids" t-as="line">
+                        </li>
+                      </ul>
+                    </td>
+                    <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px; padding-top:0px; padding-bottom:0px; vertical-align:top;">
+                      <ul style="padding-right:90px; margin:0;">
+                        <li dir="rtl">
+                          <t t-foreach="docs" t-as="doc">
+                                                        يتم الدفع
+                                                        <strong><t t-esc="doc.get_payment_term_text_ar()"/></strong>.
+                                                    </t>
+                        </li>
+                      </ul>
+                    </td>
+                  </tr>
+                  <t t-foreach="o.payment_schedule_line_ids" t-as="line">
+                    <tr class="para">
+                      <td width="50%" style="text-align:left; padding:10px; padding-top:0px; padding-bottom:0px; vertical-align:top;">
+                        <ul style="padding-left:90px; margin:0; list-style-type:none;">
+                          <li>
+                            <ul style="padding-left:10px; margin:0;">
                               <li style="white-space: nowrap; word-break: keep-all;">
                                 <strong><t t-esc="line.name"/></strong> – <strong><t t-esc="line.payment_date.strftime('%d-%m-%Y')"/></strong> – <strong><span t-field="line.amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></strong>
                               </li>
-                            </t>
-                          </ul>
-                        </li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </td>
+                      <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px; padding-top:0px; padding-bottom:0px; vertical-align:top;">
+                        <ul style="padding-right:90px; margin:0; list-style-type:none;">
+                          <li dir="rtl">
+                            <ul dir="rtl" style="padding-right:10px; margin:0; text-align:right;">
+                              <li style="direction:rtl; text-align:right; white-space: nowrap; word-break: keep-all;">
+                                <strong><t t-esc="line.name_ara"/></strong> – <span style="direction:ltr; display:inline-block;"><strong><t t-esc="line.payment_date.strftime('%d-%m-%Y')"/></strong></span> – <span style="direction:ltr;"><strong><t t-esc="'{0:,.2f}'.format(line.amount)"/></strong> س.ر</span>
+                              </li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </td>
+                    </tr>
+                  </t>
+                  <tr class="para">
+                    <td width="50%" style="text-align:left; padding:10px; padding-top:0px; vertical-align:top;">
+                      <ul style="padding-left:90px; margin:0;">
                         <li>Late payments may result in the suspension of services until the
                                                     overdue dues are settled, and the first party has the right to
                                                     terminate the contract if the second party does not commit to paying
@@ -980,25 +1049,8 @@ td {
                                                 </li>
                       </ul>
                     </td>
-                    <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px;">
+                    <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px; padding-top:0px; vertical-align:top;">
                       <ul style="padding-right:90px; margin:0;">
-                        <li>قيمة العقد السنوي:
-                                                    <strong><t t-esc="'{0:,.2f}'.format(o.amount_total)"/>ريال سعودي</strong>
-                                                     ( شامل ضريبة القيمة المضافة).
-                                                </li>
-                        <li dir="rtl">
-                          <t t-foreach="docs" t-as="doc">
-                                                        يتم الدفع
-                                                        <strong><t t-esc="doc.get_payment_term_text_ar()"/></strong>.
-                                                    </t>
-                          <ul dir="rtl" style="padding-right:10px; margin:0; text-align:right;">
-                            <t t-foreach="o.payment_schedule_line_ids" t-as="line">
-                              <li style="direction:rtl; text-align:right; white-space: nowrap; word-break: keep-all;">
-                                <strong><t t-esc="line.name_ara"/></strong> – <span style="direction:ltr; display:inline-block;"><strong><t t-esc="line.payment_date.strftime('%d-%m-%Y')"/></strong></span> – <span style="direction:ltr;"><strong><t t-esc="'{0:,.2f}'.format(line.amount)"/></strong> س.ر</span>
-                              </li>
-                            </t>
-                          </ul>
-                        </li>
                         <li>قد يؤدي التأخر في المدفوعات إلى تعليق الخدمات حتى يتم تسوية
                                                     المستحقاتالمتأخرة ويحق للطرف الأول إنهاء العقد في حال لم يلتزم الطرف
                                                     الثاني بسداد أي من المستحقات المالية.
@@ -1050,44 +1102,100 @@ td {
                     </td>
                   </tr>
                   <tr class="para">
-                    <td width="50%" style="text-align:left; padding:10px;">
+                    <td width="50%" style="text-align:left; padding:10px; vertical-align: top;">
                       <div style="padding-left: 20px; text-indent: -20px;"><span style="font-weight:bold; margin-right: 5px; color:#002060;">3.</span><span style="font-weight:bold; color:#002060;">Repairs &amp; Spare
                                                         Parts:
                                                     </span>
                                                     Only First Party technicians are authorized for covered units. If
                                                     serviced by third party, First Party holds no liability.
-                                                    <ul style="list-style-type: disc;"><li>As we are the exclusive agent for Midea Air conditioners, it
-                                                            is recommended that spare parts be purchased from the First
-                                                            Party.
-                                                        </li></ul>
                                             </div>
                     </td>
-                    <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px;">
+                    <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px; vertical-align: top;">
                       <div style="padding-right: 20px; text-indent: -20px;"><span style="font-weight:bold; margin-left: 5px; color:#002060;">3.</span><span style="font-weight:bold; color:#002060;">الإصلاحات وقطع
                                                     الغيار:</span>فنيي الطرف الأول فقط مصرح لهم بالوحدات المغطاةبالعقد.
                                                     إذا تمت الخدمة من قبل الطرف ثالث، فإن الطرف الأول لا يتحمل أي
                                                     مسؤولية.
-                                                    <ul style="list-style-type: disc;  padding-right:50px;"><li>مصرح لهم بالوحدات المغطاة بالعقد. إذا تمت الخدمة من قبل
-                                                            الطرف ثالث، فإن الطرف الأول لا يتحمل أي مسؤولية.
-                                                        </li></ul>
                                             </div>
                     </td>
                   </tr>
                   <tr class="para">
-                    <td width="50%" style="text-align:left; padding:10px;">
+                    <td width="50%" style="text-align:left; padding:10px; padding-top:0px; vertical-align: top;">
+                      <div style="padding-left: 20px;">
+                        <ul style="list-style-type: disc; margin:0;"><li>As we are the exclusive agent for Midea Air conditioners, it
+                                                            is recommended that spare parts be purchased from the First
+                                                            Party.
+                                                        </li></ul>
+                      </div>
+                    </td>
+                    <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px; padding-top:0px; vertical-align: top;">
+                      <div style="padding-right: 20px;">
+                        <ul style="list-style-type: disc; padding-right:50px; margin:0;"><li>مصرح لهم بالوحدات المغطاة بالعقد. إذا تمت الخدمة من قبل
+                                                            الطرف ثالث، فإن الطرف الأول لا يتحمل أي مسؤولية.
+                                                        </li></ul>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="para">
+                    <td width="50%" style="text-align:left; padding:10px; vertical-align: top;">
                       <div style="padding-left: 20px; text-indent: -20px;">
                         <span style="font-weight:bold; margin-right: 5px; color:#002060;">4.</span>
                         <span style="font-weight:bold; color:#002060;">Limitation of
                                                         Liability:
                                                     </span>
-                        <ul style="list-style-type: disc;">
+                      </div>
+                    </td>
+                    <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px; vertical-align: top;">
+                      <div style="padding-right: 20px; text-indent: -20px;">
+                        <span style="font-weight:bold; margin-left: 5px; color:#002060;">4.</span>
+                        <span style="font-weight:bold; color:#002060;">حدود المسؤولية:
+                                                    </span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="para">
+                    <td width="50%" style="text-align:left; padding:10px; padding-top:0px; vertical-align: top;">
+                      <div style="padding-left: 20px;">
+                        <ul style="list-style-type: disc; margin:0;">
                           <li>First Party shall not be responsible for delays or damages
                                                             caused by force majeure (e.g., natural disasters, strikes,
                                                             fires, unavailability of parts).
                                                         </li>
+                        </ul>
+                      </div>
+                    </td>
+                    <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px; padding-top:0px; vertical-align: top;">
+                      <div style="padding-right: 20px;">
+                        <ul style="list-style-type: disc; padding-right:50px; margin:0;">
+                          <li>لا يتحمل الطرف الأول المسؤولية عن التأخير أو الأضرار الناجمة
+                                                            عن القوة القاهرة (على سبيل المثال ، الكوارث الطبيعية
+                                                            والإضرابات والحرائق وعدم توفر الأجزاء).
+                                                        </li>
+                        </ul>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="para">
+                    <td width="50%" style="text-align:left; padding:10px; padding-top:0px; vertical-align: top;">
+                      <div style="padding-left: 20px;">
+                        <ul style="list-style-type: disc; margin:0;">
                           <li>Liability does not cover units not included in this
                                                             contract.
                                                         </li>
+                        </ul>
+                      </div>
+                    </td>
+                    <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px; padding-top:0px; vertical-align: top;">
+                      <div style="padding-right: 20px;">
+                        <ul style="list-style-type: disc; padding-right:50px; margin:0;">
+                          <li>لا تغطي المسؤولية الوحدات غير المدرجة في هذا العقد.</li>
+                        </ul>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr class="para">
+                    <td width="50%" style="text-align:left; padding:10px; padding-top:0px; vertical-align: top;">
+                      <div style="padding-left: 20px;">
+                        <ul style="list-style-type: disc; margin:0;">
                           <li>If force majeure prevents execution for four (4) months or
                                                             more, either Party may terminate the agreement by written
                                                             notice.
@@ -1095,17 +1203,9 @@ td {
                         </ul>
                       </div>
                     </td>
-                    <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px;">
-                      <div style="padding-right: 20px; text-indent: -20px;">
-                        <span style="font-weight:bold; margin-left: 5px; color:#002060;">4.</span>
-                        <span style="font-weight:bold; color:#002060;">حدود المسؤولية:
-                                                    </span>
-                        <ul style="list-style-type: disc;  padding-right:50px;">
-                          <li>لا يتحمل الطرف الأول المسؤولية عن التأخير أو الأضرار الناجمة
-                                                            عن القوة القاهرة (على سبيل المثال ، الكوارث الطبيعية
-                                                            والإضرابات والحرائق وعدم توفر الأجزاء).
-                                                        </li>
-                          <li>لا تغطي المسؤولية الوحدات غير المدرجة في هذا العقد.</li>
+                    <td width="50%" dir="rtl" style="text-align:right; font-family:'Arial', sans-serif; padding:10px; padding-top:0px; vertical-align: top;">
+                      <div style="padding-right: 20px;">
+                        <ul style="list-style-type: disc; padding-right:50px; margin:0;">
                           <li>إذا حالت القوة القاهرة دون التنفيذ لمدة أربعة (4) أشهر أو
                                                             أكثر، يجوز لأي من الطرفين إنهاء الاتفاقية عن طريق إشعار
                                                             كتابي.
@@ -1465,33 +1565,47 @@ td {
 					    (o.amc_quotation_id.crm_id.site_country_id.name or '').strip() if o.amc_quotation_id.crm_id.site_country_id else '',
 					    (o.amc_quotation_id.crm_id.site_zip or '').strip(),
 					]"/>
-                  <td t-if="line_index == 0" t-att-rowspan="len(o.contract_line_ids)" style="padding:8px;">
-                    <strong>
-                       <!-- <t t-esc="o.site_address or ''"/> -->
-                      <t t-esc="', '.join(filter(None, address_parts))"/>
-                    </strong>
-                  </td>
-                  <!-- Other columns -->
-                  <td style="padding:8px; text-align:center;">
-                    <strong>
-                      <t t-esc="line.brand_category_id.name or ''"/>
-                    </strong>
-                  </td>
-                  <td style="padding:8px; text-align:center;">
-                    <strong>
-                      <t t-esc="line.product_id.name or ''"/>
-                    </strong>
-                  </td>
-                  <td style="padding:8px; text-align:center;">
-                    <strong>
-                      <t t-esc="line.contract_type_id.name or ''"/>
-                    </strong>
-                  </td>
-                  <td style="padding:8px; text-align:center;">
-                    <strong>
-                      <t t-esc="line.qty_ordered or 0"/>
-                    </strong>
-                  </td>
+					
+					<!-- Site Address -->
+				<td t-if="line_index == 0"
+				    t-att-rowspan="len(o.contract_line_ids)"
+				    style="width:20%; padding:8px; text-align:center; vertical-align:middle;">
+				    <strong>
+				    	<t t-esc="o.site_address or ''"/>
+				       <!--  <t t-esc="', '.join(filter(None, address_parts))"/> -->
+				    </strong>
+				</td>
+				
+				<!-- Brand -->
+				<td style="width:13%; padding:8px; text-align:center;">
+				    <strong>
+				        <t t-esc="line.brand_category_id.name or ''"/>
+				    </strong>
+				</td>
+				
+				<!-- Equipment -->
+				<td style="width:19%; padding:8px; text-align:center;">
+				    <strong>
+				        <t t-esc="line.product_id.name or ''"/>
+				    </strong>
+				</td>
+				
+				<!-- Contract Type -->
+				<td style="width:40%; padding:8px; text-align:center; vertical-align:middle; white-space:nowrap;">
+				    <strong>
+				        <t t-esc="line.contract_type_id.name or ''"/>
+				    </strong>
+				</td>
+				
+				<!-- Quantity -->
+				<td style="width:8%; padding:8px; text-align:center;">
+				    <strong>
+				        <t t-esc="line.qty_ordered or 0"/>
+				    </strong>
+				</td>
+									
+					
+                  
                 </tr>
               </tbody>
             </table>

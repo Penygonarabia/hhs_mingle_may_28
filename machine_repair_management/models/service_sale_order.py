@@ -1782,6 +1782,12 @@ class ServiceSaleOrder(models.Model):
     
     zip = fields.Char(string = "Zip")
     
+    '''Code Added On June 15 2026 by Vijaya Bhaskar because when a client cancel the quotation after the ready to invoice or closed'''
+    
+    job_card_state_code = fields.Char(
+    related='job_task_id.job_card_state_code',
+    store=False)
+    
     
     '''Code Added on June 16 2026 by Vijaya Bhaskar client asked site address similar to address'''
 
@@ -2443,6 +2449,10 @@ class ServiceSaleOrder(models.Model):
         self.write({"state": "sent"})
         self.whatsapp_button_click_bool = True
 
+    '''Code Added on August 17 2026 by Vijaya Bhaskar client asked Manual Override'''  
+    def action_sent_approval_manual_service(self):
+        self.write({'state':"sent"})   
+        
     def action_confirm(self):
         for rec in self:
             if rec.job_task_id:
@@ -2582,11 +2592,20 @@ class ServiceSaleOrder(models.Model):
             # --- Step 2: Generate PDF ---
             try:
 
+                # pdf_content, _ = (
+                #     self.env["ir.actions.report"]
+                #     .sudo()
+                #     ._render_qweb_pdf(
+                #         "machine_repair_management.report_service_saleorder_document_hhs",
+                #         [self.id],
+                #     )
+                # )
+                
                 pdf_content, _ = (
                     self.env["ir.actions.report"]
                     .sudo()
                     ._render_qweb_pdf(
-                        "machine_repair_management.report_service_saleorder_document_hhs",
+                        "machine_repair_management.service_sale_order_quotation_report",
                         [self.id],
                     )
                 )
@@ -2711,10 +2730,18 @@ class ServiceSaleOrder(models.Model):
                     self.env["ir.actions.report"]
                     .sudo()
                     ._render_qweb_pdf(
-                        "machine_repair_management.report_saleorder_amcquotation",
+                        "machine_repair_management.service_sale_order_quotation_report",
                         [self.id],
                     )
                 )
+                # pdf_content, _ = (
+                #     self.env["ir.actions.report"]
+                #     .sudo()
+                #     ._render_qweb_pdf(
+                #         "machine_repair_management.report_saleorder_amcquotation",
+                #         [self.id],
+                #     )
+                # )
                 _logger.info("📄 PDF generated successfully for job card %s", self.name)
             except Exception as e:
                 _logger.error(
@@ -2850,9 +2877,63 @@ class ServiceSaleOrder(models.Model):
             _logger.error("Buttons send error: %s", str(e))
             return False
 
+    # def action_send_email(self):
+    #     self.ensure_one()
+    #
+    #     # 1. Load the mail template
+    #     template = self.env.ref(
+    #         "machine_repair_management.mail_template_service_sale_order",
+    #         raise_if_not_found=False,
+    #     )
+    #     if not template:
+    #         raise UserError(
+    #             _("Email template not found. Please contact your administrator.")
+    #         )
+    #
+    #     # 2. Choose correct report
+    #     if self.amc_quotation:
+    #         report = self.env.ref(
+    #             "machine_repair_management.sale_order_amc_quotation_report_details",
+    #             raise_if_not_found=False,
+    #         )
+    #     else:
+    #         report = self.env.ref(
+    #             "machine_repair_management.service_sale_order_quotation_report",
+    #             raise_if_not_found=False,
+    #         )
+    #
+    #     if not report:
+    #         raise UserError(_("Report template not found. Cannot send quotation."))
+    #
+    #     # 3. Temporarily assign the correct report to the template
+    #     template = template.sudo()
+    #     original_reports = template.report_template_ids.ids[:]
+    #
+    #     try:
+    #         template.write({"report_template_ids": [(6, 0, [report.id])]})
+    #
+    #         # 4. Send the email directly using the template (Odoo 17+ method)
+    #         template.send_mail(self.id, force_send=True)
+    #
+    #         # 5. Mark as sent
+    #         self.write(
+    #             {
+    #                 "state": "sent",
+    #             }
+    #         )
+    #
+    #         # 6. Log in chatter
+    #         self.message_post(body=_("Quotation sent by email with attached PDF."))
+    #
+    #     finally:
+    #         # Always restore original report(s)
+    #         template.write({"report_template_ids": [(6, 0, original_reports)]})
+    #
+    #     return True
+    
     def action_send_email(self):
         self.ensure_one()
-
+    
         # 1. Load the mail template
         template = self.env.ref(
             "machine_repair_management.mail_template_service_sale_order",
@@ -2862,46 +2943,30 @@ class ServiceSaleOrder(models.Model):
             raise UserError(
                 _("Email template not found. Please contact your administrator.")
             )
-
-        # 2. Choose correct report
-        if self.amc_quotation:
-            report = self.env.ref(
-                "machine_repair_management.sale_order_amc_quotation_report_details",
-                raise_if_not_found=False,
-            )
-        else:
-            report = self.env.ref(
-                "machine_repair_management.service_sale_order_quotation_report",
-                raise_if_not_found=False,
-            )
-
+    
+        # 2. Single dynamic report handles both HHS and AMC branches internally
+        report = self.env.ref(
+            "machine_repair_management.service_sale_order_quotation_report",
+            raise_if_not_found=False,
+        )
+    
         if not report:
             raise UserError(_("Report template not found. Cannot send quotation."))
-
+    
         # 3. Temporarily assign the correct report to the template
         template = template.sudo()
         original_reports = template.report_template_ids.ids[:]
-
+    
         try:
             template.write({"report_template_ids": [(6, 0, [report.id])]})
-
-            # 4. Send the email directly using the template (Odoo 17+ method)
             template.send_mail(self.id, force_send=True)
-
-            # 5. Mark as sent
-            self.write(
-                {
-                    "state": "sent",
-                }
-            )
-
-            # 6. Log in chatter
+    
+            self.write({"state": "sent"})
             self.message_post(body=_("Quotation sent by email with attached PDF."))
-
+    
         finally:
-            # Always restore original report(s)
             template.write({"report_template_ids": [(6, 0, original_reports)]})
-
+    
         return True
 
         ## Added on - 17-11-2025
@@ -2934,7 +2999,7 @@ class ServiceSaleOrder(models.Model):
                 order.crm_id.site_street2 or False,
                 order.crm_id.site_district_id.name or False,
                 order.crm_id.site_customer_city_id.name or False,
-                # order.crm_id.site_state_id.name or False,
+                order.crm_id.site_state_id.name or False,
                 order.crm_id.site_country_id.name or False,
                 order.crm_id.site_zip or False
                 
@@ -2960,14 +3025,15 @@ class ServiceSaleOrder(models.Model):
                     'district_id': order.district_id.id or '',
                     'state_id': order.state_id.id or '',
                     'country_id':order.country_id.id or '',
-                    'zip': order.zip or '', 
-                     'site_street' :  order.crm_id.site_street or False,
+                    'zip': order.zip or '',      
+                    'site_street' :  order.crm_id.site_street or False,
                     'site_street2' :  order.crm_id.site_street2 or False,
                     'site_district_id' : order.crm_id.site_district_id.id or False,
                     'site_customer_city_id' : order.crm_id.site_customer_city_id.id or False,
                      'site_country_id' : order.crm_id.site_country_id.id or Fasle,
                      'site_zip' : order.crm_id.site_zip or False,
                      'site_state_id' :order.crm_id.site_state_id.id or False,   
+                
                 
 
                 }
@@ -3068,7 +3134,20 @@ class ServiceSaleOrder(models.Model):
     def compute_approval_button(self):
         for rec in self:
             rec.show_approval_button = self.env.user.has_group("base.group_system")
-
+    
+    
+    '''Code Added on July 27 2026 by Vijaya bhaskar client asked the quantity and no.of visits per year is mandatory but these fields are float.So Validation is asked'''        
+    @api.constrains('service_sale_order_line_ids')
+    def _check_service_lines(self):
+        for order in self:
+            for line in order.service_sale_order_line_ids:
+                if line.product_qty <= 0:
+                    raise ValidationError(
+                        _("Please enter Product Quantity for all service lines.")
+                    )
+                if line.no_of_visits_per_year <=0:
+                    raise ValidationError(_("Please enter the No. of Visits/Yr in the service lines"))    
+            
 
 class ServiceSaleOrderLine(models.Model):
     _name = "service.sale.order.line"

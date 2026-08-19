@@ -38,6 +38,7 @@ class JobCardReport(models.TransientModel):
         tracking=True,
         store=True,
     )
+    
     '''Code Added on June 10 2026 by Vijaya Bhaskar'''
     action_status = fields.Selection([('closed','Closed'),('cancelled','Cancelled'),('not_closed','Not Closed')],string = "Action Status")
     

@@ -421,14 +421,14 @@ class JobCardExcel(models.AbstractModel):
                 '''Code Added on March 30 2026 by Vijaya bhaskar client asked to Parts - Warranty Cost Column'''
                 # product_unit_price.append(str(round(line.product_id.standard_price,2)) if line.product_id.standard_price and line.under_warranty_bool  else '0.00')
                 '''Code Added on July 04 2026 by Vijaya Bhaskar working correctly '''
-                # product_unit_price.append(str(round(line.qty * line.product_id.standard_price,3)) if line.product_id.standard_price and line.under_warranty_bool  else '0.00')
+                # product_unit_price.append(str(round(line.qty * line.product_id.standard_price,2)) if line.product_id.standard_price and line.under_warranty_bool  else '0.00')
                 
                 
                 '''Code Added on July 04 2026 by Vijaya Bhaskar working correctly'''
                 if wizard.from_date and wizard.from_date < cutoff_date:
                     # Before 01-02-2026 use line.standard_price
                     product_unit_price.append(
-                        str(round(line.standard_price, 2))
+                        str(round(line.qty * line.standard_price, 2))
                         if line.standard_price and line.under_warranty_bool
                         else '0.00'
                     )

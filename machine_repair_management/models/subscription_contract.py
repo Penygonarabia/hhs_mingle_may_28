@@ -136,7 +136,7 @@ class SubscriptionContracts(models.Model):
                 
                 ]
         self.site_address =", ".join(filter(None,address))
-        
+    
     
     
     '''Cron Job Added on July 15 2026 by Vijaya Bhaskar'''

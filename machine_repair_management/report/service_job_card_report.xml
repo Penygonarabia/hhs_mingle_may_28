@@ -17,984 +17,1470 @@
         </div>
     </template>
     <template id="service_job_card_report_template">
-        <t t-call="web.html_container">
-            <t t-foreach="service_jobs" t-as="doc">
-                <t t-call="machine_repair_management.service_job_card_internal_layout">
-                    <div class="header" t-att-style="report_header_style">
-                        <div class="row mt32 mb32">
-                            <div class="col-4 text-left">
-                                <img src="machine_repair_management/static/src/img/HHS_Header_Left.png" alt="img"
-                                     style="height: 120px; width: 350px;"/>
-                            </div>
-                            <div class="col-4 text-center " style="vertical-align:text-top">
-                                <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)"
-                                     style="max-height: 100px; min-height:100px; min-width: 200px; max-width: 200px;"/>
-                            </div>
-                            <div class="col-4 text-right " style="vertical-align:text-top;text-align:right">
-                                <img src="machine_repair_management/static/src/img/HHS_Header_Right.png" alt="img"
-                                     style="height: 120px; width: 350px;"/>
-                            </div>
+    <t t-call="web.html_container">
+        <t t-foreach="service_jobs" t-as="doc">
+            <t t-call="machine_repair_management.service_job_card_internal_layout">
+
+                <div class="header" t-att-style="report_header_style">
+                    <div class="row mt32 mb32">
+                        <div class="col-4 text-left">
+                            <img src="machine_repair_management/static/src/img/HHS_Header_Left.png"
+                                 alt="img"
+                                 style="height:120px; width:350px;"/>
                         </div>
-                        <h2>
-                            <center>Job Card Report</center>
-                        </h2>
+
+                        <div class="col-4 text-center"
+                             style="vertical-align:text-top">
+                            <img t-if="res_company.logo"
+                                 t-att-src="image_data_uri(res_company.logo)"
+                                 style="max-height:100px; min-height:100px;
+                                        min-width:200px; max-width:200px;"/>
+                        </div>
+
+                        <div class="col-4 text-right"
+                             style="vertical-align:text-top;text-align:right">
+                            <img src="machine_repair_management/static/src/img/HHS_Header_Right.png"
+                                 alt="img"
+                                 style="height:120px; width:350px;"/>
+                        </div>
                     </div>
-                    <div class="page" style="page-break-after: always;">
-                        <div class="row mt32" style="margin-bottom:2px;">
-                            <div class="col-6">
-                                <table class="table table-bordered border-dark"
-                                       style="margin:0; border-collapse:collapse">
-                                    <colgroup>
-                                        <col width="30%"/>
-                                        <col width="40%"/>
-                                        <col width="30%"/>
-                                    </colgroup>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <strong>CIC Ref No.:</strong>
-                                            </td>
-                                            <td>
-                                                <span t-if="doc['job_card_no']" t-esc="doc['job_card_no']"/>
-                                            </td>
-                                            <td style="text-align: right;">
-                                                <strong>:رقم المرجع</strong>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <strong>Customer Name.:</strong>
-                                            </td>
-                                            <td>
-                                                <span t-if="doc['customer_name']" t-esc="doc['customer_name']"/>
-                                            </td>
-                                            <td style="text-align: right;">
-                                                <strong>:اسم العميل</strong>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <strong>Customer Address.:</strong>
-                                            </td>
-                                            <td>
-                                                <span t-if="doc['address']" t-esc="doc['address']"/>
-                                            </td>
-                                            <td style="text-align: right;">
-                                                <strong>:عنوان العميل</strong>
-                                            </td>
-                                        </tr>
-                                        <tr t-if="False">
-                                            <td>
-                                                <strong>Customer Location.:</strong>
-                                            </td>
-                                            <td>
-                                                <span t-if="doc['address']" t-esc="doc['address']"/>
-                                            </td>
-                                            <td style="text-align: right;">
-                                                <strong>:ضريبة القيمة المضافة</strong>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <strong>Customer Mob No.:</strong>
-                                            </td>
-                                            <td>
-                                                <span t-if="doc['customer_mob_no']"
-                                                      t-esc="doc['customer_mob_no']"/>
-                                            </td>
-                                            <td style="text-align: right; ">
-                                                <strong>:رقم هاتف العميل</strong>
-                                                <!--                                                <strong>:رقم الموديل</strong>-->
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <strong>Customer VAT No.:</strong>
-                                            </td>
-                                            <td>
-                                                <span t-if="doc['customer_VAT_no']" t-esc="doc['customer_VAT_no']"/>
-                                            </td>
-                                            <td style="text-align: right; ">
-                                                <strong>:رقم بطاقة العمل</strong>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="col-6">
-                                <table class="table table-bordered border-dark"
-                                       style="margin:0; border-collapse:collapse">
-                                    <colgroup>
-                                        <col width="34%"/>
-                                        <col width="32%"/>
-                                        <col width="34%"/>
-                                    </colgroup>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <strong>Date:</strong>
-                                            </td>
-                                            <td>
-                                                <span t-if="doc['service_created_date']"
-                                                      t-esc="doc['service_created_date']"/>
-                                            </td>
-                                            <td style="text-align: right;">
-                                                <strong>:التاريخ</strong>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <strong>Promised Date/Time:</strong>
-                                            </td>
-                                            <td>
-                                                <span t-if="doc['promised_date_time']"
-                                                      t-esc="doc['promised_date_time']"/>
-                                            </td>
-                                            <td style="text-align: right;">
-                                                <strong>:تاريخ و وقت إتمام العمل</strong>
-                                                <!--                                                <strong>:تاريخ ووقت الإغلاق</strong>-->
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <strong>Technician:</strong>
-                                            </td>
-                                            <td>
-                                                <span t-if="doc['technician_name']" t-esc="doc['technician_name']"/>
-                                            </td>
-                                            <td style="text-align: right; ">
-                                                <strong>:اسم الفني</strong>
-                                                <!--                                                <strong>:اسم الفني</strong>-->
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <strong>Branch.:</strong>
-                                            </td>
-                                            <td>
-                                                <span t-if="doc['work_center_id']"
-                                                      t-esc="doc['work_center_id']"/>
-                                            </td>
-                                            <td style="text-align: right; ">
-                                                <strong>:الفرع</strong>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <strong>Dealer:</strong>
-                                            </td>
-                                            <td>
-                                                <span t-if="doc['dealer_name']" t-esc="doc['dealer_name']"/>
-                                            </td>
-                                            <td style="text-align: right;">
-                                                <strong>:المورد</strong>
-                                                <!--                                                <strong>:رقم الموديل</strong>-->
-                                            </td>
-                                        </tr>
 
-                                        <!--                                         <tr> -->
-                                        <!--                                             <td> -->
-                                        <!--                                                 <strong>Serial No:</strong> -->
-                                        <!--                                             </td> -->
-                                        <!--                                             <td> -->
-                                        <!--                                                 <span t-if="doc['serial_no']" -->
-                                        <!--                                                       t-esc="doc['serial_no']"/> -->
-                                        <!--                                             </td> -->
-                                        <!--                                             <td style="text-align: right;"> -->
-                                        <!--                                                 <strong>:الرقم التسلسلي</strong> -->
-                                        <!--                                             </td> -->
-                                        <!--                                         </tr> -->
-                                        <!--                                         <tr> -->
-                                        <!--                                             <td> -->
-                                        <!--                                                 <strong>VAT Registration:</strong> -->
-                                        <!--                                             </td> -->
-                                        <!--                                             <td> -->
-                                        <!--                                                 <span t-if="doc['company_vat']" -->
-                                        <!--                                                       t-esc="doc['company_vat']"/> -->
-                                        <!--                                             </td> -->
-                                        <!--                                             <td style="text-align: right;"> -->
-                                        <!--                                                 <strong>: ضريبة القيمة المضافة</strong> -->
-                                        <!--                                             </td> -->
-                                        <!--                                         </tr> -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <table class="table table-bordered border-dark"
-                               style="margin-bottom:2px; padding-bottom:2px;">
-                            <tr>
-                                <th>
-                                    <span>الموديل</span>
-                                    <br/>
-                                    Model
-                                </th>
-                                <th>
-                                    <span>الرقم التسلسلي</span>
-                                    <br/>
-                                    Serial No.
-                                </th>
-                                <th>
-                                    <span>رقم الفاتورة</span>
-                                    <br/>
-                                    Invoice No.
-                                </th>
-                                <th>
-                                    <span>التاريخ</span>
-                                    <br/>
-                                    Date
-                                </th>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <span t-if="doc['model_no']" t-esc="doc['model_no']"/>
-                                </td>
-                                <td>
-                                    <span t-if="doc['serial_no']" t-esc="doc['serial_no']"/>
-                                </td>
-                                <td>
-                                    <span t-if="doc['invoice_no']" t-esc="doc['invoice_no']"/>
-                                </td>
-                                <td>
-                                    <span t-if="doc['invoice_date']" t-esc="doc['invoice_date']"/>
-                                </td>
-                            </tr>
-                        </table>
-                        <p style="margin-bottom: 2px">
-                            <strong>Warranty Status:</strong>
-                            <span t-if="doc['services_warranty']" t-esc="doc['services_warranty']"/>
-                        </p>
-                        <table class="table table-bordered border-dark" style="margin-bottom: 0; padding-bottom: 0;">
-                            <thead>
-                                <tr>
-                                    <th width="30%">
-                                        <span>الأعراض</span>
-                                        <br/>
-                                        Symptoms
-                                    </th>
-                                    <th width="30%">
-                                        <span>العيوب</span>
-                                        <br/>
-                                        Defects
-                                    </th>
-                                    <th width="40%">
-                                        <span>الخدمة</span>
-                                        <br/>
-                                        Service
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <!--  Symptoms Column  -->
-                                    <td>
-                                        <table class="table table-borderless m-0">
-                                            <t t-foreach="symptoms" t-as="symptom">
-                                                <tr>
-                                                    <td>
-                                                        <span t-esc="symptom['symptoms_id']"/>
-                                                    </td>
-                                                </tr>
-                                            </t>
-                                            <tr>
-                                                <td style="padding-top:10px;">
-                                                    <strong>Client Comments:</strong>
-                                                    <span t-if="doc['client_comments']"
-                                                          t-esc="doc['client_comments']"/>
-                                                    <!--                                                     <span>For a static template</span>
-                                                     -->                                                    <!--  <span t-esc="doc['comments']"/> -->
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                    <!--  Defects Column  -->
-                                    <td>
-                                        <table class="table table-borderless m-0">
-                                            <t t-foreach="defects" t-as="defect">
-                                                <tr>
-                                                    <td>
-                                                        <span t-esc="defect['defects_id']"/>
-                                                    </td>
-                                                </tr>
-                                            </t>
-                                        </table>
-                                    </td>
-                                    <!--  Service Column  -->
-                                    <td>
-                                        <table class="table table-borderless m-0">
-                                            <t t-foreach="services" t-as="service">
-                                                <tr>
-                                                    <td>
-                                                        <span t-esc="service['services_id']"/>
-                                                    </td>
-                                                </tr>
-                                            </t>
-                                        </table>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <!--                        <p style="margin-bottom: 0; padding-bottom: 0;">-->
-                        <!--                            <strong>First Visit:</strong>-->
-                        <!--                            <strong style="text-align: right;">الزياره الاولي</strong>-->
-                        <!--                        </p>-->
-                        <p style="margin-bottom: 0; padding-bottom: 0;">
-                            <strong>First Visit:</strong>
-                            <strong style="float:right;">الزياره الاولي</strong>
-                        </p>
+                    <h2 style="font-size:18px !important;">
+                        <center style="font-size:35px;">
+                            Job Card Report / تقرير بطاقة العمل
+                        </center>
+                    </h2>
+                </div>
 
-                        <div class="col-12" style="margin-bottom:5px; padding-bottom:5px;">
-                            <table class="table table-bordered border-dark">
+                <div class="page"
+                     style="page-break-after:always; font-size:16px !important;">
+
+                    <!-- ================================================== -->
+                    <!-- CUSTOMER / JOB CARD INFORMATION -->
+                    <!-- ================================================== -->
+
+                    <div class="row mt32" style="margin-bottom:2px;">
+
+                        <div class="col-6">
+                            <table class="table table-bordered border-dark"
+                                   style="margin:0; border-collapse:collapse; font-size:16px !important;">
+
                                 <colgroup>
                                     <col width="30%"/>
                                     <col width="40%"/>
                                     <col width="30%"/>
                                 </colgroup>
+
                                 <tbody>
-                                    <!--  Row 1: Description of Work Done  -->
+
                                     <tr>
-                                        <td>
-                                            <strong>Description of Work Done:</strong>
+                                        <td style="font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                Job Card No:
+                                            </strong>
                                         </td>
-                                        <td>
-                                            <span t-if="doc['engineer_comments']" t-esc="doc['engineer_comments']"/>
+
+                                        <td style="font-size:16px !important;">
+                                            <span t-if="doc['job_card_no']"
+                                                  t-esc="doc['job_card_no']"
+                                                  style="font-size:16px !important;"/>
                                         </td>
-                                        <td style="text-align: right;">
-                                            <strong>:وصف الأعمال المنفذة</strong>
+
+                                        <td style="text-align:right; font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                :رقم بطاقة العمل
+                                            </strong>
                                         </td>
                                     </tr>
-                                    <!--  Row 2: Inner table (Date, Time In, Time Out, Technician)  -->
+
                                     <tr>
-                                        <td colspan="3" class="p-0">
-                                            <table class="table table-bordered border-dark m-0">
-                                                <colgroup>
-                                                    <col width="21%"/>
-                                                    <col width="21%"/>
-                                                    <col width="23%"/>
-                                                    <col width="35%"/>
-                                                </colgroup>
-                                                <tbody>
-                                                    <tr>
-                                                        <!--                                                        <t t-foreach="docs" t-as="doc">-->
-                                                        <td>
-                                                            <!--                                                            <strong>Date:</strong>-->
-                                                            <!--                                                            <span t-if="doc['first_visit_date']"-->
-                                                            <!--                                                                  t-esc="doc['first_visit_date']"/>-->
-                                                            <!--                                                            <span style="text-align:right;">التاريخ</span>-->
-                                                            <table style="width:100%; border-collapse: collapse; border-style: hidden;">
-                                                                <tr>
-                                                                    <td style="border-style: hidden; text-align:left; width:20%;">
-                                                                        <strong>Date:</strong>
-                                                                    </td>
+                                        <td style="font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                Customer Name.:
+                                            </strong>
+                                        </td>
 
-                                                                    <td style="border-style: hidden; text-align:center; width:41%;">
-                                                                        <span t-if="doc['first_visit_date']"
-                                                                              t-esc="doc['first_visit_date']"/>
-                                                                    </td>
+                                        <td style="font-size:16px !important;">
+                                            <span t-if="doc['customer_name']"
+                                                  t-esc="doc['customer_name']"
+                                                  style="font-size:16px !important;"/>
+                                        </td>
 
-                                                                    <td style="border-style: hidden; text-align:right; width:39%;">
-                                                                        <strong>التاريخ</strong>
-                                                                    </td>
-                                                                </tr>
-                                                            </table>
-                                                        </td>
-                                                        <td>
-                                                            <table style="width:100%; border-collapse: collapse; border-style: hidden;">
-                                                                <tr>
-                                                                    <td style="border-style: hidden; text-align:left; width:33%;">
-                                                                        <strong>Time In:</strong>
-                                                                    </td>
-
-                                                                    <td style="border-style: hidden; text-align:center; width:28%;">
-                                                                        <span t-if="doc['first_vist_time_in']"
-                                                                              t-esc="doc['first_vist_time_in']"/>
-                                                                    </td>
-
-                                                                    <td style="border-style: hidden; text-align:right; width:39%;">
-                                                                        <strong>وقت الوصول</strong>
-                                                                    </td>
-                                                                </tr>
-                                                            </table>
-                                                            <!--                                                            <strong>Time In:</strong>-->
-                                                            <!--                                                            <span t-if="doc['first_vist_time_in']"-->
-                                                            <!--                                                                  t-esc="doc['first_vist_time_in']"/>-->
-                                                            <!--                                                            <span style="text-align:right">وقت الوصول</span>-->
-                                                        </td>
-                                                        <td>
-                                                            <table style="width:100%; border-collapse: collapse; border-style: hidden;">
-                                                                <tr>
-                                                                    <td style="border-style: hidden; text-align:left; width:30%;">
-                                                                        <strong>Time Out:</strong>
-                                                                    </td>
-                                                                    <td style="border-style: hidden; text-align:center; width:28%;">
-                                                                        <span t-if="doc['first_vist_time_out']"
-                                                                              t-esc="doc['first_vist_time_out']"/>
-                                                                    </td>
-                                                                    <td style="border-style: hidden; text-align:right; width:42%;">
-                                                                        <strong>وقت الانصراف</strong>
-                                                                    </td>
-                                                                </tr>
-                                                            </table>
-                                                        </td>
-                                                        <td>
-                                                            <table style="width:100%; border-collapse: collapse; border-style: hidden;">
-                                                                <tr>
-                                                                    <td style="border-style: hidden; text-align:left; width:33%;">
-                                                                        <strong>Technician:</strong>
-                                                                    </td>
-                                                                    <td style="border-style: hidden; text-align:center; width:28%;">
-                                                                        <span t-if="doc['technician_first_visit']"
-                                                                              t-esc="doc['technician_first_visit']"/>
-                                                                    </td>
-                                                                    <td style="border-style: hidden; text-align:right; width:39%;">
-                                                                        <strong>اسم الفني</strong>
-                                                                    </td>
-                                                                </tr>
-                                                            </table>
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
+                                        <td style="text-align:right; font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                :اسم العميل
+                                            </strong>
                                         </td>
                                     </tr>
+
+                                    <tr>
+                                        <td style="font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                Customer Address.:
+                                            </strong>
+                                        </td>
+
+                                        <td style="font-size:16px !important;">
+                                            <span t-if="doc['address']"
+                                                  t-esc="doc['address']"
+                                                  style="font-size:16px !important;"/>
+                                        </td>
+
+                                        <td style="text-align:right; font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                :عنوان العميل
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+                                    <tr t-if="False">
+                                        <td style="font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                Customer Location.:
+                                            </strong>
+                                        </td>
+
+                                        <td style="font-size:16px !important;">
+                                            <span t-if="doc['address']"
+                                                  t-esc="doc['address']"
+                                                  style="font-size:16px !important;"/>
+                                        </td>
+
+                                        <td style="text-align:right; font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                :ضريبة القيمة المضافة
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                Customer Mob No.:
+                                            </strong>
+                                        </td>
+
+                                        <td style="font-size:16px !important;">
+                                            <span t-if="doc['customer_mob_no']"
+                                                  t-esc="doc['customer_mob_no']"
+                                                  style="font-size:16px !important;"/>
+                                        </td>
+
+                                        <td style="text-align:right; font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                :رقم هاتف العميل
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                VAT No.:
+                                            </strong>
+                                        </td>
+
+                                        <td style="font-size:16px !important;">
+                                            <span t-if="doc['customer_VAT_no']"
+                                                  t-esc="doc['customer_VAT_no']"
+                                                  style="font-size:16px !important;"/>
+                                        </td>
+
+                                        <td style="text-align:right; font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                :الرقم الضريبي
+                                            </strong>
+                                        </td>
+                                    </tr>
+
                                 </tbody>
                             </table>
                         </div>
 
-                        <t t-foreach="service_jobs" t-as="doc">
-                            <t t-if="doc['second_visit_technician_bool'] == True">
-                                <p style="margin-bottom:5px; padding-bottom:5px;">
-                                    <strong>Second Visit:</strong>
-                                    <strong style="float:right;">الزياره الثانية</strong>
-                                </p>
-                                <div class="col-12" style="margin-bottom:2px; padding-bottom:2px;">
-                                    <table class="table table-bordered border-dark" style="margin-bottom:5px;padding-bottom:5px;">
-                                        <colgroup>
-                                            <col width="30%"/>
-                                            <col width="40%"/>
-                                            <col width="30%"/>
-                                        </colgroup>
-                                        <tbody>
-                                            <!--  Row 1: Description of Work Done  -->
+                        <div class="col-6">
+
+                            <table class="table table-bordered border-dark"
+                                   style="margin:0; border-collapse:collapse; font-size:16px !important;">
+
+                                <colgroup>
+                                    <col width="34%"/>
+                                    <col width="32%"/>
+                                    <col width="34%"/>
+                                </colgroup>
+
+                                <tbody>
+
+                                    <tr>
+                                        <td style="font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                Service Created Date &amp; Time:
+                                            </strong>
+                                        </td>
+
+                                        <td style="font-size:16px !important;">
+                                            <span t-if="doc['service_created_date']"
+                                                  t-esc="doc['service_created_date']"
+                                                  style="font-size:16px !important;"/>
+                                        </td>
+
+                                        <td style="text-align:right; font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                :تاريخ ووقت إنشاء بطاقه العمل
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                Completed Date &amp; Time:
+                                            </strong>
+                                        </td>
+
+                                        <td style="font-size:16px !important;">
+                                            <span t-if="doc['promised_date_time']"
+                                                  t-esc="doc['promised_date_time']"
+                                                  style="font-size:16px !important;"/>
+                                        </td>
+
+                                        <td style="text-align:right; font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                :تاريخ ووقت إتمام العمل
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                Technician:
+                                            </strong>
+                                        </td>
+
+                                        <td style="font-size:16px !important;">
+                                            <span t-if="doc['technician_name']"
+                                                  t-esc="doc['technician_name']"
+                                                  style="font-size:16px !important;"/>
+                                        </td>
+
+                                        <td style="text-align:right; font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                :اسم الفني
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                Branch.:
+                                            </strong>
+                                        </td>
+
+                                        <td style="font-size:16px !important;">
+                                            <span t-if="doc['work_center_id']"
+                                                  t-esc="doc['work_center_id']"
+                                                  style="font-size:16px !important;"/>
+                                        </td>
+
+                                        <td style="text-align:right; font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                :الفرع
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                Dealer:
+                                            </strong>
+                                        </td>
+
+                                        <td style="font-size:16px !important;">
+                                            <span t-if="doc['dealer_name']"
+                                                  t-esc="doc['dealer_name']"
+                                                  style="font-size:16px !important;"/>
+                                        </td>
+
+                                        <td style="text-align:right; font-size:16px !important;">
+                                            <strong style="font-size:18px !important;">
+                                                :المورد
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+
+
+                    <!-- ================================================== -->
+                    <!-- MODEL / SERIAL / INVOICE -->
+                    <!-- ================================================== -->
+
+                    <table class="table table-bordered border-dark"
+                           style="margin-bottom:2px; padding-bottom:2px; font-size:16px !important;">
+
+                        <tr>
+
+                            <th style="font-size:17px !important; font-weight:bold !important;">
+                                <span style="font-size:17px !important;">
+                                    الطراز
+                                </span>
+                                <br/>
+                                <span style="font-size:17px !important;">
+                                    Model
+                                </span>
+                            </th>
+
+                            <th style="font-size:17px !important; font-weight:bold !important;">
+                                <span style="font-size:17px !important;">
+                                    الرقم التسلسلي
+                                </span>
+                                <br/>
+                                <span style="font-size:17px !important;">
+                                    Serial No.
+                                </span>
+                            </th>
+
+                            <th style="font-size:17px !important; font-weight:bold !important;">
+                                <span style="font-size:17px !important;">
+                                    رقم الفاتورة
+                                </span>
+                                <br/>
+                                <span style="font-size:17px !important;">
+                                    Invoice No.
+                                </span>
+                            </th>
+
+                            <th style="font-size:17px !important; font-weight:bold !important;">
+                                <span style="font-size:17px !important;">
+                                    التاريخ
+                                </span>
+                                <br/>
+                                <span style="font-size:17px !important;">
+                                    Date
+                                </span>
+                            </th>
+
+                        </tr>
+
+                        <tr>
+                            <td style="font-size:16px !important;">
+                                <span t-if="doc['model_no']"
+                                      t-esc="doc['model_no']"
+                                      style="font-size:16px !important;"/>
+                            </td>
+
+                            <td style="font-size:16px !important;">
+                                <span t-if="doc['serial_no']"
+                                      t-esc="doc['serial_no']"
+                                      style="font-size:16px !important;"/>
+                            </td>
+
+                            <td style="font-size:16px !important;">
+                                <span t-if="doc['invoice_no']"
+                                      t-esc="doc['invoice_no']"
+                                      style="font-size:16px !important;"/>
+                            </td>
+
+                            <td style="font-size:16px !important;">
+                                <span t-if="doc['invoice_date']"
+                                      t-esc="doc['invoice_date']"
+                                      style="font-size:16px !important;"/>
+                            </td>
+                        </tr>
+
+                    </table>
+
+
+                    <!-- ================================================== -->
+                    <!-- WARRANTY -->
+                    <!-- ================================================== -->
+
+                    <p style="margin-bottom:2px; font-size:16px !important;">
+                        <strong style="font-size:18px !important;">
+                            Warranty Status:
+                        </strong>
+
+                        <span t-if="doc['services_warranty']"
+                              t-esc="doc['services_warranty']"
+                              style="font-size:16px !important;"/>
+                    </p>
+
+
+                    <!-- ================================================== -->
+                    <!-- SYMPTOMS / DEFECTS / SERVICE -->
+                    <!-- ================================================== -->
+
+                    <table class="table table-bordered border-dark"
+                           style="margin-bottom:0; padding-bottom:0; font-size:16px !important;">
+
+                        <thead>
+                            <tr>
+
+                                <th width="30%"
+                                    style="font-size:17px !important; font-weight:bold !important;">
+                                    <span style="font-size:17px !important;">
+                                        الأعراض
+                                    </span>
+                                    <br/>
+                                    <span style="font-size:17px !important;">
+                                        Symptoms
+                                    </span>
+                                </th>
+
+                                <th width="30%"
+                                    style="font-size:17px !important; font-weight:bold !important;">
+                                    <span style="font-size:17px !important;">
+                                        العيوب
+                                    </span>
+                                    <br/>
+                                    <span style="font-size:17px !important;">
+                                        Defects
+                                    </span>
+                                </th>
+
+                                <th width="40%"
+                                    style="font-size:17px !important; font-weight:bold !important;">
+                                    <span style="font-size:17px !important;">
+                                        الخدمة
+                                    </span>
+                                    <br/>
+                                    <span style="font-size:17px !important;">
+                                        Service
+                                    </span>
+                                </th>
+
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+
+                                <td style="font-size:16px !important;">
+                                    <table class="table table-borderless m-0"
+                                           style="font-size:16px !important;">
+                                        <t t-foreach="symptoms" t-as="symptom">
                                             <tr>
-                                                <td>
-                                                    <strong>Description of Work Done:</strong>
-                                                </td>
-                                                <td>
-                                                    <span t-if="doc['engineer_comments_second']"
-                                                          t-esc="doc['engineer_comments_second']"/>
-                                                </td>
-                                                <td style="text-align: right;">
-                                                    <strong>:وصف الأعمال المنفذة</strong>
+                                                <td style="font-size:16px !important;">
+                                                    <span t-esc="symptom['symptoms_id']"
+                                                          style="font-size:16px !important;"/>
                                                 </td>
                                             </tr>
-                                            <!--  Row 2: Inner table (Date, Time In, Time Out, Technician)  -->
-                                            <tr>
-                                                <td colspan="3" class="p-0">
-                                                    <table class="table table-bordered border-dark m-0"
-                                                           style="margin:5;">
-                                                        <colgroup>
-                                                            <col width="21%"/>
-                                                            <col width="21%"/>
-                                                            <col width="23%"/>
-                                                            <col width="35%"/>
-                                                        </colgroup>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td>
-                                                                    <table style="width:100%; border-collapse: collapse; border-style: hidden;">
-                                                                        <tr>
-                                                                            <td style="border-style: hidden; text-align:left; width:20%;">
-                                                                                <strong>Date:</strong>
-                                                                            </td>
-
-                                                                            <td style="border-style: hidden; text-align:center; width:41%;">
-                                                                                <span t-if="doc['second_visit_date']"
-                                                                                      t-esc="doc['second_visit_date']"/>
-                                                                            </td>
-
-                                                                            <td style="border-style: hidden; text-align:right; width:39%;">
-                                                                                <strong>التاريخ</strong>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                                <td>
-                                                                    <table style="width:100%; border-collapse: collapse; border-style: hidden;">
-                                                                        <tr>
-                                                                            <td style="border-style: hidden; text-align:left; width:33%;">
-                                                                                <strong>Time In:</strong>
-                                                                            </td>
-
-                                                                            <td style="border-style: hidden; text-align:center; width:28%;">
-                                                                                <span t-if="doc['second_visit_time_in']"
-                                                                                      t-esc="doc['second_visit_time_in']"/>
-                                                                            </td>
-
-                                                                            <td style="border-style: hidden; text-align:right; width:39%;">
-                                                                                <strong>وقت الوصول</strong>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-
-                                                                <td>
-                                                                    <table style="width:100%; border-collapse: collapse; border-style: hidden;">
-                                                                        <tr>
-                                                                            <td style="border-style: hidden; text-align:left; width:30%;">
-                                                                                <strong>Time Out:</strong>
-                                                                            </td>
-                                                                            <td style="border-style: hidden; text-align:center; width:28%;">
-                                                                                <span t-if="doc['second_visit_time_out']"
-                                                                                      t-esc="doc['second_visit_time_out']"/>
-                                                                            </td>
-                                                                            <td style="border-style: hidden; text-align:right; width:42%;">
-                                                                                <strong>وقت الانصراف</strong>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-
-                                                                <td>
-                                                                    <table style="width:100%; border-collapse: collapse; border-style: hidden;">
-                                                                        <tr>
-                                                                            <td style="border-style: hidden; text-align:left; width:33%;">
-                                                                                <strong>Technician:</strong>
-                                                                            </td>
-                                                                            <td style="border-style: hidden; text-align:center; width:28%;">
-                                                                                <span t-if="doc['technician_second_visit']"
-                                                                                      t-esc="doc['technician_second_visit']"/>
-                                                                            </td>
-                                                                            <td style="border-style: hidden; text-align:right; width:39%;">
-                                                                                <strong>اسم الفني</strong>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                        </tbody>
+                                        </t>
                                     </table>
-                                </div>
-                            </t>
-                        </t>
+                                </td>
+
+                                <td style="font-size:16px !important;">
+                                    <table class="table table-borderless m-0"
+                                           style="font-size:16px !important;">
+                                        <t t-foreach="defects" t-as="defect">
+                                            <tr>
+                                                <td style="font-size:16px !important;">
+                                                    <span t-esc="defect['defects_id']"
+                                                          style="font-size:16px !important;"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </table>
+                                </td>
+
+                                <td style="font-size:16px !important;">
+                                    <table class="table table-borderless m-0"
+                                           style="font-size:16px !important;">
+                                        <t t-foreach="services" t-as="service">
+                                            <tr>
+                                                <td style="font-size:16px !important;">
+                                                    <span t-esc="service['services_id']"
+                                                          style="font-size:16px !important;"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </table>
+                                </td>
+
+                            </tr>
+                        </tbody>
+                    </table>
+
+
+                    <!-- ================================================== -->
+                    <!-- CLIENT COMMENTS -->
+                    <!-- ================================================== -->
+
+                    <t>
+                        <tr>
+                            <td style="padding-top:10px; font-size:16px !important;">
+                                <strong style="font-size:18px !important;">
+                                    Client Comments:
+                                </strong>
+
+                                <span t-if="doc['client_comments']"
+                                      t-esc="doc['client_comments']"
+                                      style="font-size:16px !important;"/>
+                            </td>
+                        </tr>
+                    </t>
+
+
+                    <!-- ================================================== -->
+                    <!-- FIRST VISIT -->
+                    <!-- ================================================== -->
+
+                    <p style="margin-bottom:0; padding-bottom:0; font-size:18px !important;">
+
+                        <strong style="font-size:18px !important;">
+                            First Visit:
+                        </strong>
+
+                        <strong style="float:right; font-size:18px !important;">
+                            الزيارة الاولى
+                        </strong>
+
+                    </p>
+
+
+                    <div class="col-12"
+                         style="margin-bottom:5px; padding-bottom:5px;">
 
                         <table class="table table-bordered border-dark"
-                               style="width:100%; margin-bottom:5px; padding-bottom:5px;">
-                            <tr>
-                                <th>
-                                    <span>الجهدالكهربائي</span>
-                                    <br/>
-                                    Volt
-                                </th>
-                                <th>
-                                    <span>التيارالكهربائي</span>
-                                    <br/>
-                                    AMP
-                                </th>
-                                <th>
-                                    <span>الضغطالمنخفض</span>
-                                    <br/>
-                                    L/P
-                                </th>
-                                <th>
-                                    <span>الضغطالمرتفع</span>
-                                    <br/>
-                                    H/P
-                                </th>
-                                <th>
-                                    <span>درجةحرارةالهواءالخارج</span>
-                                    <br/>
-                                    S.A.T
-                                </th>
-                                <th>
-                                    <span>درجةحرارةالهواءالراجع</span>
-                                    <br/>
-                                    R.A.T
-                                </th>
-                                <th>
-                                    <span>المساحة</span>
-                                    <br/>
-                                    Area
-                                </th>
-                                <th>
-                                    <span>طولالأنبوب</span>
-                                    <br/>
-                                    P/Length
-                                </th>
-                            </tr>
-                            <tr class="text-center">
-                                <td>
-                                    <span t-if="doc['volt']" t-esc="doc['volt']"/>
-                                </td>
-                                <td>
-                                    <span t-if="doc['ampere']" t-esc="doc['ampere']"/>
-                                </td>
-                                <td>
-                                    <span t-if="doc['lp']" t-esc="doc['lp']"/>
-                                </td>
-                                <td>
-                                    <span t-if="doc['hp']" t-esc="doc['hp']"/>
-                                </td>
-                                <td>
-                                    <span t-if="doc['sat']" t-esc="doc['sat']"/>
-                                </td>
-                                <td>
-                                    <span t-if="doc['rat']" t-esc="doc['rat']"/>
-                                </td>
-                                <td>
-                                    <span t-if="doc['area']" t-esc="doc['area']"/>
-                                </td>
-                                <td>
-                                    <span t-if="doc['p_length']" t-esc="doc['p_length']"/>
-                                </td>
-                            </tr>
-                        </table>
-                        <table class="table table-bordered border-dark" style="margin-bottom:2px; padding-bottom:2px;">
-                            <thead>
-                                <tr style="text-align:center">
-                                    <th width="2%" style="vertical-align:text-top">
-                                        <strong>قم</strong>
-                                        <br/>
-                                        <strong>No</strong>
-                                    </th>
-                                    <th width="8%" style="vertical-align:text-top">
-                                        <strong>الفئة</strong>
-                                        <br/>
-                                        <strong>Stock Group</strong>
-                                    </th>
-                                    <th width="10%" style="vertical-align:text-top">
-                                        <strong>رقم الصنف</strong>
-                                        <br/>
-                                        <strong>Stock Number</strong>
-                                    </th>
-                                    <th width="29%" style="vertical-align:text-top">
-                                        <strong>الوصف</strong>
-                                        <br/>
-                                        <strong>Description</strong>
-                                    </th>
-                                    <th width="5%" style="vertical-align:text-top">
-                                        <strong>الكمية</strong>
-                                        <br/>
-                                        <strong>Qty</strong>
-                                    </th>
-                                    <tr t-if="False">
-                                        <th width="6%" style="vertical-align:text-top">
-                                            <strong>سعر الوحدة</strong>
-                                            <br/>
-                                            <strong>Unit Price</strong>
-                                        </th>
-                                    </tr>
-                                    <tr t-if="False">
-                                        <th width="6%" style="vertical-align:text-top">
-                                            <strong>خصم الوحدة</strong>
-                                            <br/>
-                                            <strong>Unit Discount</strong>
-                                        </th>
-                                    </tr>
-                                    <tr t-if="False">
-                                        <th width="7%" style="vertical-align:text-top">
-                                            <strong>سعر الوحدة الصافي</strong>
-                                            <br/>
-                                            <strong>Net Unit Price</strong>
-                                        </th>
-                                    </tr>
-                                    <tr t-if="False">
-                                        <th width="7%" style="vertical-align:text-top">
-                                            <strong>السعر الإجمالي</strong>
-                                            <br/>
-                                            <strong>Extended Price</strong>
-                                        </th>
-                                    </tr>
-                                    <tr t-if="False">
-                                        <th width="6%" style="vertical-align:text-top">
-                                            <strong>نسبة الضريبة</strong>
-                                            <br/>
-                                            <strong>Vat %</strong>
-                                        </th>
-                                    </tr>
-                                    <tr t-if="False">
-                                        <th width="7%" style="vertical-align:text-top">
-                                            <strong>قيمة الضريبة</strong>
-                                            <br/>
-                                            <strong>Vat Amount</strong>
-                                        </th>
-                                    </tr>
-                                    <tr t-if="False">
-                                        <th width="7%" style="vertical-align:text-top">
-                                            <strong>الإجمالي</strong>
-                                            <br/>
-                                            <strong>Amount</strong>
-                                        </th>
-                                    </tr>
-                                </tr>
-                            </thead>
+                               style="font-size:16px !important;">
+
+                            <colgroup>
+                                <col width="30%"/>
+                                <col width="40%"/>
+                                <col width="30%"/>
+                            </colgroup>
+
                             <tbody>
-                                <t t-set="counter" t-value="1"/>
-                                <t t-foreach="product_lines" t-as="product">
-                                    <tr>
-                                        <td class="text-right" style="text-align:center">
-                                            <span t-esc="counter"/>
-                                        </td>
-                                        <td>
-                                            <span t-esc="product['stock_group']"/>
-                                        </td>
-                                        <td class="text-right">
-                                            <span t-esc="product['stock_number']"/>
-                                        </td>
-                                        <td>
-                                            <span t-esc="product['description']"/>
-                                        </td>
-                                        <td class="text-right" style="text-align:center;">
-                                            <span t-esc="product['qty']"/>
-                                        </td>
 
-                                        <!--                                        <td style="text-align: right;">-->
-                                        <!--                                            <span>0</span>-->
-                                        <!--                                            &lt;!&ndash;                                             <span t-esc="product['unit_price']" &ndash;&gt;-->
-                                        <!--                                            &lt;!&ndash;                                                   t-options="{'widget': 'float', 'precision': 2}"/> &ndash;&gt;-->
-                                        <!--                                        </td>-->
-                                        <tr t-if="False">
-                                            <td>
-                                                <span t-esc="product['unit_discount']"/>
-                                            </td>
-                                        </tr>
-                                        <tr t-if="False">
-                                            <td class="text-right" style="text-align: right;">
-                                                <span t-esc="product['net_unit_price']"
-                                                      t-options="{'widget': 'float', 'precision': 2}"/>
-                                            </td>
-                                        </tr>
-                                        <tr t-if="False">
-                                            <td class="text-right" style="text-align: right;">
-                                                <span t-esc="product['extended_price']"
-                                                      t-options="{'widget': 'float', 'precision': 2}"/>
-                                            </td>
-                                        </tr>
-                                        <tr t-if="False">
-                                            <td class="text-right" style="text-align: right;">
-                                                <span t-esc="product['vat_percent']"/>
-                                                %
-                                            </td>
-                                        </tr>
-                                        <tr t-if="False">
-                                            <td class="text-right" style="text-align: right;">
-                                                <span t-esc="product['vat_amount']"
-                                                      t-options="{'widget': 'float', 'precision': 2}"/>
-                                            </td>
-                                        </tr>
-                                        <!--                                        <td class="text-right" style="text-align: right;">-->
-                                        <!--                                            <span>0</span>-->
-                                        <!--                                            &lt;!&ndash;                                             <span t-esc="product['total']" &ndash;&gt;-->
-                                        <!--                                            &lt;!&ndash;                                                   t-options="{'widget': 'float', 'precision': 2}"/> &ndash;&gt;-->
-                                        <!--                                        </td>-->
-                                    </tr>
-                                    <t t-set="counter" t-value="counter+1"/>
-                                </t>
-                                <t t-if="False" t-foreach="totals" t-as="total">
-                                    <tr>
-                                        <td colspan="4" style="text-align:right">
-                                            <strong>Total</strong>
-                                        </td>
-                                        <td style="text-align:right">
-                                            <strong>
-                                                <span t-esc="total['total_extended_price']"
-                                                      t-options="{'widget': 'float', 'precision': 2}"/>
-                                            </strong>
-                                        </td>
-                                        <td/>
-                                        <tr t-if="False">
-                                            <td style="text-align:right">
-                                                <strong>
-                                                    <span t-esc="total['total_vat_amt']"
-                                                          t-options="{'widget': 'float', 'precision': 2}"/>
-                                                </strong>
-                                            </td>
-                                        </tr>
-                                        <tr t-if="False">
-                                            <td rowspan="2" style="text-align:right">
-                                                <strong>
-                                                    <span t-esc="total['grand_total']"
-                                                          t-options="{'widget': 'float', 'precision': 2}"/>
-                                                </strong>
-                                            </td>
-                                        </tr>
-                                    </tr>
-                                    <tr t-if="False">
-                                        <td colspan="6" style="text-align:right">
-                                            <strong>
-                                                <span t-esc="total['amount_words']"/>
-                                                Only
-                                            </strong>
-                                        </td>
-                                    </tr>
-                                </t>
+                                <tr>
+
+                                    <td style="font-size:16px !important;">
+                                        <strong style="font-size:18px !important;">
+                                            Description of Work Done:
+                                        </strong>
+                                    </td>
+
+                                    <td style="font-size:16px !important;">
+                                        <span t-if="doc['engineer_comments']"
+                                              t-esc="doc['engineer_comments']"
+                                              style="font-size:16px !important;"/>
+                                    </td>
+
+                                    <td style="text-align:right; font-size:16px !important;">
+                                        <strong style="font-size:18px !important;">
+                                            :وصف الأعمال المنفذة
+                                        </strong>
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+
+                                    <td colspan="3" class="p-0">
+
+                                        <table class="table table-bordered border-dark m-0"
+                                               style="font-size:16px !important;">
+
+                                            <colgroup>
+                                                <col width="21%"/>
+                                                <col width="21%"/>
+                                                <col width="23%"/>
+                                                <col width="35%"/>
+                                            </colgroup>
+
+                                            <tbody>
+
+                                                <tr>
+
+                                                    <!-- DATE -->
+
+                                                    <td style="font-size:16px !important;">
+
+                                                        <table style="width:100%; border-collapse:collapse; border-style:hidden; font-size:16px !important;">
+
+                                                            <tr>
+
+                                                                <td style="border-style:hidden; text-align:left; width:20%; font-size:16px !important;">
+                                                                    <strong style="font-size:18px !important;">
+                                                                        Date:
+                                                                    </strong>
+                                                                </td>
+
+                                                                <td style="border-style:hidden; text-align:center; width:41%; font-size:16px !important;">
+                                                                    <span t-if="doc['first_visit_date']"
+                                                                          t-esc="doc['first_visit_date']"
+                                                                          style="font-size:16px !important;"/>
+                                                                </td>
+
+                                                                <td style="border-style:hidden; text-align:right; width:39%; font-size:16px !important;">
+                                                                    <strong style="font-size:18px !important;">
+                                                                        التاريخ
+                                                                    </strong>
+                                                                </td>
+
+                                                            </tr>
+
+                                                        </table>
+
+                                                    </td>
+
+
+                                                    <!-- TIME IN -->
+
+                                                    <td style="font-size:16px !important;">
+
+                                                        <table style="width:100%; border-collapse:collapse; border-style:hidden; font-size:16px !important;">
+
+                                                            <tr>
+
+                                                                <td style="border-style:hidden; text-align:left; width:33%; font-size:16px !important;">
+                                                                    <strong style="font-size:18px !important;">
+                                                                        Time In:
+                                                                    </strong>
+                                                                </td>
+
+                                                                <td style="border-style:hidden; text-align:center; width:28%; font-size:16px !important;">
+                                                                    <span t-if="doc['first_vist_time_in']"
+                                                                          t-esc="doc['first_vist_time_in']"
+                                                                          style="font-size:16px !important;"/>
+                                                                </td>
+
+                                                                <td style="border-style:hidden; text-align:right; width:39%; font-size:16px !important;">
+                                                                    <strong style="font-size:18px !important;">
+                                                                        وقت الوصول
+                                                                    </strong>
+                                                                </td>
+
+                                                            </tr>
+
+                                                        </table>
+
+                                                    </td>
+
+
+                                                    <!-- TIME OUT -->
+
+                                                    <td style="font-size:16px !important;">
+
+                                                        <table style="width:100%; border-collapse:collapse; border-style:hidden; font-size:16px !important;">
+
+                                                            <tr>
+
+                                                                <td style="border-style:hidden; text-align:left; width:30%; font-size:16px !important;">
+                                                                    <strong style="font-size:18px !important;">
+                                                                        Time Out:
+                                                                    </strong>
+                                                                </td>
+
+                                                                <td style="border-style:hidden; text-align:center; width:28%; font-size:16px !important;">
+                                                                    <span t-if="doc['first_vist_time_out']"
+                                                                          t-esc="doc['first_vist_time_out']"
+                                                                          style="font-size:16px !important;"/>
+                                                                </td>
+
+                                                                <td style="border-style:hidden; text-align:right; width:42%; font-size:16px !important;">
+                                                                    <strong style="font-size:18px !important;">
+                                                                        وقت الانصراف
+                                                                    </strong>
+                                                                </td>
+
+                                                            </tr>
+
+                                                        </table>
+
+                                                    </td>
+
+
+                                                    <!-- TECHNICIAN -->
+
+                                                    <td style="font-size:16px !important;">
+
+                                                        <table style="width:100%; border-collapse:collapse; border-style:hidden; font-size:16px !important;">
+
+                                                            <tr>
+
+                                                                <td style="border-style:hidden; text-align:left; width:33%; font-size:16px !important;">
+                                                                    <strong style="font-size:18px !important;">
+                                                                        Technician:
+                                                                    </strong>
+                                                                </td>
+
+                                                                <td style="border-style:hidden; text-align:center; width:28%; font-size:16px !important;">
+                                                                    <span t-if="doc['technician_first_visit']"
+                                                                          t-esc="doc['technician_first_visit']"
+                                                                          style="font-size:16px !important;"/>
+                                                                </td>
+
+                                                                <td style="border-style:hidden; text-align:right; width:39%; font-size:16px !important;">
+                                                                    <strong style="font-size:18px !important;">
+                                                                        اسم الفني
+                                                                    </strong>
+                                                                </td>
+
+                                                            </tr>
+
+                                                        </table>
+
+                                                    </td>
+
+                                                </tr>
+
+                                            </tbody>
+
+                                        </table>
+
+                                    </td>
+
+                                </tr>
+
                             </tbody>
+
                         </table>
-                        <p style="float:right">لقد استلمت الجهاز بعد إصلاحه وأنا راضٍ عن الصيانة .</p>
-                        <p>I have received the repaired device And I am satisfied with the repair.</p>
-                        <!--                        <div class="row mt32 mb32">-->
-                        <!--                        <div class="col-12">-->
-                        <!--                            <p style="text-align: right;">لقد استلمت الجهاز بعد إصلاحه وأنا راضٍ عن الصيانة</p>-->
-                        <!--                            <p style="text-align: left;">I have received the repaired device and I am satisfied with the-->
-                        <!--                                repair.-->
-                        <!--                            </p>-->
-                        <!--                        </div>-->
-                        <!--                        <div style="display: table; margin: 0 auto;">-->
-                        <!--                            <div style="display: table-row;">-->
 
-                        <!--                                <div style="display: table-cell; padding: 5px; text-align:left;">-->
-                        <!--                                    <p>Customer Signature</p>-->
-                        <!--                                </div>-->
-
-                        <!--                                <div style="display: table-cell; padding: 5px; text-align:center;">-->
-                        <!--                                    <t t-if="doc['signature']">-->
-                        <!--                                        <img t-att-src="'data:image/png;base64,' + doc['signature']"-->
-                        <!--                                             style="max-height: 100px; min-height:100px; min-width: 200px; max-width: 200px; display:block; margin:0 auto;"/>-->
-                        <!--                                    </t>-->
-                        <!--                                </div>-->
-
-                        <!--                                <div style="display: table-cell; padding: 5px; text-align:right;">-->
-                        <!--                                    <span>:</span>-->
-                        <!--                                    <span>توقيع العميل</span>-->
-                        <!--                                </div>-->
-
-                        <!--                            </div>-->
-                        <!--                        </div>-->
-
-                        <!--                    <div style="width:100%; text-align:right;">-->
-
-                        <!--                        <div style="display: table; margin-left:auto; margin-right:0;">-->
-                        <!--                            <div style="display: table-row;">-->
-
-                        <!--                                <div style="display: table-cell; padding: 5px; text-align:left;">-->
-                        <!--                                    <p>Customer Signature</p>-->
-                        <!--                                </div>-->
-
-                        <!--                                <div style="display: table-cell; padding: 5px; text-align:center;">-->
-                        <!--                                    <t t-if="doc['signature']">-->
-                        <!--                                        <img t-att-src="'data:image/png;base64,' + doc['signature']"-->
-                        <!--                                             style="max-height: 100px; min-height:100px; min-width:200px; max-width:200px; display:block; margin:0 auto;"/>-->
-                        <!--                                    </t>-->
-                        <!--                                </div>-->
-
-                        <!--                                <div style="display: table-cell; padding: 5px; text-align:right;">-->
-                        <!--                                    <span>:</span>-->
-                        <!--                                    <span>توقيع العميل</span>-->
-                        <!--                                </div>-->
-
-                        <!--                            </div>-->
-                        <!--                        </div>-->
-
-                        <!--                        </div>-->
+                    </div>
 
 
-                        <!-- <div style="width:100%; text-align:right;">
+                    <!-- ================================================== -->
+                    <!-- FINAL VISIT -->
+                    <!-- ================================================== -->
 
-                            <div style="display:inline-block; text-align:center; margin-right:0;">
+                    <t t-foreach="service_jobs" t-as="doc">
 
-                                Signature Image
-                               
-                                <img t-att-src="image_data_uri(doc['signature'])" 
-                                   style="max-height:120px; min-height:120px; width:200px; object-fit:contain; display:block; margin-left:auto;"/>
-                               	
-                               	  <t t-if="doc['signature']">
-							            <img t-att-src="'data:image/png;base64,' + doc['signature']"
-							                 style="max-height:120px; min-height:120px; width:200px; object-fit:contain; display:block; margin-left:auto;"/>
-							        </t>
-                               	
-                                    <img t-att-src="'data:image/png;base64,%s' % doc.get('signature')"
-                                         style="max-height:120px; min-height:120px; width:200px; object-fit:contain; display:block; margin-left:auto;"/>
-                                
+                        <t t-if="doc['second_visit_technician_bool'] == True">
+
+                            <p style="margin-bottom:5px; padding-bottom:5px; font-size:18px !important;">
+
+                                <strong style="font-size:18px !important;">
+                                    Final Visit:
+                                </strong>
+
+                                <strong style="float:right; font-size:18px !important;">
+                                    الزيارة النهائية
+                                </strong>
+
+                            </p>
+
+
+                            <div class="col-12"
+                                 style="margin-bottom:2px; padding-bottom:2px;">
+
+                                <table class="table table-bordered border-dark"
+                                       style="margin-bottom:5px; padding-bottom:5px; font-size:16px !important;">
+
+                                    <colgroup>
+                                        <col width="30%"/>
+                                        <col width="40%"/>
+                                        <col width="30%"/>
+                                    </colgroup>
+
+                                    <tbody>
+
+                                        <tr>
+
+                                            <td style="font-size:16px !important;">
+                                                <strong style="font-size:18px !important;">
+                                                    Description of Work Done:
+                                                </strong>
+                                            </td>
+
+                                            <td style="font-size:16px !important;">
+                                                <span t-if="doc['engineer_comments_second']"
+                                                      t-esc="doc['engineer_comments_second']"
+                                                      style="font-size:16px !important;"/>
+                                            </td>
+
+                                            <td style="text-align:right; font-size:16px !important;">
+                                                <strong style="font-size:18px !important;">
+                                                    :وصف الأعمال المنفذة
+                                                </strong>
+                                            </td>
+
+                                        </tr>
+
+
+                                        <tr>
+
+                                            <td colspan="3" class="p-0">
+
+                                                <table class="table table-bordered border-dark m-0"
+                                                       style="margin:5px; font-size:16px !important;">
+
+                                                    <colgroup>
+                                                        <col width="21%"/>
+                                                        <col width="21%"/>
+                                                        <col width="23%"/>
+                                                        <col width="35%"/>
+                                                    </colgroup>
+
+                                                    <tbody>
+
+                                                        <tr>
+
+                                                            <!-- DATE -->
+
+                                                            <td style="font-size:16px !important;">
+
+                                                                <table style="width:100%; border-collapse:collapse; border-style:hidden; font-size:16px !important;">
+
+                                                                    <tr>
+
+                                                                        <td style="border-style:hidden; text-align:left; width:20%; font-size:16px !important;">
+                                                                            <strong style="font-size:18px !important;">
+                                                                                Date:
+                                                                            </strong>
+                                                                        </td>
+
+                                                                        <td style="border-style:hidden; text-align:center; width:41%; font-size:16px !important;">
+                                                                            <span t-if="doc['second_visit_date']"
+                                                                                  t-esc="doc['second_visit_date']"
+                                                                                  style="font-size:16px !important;"/>
+                                                                        </td>
+
+                                                                        <td style="border-style:hidden; text-align:right; width:39%; font-size:16px !important;">
+                                                                            <strong style="font-size:18px !important;">
+                                                                                التاريخ
+                                                                            </strong>
+                                                                        </td>
+
+                                                                    </tr>
+
+                                                                </table>
+
+                                                            </td>
+
+
+                                                            <!-- TIME IN -->
+
+                                                            <td style="font-size:16px !important;">
+
+                                                                <table style="width:100%; border-collapse:collapse; border-style:hidden; font-size:16px !important;">
+
+                                                                    <tr>
+
+                                                                        <td style="border-style:hidden; text-align:left; width:33%; font-size:16px !important;">
+                                                                            <strong style="font-size:18px !important;">
+                                                                                Time In:
+                                                                            </strong>
+                                                                        </td>
+
+                                                                        <td style="border-style:hidden; text-align:center; width:28%; font-size:16px !important;">
+                                                                            <span t-if="doc['second_visit_time_in']"
+                                                                                  t-esc="doc['second_visit_time_in']"
+                                                                                  style="font-size:16px !important;"/>
+                                                                        </td>
+
+                                                                        <td style="border-style:hidden; text-align:right; width:39%; font-size:16px !important;">
+                                                                            <strong style="font-size:18px !important;">
+                                                                                وقت الوصول
+                                                                            </strong>
+                                                                        </td>
+
+                                                                    </tr>
+
+                                                                </table>
+
+                                                            </td>
+
+
+                                                            <!-- TIME OUT -->
+
+                                                            <td style="font-size:16px !important;">
+
+                                                                <table style="width:100%; border-collapse:collapse; border-style:hidden; font-size:16px !important;">
+
+                                                                    <tr>
+
+                                                                        <td style="border-style:hidden; text-align:left; width:30%; font-size:16px !important;">
+                                                                            <strong style="font-size:18px !important;">
+                                                                                Time Out:
+                                                                            </strong>
+                                                                        </td>
+
+                                                                        <td style="border-style:hidden; text-align:center; width:28%; font-size:16px !important;">
+                                                                            <span t-if="doc['second_visit_time_out']"
+                                                                                  t-esc="doc['second_visit_time_out']"
+                                                                                  style="font-size:16px !important;"/>
+                                                                        </td>
+
+                                                                        <td style="border-style:hidden; text-align:right; width:42%; font-size:16px !important;">
+                                                                            <strong style="font-size:18px !important;">
+                                                                                وقت الانصراف
+                                                                            </strong>
+                                                                        </td>
+
+                                                                    </tr>
+
+                                                                </table>
+
+                                                            </td>
+
+
+                                                            <!-- TECHNICIAN -->
+
+                                                            <td style="font-size:16px !important;">
+
+                                                                <table style="width:100%; border-collapse:collapse; border-style:hidden; font-size:16px !important;">
+
+                                                                    <tr>
+
+                                                                        <td style="border-style:hidden; text-align:left; width:33%; font-size:16px !important;">
+                                                                            <strong style="font-size:18px !important;">
+                                                                                Technician:
+                                                                            </strong>
+                                                                        </td>
+
+                                                                        <td style="border-style:hidden; text-align:center; width:28%; font-size:16px !important;">
+                                                                            <span t-if="doc['technician_second_visit']"
+                                                                                  t-esc="doc['technician_second_visit']"
+                                                                                  style="font-size:16px !important;"/>
+                                                                        </td>
+
+                                                                        <td style="border-style:hidden; text-align:right; width:39%; font-size:16px !important;">
+                                                                            <strong style="font-size:18px !important;">
+                                                                                اسم الفني
+                                                                            </strong>
+                                                                        </td>
+
+                                                                    </tr>
+
+                                                                </table>
+
+                                                            </td>
+
+                                                        </tr>
+
+                                                    </tbody>
+
+                                                </table>
+
+                                            </td>
+
+                                        </tr>
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </t>
+
+                    </t>
+
+
+                    <!-- ================================================== -->
+                    <!-- TECHNICAL MEASUREMENTS -->
+                    <!-- ================================================== -->
+
+                    <table class="table table-bordered border-dark"
+                           style="width:100%; margin-bottom:5px; padding-bottom:5px; font-size:16px !important;">
+
+                        <tr>
+
+                            <th style="font-size:17px !important; font-weight:bold !important;">
+                                <span style="font-size:17px !important;">الجهد الكهربائي</span>
+                                <br/>
+                                <span style="font-size:17px !important;">Volt</span>
+                            </th>
+
+                            <th style="font-size:17px !important; font-weight:bold !important;">
+                                <span style="font-size:17px !important;">التيار الكهربائي</span>
+                                <br/>
+                                <span style="font-size:17px !important;">AMP</span>
+                            </th>
+
+                            <th style="font-size:17px !important; font-weight:bold !important;">
+                                <span style="font-size:17px !important;">الضغط المنخفض</span>
+                                <br/>
+                                <span style="font-size:17px !important;">L/P</span>
+                            </th>
+
+                            <th style="font-size:17px !important; font-weight:bold !important;">
+                                <span style="font-size:17px !important;">الضغط المرتفع</span>
+                                <br/>
+                                <span style="font-size:17px !important;">H/P</span>
+                            </th>
+
+                            <th style="font-size:17px !important; font-weight:bold !important;">
+                                <span style="font-size:17px !important;">
+                                    درجة حرارة الهواء الخارج
+                                </span>
+                                <br/>
+                                <span style="font-size:17px !important;">S.A.T</span>
+                            </th>
+
+                            <th style="font-size:17px !important; font-weight:bold !important;">
+                                <span style="font-size:17px !important;">
+                                    درجة حرارة الهواء الراجع
+                                </span>
+                                <br/>
+                                <span style="font-size:17px !important;">R.A.T</span>
+                            </th>
+
+                            <th style="font-size:17px !important; font-weight:bold !important;">
+                                <span style="font-size:17px !important;">المساحة</span>
+                                <br/>
+                                <span style="font-size:17px !important;">Area</span>
+                            </th>
+
+                            <th style="font-size:17px !important; font-weight:bold !important;">
+                                <span style="font-size:17px !important;">طول الأنبوب</span>
+                                <br/>
+                                <span style="font-size:17px !important;">P/Length</span>
+                            </th>
+
+                        </tr>
+
+                        <tr class="text-center">
+
+                            <td style="font-size:16px !important;">
+                                <span t-if="doc['volt']"
+                                      t-esc="doc['volt']"
+                                      style="font-size:16px !important;"/>
+                            </td>
+
+                            <td style="font-size:16px !important;">
+                                <span t-if="doc['ampere']"
+                                      t-esc="doc['ampere']"
+                                      style="font-size:16px !important;"/>
+                            </td>
+
+                            <td style="font-size:16px !important;">
+                                <span t-if="doc['lp']"
+                                      t-esc="doc['lp']"
+                                      style="font-size:16px !important;"/>
+                            </td>
+
+                            <td style="font-size:16px !important;">
+                                <span t-if="doc['hp']"
+                                      t-esc="doc['hp']"
+                                      style="font-size:16px !important;"/>
+                            </td>
+
+                            <td style="font-size:16px !important;">
+                                <span t-if="doc['sat']"
+                                      t-esc="doc['sat']"
+                                      style="font-size:16px !important;"/>
+                            </td>
+
+                            <td style="font-size:16px !important;">
+                                <span t-if="doc['rat']"
+                                      t-esc="doc['rat']"
+                                      style="font-size:16px !important;"/>
+                            </td>
+
+                            <td style="font-size:16px !important;">
+                                <span t-if="doc['area']"
+                                      t-esc="doc['area']"
+                                      style="font-size:16px !important;"/>
+                            </td>
+
+                            <td style="font-size:16px !important;">
+                                <span t-if="doc['p_length']"
+                                      t-esc="doc['p_length']"
+                                      style="font-size:16px !important;"/>
+                            </td>
+
+                        </tr>
+
+                    </table>
+
+
+                    <!-- ================================================== -->
+                    <!-- PRODUCT TABLE -->
+                    <!-- ================================================== -->
+
+                    <table class="table table-bordered border-dark"
+                           style="margin-bottom:2px; padding-bottom:2px; font-size:16px !important;">
+
+                        <thead>
+
+                            <tr style="text-align:center;">
+
+                                <th width="2%"
+                                    style="vertical-align:text-top; font-size:17px !important; font-weight:bold !important;">
+                                    <strong style="font-size:17px !important;">
+                                        تسلسل
+                                    </strong>
+                                    <br/>
+                                    <strong style="font-size:17px !important;">
+                                        S/N
+                                    </strong>
+                                </th>
+
+                                <th width="8%"
+                                    style="vertical-align:text-top; font-size:17px !important; font-weight:bold !important;">
+                                    <strong style="font-size:17px !important;">
+                                        فئة الصنف
+                                    </strong>
+                                    <br/>
+                                    <strong style="font-size:17px !important;">
+                                        Stock Group
+                                    </strong>
+                                </th>
+
+                                <th width="29%"
+                                    style="vertical-align:text-top; font-size:17px !important; font-weight:bold !important;">
+                                    <strong style="font-size:17px !important;">
+                                        الوصف
+                                    </strong>
+                                    <br/>
+                                    <strong style="font-size:17px !important;">
+                                        Description
+                                    </strong>
+                                </th>
+
+                                <th width="5%"
+                                    style="vertical-align:text-top; font-size:17px !important; font-weight:bold !important;">
+                                    <strong style="font-size:17px !important;">
+                                        الكمية
+                                    </strong>
+                                    <br/>
+                                    <strong style="font-size:17px !important;">
+                                        Qty
+                                    </strong>
+                                </th>
+
+                                <!-- Existing hidden columns preserved -->
+
+                                <tr t-if="False">
+                                    <th width="6%"
+                                        style="vertical-align:text-top; font-size:17px !important;">
+                                        <strong style="font-size:17px !important;">
+                                            سعر الوحدة
+                                        </strong>
+                                        <br/>
+                                        <strong style="font-size:17px !important;">
+                                            Unit Price
+                                        </strong>
+                                    </th>
+                                </tr>
+
+                                <tr t-if="False">
+                                    <th width="6%"
+                                        style="vertical-align:text-top; font-size:17px !important;">
+                                        <strong style="font-size:17px !important;">
+                                            خصم الوحدة
+                                        </strong>
+                                        <br/>
+                                        <strong style="font-size:17px !important;">
+                                            Unit Discount
+                                        </strong>
+                                    </th>
+                                </tr>
+
+                                <tr t-if="False">
+                                    <th width="7%"
+                                        style="vertical-align:text-top; font-size:17px !important;">
+                                        <strong style="font-size:17px !important;">
+                                            سعر الوحدة الصافي
+                                        </strong>
+                                        <br/>
+                                        <strong style="font-size:17px !important;">
+                                            Net Unit Price
+                                        </strong>
+                                    </th>
+                                </tr>
+
+                                <tr t-if="False">
+                                    <th width="7%"
+                                        style="vertical-align:text-top; font-size:17px !important;">
+                                        <strong style="font-size:17px !important;">
+                                            السعر الإجمالي
+                                        </strong>
+                                        <br/>
+                                        <strong style="font-size:17px !important;">
+                                            Extended Price
+                                        </strong>
+                                    </th>
+                                </tr>
+
+                                <tr t-if="False">
+                                    <th width="6%"
+                                        style="vertical-align:text-top; font-size:17px !important;">
+                                        <strong style="font-size:17px !important;">
+                                            نسبة الضريبة
+                                        </strong>
+                                        <br/>
+                                        <strong style="font-size:17px !important;">
+                                            Vat %
+                                        </strong>
+                                    </th>
+                                </tr>
+
+                                <tr t-if="False">
+                                    <th width="7%"
+                                        style="vertical-align:text-top; font-size:17px !important;">
+                                        <strong style="font-size:17px !important;">
+                                            قيمة الضريبة
+                                        </strong>
+                                        <br/>
+                                        <strong style="font-size:17px !important;">
+                                            Vat Amount
+                                        </strong>
+                                    </th>
+                                </tr>
+
+                                <tr t-if="False">
+                                    <th width="7%"
+                                        style="vertical-align:text-top; font-size:17px !important;">
+                                        <strong style="font-size:17px !important;">
+                                            الإجمالي
+                                        </strong>
+                                        <br/>
+                                        <strong style="font-size:17px !important;">
+                                            Amount
+                                        </strong>
+                                    </th>
+                                </tr>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            <t t-set="counter" t-value="1"/>
+
+                            <t t-foreach="product_lines" t-as="product">
+
+                                <tr>
+
+                                    <td class="text-right"
+                                        style="text-align:center; font-size:16px !important;">
+                                        <span t-esc="counter"
+                                              style="font-size:16px !important;"/>
+                                    </td>
+
+                                    <td style="font-size:16px !important;">
+                                        <span t-esc="product['stock_group']"
+                                              style="font-size:16px !important;"/>
+                                    </td>
+
+                                    <td style="font-size:16px !important;">
+                                        <span t-esc="product['description']"
+                                              style="font-size:16px !important;"/>
+                                    </td>
+
+                                    <td class="text-right"
+                                        style="text-align:center; font-size:16px !important;">
+                                        <span t-esc="product['qty']"
+                                              style="font-size:16px !important;"/>
+                                    </td>
+
+                                    <tr t-if="False">
+                                        <td style="font-size:16px !important;">
+                                            <span t-esc="product['unit_discount']"
+                                                  style="font-size:16px !important;"/>
+                                        </td>
+                                    </tr>
+
+                                    <tr t-if="False">
+                                        <td class="text-right"
+                                            style="text-align:right; font-size:16px !important;">
+                                            <span t-esc="product['net_unit_price']"
+                                                  t-options="{'widget': 'float', 'precision': 2}"
+                                                  style="font-size:16px !important;"/>
+                                        </td>
+                                    </tr>
+
+                                    <tr t-if="False">
+                                        <td class="text-right"
+                                            style="text-align:right; font-size:16px !important;">
+                                            <span t-esc="product['extended_price']"
+                                                  t-options="{'widget': 'float', 'precision': 2}"
+                                                  style="font-size:16px !important;"/>
+                                        </td>
+                                    </tr>
+
+                                    <tr t-if="False">
+                                        <td class="text-right"
+                                            style="text-align:right; font-size:16px !important;">
+                                            <span t-esc="product['vat_percent']"
+                                                  style="font-size:16px !important;"/>
+                                            %
+                                        </td>
+                                    </tr>
+
+                                    <tr t-if="False">
+                                        <td class="text-right"
+                                            style="text-align:right; font-size:16px !important;">
+                                            <span t-esc="product['vat_amount']"
+                                                  t-options="{'widget': 'float', 'precision': 2}"
+                                                  style="font-size:16px !important;"/>
+                                        </td>
+                                    </tr>
+
+                                </tr>
+
+                                <t t-set="counter" t-value="counter+1"/>
+
+                            </t>
+
+
+                            <t t-if="False" t-foreach="totals" t-as="total">
+
+                                <tr>
+
+                                    <td colspan="4"
+                                        style="text-align:right; font-size:16px !important;">
+
+                                        <strong style="font-size:18px !important;">
+                                            Total
+                                        </strong>
+
+                                    </td>
+
+                                    <td style="text-align:right; font-size:16px !important;">
+
+                                        <strong style="font-size:18px !important;">
+
+                                            <span t-esc="total['total_extended_price']"
+                                                  t-options="{'widget': 'float', 'precision': 2}"
+                                                  style="font-size:18px !important;"/>
+
+                                        </strong>
+
+                                    </td>
+
+                                </tr>
+
+                                <tr t-if="False">
+
+                                    <td colspan="6"
+                                        style="text-align:right; font-size:16px !important;">
+
+                                        <strong style="font-size:18px !important;">
+
+                                            <span t-esc="total['amount_words']"
+                                                  style="font-size:18px !important;"/>
+
+                                            Only
+
+                                        </strong>
+
+                                    </td>
+
+                                </tr>
+
+                            </t>
+
+                        </tbody>
+
+                    </table>
+
+
+                    <!-- ================================================== -->
+                    <!-- CUSTOMER ACCEPTANCE TEXT -->
+                    <!-- ================================================== -->
+
+                    <table style="width:100%; margin-top:10px;
+                                  border-collapse:collapse;
+                                  border:0px transparent;
+                                  font-size:16px !important;">
+
+                        <tr>
+
+                            <td style="direction:ltr;
+                                       text-align:left;
+                                       white-space:nowrap;
+                                       padding:0;
+                                       font-size:16px !important;">
+
+                                I have received the repaired device and I am satisfied with the repair.
+
+                            </td>
+
+                            <td style="direction:rtl;
+                                       text-align:right;
+                                       white-space:nowrap;
+                                       padding:0;
+                                       font-size:16px !important;">
+
+                                لقد استلمت الجهاز بعد إصلاحه وأنا راضٍ عن الصيانة.
+
+                            </td>
+
+                        </tr>
+
+                    </table>
+
+
+                    <!-- ================================================== -->
+                    <!-- SIGNATURE -->
+                    <!-- ================================================== -->
+
+                    <t t-if="doc['signature']">
+
+                        <div style="width:100%; text-align:right;">
+
+                            <div style="display:inline-block;
+                                        text-align:center;
+                                        margin-right:0;">
+
+                                <t t-if="doc['signature']">
+
                                     <img t-att-src="'data:image/png;base64,' + doc['signature']"
-                                         style="max-height:120px; min-height:120px; width:200px; object-fit:contain; display:block; margin-left:auto;"/>
-									<img t-att-src="image_data_uri(data.get('signature_sign'))"
-								     style="max-height:120px; min-height:120px; width:200px; object-fit:contain; display:block; margin-left:auto;"/>
-								                                         
-					
+                                         style="max-height:120px;
+                                                min-height:120px;
+                                                width:200px;
+                                                object-fit:contain;
+                                                display:block;
+                                                margin-left:auto;"/>
 
-                                English Caption
-                                <p style="margin:3px 0 0 0; font-size:13px; text-align:center;">
+                                    <span t-esc="doc['closed_date_time']"
+                                          style="font-size:16px !important;"/>
+
+                                </t>
+
+
+                                <p style="margin:3px 0 0 0;
+                                          font-size:16px !important;
+                                          text-align:center;">
+
                                     Customer Signature
+
                                 </p>
 
-                                Arabic Caption
-                                <p style="margin:0; font-size:13px; text-align:center; direction:rtl;">
+
+                                <p style="margin:0;
+                                          font-size:16px !important;
+                                          text-align:center;
+                                          direction:rtl;">
+
                                     توقيع العميل
+
                                 </p>
 
                             </div>
 
                         </div>
-                         -->
-                        
-                        <div style="width:100%; text-align:right;">
 
-						    <div style="display:inline-block; text-align:center; margin-right:0;">
-						
-						        <!-- Signature Image -->
-						        <t t-if="doc['signature']">
-						            <img t-att-src="'data:image/png;base64,' + doc['signature']"
-						                 style="max-height:120px; min-height:120px; width:200px; object-fit:contain; display:block; margin-left:auto;"/>
-						            <span t-esc ="doc['closed_date_time']"/>   
-						        </t>
-						
-						        <!-- English Caption -->
-						        <p style="margin:3px 0 0 0; font-size:13px; text-align:center;">
-						            Customer Signature
-						        </p>
-						
-						        <!-- Arabic Caption -->
-						        <p style="margin:0; font-size:13px; text-align:center; direction:rtl;">
-						            توقيع العميل
-						        </p>
-						
-						    </div>
-						
-						</div>
+                    </t>
 
 
-                        <!--                            <div class="col-4"></div>-->
-                        <!--                            <div class="col-4" align="center">-->
-                        <!--                                <t t-if="doc['signature']">-->
-                        <!--                                    <img t-att-src="'data:image/png;base64,' + doc['signature']"-->
-                        <!--                                         style="max-height: 100px; min-height:100px; min-width: 200px; max-width: 200px;"/>-->
-                        <!--                                </t>-->
-                        <!--                                <p style="font-size:18px;">توقيع العميل</p>-->
-                        <!--                                <p style="font-size:18px;">Customer Signature</p>-->
-                        <!--                            </div>-->
-                        <!--                        </div>-->
-                    </div>
-
-                    <!--                    <div class="footer" style="border:#ffffff !important;background-color:#ffffff !important;">-->
-                    <!--                        <img t-att-src="'/web/static/src/img/your_image.png'"-->
-                    <!--                             style="width:100%; height:100px; display:block; border:0 !important; outline:0 !important;"/>-->
-
-                    <!--                        &lt;!&ndash;                        <img src="machine_repair_management/static/src/img/image_job5.png"&ndash;&gt;-->
-                    <!--                        &lt;!&ndash;                             class="footer_jc_imageborder_blank"/>&ndash;&gt;-->
-                    <!--                    </div>-->
-
-                    <!--                    <div class="footer" style="border:none !important;background-color:#ffffff !important;">-->
-                    <!--                        <img t-att-src="machine_repair_management/static/src/img/image_job5.png"-->
-                    <!--                             style="width:100%; height:100px; display:block; border:0 !important; outline:0 !important;"/>-->
-                    <!--                    </div>-->
+                    <!-- ================================================== -->
+                    <!-- FOOTER -->
+                    <!-- ================================================== -->
 
                     <div class="footer">
+
                         <img src="machine_repair_management/static/src/img/JobCard_Footer_img.png"
                              style="width:100%;"/>
+
                     </div>
 
-                    <!--                    <div class="footer"-->
-                    <!--                         style="padding:2px;margin:2px;border: none !important; border-width: 0 !important; border-style: none !important; background: none !important;">-->
-                    <!--                        <img src="machine_repair_management/static/src/img/JobCard_Footer1.png"-->
-                    <!--                             style="border: none !important; background: transparent !important; box-shadow: none !important;border-width: 0 !important;"/>-->
-                    <!--                    </div>-->
+                </div>
 
-
-                </t>
             </t>
         </t>
-    </template>
+    </t>
+</template>
 </odoo>
+

@@ -10,7 +10,7 @@
 		
 			<xpath expr = "//group[@id='header_right_group']" position = "inside">
 			            <field name="subscription_contract_id" invisible="1"/>
-            	  <field name  = "customer_code" invisible = "1"/>
+            	<field name  = "customer_code" invisible = "1"/>
                  <field name = "warehouse_id" invisible = "1"/>
                  
                  <field name = "work_center_id" invisible = "1"/>
@@ -40,7 +40,7 @@
             	<attribute name = "invisible">1</attribute>
             </xpath>
             
-            <xpath expr = "//group[@id='header_left_group']/label[@for='partner_id'][1]" position="before">
+            <xpath expr="//group[@id='header_left_group']/label[@for='partner_id'][1]" position="before">
 	            <label for="partner_name" string="Company Name" invisible = "not subscription_contract_id"/>
 	            <field name="partner_name" nolabel="1" readonly = "1"  invisible = "not subscription_contract_id"/>
 	            
@@ -58,9 +58,10 @@
 	                           options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
 	                </div>   
 	            
+	            
 	        </xpath>
 	        
-	        <xpath expr = "//group[@id = 'header_left_group']/field[@name = 'partner_shipping_id']" position = "attributes" >
+	         <xpath expr = "//group[@id = 'header_left_group']/field[@name = 'partner_shipping_id']" position = "attributes" >
             	<attribute name = "invisible">subscription_contract_id != False</attribute>
             </xpath>
             

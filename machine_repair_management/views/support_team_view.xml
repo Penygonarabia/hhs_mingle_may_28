@@ -23,7 +23,7 @@
                             <field name="name"/>
                         </group>
                         <group col="2">
-                            <field name="leader_id"/>
+                            <field name="leader_id" domain ="[('is_salesman','=', False)]"/>
                         </group>
                         <group col="2">
                             <field name="service_type_id" required="1"/>
@@ -45,7 +45,7 @@
                             <page string ="Team Members">
                             	<field name ="support_team_line_ids">
                             		<tree editable ="bottom">
-                            			<field name ="support_team_user_id" />
+                            			<field name ="support_team_user_id"  domain ="[('is_salesman','=', False)]"/>
                             			<field name = "is_default_team_member" />
                             		</tree>
                             	</field>

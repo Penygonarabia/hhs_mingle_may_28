@@ -15,7 +15,10 @@ class CrmLead(models.Model):
         'Project Name', index='trigram',
         compute='_compute_name', readonly=False, store=True)
     # name = fields.Char(string="Project Name", required=True)
-    email_from = fields.Char(required=True)
+    # email_from = fields.Char(string = "Email")
+    email_from = fields.Char(
+        'Email', tracking=40, index='trigram',
+        compute='_compute_email_from', inverse='_inverse_email_from', readonly=False, store=True, required = False)
     phone = fields.Char(required=True)
     mobile = fields.Char()
     contact_name = fields.Char()

@@ -70,7 +70,6 @@ class AccountMove(models.Model):
     zip = fields.Char(string = "Zip")
     
     customer_name = fields.Char('Customer')
-    
 
     def _generate_qr_code(self):
         for record in self:

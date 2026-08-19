@@ -1,0 +1,29 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+<odoo>
+	<record id = "sales_team_inherit_salesman_form_view_is_saleman" model = "ir.ui.view">
+		
+		<field name = "name">crm.team.salesman.inherit.form.view</field>
+		<field name = "model">crm.team</field>
+		<field name = "inherit_id" ref = "sales_team.crm_team_view_form"/>
+		<field name = "arch" type = "xml">
+		
+			<xpath expr = "//field[@name='user_id']" position = "attributes"> 
+				<attribute name = "domain">[('is_salesman','in',(True,False))]</attribute>
+			</xpath>
+			
+			
+			 <xpath expr="//field[@name='member_ids']" position="attributes">
+	            <attribute name="domain">[('is_salesman', 'in',(True,False))]</attribute>
+	        </xpath>
+	
+	        <!-- Members: crm.team.member -->
+	        <xpath expr="//field[@name='crm_team_member_ids']" position="attributes">
+	            <attribute name="domain">[('user_id.is_salesman', 'in',(True,False))]</attribute>
+	        </xpath>
+			
+		</field>
+	
+	</record>
+
+
+</odoo> 

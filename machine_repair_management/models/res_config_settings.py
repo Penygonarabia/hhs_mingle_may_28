@@ -190,6 +190,16 @@ class ResConfigSettings(models.TransientModel):
     notify_manager_thirty_day = fields.Integer(string = "Notify Manager 30 Days before Contract Expiration", config_parameter = 'machine_repair_management.notify_manager_thirty_day')
     
 
+    '''Code Added on July 09 2026 by Vijaya Bhaskar client asked model is shown based on the country selected'''
+
+    manufacturing_country_code = fields.Boolean(string = "Manufacturing Country Code", default = False, help = "Manufacturing Country Code Y/N",
+                                                config_parameter = "machine_repair_management.manufacturing_country_code")
+    
+    
+    filtering_data_by_country = fields.Char(string = "Filtering Data", default = "KSA", config_parameter = "machine_repair_management.filtering_data_by_country" , help = "Filtering Data Based on the country should be visible in the Model")
+    
+    
+
     @api.model
     def get_values(self):
         res = super(ResConfigSettings, self).get_values()
@@ -287,8 +297,14 @@ class ResConfigSettings(models.TransientModel):
             asset_tag_sequence_creation_bool=params.get_param('machine_repair_management.asset_tag_sequence_creation_bool'),
             invoice_txt_contract = params.get_param('machine_repair_management.invoice_txt_contract'),
             notify_salesman_sixty_day = params.get_param('machine_repair_management.notify_salesman_sixty_day'),
-            notify_manager_thirty_day = params.get_param('machine_repair_management.notify_manager_thirty_day')
-
+            notify_manager_thirty_day = params.get_param('machine_repair_management.notify_manager_thirty_day'),
+            manufacturing_country_code = params.get_param('machine_repair_management.manufacturing_country_code'),
+            
+            filtering_data_by_country = params.get_param('machine_repair_management.filtering_data_by_country', default='KSA'),
+            
+            
+            
+            
 
         )
         return res
@@ -422,5 +438,10 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('machine_repair_management.notify_salesman_sixty_day',self.notify_salesman_sixty_day)
         
         self.env['ir.config_parameter'].sudo().set_param('machine_repair_management.notify_manager_thirty_day',self.notify_manager_thirty_day)
+        
+        self.env['ir.config_parameter'].sudo().set_param('machine_repair_management.manufacturing_country_code', self.manufacturing_country_code)
+        
+        self.env['ir.config_parameter'].sudo().set_param('machine_repair_management.filtering_data_by_country',self.filtering_data_by_country)
+        
         
         return res

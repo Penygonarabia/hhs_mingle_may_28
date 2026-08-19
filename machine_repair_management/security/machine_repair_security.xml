@@ -109,6 +109,19 @@
             <field name="comment">Allow to Authorize to Expired Purchase Unit in Job Card.</field>
         </record>
         
+         <record id = "group_parts_supervisor_both" model = "res.groups">
+        	<field name = "name">Parts &amp; Supervisor</field>
+        	<field name="implied_ids" eval="[
+        (4, ref('machine_repair_management.group_machine_repair_user')),
+        (4, ref('machine_repair_management.group_parts_user')),
+        (4, ref('machine_repair_management.group_technical_allocation_user'))
+    ]"/>
+        	<field name = "category_id" ref = "machine_repair_management.category_machine_repair"/>
+        	<field name = "comment">Allow Both Parts and Supervisor</field>
+        
+        </record>
+        
+        
        <!--  <record id ="group_service_request_admin_user" model = "res.groups">
         	<field name ="name">Admin User</field>
         	<field name = "category_id" ref = "machine_repair_management.category_machine_repair" />

@@ -60,7 +60,8 @@
                             help="Cancel; your Subscription Contracts"
                             invisible="state not in ('Ongoing', 'Expire Soon')"
                     />
-                      <button name = "action_to_termination" class="oe_highlight"
+                    
+                    <button name = "action_to_termination" class="oe_highlight"
                             string = "Termination" type="object"
                             help = "Termination of Subscription Contracts"
                             invisible="state != 'Ongoing'"            
@@ -142,7 +143,7 @@
                             <field name="currency_id"
                                    readonly="lock or state not in 'New' " invisible="1"/>
                             <field name="lock" invisible="1"/>
-                            <field name="date_start" required = "1"
+                            <field name="date_start"  required = "1"
                                    readonly="lock or state not in 'New' "/>
                             <field name="date_end"
                                    readonly="lock or state not in 'New' "/>
@@ -158,7 +159,8 @@
                                    
                              <field name = "termination_reason"  invisible = "not termination_reason"/> 
                              <field name = "termination_date" readonly = "1" force_save = "1" invisible = "not termination_date"/> 
-                             <field name = "termination_button_click_bool"  invisible = "1"/>           
+                             <field name = "termination_button_click_bool"  invisible = "1"/>  
+                                     
                             <field name="project_id" readonly="1" invisible="0"/>
 
                         </group>
@@ -200,7 +202,7 @@
                                    placeholder="Terms and Conditions"
                                    readonly="lock"/>
                         </page>
-                        <page string="Company Representative">
+                       <!--  <page string="Company Representative">
                             <group>
                                 <group>
                                     <field name="customer_name" readonly="state not in 'New' "/>
@@ -215,17 +217,48 @@
                                     <field name="date" invisible="1"/>
                                 </group>
                                 <group>
-                                    <field name="additional_info" readonly="state not in 'New' "/>
-                                    <field name="site_address" readonly="state not in 'New' "  force_save = "1" invisible = "1"/>
+                                    <field name="additional_info" readonly="state not in 'New'"/>
+                                    <field name="site_address" readonly="state not in 'New'" force_save = "1" invisible = "1"/>
                                     <field name="service_coordinator_person"/>
                                     <field name="service_coordinator_mobile"/>
                                 </group>
-                                <!--                                <group>-->
-                                <!--                                     <field name="stamp" invisible="1"/>-->
-                                <!--                                     <field name="contact_person"/>-->
-                                <!--                                     <field name="mobile_no"/>-->
-                                <!--                                     <field name="additional_info"/>-->
-                                <!--                                </group>-->
+                               
+                            </group>
+
+
+                        </page> -->
+                        
+                        
+                         <page string="Company Representative">
+                            <group>
+                                <group>
+                                    <label for="customer_name" class="o_form_label_required_custom" string="Name"/>
+                                    <field name="customer_name" nolabel="1" readonly="state not in 'New'"/>
+                                    <field name="contact_person" readonly="state not in 'New' " invisible="1"/>
+                                    <label for="mobile_no" class="o_form_label_required_custom" string="Mobile No."/>
+                                    <field name="mobile_no" nolabel="1" readonly="state not in 'New' "/>
+                                    <label for="email" class="o_form_label_required_custom" string="Email Id"/>
+                                    <field name="email" nolabel="1" readonly="state not in 'New' "/>
+                                    <label for="job_position" class="o_form_label_required_custom" string="Job Position"/>
+                                    <field name="job_position" nolabel="1" readonly="state not in 'New' "/>
+                                    <field name="id_party" readonly="state not in 'New' "/>
+                                    <label for="contact_persons" class="o_form_label_required_custom" string="Contact Person"/>
+                                    <field name="contact_persons" nolabel="1"/>
+                                    <label for="contact_persons_mobile" class="o_form_label_required_custom" string="Contact Person Mobile"/>
+                                    <field name="contact_persons_mobile" nolabel="1"/>
+                                    <field name="signature" widget="signature" invisible="1"/>
+                                    <field name="date" invisible="1"/>
+                                </group>
+                                <group>
+                                    <field name="additional_info" readonly="state not in 'New' "/>
+                                    <field name="site_address" readonly="state not in 'New' " invisible ="1"/>
+                                    
+                                    <label for="service_coordinator_person" class="o_form_label_required_custom" string="Service Coordinator Contact Person"/>
+                                    <field name="service_coordinator_person" nolabel="1"/>
+                                    <label for="service_coordinator_mobile" class="o_form_label_required_custom" string="Service Coordinator Mobile Number"/>
+                                    <field name="service_coordinator_mobile" nolabel="1"/>
+                                </group>
+                               
                             </group>
 
 
@@ -265,39 +298,59 @@
                         <page string="Attachments">
 
                             <group string="Attachments">
-
-                                <group>
+                            
+                            	<group>
                                     <!--                                    <label string="Caption 1"/>-->
+                                    <label for="attachment1" class="o_form_label_required_custom" string="Quotation"/>
                                     <field name="attachment1"
+                                           nolabel="1"
                                            filename="attachment1_filename"
                                            widget="binary"/>
+                                           
+                                         
 
                                     <!--                                    <label string="Caption 2"/>-->
+                                    <label for="attachment2" class="o_form_label_required_custom" string="Contract"/>
                                     <field name="attachment2"
+                                           nolabel="1"
                                            filename="attachment2_filename"
                                            widget="binary"/>
+                                           
 
                                     <!--                                    <label string="Caption 3"/>-->
+                                    <label for="attachment3" class="o_form_label_required_custom" string="C.R."/>
                                     <field name="attachment3"
+                                           nolabel="1"
                                            filename="attachment3_filename"
                                            widget="binary"/>
+                                           
 
                                     <!--                                    <label string="Caption 4"/>-->
+                                    <label for="attachment4" class="o_form_label_required_custom" string="VAT"/>
                                     <field name="attachment4"
+                                           nolabel="1"
                                            filename="attachment4_filename"
                                            widget="binary"/>
+                                           
 
                                     <!--                                    <label string="Caption 5"/>-->
+                                    <label for="attachment5" class="o_form_label_required_custom" string="National Address"/>
                                     <field name="attachment5"
+                                           nolabel="1"
                                            filename="attachment5_filename"
                                            widget="binary"/>
+                                     
 
                                     <!--                                    <label string="Caption 6"/>-->
+                                    <label for="attachment6" class="o_form_label_required_custom" string="Company’s Representative"/>
                                     <field name="attachment6"
+                                           nolabel="1"
                                            filename="attachment6_filename"
                                            widget="binary"/>
                                            
-                                   	<field name = "additional_document_attachment_ids" widget="many2many_binary"/>    
+                                      
+                                           
+                                     <field name = "additional_document_attachment_ids" widget="many2many_binary"/>    
                                      
                                       <field name="attachment1_filename" invisible="1"/> 
                                       <field name="attachment2_filename" invisible="1"/>  
@@ -305,8 +358,52 @@
                                       <field name="attachment4_filename" invisible="1"/>  
                                       <field name="attachment5_filename" invisible="1"/> 
                                       <field name="attachment6_filename" invisible="1"/>             
-                                              
+                                      
+                                       
                                 </group>
+
+                                <!-- <group>
+                                    
+                                    <field name="attachment1"
+                                           filename="attachment1_filename"
+                                           widget="binary"/>
+
+                                   
+                                    <field name="attachment2"
+                                           filename="attachment2_filename"
+                                           widget="binary"/>
+
+                                    
+                                    <field name="attachment3"
+                                           filename="attachment3_filename"
+                                           widget="binary"/>
+
+                                 
+                                    <field name="attachment4"
+                                           filename="attachment4_filename"
+                                           widget="binary"/>
+
+                                   
+                                    <field name="attachment5"
+                                           filename="attachment5_filename"
+                                           widget="binary"/>
+
+                                    
+                                    <field name="attachment6"
+                                           filename="attachment6_filename"
+                                           widget="binary"/>
+                                           
+                                     <field name = "additional_document_attachment_ids" widget="many2many_binary"/>    
+                                     
+                                      <field name="attachment1_filename" invisible="1"/> 
+                                      <field name="attachment2_filename" invisible="1"/>  
+                                      <field name="attachment3_filename" invisible="1"/> 
+                                      <field name="attachment4_filename" invisible="1"/>  
+                                      <field name="attachment5_filename" invisible="1"/> 
+                                      <field name="attachment6_filename" invisible="1"/>             
+                                             
+                                           
+                                </group> -->
 
                             </group>
 
@@ -454,319 +551,4 @@
     </record>
 </odoo>
 
-        <!--<?xml version="1.0" encoding="UTF-8" ?>-->
-        <!--<odoo>-->
-        <!--    &lt;!&ndash; Action subscription contracts &ndash;&gt;-->
-        <!--    <record id="subscription_contracts_action" model="ir.actions.act_window">-->
-        <!--        <field name="name">Contracts</field>-->
-        <!--        <field name="type">ir.actions.act_window</field>-->
-        <!--        <field name="res_model">subscription.contracts</field>-->
-        <!--        <field name="view_mode">tree,form</field>-->
-        <!--        <field name="help" type="html">-->
-        <!--            <p class="o_view_nocontent_smiling_face">-->
-        <!--                Create a new record!-->
-        <!--            </p>-->
-        <!--        </field>-->
-        <!--    </record>-->
-        <!--    &lt;!&ndash; Contracts menu &ndash;&gt;-->
-        <!--   &lt;!&ndash;  <menuitem id="subscription_contract_menu_action"-->
-        <!--              name="Contracts"-->
-        <!--              parent="sale.menu_sale_config"-->
-        <!--              action="subscription_contracts_action"/> &ndash;&gt;-->
-        <!--     -->
-        <!--    <menuitem id="subscription_contract_menu_action"-->
-        <!--              name="Contracts"-->
-        <!--             parent = "crm.crm_menu_sales"-->
-        <!--              action="subscription_contracts_action"-->
-        <!--              sequence = "999"-->
-        <!--              />-->
-        <!--                        -->
-        <!--              				-->
-        <!--              -->
-        <!--    &lt;!&ndash; Subscription contract form view &ndash;&gt;-->
-        <!--    <record id="subscription_contracts_view_form" model="ir.ui.view">-->
-        <!--        <field name="name">subscription.contracts.view.form</field>-->
-        <!--        <field name="model">subscription.contracts</field>-->
-        <!--        <field name="arch" type="xml">-->
-        <!--            <form>-->
-        <!--                <header>-->
-        <!--                    <field name="state" widget='statusbar'-->
-        <!--                           statusbar_visible='New,Ongoing,Expire Soon,Expired'/>-->
-        <!--                    <button name="action_to_confirm" class="oe_highlight"-->
-        <!--                            string="Confirm" type="object"-->
-        <!--                            help="Confirm your Subscription Contracts"-->
-        <!--                            invisible="state != 'New'" confirm="Are you sure?"/>-->
-        <!--                    <button name="action_generate_invoice"-->
-        <!--                            class="oe_highlight"-->
-        <!--                            string="Generate Invoice"-->
-        <!--                            type="object"-->
-        <!--                            invisible="state not in ('Ongoing','Expire Soon')"/>-->
-        <!--                            help="Generate Invoices for your Contracts"/>-->
-        <!--                    <button name="action_lock" class="oe_highlight"-->
-        <!--                            string="Lock" type="object"-->
-        <!--                            help="Lock your Subscription Contracts"-->
-        <!--                            invisible="1"-->
-        <!--                    />-->
-        <!--                    <button name="action_to_unlock" class="oe_highlight"-->
-        <!--                            string="Unlock" type="object"-->
-        <!--                            help="Unlock your Subscription Contracts"-->
-        <!--                            invisible="1"-->
-        <!--                    />-->
-        <!--                    <button name="action_to_cancel" class="oe_highlight"-->
-        <!--                            string="Cancel" type="object"-->
-        <!--                            help="Cancel; your Subscription Contracts"-->
-        <!--                            invisible="state not in ('Ongoing', 'Expire Soon')"-->
-        <!--                    />-->
-        <!--                </header>-->
-        <!--                <sheet>-->
-        <!--                    <div class="oe_button_box" name="button_box">-->
-        <!--                        <button class="oe_stat_button" icon="fa-pencil-square" name="show_amc_quotation_view"-->
-        <!--                                string="Show Quotation" type="object"/>-->
-        <!--                        <button class="oe_stat_button" type="object"-->
-        <!--                                name="action_get_invoice"-->
-        <!--                                icon="fa-pencil-square-o"-->
-        <!--                                invisible="state not in ('Ongoing', 'Expire Soon', 'Expired')"-->
-        <!--                                >-->
-        <!--                            <field string="Invoices"-->
-        <!--                                   name="invoice_count" widget="statinfo"-->
-        <!--                            />-->
-        <!--                        </button>-->
-        <!--                    </div>-->
-        <!--&lt;!&ndash;                    <div class="oe_button_box" name="button_box">&ndash;&gt;-->
-
-        <!--&lt;!&ndash;                    <button class="oe_stat_button" icon="fa-pencil-square" name="show_invoice_view"&ndash;&gt;-->
-        <!--&lt;!&ndash;                                string="Show Invoice" type="object"/>&ndash;&gt;-->
-        <!--&lt;!&ndash;                                        </div>&ndash;&gt;-->
-
-        <!--&lt;!&ndash;                    <div class="oe_button_box" name="button_box"  invisible="not invoices_active">&ndash;&gt;-->
-        <!--&lt;!&ndash;                        <button class="oe_stat_button" type="object"&ndash;&gt;-->
-        <!--&lt;!&ndash;                                name="action_get_invoice"&ndash;&gt;-->
-        <!--&lt;!&ndash;                                icon="fa-pencil-square-o"&ndash;&gt;-->
-        <!--&lt;!&ndash;                                invisible="state not in ('Ongoing', 'Expire Soon', 'Expired')"&ndash;&gt;-->
-        <!--&lt;!&ndash;                                >&ndash;&gt;-->
-        <!--&lt;!&ndash;                            <field string="Invoices"&ndash;&gt;-->
-        <!--&lt;!&ndash;                                   name="invoice_count" widget="statinfo"&ndash;&gt;-->
-        <!--&lt;!&ndash;                            />&ndash;&gt;-->
-        <!--&lt;!&ndash;                        </button>&ndash;&gt;-->
-        <!--&lt;!&ndash;                    </div>&ndash;&gt;-->
-        <!--                    <div class="oe_title">-->
-        <!--                        <h1>-->
-        <!--                            <field name="name" placeholder="Contracts"-->
-        <!--                                   readonly="1"/>-->
-        <!--                        </h1>-->
-        <!--                    </div>-->
-        <!--                    <group>-->
-        <!--                        <group>-->
-        <!--                            <field name="reference" required="1"-->
-        <!--                                   readonly="lock or state not in 'New' "/>-->
-        <!--                            <field name="partner_id" options="{'no_create': True}"-->
-        <!--                                   readonly="lock or state not in 'New' "/>-->
-        <!--                            <field name ="contract_type" readonly="lock or state not in 'New' " invisible="1"/>-->
-        <!--                            <field name="recurring_period"-->
-        <!--                                   readonly="lock or state not in 'New' " />-->
-        <!--                            <field name="recurring_period_interval"-->
-        <!--                                   readonly="lock or state not in 'New' "/>-->
-        <!--                            <field name="recurring_invoice"-->
-        <!--                                   readonly="lock or state not in 'New' "/>-->
-        <!--                            <field name="next_invoice_date" required="1"-->
-        <!--                                   readonly="lock or state not in 'New'"  widget="date"/>-->
-        <!--                            <field name="current_reference" invisible="1"/>-->
-        <!--                            <field name="invoices_active" invisible="1"/>-->
-        <!--                        </group>-->
-        <!--                        <group>-->
-        <!--                            <field name="contract_reminder"-->
-        <!--                                   readonly="lock "  />-->
-        <!--                              <field name="payment_term_id"-->
-        <!--                                   readonly="lock "  invisible="1"/>-->
-        <!--                            <field name="company_id"-->
-        <!--                                   readonly="lock or state not in 'New' " invisible="1"/>-->
-        <!--                            <field name="currency_id"-->
-        <!--                                   readonly="lock or state not in 'New' " invisible="1"/>-->
-        <!--                            <field name="lock" invisible="1"/>-->
-        <!--                            <field name="date_start"-->
-        <!--                                   readonly="lock or state not in 'New' "/>-->
-        <!--                            <field name="date_end"-->
-        <!--                                   readonly="lock or state not in 'New' "/>-->
-        <!--                            <field name="add_paid_service_price"/>-->
-        <!--                             <field name="travel_hours"/>-->
-        <!--                            <field name="gross_profit" groups="selling_cost_price_restrict.group_product_price_user"/>-->
-        <!--                           <field name ="manual_next_invoice_date" invisible="1"/>-->
-        <!--                            <field name = "show_product_fields" invisible="1"/>-->
-
-        <!--                        </group>-->
-        <!--                    </group>-->
-        <!--                    <notebook>-->
-        <!--                       <page string="Contract Lines">-->
-        <!--                            <field name="contract_line_ids"-->
-        <!--                                   readonly="1"/>-->
-        <!--                            <group style="float:right;">-->
-        <!--                                <field name="untaxed_amount" style="text-align:right" readonly="1" force_save ="1"/>-->
-        <!--                                <field name="total_discount" style="text-align:right" readonly="1" force_save ="1" invisible="1"/>-->
-        <!--                                <field name="vat_amount" style="text-align:right" readonly="1" force_save ="1"/>-->
-        <!--                                <field name="amount_total" string ="Grand Total" style="text-align:right" readonly="1" force_save ="1"/>-->
-        <!--                            </group>-->
-        <!--                        </page>-->
-        <!--                       <page string="Sale Order Lines" invisible="1">-->
-        <!--                            <field name="sale_order_line_ids"-->
-        <!--                                   readonly="lock or state not in 'New'"/>-->
-        <!--                        </page>-->
-        <!--                        <page string="Terms and Conditions" invisible="1">-->
-        <!--                            <field name="note"-->
-        <!--                                   placeholder="Terms and Conditions"-->
-        <!--                                   readonly="lock"/>-->
-        <!--                        </page>-->
-        <!--                        <page string="Other Info">-->
-        <!--                            <group>-->
-        <!--                                 <group>-->
-        <!--                                     <field name="customer_name" readonly="state not in 'New' "/>-->
-        <!--                                      <field name="contact_person" readonly="state not in 'New' "/>-->
-        <!--                                     <field name="job_position" readonly="state not in 'New' "/>-->
-        <!--                                     <field name="id_party" readonly="state not in 'New' "/>-->
-        <!--                                     <field name="email" readonly="state not in 'New' "/>-->
-        <!--                                     <field name="mobile_no" readonly="state not in 'New' "/>-->
-        <!--                                     <field name="signature" widget="signature" invisible="1"/>-->
-        <!--                                     <field name="date" invisible="1"/>-->
-        <!--                                </group>-->
-        <!--                                <group>-->
-        <!--                                      <field name="additional_info" readonly="state not in 'New' "/>-->
-        <!--                                     <field name="site_address" readonly="state not in 'New' "/>-->
-        <!--                                </group>-->
-        <!--&lt;!&ndash;                                <group>&ndash;&gt;-->
-        <!--&lt;!&ndash;                                     <field name="stamp" invisible="1"/>&ndash;&gt;-->
-        <!--&lt;!&ndash;                                     <field name="contact_person"/>&ndash;&gt;-->
-        <!--&lt;!&ndash;                                     <field name="mobile_no"/>&ndash;&gt;-->
-        <!--&lt;!&ndash;                                     <field name="additional_info"/>&ndash;&gt;-->
-        <!--&lt;!&ndash;                                </group>&ndash;&gt;-->
-        <!--                            </group>-->
-
-
-        <!--                        </page>-->
-
-        <!--                         <page string="Visit Count" >-->
-        <!--                         -->
-        <!--&lt;!&ndash;                         	<group invisible="1">&ndash;&gt;-->
-        <!--&lt;!&ndash;                         		&ndash;&gt;-->
-        <!--&lt;!&ndash;                         		     <field name="actual_correct_count" />&ndash;&gt;-->
-        <!--&lt;!&ndash;                         		      <field name="actual_prevent_count" />&ndash;&gt;-->
-        <!--&lt;!&ndash;                                     <field name="paid_visit_count"/>&ndash;&gt;-->
-
-        <!--&lt;!&ndash;                         	&ndash;&gt;-->
-        <!--&lt;!&ndash;                         	</group>&ndash;&gt;-->
-        <!--                            <group>-->
-        <!--                                 <group name="preventive" string="Preventive">-->
-        <!--                                     <field name="entitlement_prevent" readonly="1"/>-->
-        <!--&lt;!&ndash;                                     <field name="actuals_up_to_date_prevent" invisible = "1"/>&ndash;&gt;-->
-        <!--                                     <field name="actual_prevent_count" readonly="1"/>-->
-        <!--                                     <field name="balance_prevent" readonly="1"/>-->
-        <!--&lt;!&ndash;                                     <field name="paid_visit_count"/>&ndash;&gt;-->
-        <!--                                </group>-->
-        <!--                                <group name="corrective" string="Corrective">-->
-        <!--                                     <field name="entitlement_correct" readonly="1"/>-->
-        <!--&lt;!&ndash;                                     <field name="actuals_up_to_date_correct" invisible = "1"/>&ndash;&gt;-->
-        <!--                                    <field name="actual_correct_count" readonly="1"/>-->
-        <!--                                    <field name="balance_correct" readonly="1"/>-->
-
-        <!--                                </group>-->
-        <!--                            </group>-->
-
-
-        <!--                        </page>-->
-        <!--                    </notebook>-->
-        <!--                </sheet>-->
-        <!--                <div class="oe_chatter">-->
-        <!--                    <field name="message_follower_ids"/>-->
-        <!--                    <field name="activity_ids"/>-->
-        <!--                    <field name="message_ids"/>-->
-        <!--                </div>-->
-        <!--            </form>-->
-        <!--        </field>-->
-        <!--    </record>-->
-        <!--    &lt;!&ndash; Subscription contract tree view &ndash;&gt;-->
-        <!--    <record id="subscription_contracts_view_tree" model="ir.ui.view">-->
-        <!--        <field name="name">subscription.contracts.view.tree</field>-->
-        <!--        <field name="model">subscription.contracts</field>-->
-        <!--        <field name="arch" type="xml">-->
-        <!--            <tree>-->
-        <!--                <field name="name"/>-->
-        <!--                <field name="partner_id"/>-->
-        <!--                <field name="next_invoice_date"/>-->
-        <!--                <field name="date_start"/>-->
-        <!--                <field name="date_end"/>-->
-        <!--                <field name="state" widget="badge"-->
-        <!--                       decoration-success="state == 'Ongoing'"-->
-        <!--                       decoration-warning="state =='Expire Soon'"-->
-        <!--                       decoration-info="state =='New'"-->
-        <!--                       decoration-danger="state in('Cancelled','Expired')"/>-->
-        <!--                <field name="amount_total"/>-->
-        <!--            </tree>-->
-        <!--        </field>-->
-        <!--    </record>-->
-        <!--    &lt;!&ndash;   contract search filter   &ndash;&gt;-->
-        <!--    <record id="subscription_contracts_view_search" model="ir.ui.view">-->
-        <!--        <field name="name">subscription.contracts.view.search</field>-->
-        <!--        <field name="model">subscription.contracts</field>-->
-        <!--        <field name="arch" type="xml">-->
-        <!--            <search>-->
-        <!--                <field name="name"/>-->
-        <!--                <field name="partner_id"/>-->
-        <!--                <field name="date_start"/>-->
-        <!--                <field name="date_end"/>-->
-        <!--                <field name="state"/>-->
-        <!--                <field name="next_invoice_date"/>-->
-        <!--                <separator/>-->
-        <!--                <group expand="0" string="Group By">-->
-        <!--                    <filter context="{'group_by': 'name'}" domain="[]" name="name" string="Reference"/>-->
-        <!--                    <filter context="{'group_by': 'partner_id'}" domain="[]" name="partner_id" string="Customer"/>-->
-        <!--                    <filter context="{'group_by': 'state'}" domain="[]" name="state" string="Stage"/>-->
-        <!--                </group>-->
-        <!--            </search>-->
-        <!--        </field>-->
-        <!--    </record>-->
-
-        <!--    &lt;!&ndash; Contract line tree view &ndash;&gt;-->
-        <!--    <record id="subscription_contracts_line_view_tree" model="ir.ui.view">-->
-        <!--        <field name="name">subscription.contracts.line.view.tree</field>-->
-        <!--        <field name="model">subscription.contracts.line</field>-->
-        <!--        <field name="arch" type="xml">-->
-        <!--            <tree editable="bottom" delete="0">-->
-        <!--                <field name="product_id" width="150px"/>-->
-        <!--                <field name="description" optional="hide"/>-->
-        <!--                <field name="asset_number" optional="hide"/>-->
-        <!--                <field name="analytic_account_id" optional="hide"/>-->
-        <!--                <field name="qty_ordered"/>-->
-        <!--                 <field name = "no_of_visits_per_year"  width="175px"/>-->
-        <!--                <field name = "no_of_emergency_visit"  width="175px"/>-->
-        <!--                <field name = "days_required_for_rpm" column_invisible="not parent.show_product_fields" width="195px"/>-->
-        <!--                <field name = "standard_hours" column_invisible="not parent.show_product_fields" width="150px" force_save="1"/>-->
-        <!--                <field name = "total_hr" column_invisible="not parent.show_product_fields" width="130px"/>-->
-        <!--                <field name = "total_cost" column_invisible="not parent.show_product_fields" width="120px"/>-->
-        <!--                <field name = "total_price" width="120px"/>-->
-        <!--                <field name = "vat" />-->
-        <!--                <field name = "vat_amt" />-->
-        <!--                <field name="product_uom_id" optional="hide"/>-->
-        <!--                <field name="price_unit" optional="hide"/>-->
-        <!--                <field name="tax_ids" widget="many2many_tags" optional="hide"/>-->
-        <!--                <field name="discount" optional="hide"/>-->
-        <!--                <field name="sub_total"/>-->
-        <!--                <field name = "days_require_rpm_round_off"  width="210px" readonly="1"/>-->
-        <!--                <field name = "actual_prevent_count" width="210px" readonly="1"/>-->
-        <!--                <field name = "balance_prevent_count" width="210px" readonly="1"/>-->
-        <!--                <field name = "total_correct_count"  width="175px" readonly="1"/>-->
-        <!--                <field name = "actual_correct_count" width="210px" readonly="1"/>-->
-        <!--                <field name = "balance_correct_count" width="230px" readonly="1"/>-->
-        <!--                <field name = "paid_visit_count" width="230x" readonly="1"/>-->
-        <!--            </tree>-->
-        <!--        </field>-->
-        <!--    </record>-->
-        <!--     &lt;!&ndash; Add 'Print Contract Document' to the Actions menu &ndash;&gt;-->
-        <!--    <record id="action_print_contract_document_server" model="ir.actions.server">-->
-        <!--        <field name="name">Print Contract Document</field>-->
-        <!--        <field name="model_id" ref="model_subscription_contracts"/>-->
-        <!--        <field name="state">code</field>-->
-        <!--        <field name="binding_model_id" ref="model_subscription_contracts"/>-->
-        <!--        <field name="binding_type">action</field>-->
-        <!--        <field name="code">-->
-        <!--            action = env["subscription.contracts"].browse(env.context.get("active_ids")).action_print_contract_document()-->
-        <!--        </field>-->
-        <!--    </record>-->
-        <!--</odoo>-->
+       

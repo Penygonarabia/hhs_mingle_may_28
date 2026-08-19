@@ -76,8 +76,10 @@ class ReportAMCQuotation(models.AbstractModel):
 
             doc_scopes = []
 
-            service_lines = rec.pm_checklist_ids.filtered(lambda l: l.is_selected)
-          
+            if 'pm_checklist_ids' in rec._fields:
+                service_lines = rec.pm_checklist_ids.filtered(lambda l: l.is_selected)
+            else:
+                service_lines = []
 
             for line in service_lines:
                 unit_type_id = line.service_unit_type_id.id
@@ -526,7 +528,6 @@ class ReportAMCQuotation(models.AbstractModel):
             rec.country_id.name.strip() if rec.country_id else "",
             rec.zip.strip() if rec.zip else "",
         ]
-
         site_address = ", ".join(filter(None, address))
 
         datas = {

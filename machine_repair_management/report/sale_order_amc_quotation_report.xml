@@ -360,9 +360,9 @@
 
 
                         <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:14pt !important;">
-                            <thead style="background-color:#1F6FAE; color:white;">
+                            <thead style="background-color:#1F6FAE; color:white; white-space:nowrap;">
                                 <tr>
-                                    <th style="text-align:center; padding:8px; font-size:14pt !important;">S.No</th>
+                                    <th style="text-align:center; padding:8px; font-size:14pt !important;">#</th>
                                     <th style="text-align:center; padding:8px; font-size:14pt !important;">
                                         <span style="font-size:17pt !important;">الوصف</span>
                                         <br/>
@@ -391,7 +391,7 @@
                                     <th style="text-align:center; font-size:14pt !important; font-family:'Noto Naskh Arabic','Amiri','DejaVu Sans',sans-serif; padding:8px;">
                                         <span style="font-size:17pt !important;">عدد الزيارات / السنة</span>
                                         <br/>
-                                        No. of Visits / Yr
+                                        Visits/Yr
                                     </th>
                                     <th style="text-align:center; padding:8px; font-size:14pt !important;">
                                         <span style="font-size:14pt !important;">سعر</span>
@@ -401,32 +401,32 @@
                                 </tr>
                             </thead>
                             <t t-set="counter" t-value="1"/>
-                            <tbody style="font-size:17pt !important;">
+                            <tbody style="font-size:17pt !important; white-space:nowrap;">
                                 <t t-foreach="quotations" t-as="quotation">
                                     <tr>
-                                        <td style="text-align:center; padding:16px;">
+                                        <td style="text-align:center; padding:4px;">
                                             <span style="font-size:14pt !important;" t-esc="counter"/>
                                             <span/>
                                         </td>
-                                        <td style="text-align:center; padding:16px;">
+                                        <td style="text-align:center; padding:4px;">
                                             <span style="font-size:14pt !important;" t-if="quotation['brand']" t-esc="quotation['brand']"/>
                                         </td>
-                                        <td style="text-align:left; padding:16px;">
+                                        <td style="text-align:left; padding:4px;">
                                             <span style="font-size:14pt !important;" t-if="quotation['unit_type']" t-esc="quotation['unit_type']"/>
                                         </td>
-                                        <td style="text-align:center; padding:16px;">
+                                        <td style="text-align:center; padding:4px;">
                                             <span style="font-size:14pt !important;" t-if="quotation['description']" t-esc="quotation['description']"/>
                                         </td>
-                                        <td style="text-align:center; padding:16px;">
+                                        <td style="text-align:center; padding:4px;">
                                             <span style="font-size:14pt !important;" t-esc="quotation['unit_selling_price']" t-options="{'widget': 'float', 'precision': 0}"/>
                                         </td>
-                                        <td style="text-align:center; padding:16px;">
+                                        <td style="text-align:center; padding:4px;">
                                             <span style="font-size:14pt !important;" t-if="quotation['Qty']" t-esc="int(quotation['Qty'])"/>
                                         </td>
-                                        <td style="text-align:center; padding:16px;">
+                                        <td style="text-align:center; padding:4px;">
                                             <span style="font-size:14pt !important;" t-if="quotation['no_of_visits_per_year']" t-esc="quotation['no_of_visits_per_year']"/>
                                         </td>
-                                        <td style="text-align:right; padding:16px;">
+                                        <td style="text-align:right; padding:4px;">
                                             <span style="font-size:14pt !important;" t-esc="company_symbol"/>
                                             <span style="font-size:14pt !important;" t-esc="quotation['total']" t-options="{'widget': 'float', 'precision': 2}"/>
                                         </td>
@@ -439,20 +439,20 @@
                                 <!-- Subtotal Row -->
                                 <tr>
                                     <!-- Col 1 -->
-                                    <td colspan="5" style="padding:16px;">
+                                    <td colspan="5" style="padding:4px;">
                                         <strong style="font-size:14pt !important;">Sub Total (Qty)</strong>
                                     </td>
 
                                     <!-- ✅ Col 6 (Qty total) -->
-                                    <td style="text-align:center; padding:16px;">
+                                    <td style="text-align:center; padding:4px;">
                                         <span style="font-size:14pt !important;" t-esc="total_qty"/>
                                     </td>
 
                                     <!-- Col 7 -->
-                                    <td style="padding:16px;"/>
+                                    <td style="padding:4px;"/>
 
                                     <!-- Col 8 (Amount) -->
-                                    <td style="text-align:right; padding:16px;">
+                                    <td style="text-align:right; padding:4px;">
                                         <strong>
                                             <span style="font-size:14pt !important;" t-esc="company_symbol"/>
                                             <span style="font-size:14pt !important;" t-esc="sub_total" t-options="{'widget': 'float', 'precision': 2}"/>
@@ -463,15 +463,15 @@
                                 <!-- VAT Row -->
                                 <tr>
                                     <!-- Col 1 -->
-                                    <td colspan="6" style="padding:16px;">
+                                    <td colspan="6" style="padding:4px;">
                                         <strong style="font-size:14pt !important;">VAT - 15%</strong>
                                     </td>
 
                                     <!-- Col 7 -->
-                                    <td style="padding:16px;"/>
+                                    <td style="padding:4px;"/>
 
                                     <!-- Col 8 -->
-                                    <td style="text-align:right; padding:16px;">
+                                    <td style="text-align:right; padding:4px;">
                                         <strong>
                                             <span style="font-size:14pt !important;" t-esc="company_symbol"/>
                                             <span style="font-size:14pt !important;" t-esc="total_vat" t-options="{'widget': 'float', 'precision': 2}"/>
@@ -482,15 +482,15 @@
                                 <!-- Grand Total Row -->
                                 <tr>
                                     <!-- Col 1 -->
-                                    <td colspan="6" style="padding:16px;">
+                                    <td colspan="6" style="padding:4px;">
                                         <strong style="font-size:14pt !important;">Grand Total</strong>
                                     </td>
 
                                     <!-- Col 7 -->
-                                    <td style="padding:16px;"/>
+                                    <td style="padding:4px;"/>
 
                                     <!-- Col 8 -->
-                                    <td style="text-align:right; padding:16px;">
+                                    <td style="text-align:right; padding:4px;">
                                         <strong>
                                             <span style="font-size:14pt !important;" t-esc="company_symbol"/>
                                             <span style="font-size:14pt !important;" t-esc="grand_total" t-options="{'widget': 'float', 'precision': 2}"/>
@@ -722,7 +722,7 @@
                                 <t t-foreach="unit.get('services', [])" t-as="service">
 
                                     <!-- NEW PAGE PER SERVICE -->
-                                    <div class="page hhs-sig" style="page-break-before: always; margin:0; padding:0; font-size:14pt !important;">
+                                    <div class="page hhs-sig" style="page-break-before: always; margin:0; padding:0; font-size:17pt !important;">
 
                                         <div style="display:table; width:100%; table-layout:fixed;">
 
@@ -732,11 +732,11 @@
                                                 <!-- LEFT -->
                                                 <div style="display:table-cell; width:50%; padding:6px 15px 6px 0; border-right:1px solid #c0c0c0; vertical-align:top;">
 
-                                                    <div style="margin-bottom:6px; font-size:14pt !important;">
+                                                    <div style="margin-bottom:6px; font-size:17pt !important;">
 
-                                                        <strong style="font-size:14pt !important;">Unit Type:</strong>
+                                                        <strong style="font-size:17pt !important;">Unit Type:</strong>
 
-                                                        <span style="margin-left:6px; font-size:14pt !important;">
+                                                        <span style="margin-left:6px; font-size:17pt !important;">
 
                                                             <!-- IF PRINT_ALWAYS_DEFAULT -->
                                                             <t t-if="unit.get('hide_unit_name')">
@@ -753,9 +753,9 @@
                                                     </div>
 
                                                     <div>
-                                                        <strong style="font-size:14pt !important;">Service Type:</strong>
+                                                        <strong style="font-size:17pt !important;">Service Type:</strong>
 
-                                                        <span style="margin-left:6px; font-size:14pt !important;">
+                                                        <span style="margin-left:6px; font-size:17pt !important;">
                                                             <t t-esc="service.get('service_en', '')"/>
                                                         </span>
                                                     </div>
@@ -765,11 +765,11 @@
                                                 <!-- RIGHT -->
                                                 <div style="display:table-cell; width:50%; padding:6px 0 6px 15px; direction:rtl; vertical-align:top;">
 
-                                                    <div style="text-align:right; margin-bottom:6px; font-size:14pt !important;">
+                                                    <div style="text-align:right; margin-bottom:6px; font-size:17pt !important;">
 
-                                                        <strong style="font-size:14pt !important;">نوع الوحدة:</strong>
+                                                        <strong style="font-size:17pt !important;">نوع الوحدة:</strong>
 
-                                                        <span style="margin-right:6px; font-size:14pt !important;">
+                                                        <span style="margin-right:6px; font-size:17pt !important;">
 
                                                             <!-- IF PRINT_ALWAYS_DEFAULT -->
                                                             <t t-if="unit.get('hide_unit_name')">
@@ -785,11 +785,11 @@
 
                                                     </div>
 
-                                                    <div style="text-align:right; font-size:14pt !important;">
+                                                    <div style="text-align:right; font-size:17pt !important;">
 
                                                         <strong style="font-size:17pt !important;">نوع الخدمة:</strong>
 
-                                                        <span style="margin-right:6px;font-size:14pt !important;">
+                                                        <span style="margin-right:6px;font-size:17pt !important;">
                                                             <t t-esc="service.get('service_ar', '')"/>
                                                         </span>
 
@@ -857,51 +857,37 @@
                                             <!-- PARAMETERS -->
                                             <t t-foreach="service.get('params', [])" t-as="param">
 
+                                                <!-- HEADER ROW FOR PARAM -->
                                                 <div style="display:table-row;">
-
-                                                    <!-- LEFT -->
                                                     <div style="display:table-cell; padding-right:15px; border-right:1px solid #c0c0c0;">
-
-                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold; font-size:14pt !important;">
+                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold; font-size:17pt !important;">
                                                             <t t-esc="param.get('param_en', '')"/>
                                                         </div>
-
-                                                        <ol style="font-size:17pt !important; padding-left: 40px; margin: 0;">
-
-                                                            <t t-foreach="param.get('lines', [])" t-as="line">
-
-                                                                <li style="margin-bottom:10px; font-size:14pt !important;">
-                                                                    <t t-esc="(line.get('en') or '').strip()"/>
-                                                                </li>
-
-                                                            </t>
-
-                                                        </ol>
-
                                                     </div>
-
-                                                    <!-- RIGHT -->
                                                     <div style="display:table-cell; padding-left:15px; direction:rtl; text-align:right; font-size:17pt !important;">
-
-                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold; font-size:14pt !important;">
+                                                        <div style="background:#d9e1f2; padding:6px; font-weight:bold; font-size:17pt !important;">
                                                             <t t-esc="param.get('param_ar', '')"/>
                                                         </div>
-
-                                                        <ol style="font-size:17pt !important; padding-right: 40px; margin: 0;">
-
-                                                            <t t-foreach="param.get('lines', [])" t-as="line">
-
-                                                                <li style="margin-bottom:10px; font-size:14pt !important;">
-                                                                    <t t-esc="line.get('ar', '')"/>
-                                                                </li>
-
-                                                            </t>
-
-                                                        </ol>
-
                                                     </div>
-
                                                 </div>
+
+                                                <!-- LINES LOOP ROW -->
+                                                <t t-foreach="param.get('lines', [])" t-as="line">
+                                                    <div style="display:table-row;">
+                                                        <!-- LEFT (EN) -->
+                                                        <div style="display:table-cell; padding-right:15px; border-right:1px solid #c0c0c0; padding-top:8px; font-size:17pt !important;">
+                                                            <p style="margin:0; padding-left:10px; font-size:17pt !important;">
+                                                                <span style="font-size:17pt !important;"><t t-esc="line_index + 1"/>. </span><span style="font-size:17pt !important;"><t t-esc="(line.get('en') or '').strip()"/></span>
+                                                            </p>
+                                                        </div>
+                                                        <!-- RIGHT (AR) -->
+                                                        <div style="display:table-cell; padding-left:15px; direction:rtl; text-align:right; font-size:17pt !important; padding-top:8px;">
+                                                            <p style="margin:0; padding-right:10px; font-size:17pt !important;">
+                                                                <span style="font-size:17pt !important;"><t t-esc="line_index + 1"/>. </span><span style="font-size:17pt !important;"><t t-esc="line.get('ar', '')"/></span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </t>
 
                                             </t>
 

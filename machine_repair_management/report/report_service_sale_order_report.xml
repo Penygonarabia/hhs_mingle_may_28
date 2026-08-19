@@ -28,450 +28,870 @@
         </template>
 
         <!-- Custom Report Template -->
-        <template id="report_service_saleorder_document_hhs">
-        
-        	<t t-call="web.html_container">
-            <t t-foreach="docs" t-as="doc">
+      <template id="report_service_saleorder_document_hhs">
 
-            <t t-call="machine_repair_management.service_sale_order_document_template_internal_layout">
-        
-            <t t-if="doc and 'company_id' in doc">
-                <t t-set="company" t-value="doc.company_id"/>
-            </t>
-            <t t-if="not doc or not 'company_id' in doc">
-                <t t-set="company" t-value="res_company"/>
-            </t>
-            <div class="header" t-att-style="report_header_style">
-                <div class="row mt32 mb32">
-                    <div class="col-4 text-left">
-                        <img src="/machine_repair_management/static/src/img/HHS_Header_Left.png" alt="img"
-                             style="height: 120px; width: 350px; image-rendering: crisp-edges;"/>
-                    </div>
-                    <div class="col-4 text-center" style="vertical-align:text-top">
-                        <img t-if="doc.company_id.logo" t-att-src="image_data_uri(doc.company_id.logo)"
-                             style="max-height: 100px; min-height:100px; min-width: 200px; max-width: 200px; image-rendering: crisp-edges;"/>
-                    </div>
-                    <div class="col-4 text-right" style="vertical-align:text-top; text-align:right">
-                        <img src="/machine_repair_management/static/src/img/HHS_Header_Right.png" alt="img"
-                             style="height: 120px; width: 350px; image-rendering: crisp-edges;"/>
-                    </div>
-                </div>
-                <h2>
-                    <center>
-                        
-                        <t>Quotation</t>
-                    </center>
-                </h2>
-            </div>
+    <t t-call="web.html_container">
 
-            <div class="page" style="page-break-after: always;">
-                <div class="row mt32 mb32">
-                    <div class="col-6">
-                        <table class="table table-bordered border-dark">
-                            <colgroup>
-                                <col width='30%'/>
-                                <col width='40%'/>
-                                <col width='30%'/>
-                            </colgroup>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Warehouse:</strong></td>
-                                    <td><span t-field="doc.job_task_id.warehouse_id.name"/></td>
-                                    <td style="text-align:right"><strong>:مستودع</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Customer Name:</strong></td>
-                                    <td><span t-field="doc.customer_name"/></td>
-                                    <td style="text-align:right"><strong>:اسم العميل</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Customer Address:</strong></td>
-                                   <!--  <td>
-                                        <div t-field="doc.partner_id"
-                                             t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
-                                    </td> -->
-                                    <td>
-                                    	<span t-field="doc.customer_address"/>
-                                    </td>
-                                    <td style="text-align:right"><strong>:عنوان العميل</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>VAT #:</strong></td>
-                                    <td><span t-field="doc.job_task_id.customer_identification_number"/></td>
-                                    <td style="text-align:right"><strong>:ضريبة القيمة المضافة</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Client Reference:</strong></td>
-                                    <td><span t-field="doc.job_task_id.customer_identification_number"/></td>
-                                    <td style="text-align:right"><strong>:رقم المرجع</strong></td>
-                                </tr>
-<!--                                <tr>-->
-<!--                                    <td><strong>Order No.:</strong></td>-->
-<!--                                    <td><span t-field="doc.name"/></td>-->
-<!--                                    <td style="text-align:right"><strong>:رقم الطلب</strong></td>-->
-<!--                                </tr>-->
-                               
-                            </tbody>
-                        </table>
+        <t t-foreach="docs" t-as="doc">
+
+            <!-- SAME INTERNAL LAYOUT AS WORKING JOB CARD -->
+            <t t-call="machine_repair_management.job_card_print_document_template_internal_layout">
+
+                <div class="header" t-att-style="report_header_style">
+
+                    <div class="row mt32 mb32">
+
+                        <div class="col-4 text-left">
+                            <img src="machine_repair_management/static/src/img/HHS_Header_Left.png"
+                                 alt="img"
+                                 style="height:120px; width:350px;"/>
+                        </div>
+
+                        <div class="col-4 text-center"
+                             style="vertical-align:text-top">
+
+                            <img t-if="res_company.logo"
+                                 t-att-src="image_data_uri(res_company.logo)"
+                                 style="max-height:100px;
+                                        min-height:100px;
+                                        min-width:200px;
+                                        max-width:200px;"/>
+
+                        </div>
+
+                        <div class="col-4 text-right"
+                             style="vertical-align:text-top;text-align:right">
+
+                            <img src="machine_repair_management/static/src/img/HHS_Header_Right.png"
+                                 alt="img"
+                                 style="height:120px; width:350px;"/>
+
+                        </div>
+
                     </div>
-                    <div class="col-6">
-                        <table class="table table-bordered border-dark">
-                            <colgroup>
-                                <col width='30%'/>
-                                <col width='28%'/>
-                                <col width='42%'/>
-                            </colgroup>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Quotation No:</strong></td>
-                                    <td><span t-field="doc.name"/></td>
-                                    <td style="text-align:right"><strong>:رقم عرض السعر</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Quotation Date:</strong></td>
-                                    <td>
-                                        <span t-field="doc.service_sale_quotation_date"
-                                              t-options='{"widget": "date", "format": "dd-MM-yyyy"}'/>
-                                    </td>
-                                    <td style="text-align:right"><strong>:تاريخ عرض السعر</strong></td>
-                                </tr>
-                                 
-                                <!-- <tr>
-                                    <td><strong>Quotation Expiry Date:</strong></td>
-                                    <td>
-                                        <span t-field="doc.validity_date"
-                                              t-options='{"widget": "date", "format": "dd-MM-yyyy"}'/>
-                                    </td>
-                                    <td style="text-align:right"><strong>:تاريخ انتهاء صلاحية عرض السعر</strong></td>
-                                </tr> -->
-                                <tr>
-                                    <td><strong>Technician Name:</strong></td>
-                                    <td><span t-field="doc.job_task_id.team_id.name"/></td>
-                                    <td style="text-align:right">
-                                        <strong>:اسم الفني</strong>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>VAT Registration:</strong></td>
-                                    <td><span t-field="doc.company_id.vat"/></td>
-                                    <td style="text-align:right"><strong>:ضريبة القيمة المضافة</strong></td>
-                                </tr>
-                               <!--  <tr>
-                                    <td><strong>Remarks:</strong></td>
-                                    <td colspan="5"></td>
-                                </tr> -->
-                            </tbody>
-                        </table>
-                    </div>
+
+                    <h2>
+                        <center style="font-size:35px;">
+                            Quotation / عرض سعر
+                        </center>
+                    </h2>
+
                 </div>
 
-                <t t-set="lines_to_report" t-value="doc.service_sale_order_line_ids"/>
-                <table class="table table-bordered border-dark">
-                    <thead>
-                        <tr style="text-align:center; color:black;">
-                            <th width="2%" style="vertical-align:text-top"><strong>قم</strong><br/><strong>No</strong></th>
-                            <th width="29%" style="vertical-align:text-top"><strong>الوصف</strong><br/><strong>Description</strong></th>
-                            <th width="5%" style="vertical-align:text-top"><strong>الكمية</strong><br/><strong>Qty</strong></th>
-                            <th width="6%" style="vertical-align:text-top"><strong>سعر الوحدة</strong><br/><strong>Unit Price</strong></th>
-                           <!--  <th width="6%" style="vertical-align:text-top"><strong>خصم الوحدة</strong><br/><strong>Unit Discount</strong></th> -->
-                            <th width="7%" style="vertical-align:text-top"><strong>سعر الوحدة الصافي</strong><br/><strong>Net Unit Price</strong></th>
-                            <th width="7%" style="vertical-align:text-top"><strong>السعر الإجمالي</strong><br/><strong>Extended Price</strong></th>
-                            <th width="6%" style="vertical-align:text-top"><strong>نسبة الضريبة</strong><br/><strong>Vat %</strong></th>
-                            <th width="7%" style="vertical-align:text-top"><strong>قيمة الضريبة</strong><br/><strong>Vat Amount</strong></th>
-                            <th width="7%" style="vertical-align:text-top"><strong>الإجمالي</strong><br/><strong>Amount</strong></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <t t-set="counter" t-value="1"/>
-                        <t t-foreach="lines_to_report" t-as="line">
-<!--                             <t t-if="not line.display_type">
- -->                                <tr>
-                                    <td style="text-align:right"><span t-esc="counter"/></td>
-                                    <td><span t-field="line.product_id.display_name"/></td>
-									<td style="text-align:right"><span t-esc="int(line.product_qty) if line.product_qty else 0"/></td>                                   <!--  <td style="text-align:right">
-                                        <span t-field="line.product_uom"/>
-                                    </td> -->
+
+                <!-- SAME FONT LOGIC AS JOB CARD -->
+                <div class="page"
+                     style="page-break-after:always; font-size:16px !important;">
+
+                    <div class="row mt32 mb32">
+
+                        <!-- LEFT INFORMATION -->
+                        <div class="col-6">
+
+                            <table class="table table-bordered border-dark">
+
+                                <colgroup>
+                                    <col width="30%"/>
+                                    <col width="40%"/>
+                                    <col width="30%"/>
+                                </colgroup>
+
+                                <tbody>
+
+                                    <tr>
+                                        <td>
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                Warehouse:
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            <span style="font-size:16px !important;"
+                                                  t-field="doc.job_task_id.warehouse_id.name"/>
+                                        </td>
+
+                                        <td style="text-align:right">
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                :مستودع
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+
+                                    <tr>
+                                        <td>
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                Customer Name:
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            <span style="font-size:16px !important;"
+                                                  t-field="doc.customer_name"/>
+                                        </td>
+
+                                        <td style="text-align:right">
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                :اسم العميل
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+
+                                    <tr>
+                                        <td>
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                Customer Address:
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            <span style="font-size:16px !important;"
+                                                  t-field="doc.customer_address"/>
+                                        </td>
+
+                                        <td style="text-align:right">
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                :عنوان العميل
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+
+                                    <tr>
+                                        <td>
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                VAT #:
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            <span style="font-size:16px !important;"
+                                                  t-field="doc.job_task_id.customer_identification_number"/>
+                                        </td>
+
+                                        <td style="text-align:right">
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                :ضريبة القيمة المضافة
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+
+                                    <tr>
+                                        <td>
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                Client Reference:
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            <span style="font-size:16px !important;"
+                                                  t-field="doc.job_task_id.customer_identification_number"/>
+                                        </td>
+
+                                        <td style="text-align:right">
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                :رقم المرجع
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+
+                        <!-- RIGHT INFORMATION -->
+                        <div class="col-6">
+
+                            <table class="table table-bordered border-dark">
+
+                                <colgroup>
+                                    <col width="30%"/>
+                                    <col width="28%"/>
+                                    <col width="42%"/>
+                                </colgroup>
+
+                                <tbody>
+
+                                    <tr>
+                                        <td>
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                Quotation No:
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            <span style="font-size:16px !important;"
+                                                  t-field="doc.name"/>
+                                        </td>
+
+                                        <td style="text-align:right">
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                :رقم عرض السعر
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+
+                                    <tr>
+                                        <td>
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                Quotation Date:
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            <span style="font-size:16px !important;"
+                                                  t-field="doc.service_sale_quotation_date"
+                                                  t-options='{"widget":"date","format":"dd-MM-yyyy"}'/>
+                                        </td>
+
+                                        <td style="text-align:right">
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                :تاريخ عرض السعر
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+
+                                    <tr>
+                                        <td>
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                Technician Name:
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            <span style="font-size:16px !important;"
+                                                  t-field="doc.job_task_id.team_id.name"/>
+                                        </td>
+
+                                        <td style="text-align:right">
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                :اسم الفني
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+
+                                    <tr>
+                                        <td>
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                VAT Registration:
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            <span style="font-size:16px !important;"
+                                                  t-field="doc.company_id.vat"/>
+                                        </td>
+
+                                        <td style="text-align:right">
+                                            <strong style="font-size:18px !important;
+                                                          font-weight:bold !important;">
+                                                :ضريبة القيمة المضافة
+                                            </strong>
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PRODUCT TABLE -->
+
+                    <t t-set="lines_to_report"
+                       t-value="doc.service_sale_order_line_ids"/>
+
+                    <table class="table table-bordered border-dark">
+
+                        <thead style="font-size:17px !important;
+                                      font-weight:bold !important;">
+
+                            <tr style="text-align:center">
+
+                                <th width="2%"
+                                    style="font-size:17px !important;
+                                           font-weight:bold !important;
+                                           vertical-align:text-top;">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        قم
+                                    </strong>
+                                    <br/>
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        No
+                                    </strong>
+
+                                </th>
+
+
+                                <th width="29%"
+                                    style="font-size:17px !important;
+                                           font-weight:bold !important;
+                                           vertical-align:text-top;">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        الوصف
+                                    </strong>
+                                    <br/>
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        Description
+                                    </strong>
+
+                                </th>
+
+
+                                <th width="5%"
+                                    style="font-size:17px !important;
+                                           font-weight:bold !important;
+                                           vertical-align:text-top;">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        الكمية
+                                    </strong>
+                                    <br/>
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        Qty
+                                    </strong>
+
+                                </th>
+
+
+                                <th width="6%"
+                                    style="font-size:17px !important;
+                                           font-weight:bold !important;
+                                           vertical-align:text-top;">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        سعر الوحدة
+                                    </strong>
+                                    <br/>
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        Unit Price
+                                    </strong>
+
+                                </th>
+
+
+                                <th width="7%"
+                                    style="font-size:17px !important;
+                                           font-weight:bold !important;
+                                           vertical-align:text-top;">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        سعر الوحدة الصافي
+                                    </strong>
+                                    <br/>
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        Net Unit Price
+                                    </strong>
+
+                                </th>
+
+
+                                <th width="7%"
+                                    style="font-size:17px !important;
+                                           font-weight:bold !important;
+                                           vertical-align:text-top;">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        السعر الإجمالي
+                                    </strong>
+                                    <br/>
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        Extended Price
+                                    </strong>
+
+                                </th>
+
+
+                                <th width="6%"
+                                    style="font-size:17px !important;
+                                           font-weight:bold !important;
+                                           vertical-align:text-top;">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        نسبة الضريبة
+                                    </strong>
+                                    <br/>
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        Vat %
+                                    </strong>
+
+                                </th>
+
+
+                                <th width="7%"
+                                    style="font-size:17px !important;
+                                           font-weight:bold !important;
+                                           vertical-align:text-top;">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        قيمة الضريبة
+                                    </strong>
+                                    <br/>
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        Vat Amount
+                                    </strong>
+
+                                </th>
+
+
+                                <th width="7%"
+                                    style="font-size:17px !important;
+                                           font-weight:bold !important;
+                                           vertical-align:text-top;">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        الإجمالي
+                                    </strong>
+                                    <br/>
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        Amount
+                                    </strong>
+
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            <t t-set="counter" t-value="1"/>
+
+                            <t t-foreach="lines_to_report" t-as="line">
+
+                                <tr>
+
                                     <td style="text-align:right">
-                                        <span t-esc="'%.2f' % line.price_unit"/>
+                                        <span style="font-size:16px !important;"
+                                              t-esc="counter"/>
                                     </td>
-                                    <!-- <td style="text-align:right">
-                                        <span t-field="line.discount"
-                                              t-options="{'widget': 'float', 'precision': 2}"/>
-                                    </td> -->
+
+                                    <td>
+                                        <span style="font-size:16px !important;"
+                                              t-field="line.product_id.display_name"/>
+                                    </td>
+
                                     <td style="text-align:right">
-                                        <span t-esc="'%.2f' %line.price_unit"
-                                              />
+                                        <span style="font-size:16px !important;"
+                                              t-esc="int(line.product_qty) if line.product_qty else 0"/>
                                     </td>
+
                                     <td style="text-align:right">
-                                        <span t-esc="'%.2f' % (line.product_qty * line.price_unit)"
-                                              />
+                                        <span style="font-size:16px !important;"
+                                              t-esc="'%.2f' % line.price_unit"/>
                                     </td>
-                                   <!--  <td style="text-align:right">
-                                        <span t-esc="', '.join([str(tax.name) for tax in line.tax_id])"/>
-                                    </td> -->
+
                                     <td style="text-align:right">
-                                        <span t-esc="int(line.vat)"
-                                              />%
+                                        <span style="font-size:16px !important;"
+                                              t-esc="'%.2f' % line.price_unit"/>
                                     </td>
+
                                     <td style="text-align:right">
-                                        <span t-esc="'%.2f' %(line.total - line.price_unit)"
-                                              />
+                                        <span style="font-size:16px !important;"
+                                              t-esc="'%.2f' % (line.product_qty * line.price_unit)"/>
                                     </td>
+
                                     <td style="text-align:right">
-                                        <span t-esc="'%.2f' % line.total"
-                                              />
+                                        <span style="font-size:16px !important;"
+                                              t-esc="int(line.vat)"/>
+                                        %
                                     </td>
+
+                                    <td style="text-align:right">
+                                        <span style="font-size:16px !important;"
+                                              t-esc="'%.2f' % (line.total - line.price_unit)"/>
+                                    </td>
+
+                                    <td style="text-align:right">
+                                        <span style="font-size:16px !important;"
+                                              t-esc="'%.2f' % line.total"/>
+                                    </td>
+
                                 </tr>
+
                                 <t t-set="counter" t-value="counter + 1"/>
-                           <!--  </t>
-                            <t t-elif="line.display_type == 'line_section'">
-                                <tr class="bg-200 fw-bold o_line_section">
-                                    <td colspan="10"><span t-field="line.name"/></td>
-                                </tr>
-                            </t>
-                            <t t-elif="line.display_type == 'line_note'">
-                                <tr class="fst-italic o_line_note">
-                                    <td colspan="10"><span t-field="line.name"/></td>
-                                </tr>
-                            </t> -->
-                        </t>
-                        <!-- <t t-set="tax_totals" t-value="doc.tax_totals"/> -->
-                        <tr>
-                            <td colspan="5" style="text-align:right"><strong>Total</strong></td>
-                            <td style="text-align:right">
-                                <strong>
-                                    <span t-esc="'%.2f' %(sum(line.product_qty * line.price_unit for line in lines_to_report ))"
-                                         />
-                                </strong>
-                            </td>
-                            <td>
-                            </td>
-                            <td style="text-align:right">
-                               <strong>
-                                   <span t-esc="'%.2f' % doc['vat_amount']"
-                                         />
-                               </strong>
-                            </td>
-                             <!-- <td style="text-align:right">
-                                <strong>
-                                    <span t-esc="doc.amount_tax"
-                                          />
-                                </strong>
-                            </td> -->
-                            <td style="text-align:right">
-                                <strong>
-                                    <span t-esc="'%.2f' % doc['grand_total_amount']"
-                                          />
-                                </strong>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <td colspan="5" style="text-align:right"><strong>Inspection Charges Amount Received</strong></td>
-                            
-                            <td colspan="10" style="text-align:right">
-                               <strong>
-                                   <span t-esc="'%.2f' % doc['inspection_charges_amount']"
-                                         />
-                               </strong>
-                            </td>
-                            
-                        </tr>
-                        
-                        
-                        <tr>
-                           <td colspan="5" style="text-align:right"><strong>Balance To Be Paid</strong></td>
-                        	
-                        	<!-- <td>
-                        	</td>
-                        	<td>
-                        	</td> -->
-                        	<td colspan="10" style="text-align:right">
-                        		<strong>
-                        			<span t-esc = "'%.2f'%doc['balance_paid']"/>
-                        		</strong>
-                        	</td>
-                        
-                        </tr>
-                        <tr>
-                        	<t t-if="doc['balance_paid'] > 0" >
-	                            <td colspan="10" style="text-align:right">
-	                                <strong>
-	                                    <span t-esc="doc.company_id.currency_id.amount_to_text(doc['balance_paid'])"/>
-	                                    Only
-	                                </strong>
-	                            </td>
-                            </t>
-                            <t t-elif="doc['inspection_charges_amount'] > 0" >
-	                            <td colspan="10" style="text-align:right">
-	                                <strong>
-	                                    <span t-esc="doc.company_id.currency_id.amount_to_text(doc['inspection_charges_amount'])"/>
-	                                    Only
-	                                </strong>
-	                            </td>
-                            </t>
-                            <t t-elif="doc['grand_total_amount'] > 0" >
-	                            <td colspan="10" style="text-align:right">
-	                                <strong>
-	                                    <span t-esc="doc.company_id.currency_id.amount_to_text(doc['grand_total_amount'])"/>
-	                                    Only
-	                                </strong>
-	                            </td>
-                            </t>
-                            
-                            
-                        </tr>
-                    </tbody>
-                </table>
-                
-                
-                <br/>
-				<br/>
-				 <table width="100%" style="border-collapse: collapse; border: 1px solid #000;">
-						    <tbody>
-						
-						        <tr>
-						
-						            <!-- English -->
-						            <td style="text-align: left; width: 50%; padding: 5px;">
-						                <strong>Quotation Validity:</strong>
-						                <!-- <span t-esc="quotation_expiry_date"/> -->
-						            </td>
-						
-						            <!-- Arabic -->
-						            <td style="text-align: right; width: 50%; padding: 5px;" dir="rtl">
-						                <strong>صلاحية عرض السعر :</strong>
-						
-						                <!--
-						                <span dir="ltr" style="display:inline-block;">
-						                    <span t-esc="quotation_expiry_date"/>
-						                </span>
-						                -->
-						            </td>
-						
-						        </tr>
-						
-						        <tr>
-						
-						            <td style="text-align: left; padding: 5px;">
-						                
-						                    This quotation is valid for 2 weeks from the date of issuance.
-						                
-						            </td>
-						
-						            <td style="text-align: right; padding: 5px;" dir="rtl">
-						                
-						                    صلاحية عرض السعر سارية لمدة أسبوعين من تاريخ إصدار عرض السعر.
-						                
-						            </td>
-						
-						        </tr>
-						
-						    </tbody>
-						</table>
-			    <br/>
-			  <br/>
-				
-				  <table width="100%" style="border-collapse: collapse; border: 1px solid #000;">
-		                <tr>
-		                    <td style="text-align: left; width: 50%; padding: 5px;">
-		                        <strong>Payment Terms:</strong> 100% Advance
-		                    </td>
-		                    <td style="text-align: right; width: 50%; padding: 5px;" dir="rtl">
-		                        <strong>شروط الدفع:</strong> 100% دفعة مقدمة
-		                    </td>
-		                </tr>
-		                <tr>
-		                    <td style="text-align: left; padding: 5px;">
-		                        Repair work will commence only after the full payment has been received.
-		                    </td>
-		                    <td style="text-align: right; padding: 5px;" dir="rtl">
-		                        سيبدأ تنفيذ أعمال الإصلاح فقط بعد استلام المبلغ بالكامل.
-		                    </td>
-		                </tr>
-		            </table>
-						
 
-                <!-- <div class="row mt32 mb32">
-                    <div class="col-4 text-left">
-                        <p style="font-size:18px;">المستلم</p>
-                        <p style="font-size:18px;">Receiver</p>
-                    </div>
-                    <div class="col-4">
-                        <p style="font-size:18px;">المحاسب / أمين الصندوق</p>
-                        <p style="font-size:18px;">Accountant/Cashier</p>
-                    </div>
-                    <div class="col-4" align="right">
-                        <p style="font-size:18px;">اسم الفني</p>
-                        <p style="font-size:18px;">Technician Name</p>
-                    </div>
-                </div> -->
-                
+                            </t>
 
-               <!--  <t t-if="doc.signature">
-                    <div class="mt-4 ml64 mr4" name="signature">
-                        <div class="offset-8">
-                            <strong>Signature</strong>
-                        </div>
-                        <div class="offset-8">
-                            <img t-att-src="image_data_uri(doc.signature)" style="max-height: 4cm; max-width: 8cm; image-rendering: crisp-edges;"/>
-                        </div>
-                        <div class="offset-8 text-center">
-                            <span t-field="doc.signed_by"/>
-                        </div>
-                    </div>
-                </t> -->
 
-               <!--  <t t-if="not is_html_empty(doc.payment_term_id.note) or not is_html_empty(doc.fiscal_position_id.sudo().note)">
-                    <div class="mt32">
-                        <p t-if="not is_html_empty(doc.payment_term_id.note)">
-                            <strong>Payment Terms:</strong>
-                            <span t-field="doc.payment_term_id.note"/>
-                        </p>
-                        <p t-if="doc.fiscal_position_id and not is_html_empty(doc.fiscal_position_id.sudo().note)">
-                            <strong>Fiscal Position Remark:</strong>
-                            <span t-field="doc.fiscal_position_id.sudo().note"/>
-                        </p>
-                    </div>
-                </t> -->
-            </div>
-            
-            	 <div class="footer">
-                        <img src="machine_repair_management/static/src/img/JobCard_Footer_img.png"
-                             style="width:100%;"/>
-                    </div>
-            <!-- <div class="footer">
-                <div>
-                    <img src="/machine_repair_management/static/src/img/Arabic_Text.png" alt="img"
-                         style="height:60px; width:100%; image-rendering: crisp-edges;"/>
+                            <!-- TOTAL -->
+
+                            <tr>
+
+                                <td colspan="5"
+                                    style="text-align:right">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        Total
+                                    </strong>
+
+                                </td>
+
+                                <td style="text-align:right">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+
+                                        <span style="font-size:16px !important;"
+                                              t-esc="'%.2f' % sum(
+                                                  line.product_qty * line.price_unit
+                                                  for line in lines_to_report
+                                              )"/>
+
+                                    </strong>
+
+                                </td>
+
+                                <td/>
+
+                                <td style="text-align:right">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+
+                                        <span style="font-size:16px !important;"
+                                              t-esc="'%.2f' % doc['vat_amount']"/>
+
+                                    </strong>
+
+                                </td>
+
+                                <td style="text-align:right">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+
+                                        <span style="font-size:16px !important;"
+                                              t-esc="'%.2f' % doc['grand_total_amount']"/>
+
+                                    </strong>
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- INSPECTION CHARGES -->
+
+                            <tr>
+
+                                <td colspan="5"
+                                    style="text-align:right">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        Inspection Charges Amount Received
+                                    </strong>
+
+                                </td>
+
+                                <td colspan="10"
+                                    style="text-align:right">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+
+                                        <span style="font-size:16px !important;"
+                                              t-esc="'%.2f' % doc['inspection_charges_amount']"/>
+
+                                    </strong>
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- BALANCE -->
+
+                            <tr>
+
+                                <td colspan="5"
+                                    style="text-align:right">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        Balance To Be Paid
+                                    </strong>
+
+                                </td>
+
+                                <td colspan="10"
+                                    style="text-align:right">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+
+                                        <span style="font-size:16px !important;"
+                                              t-esc="'%.2f' % doc['balance_paid']"/>
+
+                                    </strong>
+
+                                </td>
+
+                            </tr>
+
+
+                            <!-- AMOUNT IN WORDS -->
+
+                            <tr>
+
+                                <t t-if="doc['balance_paid'] > 0">
+
+                                    <td colspan="10"
+                                        style="text-align:right">
+
+                                        <strong style="font-size:18px !important;
+                                                       font-weight:bold !important;">
+
+                                            <span style="font-size:16px !important;"
+                                                  t-esc="doc.company_id.currency_id.amount_to_text(doc['balance_paid'])"/>
+
+                                            Only
+
+                                        </strong>
+
+                                    </td>
+
+                                </t>
+
+                                <t t-elif="doc['inspection_charges_amount'] > 0">
+
+                                    <td colspan="10"
+                                        style="text-align:right">
+
+                                        <strong style="font-size:18px !important;
+                                                       font-weight:bold !important;">
+
+                                            <span style="font-size:16px !important;"
+                                                  t-esc="doc.company_id.currency_id.amount_to_text(doc['inspection_charges_amount'])"/>
+
+                                            Only
+
+                                        </strong>
+
+                                    </td>
+
+                                </t>
+
+                                <t t-elif="doc['grand_total_amount'] > 0">
+
+                                    <td colspan="10"
+                                        style="text-align:right">
+
+                                        <strong style="font-size:18px !important;
+                                                       font-weight:bold !important;">
+
+                                            <span style="font-size:16px !important;"
+                                                  t-esc="doc.company_id.currency_id.amount_to_text(doc['grand_total_amount'])"/>
+
+                                            Only
+
+                                        </strong>
+
+                                    </td>
+
+                                </t>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+
+                    <br/>
+                    <br/>
+
+
+                    <!-- QUOTATION VALIDITY -->
+
+                    <table width="100%"
+                           style="border-collapse:collapse;border:1px solid #000;">
+
+                        <tbody>
+
+                            <tr>
+
+                                <td style="text-align:left;width:50%;padding:5px;">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        Quotation Validity:
+                                    </strong>
+
+                                </td>
+
+                                <td style="text-align:right;width:50%;padding:5px;"
+                                    dir="rtl">
+
+                                    <strong style="font-size:18px !important;
+                                                   font-weight:bold !important;">
+                                        صلاحية عرض السعر :
+                                    </strong>
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td style="text-align:left;padding:5px;">
+                                    <span style="font-size:16px !important;">
+                                        This quotation is valid for 2 weeks from the date of issuance.
+                                    </span>
+                                </td>
+
+                                <td style="text-align:right;padding:5px;"
+                                    dir="rtl">
+
+                                    <span style="font-size:16px !important;">
+                                        صلاحية عرض السعر سارية لمدة أسبوعين من تاريخ إصدار عرض السعر.
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+
+                    <br/>
+                    <br/>
+
+
+                    <!-- PAYMENT TERMS -->
+
+                    <table width="100%"
+                           style="border-collapse:collapse;border:1px solid #000;">
+
+                        <tr>
+
+                            <td style="text-align:left;width:50%;padding:5px;">
+
+                                <strong style="font-size:18px !important;
+                                               font-weight:bold !important;">
+                                    Payment Terms:
+                                </strong>
+
+                                <span style="font-size:16px !important;">
+                                    100% Advance
+                                </span>
+
+                            </td>
+
+                            <td style="text-align:right;width:50%;padding:5px;"
+                                dir="rtl">
+
+                                <strong style="font-size:18px !important;
+                                               font-weight:bold !important;">
+                                    شروط الدفع:
+                                </strong>
+
+                                <span style="font-size:16px !important;">
+                                    100% دفعة مقدمة
+                                </span>
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td style="text-align:left;padding:5px;">
+
+                                <span style="font-size:16px !important;">
+                                    Repair work will commence only after the full payment has been received.
+                                </span>
+
+                            </td>
+
+                            <td style="text-align:right;padding:5px;"
+                                dir="rtl">
+
+                                <span style="font-size:16px !important;">
+                                    سيبدأ تنفيذ أعمال الإصلاح فقط بعد استلام المبلغ بالكامل.
+                                </span>
+
+                            </td>
+
+                        </tr>
+
+                    </table>
+
                 </div>
-                <br/>
-                <div>
-                    <img src="/machine_repair_management/static/src/img/Footer_Address.png" alt="img"
-                         style="height:80px; width:100%; image-rendering: crisp-edges;"/>
-                </div>
-            </div> -->
-            </t>
-            </t>
-            </t>
-        </template>
 
-        <!-- Inherit and Replace Default Report Template -->
-        <!-- <template id="custom_report_saleorder_hhs" inherit_id="sale.report_saleorder_document">
-            <xpath expr="//t[1]" position="replace">
-                <t t-call="web.html_container">
-                    <t t-foreach="docs" t-as="doc">
-                        <t t-call="machine_repair_management.sale_order_document_template_internal_layout">
-                            <t t-call="machine_repair_management.report_saleorder_document_hhs"
-                               t-lang="doc.partner_id.lang"/>
-                        </t>
-                    </t>
-                </t>
-            </xpath>
-        </template>
- -->
+
+                <!-- SAME FOOTER AS WORKING TEMPLATE -->
+
+                <div class="footer">
+
+                    <img src="machine_repair_management/static/src/img/JobCard_Footer_img.png"
+                         style="width:100%;"/>
+
+                </div>
+
+            </t>
+
+        </t>
+
+    </t>
+
+</template>  
+ 
         <!-- Override Default Report Action -->
-    <!-- <record id="service_sale_order_quotation_report" model="ir.actions.report">
+   <!--  <record id="service_sale_order_quotation_report" model="ir.actions.report">
         <field name="name">Quotation</field>
         <field name="model">service.sale.order</field>
         <field name="report_type">qweb-pdf</field>
@@ -482,9 +902,9 @@
         <field name="binding_model_id" eval="False"/>
         <field name="binding_type">report</field>
     </record> -->
-    
-    
-     <record id="service_sale_order_quotation_report" model="ir.actions.report">
+            
+            
+      <record id="service_sale_order_quotation_report" model="ir.actions.report">
 	    <field name="name">Quotation</field>
 	    <field name="model">service.sale.order</field>
 	    <field name="report_type">qweb-pdf</field>
@@ -521,8 +941,6 @@
 	
 	</template>  
 	        
-            
-        
         
         
     </data>    

@@ -107,7 +107,9 @@ class ServiceSaleOrder(models.Model):
                             or "New"
                         )
     
+                 
                     else:
+                    
                         now = datetime.now()
                         current_month = now.month
                         current_year = now.year

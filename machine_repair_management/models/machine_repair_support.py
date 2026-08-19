@@ -68,9 +68,19 @@ def postcommit_defer(func):
     return wrapper
 
 class MachineRepairSupport(models.Model):
-    _name = "machine.repair.support"
-    _description = "Machine Repair Support"
-    _order = "id desc"
+    _name = 'machine.repair.support'
+
+    def _run_postcommit_action(self, method_name, *args, **kwargs):
+        if not self:
+            return
+        with self.pool.cursor() as new_cr:
+            new_env = self.env(cr=new_cr)
+            new_records = new_env[self._name].browse(self.ids)
+            new_records = new_records.with_context(in_postcommit=True)
+            getattr(new_records, method_name)(*args, **kwargs)
+
+    _description = 'Machine Repair Support'
+    _order = 'id desc'
     #     _inherit = ['mail.thread', 'ir.needaction_mixin']
     _inherit = [
         "mail.thread",
@@ -129,6 +139,7 @@ class MachineRepairSupport(models.Model):
                 #     else "machine.repair.support"
                 # )
                 project_id = vals.get("project_id")
+                
                 '''Code added on August 04 2026 by Vijaya bhaskar Service Request screen and job scheduling screen if user rights has one project show it as default and disable other. IF more than 1 no default let user select the project.'''
                 projects = self.env.user.project_ids
                 if not vals.get("amc_project_id") and len(projects) == 1:
@@ -219,7 +230,7 @@ class MachineRepairSupport(models.Model):
                 
                         contract = self.env["subscription.contracts"].browse(contract_id)
                 
-                        # Get matching contract line
+                         # Get matching contract line
                         
                         '''Code Added on July 14 2026 by Vijaya Bhaskar 
                         line = contract.contract_line_ids.filtered(
@@ -254,6 +265,7 @@ class MachineRepairSupport(models.Model):
                         '''
                         vals['name'] = f"{contract.customer_code}/EC-{machine_repair_search+1:02d}"
 
+                    
                     
                     '''Code Added on May 23 2026 by Vijaya Bhaskar because Already Preventive Count has finished their quota'''
                     # if vals.get('maintenance_type') == 'preventive' and vals.get('paid_service_bool')==True:
@@ -498,22 +510,14 @@ class MachineRepairSupport(models.Model):
                 job_card._onchange_expiry_date_warranty()
 
             if job_card.team_id:
-                scheduled_state = self.env["project.task.type"].search(
-                    [("code", "=", "102")], limit=1
-                )
-
+                scheduled_state = self.env['project.task.type'].search(
+                                        [('code','=','102')],
+                                         limit=1)
+            
                 job_card.job_card_state_code = scheduled_state.code
                 job_card.job_card_state = scheduled_state.name
                 job_card.job_state = scheduled_state
-                job_card.available_state_ids = [
-                    (
-                        6,
-                        0,
-                        self.env["project.task.type"]
-                        .search([("code", "in", ("102", "103", "104"))])
-                        .ids,
-                    )
-                ]
+                job_card.available_state_ids = [(6, 0, self.env['project.task.type'].search([('code', 'in', ('102', '103', '104'))]).ids)]                
                 # job_card._onchange_job_card_state_status()
                 job_card._compute_available_state_ids()
 
@@ -556,9 +560,12 @@ class MachineRepairSupport(models.Model):
             #     partner = self.env['res.partner'].create(partner_vals)
             #     rec.partner_id = partner
             if not partner_search:
-                partner = self.env["res.partner"].create(partner_vals)
-                rec.partner_id = partner.id
-                rec.task_id.partner_id = partner.id
+                '''Code Added on August 10 2026 by Vijaya bhaskar user’s alternative mobile number or contract screen no need not create a customer'''
+                if not rec.project_related_amc_bool:
+                    partner = self.env["res.partner"].create(partner_vals)
+                    rec.partner_id = partner.id
+                    rec.task_id.partner_id = partner.id
+                    
             else:
                 partner = partner_search.update(
                     {
@@ -586,61 +593,60 @@ class MachineRepairSupport(models.Model):
                     }
                 )
                 rec.partner_id = partner_search.id
-
+              
+            
+            
+   
+            
+    @postcommit_defer
     def _send_whatsapp_greeting(self):
         _logger.info("✅ WhatsApp greeting send triggered for order %s", self.name)
-        if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
-        ):
+        if not self.env['ir.config_parameter'].sudo().get_param('machine_repair_management.whatsapp_send_bool') == 'True':
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
-
+      
         # Validate partner data
         phone_number = self.phone
         whatsapp_opt_in = self.whatsapp_opt_in
         # whatsapp_opt_in = self.partner_id.x_whatsapp_opt_in
         country_code = self.country_id.phone_code
-
+        
         if not whatsapp_opt_in:
             _logger.info("❌ No WhatsApp opt-in for customer %s", self.customer_name)
             return False
-
+    
         if not phone_number:
-            _logger.info(
-                "❌ No mobile number found for customer  %s", self.customer_name
-            )
+            _logger.info("❌ No mobile number found for customer  %s", self.customer_name)
             return False
-
+    
         # Format phone number (E.164 without +)
-        phone_number = phone_number.replace("+", "").replace(" ", "")
+        phone_number = phone_number.replace('+', '').replace(' ', '')
         phone_number = f"{country_code}{phone_number}"
         _logger.info("............Formatted phone number: %s", phone_number)
-
+    
         # base_url = 'https://graph.facebook.com/v18.0/629139543620025'
         whatsapp_phone_number_id = f"{self.env['ir.config_parameter'].sudo().get_param('whatsapp_sale_order_notify.whatsapp_phone_number_id')}"
 
-        base_url = f"https://graph.facebook.com/v18.0/{whatsapp_phone_number_id}"
+        base_url = f'https://graph.facebook.com/v18.0/{whatsapp_phone_number_id}'
 
         access_token = f"{self.env['ir.config_parameter'].sudo().get_param('whatsapp_sale_order_notify.whatsapp_access_token')}"
-
+    
         # headers = {
         #     'Authorization': f'Bearer {access_token}',
         # }
-
+       
         # base_url = f'https://graph.facebook.com/{api_version}/{phone_number_id}'
         headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json",
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json'
         }
         if not access_token:
             _logger.error("❌ No WhatsApp access token configured")
             return False
-
+    
+    
         # Send greeting template message
-        template_url = f"{base_url}/messages"
+        template_url = f'{base_url}/messages'
         # template_payload = {
         #     'messaging_product': 'whatsapp',
         #     'to': phone_number,
@@ -650,8 +656,8 @@ class MachineRepairSupport(models.Model):
         #         'language': {'code': 'en_US'}
         #     }
         # }
-
-        """
+        
+        '''
         message = False
      
         message = f"Welcome Shaker & Co. \n \n Dear Customer {self.customer_name},\n Thank you for contacting Shaker & Co. your service request number is {self.name}.We will send you an appointment schedule shortly.\n\n Thank You.\n Service Team"
@@ -666,10 +672,10 @@ class MachineRepairSupport(models.Model):
                 }
             
             }
-        """
-
-        """This is working perfect but i commented by Vijaya Bhaskar on august-02-2025 because they don't want Default Template """
-        """
+        '''
+        
+        '''This is working perfect but i commented by Vijaya Bhaskar on august-02-2025 because they don't want Default Template '''
+        '''
         template_payload = {
               "messaging_product": "whatsapp",
                'to': phone_number,
@@ -713,8 +719,10 @@ class MachineRepairSupport(models.Model):
                 ]
               }
             }
-            """
-
+            '''
+            
+        
+        
         template_payload = {
             "messaging_product": "whatsapp",
             "to": phone_number,
@@ -749,19 +757,16 @@ class MachineRepairSupport(models.Model):
         }
 
         try:
-            response = requests.post(
-                template_url, headers=headers, json=template_payload
-            )
+            response = requests.post(template_url, headers=headers, json=template_payload, timeout=(5, 10))
+            _logger.info("WhatsApp greeting message API response: Status: %s, Body: %s", response.status_code, response.text)
+            self.message_post(body=_("WhatsApp greeting message API Response status: %s, Body: %s") % (response.status_code, response.text))
             response.raise_for_status()
-            _logger.info("✅ Greeting message sent for order %s:", self.name)
-            # _logger.info("✅ Greeting message sent for order %s:%s", self.name, response.json())
-            self.message_post(body=_("WhatsApp greeting message sent successfully"))
+            _logger.info("✅ Greeting message sent for order %s: %s", self.name, response.json())
             return True
-
+      
         except requests.exceptions.RequestException as e:
-            _logger.error(
-                "❌ Greeting Message Failed to send WhatsApp message: %s", str(e)
-            )
+            _logger.error("❌ Greeting Message Failed to send WhatsApp message: %s", str(e))
+            self.message_post(body=_("WhatsApp greeting message failed: %s") % str(e))
             return False
 
     '''Code Added on June 19 2026 by Vijaya Bhaskar client asked the emergency visit sent to cordinator '''
@@ -837,22 +842,23 @@ class MachineRepairSupport(models.Model):
     def onchnage_project(self):
         for rec in self:
             rec.analytic_account_id = rec.project_id.analytic_account_id
-
+            
+            
+    
     def action_whatsapp_send(self):
         for rec in self:
             if not rec.phone:
                 raise ValidationError("Please Enter Correct Phone Number")
-
-            message = "Your Service Request %s is Created" % rec.name
-            whatsapp_url = "https://api.whatsapp.com/send?phone=%s&text=%s" % (
-                rec.phone,
-                message,
-            )
+           
+            message = "Your Service Request %s is Created" %rec.name
+            whatsapp_url = "https://api.whatsapp.com/send?phone=%s&text=%s" %(rec.phone,message)
             return {
-                "type": "ir.actions.act_url",
-                "target": "new",
-                "url": whatsapp_url,
-            }
+                'type':'ir.actions.act_url',
+                 'target' :'new',
+                 'url':whatsapp_url,
+                
+                }
+                    
 
     @api.onchange("product_id")
     def onchnage_product(self):
@@ -865,6 +871,8 @@ class MachineRepairSupport(models.Model):
                 rec.model = rec.product_id.model
                 rec.year = rec.product_id.year
 
+  
+   
     state = fields.Many2one(
         "project.task.type",
         string="Machine Status",
@@ -908,6 +916,8 @@ class MachineRepairSupport(models.Model):
         if self.state and not self.state.exists():
             self.state = False
 
+    
+
     def write(self, vals):
         if vals.get("state"):
             state = self.env["project.task.type"].sudo().browse(vals["state"])
@@ -918,6 +928,7 @@ class MachineRepairSupport(models.Model):
     @api.model
     def default_get(self, fields):
         res = super().default_get(fields)
+
         # Set the default project_id if it's provided (or fetched dynamically)
         if self.project_id:
             project = self.env["project.project"].browse(self.project_id.id)
@@ -926,14 +937,14 @@ class MachineRepairSupport(models.Model):
             )
             if fallback_state:
                 res["state"] = fallback_state.id
-        
+                
         '''Code added on August 04 2026 by Vijaya bhaskar Service Request screen and job scheduling screen if user rights has one project show it as default and disable other. IF more than 1 no default let user select the project.'''
         projects = self.env.user.project_ids
         if len(projects) == 1:
             project = projects[0]
             res['amc_project_id'] = project.id
-            res['project_related_amc_bool'] = project.related_to_amc        
-                
+            res['project_related_amc_bool'] = project.related_to_amc 
+                   
         return res
 
     """ This code is commented by Vijaya bhaskar on Jun-11-2025 for time being because name field is not shown in the Import/Export because it is readonly"""
@@ -977,9 +988,8 @@ class MachineRepairSupport(models.Model):
         "res.users",
         string="Technician",
     )
-    available_user_ids = fields.Many2many(
-        "res.users", compute="_compute_available_user_ids", store=True
-    )
+    available_user_ids = fields.Many2many('res.users', compute='_compute_available_user_ids', store = True)
+    
     active = fields.Boolean(default=True)
 
     @api.depends("team_id", "team_id.support_team_line_ids")
@@ -1035,11 +1045,7 @@ class MachineRepairSupport(models.Model):
 
     @api.model
     def _get_default_project(self):
-        project_id = (
-            self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.project_id")
-        )
+        project_id = self.env['ir.config_parameter'].sudo().get_param('machine_repair_management.project_id')
         if project_id:
             return int(project_id)
         else:
@@ -1209,59 +1215,41 @@ class MachineRepairSupport(models.Model):
     whatsapp_opt_in = fields.Boolean(string="Whatsapp", default=True)
 
     building_number = fields.Char("Building Number")
+    
+    plot_identification = fields.Char("Additional No")
+    
+    partner_latitude = fields.Float(string='Latitude', digits=(10, 7))
+    
+    partner_longitude = fields.Float(string='Longitude', digits=(10, 7))
+    
+    address_one = fields.Char(string="Customer Address")
+    
+    address_two = fields.Char(string = "Address 2")
+    
+    product_group_id = fields.Many2one('product.category',string="Product Group" , 
+                                     context=lambda self: {'show_only_name': True})
 
-    plot_identification = fields.Char("Plot Identification")
-
-    partner_latitude = fields.Float(string="Latitude", digits=(10, 7))
-
-    partner_longitude = fields.Float(string="Longitude", digits=(10, 7))
-
-    address_one = fields.Char(string="Address 1")
-
-    address_two = fields.Char(string="Address 2")
-
-    product_group_id = fields.Many2one(
-        "product.category",
-        string="Product Group",
-        context=lambda self: {"show_only_name": True},
-    )
-
-    product_sub_group_id = fields.Many2one(
-        "product.category",
-        string="Product Sub Group",
-        context=lambda self: {"show_only_name": True},
-    )
-
-    attachment_ids = fields.Many2many(
-        "ir.attachment",
-        string="Attachment",
-        domain="[('mimetype','in',['image/jpeg','image/png','application/pdf','image/gif'])]",
-    )
-
-    sr_service_warranty_id = fields.Many2one(
-        "service.warranty",
-        string="Service Warranty",
-        default=lambda self: self.env["service.warranty"].search(
-            [("warranty_applicable_bool", "=", False)]
-        ),
-    )
-
+    product_sub_group_id = fields.Many2one('product.category',string="Product Sub Group",
+                                        context=lambda self: {'show_only_name': True})
+    
+    
+    attachment_ids = fields.Many2many('ir.attachment', string = "Attachment",\
+                                      domain ="[('mimetype','in',['image/jpeg','image/png','application/pdf','image/gif'])]")
+    
+    
+    sr_service_warranty_id = fields.Many2one('service.warranty', string="Service Warranty", 
+                                             default  = lambda self: self.env['service.warranty'].search([('warranty_applicable_bool','=',False)]))
+    
+    
+    
     # available_city_ids = fields.Many2many('res.city',string ="Cities")
-
-    whatsapp_service_send_bool = fields.Boolean(
-        string="Whatsapp Send Y/N",
-        default=False,
-        help="All Whatsapp Send feature Enable/Not in res.config_settings",
-        compute="_compute_whatsapp_service_send_bool",
-    )
-
-    sequence_creation_bool = fields.Boolean(
-        string="Sequence Creation",
-        default=False,
-        compute="_compute_sequence_creation_bool",
-        store=False,
-    )
-
+    
+    whatsapp_service_send_bool = fields.Boolean(string = "Whatsapp Send Y/N", default = False, help = "All Whatsapp Send feature Enable/Not in res.config_settings",
+                                        compute = "_compute_whatsapp_service_send_bool")
+                                    
+    
+    sequence_creation_bool = fields.Boolean(string = "Sequence Creation" , default =  False, compute = "_compute_sequence_creation_bool", store = False)
+    
     # @api.depends('customer_name')
     # def _compute_sequence_creation_bool(self):
     #     for rec in self:
@@ -1270,104 +1258,83 @@ class MachineRepairSupport(models.Model):
     #             rec.sequence_creation_bool = True
     #
 
-    @api.depends("customer_name")
+    @api.depends('customer_name')
     def _compute_sequence_creation_bool(self):
-        config_val = (
-            self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.sequence_creation_bool", "False")
+        config_val = self.env['ir.config_parameter'].sudo().get_param(
+            'machine_repair_management.sequence_creation_bool', 'False'
         )
         for rec in self:
-            rec.sequence_creation_bool = config_val == "True"
-
-    @api.depends("customer_name")
+            rec.sequence_creation_bool = config_val == 'True'
+    
+    @api.depends('customer_name')
     def _compute_whatsapp_service_send_bool(self):
         for rec in self:
             rec.whatsapp_service_send_bool = False
-            whatsapp_search = (
-                self.env["ir.config_parameter"]
-                .sudo()
-                .get_param("machine_repair_management.whatsapp_send_bool")
-            )
-            if whatsapp_search == "True":
+            whatsapp_search = self.env['ir.config_parameter'].sudo().get_param('machine_repair_management.whatsapp_send_bool')
+            if whatsapp_search == 'True':
                 rec.whatsapp_service_send_bool = True
-
+                
+            
+    
     def _get_city_domain(self):
         user = self.env.user
         work_center = user.default_work_center_id
         if work_center:
-            return [("def_work_center_id", "in", work_center.ids)]
+            return [('def_work_center_id', 'in', work_center.ids)]
         return []
-
-    @api.onchange("sr_service_warranty_id")
+    
+    @api.onchange('sr_service_warranty_id')
     def _onchange_service_warranty(self):
         for rec in self:
             if rec.sr_service_warranty_id:
-                rec.warranty = (
-                    rec.sr_service_warranty_id.warranty_applicable_bool or None
-                )
-
-    @api.constrains("building_number", "plot_identification", "zip_code")
+                rec.warranty = rec.sr_service_warranty_id.warranty_applicable_bool or None
+    
+  
+    @api.constrains('building_number','plot_identification','zip_code')
     def _check_building_number(self):
         for rec in self:
-            if rec.building_number:
-                if not rec.building_number.isdigit():
-                    raise ValidationError(
-                        "Please enter Building number is always number not character"
-                    )
-                if rec.building_number.isdigit():
-                    if len(rec.building_number) != 4:
-                        raise ValidationError("Building number  always 4 numbers")
-            if rec.plot_identification:
-                if not rec.plot_identification.isdigit():
-                    raise ValidationError(
-                        "Please enter Plot identification number is always number"
-                    )
-                if rec.plot_identification.isdigit():
-                    if len(rec.plot_identification) != 4:
-                        raise ValidationError(
-                            "Plot identification Number always 4 digits"
-                        )
-            if rec.zip_code:
-                if not rec.zip_code.isdigit():
-                    raise ValidationError(
-                        "Please enter Zip Code is always number not character"
-                    )
-                if rec.zip_code.isdigit():
-                    if len(rec.zip_code) != 5:
-                        raise ValidationError("Zip Code  always 5 numbers")
+            if rec.customer_identification_scheme == 'TIN':
+                if rec.building_number:
+                    if not rec.building_number.isdigit():
+                        raise ValidationError("Please enter Building number is always number not character")
+                    if rec.building_number.isdigit():
+                        if len(rec.building_number) != 4:
+                            raise ValidationError("Building number  always 4 numbers")
+                if rec.plot_identification:
+                    if not rec.plot_identification.isdigit():
+                        raise ValidationError('Please enter Additional No. is always number')
+                    if rec.plot_identification.isdigit():
+                        if len(rec.plot_identification) != 4:
+                            raise ValidationError("Additional No. always 4 digits")      
+                        
+                if rec.zip_code:
+                    if not rec.zip_code.isdigit():
+                        raise ValidationError("Please enter Zip Code is always number not character")
+                    if rec.zip_code.isdigit():
+                        if len(rec.zip_code) != 5:
+                            raise ValidationError("Zip Code  always 5 numbers")    
 
-    @api.onchange("customer_identification_scheme")
+
+    @api.onchange('customer_identification_scheme')
     def _onchange_customer_identification_scheme(self):
         for rec in self:
             if rec.customer_identification_scheme:
-                if rec.customer_identification_scheme != "TIN":
-                    rec.customer_identification_number = (
-                        rec.partner_id.additional_identification_number
-                    )
-                    rec.building_number = None
+                if rec.customer_identification_scheme != 'TIN':
+                    rec.customer_identification_number = rec.partner_id.additional_identification_number
+                    rec.building_number =  None
                     rec.plot_identification = None
                 else:
-                    if rec.partner_id.additional_identification_scheme == "TIN":
+                    if rec.partner_id.additional_identification_scheme == 'TIN':
                         rec.customer_identification_number = rec.partner_id.vat or None
                         rec.building_number = rec.partner_id.building_number or None
-                        rec.plot_identification = (
-                            rec.partner_id.plot_identification or None
-                        )
+                        rec.plot_identification = rec.partner_id.plot_identification or None
             else:
                 rec.customer_identification_number = None
-                rec.building_number = None
+                rec.building_number =  None
                 rec.plot_identification = None
-
-    @api.onchange(
-        "address_one",
-        "address_two",
-        "zip_code",
-        "district",
-        "customer_city_id",
-        "country_state_id",
-        "country_id",
-    )
+                        
+        
+    @api.onchange('address_one', 'address_two', 'zip_code', 'district', 'customer_city_id', 'country_state_id', 'country_id')
     def _onchange_get_lat_lon(self):
         for rec in self:
             address_parts = [
@@ -1381,37 +1348,31 @@ class MachineRepairSupport(models.Model):
                 rec.country_state_id.name if rec.country_state_id else "",
                 rec.country_id.name if rec.country_id else "",
             ]
-            full_address = ", ".join(filter(None, address_parts))
+            full_address = ', '.join(filter(None, address_parts))
             if full_address:
                 try:
-                    geolocator = Nominatim(user_agent="odoo_geolocator")
-                    location = geolocator.geocode(full_address, timeout=10)
+                    geolocator = Nominatim(user_agent=f"hhs-odoo/{rec.env.company.name or 'unknown'}")
+                    location = geolocator.geocode(full_address, timeout=3)
                     if location:
                         rec.partner_latitude = location.latitude
                         rec.partner_longitude = location.longitude
                 except Exception as e:
                     _logger.warning(f"GeoPy geocoding failed for '{full_address}': {e}")
 
-    @api.depends("is_readonly")
+    @api.depends('is_readonly')
     def _compute_is_readonly(self):
         for record in self:
-            if record.env.user.has_group(
-                "machine_repair_management.group_technical_allocation_user"
-            ):
+            if record.env.user.has_group('machine_repair_management.group_technical_allocation_user'):
                 record.is_readonly = True
             else:
                 record.is_readonly = False
-
-    @api.constrains("attachment_ids")
+                
+    
+    @api.constrains('attachment_ids')
     def _validation_attachment_ids(self):
         for rec in self:
             if rec.attachment_ids:
-                allowed_mimetypes = [
-                    "image/jpeg",
-                    "image/png",
-                    "image/gif",
-                    "application/pdf",
-                ]
+                allowed_mimetypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']
                 for attachment in rec.attachment_ids:
                     if attachment.mimetype not in allowed_mimetypes:
                         raise ValidationError(
@@ -1464,19 +1425,18 @@ class MachineRepairSupport(models.Model):
             #     ('job_card_state','=','On Hold - Spare Parts Required'),('job_card_state_code','=','121')
             # ]
             if user.default_work_center_id:
-                domain += [("work_center_id", "in", user.default_work_center_id.ids)]
-            return super(MachineRepairSupport, self).search_fetch(
-                domain, field_names, offset, limit, order
-            )
-
+                domain += [('work_center_id', 'in', user.default_work_center_id.ids)]
+            return super(MachineRepairSupport, self).search_fetch(domain, field_names, offset, limit, order)
+        
         # if user.has_group('machine_repair_management.group_job_card_back_office_user') and \
         #     user.has_group('machine_repair_management.group_parts_user') and user.default_work_center_id:
         #     domain += [
         #         ('work_location_id', 'in', user.default_work_center_id.ids)
         #     ]
         #     return super(MachineRepairSupport, self).search_fetch(domain, field_names, offset, limit, order)
-
-        # for Admin user
+        
+     
+        #for Admin user
         # if user.has_group('machine_repair_management.group_admin_user') and  \
         #     user.has_group('machine_repair_management.group_job_card_back_office_user'):
         #     if user.default_work_center_id:
@@ -1490,12 +1450,11 @@ class MachineRepairSupport(models.Model):
         #
         #     return super(MachineRepairSupport, self).search_fetch(domain, field_names, offset, limit, order)
 
-        # For mobile users (technicians)
-        if user.has_group("machine_repair_management.group_job_card_back_office_user"):
+         # For mobile users (technicians)
+        if user.has_group('machine_repair_management.group_job_card_back_office_user') :
             if user.default_work_center_id:
                 domain += [
-                    ("user_id", "=", user.id),
-                    ("work_location_id", "in", user.default_work_center_id.ids),
+                    ('user_id', '=', user.id),('work_location_id', 'in', user.default_work_center_id.ids)
                 ]
                 domain += [("amc_project_id", "in", amc_project_ids)]
             else:
@@ -1519,32 +1478,32 @@ class MachineRepairSupport(models.Model):
         #         ('user_id', '=', user.id)
         #     ]
         #     return super(MachineRepairSupport, self).search_fetch(domain, field_names, offset, limit, order)
-
+        
         # Default fallback
-        return super(MachineRepairSupport, self).search_fetch(
-            domain, field_names, offset, limit, order
-        )
-
+        return super(MachineRepairSupport, self).search_fetch(domain, field_names, offset, limit, order)
+  
+   
     total_consumed_hours = fields.Float(
-        string="Total Consumed Hours",
+        string='Total Consumed Hours',
         #         compute='compute_total_hours',
         #         store=True,
     )
+
     custome_client_user_id = fields.Many2one(
-        "res.users",
+        'res.users',
         string="Ticket Created User",
         readonly=True,
-        track_visibility="always",
+        track_visibility='always'
     )
     product_slno = fields.Char(string="Serial Number")
     purchase_invoice_no = fields.Char(string="Purchase Invoice Number")
     purchase_date = fields.Date(string="Purchase Date")
-
+    
     # purchase_dealer_name = fields.Char(string="Dealer Name",deprecated=False)
     dealer_id = fields.Many2one(
-        "res.partner",
-        string="Dealer Name",
-        domain="[('partner_type_hhs','=','customer'),('sub_partner_type','=','dealer')]",
+    'res.partner', 
+    string="Dealer Name",
+    domain="[('partner_type_hhs','=','customer'),('sub_partner_type','=','dealer')]",
     )
     # @api.onchange('dealer_id')
     # def _onchange_dealer_id(self):
@@ -1558,32 +1517,38 @@ class MachineRepairSupport(models.Model):
     #         }
 
     internal_bool = fields.Boolean(string="Internal")
-    address = fields.Char(string="Address", compute="_compute_address", store=True)
-    job_card_no = fields.Char(string="Job Card No.")
-    status = fields.Char(string="Status")
-    service_request_state = fields.Char(string="Service Request State", store=True)
-    service_request_state_code = fields.Char(string="Service Request Code", store=True)
-    work_center_group_id = fields.Many2one(
-        "work.center.group", string="Work Center Group"
-    )
-    import_bool = fields.Boolean(string="Import", default=False)
-    svc_id = fields.Many2one(
-        "service.capacity",
-        string="Capacity",
-    )
-    capacity = fields.Char(string="Capacity")
-    purchase_dealer_name = fields.Char(string="Dealer Name")
-    # job_card_read_state = fields.Many2one(related='task_id.job_state', string ="Job card state",store=True, deprecated =True)
-    # service_request_state = fields.Char(string = "Service Request State",compute="_compute_job_card_state",store=True)
-    # service_request_state_code = fields.Char(string ="Service Request Code",    compute="_compute_job_card_state",store=True)
-    # job_card_read_state = fields.Many2one(related='task_id.job_state', string ="Job card state",store=True)
 
-    @api.onchange("state")
+    address = fields.Char(string="Address",compute="_compute_address",store= True)
+
+    job_card_no = fields.Char(string="Job Card No.")
+
+    status = fields.Char(string="Status")
+    
+    service_request_state = fields.Char(string = "Service Request State",store=True)
+    
+    service_request_state_code = fields.Char(string ="Service Request Code",   store=True)
+    
+    work_center_group_id = fields.Many2one('work.center.group', string = "Work Center Group")
+
+    import_bool = fields.Boolean(string ="Import",default = False)  
+    
+    svc_id = fields.Many2one('service.capacity',string="Capacity",)
+     
+    capacity = fields.Char(string="Capacity")
+    
+    purchase_dealer_name = fields.Char(string="Dealer Name")
+  
+   
+        
+    @api.onchange('state')
     def _onchange_state(self):
         for rec in self:
             rec.service_request_state = rec.state.name
-            rec.service_request_state_code = rec.state.code
+            rec.service_request_state_code = rec.state.code 
             # rec.state = rec.job_state
+    
+    
+   
 
     # @api.model
     # def _default_internal_tab_show_bool(self):
@@ -1601,22 +1566,12 @@ class MachineRepairSupport(models.Model):
     #     job_card_search = self.env['ir.config_parameter'].sudo().get_param('machine_repair_management.job_card_show')
     #     return job_card_search
 
-    internal_tab_show_bool = fields.Boolean(
-        string="Internal Tab show", compute="_compute_internal"
-    )
-    maintenance_tab_show_bool = fields.Boolean(
-        string="Maintenance Tab show", compute="_compute_internal"
-    )
-    job_card_no_bool = fields.Boolean(
-        string="Job card no bool", compute="_compute_internal"
-    )
-    warehouse_id = fields.Many2one(
-        "stock.warehouse", string="Warehouse", compute="_compute_warehouse", store=True
-    )
-
-    # project_type_id = fields.Many2one('project.project', string = "Project")
-
-    """ Commented by Vijaya Bhaskar on Sep 17 2025 due to warehouse interface is not required on the product category 
+    internal_tab_show_bool = fields.Boolean(string="Internal Tab show", compute="_compute_internal")
+    maintenance_tab_show_bool = fields.Boolean(string="Maintenance Tab show", compute="_compute_internal")
+    job_card_no_bool = fields.Boolean(string="Job card no bool", compute="_compute_internal")
+    warehouse_id = fields.Many2one('stock.warehouse', string = "Warehouse", compute = "_compute_warehouse", store = True)
+   
+    ''' Commented by Vijaya Bhaskar on Sep 17 2025 due to warehouse interface is not required on the product category 
     @api.constrains('product_category','work_location_id')
     def _check_warehouse_id(self):
         for rec in self:
@@ -1624,9 +1579,8 @@ class MachineRepairSupport(models.Model):
                 work_center = rec.product_category.category_line_ids.mapped('work_center_location_id')
                 if rec.work_location_id not in work_center:
                     raise ValidationError("Please give same Work center in Product Category warehouse is not defined")
-    """
-
-    @api.depends("work_location_id", "product_category")
+    '''
+    @api.depends('work_location_id','product_category')
     def _compute_warehouse(self):
         for rec in self:
             rec.warehouse_id = False
@@ -1635,36 +1589,28 @@ class MachineRepairSupport(models.Model):
                     if warehouse.work_center_location_id and rec.work_location_id:
                         if warehouse.work_center_location_id == rec.work_location_id:
                             rec.warehouse_id = warehouse.warehouse_id.id
+                    
+            
 
-    @api.depends("call_types_id")
+    @api.depends('call_types_id')
     def _compute_internal(self):
         self.internal_tab_show_bool = False
         self.maintenance_tab_show_bool = False
         self.job_card_no_bool = False
 
-        internal_search = (
-            self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.internal_service_show")
-        )
-        maintenance_search = (
-            self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.maintenance_service_show")
-        )
-        job_card_search = (
-            self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.job_card_show")
-        )
+        internal_search = self.env['ir.config_parameter'].sudo().get_param(
+            'machine_repair_management.internal_service_show')
+        maintenance_search = self.env['ir.config_parameter'].sudo().get_param(
+            'machine_repair_management.maintenance_service_show')
+        job_card_search = self.env['ir.config_parameter'].sudo().get_param('machine_repair_management.job_card_show')
 
-        if internal_search == "True":
+        if internal_search == 'True':
             self.internal_tab_show_bool = True
 
-        if maintenance_search == "True":
+        if maintenance_search == 'True':
             self.maintenance_tab_show_bool = True
 
-        if job_card_search == "True":
+        if job_card_search == 'True':
             self.job_card_no_bool = True
 
             # internal_tab_show_bool = fields.Boolean(string="Internal Tab show" , default = _default_internal_tab_show_bool, )
@@ -1756,7 +1702,8 @@ class MachineRepairSupport(models.Model):
         for rec in self:
             if rec.project_related_amc_bool and rec.contract_id:
                 rec.partner_name = rec.contract_id.partner_name or False
-                '''Code Added on August 10 2026 by Vijaya bhaskar'''
+                
+                '''Code Added on August 10 2026 client f call center user type the user’s alternative mobile number or contract screen'''
                 contract_search = self.env['subscription.contracts'].search([('id','=', rec.contract_id.id)],limit = 1)
                 if contract_search:
                     rec.customer_name = contract_search.contact_persons or False
@@ -1774,6 +1721,7 @@ class MachineRepairSupport(models.Model):
                     rec.plot_identification = contract_search.plot_identification or False
                     # rec.partner_name  = contract_search.partner_name or False
        
+                
                 
     
 
@@ -1968,29 +1916,6 @@ class MachineRepairSupport(models.Model):
             if rec.maintenance_type == "preventive":
                 if li.actual_prevent_count == li.days_require_rpm_round_off:
                     rec.paid_service_editable = True
-    
-    '''Code Added on July 14 2026 Client asked when we corrective overall count to be made irrespective of product count'''
-    # @api.constrains("paid_service_bool", "contract_id", "maintenance_type")
-    # def _check_corrective_paid_service(self):
-    #     for rec in self:
-    #         if not rec.contract_id:
-    #             continue
-    #
-    #         if rec.maintenance_type == "corrective":
-    #             total_allowed = sum(rec.contract_id.contract_line_ids.mapped("no_of_emergency_visit"))
-    #             total_used = sum(rec.contract_id.contract_line_ids.mapped("actual_correct_count"))
-    #
-    #             if total_used >= total_allowed and not rec.paid_service_bool:
-    #                 raise ValidationError(
-    #                     _(
-    #                         "Corrective visits are fully used. Please enable Paid Service."
-    #                     )
-    #                 )
-    #
-    #         elif rec.maintenance_type == "preventive":
-    #             # Preventive validation (if needed)
-    #             pass
-    #
 
     @api.constrains("paid_service_bool", "contract_id", "service_products_code_id")
     def _check_corrective_paid_service(self):
@@ -2000,9 +1925,9 @@ class MachineRepairSupport(models.Model):
             )
             if not line:
                 continue
-    
+
             li = line[0]
-    
+
             # If corrective is fully used and user still didn't tick paid
             if rec.maintenance_type == "corrective":
                 if li.actual_correct_count == li.no_of_emergency_visit:
@@ -2057,18 +1982,16 @@ class MachineRepairSupport(models.Model):
 
     @api.constrains("symptom_line_ids")
     def _check_symptom_lines(self):
-        """Code is added on Sep-09-2025 by Vijaya Bhaskar skip the validation by create the duplicate job card"""
+        '''Code is added on Sep-09-2025 by Vijaya Bhaskar skip the validation by create the duplicate job card'''
 
-        if self.env.context.get("skip_state_validation"):
+        if self.env.context.get('skip_state_validation'):
             return False
         for rec in self:
             for line in rec.symptom_line_ids:
                 if not line.sym_id:
-                    raise ValidationError(
-                        "Each Symptom line must have selected if you clicked"
-                    )
+                    raise ValidationError('Each Symptom line must have selected if you clicked')  
 
-                    # job_card_create_bool = fields.Boolean(string = "Job card create", default = False , compute ="_compute_" )
+    # job_card_create_bool = fields.Boolean(string = "Job card create", default = False , compute ="_compute_" )
 
     ## Commented by Raj 21-03-26 - reason hhs live this code is commented
     # @api.constrains('symptom_line_ids', 'problem')
@@ -2080,51 +2003,49 @@ class MachineRepairSupport(models.Model):
     #         if not rec.symptom_line_ids and not rec.problem:
     #             raise ValidationError("Please Enter at-least one line at the Symptoms or Complaint Details")
 
-    @api.onchange("warranty")
+
+   
+    '''Code Added on Mar 16 2026 '''
+    @api.onchange('purchase_date','dealer_id')
     # @api.depends('purchase_date','product_category','product_category.warranty_period_combo','product_category.warranty_period')
     def __onchange_warranty(self):
         for rec in self:
             rec.website_year = False
-            if rec.warranty:
+            if rec.sr_service_warranty_id.warranty_applicable_bool:
                 if rec.purchase_date and rec.product_category:
-                    if (
-                        rec.product_category.warranty_period
-                        and rec.product_category.warranty_period_combo
-                    ):
+                    if rec.product_category.warranty_period and rec.product_category.warranty_period_combo:
                         if rec.product_category.warranty_period_combo == "years":
                             rec.website_year = rec.purchase_date + relativedelta(
-                                years=rec.product_category.warranty_period
-                            )
+                                years=rec.product_category.warranty_period)
                         elif rec.product_category.warranty_period_combo == "months":
                             rec.website_year = rec.purchase_date + relativedelta(
-                                months=rec.product_category.warranty_period
-                            )
+                                months=rec.product_category.warranty_period)
                         elif rec.product_category.warranty_period_combo == "days":
                             rec.website_year = rec.purchase_date + relativedelta(
-                                days=rec.product_category.warranty_period
-                            )
-
-            # if rec.website_year:
+                                days=rec.product_category.warranty_period)
+                            
+            if rec.website_year:
+                if rec.website_year < fields.Date.today():
+                    return {
+                            'warning': {
+                                'title': 'Warranty Expired',
+                                'message': 'Your Warranty has expired more than %s days ago' % (fields.Date.today() - rec.website_year).days
+                            }
+                        }                    
+                            
+            # if rec.website_year:                
             #     if rec.website_year >= rec.request_date:
             #         rec.warranty = True
             #
 
-    # @api.onchange('product_category')
-    # def _onchange_product_category(self):
-    #     for rec in self:
-    #         # rec.product_id = False
-    #         if rec.product_category:
-    #             rec.nature_of_service_id = rec.product_category.def_servicetypeid.id or False
-
-    @api.onchange("product_category")
+    @api.onchange('product_category')
     def _onchange_product_category(self):
         for rec in self:
             # rec.product_id = False
             if rec.product_category:
-                rec.nature_of_service_id = (
-                    rec.product_category.def_servicetypeid.id or False
-                )
-            """Code Added on Mar 16 2026 client asked to clear the concerned category"""
+                rec.nature_of_service_id = rec.product_category.def_servicetypeid.id or False
+                
+            '''Code Added on Mar 16 2026 client asked to clear the concerned category'''  
             if rec._origin and rec.product_category == rec._origin.product_category:
                 return
             '''Code Added on May 23 2026 by Vijaya Bhaskar'''
@@ -2144,7 +2065,7 @@ class MachineRepairSupport(models.Model):
         for rec in self:
             if not rec.product_group_id:
                 continue
-
+            
             if rec._origin and rec.product_group_id == rec._origin.product_group_id:
                 return
 
@@ -2184,43 +2105,26 @@ class MachineRepairSupport(models.Model):
                     #         'message': f"{rec.partner_id.name} is a blocked customer.Reason: {rec.partner_id.blocked_reason}. Selection reverted."
                     #     }
                     # }
-                    raise ValidationError(
-                        "%s is Blocked Customer.The reason is '%s'."
-                        % (rec.partner_id.name, rec.partner_id.blocked_reason)
-                    )
+                    raise ValidationError("%s is Blocked Customer.The reason is '%s'." % (rec.partner_id.name,rec.partner_id.blocked_reason))
                 elif rec.partner_id.blocked_customer:
-                    raise ValidationError(
-                        "%s is Blocked Customer." % rec.partner_id.name
-                    )
-
+                    raise ValidationError("%s is Blocked Customer." % rec.partner_id.name)
+                
                 rec.email = rec.partner_id.email
                 rec.phone = rec.partner_id.mobile
 
                 address_parts = [
                     rec.partner_id.street or False,
                     rec.partner_id.street2 or False,
-                    (
-                        rec.partner_id.customer_city_id.name
-                        if rec.partner_id.customer_city_id
-                        else False
-                    ),
+                    rec.partner_id.customer_city_id.name if rec.partner_id.customer_city_id else False,
                     rec.partner_id.state_id.name if rec.partner_id.state_id else False,
-                    (
-                        rec.partner_id.country_id.name
-                        if rec.partner_id.state_id
-                        else False
-                    ),
-                    rec.partner_id.zip or False,
+                    rec.partner_id.country_id.name if rec.partner_id.state_id else False,
+                    rec.partner_id.zip or False
                 ]
                 rec.address = ",".join(filter(None, address_parts))
-                rec.work_location_id = (
-                    rec.partner_id.customer_city_id.def_work_center_id.id or False
-                )
+                rec.work_location_id = rec.partner_id.customer_city_id.def_work_center_id.id or False
                 rec.partner_city = rec.partner_id.customer_city_id.name
-                rec.work_center_group_id = (
-                    rec.work_location_id.work_center_group_id.id or False
-                )
-                # rec.customer_city_id =
+                rec.work_center_group_id = rec.work_location_id.work_center_group_id.id or False
+                # rec.customer_city_id = 
                 if rec.phone:
                     try:
                         return rec.action_show_job_card()
@@ -2236,17 +2140,15 @@ class MachineRepairSupport(models.Model):
                 # rec.address = rec.partner_id.street + "," + rec.partner_id.street2+"," + rec.partner_id.customer_city_id.name +","+\
                 #                 rec.partner_id.state_id.name + ","+ rec.partner_id.country_id.name+ ","+ rec.partner_id.zip
                 # rec.phone = rec.partner_id.phone
-
+    
     # def read(self, fields=None, load='_classic_read'):
     #     res = super(MachineRepairSupport, self).read(fields, load)
     #     for rec in self:
     #         rec.action_show_job_card()
     #     return res
-    mobile_number_bool = fields.Boolean(
-        "Mobile Bool", default=False, compute="_compute_mobile_number_bool"
-    )
-
-    @api.depends("phone")
+    mobile_number_bool = fields.Boolean('Mobile Bool',default = False,compute="_compute_mobile_number_bool")
+    
+    @api.depends('phone')
     def _compute_mobile_number_bool(self):
         for rec in self:
             rec.mobile_number_bool = False
@@ -2254,43 +2156,30 @@ class MachineRepairSupport(models.Model):
                 rec.mobile_number_bool = True
                 # if rec.mobile_number_bool:
                 #     rec.action_show_job_card()
-
-    @api.onchange("customer_city_id")
+    
+    @api.onchange('customer_city_id')
     def _onchange_customer_city_id(self):
         for rec in self:
             if rec.customer_city_id:
-                service_request_search = self.env["machine.repair.support"].search(
-                    [
-                        ("phone", "=", rec.phone),
-                        ("customer_name", "=", rec.customer_name),
-                    ],
-                    order="id Desc",
-                    limit=1,
-                )
-                district_search_id = self.env["res.state.district"].search(
-                    [("city_id", "=", rec.customer_city_id.id)], limit=1
-                )
-                rec.work_location_id = (
-                    rec.customer_city_id.def_work_center_id.id or False
-                )
-                rec.country_district_id = (
-                    service_request_search.country_district_id.id
-                    if service_request_search
-                    else district_search_id
-                )
+                service_request_search = self.env['machine.repair.support'].search([('phone','=',rec.phone),('customer_name' , '=',rec.customer_name)],order ="id Desc",limit =1)
+                district_search_id = self.env['res.state.district'].search([('city_id','=',rec.customer_city_id.id)],limit = 1)
+                rec.work_location_id = rec.customer_city_id.def_work_center_id.id or False
+                '''Code Added on August 13 2026 by Vijaya bhaskar District is not come correct'''
+                if not rec.project_related_amc_bool:
+                    rec.country_district_id = service_request_search.country_district_id.id if service_request_search else district_search_id
                 # rec.country_district_id = rec.customer_city_id.country_district_id.id or False
                 rec.country_state_id = rec.customer_city_id.state_id.id or False
                 rec.country_id = rec.customer_city_id.country_id.id or False
                 rec.zip_code = rec.customer_city_id.zipcode or False
-                rec.work_center_group_id = (
-                    rec.work_location_id.work_center_group_id.id or False
-                )
+                rec.work_center_group_id = rec.work_location_id.work_center_group_id.id or False
+                
                 # rec.country_district_id = district_search_id or False
 
+    
     # @api.onchange('customer_name')
     # def _onchange_customer_name(self):
     #     for rec in self:
-    #         service_request_search = self.env['machine.repair.support'].search([('phone','=',rec.phone)],order ="id Desc", limit = 1)
+    #         service_request_search = self.env['machine.repair.support'].search([('phone','=',rec.phone)],order ="id Desc", limit = 1)    
     #
     #         if service_request_search:
     #             rec.email = service_request_search.email or False
@@ -2331,32 +2220,25 @@ class MachineRepairSupport(models.Model):
     #             rec.partner_latitude = False
     #             rec.partner_longitude = False
     #             # rec.work_center_group_id = False
-
-    """this code is added to get the contract from the customer code added on July 29 2025"""
-
-    @api.onchange("partner_id")
+                
+    '''this code is added to get the contract from the customer code added on July 29 2025'''        
+    @api.onchange('partner_id')
     def onchange_partner_id_check(self):
         for rec in self:
             if rec.partner_id:
                 rec.customer_name = rec.partner_id.name or None
-                rec.address_one = rec.partner_id.street or None
+                rec.address_one = rec.partner_id.street  or None
                 rec.address_two = rec.partner_id.street2 or None
                 rec.customer_city_id = rec.partner_id.customer_city_id.id or None
-                rec.customer_identification_scheme = (
-                    rec.partner_id.additional_identification_scheme or None
-                )
-                rec.customer_identification_number = (
-                    rec.partner_id.additional_identification_number
-                    if rec.partner_id.additional_identification_scheme != "TIN"
-                    else rec.partner_id.vat
-                )
+                rec.customer_identification_scheme = rec.partner_id.additional_identification_scheme or None
+                rec.customer_identification_number = rec.partner_id.additional_identification_number if rec.partner_id.additional_identification_scheme !='TIN' else rec.partner_id.vat 
                 rec.building_number = rec.partner_id.building_number or None
                 rec.plot_identification = rec.partner_id.plot_identification or None
                 rec.whatsapp_opt_in = rec.partner_id.x_whatsapp_opt_in or None
                 rec.partner_latitude = rec.partner_id.partner_latitude or None
-                rec.partner_longitude = rec.partner_id.partner_longitude or None
-
-                # else:
+                rec.partner_longitude = rec.partner_id.partner_longitude or None 
+                
+            # else:
             #     rec.email = False
             #     rec.address = False
             #     rec.address_one = False
@@ -2374,39 +2256,38 @@ class MachineRepairSupport(models.Model):
             #     rec.plot_identification = False
             #     rec.partner_latitude = False
             #     rec.partner_longitude = False
-
-    @api.depends(
-        "address_one",
-        "address_two",
-        "customer_city_id",
-        "country_district_id",
-        "country_state_id",
-        "country_id",
-        "zip_code",
-    )
+                    
+                
+    
+    @api.depends('address_one','address_two','customer_city_id','country_district_id','country_state_id','country_id','zip_code')
     def _compute_address(self):
         for rec in self:
             # rec.address = False
-            address_parts = [
-                rec.address_one or False,
-                rec.address_two or False,
-                rec.customer_city_id.name or False,
-                rec.country_district_id.name or False,
-                rec.country_state_id.name or False,
-                rec.country_id.name or False,
-                rec.zip_code or False,
-            ]
-            rec.address = ",".join(filter(None, address_parts))
-
-    @api.constrains("phone")
+            address_parts =[
+                 rec.address_one or False,
+                 rec.address_two or False,
+                 rec.customer_city_id.name or False,
+                 rec.country_district_id.name or False,
+                 rec.country_state_id.name or False,
+                 rec.country_id.name or False,
+                 rec.zip_code or False
+                 
+                 ]
+            rec.address = ",".join(filter(None,address_parts))
+            
+    
+    @api.constrains('phone')
     def _check_valid_phone_number(self):
+        
         for rec in self:
             if rec.phone:
                 # if len(rec.phone) < 10 or len(rec.phone) > 15:
-                if len(rec.phone) != 10:
-                    raise ValidationError(_("Mobile number must be 10 digits."))
-
-    @api.constrains("email")
+                if len(rec.phone) != 10:    
+                    raise ValidationError(_(
+                        "Mobile number must be 10 digits."
+                    )) 
+    
+    @api.constrains('email')
     def _check_email_validity(self):
         """Code is added on Sep-09-2025 by Vijaya Bhaskar skip the validation by create the duplicate job card"""
         if self.env.context.get("skip_state_validation"):
@@ -2450,17 +2331,11 @@ class MachineRepairSupport(models.Model):
                                 )
 
     def action_show_job_card(self):
-        job_card_search = (
-            self.env["project.task"]
-            .sudo()
-            .search(
-                [
-                    ("phone", "=", self.phone),
-                    ("job_card_state_code", "not in", ("126", "124")),
-                ]
-            )
-        )
-
+        job_card_search = self.env['project.task'].sudo().search([
+            ('phone', '=', self.phone),
+            ('job_card_state_code', 'not in', ('126', '124'))
+        ])
+        
         if job_card_search:
             return {
                 "type": "ir.actions.act_window",
@@ -2533,6 +2408,8 @@ class MachineRepairSupport(models.Model):
                 "domain": [("service_request_id", "=", self.id)],
                 "target": "current",
             }
+    
+   
 
     request_created_date = fields.Date(
         string="Call Date", compute="_compute_request_date_time", store=True
@@ -2692,7 +2569,8 @@ class MachineRepairSupport(models.Model):
                 except Exception as e:
                     _logger.warning("Failed to process signature: %s", str(e))
                     signature_data = None
-
+                    
+                    
             local_app_start_time = False
             local_closed_date_time = False
             user_tz = self.env.user.tz or "UTC"
@@ -2867,22 +2745,21 @@ class MachineRepairSupport(models.Model):
             # 'signature_sign':self.signature,
             # 'signature':self.signature,
         }
+        
 
-        return self.env.ref(
-            "machine_repair_management.service_request_job_card_report"
-        ).report_action(self, data=datas)
+        return self.env.ref('machine_repair_management.service_request_job_card_report').report_action(self,data = datas)
 
     """ Need to check 
     @api.constrains('team_id', 'task_id')
     def _check_technician_conflict(self):
         for rec in self:
-
+            
            # Get user's timezone
            user_tz = self.env.user.tz or 'UTC'
            tz = pytz.timezone(user_tz)
-
-
-
+    
+    
+     
            local_timezone = pytz.utc.localize(rec.request_date).astimezone(tz)
            # Get current time in user's local timezone
            now_local = fields.Datetime.context_timestamp(rec, fields.Datetime.now())
@@ -2890,7 +2767,7 @@ class MachineRepairSupport(models.Model):
            # Convert back to UTC for comparison with UTC stored fields
            now_utc = now_local.astimezone(pytz.utc).replace(tzinfo=None)
            print(".............time",now_utc,local_timezone)
-
+    
            # Search for active overlapping tasks in UTC
            conflicting_tasks = self.env['project.task'].search([
                ('technician_id', '=', rec.user_id.id),
@@ -2905,7 +2782,7 @@ class MachineRepairSupport(models.Model):
                late = pytz.utc.localize(conf.planned_date_end).astimezone(tz) 
                if planned < local_timezone and  late > local_timezone:
                    print(".......conf",conf.technician_id.name,conf.planned_date_begin,conf.planned_date_end.conf.name)
-
+    
            if conflicting_tasks:
                task_names = ', '.join(conflicting_tasks.mapped('name'))
                raise ValidationError(_(
@@ -2931,7 +2808,7 @@ class MachineRepairSupport(models.Model):
         default = lambda self : self.env.user.project_ids.id
         if len(self.env.user.project_ids) == 1
         else False,
-        
+    
     )
 
     project_related_amc_bool = fields.Boolean(
@@ -2972,20 +2849,75 @@ class MachineRepairSupport(models.Model):
             rec.paid_service_amount = False
             if rec.paid_service_bool and rec.contract_id.add_paid_service_price > 0.0:
                 rec.paid_service_amount = rec.contract_id.add_paid_service_price
-
-    
+                
+                 
     '''Code added on August 04 2026 by Vijaya bhaskar Service Request screen and job scheduling screen if user rights has one project show it as default and disable other. IF more than 1 no default let user select the project.'''
-  
+    
     project_readonly = fields.Boolean( compute="_compute_allowed_projects")   
- 
+        
     # @api.depends_context("uid")
     @api.depends('priority')
     def _compute_allowed_projects(self):
         projects = self.env.user.project_ids
         for rec in self:
-            rec.project_readonly = len(projects) == 1
+            rec.project_readonly = len(projects) == 1      
+            
+    '''Code Added on August 10 2026 by vijaya bhaskar'''
+    allowed_contract_ids = fields.Many2many(
+    "subscription.contracts",
+    compute="_compute_allowed_contract_ids",
+    string="Allowed Contracts",
+    )  
     
+    @api.depends("phone", "partner_id")
+    def _compute_allowed_contract_ids(self):
+        Contract = self.env["subscription.contracts"]
     
+        for rec in self:
+            rec.allowed_contract_ids = False
+    
+            # No phone -> all ongoing contracts
+            if not rec.phone:
+                rec.allowed_contract_ids = Contract.search([
+                    ("state", "=", "Ongoing")
+                ])
+                continue
+    
+            # --------------------------------------------------
+            # 1. Phone belongs to res.partner.mobile
+            # --------------------------------------------------
+            partner = self.env["res.partner"].search(
+                [("mobile", "=", rec.phone)],
+                limit=1
+            )
+    
+            if partner:
+                rec.allowed_contract_ids = Contract.search([
+                    ("state", "=", "Ongoing"),
+                    ("partner_id", "=", partner.id),
+                ])
+                continue
+    
+            # --------------------------------------------------
+            # 2. Phone belongs to contact_persons_mobile
+            # --------------------------------------------------
+            contracts = Contract.search([
+                ("state", "=", "Ongoing"),
+                ("contact_persons_mobile", "=", rec.phone),
+            ])
+    
+            if contracts:
+                rec.allowed_contract_ids = contracts
+                continue
+    
+            # --------------------------------------------------
+            # 3. Phone doesn't belong anywhere
+            #    -> show all ongoing contracts
+            # --------------------------------------------------
+            rec.allowed_contract_ids = Contract.search([
+                ("state", "=", "Ongoing")
+            ])                           
+
 class HrTimesheetSheet(models.Model):
     _inherit = "account.analytic.line"
 
@@ -2998,6 +2930,7 @@ class HrTimesheetSheet(models.Model):
         string="Chargable?",
         default=True,
     )
+
 
 
 class View(models.Model):

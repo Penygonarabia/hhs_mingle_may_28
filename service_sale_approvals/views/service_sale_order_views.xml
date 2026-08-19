@@ -58,7 +58,7 @@
             </xpath>
             <xpath expr="//button[@name='action_contract_creation']" position="attributes">
                 <attribute name="invisible">
-                    (state != 'done' and state != 'approve' and state != 'sent')
+                    (state != 'done' and state != 'approve' and state != 'sent') or job_task_id
                 </attribute>
             </xpath>
             <xpath expr="//field[@name='state']" position="after">

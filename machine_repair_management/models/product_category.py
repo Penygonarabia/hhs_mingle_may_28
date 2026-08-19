@@ -26,13 +26,13 @@ class Product_service_type(models.Model):
     allowed_group_is_promoter = fields.Boolean('Use for Promoters', default=False)
     alternative_description = fields.Char('Alternative Description')
     allowed_is_contract = fields.Boolean('Use for Contract')
-    
+
     @api.constrains('code')
     def _check_code(self):
         for rec in self:
             if rec.code:
                 code_search = self.env['product.category'].search([
-                    ('code', '=', rec.code)       
+                    ('code', '=', rec.code),
                 ])
     
                 if len(code_search) > 1:
@@ -41,7 +41,6 @@ class Product_service_type(models.Model):
                         "The category code must be unique. Please enter a different code."
                         % rec.code
                     )
-
 
 class ProductCategoryLocation(models.Model):
     _name = "product.category.line"

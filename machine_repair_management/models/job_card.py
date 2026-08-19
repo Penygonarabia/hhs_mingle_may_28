@@ -79,8 +79,181 @@ def generate_qr_code(value):
 _task_type_cache = None
 
 
+
+from functools import wraps
+
+def postcommit_defer(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if not self:
+            return func(self, *args, **kwargs)
+        if not self.env.context.get('in_postcommit') and not self.env.context.get('skip_postcommit'):
+            self.env.cr.postcommit.add(
+                lambda: self._run_postcommit_action(func.__name__, *args, **kwargs)
+            )
+            return True
+        return func(self, *args, **kwargs)
+    return wrapper
+
 class ProjectTask(models.Model):
     _inherit = "project.task"
+
+    def _run_postcommit_action(self, method_name, *args, **kwargs):
+        if not self:
+            return
+        with self.pool.cursor() as new_cr:
+            new_env = self.env(cr=new_cr)
+            new_records = new_env[self._name].browse(self.ids)
+            new_records = new_records.with_context(in_postcommit=True)
+            getattr(new_records, method_name)(*args, **kwargs)
+
+    def _run_whatsapp_in_background(self, method_name):
+        if not self:
+            return
+        self.env.cr.postcommit.add(
+            lambda: self._start_whatsapp_thread(method_name)
+        )
+
+    def _start_whatsapp_thread(self, method_name):
+        import threading
+        import odoo
+        from odoo import api
+        import logging
+        _logger = logging.getLogger(__name__)
+
+        uid = self.env.uid
+        context = dict(self.env.context)
+        db_name = self.env.cr.dbname
+        record_ids = self.ids
+
+        def background_task():
+            try:
+                registry = odoo.registry(db_name)
+                with registry.cursor() as cr:
+                    context_copy = dict(context)
+                    context_copy.update({'tracking_disable': True, 'mail_notrack': True, 'skip_state_validation': True, 'in_postcommit': True})
+                    env = api.Environment(cr, uid, context_copy)
+
+                    # Mock request object to avoid RuntimeError: object is not bound during PDF rendering
+                    from odoo.http import _request_stack
+                    class MockUser:
+                        def __init__(self, user):
+                            self._user = user
+                        def has_group(self, group_name):
+                            if group_name == 'website.group_website_designer':
+                                return True
+                            return self._user.has_group(group_name)
+                        def __getattr__(self, name):
+                            return getattr(self._user, name)
+
+                    class MockEnv:
+                        def __init__(self, env):
+                            self.user = MockUser(env.user)
+                            self.cr = env.cr
+                            self.uid = env.uid
+                            self.context = env.context
+                            self._env = env
+                        def __getattr__(self, name):
+                            return getattr(self._env, name)
+
+                    class MockHttpRequest:
+                        def __init__(self):
+                            self.host = 'localhost'
+                            self.environ = {}
+                            self.remote_addr = '127.0.0.1'
+                            self.url = 'http://localhost/'
+                            self.path = '/'
+                            self.headers = {}
+                            self.cookies = {}
+
+                    class MockSession:
+                        def __init__(self):
+                            self.debug = ""
+                            self.sid = "dummy"
+                            self._data = {}
+                        def get(self, key, default=None):
+                            return self._data.get(key, default)
+                        def setdefault(self, key, default=None):
+                            return self._data.setdefault(key, default)
+                        def __getitem__(self, key):
+                            return self._data[key]
+                        def __setitem__(self, key, value):
+                            self._data[key] = value
+
+                    class MockRequest:
+                        def __init__(self, env):
+                            self.env = MockEnv(env)
+                            self.cr = env.cr
+                            self.uid = env.uid
+                            self.context = env.context
+                            self.website = None
+                            self.session = MockSession()
+                            self.params = {}
+                            self.httprequest = MockHttpRequest()
+                            self.db = env.cr.dbname
+                            self.is_frontend = False
+                            self.is_frontend_multilang = False
+                            self.endpoint = None
+                            self.httprequest.session = self.session
+                        def update_context(self, **kwargs):
+                            pass
+                        def csrf_token(self, time_limit=3600):
+                            return 'dummy_csrf'
+
+                    mock_req = MockRequest(env)
+                    _request_stack.push(mock_req)
+                    try:
+                        records = env['project.task'].browse(record_ids)
+                        for rec in records:
+                            method = getattr(rec, method_name, None)
+                            if method and callable(method):
+                                method()
+                    finally:
+                        _request_stack.pop()
+            except Exception as e:
+                _logger.error("Background WhatsApp %s failed: %s", method_name, e, exc_info=True)
+
+        thread = threading.Thread(target=background_task)
+        thread.daemon = True
+        thread.start()
+
+    def _run_whatsapp_background_actions(self, state_code):
+        for rec in self:
+            if state_code == "117":
+                rec._run_whatsapp_in_background("_send_unit_receipt_whatsapp")
+            elif state_code == "105":
+                rec._run_whatsapp_in_background("_send_failed_to_attend_call_status_whatsapp")
+            elif state_code == "121" and not rec.unit_pull_out_status_check:
+                rec._run_whatsapp_in_background("_send_whatsapp_for_parts_user")
+                rec._run_whatsapp_in_background("_send_whatsapp_job_card_report_for_ready_to_invoice")
+            elif state_code == "122":
+                rec._run_whatsapp_in_background("_send_whatsapp_for_supervisor_user")
+            elif state_code == "125":
+                rec._run_whatsapp_in_background("_send_whatsapp_job_card_report_for_ready_to_invoice")
+                if rec.inspection_charges_amount > 0 or rec.service_warranty_id:
+                    rec._run_whatsapp_in_background("send_whatsapp_service_charges_receipt")
+            elif state_code == "113" and rec.inspection_charges_amount > 0:
+                rec._run_whatsapp_in_background("send_whatsapp_service_charges_receipt")
+            elif state_code == "126" and (rec.inspection_charges_amount > 0 or rec.service_warranty_id):
+                rec._run_whatsapp_in_background("send_whatsapp_invoice_receipt")
+            elif state_code == "128" and rec.service_sale_id and rec.service_sale_id.whatsapp_button_click_bool:
+                if rec.inspection_charges_amount > 0:
+                    rec._run_whatsapp_in_background("send_whatsapp_service_charges_receipt")
+                rec._run_whatsapp_in_background("_send_whatsapp_job_card_report_for_ready_to_invoice")
+            elif state_code == "133":
+                rec._run_whatsapp_in_background("_send_whatsapp_rescheduled_with_unit")
+            elif state_code == "134":
+                rec._run_whatsapp_in_background("_send_whatsapp_for_rescheduled_with_parts")
+            elif state_code == "102":
+                '''Code Added on August 07 2026 by Vijaya bhaskar Client asked if the project is AMC need not send every whatsapp to customer.so stop to sent whatsaapp to customer'''
+                if not rec.project_related_amc_bool:
+                    rec._run_whatsapp_in_background("_send_whatsapp_scheduled_message")
+            elif state_code == "112":
+                rec._run_whatsapp_in_background("_send_whatsapp_for_cancelled_insp_charges_by_cst")
+                if rec.inspection_charges_amount > 0:
+                    rec._run_whatsapp_in_background("send_whatsapp_service_charges_receipt")
+
+
     _description = "Job Card"
 
     # _order = 'id desc'
@@ -96,6 +269,12 @@ class ProjectTask(models.Model):
         string="Stage Kanban Color",
         compute="_compute_stage_kanban_color",
         store=False,
+    )
+
+    pdf_rendering_time = fields.Char(
+        string="PDF Rendering Time",
+        readonly=True,
+        tracking=True,
     )
 
     # @api.model
@@ -125,12 +304,19 @@ class ProjectTask(models.Model):
         store=True,
     )
 
+    @api.model
+    def _default_project_id(self):
+        val = getattr(self.__class__, '_cached_hhs_project_id', None)
+        if val is None or not val:
+            project = self.env["project.project"].search([("name", "=", "HHS")], limit=1)
+            val = project.id if project else False
+            self.__class__._cached_hhs_project_id = val
+        return val
+
     project_id = fields.Many2one(
         "project.project",
         string="Project",
-        default=lambda self: self.env["project.project"].search(
-            [("name", "=", "HHS")], limit=1
-        ),
+        default=lambda self: self._default_project_id()
     )
 
     # Contract based update field Added on 15-11-2025
@@ -281,7 +467,7 @@ class ProjectTask(models.Model):
         "Whatsapp Scheduled Message",
         default=False,
         help="Whatsapp scheduled message to customer and technician",
-        compute="_compute_whatsapp_scheduled_message_sent_bool",
+       
         store=True,
     )
 
@@ -332,7 +518,7 @@ class ProjectTask(models.Model):
     )
 
     technician_second_visit_id = fields.Many2one(
-        "res.users", string="Technician Final Visit name"
+        "res.users", string="Technician Final Visit Name"
     )
 
     message_log_ids = fields.One2many(
@@ -482,7 +668,7 @@ class ProjectTask(models.Model):
         default=False,
         help="When the Closed job card then all other field to be non edited",
         compute="_compute_closed_jobcard_check_bool",
-        store=True,
+        store=False,
     )
     '''Code Added on May 21 2026 by Vijaya Bhaskar'''
     emergency_count_exceed = fields.Boolean(string = "Emergency Count")
@@ -566,7 +752,6 @@ class ProjectTask(models.Model):
         counts = dict(self.env.cr.fetchall())
         for rec in self:
             rec.technician_no_of_visit_count = counts.get(rec.id, 0)
-
 
     @api.model
     def _get_year_selection(self, field_type):
@@ -760,6 +945,7 @@ class ProjectTask(models.Model):
 
     def action_open_js_popup(self):
         self.ensure_one()
+
         if self.service_sale_id:
             if self.service_sale_id.state == "done":
                 balance_paid_amount = self.balance_paid
@@ -804,7 +990,8 @@ class ProjectTask(models.Model):
             # dialog_size="large",  # optional, still used internally
             # dialog_class="modal-dialog modal-xl modal-dialog-centered",
         )
-        print(">>> Final Action Context:", action["context"])
+
+
         return action
 
     @api.onchange("team_id")
@@ -853,8 +1040,8 @@ class ProjectTask(models.Model):
             """Code Added on Mar 16 2026 client asked to clear the concerned category"""
 
             if (
-                rec._origin
-                and rec.product_category_id == rec._origin.product_category_id
+                    rec._origin
+                    and rec.product_category_id == rec._origin.product_category_id
             ):
                 return
 
@@ -918,6 +1105,7 @@ class ProjectTask(models.Model):
                         raise ValidationError(
                             "Please remove all added parts from the list before changing the warehouse."
                         )
+
                         rec.product_line_ids = [(5, 0, 0)]
 
                 """Code Added on Feb 05 2025 because product category is added in the selected warehouse"""
@@ -1016,12 +1204,23 @@ class ProjectTask(models.Model):
     @api.depends("technician_id")
     def _compute_team_id(self):
         """Compute team_id based on technician_id."""
+        technician_ids = [r.technician_id.id for r in self if r.technician_id]
+        if not technician_ids:
+            for record in self:
+                record.team_id = False
+            return
+
+        teams = self.env["machine.support.team"].search(
+            [("leader_id", "in", technician_ids)]
+        )
+        tech_to_team = {}
+        for team in teams:
+            if team.leader_id.id not in tech_to_team:
+                tech_to_team[team.leader_id.id] = team.id
+
         for record in self:
             if record.technician_id:
-                team = self.env["machine.support.team"].search(
-                    [("leader_id", "=", record.technician_id.id)], limit=1
-                )
-                record.team_id = team.id if team else False
+                record.team_id = tech_to_team.get(record.technician_id.id, False)
             else:
                 record.team_id = False
 
@@ -1042,21 +1241,23 @@ class ProjectTask(models.Model):
     @api.depends("job_state")
     def _compute_state_status(self):
         """Compute state_status and validate stock quantities for product_line_ids when job_state.code is '126'."""
+        scheduling_lst = []
+        scheduled_state = self.env["project.task.type"].search(
+            [("code", "=", "126")], limit=1
+        )
         for rec in self:
             rec.state_status = False
+
             if self.env.context.get("skip_reschedule_logic"):
                 continue
-            scheduled_state = self.env["project.task.type"].search(
-                [("code", "=", "126")], limit=1
-            )
-            # print("............jobstate",rec.job_state,rec.job_state.code)
 
             if scheduled_state and scheduled_state.code == rec.job_state.code:
+                rec.state_status = True
                 # Check stock quantities for product_line_ids
                 if (
-                    rec.warehouse_id
-                    and rec.warehouse_id.lot_stock_id
-                    and rec.product_category_id
+                        rec.warehouse_id
+                        and rec.warehouse_id.lot_stock_id
+                        and rec.product_category_id
                 ):
                     location_id = rec.warehouse_id.lot_stock_id.id
                     categ_id = rec.product_category_id.id
@@ -1129,18 +1330,15 @@ class ProjectTask(models.Model):
                         )
 
                 # Set state_status to True if validation passes
-                rec.state_status = True
-                if rec.state_status and rec.project_related_amc_bool:
-                    '''Code Added on May 23 2026 by Vijaya Bhaskar'''
-                    rec.asset_id.last_actual_prevent_visit = fields.Date.today()
-                    # rec.service_request_id._compute_update_contract_line()
+                ## commented on Jan 25 -2026 by Vijaya Bhaskar due to Closed Job card showing error
+                # rec.state_status = True
 
             scheduled_state_cancel = self.env["project.task.type"].search(
                 [("code", "=", "124")], limit=1
             )
             if (
-                scheduled_state_cancel
-                and scheduled_state_cancel.code == rec.job_state.code
+                    scheduled_state_cancel
+                    and scheduled_state_cancel.code == rec.job_state.code
             ):
                 rec.state_status = True
 
@@ -1392,27 +1590,29 @@ class ProjectTask(models.Model):
     """ send Email to parts user because the code is  On Hold Spare Parts  code is added on Oct-03 2025"""
 
     def _send_email_for_parts_user(self):
+
         work_center = False
+
         work_center = self.work_center_id
 
         subject = f"Spare Parts Required – Service Request No. {self.name} "
         body_html = f"""
-            <p style="color:#0000FF;font-size:20px">Dear </p>
-             <p style="color:#0000FF;font-size:20px">
-                Please note that Service Request No.{self.name} requires spare parts to complete the repair.
-             </p>
-             <p style="color:#0000FF;font-size:20px">
-               Kindly check the availability of the required parts from your account in Cielo Cloud.
-               <br/>
-               Thank you for your support.
-             </p>
-
-            <br/>
-            <b style="color:#0000FF;font-size:20px">Best Regards</b><br/>
-            <b style="color:#0000FF;font-size:20px">Maintenance Dept</b><br/>
-             <b style="color:#0000FF;font-size:20px">HH-Shaker</b>
-
-            """
+        <p style="color:#0000FF;font-size:20px">Dear </p>
+         <p style="color:#0000FF;font-size:20px">
+            Please note that Service Request No.{self.name} requires spare parts to complete the repair.
+         </p>
+         <p style="color:#0000FF;font-size:20px">
+           Kindly check the availability of the required parts from your account in Cielo Cloud.
+           <br/>
+           Thank you for your support.
+         </p>
+    
+        <br/>
+        <b style="color:#0000FF;font-size:20px">Best Regards</b><br/>
+        <b style="color:#0000FF;font-size:20px">Maintenance Dept</b><br/>
+         <b style="color:#0000FF;font-size:20px">HH-Shaker</b>
+    
+        """
 
         self.env["mail.mail"].create(
             {
@@ -1434,6 +1634,7 @@ class ProjectTask(models.Model):
 
     """code added on Nov 14 -2025 send whatsapp to customer for on hold spare parts"""
 
+    @postcommit_defer
     def _send_whatsapp_for_parts_user(self):
 
         # if not self.whatsapp_send_bool:
@@ -1441,10 +1642,10 @@ class ProjectTask(models.Model):
         #     return False
 
         if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
+                not self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.whatsapp_send_bool")
+                    == "True"
         ):
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
@@ -1521,7 +1722,7 @@ class ProjectTask(models.Model):
         }
         try:
             response = requests.post(
-                template_url, headers=headers, json=template_payload
+                template_url, headers=headers, json=template_payload, timeout=(5, 10)
             )
             response.raise_for_status()  # Raise an exception for HTTP errors
 
@@ -1538,7 +1739,7 @@ class ProjectTask(models.Model):
             # Optionally, notify the user or log the error in the chatter
             self.service_request_id.message_post(
                 body=_("WhatsApp OnHold Spare Parts message sent successfully to %s")
-                % self.customer_name,
+                     % self.customer_name,
                 message_type="notification",
             )
             return False
@@ -1546,24 +1747,25 @@ class ProjectTask(models.Model):
     """ send Email to Supervisor user for parts Ready code is added on Oct-09 2025"""
 
     def _send_email_for_supervisor_user(self):
+
         work_center = False
 
         work_center = self.work_center_id
 
         subject = f"Parts are Ready for the Job Card :{self.name} "
         body_html = f"""
-                <p style = "color:#0000FF;font-size:20px">Dear  </p>
-                 <p style = "color:#0000FF;font-size:20px">
-                      Products are added for the Job Card No.{self.name}.Please Check that
-                 </p>
-
-
-                 <br/>
-                <b style = "color:#0000FF;font-size:20px">Best Regards</b><br/>
-                <b style = "color:#0000FF;font-size:20px">Maintenance Dept</b><br/>
-                 <b style = "color:#0000FF;font-size:20px">HH-Shaker</b>
-
-                """
+        <p style = "color:#0000FF;font-size:20px">Dear  </p>
+         <p style = "color:#0000FF;font-size:20px">
+              Products are added for the Job Card No.{self.name}.Please Check that
+         </p>
+            
+        
+         <br/>
+        <b style = "color:#0000FF;font-size:20px">Best Regards</b><br/>
+        <b style = "color:#0000FF;font-size:20px">Maintenance Dept</b><br/>
+         <b style = "color:#0000FF;font-size:20px">HH-Shaker</b>
+        
+        """
 
         self.env["mail.mail"].create(
             {
@@ -1583,65 +1785,68 @@ class ProjectTask(models.Model):
                 subtype_xmlid="mail.mt_comment",
             )
 
-        # work_center_group = False
-        #
-        # work_center_group = self.work_center_group_id
-        #
-        # work_center_search = self.env['work.center.location'].search(
-        #     [('work_center_group_id', '=', work_center_group.id)])
-        #
-        # supervisor_user_search = self.env['res.users'].search([
-        #     ('groups_id', 'in', self.env.ref('machine_repair_management.group_technical_allocation_user').id),
-        #     ('default_work_center_id', 'in', work_center_search.ids)
-        #
-        # ])
-        # if not supervisor_user_search:
-        #     return
-        # for user in supervisor_user_search:
-        #
-        #     subject = f"Parts are Ready for the Job Card :{self.name} "
-        #     body_html = f"""
-        #     <p style = "color:#0000FF;font-size:20px">Dear {user.name} </p>
-        #      <p style = "color:#0000FF;font-size:20px">
-        #           Products are added for the Job Card No.{self.name}.Please Check that
-        #      </p>
-        #
-        #
-        #      <br/>
-        #     <b style = "color:#0000FF;font-size:20px">Best Regards</b><br/>
-        #     <b style = "color:#0000FF;font-size:20px">Maintenance Dept</b><br/>
-        #      <b style = "color:#0000FF;font-size:20px">HH-Shaker</b>
-        #
-        #     """
-        #
-        #     self.env['mail.mail'].create({
-        #         'subject': subject,
-        #         'body_html': body_html,
-        #         'email_from': self.env.user.email,
-        #         'email_to': user.login,
-        #
-        #     })
-        #
-        #     if self.service_request_id:
-        #         self.service_request_id.message_post(
-        #             body=f"Parts ready email sent to {user.name}",
-        #             subject=subject,
-        #             message_type='comment',
-        #             subtype_xmlid='mail.mt_comment'
-        #         )
+        ''' Currently Working Commented on Dec 19 due to mail send send many times 
+        
+        work_center_group = False
+        
+        work_center_group = self.work_center_group_id
+        
+        work_center_search  = self.env['work.center.location'].search([('work_center_group_id','=',work_center_group.id)])
+        
+        supervisor_user_search = self.env['res.users'].search([
+            ('groups_id','in', self.env.ref('machine_repair_management.group_technical_allocation_user').id),
+            ('default_work_center_id','in',work_center_search.ids)
+            
+            ])
+        if not supervisor_user_search:
+            return
+        for user in supervisor_user_search:
+            
+            subject = f"Parts are Ready for the Job Card :{self.name} "
+            body_html = f"""
+            <p style = "color:#0000FF;font-size:20px">Dear {user.name} </p>
+             <p style = "color:#0000FF;font-size:20px">
+                  Products are added for the Job Card No.{self.name}.Please Check that
+             </p>
+                
+            
+             <br/>
+            <b style = "color:#0000FF;font-size:20px">Best Regards</b><br/>
+            <b style = "color:#0000FF;font-size:20px">Maintenance Dept</b><br/>
+             <b style = "color:#0000FF;font-size:20px">HH-Shaker</b>
+            
+            """
+            
+            self.env['mail.mail'].create({
+                'subject':subject,
+                'body_html': body_html,
+                'email_from': self.env.user.email,
+                'email_to' : user.login,
+               
+                })
+
+            if self.service_request_id:
+                self.service_request_id.message_post(
+                    body=f"Parts ready email sent to {user.name}",
+                    subject=subject,
+                    message_type='comment',
+                    subtype_xmlid='mail.mt_comment'
+                )
+            '''
 
     """ Send Whatsapp for Supervisor User is added on Oct 09-2025"""
 
+    @postcommit_defer
     def _send_whatsapp_for_supervisor_user(self):
 
         # if not self.whatsapp_send_bool:
         #     _logger.info("❌ No WhatsApp set in res Config Settings")
         #     return False
         if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
+                not self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.whatsapp_send_bool")
+                    == "True"
         ):
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
@@ -1739,7 +1944,7 @@ class ProjectTask(models.Model):
             }
             try:
                 response = requests.post(
-                    template_url, headers=headers, json=template_payload
+                    template_url, headers=headers, json=template_payload, timeout=(5, 10)
                 )
                 response.raise_for_status()  # Raise an exception for HTTP errors
 
@@ -1756,28 +1961,29 @@ class ProjectTask(models.Model):
                 # Optionally, notify the user or log the error in the chatter
                 self.service_request_id.message_post(
                     body=_("WhatsApp scheduled message sent successfully to %s")
-                    % self.partner_id.name,
+                         % self.partner_id.name,
                     message_type="notification",
                 )
                 return False
-
-    @api.depends("customer_name", "job_card_state_code")
-    # @api.depends('team_id','planned_date_begin','job_card_state_code')
-    def _compute_whatsapp_scheduled_message_sent_bool(self):
-        for rec in self:
-            rec.whatsapp_scheduled_message_sent_bool = False
-            if rec.job_card_state_code == "102":
-                if rec.team_id and rec.planned_date_begin:
-                    rec.whatsapp_scheduled_message_sent_bool = True
-                    if rec.whatsapp_scheduled_message_sent_bool:
-                        '''Code Added on August 07 2026 by Vijaya bhaskar Client asked if the project is AMC need not send every whatsapp to customer.so stop to sent whatsaapp to customer'''
-                        if not rec.project_related_amc_bool:
-                            rec._send_whatsapp_scheduled_message()
-                        # rec._send_whatsapp_scheduled_technician_message()
-                        rec.whatsapp_scheduled_message_sent_bool = False
+    '''Code Commented on June 19 206 for performance issue for sending whatsapp'''
+    # @api.depends("customer_name", "job_card_state_code")
+    # # @api.depends('team_id','planned_date_begin','job_card_state_code')
+    # def _compute_whatsapp_scheduled_message_sent_bool(self):
+    #     for rec in self:
+    #         rec.whatsapp_scheduled_message_sent_bool = False
+    #         if rec.job_card_state_code == "102":
+    #             if rec.team_id and rec.planned_date_begin:
+    #                 rec.whatsapp_scheduled_message_sent_bool = True
+    #                 if rec.whatsapp_scheduled_message_sent_bool:
+    #                     '''Code Commented on June 19 2026 for performance issue for sending whatsapp'''
+    #                     rec._run_whatsapp_in_thread('_send_whatsapp_scheduled_message')
+    #                     # rec._send_whatsapp_scheduled_message()
+    #                     # rec._send_whatsapp_scheduled_technician_message()
+    #                     rec.whatsapp_scheduled_message_sent_bool = False
 
     """send whatsapp to customer for allocated job card"""
 
+    @postcommit_defer
     def _send_whatsapp_scheduled_message(self):
 
         # if not self.whatsapp_send_bool:
@@ -1792,10 +1998,10 @@ class ProjectTask(models.Model):
             return False
         
         if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
+                not self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.whatsapp_send_bool")
+                    == "True"
         ):
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
@@ -1902,7 +2108,7 @@ class ProjectTask(models.Model):
 
         try:
             response = requests.post(
-                template_url, headers=headers, json=template_payload
+                template_url, headers=headers, json=template_payload, timeout=(5, 10)
             )
             response.raise_for_status()  # Raise an exception for HTTP errors
 
@@ -1911,7 +2117,7 @@ class ProjectTask(models.Model):
                 body=_(
                     "WhatsApp Job card %s scheduled message sent successfully to the customer"
                 )
-                % self.name
+                     % self.name
             )
             return True
 
@@ -1920,7 +2126,7 @@ class ProjectTask(models.Model):
             # Optionally, notify the user or log the error in the chatter
             self.service_request_id.message_post(
                 body=_("WhatsApp scheduled message sent successfully to %s")
-                % self.partner_id.name,
+                     % self.partner_id.name,
                 message_type="notification",
             )
             return False
@@ -1928,6 +2134,7 @@ class ProjectTask(models.Model):
 
     """ send whatsapp to technician for allocated job card"""
 
+    @postcommit_defer
     def _send_whatsapp_scheduled_technician_message(self):
 
         # if not self.whatsapp_send_bool:
@@ -1935,10 +2142,10 @@ class ProjectTask(models.Model):
         #     return False
 
         if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
+                not self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.whatsapp_send_bool")
+                    == "True"
         ):
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
@@ -1977,7 +2184,9 @@ class ProjectTask(models.Model):
             "Content-Type": "application/json",
         }
         template_url = f"{base_url}/messages"
+
         message = False
+
         if self.planned_date_begin:
             message = f"Dear {self.team_id.name},\n  You are allocated for Job number {self.name} at {self.planned_date_begin.strftime('%d-%m-%Y %H:%M:%S')}.\n\n Thank You.\n Service Team"
         template_payload = {
@@ -1991,7 +2200,7 @@ class ProjectTask(models.Model):
 
         try:
             response = requests.post(
-                template_url, headers=headers, json=template_payload
+                template_url, headers=headers, json=template_payload, timeout=(5, 10)
             )
             response.raise_for_status()  # Raise an exception for HTTP errors
             # Use message_notify instead of message_post for user notifications
@@ -1999,7 +2208,7 @@ class ProjectTask(models.Model):
                 body=_(
                     "WhatsApp Job card %s scheduled message sent successfully to Technician"
                 )
-                % self.name
+                     % self.name
             )
             return True
 
@@ -2008,22 +2217,23 @@ class ProjectTask(models.Model):
             # Optionally, notify the user or log the error in the chatter
             self.service_request_id.message_post(
                 body=_("WhatsApp scheduled message sent successfully to %s")
-                % self.partner_id.name,
+                     % self.partner_id.name,
                 message_type="notification",
             )
             return False
 
     """ Whatsapp Send to customer when they failed to attend the call added on Sep 4 2025"""
 
+    @postcommit_defer
     def _send_failed_to_attend_call_status_whatsapp(self):
         # if not self.whatsapp_send_bool:
         #     _logger.info("❌ No WhatsApp set in res Config Settings")
         #     return False
         if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
+                not self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.whatsapp_send_bool")
+                    == "True"
         ):
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
@@ -2091,7 +2301,7 @@ class ProjectTask(models.Model):
         }
         try:
             response = requests.post(
-                template_url, headers=headers, json=template_payload
+                template_url, headers=headers, json=template_payload, timeout=(5, 10)
             )
             response.raise_for_status()  # Raise an exception for HTTP errors
 
@@ -2099,7 +2309,7 @@ class ProjectTask(models.Model):
                 body=_(
                     "WhatsApp Job card %s Failed to attend call message sent successfully to the customer"
                 )
-                % self.name
+                     % self.name
             )
             return True
 
@@ -2108,20 +2318,21 @@ class ProjectTask(models.Model):
             # Optionally, notify the user or log the error in the chatter
             self.service_request_id.message_post(
                 body=_("WhatsApp Failed message sent successfully to %s")
-                % self.partner_id.name,
+                     % self.partner_id.name,
                 message_type="notification",
             )
             return False
 
     """code is added on Nov-07-2025 for cancelled inspection charges by cst"""
 
+    @postcommit_defer
     def _send_whatsapp_for_cancelled_insp_charges_by_cst(self):
 
         if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
+                not self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.whatsapp_send_bool")
+                    == "True"
         ):
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
@@ -2192,7 +2403,7 @@ class ProjectTask(models.Model):
         }
         try:
             response = requests.post(
-                template_url, headers=headers, json=template_payload
+                template_url, headers=headers, json=template_payload, timeout=(5, 10)
             )
             response.raise_for_status()  # Raise an exception for HTTP errors
 
@@ -2200,7 +2411,7 @@ class ProjectTask(models.Model):
                 body=_(
                     "WhatsApp Job card %s Cancelled Insp.Charges by CST message sent successfully to the customer"
                 )
-                % self.name
+                     % self.name
             )
             return True
 
@@ -2209,561 +2420,10 @@ class ProjectTask(models.Model):
             # Optionally, notify the user or log the error in the chatter
             self.service_request_id.message_post(
                 body=_("WhatsApp Failed message sent successfully to %s")
-                % self.partner_id.name,
+                     % self.partner_id.name,
                 message_type="notification",
             )
             return False
-
-    # this is currently working commented by vijaya bhaskar or july 09-2025
-    # @api.onchange('job_state')
-    # def _onchange_job_card_state_status(self):
-    #     for rec in self:
-    #
-    #         rec.job_card_state = rec.job_state.name
-    #         rec.job_card_state_code = rec.job_state.code
-    #         rec.service_request_id.service_request_state = rec.job_state.name
-    #         rec.service_request_id.service_request_state_code = rec.job_state.code
-    #         rec.service_request_id.state  = rec.job_state
-    #
-    #         if rec._origin and rec.job_state != rec._origin.job_state:
-    #
-    #             ''' Technician Accepted state'''
-    #             if rec.job_card_state_code =='103':
-    #                 rec.technician_accepted_date = fields.Datetime.now()
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['103', '104', '105', '106', '107'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_back_office_user'):
-    #                     state_lst = []
-    #                     job_state_back_office = self.env['project.task.type'].search([('code','in',('105','106','107'))])
-    #                     for job in job_state_back_office:
-    #                         state_lst.append(job.id)
-    #                         rec.job_state = self.job_state
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids =[(6,0,state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #             ''' Technician Rejected state'''
-    #             if rec.job_card_state_code == '104':
-    #                 rec.technician_rejected_date = fields.Datetime.now()
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['104', '107'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_back_office_user'):
-    #                     state_lst = []
-    #                     job_state_back_office = self.env['project.task.type'].search([('code','in',('107'))])
-    #                     for job in job_state_back_office:
-    #                         state_lst.append(job.id)
-    #                         rec.job_state = self.job_state
-    #                     if hasattr(eec, available_state_ids) and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids =[(6,0,state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #             ''' Failed to attend call (Customer not answered) '''
-    #             if rec.job_card_state_code == '105':
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['105', '107'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_back_office_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['107'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #             ''' Out of City '''
-    #             if rec.job_card_state_code == '106':
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['106', '107'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_back_office_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['107'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #
-    #             ''' Rescheduled State '''
-    #             if rec.job_card_state_code == '107':
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_back_office_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['103', '104'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #
-    #
-    #
-    #             ''' Customer Accepted State '''
-    #             if rec.job_card_state_code == '108':
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['103', '107', '108'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #             ''' Technician Started State '''
-    #             if rec.job_card_state_code =='109':
-    #                 rec.technician_started_date = fields.Datetime.now()
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['107', '109', '110'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #             ''' Technician Reached State '''
-    #             if rec.job_card_state_code == '110':
-    #                 rec.technician_reached_date = fields.Datetime.now()
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['110', '111'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #             ''' Warranty Verification State '''
-    #             if rec.job_card_state_code == '111':
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['111', '112', '113', '114'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #             ''' Inspection Started State '''
-    #             if rec.job_card_state_code == '113':
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['113', '114', '125'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #             ''' Quotation provided. Waiting customer approval State '''
-    #             if rec.job_card_state_code == '114':
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['114', '115', '116'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #
-    #
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_back_office_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['124'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #             ''' Job Started (In-progress) State '''
-    #             if rec.job_card_state_code == '115':
-    #                 rec.job_started_date = fields.Datetime.now()
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['115', '117', '121'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #
-    #             ''' Payment Refused State '''
-    #             if rec.job_card_state_code =='116':
-    #                 # rec.job_started_date = fields.Datetime.now()
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_back_office_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['107', '124'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #
-    #             ''' Unit Pull Out State '''
-    #             if rec.job_card_state_code == '117':
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['117', '121'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_back_office_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['123', '124','107'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #             ''' On Hold - Spare Parts Required State '''
-    #             if rec.job_card_state_code == '121':
-    #                 rec.job_hold_date = fields.Datetime.now()
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['121', '123', '124'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_back_office_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['123', '107'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #             ''' Parts Ready State '''
-    #             if rec.job_card_state_code in ('122','123'):
-    #                 rec.job_resume_date = fields.Datetime.now()
-    #
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['122', '123', '107'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #             ''' Ready to Invoice (Complete) State '''
-    #             if rec.job_card_state_code == '125':
-    #                 rec.closed_datetime = fields.Datetime.now()
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['125', '126'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_back_office_user'):
-    #                     state_lst = []
-    #                     job_state_update = self.env['project.task.type'].search([('code', 'in', ['126'])])
-    #                     for job_state in job_state_update:
-    #                         state_lst.append(job_state.id)
-    #                         rec.job_state = self.job_state
-    #                         print("job_state,code", job_state.id, job_state.name, job_state.code)
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids = [(6, 0, state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #             '''If the User selected the Parts Ready Job state then check all the parts should be ticked in the product consume parts/service by Vijaya Bhaskar on June-30-2025'''
-    #             if rec.job_card_state_code in ('122','126'):
-    #                 if rec.product_line_ids:
-    #                     for line in rec.product_line_ids:
-    #                         if line.product_id:
-    #                             if not line.parts_reserved_bool:
-    #                                 raise ValidationError("Please check all the Products should be Reserved.This Product %s is not reserved" % line.product_id.display_name)
-    #
-    #                         if line.on_hand_qty == 0.0:
-    #                             raise ValidationError("Please Stock is not available.Please Contact Administrator")
-    #
-    #
-    #
-    #
-    #                 if not rec.product_line_ids:
-    #                     raise ValidationError("Please give any one of the Product in the product consume Part/services")
-    #
-    #
-    #             ''' Scheduled (Technician Assigned) State '''
-    #             if rec.job_card_state_code == '102':
-    #                 if not rec.team_id :
-    #                     raise ValidationError("Please enter Team Leader name in the Job card")
-    #
-    #                 if not rec.technician_id:
-    #
-    #                     raise ValidationError("Please Enter Technician Name ")
-    #
-    #                 if self.env.user.has_group('machine_repair_management.group_job_card_back_office_user'):
-    #                     state_lst = []
-    #                     job_state_back_office = self.env['project.task.type'].search([('code','in',('102','103','104'))])
-    #                     for job in job_state_back_office:
-    #                         state_lst.append(job.id)
-    #                         rec.job_state = self.job_state
-    #                     if hasattr(rec, 'available_state_ids') and rec.available_state_ids:
-    #                         if state_lst:
-    #                             rec.available_state_ids =[(6,0,state_lst)]
-    #                         else:
-    #                             rec.available_state_ids = [(5,)]
-    #
-    #                     else:
-    #                         rec.available_state_ids = [(6, 0, state_lst)] if state_lst else False
-    #
-    #
-    #
-    #
-    #
-    #             elif rec.job_card_state  not in  ('101','102'):
-    #
-    #                 if not rec.team_id :
-    #
-    #                     raise ValidationError("Please give the Team Leader Name")
-    #
-    #                 if not rec.technician_id:
-    #
-    #                     raise ValidationError("Please Enter Technician Name ")
-    #
-    #                 # if not rec.service_requested_datetime:
-    #                 #
-    #                 #     raise ValidationError("Please Enter  Requested Date & Time")
-    #
-    #                 '''Commented on Jun - 7 -2025 for replace appointment datetime with planned_date_begin for scheduling'''
-    #                 # if not rec.appointment_datetime:
-    #                 #     raise ValidationError("Please Enter Appointment Date & Time")
-    #                 if not rec.planned_date_begin:
-    #
-    #                     raise ValidationError("Please Enter Appt Start Date & Time")
-    #
-    #                 if rec.job_card_state_code == '126':
-    #                     if not rec.closed_datetime:
-    #                         raise ValidationError("Please Enter Closed Date time.")
-    #                     if rec.quotation_count == 0:
-    #                     # if not rec.sale_id:
-    #                         if rec.product_line_ids:
-    #                             for line in rec.product_line_ids:
-    #                                 if not line.under_warranty_bool:
-    #                                     raise ValidationError("Complete your quotation first, then close the job card")
-    #
-    #
-    #                     # if self.env.user.has_group('machine_repair_management.group_technical_allocation_user'):
-    #                     #     if not rec.supervisor_comments:
-    #                     #         raise ValidationError("Please give the supervisor comments for this Job card")
-    #
-
-    """ it will be faster loaded job card in"""
-    # def _get_task_type_by_code(self):
-    #     global _task_type_cache
-    #     # Initialize cache if not already set
-    #     if _task_type_cache is None:
-    #         task_types = self.env['project.task.type'].search([
-    #             ('code', '!=', False)
-    #         ])
-    #         _task_type_cache = {t.code: t.id for t in task_types}
-    #     return _task_type_cache
-    #
-    # def _clear_task_type_cache(self):
-    #     """Clear the module-level cache when needed (e.g., after modifying project.task.type)."""
-    #     global _task_type_cache
-    #     _task_type_cache = None
-
-    # def read(self, fields=None, load='_classic_read'):
-    #     res = super(ProjectTask, self).read(fields, load)
-    #     # Only compute if available_state_ids is requested in fields
-    #     if not fields or 'available_state_ids' in fields:
-    #         self._compute_available_state_ids()
-    #     # if not fields or 'address' in fields:
-    #     #     self._compute_address()
-    #     return res
 
     current_user_id = fields.Many2one(
         "res.users", compute="_compute_current_user", store=False
@@ -2780,32 +2440,23 @@ class ProjectTask(models.Model):
             """code is added on Oct 22-2025 for parts user should not see the Create Quotation,Create work order copy,send proforma invoice"""
             rec.parts_user_bool = False
             if rec.current_user_id.has_group(
-                "machine_repair_management.group_parts_user"
-            ):
+                    "machine_repair_management.group_parts_user"
+            )and not rec.current_user_id.has_group('machine_repair_management.group_parts_supervisor_both'):
                 rec.parts_user_bool = True
                 # '''Code Added on March 03 2026'''
 
                 """Code Added on Mar 09 2026"""
                 if rec.team_id.leader_id.warehouse_category_user_line_ids:
-                    stock_warehouse_search = self.env['stock.warehouse'].search([('work_center_ids.work_center_group_id', 'in', rec.work_center_group_id.ids),
-                         ('product_category_ids', 'in', rec.product_category_id.id),
-                         ('region_default_warehouse_bool', '=', True),
-                         ('warehouse_type', '=', 'main_warehouse')], limit=1)
-                    
-                    # stock_warehouse_search = self.env["stock.warehouse"].search(
-                    #     [
-                    #         (
-                    #             "work_center_id.work_center_group_id",
-                    #             "=",
-                    #             rec.work_center_group_id.id,
-                    #         ),
-                    #         ("product_category_ids", "in", rec.product_category_id.id),
-                    #         # ('default_work_center_bool','=',True),
-                    #         ("region_default_warehouse_bool", "=", True),
-                    #         ("warehouse_type", "=", "main_warehouse"),
-                    #     ],
-                    #     limit=1,
-                    # )
+                    stock_warehouse_search = self.env["stock.warehouse"].search(
+                        [
+                           ('work_center_ids.work_center_group_id','in',rec.work_center_group_id.ids),
+                            ("product_category_ids", "in", rec.product_category_id.id),
+                            # ('default_work_center_bool','=',True),
+                            ("region_default_warehouse_bool", "=", True),
+                            ("warehouse_type", "=", "main_warehouse"),
+                        ],
+                        limit=1,
+                    )
 
                     rec.main_warehouse_id = stock_warehouse_search.id
 
@@ -2837,8 +2488,261 @@ class ProjectTask(models.Model):
 
     """this code is correctly work but they want dynamic work added on the project task stages commented on Oct 28 2025"""
 
-   
+    @api.depends(
+    "job_card_state_code",
+    "current_user_id",
+    "amc_project_id",
+    "project_related_amc_bool",
+    )
+    def _compute_available_state_ids(self):
     
+        if not self:
+            return
+    
+        # -------------------------------------------------
+        # PROJECT IDS
+        # -------------------------------------------------
+        project_ids = self.mapped("amc_project_id").ids
+    
+        task_types_data = self.env["project.task.type"].search([
+            ("project_ids", "in", project_ids)
+        ])
+    
+        type_by_code = {rec.code: rec for rec in task_types_data}
+    
+        state_transitions = {}
+        internal_hide = {}
+        other_hide = {}
+    
+        # -------------------------------------------------
+        # BUILD TRANSITION MAPS
+        # -------------------------------------------------
+        for data in task_types_data:
+    
+            code = data.code
+    
+            domain_bo = [
+                x.strip()
+                for x in (data.back_office_user_code or "").split(",")
+                if x.strip()
+            ]
+    
+            domain_mo = [
+                x.strip()
+                for x in (data.mobile_user_code or "").split(",")
+                if x.strip()
+            ]
+    
+            domain_pa = [
+                x.strip()
+                for x in (data.parts_user_code or "").split(",")
+                if x.strip()
+            ]
+    
+            state_transitions[code] = {
+                "backoffice": domain_bo,
+                "technical": domain_bo,
+                "mobile": domain_mo,
+                "parts": domain_pa,
+                "both": domain_bo + domain_pa,
+            }
+    
+            internal_hide[code] = [
+                x.strip()
+                for x in (data.internal_technician_status_hide or "").split(",")
+                if x.strip()
+            ]
+    
+            other_hide[code] = [
+                x.strip()
+                for x in (data.other_status_hide or "").split(",")
+                if x.strip()
+            ]
+    
+        # -------------------------------------------------
+        # USER GROUPS
+        # -------------------------------------------------
+        user = self.env.user
+    
+        is_bo = user.has_group(
+            "machine_repair_management.group_job_card_back_office_user"
+        )
+        is_mo = user.has_group(
+            "machine_repair_management.group_job_card_mobile_user"
+        )
+        is_pa = user.has_group(
+            "machine_repair_management.group_parts_user"
+        )
+        is_te = user.has_group(
+            "machine_repair_management.group_technical_allocation_user"
+        )
+        is_both = user.has_group(
+            "machine_repair_management.group_parts_supervisor_both"
+        )
+    
+        # -------------------------------------------------
+        # RECORD LOOP
+        # -------------------------------------------------
+        for rec in self:
+    
+            rec.available_state_ids = [(5, 0, 0)]
+    
+            if not rec.job_card_state_code:
+                continue
+    
+            trans = state_transitions.get(rec.job_card_state_code)
+    
+            if not trans:
+                continue
+    
+            # ----------------------------
+            # Allowed transitions
+            # ----------------------------
+            if is_both:
+                allowed = trans["both"]
+            elif is_pa:
+                allowed = trans["parts"]
+            elif is_te:
+                allowed = trans["technical"]
+            elif is_bo:
+                allowed = trans["backoffice"]
+            elif is_mo:
+                allowed = trans["mobile"]
+            else:
+                allowed = []
+    
+            # Remove duplicates while preserving order
+            seen = set()
+            allowed = [
+                x for x in allowed
+                if not (x in seen or seen.add(x))
+            ]
+    
+            # ----------------------------
+            # Hide logic
+            # ----------------------------
+            if not rec.unit_pull_out_status_check:
+                allowed = [
+                    c for c in allowed
+                    if c not in internal_hide.get(
+                        rec.job_card_state_code, []
+                    )
+                ]
+    
+            if rec.unit_pull_out_status_check:
+                allowed = [
+                    c for c in allowed
+                    if c not in other_hide.get(
+                        rec.job_card_state_code, []
+                    )
+                ]
+    
+            # ----------------------------
+            # Special 110
+            # ----------------------------
+            if (
+                rec.job_card_state_code == "110"
+                and is_mo
+            ):
+                if rec.second_visit_technician_bool:
+                    if rec.warranty:
+                        allowed = [
+                            "110",
+                            "125",
+                            "107",
+                            "121",
+                            "117",
+                        ]
+                    else:
+                        allowed = [
+                            "110",
+                            "125",
+                            "107",
+                            "121",
+                            "129",
+                            "117",
+                        ]
+    
+            # ----------------------------
+            # Special 113
+            # ----------------------------
+            if (
+                rec.job_card_state_code == "113"
+                and rec.project_related_amc_bool
+                and rec.maintenance_type == "preventive"
+                and is_mo
+            ):
+                allowed = ["113", "125"]
+    
+            # ----------------------------
+            # AMC Preventive Hide
+            # ----------------------------
+            if (
+                rec.project_related_amc_bool
+                and rec.maintenance_type == "preventive"
+                and "111" in allowed
+            ):
+                allowed = [
+                    c for c in allowed
+                    if c != "111"
+                ]
+    
+            # ----------------------------
+            # Warranty Hide
+            # ----------------------------
+            if (
+                rec.service_warranty_id
+                and rec.service_warranty_id.job_card_status_hide
+                and is_mo
+            ):
+                hide = [
+                    c.strip()
+                    for c in rec.service_warranty_id.job_card_status_hide.split(",")
+                    if c.strip()
+                ]
+    
+                allowed = [
+                    c for c in allowed
+                    if c not in hide
+                ]
+                
+            '''Code Added on july 08 2026 by Vijaya bhaskar client asked Technician Reached - job started - Instead of Cancellation show  the Need Reschedule''' 
+            # -------------------------------------------------
+            # REPLACE 124 WITH 107
+            # -------------------------------------------------
+            if (
+                rec.job_card_state_code == "110"
+                and rec.project_related_amc_bool
+                and "124" in allowed
+            ):
+                allowed = [
+                    "107" if code == "124" else code
+                    for code in allowed
+                ]
+            
+                # Remove duplicates while preserving order
+                seen = set()
+                allowed = [
+                    x for x in allowed
+                    if not (x in seen or seen.add(x))
+                ]    
+                
+                
+    
+            # ----------------------------
+            # Assign states
+            # ----------------------------
+            if allowed:
+    
+                ordered_ids = [
+                    type_by_code[code].id
+                    for code in allowed
+                    if code in type_by_code
+                ]
+    
+                rec.available_state_ids = [(6, 0, ordered_ids)]
+     
+    ''' currently code is added on July 07 2026 by vijaya bhaskar
     @api.depends(
         "job_card_state_code",
         "current_user_id",
@@ -2846,6 +2750,9 @@ class ProjectTask(models.Model):
         "project_related_amc_bool",
     )
     def _compute_available_state_ids(self):
+	
+ 	if not self:
+            return
     
         TaskType = self.env["project.task.type"]
     
@@ -3000,7 +2907,7 @@ class ProjectTask(models.Model):
                         "117",
                     ]
             
-            '''Code Added on June 09 2026 by Vijaya Bhaskar client asked when the Job type is preventive and after inspection started then ready to invoice only shown not all other'''        
+            #Code Added on June 09 2026 by Vijaya Bhaskar client asked when the Job type is preventive and after inspection started then ready to invoice only shown not all other        
             if (
                 rec.job_card_state_code == "113"
                 and rec.project_related_amc_bool and 
@@ -3126,7 +3033,7 @@ class ProjectTask(models.Model):
             # -------------------------------------------------  
             # AMC PREVENTIVE HIDE
             # -------------------------------------------------
-            '''Code Added on June 16 2026 by Vijaya Bhaskar client asked to warranty verification status need not'''
+            #Code Added on June 16 2026 by Vijaya Bhaskar client asked to warranty verification status need not
             if (
                 rec.project_related_amc_bool
                 and rec.maintenance_type == 'preventive'
@@ -3136,28 +3043,7 @@ class ProjectTask(models.Model):
                     c for c in allowed_codes
                     if c != '111'
                 ]
-            
-            
-            '''Code Added on july 08 2026 by Vijaya bhaskar client asked Technician Reached - job started - Instead of Cancellation show  the Need Reschedule''' 
-            # -------------------------------------------------
-            # REPLACE 124 WITH 107
-            # -------------------------------------------------
-            if (
-                rec.job_card_state_code == "110"
-                and rec.project_related_amc_bool
-                and "124" in allowed_codes
-            ):
-                allowed_codes = [
-                    "107" if code == "124" else code
-                    for code in allowed_codes
-                ]
-            
-                # Remove duplicates while preserving order
-                seen = set()
-                allowed_codes = [
-                    x for x in allowed_codes
-                    if not (x in seen or seen.add(x))
-                ]
+        
     
             if not allowed_codes:
                 continue
@@ -3206,17 +3092,13 @@ class ProjectTask(models.Model):
             rec.available_state_ids = [
                 (6, 0, ordered_states.ids)
             ]
-            
+     
+    '''        
     ''' currently working code  commented on May 08 2026        
     @api.depends("job_card_state_code", "current_user_id")
     def _compute_available_state_ids(self):
-        """
-        Dynamically computes available state transitions per record
-        based on project.task.type fields:
-          - back_office_user_code
-          - mobile_user_code
-          - parts_user_code
-        """
+        if not self:
+            return
 
         task_types = self.env["project.task.type"].search([])
         type_by_code = {t.code: t for t in task_types}
@@ -3450,6 +3332,9 @@ class ProjectTask(models.Model):
                 rec.service_charge_amount + rec.service_vat_amount
             )
 
+
+
+
     @api.depends("team_id", "team_id.support_team_line_ids")
     def _compute_available_user_ids(self):
         for rec in self:
@@ -3472,8 +3357,8 @@ class ProjectTask(models.Model):
                     lambda l: l.is_default_team_member
                 )
                 if (
-                    default_line
-                    and default_line.support_team_user_id.id in available_ids
+                        default_line
+                        and default_line.support_team_user_id.id in available_ids
                 ):
                     rec.technician_id = default_line.support_team_user_id.id
                 elif available_ids:
@@ -3493,7 +3378,7 @@ class ProjectTask(models.Model):
                 # rec.write({'job_card_state_code':'102'})
 
                 """ for create the timesheet"""
-                #     val_lst = [(5,0,0)]
+            #     val_lst = [(5,0,0)]
             #     vals = {
             #         'date' : self.service_created_datetime.date(),
             #         'user_id' : self.technician_id.id,
@@ -3537,11 +3422,15 @@ class ProjectTask(models.Model):
             project = self.env["project.project"].browse(self.project_id.id)
             if project.exists():
                 domain.append(("project_ids", "=", project.id))
+
         user = self.env.user
+
         if user.has_group("machine_repair_management.group_job_card_back_office_user"):
             domain.append(("back_office_user", "=", True))
+
         elif user.has_group("machine_repair_management.group_job_card_mobile_user"):
             domain.append(("mobile_user", "=", True))
+
         return domain
 
     @api.onchange("job_state")
@@ -3549,24 +3438,25 @@ class ProjectTask(models.Model):
         if self.job_state and not self.job_state.exists():
             self.job_state = False
 
-            # print("........jobssssssssssssssssssssssssst",self.job_state,self.job_state.code,self.job_state.name)
+
         if self.job_state.code == "126":
             if (
-                self.env["ir.config_parameter"]
-                .sudo()
-                .get_param("machine_repair_management.negative_stock_allow")
-                == "True"
+                    self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.negative_stock_allow")
+                    == "True"
             ):
+
                 for line in self.product_line_ids:
                     if line.on_hand_qty == 0.0:
                         return {
                             "warning": {
                                 "title": "Warning",
                                 "message": "Stock not available for product %s"
-                                % line.product_id.display_name,
+                                           % line.product_id.display_name,
                             }
                         }
-                        # if self.job_state.code == '124':
+        # if self.job_state.code == '124':
         #     return {
         #
         #     'type':'ir.actions.act_window',
@@ -3690,4039 +3580,1073 @@ class ProjectTask(models.Model):
             if not state.exists():
                 vals["job_state"] = False
         return super().create(vals)
-
-    # def write(self, vals):
-    #     # if self.env.context.get('skip_state_validation'):
-    #     #     return super().write(vals)
-    #     #
-    #     is_minimal_update = len(vals) == 0 or all(
-    #         field
-    #         in [
-    #             "message_main_attachment_id",
-    #             "message_ids",
-    #             "activity_ids",
-    #             "write_date",
-    #             "__last_update",
-    #         ]
-    #         for field in vals.keys()
-    #     )
-
-    #     if is_minimal_update or self.env.context.get("creating"):
-    #         return super().write(vals)
-
-    #     if self.env.context.get("skip_state_validation"):
-    #         return super().write(vals)
-
-    #     warnings = []
-    #     warning_needed = False
-    #     state_changing_to_124 = False
-
-    #     for rec in self:
-    #         # Take new state code if being updated, otherwise existing
-    #         state_code = vals.get("job_card_state_code") or rec.job_card_state_code
-    #         engineer_comments = vals.get("engineer_comments") or rec.engineer_comments
-    #         team_id = vals.get("team_id") or rec.team_id.id
-
-    #         def is_state_changing_to(target_code):
-    #             return ("job_state" in vals or "job_card_state_code" in vals) and (
-    #                 (vals.get("job_card_state_code") == target_code)
-    #                 or (
-    #                     not vals.get("job_card_state_code")
-    #                     and vals.get("job_state")
-    #                     and self.env["project.task.type"].browse(vals["job_state"]).code
-    #                     == target_code
-    #                 )
-    #             )
-
-    #         # Check if state is being changed to specific codes
-    #         state_changing_to_102 = is_state_changing_to("102")
-    #         state_changing_to_107 = is_state_changing_to("107")
-
-    #         state_changing_to_111 = is_state_changing_to("111")
-    #         state_changing_to_112 = is_state_changing_to("112")
-
-    #         state_changing_to_113 = is_state_changing_to("113")
-    #         state_changing_to_115 = is_state_changing_to("115")
-    #         state_changing_to_116 = is_state_changing_to("116")
-
-    #         state_changing_to_117 = is_state_changing_to("117")
-    #         state_changing_to_121 = is_state_changing_to("121")
-
-    #         state_changing_to_122 = is_state_changing_to("122")
-    #         state_changing_to_124 = is_state_changing_to("124")
-    #         state_changing_to_125 = is_state_changing_to("125")
-    #         state_changing_to_126 = is_state_changing_to("126")
-
-    #         state_changing_to_128 = is_state_changing_to("128")
-    #         state_changing_to_129 = is_state_changing_to("129")
-    #         state_changing_to_130 = is_state_changing_to("130")
-
-    #         if state_changing_to_102:
-    #             if not team_id:
-    #                 raise ValidationError(
-    #                     _(
-    #                         "Please assign the technician to this Job Card %s "
-    #                         % rec.name
-    #                     )
-    #                 )
-
-    #         if state_changing_to_124:
-    #             """Engineer comments are commented due to not need during closed Job card
-    #             if not engineer_comments:
-    #                 raise ValidationError(
-    #                     _("Please enter Engineer Comments before moving Job Card %s") % rec.name
-    #                 )
-    #             """
-    #             # self = self.with_context(open_cancelled_wizard=True)
-    #             # if not self.cancel_button_wizard_bool:
-    #             # raise UserError(_("Please Click the Cancel Job Card Button in mobile"))
-    #             # return rec.cancelled_reason_button_mobile()
-    #             cancellation_reason = (
-    #                 vals.get("cancellation_reason_id") or rec.cancellation_reason_id
-    #             )
-
-    #             # if not cancellation_reason:
-    #             #     return rec.cancelled_reason_button_mobile()
-
-    #             # raise ValidationError(_("Please Select any one Cancellation Reason before Cancel the Job Card."))
-
-    #         if state_changing_to_122:
-    #             if not rec.product_line_ids and not vals.get("product_line_ids"):
-    #                 raise ValidationError(
-    #                     _(
-    #                         "Please give at least one Product in the product consume Part/services"
-    #                     )
-    #                 )
-
-    #             for line in rec.product_line_ids:
-    #                 if line.product_id:
-    #                     if not line.parts_reserved_bool:
-    #                         raise ValidationError(
-    #                             _(
-    #                                 "Product %s is not reserved. Please reserve all products before proceeding."
-    #                                 % line.product_id.display_name
-    #                             )
-    #                         )
-    #                 if line.on_hand_qty == 0.0:
-    #                     raise ValidationError(
-    #                         _(
-    #                             "Stock is not available for Product %s. Please contact Administrator."
-    #                             % line.product_id.display_name
-    #                         )
-    #                     )
-
-    #             # Inspection charges check
-    #             if rec.inspection_charges_bool and rec.inspection_charges_amount > 0:
-    #                 if not any(
-    #                     l.product_id and l.product_id.service_type_bool
-    #                     for l in rec.product_line_ids
-    #                 ):
-    #                     raise ValidationError(
-    #                         _("Please enter service charge amount in the product line")
-    #                     )
-
-    #         if state_changing_to_125:
-    #             product_id = vals.get("product_id") or rec.product_id.id
-    #             project_related_amc_bool = (
-    #                 vals.get("project_related_amc_bool") or rec.project_related_amc_bool
-    #             )
-    #             if not product_id and not project_related_amc_bool:
-    #                 raise ValidationError(_("Please enter Model No. in the Job card"))
-    #             product_slno = vals.get("product_slno") or rec.product_slno
-    #             if not product_slno:
-    #                 raise ValidationError(
-    #                     _("Please enter Serial Number in the Job card")
-    #                 )
-
-    #             purchase_invoice_no = (
-    #                 vals.get("purchase_invoice_no") or rec.purchase_invoice_no
-    #             )
-    #             if rec.warranty and not purchase_invoice_no:
-    #                 raise ValidationError(
-    #                     _("Please enter Purchase Invoice No in the Job card")
-    #                 )
-
-    #             purchase_date = vals.get("purchase_date") or rec.purchase_date
-    #             if rec.warranty and not purchase_date:
-    #                 raise ValidationError(
-    #                     _("Please enter Purchase date in the Job card")
-    #                 )
-
-    #             service_warranty_id = (
-    #                 vals.get("service_warranty_id") or rec.service_warranty_id.id
-    #             )
-    #             if not service_warranty_id:
-    #                 raise ValidationError(
-    #                     _("Please select any one Service Warranty in the Job card")
-    #                 )
-
-    #             signature = vals.get("signature") or rec.signature
-    #             if not signature:
-    #                 raise ValidationError(
-    #                     _("Please enter Customer Signature in the Job card")
-    #                 )
-
-    #         if state_changing_to_126:
-
-    #             """Control Card no should be hide as per client request on NOv 13
-    #             control_card_no = vals.get('control_card_no') or rec.control_card_no
-    #             if not control_card_no:
-    #                 raise ValidationError(_("Please enter 'Control Card No' in the Job card."))
-    #             """
-    #             closed_datetime = vals.get("closed_datetime") or rec.closed_datetime
-    #             if not closed_datetime:
-    #                 raise ValidationError(
-    #                     _("Please enter Completed Date & Time in the Job card")
-    #                 )
-
-    #             # if closed_datetime:
-    #             #     if rec.planned_date_begin and closed_datetime:
-    #             #         if rec.planned_date_begin > closed_datetime:
-    #             #             raise ValidationError('Completed Date & Time is always greater than Appt Start Date & Time')
-    #             #
-    #             if closed_datetime:
-    #                 planned_dt = rec.planned_date_begin
-    #                 closed_dt = (
-    #                     fields.Datetime.from_string(closed_datetime)
-    #                     if isinstance(closed_datetime, str)
-    #                     else closed_datetime
-    #                 )
-
-    #                 if planned_dt and closed_dt:
-    #                     if planned_dt > closed_dt:
-    #                         raise ValidationError(
-    #                             _(
-    #                                 "Completed Date & Time is always greater than Appt Start Date & Time"
-    #                             )
-    #                         )
-
-    #             product_id = vals.get("product_id") or rec.product_id.id
-    #             project_related_amc_bool = (
-    #                 vals.get("project_related_amc_bool") or rec.project_related_amc_bool
-    #             )
-
-    #             if not product_id and not project_related_amc_bool:
-    #                 raise ValidationError(_("Please enter Model No. in the Job card"))
-
-    #             purchase_invoice_no = (
-    #                 vals.get("purchase_invoice_no") or rec.purchase_invoice_no
-    #             )
-    #             if rec.warranty and not purchase_invoice_no:
-    #                 raise ValidationError(_("Please enter Purchase Invoice No"))
-
-    #             purchase_date = vals.get("purchase_date") or rec.purchase_date
-    #             if rec.warranty and not purchase_date:
-    #                 raise ValidationError(
-    #                     _("Please enter Purchase date in the Job card")
-    #                 )
-
-    #             service_warranty_id = (
-    #                 vals.get("service_warranty_id") or rec.service_warranty_id.id
-    #             )
-    #             if not service_warranty_id:
-    #                 raise ValidationError(_("Please select any one Service Warranty"))
-
-    #             product_lines = vals.get("product_line_ids")
-    #             if vals.get("product_line_ids"):
-    #                 for command in vals.get("product_line_ids"):
-    #                     if command[0] == 1:  # UPDATE existing line
-    #                         line_id = command[1]
-    #                         updates = command[2]
-    #                         line = product_lines.browse(line_id)
-    #                         line.parts_reserved_bool = updates.get(
-    #                             "parts_reserved_bool", line.parts_reserved_bool
-    #                         )
-
-    #                     elif command[0] == 0:  # CREATE new line
-    #                         new_vals = command[2]
-    #                         product_lines += product_lines.new(new_vals)
-
-    #             # Now validate final values
-    #             for line in product_lines:
-    #                 if not line:
-    #                     raise ValidationError(
-    #                         _(
-    #                             "Please give any one of the Product in the product consume Part/services"
-    #                         )
-    #                     )
-
-    #                 if line.product_id and not line.parts_reserved_bool:
-    #                     raise ValidationError(
-    #                         _(
-    #                             "Product %s is not reserved. Please reserve all products before proceeding."
-    #                         )
-    #                         % line.product_id.display_name
-    #                     )
-    #                 """Code is added on Oct -06-2025 due to Client ask to skip the validation when negative_stock_allow allow field is enable in the res.config_settings"""
-    #                 if (
-    #                     not self.env["ir.config_parameter"]
-    #                     .sudo()
-    #                     .get_param("machine_repair_management.negative_stock_allow")
-    #                     == "True"
-    #                 ):
-    #                     if line.on_hand_qty == 0.0:
-    #                         raise ValidationError(
-    #                             _(
-    #                                 "Stock %s is not available. Please Contact Administrator"
-    #                                 % line.product_id.display_name
-    #                             )
-    #                         )
-    #             ##### commented on Dec 10-2025
-    #             # lines_to_check = (
-    #             #     rec.product_line_ids
-    #             #     if not product_line_vals
-    #             #     else rec.product_line_ids
-    #             # )
-    #             # """ Client asked to need not give any product in the product lines because they need to close the job card without product on Oct -06s -2025"""
-    #             # # if not lines_to_check:
-    #             # #     raise ValidationError(_("Please give any one of the Product in the product consume Part/services"))
-    #             # #
-
-    #             # for line in lines_to_check:
-    #             #     if line.product_id:
-    #             #         if not line.parts_reserved_bool:
-    #             #             raise ValidationError(
-    #             #                 _(
-    #             #                     "Please check all the Products should be Reserved. "
-    #             #                     "This Product %s is not reserved"
-    #             #                     % line.product_id.display_name
-    #             #                 )
-    #             #             )
-
-    #             #     """Code is added on Oct -06-2025 due to Client ask to skip the validation when negative_stock_allow allow field is enable in the res.config_settings"""
-    #             #     if (
-    #             #         not self.env["ir.config_parameter"]
-    #             #         .sudo()
-    #             #         .get_param("machine_repair_management.negative_stock_allow")
-    #             #         == "True"
-    #             #     ):
-    #             #         if line.on_hand_qty == 0.0:
-    #             #             raise ValidationError(
-    #             #                 _(
-    #             #                     "Stock %s is not available. Please Contact Administrator"
-    #             #                     % line.product_id.display_name
-    #             #                 )
-    #             #             )
-
-    #             if rec.inspection_charges_bool and rec.inspection_charges_amount > 0:
-    #                 if not any(
-    #                     line.product_id and line.product_id.service_type_bool
-    #                     for line in rec.product_line_ids
-    #                 ):
-    #                     raise ValidationError(
-    #                         _("Please enter service charge amount in the product line")
-    #                     )
-
-    #             if rec.service_sale_id:
-    #                 if rec.service_sale_id.state not in ("sale", "done"):
-    #                     raise ValidationError(
-    #                         "Please Confirm the Sale Quotation %s"
-    #                         % rec.service_sale_id.name
-    #                     )
-
-    #             if rec.balance_paid != 0.0:
-    #                 raise ValidationError(
-    #                     "Balance Payment is there.Please Do the balance payment. "
-    #                 )
-
-    #             if rec.hyperpay_line_ids:
-    #                 for line in rec.hyperpay_line_ids:
-    #                     if line.hyper_pay_status != "success":
-    #                         raise ValidationError(
-    #                             "Still Payment is not Success.Please Check that"
-    #                         )
-    #             """Code Added By Vengatesh in Mar 26 -2026"""
-    #             """Code added on Dec 05 2025 due to client ask when the co-ordinator closed the record sales man user code must be asked"""
-    #             if not rec.current_user_id.user_code:
-    #                 raise ValidationError(
-    #                     "Please give the Salesman code as per penygon code in the User Settings"
-    #                 )
-
-    #             mode_of_payment = vals.get("mode_of_payment") or rec.mode_of_payment
-    #             if not mode_of_payment:
-    #                 raise ValidationError(_("Please give Method of Payment"))
-
-    #             mode_of_payment_balance_amount = (
-    #                 vals.get("mode_of_payment_balance_amount")
-    #                 or rec.mode_of_payment_balance_amount
-    #             )
-    #             if rec.final_balance_amount != 0.0:
-    #                 if not mode_of_payment_balance_amount:
-    #                     raise ValidationError(_("Please give the method of Payment"))
-
-    #             online_payment_attachment_vals = (
-    #                 vals.get("online_payment_invoice_attachment_ids")
-    #                 or rec.online_payment_invoice_attachment_ids
-    #             )
-    #             if rec.mode_of_payment in ("online", "bank"):
-    #                 if not online_payment_attachment_vals:
-    #                     raise ValidationError(
-    #                         _(
-    #                             "Please Attach Online/Bank Transfer Attachment Payment copy"
-    #                         )
-    #                     )
-
-    #             return_damage_parts_technician = (
-    #                 vals.get("return_damage_parts_technician")
-    #                 or rec.return_damage_parts_technician
-    #             )
-    #             damaged_parts_returned_parts_user = (
-    #                 vals.get("damaged_parts_returned_parts_user")
-    #                 or rec.damaged_parts_returned_parts_user
-    #             )
-    #             damaged_parts_to_be_returned_technician = (
-    #                 vals.get("damaged_parts_to_be_returned_technician")
-    #                 or rec.damaged_parts_to_be_returned_technician
-    #             )
-    #             service_warranty_id = (
-    #                 vals.get("service_warranty_id") or rec.service_warranty_id
-    #             )
-    #             if (
-    #                 service_warranty_id.warranty_applicable_bool
-    #                 and not service_warranty_id.misuse_warranty_bool
-    #             ):
-    #                 if damaged_parts_to_be_returned_technician:
-    #                     if (
-    #                         not return_damage_parts_technician
-    #                         and not damaged_parts_returned_parts_user
-    #                     ):
-    #                         raise ValidationError(
-    #                             _("Return the damaged item to warehouse is there")
-    #                         )
-
-    #             """code added on FEB 02-2026"""
-    #             if rec.warranty:
-    #                 for line in rec.product_line_ids:
-    #                     if line.under_warranty_bool:
-    #                         if line.price_unit > 0:
-    #                             raise ValidationError(
-    #                                 _(
-    #                                     "For Under Warranty Unit Price is always equal to Zero Only.Please Change the Product %s Price Unit makes to Zero"
-    #                                     % line.product_id.display_name
-    #                                 )
-    #                             )
-
-    #                             # line.price_unit = 0
-    #                             # line.total = 0
-
-    #             """Code added on Mar 06 2026"""
-    #             if any(
-    #                 l.product_id
-    #                 and l.price_unit > 0
-    #                 and not l.under_warranty_bool
-    #                 and l.vat == 0.0
-    #                 for l in rec.product_line_ids
-    #             ):
-    #                 raise ValidationError(
-    #                     _("VAT must be entered when Price Unit is greater than zero.")
-    #                 )
-
-    #             """Code Added on Mar 09 2026"""
-    #             invalid_tax_lines = rec.product_line_ids.filtered(
-    #                 lambda l: l.product_id
-    #                 and l.price_unit > 0
-    #                 and not l.product_id.taxes_id
-    #             )
-
-    #             if invalid_tax_lines:
-    #                 products = ", ".join(invalid_tax_lines.mapped("product_id.name"))
-    #                 raise ValidationError(_("VAT must be set for: %s") % products)
-
-    #             """Code Added by Vengatesh On Mar 25 2026"""
-    #             if any(
-    #                 l.product_id
-    #                 and l.amount_required
-    #                 and not l.under_warranty_bool
-    #                 and l.price_unit == 0.0
-    #                 for l in rec.product_line_ids
-    #             ):
-    #                 raise ValidationError(
-    #                     _(
-    #                         "Product  must have a price greater than 0 "
-    #                         "because amount is required."
-    #                     )
-    #                 )
-
-    #         """Code Added on Nov 17-2025"""
-    #         if state_changing_to_111:
-
-    #             self.warranty_verfication_status_check = True
-
-    #         """State changing to Inspection started state """
-
-    #         if state_changing_to_113:
-    #             self.inspection_started_status_check = True
-
-    #             """Code Added on Jan 20 2026"""
-    #             inspection_charges_amount = (
-    #                 vals.get("inspection_charges_amount")
-    #                 or rec.inspection_charges_amount
-    #             )
-    #             inspection_charges_bool = (
-    #                 vals.get("inspection_charges_bool") or rec.inspection_charges_bool
-    #             )
-    #             if inspection_charges_amount > 0.0:
-    #                 if not inspection_charges_bool:
-    #                     raise ValidationError(
-    #                         _(
-    #                             "Please Tick the Inspection Charges Confirmed.Because Inspection Charges Amount(Inc.VAT) is greater than Zero."
-    #                         )
-    #                     )
-
-    #             """Code Added on Jan 21 2026"""
-    #             # service_warranty = vals.get('service_warranty_id') or rec.service_warranty_id
-    #             # inspection_charges_amount = vals.get('inspection_charges_amount') or rec.inspection_charges_amount
-    #             # if not service_warranty.warranty_applicable_bool and not service_warranty.misuse_warranty_bool:
-    #             #     if inspection_charges_amount == 0.0:
-    #             #         raise ValidationError(_("Please give the Inspection Charges Amount Which always greater than zero"))
-    #             #
-    #             service_warranty = (
-    #                 vals.get("service_warranty_id") or rec.service_warranty_id
-    #             )
-
-    #             if not service_warranty:
-    #                 raise ValidationError(_("Please select any one Service Warranty"))
-
-    #             if rec.warranty:
-    #                 purchase_invoice_no = (
-    #                     vals.get("purchase_invoice_no") or rec.purchase_invoice_no
-    #                 )
-    #                 if not purchase_invoice_no:
-    #                     raise ValidationError(
-    #                         _("Please enter Purchase Invoice No in the Job Card")
-    #                     )
-
-    #                 purchase_date = vals.get("purchase_date") or rec.purchase_date
-    #                 if not purchase_date:
-    #                     raise ValidationError(
-    #                         _("Please enter Purchase date in the Job Card")
-    #                     )
-
-    #                 dealer = vals.get("dealer_id") or rec.dealer_id
-    #                 if not dealer:
-    #                     raise ValidationError(
-    #                         _("Please enter Dealer Name in the Job Card")
-    #                     )
-
-    #                 attachment_vals = vals.get("attachment_ids") or rec.attachment_ids
-    #                 if not attachment_vals:
-    #                     raise ValidationError(_("Please Attach Invoice Documents"))
-    #                 if attachment_vals:
-    #                     allowed_mimetypes = [
-    #                         "image/jpeg",
-    #                         "image/png",
-    #                         "image/gif",
-    #                         "application/pdf",
-    #                     ]
-    #                     for attachment in rec.attachment_ids:
-    #                         if attachment.mimetype not in allowed_mimetypes:
-    #                             raise ValidationError(
-    #                                 _(
-    #                                     "Only PDF, JPG, PNG, and GIF files are allowed in the job card.\n"
-    #                                     f"Invalid file: {attachment.name}"
-    #                                 )
-    #                             )
-    #                 """Code Added on Jan 21 2026"""
-    #             inspection_charges_amount = (
-    #                 vals.get("inspection_charges_amount")
-    #                 or rec.inspection_charges_amount
-    #             )
-    #             if vals.get("service_warranty_id"):
-    #                 warranty_search = self.env["service.warranty"].search(
-    #                     [("id", "=", vals.get("service_warranty_id"))], limit=1
-    #                 )
-    #                 if (
-    #                     not warranty_search.warranty_applicable_bool
-    #                     and not warranty_search.misuse_warranty_bool
-    #                 ):
-    #                     if inspection_charges_amount == 0.0:
-    #                         raise ValidationError(
-    #                             _(
-    #                                 "Please give the Inspection Charges Amount if it is not under warranty"
-    #                             )
-    #                         )
-    #             """Updated Code Added on Feb 03 2026"""
-    #             if not vals.get("service_warranty_id"):
-    #                 if rec.service_warranty_id:
-    #                     if (
-    #                         not rec.service_warranty_id.warranty_applicable_bool
-    #                         and not rec.service_warranty_id.misuse_warranty_bool
-    #                     ):
-    #                         if inspection_charges_amount == 0.0:
-    #                             raise ValidationError(
-    #                                 _(
-    #                                     "Please give the Inspection Charges Amount if it is not under warranty"
-    #                                 )
-    #                             )
-
-    #             if not rec.warranty and rec.inspection_charges_bool:
-    #                 val = vals.get("inspection_charges_amount")
-    #                 amount = (
-    #                     float(val)
-    #                     if val not in (None, False, "")
-    #                     else rec.inspection_charges_amount
-    #                 )
-
-    #                 if amount == 0.0:
-    #                     raise ValidationError(
-    #                         "Please enter the inspection Charges Amount if it is not under warranty"
-    #                     )
-
-    #             """Code added on Dec 04-2025 because mode of payment is mandatory for warranty verification to inspection started state"""
-    #             if rec.inspection_charges_amount != 0.0:
-    #                 if not (rec.mode_of_payment or vals.get("mode_of_payment")):
-    #                     raise ValidationError("Please select the Method of Payment")
-
-    #             """If technician is not set default warehouse then services is not add in the product lines"""
-    #             if not (rec.warehouse_id or vals.get("warehouse_id")):
-    #                 if not rec.current_user_id.property_warehouse_id:
-    #                     raise ValidationError(
-    #                         "Please add Default Warehouse for the Technician in the User Settings"
-    #                     )
-    #                 if rec.current_user_id.property_warehouse_id:
-    #                     raise ValidationError(
-    #                         _("Please give the warehouse in the Job card")
-    #                     )
-
-    #             online_payment_attachment_vals = (
-    #                 vals.get("online_payment_invoice_attachment_ids")
-    #                 or rec.online_payment_invoice_attachment_ids
-    #             )
-    #             mode_of_payment_balance_amount = (
-    #                 vals.get("mode_of_payment_balance_amount")
-    #                 or rec.mode_of_payment_balance_amount
-    #             )
-    #             mode_of_payment = vals.get("mode_of_payment") or rec.mode_of_payment
-    #             if mode_of_payment in (
-    #                 "online",
-    #                 "bank",
-    #             ) or mode_of_payment_balance_amount in ("online", "bank"):
-    #                 if not online_payment_attachment_vals:
-    #                     raise ValidationError(
-    #                         _(
-    #                             "Please Attach Online/Bank Transfer Attachment Payment copy"
-    #                         )
-    #                     )
-
-    #             self.whatsapp_inspection_started_bool = True
-    #         if (
-    #             state_changing_to_115
-    #             or state_changing_to_117
-    #             or state_changing_to_121
-    #             or state_changing_to_129
-    #         ):
-
-    #             product_id = vals.get("product_id") or rec.product_id.id
-    #             project_related_amc_bool = (
-    #                 vals.get("project_related_amc_bool") or rec.project_related_amc_bool
-    #             )
-
-    #             if not product_id and not project_related_amc_bool:
-    #                 raise ValidationError(_("Please enter Model No. in the Job card"))
-
-    #             product_slno = vals.get("product_slno") or rec.product_slno
-
-    #             if not product_slno:
-    #                 raise ValidationError(
-    #                     _("Please enter Serial Number in the Job Card")
-    #                 )
-
-    #             service_warranty = (
-    #                 vals.get("service_warranty_id") or rec.service_warranty_id
-    #             )
-
-    #             if not service_warranty:
-    #                 raise ValidationError(_("Please select any one Service Warranty"))
-
-    #         if (
-    #             state_changing_to_121
-    #             or state_changing_to_128
-    #             or state_changing_to_125
-    #             or state_changing_to_117
-    #             or state_changing_to_116
-    #             or state_changing_to_129
-    #             or state_changing_to_130
-    #         ):
-    #             # if state_changing_to_121 or state_changing_to_128 or state_changing_to_125 or state_changing_to_117 or state_changing_to_116 or state_changing_to_107 or state_changing_to_129 or state_changing_to_130:
-
-    #             symptom_line_ids = vals.get("symptoms_line_ids_duplicate") or vals.get(
-    #                 "symptoms_line_ids"
-    #             )
-    #             lines_to_check = rec.symptoms_line_ids or symptom_line_ids
-    #             if not lines_to_check:
-    #                 raise ValidationError(
-    #                     _("Please give any one of the Symptoms in the Symptoms tab")
-    #                 )
-
-    #             defect_type_ids = vals.get("defects_type_ids_duplicate") or vals.get(
-    #                 "defects_type_ids"
-    #             )
-    #             defect_to_check = rec.defects_type_ids or defect_type_ids
-    #             if not defect_to_check:
-    #                 raise ValidationError(
-    #                     _("Please give any one of the Defects in the Defects tab")
-    #                 )
-
-    #             # service_type_ids = vals.get('service_type_ids_duplicate') or vals.get('service_type_ids')
-    #             # service_to_check = rec.service_type_ids or service_type_ids
-    #             # if not service_to_check:
-    #             #     raise ValidationError(_("Please give any one of the Service in the Service tab"))
-
-    #         if state_changing_to_112:
-    #             symptom_line_ids = vals.get("symptoms_line_ids_duplicate") or vals.get(
-    #                 "symptoms_line_ids"
-    #             )
-    #             lines_to_check = rec.symptoms_line_ids or symptom_line_ids
-    #             if not lines_to_check:
-    #                 raise ValidationError(
-    #                     _("Please give any one of the Symptoms in the Symptoms tab")
-    #                 )
-
-    #         if state_changing_to_117:
-
-    #             engineer_comments = (
-    #                 vals.get("engineer_comments") or rec.engineer_comments
-    #             )
-    #             if not engineer_comments:
-    #                 raise ValidationError(_("Please enter the Technician Comments 1"))
-
-    #         """Code Added on Jan 20 2026"""
-    #         if state_changing_to_121:
-    #             if rec.service_sale_id:
-    #                 if rec.service_sale_id.state == "done":
-    #                     balance_paid_amount = (
-    #                         vals.get("balance_paid") or rec.balance_paid
-    #                     )
-    #                     balance_amount_received_bool = (
-    #                         vals.get("balance_amount_received_bool")
-    #                         or rec.balance_amount_received_bool
-    #                     )
-    #                     mode_of_payment_balance_amount = (
-    #                         vals.get("mode_of_payment_balance_amount")
-    #                         or rec.mode_of_payment_balance_amount
-    #                     )
-    #                     if (
-    #                         balance_paid_amount > 0.0
-    #                         and not mode_of_payment_balance_amount
-    #                     ):
-    #                         raise ValidationError(
-    #                             _("Please Select any one Method Of Payment")
-    #                         )
-
-    #                     if (
-    #                         balance_paid_amount > 0.0
-    #                         and not balance_amount_received_bool
-    #                     ):
-    #                         raise ValidationError(
-    #                             _(
-    #                                 "Ensure Amount is received from the customer while clicking the Balance Amount Confirmed."
-    #                             )
-    #                         )
-
-    #             """ code added on Jan 23 2026 """
-    #             online_payment_attachment_vals = (
-    #                 vals.get("online_payment_invoice_attachment_ids")
-    #                 or rec.online_payment_invoice_attachment_ids
-    #             )
-    #             if rec.current_user_id.has_group(
-    #                 "machine_repair_management.group_technical_allocation_user"
-    #             ):
-    #                 if rec.mode_of_payment in (
-    #                     "online",
-    #                     "bank",
-    #                 ) or rec.mode_of_payment_balance_amount in ("online", "bank"):
-    #                     if not online_payment_attachment_vals:
-    #                         raise ValidationError(
-    #                             _(
-    #                                 "Please Attach Online/Bank Transfer Attachment Payment copy"
-    #                             )
-    #                         )
-
-    #             """Code added on Mar 09 2026"""
-    #             if any(
-    #                 l.product_id
-    #                 and l.price_unit > 0
-    #                 and not l.under_warranty_bool
-    #                 and l.vat == 0.0
-    #                 for l in rec.product_line_ids
-    #             ):
-    #                 raise ValidationError(
-    #                     _("VAT must be entered when Price Unit is greater than zero.")
-    #                 )
-
-    #             """Code Added on Mar 09 2026"""
-    #             invalid_tax_lines = rec.product_line_ids.filtered(
-    #                 lambda l: l.product_id
-    #                 and l.price_unit > 0
-    #                 and not l.product_id.taxes_id
-    #             )
-
-    #             if invalid_tax_lines:
-    #                 products = ", ".join(invalid_tax_lines.mapped("product_id.name"))
-    #                 raise ValidationError(_("VAT must be set for: %s") % products)
-
-    #         if state_changing_to_125:
-
-    #             service_type_ids = vals.get("service_type_ids_duplicate") or vals.get(
-    #                 "service_type_ids"
-    #             )
-    #             service_to_check = rec.service_type_ids or service_type_ids
-    #             if not service_to_check:
-    #                 raise ValidationError(
-    #                     _("Please give any one of the Service in the Service tab")
-    #                 )
-
-    #             if self.second_visit_technician_bool:
-    #                 engineer_comments_2 = (
-    #                     vals.get("engineer_comments_second")
-    #                     or rec.engineer_comments_second
-    #                 )
-    #                 if not engineer_comments_2:
-    #                     raise ValidationError(
-    #                         _("Please enter the Technician Comments 2")
-    #                     )
-
-    #         """If already warranty verification is there the job card is not open.It will be added on Sep 15 -2025 """
-    #         # it is already worked perfectly when we open the  already job card it will raise error.so it was commented
-    #         # state_changing_to_111 = ('job_state' in vals or 'job_card_state_code' in vals) and (
-    #         # (vals.get('job_card_state_code') == '111') or
-    #         # (not vals.get('job_card_state_code') and vals.get('job_state') and
-    #         #  self.env['project.task.type'].browse(vals['job_state']).code == '111')
-    #         # )
-    #         #
-    #         # if state_code == '102':
-    #         #     if not team_id:
-    #         #         raise ValidationError(
-    #         #             _("Please select a Team before moving Job Card %s") % rec.name
-    #         #         )
-    #         #
-    #         # if state_code == '124' and not engineer_comments:
-    #         #     raise ValidationError(
-    #         #         _("Please enter Engineer Comments before moving Job Card %s") % rec.name
-    #         #     )
-    #         #
-    #         # if state_code == '122':
-    #         #     if not rec.product_line_ids and not vals.get("product_line_ids"):
-    #         #         raise ValidationError(
-    #         #             _("Please give at least one Product in the product consume Part/services")
-    #         #         )
-    #         #
-    #         #     for line in rec.product_line_ids:
-    #         #         if line.product_id:
-    #         #             if not line.parts_reserved_bool:
-    #         #                 raise ValidationError(
-    #         #                     _("Product %s is not reserved. Please reserve all products before proceeding.")
-    #         #                     % line.product_id.display_name
-    #         #                 )
-    #         #         if line.on_hand_qty == 0.0:
-    #         #             raise ValidationError(
-    #         #                 _("Stock is not available for Product %s. Please contact Administrator.")
-    #         #                 % line.product_id.display_name
-    #         #             )
-    #         #
-    #         #     # Inspection charges check
-    #         #     if rec.inspection_charges_bool and rec.inspection_charges_amount > 0:
-    #         #         if not any(
-    #         #             l.product_id and l.product_id.service_type_bool
-    #         #             for l in rec.product_line_ids
-    #         #         ):
-    #         #             raise ValidationError(
-    #         #                 _("Please enter service charge amount in the product line")
-    #         #             )
-    #         #
-    #         # if state_code == '125':
-    #         #     product_id = vals.get('product_id') or rec.product_id.id
-    #         #     if not product_id:
-    #         #         raise ValidationError(_("Please enter Model No. in the Job card"))
-    #         #     product_slno = vals.get('product_slno') or rec.product_slno
-    #         #     # product_slno = vals['product_slno'] if 'product_slno' in vals else rec.product_slno
-    #         #     # product_slno = vals.get('product_slno', rec.product_slno)
-    #         #     if not product_slno:
-    #         #         raise ValidationError(_("Please enter Serial Number in the Job card"))
-    #         #
-    #         #     purchase_invoice_no = vals.get('purchase_invoice_no') or rec.purchase_invoice_no
-    #         #     if rec.warranty and not purchase_invoice_no:
-    #         #         raise ValidationError(_("Please enter Purchase Invoice No in the Job Card"))
-    #         #
-    #         #     purchase_date = vals.get('purchase_date') or rec.purchase_date
-    #         #     if rec.warranty and not purchase_date:
-    #         #         raise ValidationError(_("Please enter Purchase date in the Job card"))
-    #         #
-    #         #     service_warranty_id = vals.get('service_warranty_id') or rec.service_warranty_id.id
-    #         #     if not service_warranty_id:
-    #         #         raise ValidationError(_("Please select any one Service Warranty in the Job Card"))
-    #         #
-    #         # if state_code == '126':
-    #         #     control_card_no = vals.get('control_card_no') or rec.control_card_no
-    #         #     if not control_card_no:
-    #         #         raise ValidationError(_("Please enter 'Control Card No' in the Job Card."))
-    #         #
-    #         #     closed_datetime = vals.get('closed_datetime') or rec.closed_datetime
-    #         #     if not closed_datetime:
-    #         #         raise ValidationError(_("Please enter Completed Date & Time in the Job Card"))
-    #         #
-    #         #     if closed_datetime:
-    #         #         if rec.planned_date_begin and closed_datetime:
-    #         #             if rec.planned_date_begin > closed_datetime:
-    #         #                 raise ValidationError('Completed Date & Time is always greater than Appt Start Date & Time')
-    #         #
-    #         #
-    #         #     # job_card_completed_datetime = vals.get('job_card_completed_time') or rec.job_card_completed_time
-    #         #     #
-    #         #     # if not job_card_completed_datetime:
-    #         #     #     raise ValidationError(_("Please enter Job Card Closed Date & Time in the Job Card"))
-    #         #     #
-    #         #
-    #         #
-    #         #     product_id = vals.get('product_id') or rec.product_id.id
-    #         #     if not product_id:
-    #         #         raise ValidationError(_("Please enter Model No. in the Job card"))
-    #         #
-    #         #     purchase_invoice_no = vals.get('purchase_invoice_no') or rec.purchase_invoice_no
-    #         #     if rec.warranty and not purchase_invoice_no:
-    #         #         raise ValidationError(_("Please enter Purchase Invoice No"))
-    #         #
-    #         #     purchase_date = vals.get('purchase_date') or rec.purchase_date
-    #         #     if rec.warranty and not purchase_date:
-    #         #         raise ValidationError(_("Please enter Purchase date in the Job card"))
-    #         #
-    #         #     # job_card_completed_time = vals.get('job_card_completed_time') or rec.job_card_completed_time
-    #         #     # if not job_card_completed_time:
-    #         #     #     raise ValidationError(_("Please enter Job Card Completed Time in the Job card"))
-    #         #     #
-    #         #
-    #         #     service_warranty_id = vals.get('service_warranty_id') or rec.service_warranty_id.id
-    #         #     if not service_warranty_id:
-    #         #         raise ValidationError(_("Please select any one Service Warranty"))
-    #         #
-    #         #     product_line_vals = vals.get('product_line_ids')
-    #         #     lines_to_check = rec.product_line_ids if not product_line_vals else rec.product_line_ids  # safer
-    #         #     if not lines_to_check:
-    #         #
-    #         #     for line in lines_to_check:
-    #         #         if line.product_id:
-    #         #             if not line.parts_reserved_bool:
-    #         #                 raise ValidationError(_("Please check all the Products should be Reserved. "
-    #         #                                         "This Product %s is not reserved") % line.product_id.display_name)
-    #         #         if line.on_hand_qty == 0.0:
-    #         #             raise ValidationError(_("Stock is not available. Please Contact Administrator"))
-    #         #
-    #         #     if rec.inspection_charges_bool and rec.inspection_charges_amount > 0:
-    #         #         if not any(line.product_id and line.product_id.service_type_bool for line in rec.product_line_ids):
-    #         #             raise ValidationError(_("Please enter service charge amount in the product line"))
-    #         #
-    #         #
-    #         # if state_changing_to_111:
-    #         #     product_id = vals.get('product_id') or rec.product_id.id
-    #         #     if not product_id:
-    #         #         raise ValidationError(_("Please enter Model No. in the Job card"))
-    #         #     product_slno = vals.get('product_slno') or rec.product_slno
-    #         #
-    #         #     if not product_slno:
-    #         #         raise ValidationError(_("Please enter Serial Number in the Job Card"))
-
-    #         warranty_fields_updated = any(
-    #             field in vals
-    #             for field in [
-    #                 "service_warranty_id",
-    #                 "warranty",
-    #                 "product_id",
-    #                 "product_slno",
-    #                 "purchase_invoice_no",
-    #                 "purchase_date",
-    #                 "dealer_id",
-    #                 "attachment_ids",
-    #             ]
-    #         )
-
-    #         if (
-    #             warranty_fields_updated
-    #             and not self.env.context.get("skip_warranty_validation")
-    #             and not self.env.context.get("creating")
-    #         ):
-
-    #             if rec.service_warranty_id or vals.get("service_warranty_id"):
-
-    #                 warranty_status = (
-    #                     vals.get("warranty") if "warranty" in vals else rec.warranty
-    #                 )
-    #                 if warranty_status:
-    #                     if not state_changing_to_113:
-    #                         # if not self.env.context.get('skip_warranty_validation'):
-    #                         #     if rec.service_warranty_id or vals.get('service_warranty_id'):
-    #                         #         if rec.warranty:
-    #                         """commented on Oct 17 due to warranty verification status in mobile they don't want to Model no and Serial number mandatory
-    #                         product_id = vals.get('product_id') or rec.product_id.id
-    #                         if not product_id:
-    #                             raise ValidationError(_("Please enter Model No. in the Job card."))
-    #                         product_slno = vals.get('product_slno') or rec.product_slno
-
-    #                         if not product_slno:
-    #                             raise ValidationError(_("Please enter Serial Number in the Job Card"))
-    #                         """
-    #                         purchase_invoice_no = (
-    #                             vals.get("purchase_invoice_no")
-    #                             or rec.purchase_invoice_no
-    #                         )
-    #                         if not purchase_invoice_no:
-    #                             raise ValidationError(
-    #                                 _(
-    #                                     "Please enter Purchase Invoice No in the Job Card"
-    #                                 )
-    #                             )
-
-    #                         purchase_date = (
-    #                             vals.get("purchase_date") or rec.purchase_date
-    #                         )
-    #                         if not purchase_date:
-    #                             raise ValidationError(
-    #                                 _("Please enter Purchase date in the Job Card")
-    #                             )
-
-    #                         dealer = vals.get("dealer_id") or rec.dealer_id
-    #                         if not dealer:
-    #                             raise ValidationError(
-    #                                 _("Please enter Dealer Name in the Job Card")
-    #                             )
-
-    #                         attachment_vals = (
-    #                             vals.get("attachment_ids") or rec.attachment_ids
-    #                         )
-    #                         if not attachment_vals:
-    #                             raise ValidationError(
-    #                                 _("Please Attach Invoice Documents")
-    #                             )
-    #                         if attachment_vals:
-    #                             allowed_mimetypes = [
-    #                                 "image/jpeg",
-    #                                 "image/png",
-    #                                 "image/gif",
-    #                                 "application/pdf",
-    #                             ]
-    #                             for attachment in rec.attachment_ids:
-    #                                 if attachment.mimetype not in allowed_mimetypes:
-    #                                     raise ValidationError(
-    #                                         _(
-    #                                             "Only PDF, JPG, PNG, and GIF files are allowed in the job card.\n"
-    #                                             f"Invalid file: {attachment.name}"
-    #                                         )
-    #                                     )
-
-    #                 # if rec.service_warranty_id.misuse_warranty_bool:
-    #                 #     if not state_changing_to_113:
-    #                 #         product_id = vals.get('product_id') or rec.product_id.id
-    #                 #         if not product_id:
-    #                 #             raise ValidationError(_("Please enter Model No. in the Job card"))
-    #                 #         product_slno = vals.get('product_slno') or rec.product_slno
-    #                 #
-    #                 #         if not product_slno:
-    #                 #             raise ValidationError(_("Please enter Serial Number in the Job Card"))
-    #                 #
-    #                 #         purchase_invoice_no = vals.get('purchase_invoice_no') or rec.purchase_invoice_no
-    #                 #         if not purchase_invoice_no:
-    #                 #             raise ValidationError(_("Please enter Purchase Invoice No in the Job Card"))
-    #                 #
-    #                 #         purchase_date = vals.get('purchase_date') or rec.purchase_date
-    #                 #         if not purchase_date:
-    #                 #             raise ValidationError(_("Please enter Purchase date in the Job Card"))
-    #                 #
-    #                 #         dealer = vals.get('dealer_id') or rec.dealer_id
-    #                 #         if not dealer :
-    #                 #             raise ValidationError(_("Please enter Dealer Name in the Job Card"))
-    #                 #
-    #                 #
-    #                 #         attachment_vals = vals.get('attachment_ids') or rec.attachment_ids
-    #                 #         if not attachment_vals:
-    #                 #             raise ValidationError(_('Please Attach Invoice Documents'))
-    #                 #         if attachment_vals:
-    #                 #             allowed_mimetypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']
-    #                 #             for attachment in rec.attachment_ids:
-    #                 #                 if attachment.mimetype not in allowed_mimetypes:
-    #                 #                     raise ValidationError(_(
-    #                 #                         "Only PDF, JPG, PNG, and GIF files are allowed in the job card.\n"
-    #                 #                         f"Invalid file: {attachment.name}"
-    #                 #                     ))
-    #                 #
-
-    #                 # if not warranty_status:
-    #                 #     product_id = vals.get('product_id') or rec.product_id.id
-    #                 #     if not product_id:
-    #                 #         raise ValidationError(_("Please enter Model No. in the Job card number"))
-    #                 #     product_slno = vals.get('product_slno') or rec.product_slno
-    #                 #
-    #                 #     if not product_slno:
-    #                 #         raise ValidationError(_("Please enter Serial Number in the Job Card number"))
-    #                 #
-
-    #         # if rec.closed_datetime or vals.get('closed_datetime'):
-    #         #     if rec.planned_date_begin and rec.closed_datetime:
-    #         #         if rec.planned_date_begin > rec.closed_datetime:
-    #         #             raise ValidationError('Closed Date & Time is always greater than Appt Start Date & Time')
-    #         #
-    #     """Code Added on March 09 2026"""
-    #     # balance_amount_received_bool = vals.get('balance_amount_received_bool') or rec.balance_amount_received_bool
-    #     if "balance_amount_received_bool" in vals:
-    #         invalid_tax_lines = rec.product_line_ids.filtered(
-    #             lambda l: l.product_id
-    #             and l.price_unit > 0
-    #             and not l.product_id.taxes_id
-    #         )
-
-    #         if invalid_tax_lines:
-    #             products = ", ".join(invalid_tax_lines.mapped("product_id.name"))
-    #             raise ValidationError(_("VAT must be set for: %s") % products)
-
-    #     """Code added on Mar 09 2026"""
-    #     res = super().write(vals)
-
-    #     state_date_map = {
-    #         "103": "technician_accepted_date",
-    #         "104": "technician_rejected_date",
-    #         "109": "technician_started_date",
-    #         "110": "technician_reached_date",
-    #         "115": "job_started_date",
-    #         "121": "job_hold_date",
-    #         "122": "job_resume_date",
-    #         "123": "job_resume_date",
-    #         "124": "cancel_date_time",
-    #         # '125':'closed_datetime',
-    #         "126": "job_card_completed_time",
-    #         ## this code is added on Oct  23 2025 they want technician first time and second time date time field
-    #         # '110':'technician_first_visit_datetime',
-    #     }
-    #     if vals.get("job_state"):
-    #         state = self.env["project.task.type"].sudo().browse(vals["job_state"])
-    #         if not state.exists():
-    #             vals["job_state"] = False
-
-    #         if state:
-    #             scheduling_code_lst = []
-
-    #             last_rescheduled_code = False
-
-    #             if "job_state" in vals:
-    #                 old_code = self.job_card_state_code
-    #                 if old_code:
-    #                     self.previous_job_card_state_code = old_code
-
-    #             valid_codes = (
-    #                 self.env["project.task.type"].sudo().search([]).mapped("code")
-    #             )
-
-    #             # if state.code in ('103', '104', '105', '106', '107', '108', '109', '110', '111', '112', '113', '114', '115', '116', '117', '118', '119',
-    #             #                   '120', '121', '122', '123', '124', '125', '126', '127', '128','129','130','131', '132', '133', '134','201','202','203','204','205','152','154','156'):
-
-    #             if state.code in valid_codes:
-    #                 self.job_card_state = state.name
-    #                 self.job_card_state_code = state.code
-    #                 self.service_request_id.service_request_state = state.name
-    #                 self.service_request_id.service_request_state_code = state.code
-    #                 self.service_request_id.state = vals.get("job_state")
-
-    #             if state.code in state_date_map:
-    #                 """
-    #                 if state.code is 103:
-    #                 state_date_mapping[state.code] returns 'technician_accepted_date'.
-    #                 self['technician_accepted_date'] accesses the technician_accepted_date field on the record.
-    #                 """
-    #                 self[state_date_map[state.code]] = fields.Datetime.now()
-
-    #             if state.code == "117":
-    #                 """If Unit pull out don't want to second vist to be bool added on Nov -01-2025"""
-    #                 # self.second_visit_technician_bool = True
-    #                 self._send_unit_receipt_whatsapp()
-    #                 today = fields.Datetime.now()
-    #                 user_tz = self.env.user.tz or "UTC"
-    #                 user_timezone = pytz.timezone(user_tz)
-    #                 local_dt = pytz.utc.localize(today).astimezone(user_timezone)
-    #                 self.technician_first_outtime = local_dt.strftime("%H:%M:%S")
-    #                 """ Code is added on Nov 17 -2025 for when technician give unit pull out then this flag is true if true then don't sent whatsapp for rescheduled internal technician stage they give unit pull out  stage.so don;t sent whatsapp for on hold state"""
-    #                 self.unit_pull_out_status_check = True
-    #                 """Code added on Jan 08 2026"""
-    #                 self.last_rescheduled_status_code = False
-
-    #             if state.code == "105":
-    #                 self._send_failed_to_attend_call_status_whatsapp()
-
-    #             # if state.code == "125":
-    #             #     if not self.job_card_closed_date_time_enable:
-    #             #         self.closed_datetime = fields.Datetime.now()
-    #             #     if self.second_visit_technician_bool:
-    #             #         today = fields.Datetime.now()
-    #             #         user_tz = self.env.user.tz or "UTC"
-    #             #         user_timezone = pytz.timezone(user_tz)
-    #             #         local_dt = pytz.utc.localize(today).astimezone(user_timezone)
-    #             #         self.technician_second_outtime = local_dt.strftime("%H:%M:%S")
-    #             #     if not self.second_visit_technician_bool:
-    #             #         today = fields.Datetime.now()
-    #             #         user_tz = self.env.user.tz or "UTC"
-    #             #         user_timezone = pytz.timezone(user_tz)
-    #             #         local_dt = pytz.utc.localize(today).astimezone(user_timezone)
-    #             #         self.technician_first_outtime = local_dt.strftime("%H:%M:%S")
-
-    #             #     if self.inspection_charges_amount > 0 or self.service_warranty_id:
-    #             #         not_under_warranty = False
-    #             #         for line in self.product_line_ids:
-    #             #             if not line.under_warranty_bool:
-    #             #                 if line.total > 0:
-    #             #                     not_under_warranty = True
-    #             #         if not_under_warranty:
-    #             #             self.send_whatsapp_service_charges_receipt()
-    #             #     self._send_whatsapp_job_card_report_for_ready_to_invoice()
-    #             if state.code == "125":
-    #                 if not self.job_card_closed_date_time_enable:
-    #                     self.closed_datetime = fields.Datetime.now()
-    #                 if self.second_visit_technician_bool:
-    #                     if self.current_user_id.has_group(
-    #                         "machine_repair_management.group_job_card_mobile_user"
-    #                     ):
-    #                         today = fields.Datetime.now()
-    #                         user_tz = self.env.user.tz or "UTC"
-    #                         user_timezone = pytz.timezone(user_tz)
-    #                         local_dt = pytz.utc.localize(today).astimezone(
-    #                             user_timezone
-    #                         )
-    #                         self.technician_second_outtime = local_dt.strftime(
-    #                             "%H:%M:%S"
-    #                         )
-    #                 if not self.second_visit_technician_bool:
-    #                     if self.current_user_id.has_group(
-    #                         "machine_repair_management.group_job_card_mobile_user"
-    #                     ):
-    #                         today = fields.Datetime.now()
-    #                         user_tz = self.env.user.tz or "UTC"
-    #                         user_timezone = pytz.timezone(user_tz)
-    #                         local_dt = pytz.utc.localize(today).astimezone(
-    #                             user_timezone
-    #                         )
-    #                         self.technician_first_outtime = local_dt.strftime(
-    #                             "%H:%M:%S"
-    #                         )
-
-    #                 if self.inspection_charges_amount > 0 or self.service_warranty_id:
-    #                     not_under_warranty = False
-    #                     for line in self.product_line_ids:
-    #                         if not line.under_warranty_bool:
-    #                             if line.total > 0:
-    #                                 not_under_warranty = True
-    #                     if not_under_warranty:
-    #                         self.send_whatsapp_service_charges_receipt()
-
-    #                 self._send_whatsapp_job_card_report_for_ready_to_invoice()
-    #                 self.closed_jobcard_user_id = self.env.user.id
-
-    #             if state.code == "110":
-    #                 if not self.second_visit_technician_bool:
-    #                     self.technician_first_visit_datetime = fields.Datetime.now()
-    #                     self.technician_first_visit_date = fields.Date.today()
-    #                 if self.second_visit_technician_bool:
-    #                     self.technician_second_visit_datetime = fields.Datetime.now()
-    #                     self.technician_second_visit_date = fields.Date.today()
-
-    #             if state.code == "112":
-    #                 self.cancellation_reason_id = (
-    #                     self.env["cancellation.reason"]
-    #                     .search(
-    #                         [("name", "ilike", "Cancelled. Insp Chrg Rej by Cst")],
-    #                         limit=1,
-    #                     )
-    #                     .id
-    #                 )
-    #                 self._send_whatsapp_for_cancelled_insp_charges_by_cst()
-    #                 if self.inspection_charges_amount > 0:
-    #                     self.send_whatsapp_service_charges_receipt()
-
-    #             if state.code == "113":
-    #                 self.create_quotation_show_bool = True
-    #                 if self.inspection_charges_amount > 0:
-    #                     self.send_whatsapp_service_charges_receipt()
-
-    #             # if state.code == "121":
-    #             #     today = fields.Datetime.now()
-    #             #     user_tz = self.env.user.tz or "UTC"
-    #             #     user_timezone = pytz.timezone(user_tz)
-    #             #     local_dt = pytz.utc.localize(today).astimezone(user_timezone)
-
-    #             #     self.technician_first_outtime = local_dt.strftime("%H:%M:%S")
-    #             #     # user_tz= self.env.user.tz
-    #             #     self.second_visit_technician_bool = True
-    #             #     self._send_email_for_parts_user()
-    #             #     self._send_whatsapp_for_parts_user()
-    #             #     self._send_whatsapp_job_card_report_for_ready_to_invoice()
-
-    #             if state.code == "121":
-    #                 today = fields.Datetime.now()
-    #                 user_tz = self.env.user.tz or "UTC"
-    #                 user_timezone = pytz.timezone(user_tz)
-    #                 local_dt = pytz.utc.localize(today).astimezone(user_timezone)
-
-    #                 self.technician_first_outtime = local_dt.strftime("%H:%M:%S")
-    #                 # user_tz= self.env.user.tz
-    #                 self.second_visit_technician_bool = True
-    #                 """Code commented on Dec 15 Because Client received multiple email when on hold spare parts because mail will be received based on the work center group """
-    #                 self._send_email_for_parts_user()
-
-    #                 if not self.unit_pull_out_status_check:
-    #                     self._send_whatsapp_for_parts_user()
-    #                     self._send_whatsapp_job_card_report_for_ready_to_invoice()
-    #                 """code added on Jan 21 2026 due to On hold Spare parts reason should not shown on Parts User so it will be shown only for Technician"""
-    #                 if self.current_user_id.has_group(
-    #                     "machine_repair_management.group_job_card_mobile_user"
-    #                 ):
-    #                     self.onhold_spareparts_status_check = True
-
-    #             if state.code == "122":
-    #                 self._send_email_for_supervisor_user()
-    #                 self._send_whatsapp_for_supervisor_user()
-
-    #                 # if state.code == '124':
-    #             #     self._send_whatsapp_for_cancellation()
-
-    #             # if state.code == "126":
-    #             #     self.job_card_completed_time = fields.Datetime.now()
-    #             #     if self.inspection_charges_amount > 0 or self.service_warranty_id:
-    #             #         not_under_warranty = False
-    #             #         for line in self.product_line_ids:
-    #             #             if not line.under_warranty_bool:
-    #             #                 if line.total > 0:
-    #             #                     not_under_warranty = True
-    #             #         if not_under_warranty:
-    #             #             self.send_whatsapp_invoice_receipt()
-
-    #             #     # self.send_whatsapp_invoice_receipt()
-
-    #             if state.code == "126":
-    #                 self.job_card_completed_time = fields.Datetime.now()
-    #                 # self.state_status = True
-    #                 self.closed_jobcard_user_id = self.env.user.id
-    #                 self.closed_jobcard_check_bool = True
-
-    #                 if self.inspection_charges_amount > 0 or self.service_warranty_id:
-    #                     not_under_warranty = False
-    #                     for line in self.product_line_ids:
-    #                         if not line.under_warranty_bool:
-    #                             if line.total > 0:
-    #                                 not_under_warranty = True
-    #                     if not_under_warranty:
-    #                         self.send_whatsapp_invoice_receipt()
-
-    #                 """Code added on March 05 2026"""
-    #                 self.action_status = "Closed"
-    #                 # self.send_whatsapp_invoice_receipt()
-
-    #             # if state.code == "128":
-    #             #     if self.inspection_charges_amount > 0:
-    #             #         self.send_whatsapp_service_charges_receipt()
-
-    #             if state.code == "128":
-    #                 if self.service_sale_id.whatsapp_button_click_bool:
-    #                     if self.inspection_charges_amount > 0:
-    #                         self.send_whatsapp_service_charges_receipt()
-    #                     self._send_whatsapp_job_card_report_for_ready_to_invoice()
-
-    #             # if state.code == "129":
-    #             #     today = fields.Datetime.now()
-    #             #     user_tz = self.env.user.tz or "UTC"
-    #             #     user_timezone = pytz.timezone(user_tz)
-    #             #     local_dt = pytz.utc.localize(today).astimezone(user_timezone)
-
-    #             #     self.technician_first_outtime = local_dt.strftime("%H:%M:%S")
-    #             #     self.second_visit_technician_bool = True
-
-    #             if state.code == "129":
-    #                 today = fields.Datetime.now()
-    #                 user_tz = self.env.user.tz or "UTC"
-    #                 user_timezone = pytz.timezone(user_tz)
-    #                 local_dt = pytz.utc.localize(today).astimezone(user_timezone)
-
-    #                 self.technician_first_outtime = local_dt.strftime("%H:%M:%S")
-    #                 self.second_visit_technician_bool = True
-    #                 self.customer_need_quote_status_check = True
-
-    #                 """Code added on Jan 08 2026"""
-    #                 self.last_rescheduled_status_code = False
-
-    #             if state.code == "130":
-    #                 today = fields.Datetime.now()
-    #                 user_tz = self.env.user.tz or "UTC"
-    #                 user_timezone = pytz.timezone(user_tz)
-    #                 local_dt = pytz.utc.localize(today).astimezone(user_timezone)
-
-    #                 self.technician_first_outtime = local_dt.strftime("%H:%M:%S")
-    #                 self.second_visit_technician_bool = True
-
-    #             if state.code == "132":
-    #                 self.second_visit_technician_bool = True
-
-    #             if state.code == "134":
-    #                 self._send_whatsapp_for_rescheduled_with_parts()
-
-    #             if state.code == "134":
-    #                 self._send_whatsapp_for_rescheduled_with_parts()
-
-    #             if state.code == "116":
-    #                 today = fields.Datetime.now()
-    #                 user_tz = self.env.user.tz or "UTC"
-    #                 user_timezone = pytz.timezone(user_tz)
-    #                 local_dt = pytz.utc.localize(today).astimezone(user_timezone)
-
-    #                 self.technician_first_outtime = local_dt.strftime("%H:%M:%S")
-    #                 self.second_visit_technician_bool = True
-
-    #             # if state.code == "107":
-    #             #     today = fields.Datetime.now()
-    #             #     user_tz = self.env.user.tz or "UTC"
-    #             #     user_timezone = pytz.timezone(user_tz)
-    #             #     local_dt = pytz.utc.localize(today).astimezone(user_timezone)
-
-    #             #     self.technician_first_outtime = local_dt.strftime("%H:%M:%S")
-    #             #     # self.second_visit_technician_bool = True
-
-    #             #     self.team_id = False
-    #             #     self.technician_id = False
-
-    #             #     self.planned_date_begin = False
-    #             #     self.planned_date_end = False
-
-    #             #     """ Code is added on Vijaya Bhaskar on Nov 10 2025 """
-    #             #     self.technician_first_visit_id = False
-    #             #     self.technician_first_visit = False
-    #             #     self.technician_first_visit_date = False
-    #             #     self.technician_first_intime = False
-    #             #     self.technician_first_outtime = False
-    #             if state.code == "107":
-    #                 today = fields.Datetime.now()
-    #                 user_tz = self.env.user.tz or "UTC"
-    #                 user_timezone = pytz.timezone(user_tz)
-    #                 local_dt = pytz.utc.localize(today).astimezone(user_timezone)
-
-    #                 self.technician_first_outtime = local_dt.strftime("%H:%M:%S")
-    #                 # self.second_visit_technician_bool = True
-
-    #                 self.team_id = False
-    #                 self.technician_id = False
-
-    #                 self.planned_date_begin = False
-    #                 self.planned_date_end = False
-    #                 """Code Added on FEB-09-2026"""
-    #                 self.warehouse_id = False
-    #                 # self.product_line_ids = [(5,0,0)]
-    #                 # self.symptoms_line_ids = [(5,0,0)]
-    #                 # self.defects_type_ids = [(5,0,0)]
-    #                 # self.service_type_ids = [(5,0,0)]
-    #                 #
-
-    #                 """ Code is added on Vijaya Bhaskar on Nov 10 2025 """
-    #                 if not self.second_visit_technician_bool:
-    #                     self.technician_first_visit_id = False
-    #                     self.technician_first_visit = False
-    #                     self.technician_first_visit_date = False
-    #                     self.technician_first_intime = False
-    #                     self.technician_first_outtime = False
-
-    #             """ Code is added on Vijaya Bhaskar on Nov 11 2025 """
-
-    #             if state.code == "156":
-    #                 self.team_id = False
-    #                 self.technician_id = False
-    #                 self.planned_date_begin = False
-    #                 self.planned_date_end = False
-    #                 self.cancellation_reason_id = False
-
-    #                 self.technician_first_visit_id = False
-    #                 self.technician_first_visit = False
-    #                 self.technician_first_visit_date = False
-    #                 self.technician_first_intime = False
-    #                 self.technician_first_outtime = False
-
-    #             """Code added on March 05 2026"""
-    #             if state.code == "154":
-    #                 self.action_status = "Cancelled"
-
-    #             if state.code not in ("126", "154"):
-    #                 self.action_status = "Not Closed"
-    #             # if state.code == '133':
-    #             #     self.team_id = False
-    #             #     self.planned_date_begin = False
-    #             #     self.planned_date_end = False
-    #             #
-
-    #             # if state.code  == '102':
-    #             #     team_id_val = vals.get('team_id') or self.team_id.id
-    #             #     self.technician_accepted_status_check = True
-    #             #
-    #             #     if not team_id_val:
-    #             #         raise ValidationError(
-    #             #             _("Please enter a Team Leader before setting Job Card %s.") % self.name
-    #             #         )
-    #             #
-
-    #             # if state.code  == '101':
-    #             #     self.technician_accepted_status_check = True
-
-    #             # oct 31 2025
-    #             if state.code == "102":
-    #                 team_id_val = vals.get("team_id") or self.team_id.id
-    #                 self.technician_accepted_status_check = True
-    #                 """Code Added on March 17 2026"""
-    #                 self.scheduled_uid = self.env.user.id
-
-    #                 if not team_id_val:
-    #                     raise ValidationError(
-    #                         _("Please enter a Team Leader before setting Job Card %s.")
-    #                         % self.name
-    #                     )
-
-    #                 technician_users = self.technician_id
-    #                 odoo_bot = self.env.user.partner_id
-    #                 if technician_users.partner_id:
-    #                     # Create or fetch private chat channel
-    #                     channel_name = f"{odoo_bot.name}, {technician_users.name}"
-    #                     channel = self.env["discuss.channel"].search(
-    #                         [
-    #                             ("name", "ilike", channel_name),
-    #                             ("channel_type", "=", "chat"),
-    #                         ],
-    #                         limit=1,
-    #                     )
-    #                     if not channel:
-    #                         channel = self.env["discuss.channel"].create(
-    #                             {
-    #                                 "name": channel_name,
-    #                                 "channel_type": "chat",
-    #                                 "channel_partner_ids": [
-    #                                     (4, technician_users.partner_id.id)
-    #                                 ],
-    #                             }
-    #                         )
-    #                     planned_plus_3 = False
-    #                     if self.planned_date_begin:
-    #                         planned_plus_3 = self.planned_date_begin + timedelta(
-    #                             hours=3
-    #                         )
-
-    #                         message_body = (
-    #                             f"Job Card {self.name} has been assigned to Mr. {self.technician_id.name} "
-    #                             f'at {planned_plus_3.strftime("%d-%m-%Y %H:%M:%S")}.'
-    #                         )
-    #                         channel.message_post(
-    #                             body=message_body,
-    #                             subject="Job Card State Update",
-    #                             message_type="notification",
-    #                             subtype_xmlid="mail.mt_comment",
-    #                             author_id=odoo_bot.id,
-    #                         )
-
-    #             elif state.code == "103":
-    #                 self.technician_accepted_status_check = False
-
-    #             elif state.code == "104":
-    #                 work_center = self.technician_id.default_work_center_id
-    #                 if not work_center:
-    #                     _logger.warning(
-    #                         "No work center found for technician %s on Job Card %s",
-    #                         self.technician_id.name,
-    #                         self.name,
-    #                     )
-    #                     return
-
-    #                 finance_users = self.env["res.users"].search(
-    #                     [
-    #                         ("default_work_center_id", "=", work_center.id),
-    #                         (
-    #                             "groups_id",
-    #                             "in",
-    #                             self.env.ref(
-    #                                 "machine_repair_management.group_technical_allocation_user"
-    #                             ).id,
-    #                         ),
-    #                     ]
-    #                 )
-
-    #                 odoo_bot = self.env.ref("base.partner_root")
-    #                 for user in finance_users:
-    #                     if user.partner_id:
-    #                         channel_name = f"{odoo_bot.name}, {user.name}"
-    #                         channel = self.env["discuss.channel"].search(
-    #                             [
-    #                                 ("name", "ilike", channel_name),
-    #                                 ("channel_type", "=", "chat"),
-    #                             ],
-    #                             limit=1,
-    #                         )
-    #                         if not channel:
-    #                             channel = self.env["discuss.channel"].create(
-    #                                 {
-    #                                     "name": channel_name,
-    #                                     "channel_type": "chat",
-    #                                     "channel_partner_ids": [
-    #                                         (4, user.partner_id.id)
-    #                                     ],
-    #                                 }
-    #                             )
-    #                         channel.message_post(
-    #                             body=f"Technician {self.technician_id.name} has rejected Job Card {self.name} (Work Center: {work_center.name})",
-    #                             subject="Job Card State Update",
-    #                             message_type="notification",
-    #                             subtype_xmlid="mail.mt_comment",
-    #                             author_id=odoo_bot.id,
-    #                         )
-
-    #             elif state.code == "107":
-    #                 self._send_notification_to_supervisior()
-
-    #             elif state.code == "121":
-    #                 work_center = self.technician_id.default_work_center_id
-    #                 group_id = self.env.ref(
-    #                     "machine_repair_management.group_parts_user"
-    #                 ).id
-    #                 finance_users = self.env["res.users"].search(
-    #                     [
-    #                         ("groups_id", "in", [group_id]),
-    #                         ("default_work_center_id", "=", work_center.id),
-    #                     ]
-    #                 )
-
-    #                 odoo_bot = self.env.user.partner_id
-    #                 for user in finance_users:
-    #                     if user.partner_id:
-    #                         channel_name = f"{odoo_bot.name}, {user.name}"
-    #                         channel = self.env["discuss.channel"].search(
-    #                             [
-    #                                 ("name", "ilike", channel_name),
-    #                                 ("channel_type", "=", "chat"),
-    #                             ],
-    #                             limit=1,
-    #                         )
-    #                         if not channel:
-    #                             channel = self.env["discuss.channel"].create(
-    #                                 {
-    #                                     "name": channel_name,
-    #                                     "channel_type": "chat",
-    #                                     "channel_partner_ids": [
-    #                                         (4, user.partner_id.id)
-    #                                     ],
-    #                                 }
-    #                             )
-    #                         message_body = f"Technician {self.technician_id.name} has put Job Card {self.name} on hold due to stock not available for some of the items."
-    #                         channel.message_post(
-    #                             body=message_body,
-    #                             subject="Job Card State Update",
-    #                             message_type="notification",
-    #                             subtype_xmlid="mail.mt_comment",
-    #                             author_id=odoo_bot.id,
-    #                         )
-    #             elif state.code == "122":
-    #                 self._send_email_for_supervisor_user()
-    #                 self._send_whatsapp_for_supervisor_user()
-
-    #                 work_center = self.technician_id.default_work_center_id
-    #                 group_id = self.env.ref(
-    #                     "machine_repair_management.group_technical_allocation_user"
-    #                 ).id
-
-    #                 finance_users = self.env["res.users"].search(
-    #                     [
-    #                         ("groups_id", "in", [group_id]),
-    #                         ("default_work_center_id", "=", work_center.id),
-    #                     ]
-    #                 )
-
-    #                 odoo_bot = self.env.user.partner_id
-
-    #                 for user in finance_users:
-    #                     if not user.partner_id:
-    #                         continue
-
-    #                     channel_name = f"{odoo_bot.name}, {user.name}"
-    #                     channel = self.env["discuss.channel"].search(
-    #                         [
-    #                             ("name", "ilike", channel_name),
-    #                             ("channel_type", "=", "chat"),
-    #                         ],
-    #                         limit=1,
-    #                     )
-    #                     if not channel:
-    #                         channel = self.env["discuss.channel"].create(
-    #                             {
-    #                                 "name": channel_name,
-    #                                 "channel_type": "chat",
-    #                                 "channel_partner_ids": [
-    #                                     (4, user.partner_id.id),
-    #                                     (4, odoo_bot.id),
-    #                                 ],
-    #                             }
-    #                         )
-
-    #                     message_body = f"Co-ordinator {user.name} has put Job Card {self.name} parts are ready."
-
-    #                     # Send message to the user
-    #                     channel.message_post(
-    #                         body=message_body,
-    #                         subject="Job Card State Update",
-    #                         message_type="notification",
-    #                         subtype_xmlid="mail.mt_comment",
-    #                         author_id=odoo_bot.id,
-    #                     )
-
-    #             elif state.code == "124":
-    #                 self._send_notification_to_technician()
-
-    #             elif state.code == "125":
-    #                 work_center = self.technician_id.default_work_center_id
-    #                 finance_users = self.env["res.users"].search(
-    #                     [
-    #                         ("default_work_center_id", "=", work_center.id),
-    #                         (
-    #                             "groups_id",
-    #                             "in",
-    #                             self.env.ref(
-    #                                 "machine_repair_management.group_technical_allocation_user"
-    #                             ).id,
-    #                         ),
-    #                     ]
-    #                 )
-
-    #                 odoo_bot = self.env.user.partner_id
-    #                 for user in finance_users:
-    #                     if user.partner_id:
-    #                         channel_name = f"{odoo_bot.name}, {user.name}"
-    #                         channel = self.env["discuss.channel"].search(
-    #                             [
-    #                                 ("name", "ilike", channel_name),
-    #                                 ("channel_type", "=", "chat"),
-    #                             ],
-    #                             limit=1,
-    #                         )
-    #                         if not channel:
-    #                             channel = self.env["discuss.channel"].create(
-    #                                 {
-    #                                     "name": channel_name,
-    #                                     "channel_type": "chat",
-    #                                     "channel_partner_ids": [
-    #                                         (4, user.partner_id.id)
-    #                                     ],
-    #                                 }
-    #                             )
-    #                         message_body = f"Job Card {self.name} has been completed and is ready to be invoiced."
-    #                         channel.message_post(
-    #                             body=message_body,
-    #                             subject="Job Card State Update",
-    #                             message_type="notification",
-    #                             subtype_xmlid="mail.mt_comment",
-    #                             author_id=odoo_bot.id,
-    #                         )
-
-    #             # if  state.code == '103':
-    #             #     self.technician_accepted_status_check = False
-    #             #
-    #             # elif state.code == '104':
-    #             #     work_center = self.technician_id.default_work_center_id
-    #             #     if not work_center:
-    #             #         _logger.warning("No work center found for technician %s on Job Card %s", self.technician_id.name,
-    #             #                         rec.name)
-    #             #         return
-    #             #     # Search for finance users with the specified group and work center
-    #             #     finance_users = self.env['res.users'].search([
-    #             #         ('default_work_center_id', '=', work_center.id),
-    #             #         (
-    #             #         'groups_id', 'in', self.env.ref('machine_repair_management.group_technical_allocation_user').id)
-    #             #     ])
-    #             #     # OdooBot as the sender
-    #             #     odoo_bot = self.env.ref('base.partner_root')
-    #             #     # Post message to each user's private Discuss channel
-    #             #     for user in finance_users:
-    #             #         if user.partner_id:
-    #             #             # Find or create a private channel between OdooBot and the user
-    #             #             channel_name = f"{odoo_bot.name}, {user.name}"
-    #             #             channel = self.env['discuss.channel'].search([
-    #             #                 ('name', 'ilike', channel_name),
-    #             #                 ('channel_type', '=', 'chat')
-    #             #             ], limit=1)
-    #             #             if not channel:
-    #             #                 channel = self.env['discuss.channel'].create({
-    #             #                     'name': channel_name,
-    #             #                     'channel_type': 'chat',
-    #             #                     # 'public': 'private',
-    #             #                     'channel_partner_ids': [(4, user.partner_id.id)]
-    #             #                 })
-    #             #             # Post the message to the private channel
-    #             #
-    #             #             channel.message_post(
-    #             #                 body=f'Technician {self.technician_id.name} has rejected Job Card {self.name} (Work Center: {work_center.name})',
-    #             #                 subject='Job Card State Update',
-    #             #                 message_type='notification',
-    #             #                 subtype_xmlid='mail.mt_comment',
-    #             #                 author_id=odoo_bot.id
-    #             #             )
-    #             #
-    #             # elif state.code == '121':
-    #             #     work_center = self.technician_id.default_work_center_id
-    #             #
-    #             #     # Fetch finance users from the group
-    #             #     group_id = self.env.ref('machine_repair_management.group_parts_user').id
-    #             #     finance_users = self.env['res.users'].search([('groups_id', 'in', [group_id]), ('default_work_center_id', '=', work_center.id)])
-    #             #
-    #             #     # OdooBot as sender
-    #             #     odoo_bot = self.env.ref('base.partner_root')
-    #             #
-    #             #     for user in finance_users:
-    #             #         if user.partner_id:
-    #             #
-    #             #             # Create or fetch private chat channel
-    #             #             channel_name = f"{odoo_bot.name}, {user.name}"
-    #             #             channel = self.env['discuss.channel'].search([
-    #             #                 ('name', 'ilike', channel_name),
-    #             #                 ('channel_type', '=', 'chat')
-    #             #             ], limit=1)
-    #             #             if not channel:
-    #             #                 channel = self.env['discuss.channel'].create({
-    #             #                     'name': channel_name,
-    #             #                     'channel_type': 'chat',
-    #             #                     # 'public': 'private',
-    #             #                     'channel_partner_ids': [(4, user.partner_id.id)]
-    #             #                 })
-    #             #
-    #             #             # Post message
-    #             #             message_body = f'Technician {self.technician_id.name} has put Job Card {self.name} on hold.'
-    #             #             channel.message_post(
-    #             #                 body=message_body,
-    #             #                 subject='Job Card State Update',
-    #             #                 message_type='notification',
-    #             #                 subtype_xmlid='mail.mt_comment',
-    #             #                 author_id=odoo_bot.id
-    #             #             )
-    #             # elif state.code == '122':
-    #             #     work_center = self.technician_id.default_work_center_id
-    #             #
-    #             #     # Fetch finance users from the group
-    #             #     group_id = self.env.ref('machine_repair_management.group_parts_user').id
-    #             #     finance_users = self.env['res.users'].search([('groups_id', 'in', [group_id]), ('default_work_center_id', '=', work_center.id)])
-    #             #
-    #             #     # OdooBot as sender
-    #             #     odoo_bot = self.env.ref('base.partner_root')
-    #             #
-    #             #     for user in finance_users:
-    #             #         if user.partner_id:
-    #             #
-    #             #             # Create or fetch private chat channel
-    #             #             channel_name = f"{odoo_bot.name}, {user.name}"
-    #             #             channel = self.env['discuss.channel'].search([
-    #             #                 ('name', 'ilike', channel_name),
-    #             #                 ('channel_type', '=', 'chat')
-    #             #             ], limit=1)
-    #             #             if not channel:
-    #             #                 channel = self.env['discuss.channel'].create({
-    #             #                     'name': channel_name,
-    #             #                     'channel_type': 'chat',
-    #             #                     # 'public': 'private',
-    #             #                     'channel_partner_ids': [(4, user.partner_id.id)]
-    #             #                 })
-    #             #
-    #             #             # Post message
-    #             #             message_body = f'Technician {self.technician_id.name} has put Job Card {self.name} on hold.'
-    #             #             channel.message_post(
-    #             #                 body=message_body,
-    #             #                 subject='Job Card State Update',
-    #             #                 message_type='notification',
-    #             #                 subtype_xmlid='mail.mt_comment',
-    #             #                 author_id=odoo_bot.id
-    #             #             )
-    #             #
-    #             # elif state.code == '125':
-    #             #     work_center = self.technician_id.default_work_center_id
-    #             #
-    #             #     finance_users = self.env['res.users'].search([
-    #             #         ('default_work_center_id', '=', work_center.id),
-    #             #         (
-    #             #             'groups_id', 'in',
-    #             #             self.env.ref('machine_repair_management.group_technical_allocation_user').id)
-    #             #     ])
-    #             #
-    #             #     # if finance_users and rec.technician_id.partner_id:
-    #             #     #     technician_user = rec.technician_id
-    #             #     #     technician_partner = technician_user.partner_id
-    #             #     odoo_bot = self.env.ref('base.partner_root')
-    #             #
-    #             #     # Combine partner IDs into a single flat list
-    #             #     for user in finance_users:
-    #             #         if user.partner_id:
-    #             #             # Find or create a private channel between OdooBot and the user
-    #             #             channel_name = f"{odoo_bot.name}, {user.name}"
-    #             #             channel = self.env['discuss.channel'].search([
-    #             #                 ('name', 'ilike', channel_name),
-    #             #                 ('channel_type', '=', 'chat')
-    #             #             ], limit=1)
-    #             #             if not channel:
-    #             #                 channel = self.env['discuss.channel'].create({
-    #             #                     'name': channel_name,
-    #             #                     'channel_type': 'chat',
-    #             #                     # 'public': 'private',
-    #             #                     'channel_partner_ids': [(4, user.partner_id.id)]
-    #             #                 })
-    #             #
-    #             #             # Post the message
-    #             #             message_body = f'Job Card {self.name} has been completed and is ready to be invoiced.'
-    #             #             channel.message_post(
-    #             #                 body=message_body,
-    #             #                 subject='Job Card State Update',
-    #             #                 message_type='notification',
-    #             #                 subtype_xmlid='mail.mt_comment',
-    #             #                 author_id=odoo_bot.id,
-    #             #             )
-    #             #
-    #             # elif state.code == '102':
-    #             #
-    #             #     technician_users = self.technician_id
-    #             #     # OdooBot as sender
-    #             #     odoo_bot = self.env.ref('base.partner_root')
-    #             #     # for user in technician_users:
-    #             #     if technician_users.partner_id:
-    #             #         # Create or fetch private chat channel
-    #             #         channel_name = f"{odoo_bot.name}, {technician_users.name}"
-    #             #         channel = self.env['discuss.channel'].search([
-    #             #             ('name', 'ilike', channel_name),
-    #             #             ('channel_type', '=', 'chat')
-    #             #         ], limit=1)
-    #             #         if not channel:
-    #             #             channel = self.env['discuss.channel'].create({
-    #             #                 'name': channel_name,
-    #             #                 'channel_type': 'chat',
-    #             #                 # 'public': 'private',
-    #             #                 'channel_partner_ids': [(4, technician_users.partner_id.id)]
-    #             #             })
-    #             #
-    #             #         # Post message
-    #             #         message_body = (
-    #             #             f'Job Card {self.name} has been assigned to Mr. {self.technician_id.name}.'
-    #             #         )
-    #             #         channel.message_post(
-    #             #             body=message_body,
-    #             #             subject='Job Card State Update',
-    #             #             message_type='notification',
-    #             #             subtype_xmlid='mail.mt_comment',
-    #             #             author_id=odoo_bot.id
-    #             #         )
-
-    #             # if state.code == '124':
-    #             #     return self.cancelled_reason_button_mobile()
-    #     for record in self:
-
-    #         if vals.get("team_id") and record.service_request_id:
-    #             record.service_request_id.team_id = vals.get("team_id")
-    #             record.service_request_id._onchange_team_id()
-
-    #             # if not record.second_visit_technician_bool:
-    #             #     record.technician_first_visit_id = record.team_id.id
-    #             # else:
-    #             #     record.technician_second_visit_id = vals.get('team_id')
-    #             #
-    #             """ This code is correctly worked but they want after change first time unit pull out if technician changes
-    #                 then need not changed the state as scheduled they want Rescheduled for internal technician
-    #             scheduled_state = self.env['project.task.type'].search(
-    #                     [('code', '=', '102')], limit=1
-    #                 )
-    #             if scheduled_state:
-    #                 record.job_state = scheduled_state.id
-    #                 record.job_card_state = record.job_state.name
-    #                 record.job_card_state_code = record.job_state.code
-
-    #                 record.service_request_id.service_request_state = record.job_state.name
-    #                 record.service_request_id.service_request_state_code = record.job_state.code
-    #                 record.service_request_id.state = record.job_state
-    #             """
-    #             """This code is added on Nov-01-2025 """
-    #             # print("..................................record.job_card_state_code",record.job_card_state_code)
-    #             if not record.job_card_state_code in ("117", "132"):
-    #                 scheduled_state = self.env["project.task.type"].search(
-    #                     [("code", "=", "102")], limit=1
-    #                 )
-    #                 if scheduled_state:
-    #                     record.job_state = scheduled_state.id
-    #                     record.job_card_state = record.job_state.name
-    #                     record.job_card_state_code = record.job_state.code
-
-    #                     record.service_request_id.service_request_state = (
-    #                         record.job_state.name
-    #                     )
-    #                     record.service_request_id.service_request_state_code = (
-    #                         record.job_state.code
-    #                     )
-    #                     record.service_request_id.state = record.job_state
-
-    #             if record.job_card_state_code == "117":
-    #                 scheduled_state = self.env["project.task.type"].search(
-    #                     [("code", "=", "204")], limit=1
-    #                 )
-    #                 if scheduled_state:
-    #                     record.job_state = scheduled_state.id
-    #                     record.job_card_state = record.job_state.name
-    #                     record.job_card_state_code = record.job_state.code
-
-    #                     record.service_request_id.service_request_state = (
-    #                         record.job_state.name
-    #                     )
-    #                     record.service_request_id.service_request_state_code = (
-    #                         record.job_state.code
-    #                     )
-    #                     record.service_request_id.state = record.job_state
-
-    #             if record.job_card_state_code == "132":
-    #                 # record.second_visit_technician_bool = True
-    #                 scheduled_state = self.env["project.task.type"].search(
-    #                     [("code", "=", "133")], limit=1
-    #                 )
-    #                 if scheduled_state:
-    #                     record.job_state = scheduled_state.id
-    #                     record.job_card_state = record.job_state.name
-    #                     record.job_card_state_code = record.job_state.code
-
-    #                     record.service_request_id.service_request_state = (
-    #                         record.job_state.name
-    #                     )
-    #                     record.service_request_id.service_request_state_code = (
-    #                         record.job_state.code
-    #                     )
-    #                     record.service_request_id.state = record.job_state
-
-    #                     # record._onchange_job_card_state_status()
-    #             # record._send_whatsapp_scheduled_message()
-    #             # record._send_whatsapp_scheduled_technician_message()
-    #             #
-
-    #         if (
-    #             vals.get("planned_date_begin")
-    #             and vals.get("team_id")
-    #             and record.service_request_id
-    #         ):
-    #             record.service_request_id.technician_appointment_date = vals.get(
-    #                 "planned_date_begin"
-    #             )
-    #             # record._send_whatsapp_scheduled_message()
-    #             # record._send_whatsapp_scheduled_technician_message()
-
-    #         if vals.get("service_requested_datetime") and record.service_request_id:
-    #             record.service_request_id.call_request_appointment_date = vals.get(
-    #                 "service_requested_datetime"
-    #             )
-
-    #         if vals.get("attachment_ids") and record.service_request_id:
-    #             record.service_request_id.attachment_ids = vals.get("attachment_ids")
-
-    #         if vals.get("service_warranty_id") and record.service_warranty_id:
-    #             record.service_request_id.sr_service_warranty_id = vals.get(
-    #                 "service_warranty_id"
-    #             )
-
-    #         if vals.get("purchase_invoice_no") and record.service_warranty_id:
-    #             record.service_request_id.purchase_invoice_no = vals.get(
-    #                 "purchase_invoice_no"
-    #             )
-
-    #         if vals.get("purchase_date") and record.service_warranty_id:
-    #             record.service_request_id.purchase_date = vals.get("purchase_date")
-
-    #         if vals.get("dealer_id") and record.service_request_id:
-    #             record.service_request_id.dealer_id = vals.get("dealer_id")
-
-    #         if vals.get("warranty_expiry_date") and record.service_request_id:
-    #             record.service_request_id.website_year = vals.get(
-    #                 "warranty_expiry_date"
-    #             )
-
-    #         if vals.get("product_id") and record.service_request_id:
-    #             record.service_request_id.product_id = vals.get("product_id")
-
-    #         if vals.get("product_sub_group_id") and record.service_request_id:
-    #             record.service_request_id.product_sub_group_id = vals.get(
-    #                 "product_sub_group_id"
-    #             )
-
-    #         if vals.get("svc_id") and record.service_request_id:
-    #             record.service_request_id.svc_id = vals.get("svc_id")
-
-    #         if vals.get("product_slno") and record.service_request_id:
-    #             record.service_request_id.product_slno = vals.get("product_slno")
-
-    #         if vals.get("inspection_charges_bool") or vals.get(
-    #             "inspection_charges_amount"
-    #         ):
-
-    #             """the client asked to even inspection charges amount is zero they want to create service item on the product lines.Added on Oct-10-2025
-
-    #             if rec.inspection_charges_amount > 0 and rec.inspection_charges_bool and rec.warehouse_id:
-    #             """
-    #             if rec.inspection_charges_bool and rec.warehouse_id:
-
-    #                 service_lines = rec.product_line_ids.filtered(
-    #                     lambda line: line.product_id.service_type_bool
-    #                 )
-    #                 # Search for service product in warehouse
-    #                 stock_quant = self.env["stock.quant"].search(
-    #                     [
-    #                         ("product_id.service_type_bool", "=", True),
-    #                         ("location_id", "=", rec.warehouse_id.lot_stock_id.id),
-    #                     ],
-    #                     limit=1,
-    #                 )
-
-    #                 if stock_quant:
-    #                     product = stock_quant.product_id
-    #                     price_unit = rec.inspection_charges_amount
-    #                     vat_taxes = product.taxes_id
-    #                     vat_amount = 0.0
-    #                     if vat_taxes:
-    #                         vat_amount = vat_taxes[0].amount
-    #                         tax_factor = 1 + (vat_amount / 100)
-    #                         price_unit /= tax_factor
-
-    #                     # Set additional fields similar to _product_line_onchange without overwriting price_unit
-    #                     uom_id = product.uom_id.id
-
-    #                     """For Mis use Warranty Service Product warranty is untick code is added on Nov 05-2025 """
-    #                     if rec.service_warranty_id.misuse_warranty_bool:
-    #                         rec.warranty = False
-
-    #                     under_warranty = rec.warranty
-    #                     standard_price = product.lst_price
-    #                     on_hand_qty = stock_quant.quantity if stock_quant else 0.0
-
-    #                     quantity_search = self.env["stock.quant"].search(
-    #                         [("product_id", "=", product.id)]
-    #                     )
-    #                     overall_qty = (
-    #                         sum(quant.quantity for quant in quantity_search)
-    #                         if quantity_search
-    #                         else 0.0
-    #                     )
-
-    #                     parts_reserved_bool = rec.warranty
-
-    #                     vals = {
-    #                         "product_id": product.id,
-    #                         # 'price_unit': price_unit,
-    #                         "price_unit": price_unit if not rec.warranty else 0.0,
-    #                         "qty": 1,
-    #                         "uom_id": uom_id,
-    #                         "under_warranty_bool": under_warranty,
-    #                         "standard_price": standard_price,
-    #                         "vat": vat_amount,
-    #                         "on_hand_qty": on_hand_qty,
-    #                         "overall_qty": overall_qty,
-    #                         "parts_reserved_bool": parts_reserved_bool,
-    #                     }
-    #                     if service_lines:
-    #                         service_lines[0].write(vals)
-    #                     else:
-    #                         # Remove any existing service lines first (clean slate)
-    #                         if service_lines:
-    #                             rec.product_line_ids = [
-    #                                 (3, line.id, 0) for line in service_lines
-    #                             ]
-    #                         # Create new service line
-    #                         rec.product_line_ids = [(0, 0, vals)]
-    #                     # if self.inspection_charges_amount > 0:
-    #                     #     self.send_whatsapp_service_charges_receipt()
-
-    #         """Code is added on Sep-05-2025 client asked the create the payment receipt based on the mode of payment check box and inspection charges amount """
-    #         if (
-    #             vals.get("mode_of_payment") or vals.get("inspection_charges_amount")
-    #         ) or vals.get("inspection_charges_bool") == True:
-    #             if (
-    #                 record.mode_of_payment
-    #                 and record.inspection_charges_bool
-    #                 and record.inspection_charges_amount > 0.0
-    #             ):
-    #                 if not record.team_id:
-    #                     raise ValidationError("Please enter Team Leader")
-    #                 if not record.planned_date_begin:
-    #                     raise ValidationError("Please enter Appt. Start Date & Time")
-
-    #                 payment_receipt_search = self.env["payment.receipt"]
-    #                 journal = False
-
-    #                 if (
-    #                     vals.get("mode_of_payment") == "cash"
-    #                     or record.mode_of_payment == "cash"
-    #                 ):
-    #                     journal = self.env["account.journal"].search(
-    #                         [("type", "=", "cash")], limit=1
-    #                     )
-    #                 else:
-    #                     journal = self.env["account.journal"].search(
-    #                         [("type", "=", "bank")], limit=1
-    #                     )
-    #                 payment_method_id = (
-    #                     journal.inbound_payment_method_line_ids[0].id
-    #                     if journal.inbound_payment_method_line_ids
-    #                     else False
-    #                 )
-    #                 payment_amount = (
-    #                     vals.get("inspection_charges_amount")
-    #                     if vals.get("inspection_charges_amount")
-    #                     else record.inspection_charges_amount
-    #                 )
-    #                 currency = self.env.company.currency_id
-    #                 job_search = self.env["project.task"].search(
-    #                     [("name", "=", record.name)], limit=1
-    #                 )
-    #                 vals_search = {
-    #                     "date": fields.date.today(),
-    #                     "job_card_no_id": job_search.id,
-    #                     "partner_id": record.partner_id.id or "",
-    #                     "customer_name": record.customer_name or "",
-    #                     "amount": payment_amount,
-    #                     "journal_id": journal.id,
-    #                     "payment_id": payment_method_id,
-    #                     "state": "posted",
-    #                     "memo": f"Inspection Charges Amount Received for {record.name} - {payment_amount:.2f} {currency.symbol}",
-    #                     "inspection_charges_amount_received_bool": True,
-    #                     "balance_amount_received_bool": False,
-    #                     "mode_of_payment": record.mode_of_payment,
-    #                     "online_transaction_date": fields.Datetime.now(),
-    #                     "online_transaction_status": "paid",
-    #                 }
-    #                 receipt_transaction = payment_receipt_search.search(
-    #                     [
-    #                         ("job_card_no_id.name", "=", record.name),
-    #                         ("inspection_charges_amount_received_bool", "=", True),
-    #                         ("balance_amount_received_bool", "=", False),
-    #                     ],
-    #                     limit=1,
-    #                 )
-
-    #                 if not receipt_transaction:
-    #                     receipt_create = (
-    #                         self.env["payment.receipt"].sudo().create(vals_search)
-    #                     )
-    #                     record.payment_receipt_id = receipt_create.id
-    #                     if record.payment_receipt_id:
-    #                         journal_entry = self.env["account.move"]
-
-    #                         journal_vals = {
-    #                             "move_type": "entry",
-    #                             # 'account_id': receipt_create.journal_id,
-    #                             # 'amount' :payment_amount,
-    #                             "ref": receipt_create.name,
-    #                             "date": receipt_create.date or False,
-    #                             "journal_id": journal.id,
-    #                         }
-
-    #                         debit_account = (
-    #                             receipt_create.journal_id.profit_account_id.id
-    #                         )
-    #                         credit_account = (
-    #                             receipt_create.journal_id.loss_account_id.id
-    #                         )
-    #                         line_vals = []
-    #                         debit_vals = {
-    #                             "name": receipt_create.name,
-    #                             "account_id": debit_account,
-    #                             "journal_id": journal.id,
-    #                             "debit": payment_amount,
-    #                             "credit": 0.0,
-    #                             "date": receipt_create.date,
-    #                         }
-
-    #                         credit_vals = {
-    #                             "name": receipt_create.name,
-    #                             "account_id": credit_account,
-    #                             "journal_id": journal.id,
-    #                             "debit": 0.0,
-    #                             "credit": payment_amount,
-    #                             "date": receipt_create.date,
-    #                         }
-
-    #                         line_vals.append((0, 0, debit_vals))
-    #                         line_vals.append((0, 0, credit_vals))
-
-    #                         transaction = journal_entry.sudo().create(journal_vals)
-    #                         transaction.update({"line_ids": line_vals})
-    #                         record.payment_receipt_id.write(
-    #                             {"account_move_id": transaction.id}
-    #                         )
-
-    #                 if receipt_transaction:
-    #                     inspection_amount = (
-    #                         vals.get("inspection_charges_amount")
-    #                         if vals.get("inspection_charges_amount")
-    #                         else record.inspection_charges_amount
-    #                     )
-    #                     payment_mode = (
-    #                         vals.get("mode_of_payment")
-    #                         if vals.get("mode_of_payment")
-    #                         else record.mode_of_payment
-    #                     )
-    #                     receipt_transaction.write(
-    #                         {
-    #                             "amount": inspection_amount,
-    #                             "memo": f"Inspection Charges Amount Received for {record.name} - {inspection_amount:.2f} {currency.symbol}",
-    #                             "mode_of_payment": payment_mode,
-    #                             "journal_id": journal.id,
-    #                         }
-    #                     )
-
-    #         """Code is added on Sep-05-2025 client asked the create the payment receipt based on the mode of balance payment check box and remaining balance paid amount """
-
-    #         if (
-    #             vals.get("mode_of_payment_balance_amount")
-    #             or vals.get("balance_amount_received_bool") == True
-    #         ):
-    #             balance_paid = False
-    #             balance_paid = (
-    #                 record.grand_total - record.final_inspection_charges_amount
-    #             )
-    #             if (
-    #                 record.mode_of_payment_balance_amount
-    #                 and record.balance_amount_received_bool
-    #                 and balance_paid > 0.0
-    #             ):
-    #                 if not record.team_id:
-    #                     raise ValidationError("Please enter Team Leader")
-    #                 if not record.planned_date_begin:
-    #                     raise ValidationError("Please enter Appt. Start Date & Time")
-
-    #                 payment_receipt_search = self.env["payment.receipt"]
-    #                 journal = False
-    #                 if (
-    #                     vals.get("mode_of_payment_balance_amount") == "cash"
-    #                     or record.mode_of_payment_balance_amount == "cash"
-    #                 ):
-    #                     journal = self.env["account.journal"].search(
-    #                         [("type", "=", "cash")], limit=1
-    #                     )
-    #                 else:
-    #                     journal = self.env["account.journal"].search(
-    #                         [("type", "=", "bank")], limit=1
-    #                     )
-    #                 payment_method_id = (
-    #                     journal.inbound_payment_method_line_ids[0].id
-    #                     if journal.inbound_payment_method_line_ids
-    #                     else False
-    #                 )
-    #                 # payment_amount = vals.get('balance_paid')  if vals.get('balance_paid') else record.balance_paid
-    #                 payment_amount = balance_paid
-    #                 currency = self.env.company.currency_id
-    #                 job_search = self.env["project.task"].search(
-    #                     [("name", "=", record.name)], limit=1
-    #                 )
-    #                 vals_search = {
-    #                     "date": fields.date.today(),
-    #                     "job_card_no_id": job_search.id,
-    #                     "partner_id": record.partner_id.id or "",
-    #                     "customer_name": record.customer_name or "",
-    #                     "amount": payment_amount,
-    #                     "journal_id": journal.id,
-    #                     "payment_id": payment_method_id,
-    #                     "state": "posted",
-    #                     "memo": f"Balance Amount Received for {record.name} - {payment_amount:.2f} {currency.symbol}",
-    #                     "inspection_charges_amount_received_bool": False,
-    #                     "balance_amount_received_bool": True,
-    #                     "mode_of_payment": record.mode_of_payment,
-    #                     "online_transaction_date": fields.Datetime.now(),
-    #                     "online_transaction_status": "paid",
-    #                 }
-    #                 receipt_transaction = payment_receipt_search.search(
-    #                     [
-    #                         ("job_card_no_id.name", "=", record.name),
-    #                         ("inspection_charges_amount_received_bool", "=", False),
-    #                         ("balance_amount_received_bool", "=", True),
-    #                     ],
-    #                     limit=1,
-    #                 )
-
-    #                 if not receipt_transaction:
-    #                     receipt_create = (
-    #                         self.env["payment.receipt"].sudo().create(vals_search)
-    #                     )
-    #                     record.payment_receipt_id = receipt_create.id
-    #                     if record.payment_receipt_id:
-    #                         journal_entry = self.env["account.move"]
-
-    #                         journal_vals = {
-    #                             "move_type": "entry",
-    #                             # 'account_id': receipt_create.journal_id,
-    #                             # 'amount' :payment_amount,
-    #                             "ref": receipt_create.name,
-    #                             "date": receipt_create.date or False,
-    #                             "journal_id": journal.id,
-    #                         }
-
-    #                         debit_account = (
-    #                             receipt_create.journal_id.profit_account_id.id
-    #                         )
-    #                         credit_account = (
-    #                             receipt_create.journal_id.loss_account_id.id
-    #                         )
-    #                         line_vals = []
-    #                         debit_vals = {
-    #                             "name": receipt_create.name,
-    #                             "account_id": debit_account,
-    #                             "journal_id": journal.id,
-    #                             "debit": payment_amount,
-    #                             "credit": 0.0,
-    #                             "date": receipt_create.date,
-    #                         }
-
-    #                         credit_vals = {
-    #                             "name": receipt_create.name,
-    #                             "account_id": credit_account,
-    #                             "journal_id": journal.id,
-    #                             "debit": 0.0,
-    #                             "credit": payment_amount,
-    #                             "date": receipt_create.date,
-    #                         }
-
-    #                         line_vals.append((0, 0, debit_vals))
-    #                         line_vals.append((0, 0, credit_vals))
-
-    #                         transaction = journal_entry.sudo().create(journal_vals)
-    #                         transaction.update({"line_ids": line_vals})
-    #                         record.payment_receipt_id.write(
-    #                             {"account_move_id": transaction.id}
-    #                         )
-
-    #                 if receipt_transaction:
-    #                     # balance_paid = vals.get('balance_paid') if vals.get('balance_paid') else record.balance_paid
-    #                     payment_mode = (
-    #                         vals.get("mode_of_payment_balance_amount")
-    #                         if vals.get("mode_of_payment_balance_amount")
-    #                         else record.mode_of_payment_balance_amount
-    #                     )
-    #                     receipt_transaction.write(
-    #                         {
-    #                             "amount": abs(balance_paid),
-    #                             "memo": f"Balance Amount Received for {record.name} - {balance_paid:.2f} {currency.symbol}",
-    #                             "mode_of_payment": payment_mode,
-    #                             "journal_id": journal.id,
-    #                         }
-    #                     )
-
-    #     # if warnings:
-    #     #     self.message_post(
-    #     #         body="Stock Warning: " + "\n".join(warnings),
-    #     #         message_type='notification',
-    #     #         # subtype_xmlid='mail.mt_comment',
-    #     #     )
-    #     #
-    #     # # Return client-side notification
-    #     # if warning_needed:
-    #     #     product_names = [line.product_id.display_name for rec in self for line in rec.line_ids if line.on_hand_qty == 0.0]
-    #     #     return {
-    #     #         'type': 'ir.actions.client',
-    #     #         'tag': 'reload',  # triggers form reload and context refresh
-    #     #         'context': {
-    #     #             'show_stock_warning': True,
-    #     #             'warning_products': ', '.join(product_names),
-    #     #         },
-    #     #     }
-    #     #
-
-    #     # self.action_save()
-
-    #     # if state_changing_to_124:
-    #     #     return self.cancelled_reason_button_mobile()
-    #     #
-    #     # if self.env.context.get('open_cancelled_wizard'):
-    #     #     return self.cancelled_reason_button_mobile()
-    #     #
-
-    #     return res
-    def write(self, vals):
-        # if self.env.context.get('skip_state_validation'):
-        #     return super().write(vals)
-        #
-        is_minimal_update = len(vals) == 0 or all(
-            field
-            in [
-                "message_main_attachment_id",
-                "message_ids",
-                "activity_ids",
-                "write_date",
-                "__last_update",
-            ]
-            for field in vals.keys()
-        )
-        
-        '''Code Added on MAy 08 2026 by Vijaya Bhaskar because fast sync same job card again skip'''
-        if self.env.context.get('skip_amc_state_sync'):
-            return super().write(vals)
-
-        if is_minimal_update or self.env.context.get("creating"):
-            return super().write(vals)
-
-        if self.env.context.get("skip_state_validation") or self.env.context.get(
-            "skip_warranty_validation"
-        ):
-            return super().write(vals)
-
-        warnings = []
-        warning_needed = False
-        state_changing_to_124 = False
-
+    
+    '''Code Added on June 19 2026 for fast performance issue for whatsapp send '''
+    def _run_whatsapp_in_thread(self, method_name, *args, **kwargs):
+        import threading
+        import odoo
+        from odoo import api, SUPERUSER_ID
+        import logging
+        _logger = logging.getLogger(__name__)
+
+        def threaded_function(db_name, record_id):
+            try:
+                registry = odoo.registry(db_name)
+                with registry.cursor() as cr:
+                    env = api.Environment(cr, SUPERUSER_ID, {})
+                    record = env['project.task'].browse(record_id)
+                    if hasattr(record, method_name):
+                        getattr(record, method_name)(*args, **kwargs)
+            except Exception as e:
+                _logger.error(f"Failed threaded whatsapp {method_name}: {e}")
+
+        db_name = self.env.cr.dbname
         for rec in self:
-            # Take new state code if being updated, otherwise existing
-            state_code = vals.get("job_card_state_code") or rec.job_card_state_code
-            engineer_comments = vals.get("engineer_comments") or rec.engineer_comments
-            team_id = vals.get("team_id") or rec.team_id.id
-
-            def is_state_changing_to(target_code):
-                return ("job_state" in vals or "job_card_state_code" in vals) and (
-                    (vals.get("job_card_state_code") == target_code)
-                    or (
-                        not vals.get("job_card_state_code")
-                        and vals.get("job_state")
-                        and self.env["project.task.type"].browse(vals["job_state"]).code
-                        == target_code
+            threading.Thread(target=threaded_function, args=(db_name, rec.id)).start()
+    
+    def _validate_ready_to_invoice(self, vals):
+        for rec in self:
+            if rec.service_sale_id:
+                if rec.service_sale_id.state == "done":
+                    balance_paid_amount = (
+                            vals.get("balance_paid") or rec.balance_paid
                     )
-                )
+                    balance_amount_received_bool = (
+                            vals.get("balance_amount_received_bool")
+                            or rec.balance_amount_received_bool
+                    )
+                    mode_of_payment_balance_amount = (
+                            vals.get("mode_of_payment_balance_amount")
+                            or rec.mode_of_payment_balance_amount
+                    )
+                    if (
+                            balance_paid_amount > 0.0
+                            and not mode_of_payment_balance_amount
+                    ):
+                        raise ValidationError(
+                            _("Please Select any one Method Of Payment")
+                        )
+                    if (
+                            balance_paid_amount > 0.0
+                            and not balance_amount_received_bool
+                    ):
+                        raise ValidationError(
+                            _(
+                                "Ensure Amount is received from the customer while clicking the Balance Amount Confirmed."
+                            )
+                        )
 
-            # Check if state is being changed to specific codes
-            state_changing_to_102 = is_state_changing_to("102")
-            state_changing_to_107 = is_state_changing_to("107")
-
-            state_changing_to_111 = is_state_changing_to("111")
-            state_changing_to_112 = is_state_changing_to("112")
-
-            state_changing_to_113 = is_state_changing_to("113")
-            state_changing_to_115 = is_state_changing_to("115")
-            state_changing_to_116 = is_state_changing_to("116")
-
-            state_changing_to_117 = is_state_changing_to("117")
-            state_changing_to_121 = is_state_changing_to("121")
-
-            state_changing_to_122 = is_state_changing_to("122")
-            state_changing_to_124 = is_state_changing_to("124")
-            state_changing_to_125 = is_state_changing_to("125")
-            state_changing_to_126 = is_state_changing_to("126")
-
-            state_changing_to_128 = is_state_changing_to("128")
-            state_changing_to_129 = is_state_changing_to("129")
-            state_changing_to_130 = is_state_changing_to("130")
-            """Code Added on Feb 20 2026 for parts user must add Parts Product any one"""
-            state_changing_to_131 = is_state_changing_to("131")
-            state_changing_to_207 = is_state_changing_to("207")
-            state_changing_to_123 = is_state_changing_to("123")
             
-            '''Code Added on May 14 2026 client asked to if they cancelled then if product lines then it will be remove first'''
-            state_changing_to_154 = is_state_changing_to('154')
+            '''Code Added on July 08 2026 by Vijaya Bhaskar model and serial number validation for preventive and corrective'''
+            model_id = vals.get('model_id') or rec.model_id.id
+            product_product_model_id = vals.get('product_product_model_id') or rec.product_product_model_id.id
             
-            '''Code Added on May 18 2026 by Vijaya Bhaskar if not quotation don't change the click  quote sent'''
-            state_changing_to_114 = is_state_changing_to("114")
-            state_changing_to_127 = is_state_changing_to("127")
-            state_changing_to_128 = is_state_changing_to("128")
-            
-            
-            '''Code Added on May 18 2026 by Vijaya Bhaskar if not quotation don't change the click  quote sent'''
-            if state_changing_to_114 or state_changing_to_127 or state_changing_to_128:
-                if not rec.service_sale_id:
-                    raise ValidationError(_("Please first Create Quotation and then Change the Status"))
+            if rec.project_related_amc_bool:
+                if rec.items_from_own_company_bool:
+                    if not product_product_model_id:
+                        raise ValidationError(_("Please enter Model in the Job Card."))
+                else:
+                    if not model_id:
+                        raise ValidationError(_("Please enter Model in the Job Card."))
                 
-                if rec.service_sale_id:
-                    if rec.service_sale_id.state == 'cancel':
-                        raise ValidationError(_("Please Create Quotation first because already Created Quotation %s is in cancel state" % rec.service_sale_id.name))
-                       
-
-            if state_changing_to_102:
-                if not team_id:
-                    raise ValidationError(
-                        _(
-                            "Please assign the technician to this Job Card %s "
-                            % rec.name
-                        )
-                    )
-
-            if state_changing_to_124:
-                """Engineer comments are commented due to not need during closed Job card
-                if not engineer_comments:
-                    raise ValidationError(
-                        _("Please enter Engineer Comments before moving Job Card %s") % rec.name
-                    )
-                """
-                # self = self.with_context(open_cancelled_wizard=True)
-                # if not self.cancel_button_wizard_bool:
-                # raise UserError(_("Please Click the Cancel Job Card Button in mobile"))
-                # return rec.cancelled_reason_button_mobile()
-                cancellation_reason = (
-                    vals.get("cancellation_reason_id") or rec.cancellation_reason_id
+                
+            
+            product_id = vals.get("product_id") or rec.product_id.id
+            if not product_id:
+                raise ValidationError(_("Please enter Model No. in the Job card"))
+            product_slno = vals.get("product_slno") or rec.product_slno
+            if not product_slno:
+                raise ValidationError(
+                    _("Please enter Serial Number in the Job card")
                 )
 
-                # if not cancellation_reason:
-                #     return rec.cancelled_reason_button_mobile()
+            balance_paid_amount = vals.get("balance_paid") or rec.balance_paid
+            balance_amount_received_bool = (
+                    vals.get("balance_amount_received_bool")
+                    or rec.balance_amount_received_bool
+            )
+            mode_of_payment_balance_amount = (
+                    vals.get("mode_of_payment_balance_amount")
+                    or rec.mode_of_payment_balance_amount
+            )
+            if balance_paid_amount > 0.0 and not mode_of_payment_balance_amount:
+                raise ValidationError(_("Please Select any one Method Of Payment"))
+            if balance_paid_amount > 0.0 and not balance_amount_received_bool:
+                raise ValidationError(
+                    _(
+                        "Ensure Amount is received from the customer while clicking the Balance Amount Confirmed."
+                    )
+                )
 
-                # raise ValidationError(_("Please Select any one Cancellation Reason before Cancel the Job Card."))
+            purchase_invoice_no = (
+                    vals.get("purchase_invoice_no") or rec.purchase_invoice_no
+            )
+            if rec.warranty and not purchase_invoice_no:
+                raise ValidationError(
+                    _("Please enter Purchase Invoice No in the Job card")
+                )
 
-            """Code  Added on Mar 16 2026 Client asked attachment images"""
-            if state_changing_to_129 or state_changing_to_117 or state_changing_to_121:
-                img1 = vals.get("img1") or rec.img1
+            purchase_date = vals.get("purchase_date") or rec.purchase_date
+            if rec.warranty and not purchase_date:
+                raise ValidationError(
+                    _("Please enter Purchase date in the Job card")
+                )
+
+            service_warranty_id = (
+                    vals.get("service_warranty_id") or rec.service_warranty_id.id
+            )
+            if not service_warranty_id:
+                raise ValidationError(
+                    _("Please select any one Service Warranty in the Job card")
+                )
+
+            symptom_line_ids = vals.get("symptoms_line_ids_duplicate") or vals.get(
+                "symptoms_line_ids"
+            )
+            lines_to_check = rec.symptoms_line_ids or symptom_line_ids
+            if not lines_to_check:
                 if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                    if not img1:
-                        raise ValidationError(
-                            _("Please Attach the image of Unit Name Plate")
-                        )
+                    raise ValidationError(_("Please give any one of the Symptoms in the Symptoms tab")
+    		        )
 
-            """Code Added on Feb 20 2026 for parts user must add Parts Product any one"""
+            defect_type_ids = vals.get("defects_type_ids_duplicate") or vals.get(
+                "defects_type_ids"
+            )
+            defect_to_check = rec.defects_type_ids or defect_type_ids
+            if not defect_to_check:
+                if not (rec.contract_id and rec.maintenance_type == 'preventive'):
+                    raise ValidationError(_("Please give any one of the Defects in the Defects tab")
+        		        )
 
-            if state_changing_to_131:
-
-                if not rec.product_line_ids and not vals.get("product_line_ids"):
-                    raise ValidationError(
-                        _(
-                            "Please give at least one Product in the product consume Part/services"
-                        )
-                    )
-                product_lines = rec.product_line_ids
-
-                # for line in product_lines:
-                """Code added on Feb 20 2026 client asked if any one parts product to be added in the product tab"""
-                if rec.current_user_id.has_group(
-                    "machine_repair_management.group_parts_user"
-                ):
-                    other_product_found = any(
-                        line.product_id
-                        and line.product_id.service_type_bool is False
-                        and line.product_id.service_product_price_edit_bool is False
-                        for line in product_lines
-                    )
-                    if not other_product_found:
-                        raise ValidationError(
-                            _(
-                                "Please enter at-least one parts Product should be added to the Product Consume Parts/Service "
-                            )
-                        )
-
-                """Code added on Mar 09 2026"""
-                if any(
-                    l.product_id
-                    and l.price_unit > 0
-                    and not l.under_warranty_bool
-                    and l.vat == 0.0
-                    for l in rec.product_line_ids
-                ):
-                    raise ValidationError(
-                        _("VAT must be entered when Price Unit is greater than zero.")
-                    )
-
-                """Code Added on Mar 09 2026"""
-                invalid_tax_lines = rec.product_line_ids.filtered(
-                    lambda l: l.product_id
-                    and l.price_unit > 0
-                    and not l.product_id.taxes_id
-                )
-
-                if invalid_tax_lines:
-                    products = ", ".join(invalid_tax_lines.mapped("product_id.name"))
-                    raise ValidationError(_("VAT must be set for: %s") % products)
+            service_type_ids = vals.get("service_type_ids_duplicate") or vals.get(
+                "service_type_ids"
+            )
+            service_to_check = rec.service_type_ids or service_type_ids
+            if not service_to_check:
+                if not (rec.contract_id and rec.maintenance_type == 'preventive'):
+                    raise ValidationError(_("Please give any one of the Service in the Service tab")
+        		        )
+		        
+            if service_to_check:
+                for line in service_to_check:
+                    if hasattr(line, 'code'):
+                        code = line.code                     
+                        qty = line.service_quantity
             
-            '''Code Added on May 14 2026 client asked to if they cancelled then if product lines then it will be remove first'''
-            
-            if state_changing_to_154:
-                if rec.product_line_ids:
-                    raise ValidationError("Please remove all the parts in the Product Consume Parts/Service.")     
-                if rec.service_sale_id:
-                    if rec.service_sale_id in ['draft','sent','sale','done']:
-                        raise ValidationError("Please First Cancel the Quotation and then Cancel the Job Card")
-                    
+                    elif isinstance(line, (list, tuple)) and len(line) >= 3:
+                        data = line[2]
+                        code_id = data.get('code')
+                        qty = data.get('service_quantity', 0.0)
+                        code = self.env['repair.type'].browse(code_id) if code_id else False
+                    else:
+                        continue
+                    if code and code.service_required_applicable_bool:
+                        if qty == 0.0:
+                            raise ValidationError(_("Please Enter the Freon Charge Quantity to the service %s" %code.service_complete_name)
+                            )
 
-            """Code Added on Feb 20 2026 for parts user must add Parts Product any one"""
+            engineer_comments = (
+                    vals.get("engineer_comments") or rec.engineer_comments
+            )
+            if not engineer_comments:
+                if not (rec.contract_id and rec.maintenance_type == 'preventive'):
+                	raise ValidationError(_("Please enter the Technician Comments 1"))
 
-            if state_changing_to_207:
-                if not rec.product_line_ids and not vals.get("product_line_ids"):
-                    raise ValidationError(
-                        _(
-                            "Please give at least one Product in the product consume Part/services"
+            mode_of_payment = vals.get("mode_of_payment") or rec.mode_of_payment
+            if not mode_of_payment:
+                if not (rec.contract_id and rec.maintenance_type == 'preventive'):
+                    '''Code Added on May 23 2026 by Vijaya Bhaskar'''
+                    if rec.emergency_count_exceed:
+                	       raise ValidationError(_("Please give Method of Payment"))
+
+            mode_of_payment_balance_amount = (
+                    vals.get("mode_of_payment_balance_amount")
+                    or rec.mode_of_payment_balance_amount
+            )
+            if rec.final_balance_amount != 0.0:
+                if not mode_of_payment_balance_amount:
+                    '''Code Added on August 04 2026 by Vijaya Bhaskar if the emergency visit they don't have the option to balance paid bool tick.so that the validation is worked only for HHS Project not amc'''
+                    if not rec.project_related_amc_bool:
+                        raise ValidationError(_("Please give the method of Payment"))
+
+            online_payment_attachment_vals = (
+                    vals.get("online_payment_invoice_attachment_ids")
+                    or rec.online_payment_invoice_attachment_ids
+            )
+            if rec.mode_of_payment in (
+                    "online",
+                    "bank",
+            ) or rec.mode_of_payment_balance_amount in ("online", "bank"):
+                if not online_payment_attachment_vals:
+                    raise ValidationError(_("Please Attach Online/Bank Transfer Attachment Payment copy"
                         )
                     )
-                product_lines = rec.product_line_ids
-                # for line in product_lines:
-                """Code added on Feb 20 2026 client asked if any one parts product to be added in the product tab"""
-                if rec.current_user_id.has_group(
-                    "machine_repair_management.group_parts_user"
+
+            if rec.second_visit_technician_bool:
+                engineer_comments_2 = (
+                        vals.get("engineer_comments_second")
+                        or rec.engineer_comments_second
+                )
+                if not engineer_comments_2:
+                    raise ValidationError(_("Please enter the Technician Comments 2")
+                    )
+
+            img1 = vals.get("img1") or rec.img1
+            if not img1:
+                if not (rec.contract_id and rec.maintenance_type == 'preventive'):
+                    raise ValidationError(_("Please Attach the image of Unit Name Plate")
+    		        )
+
+            signature = vals.get("signature") or rec.signature
+            if not signature:
+                rec.customer_signature_show_bool = True
+                if not rec.customer_signature_show_bool:
+                    if not (rec.contract_id and rec.maintenance_type == 'preventive'):
+                        raise ValidationError(_("Please enter Customer Signature in the Job card")
+    		            )
+
+            damaged_parts_to_be_returned_technician = False
+            service_warranty_id = (
+                    vals.get("service_warranty_id") or rec.service_warranty_id
+            )
+            if (
+                    service_warranty_id.warranty_applicable_bool
+                    and not service_warranty_id.misuse_warranty_bool
+            ):
+                returned_damaged_parts_technician = (
+                        vals.get("return_damage_parts_technician")
+                        or rec.return_damage_parts_technician
+                )
+
+                if (
+                        rec.damaged_parts_to_be_returned_technician
+                        and not returned_damaged_parts_technician
                 ):
-                    other_product_found = any(
-                        line.product_id
-                        and line.product_id.service_type_bool is False
-                        and line.product_id.service_product_price_edit_bool is False
-                        for line in product_lines
+                    raise ValidationError(_("Some Products are Return the damaged item to warehouse is there.So Please Tick the 'I will Return the Damaged Part(s)'"
+                        )
                     )
-                    if not other_product_found:
-                        raise ValidationError(
-                            _(
-                                "Please enter at-least one parts Product should be added to the Product Consume Parts/Service "
-                            )
-                        )
 
-            """Code added on Feb 25 2026 for new requirement"""
-            if state_changing_to_123:
-                product_lines = rec.product_line_ids
-                main_warehouse_id = (
-                    vals.get("main_warehouse_id") or rec.main_warehouse_id.id
-                )
-                reserve_from_main_warehouse_bool = (
-                    vals.get("reserve_from_main_warehouse_bool")
-                    or rec.reserve_from_main_warehouse_bool
-                )
-                if vals.get("product_line_ids"):
-                    for command in vals.get("product_line_ids"):
-                        if command[0] == 1:  # UPDATE existing line
-                            line_id = command[1]
-                            updates = command[2]
-                            line = product_lines.browse(line_id)
-                            line.parts_reserved_bool = updates.get(
-                                "parts_reserved_bool", line.parts_reserved_bool
-                            )
-
-                        elif command[0] == 0:  # CREATE new line
-                            new_vals = command[2]
-                            product_lines += product_lines.new(new_vals)
-
-                # Now validate final values
-                for line in product_lines:
-                    if line.product_id and not line.parts_reserved_bool:
-                        raise ValidationError(
-                            _(
-                                "Product %s is not reserved. Please reserve all products before proceeding."
-                            )
-                            % line.product_id.display_name
-                        )
-
-                    if line.product_id:
-                        qty = 0.0
-                        quant = self.env["stock.quant"].search(
-                            [
-                                ("product_id", "=", line.product_id.id),
-                                ("location_id.warehouse_id", "=", self.warehouse_id.id),
-                            ],
-                            limit=1,
-                        )
-
-                        qty = quant.quantity
-                        if quant.quantity == 0.0:
-                            raise ValidationError(
-                                _(
-                                    "%s Product stock is not available in the Technician Warehouse"
+            if rec.warranty:
+                for line in rec.product_line_ids:
+                    if line.under_warranty_bool:
+                        if line.price_unit > 0:
+                            raise ValidationError(_("For Under Warranty Unit Price is always equal to Zero Only.Please Change the Product %s Price Unit makes to Zero"
                                     % line.product_id.display_name
                                 )
                             )
 
-            if state_changing_to_122:
-                if not rec.product_line_ids and not vals.get("product_line_ids"):
-                    raise ValidationError(
-                        _(
-                            "Please give at least one Product in the product consume Part/services"
-                        )
-                    )
-
-                product_lines = rec.product_line_ids
-
-                if vals.get("product_line_ids"):
-                    for command in vals.get("product_line_ids"):
-                        if command[0] == 1:  # UPDATE existing line
-                            line_id = command[1]
-                            updates = command[2]
-                            line = product_lines.browse(line_id)
-                            line.parts_reserved_bool = updates.get(
-                                "parts_reserved_bool", line.parts_reserved_bool
-                            )
-
-                        elif command[0] == 0:  # CREATE new line
-                            new_vals = command[2]
-                            product_lines += product_lines.new(new_vals)
-
-                # Now validate final values
-                for line in product_lines:
-                    if (
-                        line.product_id
-                        and not line.parts_reserved_bool
-                        and not rec.reserve_from_main_warehouse_bool
-                    ):
-                        raise ValidationError(
-                            _(
-                                "Product %s is not reserved. Please reserve all products before proceeding."
-                            )
-                            % line.product_id.display_name
-                        )
-
-                    # for line in rec.product_line_ids:
-                    #     if line.product_id:
-                    #         if not line.parts_reserved_bool:
-                    #             raise ValidationError(
-                    #                 _("Product %s is not reserved. Please reserve all products before proceeding."% line.product_id.display_name)
-                    #
-                    #             )
-                    if (
-                        line.on_hand_qty == 0.0
-                        and not rec.reserve_from_main_warehouse_bool
-                    ):
-                        raise ValidationError(
-                            _(
-                                "Stock is not available for Product %s. Please contact Administrator."
-                                % line.product_id.display_name
-                            )
-                        )
-
-                    """Code added on Feb 20 2026 client asked if any one parts product to be added in the product tab"""
-                    if rec.current_user_id.has_group(
-                        "machine_repair_management.group_parts_user"
-                    ):
-                        other_product_found = any(
-                            line.product_id
-                            and line.product_id.service_type_bool is False
-                            and line.product_id.service_product_price_edit_bool is False
-                            for line in product_lines
-                        )
-                        if not other_product_found:
-                            raise ValidationError(
-                                _(
-                                    "Please enter at-least one parts Product should be added to the Product Consume Parts/Service "
-                                )
-                            )
-
-                        """Code Added on Mar 3 2026"""
-                        # if rec.reserve_from_main_warehouse_bool:
-                        #     if line.product_id:
-                        #         qty = 0.0
-                        #         quant = self.env['stock.quant'].search([
-                        #             ('product_id', '=', line.product_id.id),
-                        #             ('location_id', '=', line.location_id.id),
-                        #         ], limit=1)
-                        #
-                        #         qty = quant.quantity or 0.0
-                        #         if qty == 0.0:
-                        #             raise ValidationError(_("%s Product is still not transfer to the Technician Warehouse.Please Transfer First " % line.product_id.display_name))
-                        #
-
-                # Inspection charges check
-                if rec.inspection_charges_bool and rec.inspection_charges_amount > 0:
-                    if not any(
-                        l.product_id and l.product_id.service_type_bool
-                        for l in rec.product_line_ids
-                    ):
-                        raise ValidationError(
-                            _(
-                                "Please enter Inspection charge amount in the product line"
-                            )
-                        )
-
-            if state_changing_to_125:
-                """Code Added on Jan 20 2026"""
-                if rec.service_sale_id:
-                    if rec.service_sale_id.state == "done":
-                        balance_paid_amount = (
-                            vals.get("balance_paid") or rec.balance_paid
-                        )
-                        balance_amount_received_bool = (
-                            vals.get("balance_amount_received_bool")
-                            or rec.balance_amount_received_bool
-                        )
-                        mode_of_payment_balance_amount = (
-                            vals.get("mode_of_payment_balance_amount")
-                            or rec.mode_of_payment_balance_amount
-                        )
-                        if (
-                            balance_paid_amount > 0.0
-                            and not mode_of_payment_balance_amount
-                        ):
-                            raise ValidationError(
-                                _("Please Select any one Method Of Payment")
-                            )
-                        if (
-                            balance_paid_amount > 0.0
-                            and not balance_amount_received_bool
-                        ):
-                            raise ValidationError(
-                                _(
-                                    "Ensure Amount is received from the customer while clicking the Balance Amount Confirmed."
-                                )
-                            )
-                
-                '''Code Added on July 08 2026 by Vijaya Bhaskar model and serial number validation for preventive and corrective'''
-                model_id = vals.get('model_id') or rec.model_id.id
-                product_product_model_id = vals.get('product_product_model_id') or rec.product_product_model_id.id
-                if rec.project_related_amc_bool:
-                    if rec.items_from_own_company_bool:
-                        if not product_product_model_id:
-                            raise ValidationError(_("Please enter Model in the Job Card."))
-                    else:
-                        if not model_id:
-                            raise ValidationError(_("Please enter Model in the Job Card."))
-                    
-                
-                product_id = vals.get("product_id") or rec.product_id.id
-                if not product_id:
-                    raise ValidationError(_("Please enter Model No. in the Job card"))
-                product_slno = vals.get("product_slno") or rec.product_slno
-                if not product_slno:
-                    raise ValidationError(_("Please enter Serial Number in the Job card")
-                        )
-
-                """Code Added on Jan 20 2026"""
-                balance_paid_amount = vals.get("balance_paid") or rec.balance_paid
-                balance_amount_received_bool = (
-                    vals.get("balance_amount_received_bool")
-                    or rec.balance_amount_received_bool
-                )
-                mode_of_payment_balance_amount = (
-                    vals.get("mode_of_payment_balance_amount")
-                    or rec.mode_of_payment_balance_amount
-                )
-                if balance_paid_amount > 0.0 and not mode_of_payment_balance_amount:
-                    raise ValidationError(_("Please Select any one Method Of Payment"))
-                if balance_paid_amount > 0.0 and not balance_amount_received_bool:
-                    raise ValidationError(
-                        _(
-                            "Ensure Amount is received from the customer while clicking the Balance Amount Confirmed."
-                        )
-                    )
-
-                purchase_invoice_no = (
-                    vals.get("purchase_invoice_no") or rec.purchase_invoice_no
-                )
-                if rec.warranty and not purchase_invoice_no:
-                    raise ValidationError(
-                        _("Please enter Purchase Invoice No in the Job card")
-                    )
-
-                purchase_date = vals.get("purchase_date") or rec.purchase_date
-                if rec.warranty and not purchase_date:
-                    raise ValidationError(
-                        _("Please enter Purchase date in the Job card")
-                    )
-
-                service_warranty_id = (
-                    vals.get("service_warranty_id") or rec.service_warranty_id.id
-                )
-                if not service_warranty_id:
-                    raise ValidationError(
-                        _("Please select any one Service Warranty in the Job card")
-                    )
-
-                symptom_line_ids = vals.get("symptoms_line_ids_duplicate") or vals.get(
-                    "symptoms_line_ids"
-                )
-                lines_to_check = rec.symptoms_line_ids or symptom_line_ids
-                if not lines_to_check:
-                    if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                        raise ValidationError(
-                            _("Please give any one of the Symptoms in the Symptoms tab")
-                        )
-                        
-               
-                             
-
-                defect_type_ids = vals.get("defects_type_ids_duplicate") or vals.get(
-                    "defects_type_ids"
-                )
-                defect_to_check = rec.defects_type_ids or defect_type_ids
-                if not defect_to_check:
-                    if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                        raise ValidationError(
-                            _("Please give any one of the Defects in the Defects tab")
-                        )
-
-                service_type_ids = vals.get("service_type_ids_duplicate") or vals.get(
-                    "service_type_ids"
-                )
-                service_to_check = rec.service_type_ids or service_type_ids
-                if not service_to_check:
-                    if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                        raise ValidationError(
-                            _("Please give any one of the Service in the Service tab")
-                        )
-                        
-                '''Code Added on May 06 2026 by Vijaya Bhaskar client asked to quantity to be added when ready to invoice'''
-                if service_to_check:
-                    for line in service_to_check:
-                        if hasattr(line, 'code'):
-                            code = line.code                     
-                            qty = line.service_quantity
-                  
-                        elif isinstance(line, (list, tuple)) and len(line) >= 3:
-                            data = line[2]
-                            code_id = data.get('code')
-                            qty = data.get('service_quantity', 0.0)
-                            code = self.env['repair.type'].browse(code_id) if code_id else False
-                        else:
-                            continue
-                        if code and code.service_required_applicable_bool:
-                            if qty == 0.0:
-                                '''Code Added on May 14 2026 by Vijaya Bhaskar'''
-                                raise ValidationError(
-                                    _("Please Enter the Freon Charge Quantity to the service %s" %code.service_complete_name)
-                                )        
-
-                engineer_comments = (
-                    vals.get("engineer_comments") or rec.engineer_comments
-                )
-                if not engineer_comments:
-                    if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-
-                        raise ValidationError(_("Please enter the Technician Comments 1"))
-
-                mode_of_payment = vals.get("mode_of_payment") or rec.mode_of_payment
-                if not mode_of_payment:
-                    if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                        '''Code Added on May 23 2026 by Vijaya Bhaskar'''
-                        if rec.emergency_count_exceed:
-                            raise ValidationError(_("Please give Method of Payment"))
-
-                mode_of_payment_balance_amount = (
-                    vals.get("mode_of_payment_balance_amount")
-                    or rec.mode_of_payment_balance_amount
-                )
-                if rec.final_balance_amount != 0.0:
-                    if not mode_of_payment_balance_amount:
-                        '''Code Added on August 04 2026 by Vijaya Bhaskar if the emergency visit they don't have the option to balance paid bool tick.so that the validation is worked only for HHS Project not amc'''
-                        if not rec.project_related_amc_bool:
-                            raise ValidationError(_("Please give the method of Payment"))
-
-                online_payment_attachment_vals = (
-                    vals.get("online_payment_invoice_attachment_ids")
-                    or rec.online_payment_invoice_attachment_ids
-                )
-                if rec.mode_of_payment in (
-                    "online",
-                    "bank",
-                ) or rec.mode_of_payment_balance_amount in ("online", "bank"):
-                    if not online_payment_attachment_vals:
-                        raise ValidationError(
-                            _(
-                                "Please Attach Online/Bank Transfer Attachment Payment copy"
-                            )
-                        )
-
-                if self.second_visit_technician_bool:
-                    engineer_comments_2 = (
-                        vals.get("engineer_comments_second")
-                        or rec.engineer_comments_second
-                    )
-                    if not engineer_comments_2:
-                        raise ValidationError(
-                            _("Please enter the Technician Comments 2")
-                        )
-
-                img1 = vals.get("img1") or rec.img1
-                if not img1:
-                    if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                        raise ValidationError(
-                            _("Please Attach the image of Unit Name Plate")
-                        )
-
-                signature = vals.get("signature") or rec.signature
-                if not signature:
-                    if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-
-                        rec.customer_signature_show_bool = True
-                    # if rec.customer_signature_show_bool:
-                    if not rec.customer_signature_show_bool:
-                        if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                            raise ValidationError(
-                                _("Please enter Customer Signature in the Job card")
-                            )
-
-                """Code Added on Jan 21 2026"""
-                """  code commented on Jan 22 -2026 because of Damaged returned Parts  """
-
-                damaged_parts_to_be_returned_technician = False
-                service_warranty_id = (
-                    vals.get("service_warranty_id") or rec.service_warranty_id
-                )
-                if (
-                    service_warranty_id.warranty_applicable_bool
-                    and not service_warranty_id.misuse_warranty_bool
-                ):
-                    # if any(line.return_damage_to_warehouse for line in rec.product_line_ids):
-                    #     rec.damaged_parts_to_be_returned_technician = True
-                    returned_damaged_parts_technician = (
-                        vals.get("return_damage_parts_technician")
-                        or rec.return_damage_parts_technician
-                    )
-
-                    if (
-                        rec.damaged_parts_to_be_returned_technician
-                        and not returned_damaged_parts_technician
-                    ):
-                        raise ValidationError(
-                            _(
-                                "Some Products are Return the damaged item to warehouse is there.So Please Tick the 'I will Return the Damaged Part(s)'"
-                            )
-                        )
-
-                """code added on FEB 02-2026"""
-                if rec.warranty:
-                    for line in rec.product_line_ids:
-                        if line.under_warranty_bool:
-                            if line.price_unit > 0:
-                                raise ValidationError(
-                                    _(
-                                        "For Under Warranty Unit Price is always equal to Zero Only.Please Change the Product %s Price Unit makes to Zero"
-                                        % line.product_id.display_name
-                                    )
-                                )
-                                # line.price_unit = 0
-                                # line.total = 0
-
-                """Code added on Mar 06 2026"""
-                if any(
+            if any(
                     l.product_id
                     and l.price_unit > 0
                     and not l.under_warranty_bool
                     and l.vat == 0.0
                     for l in rec.product_line_ids
-                ):
-                    raise ValidationError(
-                        _("VAT must be entered when Price Unit is greater than zero.")
-                    )
-
-                """Code Added on Mar 09 2026"""
-                invalid_tax_lines = rec.product_line_ids.filtered(
-                    lambda l: l.product_id
-                    and l.price_unit > 0
-                    and not l.product_id.taxes_id
+            ):
+                raise ValidationError(_("VAT must be entered when Price Unit is greater than zero.")
                 )
 
-                if invalid_tax_lines:
-                    products = ", ".join(invalid_tax_lines.mapped("product_id.name"))
-                    raise ValidationError(_("VAT must be set for: %s") % products)
+            invalid_tax_lines = rec.product_line_ids.filtered(
+                lambda l: l.product_id
+                          and l.price_unit > 0
+                          and not l.product_id.taxes_id
+            )
 
-                """Code Added by Vengatesh On Mar 31 2026"""
-                if any(
+            if invalid_tax_lines:
+                products = ", ".join(invalid_tax_lines.mapped("product_id.name"))
+                raise ValidationError(_("VAT must be set for: %s") % products)
+
+            if any(
                     l.product_id
                     and l.amount_required
                     and not l.under_warranty_bool
                     and l.price_unit == 0.0
                     for l in rec.product_line_ids
-                ):
+            ):  
+                        
+                if ((rec.project_related_amc_bool and rec.paid_service_bool and not (rec.contract_id and rec.maintenance_type == "preventive"))
+                        or (not rec.project_related_amc_bool)):
+                    raise ValidationError(_("Product  must have a price greater than 0 "
+                            "because amount is required. For ready to Invoice"
+                        )
+                    )
+            if rec.service_warranty_id.amount_required:
+                if rec.grand_total == 0.0 or not rec.product_line_ids:
                     if ((rec.project_related_amc_bool and rec.paid_service_bool and not (rec.contract_id and rec.maintenance_type == "preventive"))
                         or (not rec.project_related_amc_bool)):
                         raise ValidationError(_("Product  must have a price greater than 0 "
-                                "because amount is required. For ready to Invoice"
-                            )
+    		                "because amount is required. For ready to Invoice"
+    		            )
+    		        ) 
+            if rec.service_sale_id:
+                if rec.service_sale_id.state not in ('sale','done','cancel'):
+                    raise ValidationError("Please Confirm the Sale Quotation %s" %rec.service_sale_id.name)
+
+            
+            
+            '''Code added on August 05 2026 by Vijaya Bhaskar Client asked if the AMC project the mandatory photo and mandatory checklist is added'''
+            if rec.project_related_amc_bool and rec.maintenance_type == "preventive":
+                for checklist in rec.checklist_line_ids.filtered('mandatory_checklist'):
+
+                    if checklist.field_type == 'yes_no':
+                        answered = bool(checklist.answer_selection_id)
+                
+                    elif checklist.field_type == 'multiple':
+                        answered = bool(checklist.answer_selection_id)
+                
+                    elif checklist.field_type == 'numeric':
+                        answered = checklist.answer_numeric not in (False, None)
+                
+                    elif checklist.field_type == 'text':
+                        answered = bool(checklist.answer_text and checklist.answer_text.strip())
+                
+                    elif checklist.field_type == 'date':
+                        answered = bool(checklist.answer_date)
+                
+                    elif checklist.field_type == 'calculated':
+                        answered = checklist.answer_numeric not in (False, None)
+                
+                    else:
+                        answered = False
+                
+                    if not answered:
+                        raise ValidationError(
+                            _("Please provide an answer for '%s'. It is mandatory.")
+                            % checklist.check_item
                         )
-                    
-                '''Code Added on April 09 2026 by Vijaya Bhaskar'''
-                if rec.service_warranty_id.amount_required:
-                    if rec.grand_total == 0.0 or not rec.product_line_ids:
-                        if ((rec.project_related_amc_bool and rec.paid_service_bool and not (rec.contract_id and rec.maintenance_type == "preventive")) or (not rec.project_related_amc_bool)):
-                            raise ValidationError(_("Product  must have a price greater than 0 "
-                                "because amount is required. For ready to Invoice"
-                            )
-                        )  
+                                    
+                for photo in rec.checklist_photo_ids:
+                    if photo.mandatory_photo:
+                        if not photo.photo_filename:
+                            raise ValidationError(_("Please upload the Photo in the Caption '%s'" % photo.caption))
                             
-                '''Code Added on May 01 2026 by Vijaya Bhaskar because they need confirm before the Ready to invoice''' 
-                if rec.service_sale_id:
-                    if rec.service_sale_id.state not in ('sale','done','cancel'):
-                        raise ValidationError("Please Confirm the Sale Quotation %s" %rec.service_sale_id.name)
-                                           
-                
-                '''Code added on August 05 2026 by Vijaya Bhaskar Client asked if the AMC project the mandatory photo and mandatory checklist is added'''
-                if rec.project_related_amc_bool and rec.maintenance_type == "preventive":
-                    for checklist in rec.checklist_line_ids.filtered('mandatory_checklist'):
-
-                        if checklist.field_type == 'yes_no':
-                            answered = bool(checklist.answer_selection_id)
-                    
-                        elif checklist.field_type == 'multiple':
-                            answered = bool(checklist.answer_selection_id)
-                    
-                        elif checklist.field_type == 'numeric':
-                            answered = checklist.answer_numeric not in (False, None)
-                    
-                        elif checklist.field_type == 'text':
-                            answered = bool(checklist.answer_text and checklist.answer_text.strip())
-                    
-                        elif checklist.field_type == 'date':
-                            answered = bool(checklist.answer_date)
-                    
-                        elif checklist.field_type == 'calculated':
-                            answered = checklist.answer_numeric not in (False, None)
-                    
-                        else:
-                            answered = False
-                    
-                        if not answered:
-                            raise ValidationError(
-                                _("Please provide an answer for '%s'. It is mandatory.")
-                                % checklist.check_item
-                            )
-                                        
-                    for photo in rec.checklist_photo_ids:
-                        if photo.mandatory_photo:
-                            if not photo.photo_filename:
-                                raise ValidationError(_("Please upload the Photo in the Caption '%s'" % photo.caption))
-                                
-                
-                # for line in rec.product_line_ids:
-                #     if line.product_id:
-                #         if line.price_unit > 0 and not line.under_warranty_bool:
-                #             if line.vat == 0.0:
-                #                 raise ValidationError(_("Vat amount is always there because Price Unit is Greater than zero"))
-                #
-
-            """State changing to closed state """
-            if state_changing_to_126:
-
-                """Control Card no should be hide as per client request on NOv 13
-                control_card_no = vals.get('control_card_no') or rec.control_card_no
-                if not control_card_no:
-                    raise ValidationError(_("Please enter 'Control Card No' in the Job card."))
-                """
-
-                customer_identification_scheme = (
+                        
+            
+    
+    def _validate_closed_state(self, vals):
+        for rec in self:
+            customer_identification_scheme = (
                     vals.get("customer_identification_scheme")
                     or rec.customer_identification_scheme
-                )
+            )
 
-                building_number = vals.get("building_number") or rec.building_number
-                plot_identification = (
+            building_number = vals.get("building_number") or rec.building_number
+            plot_identification = (
                     vals.get("plot_identification") or rec.plot_identification
-                )
-                zip_code = vals.get("zip_code") or rec.zip_code
+            )
+            zip_code = vals.get("zip_code") or rec.zip_code
 
-                customer_address = vals.get("address_one") or rec.address_one
+            customer_address = vals.get("address_one") or rec.address_one
 
-                if customer_identification_scheme == "TIN":
+            if customer_identification_scheme == "TIN":
 
-                    if not customer_address:
-                        raise ValidationError(
-                            _(
-                                "Please enter the Customer Address.Because of VAT Customer"
-                            )
+                if not customer_address:
+                    raise ValidationError(_("Please enter the Customer Address.Because of VAT Customer"
                         )
-
-                    if not building_number:
-                        raise ValidationError("Please enter Building number")
-
-                    if building_number:
-                        if not building_number.isdigit():
-                            raise ValidationError(
-                                "Please enter Building number is always number not character"
-                            )
-                        if building_number.isdigit():
-                            if len(building_number) != 4:
-                                raise ValidationError(
-                                    "Building number  always 4 numbers write fun"
-                                )
-
-                    if not plot_identification:
-                        raise ValidationError("Please enter Additional No.")
-
-                    if plot_identification:
-                        if not plot_identification.isdigit():
-                            raise ValidationError(
-                                "Please enter Additional No. is always number"
-                            )
-                        if plot_identification.isdigit():
-                            if len(plot_identification) != 4:
-                                raise ValidationError("Additional No. always 4 digits")
-
-                    if not zip_code:
-                        raise ValidationError("Please enter Zip Code")
-
-                    if zip_code:
-                        if not zip_code.isdigit():
-                            raise ValidationError(
-                                "Please enter Zip Code is always number not character"
-                            )
-                        if zip_code.isdigit():
-                            if len(zip_code) != 5:
-                                raise ValidationError("Zip Code  always 5 numbers")
-
-                closed_datetime = vals.get("closed_datetime") or rec.closed_datetime
-                if not closed_datetime:
-                    raise ValidationError(
-                        _("Please enter Completed Date & Time in the Job card")
                     )
 
-                # if closed_datetime:
-                #     if rec.planned_date_begin and closed_datetime:
-                #         if rec.planned_date_begin > closed_datetime:
-                #             raise ValidationError('Completed Date & Time is always greater than Appt Start Date & Time')
-                #
-                if closed_datetime:
-                    planned_dt = rec.planned_date_begin
-                    closed_dt = (
-                        fields.Datetime.from_string(closed_datetime)
-                        if isinstance(closed_datetime, str)
-                        else closed_datetime
-                    )
+                if not building_number:
+                    raise ValidationError("Please enter Building number")
 
-                    """ Client Asked to Date will be entered before the start date and time for time being  commented on DEC -19 2025
-                        Coordinator is not able to close the jobcard if the visit date/time is before the appointment date/time.
-                    if planned_dt and closed_dt:
-                        if planned_dt > closed_dt:
-                            raise ValidationError(_('Completed Date & Time is always greater than Appt Start Date & Time'))
-                    """
-                product_id = vals.get("product_id") or rec.product_id.id
-                if not product_id:
-                    raise ValidationError(_("Please enter Model No. in the Job card"))
-                
-                '''Code Added on July 08 2026 by Vijaya Bhaskar model and serial number validation for preventive and corrective'''
-                model_id = vals.get('model_id') or rec.model_id.id
-                product_product_model_id = vals.get('product_product_model_id') or rec.product_product_model_id.id
-                
-                if rec.project_related_amc_bool:
-                    if rec.items_from_own_company_bool:
-                        if not product_product_model_id:
-                            raise ValidationError(_("Please enter Model in the Job Card."))
-                    else:
-                        if not model_id:
-                            raise ValidationError(_("Please enter Model in the Job Card."))
-                    
-                
-                
-                purchase_invoice_no = (
+                if building_number:
+                    if not building_number.isdigit():
+                        raise ValidationError(
+                            "Please enter Building number is always number not character"
+                        )
+                    if building_number.isdigit():
+                        if len(building_number) != 4:
+                            raise ValidationError(
+                                "Building number  always 4 numbers write fun"
+                            )
+
+                if not plot_identification:
+                    raise ValidationError("Please enter Additional No.")
+
+                if plot_identification:
+                    if not plot_identification.isdigit():
+                        raise ValidationError(
+                            "Please enter Additional No. is always number"
+                        )
+                    if plot_identification.isdigit():
+                        if len(plot_identification) != 4:
+                            raise ValidationError("Additional No. always 4 digits")
+
+                if not zip_code:
+                    raise ValidationError("Please enter Zip Code")
+
+                if zip_code:
+                    if not zip_code.isdigit():
+                        raise ValidationError(
+                            "Please enter Zip Code is always number not character"
+                        )
+                    if zip_code.isdigit():
+                        if len(zip_code) != 5:
+                            raise ValidationError("Zip Code  always 5 numbers")
+
+            closed_datetime = vals.get("closed_datetime") or rec.closed_datetime
+            if not closed_datetime:
+                raise ValidationError(_("Please enter Completed Date & Time in the Job card")
+                )
+
+            product_id = vals.get("product_id") or rec.product_id.id
+            if not product_id:
+                raise ValidationError(_("Please enter Model No. in the Job card"))
+            
+            '''Code Added on July 08 2026 by Vijaya Bhaskar model and serial number validation for preventive and corrective'''
+            model_id = vals.get('model_id') or rec.model_id.id
+            product_product_model_id = vals.get('product_product_model_id') or rec.product_product_model_id.id
+            if rec.project_related_amc_bool:
+                if rec.items_from_own_company_bool:
+                    if not product_product_model_id:
+                        raise ValidationError(_("Please enter Model in the Job Card."))
+                else:
+                    if not model_id:
+                        raise ValidationError(_("Please enter Model in the Job Card."))
+    
+            
+            purchase_invoice_no = (
                     vals.get("purchase_invoice_no") or rec.purchase_invoice_no
-                )
-                if rec.warranty and not purchase_invoice_no:
-                    raise ValidationError(_("Please enter Purchase Invoice No"))
+            )
+            if rec.warranty and not purchase_invoice_no:
+                raise ValidationError(_("Please enter Purchase Invoice No"))
 
-                purchase_date = vals.get("purchase_date") or rec.purchase_date
-                if rec.warranty and not purchase_date:
-                    raise ValidationError(
-                        _("Please enter Purchase date in the Job card")
+            purchase_date = vals.get("purchase_date") or rec.purchase_date
+            if rec.warranty and not purchase_date:
+                raise ValidationError(_("Please enter Purchase date in the Job card")
+                )
+
+            service_warranty_id = (
+                    vals.get("service_warranty_id") or rec.service_warranty_id.id
+            )
+            if not service_warranty_id:
+                raise ValidationError(_("Please select any one Service Warranty"))
+
+            product_lines = rec.product_line_ids
+
+            if vals.get("product_line_ids"):
+                for command in vals.get("product_line_ids"):
+                    if command[0] == 1:  # UPDATE existing line
+                        line_id = command[1]
+                        updates = command[2]
+                        line = product_lines.browse(line_id)
+                        line.parts_reserved_bool = updates.get(
+                            "parts_reserved_bool", line.parts_reserved_bool
+                        )
+
+                    elif command[0] == 0:  # CREATE new line
+                        new_vals = command[2]
+                        product_lines += product_lines.new(new_vals)
+
+            # Now validate final values
+            for line in product_lines:
+                if not line:
+                    raise ValidationError(_("Please give any one of the Product in the product consume Part/services"
+                        )
                     )
 
-                service_warranty_id = (
-                    vals.get("service_warranty_id") or rec.service_warranty_id.id
-                )
-                if not service_warranty_id:
-                    raise ValidationError(_("Please select any one Service Warranty"))
-
-                product_lines = rec.product_line_ids
-
-                if vals.get("product_line_ids"):
-                    for command in vals.get("product_line_ids"):
-                        if command[0] == 1:  # UPDATE existing line
-                            line_id = command[1]
-                            updates = command[2]
-                            line = product_lines.browse(line_id)
-                            line.parts_reserved_bool = updates.get(
-                                "parts_reserved_bool", line.parts_reserved_bool
-                            )
-
-                        elif command[0] == 0:  # CREATE new line
-                            new_vals = command[2]
-                            product_lines += product_lines.new(new_vals)
-
-                # Now validate final values
-                for line in product_lines:
-                    if not line:
-                        raise ValidationError(
-                            _(
-                                "Please give any one of the Product in the product consume Part/services"
+                if line.product_id and not line.parts_reserved_bool:
+                    raise ValidationError(_("Product %s is not reserved. Please reserve all products before proceeding."
+                        )
+                        % line.product_id.display_name
+                    )
+                if (not self.env["ir.config_parameter"]
+                                    .sudo()
+                                    .get_param("machine_repair_management.negative_stock_allow")
+                            == "True"
+                ):
+                    if line.on_hand_qty == 0.0:
+                        raise ValidationError(_(
+                                "Stock %s is not available. Please Contact Administrator"
+                                % line.product_id.display_name
                             )
                         )
 
-                    if line.product_id and not line.parts_reserved_bool:
-                        raise ValidationError(
-                            _(
-                                "Product %s is not reserved. Please reserve all products before proceeding."
-                            )
-                            % line.product_id.display_name
-                        )
-                    """Code is added on Oct -06-2025 due to Client ask to skip the validation when negative_stock_allow allow field is enable in the res.config_settings"""
-                    if (
-                        not self.env["ir.config_parameter"]
-                        .sudo()
-                        .get_param("machine_repair_management.negative_stock_allow")
-                        == "True"
-                    ):
-                        if line.on_hand_qty == 0.0:
-                            raise ValidationError(
-                                _(
-                                    "Stock %s is not available. Please Contact Administrator"
-                                    % line.product_id.display_name
-                                )
-                            )
-                    """Code Added by Vengatesh On Mar 31 2026"""
-                    if any(
+                if any(
                         l.product_id
                         and l.amount_required
                         and not l.under_warranty_bool
                         and l.price_unit == 0.0
                         for l in rec.product_line_ids
-                    ):
-                        if ((rec.project_related_amc_bool and rec.paid_service_bool and not (rec.contract_id and rec.maintenance_type == "preventive"))
+                ):
+                    if ((rec.project_related_amc_bool and rec.paid_service_bool and not (rec.contract_id and rec.maintenance_type == "preventive"))
                         or (not rec.project_related_amc_bool)):
-                            raise ValidationError(_("Product  must have a price greater than 0 "
+                        raise ValidationError(_(
+                                "Product  must have a price greater than 0 "
                                 "because amount is required. "
                             )
                         )
 
-                ##### commented on Dec 10-2025
-                # product_line_vals = vals.get('product_line_ids')
-                # lines_to_check = rec.product_line_ids if not product_line_vals else rec.product_line_ids
-                # ''' Client asked to need not give any product in the product lines because they need to close the job card without product on Oct -06s -2025'''
-                # # if not lines_to_check:
-                # #     raise ValidationError(_("Please give any one of the Product in the product consume Part/services"))
-                # #
-                #
-                # for line in lines_to_check:
-                #     if line.product_id:
-                #         if not line.parts_reserved_bool:
-                #             raise ValidationError(_("Please check all the Products should be Reserved. "
-                #                                     "This Product %s is not reserved" % line.product_id.display_name) )
-                #
-                #
-                #     if not self.env['ir.config_parameter'].sudo().get_param('machine_repair_management.negative_stock_allow') == 'True':
-                #         if line.on_hand_qty == 0.0:
-                #             raise ValidationError(_("Stock %s is not available. Please Contact Administrator" % line.product_id.display_name))
-                #
-
-                if rec.inspection_charges_bool and rec.inspection_charges_amount > 0:
-                    if not any(
+            if rec.inspection_charges_bool and rec.inspection_charges_amount > 0:
+                if not any(
                         line.product_id and line.product_id.service_type_bool
                         for line in rec.product_line_ids
-                    ):
-                        raise ValidationError(
-                            _("Please enter service charge amount in the product line")
-                        )
-
-                if rec.service_sale_id:
-                    if rec.service_sale_id.state not in ("sale", "done", "cancel"):
-                        raise ValidationError(
-                            "Please Confirm the Sale Quotation %s"
-                            % rec.service_sale_id.name
-                        )
-
-                if rec.balance_paid != 0.0:
-                    '''Code Added on August 04 2026 by Vijaya Bhaskar if the emergency visit they don't have the option to balance paid bool tick.so that the validation is worked only for HHS Project not amc'''
-                    if not rec.project_related_amc_bool:
-                        raise ValidationError(
-                            "Balance Payment is there.Please Do the balance payment. "
-                        )
-
-                if rec.hyperpay_line_ids:
-                    for line in rec.hyperpay_line_ids:
-                        if line.hyper_pay_status != "success":
-                            raise ValidationError(
-                                "Still Payment is not Success.Please Check that"
-                            )
-                """Code added on Dec 05 2025 due to client ask when the co-ordinator closed the record sales man user code must be asked"""
-                if not rec.current_user_id.user_code:
-                    raise ValidationError(
-                        "Please give the Salesman code as per penygon code in the User Settings"
+                ):
+                    raise ValidationError(_("Please enter service charge amount in the product line")
                     )
 
-                mode_of_payment = vals.get("mode_of_payment") or rec.mode_of_payment
-                if not mode_of_payment:
-                    if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                        '''Code Added on May 23 2026 by Vijaya Bhaskar'''
-                        if rec.emergency_count_exceed:
-                            raise ValidationError(_("Please give Method of Payment"))
+            if rec.service_sale_id:
+                if rec.service_sale_id.state not in ("sale", "done", "cancel"):
+                    raise ValidationError(
+                        "Please Confirm the Sale Quotation %s"
+                        % rec.service_sale_id.name
+                    )
 
-                mode_of_payment_balance_amount = (
+            if rec.balance_paid != 0.0:
+                '''Code Added on August 04 2026 by Vijaya Bhaskar if the emergency visit they don't have the option to balance paid bool tick.so that the validation is worked only for HHS Project not amc'''
+                if not rec.project_related_amc_bool:
+                    raise ValidationError(
+                        "Balance Payment is there.Please Do the balance payment. "
+                    )
+
+            if rec.hyperpay_line_ids:
+                for line in rec.hyperpay_line_ids:
+                    if line.hyper_pay_status != "success":
+                        raise ValidationError(
+                            "Still Payment is not Success.Please Check that"
+                        )
+            if not rec.current_user_id.user_code:
+                raise ValidationError(
+                    "Please give the Salesman code as per penygon code in the User Settings"
+                )
+
+            mode_of_payment = vals.get("mode_of_payment") or rec.mode_of_payment
+            if not mode_of_payment:
+                if not (rec.contract_id and rec.maintenance_type == 'preventive'):
+                    '''Code Added on May 23 2026 by Vijaya Bhaskar'''
+                    if rec.emergency_count_exceed:
+                        raise ValidationError(_("Please give Method of Payment"))
+
+            mode_of_payment_balance_amount = (
                     vals.get("mode_of_payment_balance_amount")
                     or rec.mode_of_payment_balance_amount
-                )
-                if rec.final_balance_amount != 0.0:
-                    if not mode_of_payment_balance_amount:
-                        '''Code Added on August 04 2026 by Vijaya Bhaskar if the emergency visit they don't have the option to balance paid bool tick.so that the validation is worked only for HHS Project not amc'''
-                        if not rec.project_related_amc_bool:
-                            raise ValidationError(_("Please give the method of Payment"))
+            )
+            if rec.final_balance_amount != 0.0:
+                if not mode_of_payment_balance_amount:
+                    '''Code Added on August 04 2026 by Vijaya Bhaskar if the emergency visit they don't have the option to balance paid bool tick.so that the validation is worked only for HHS Project not amc'''
+                    if not rec.project_related_amc_bool:
+                        raise ValidationError(_("Please give the method of Payment"))
 
-                online_payment_attachment_vals = (
+            online_payment_attachment_vals = (
                     vals.get("online_payment_invoice_attachment_ids")
                     or rec.online_payment_invoice_attachment_ids
-                )
-                if rec.mode_of_payment in ("online", "bank"):
-                    if not online_payment_attachment_vals:
-                        raise ValidationError(
-                            _(
-                                "Please Attach Online/Bank Transfer Attachment Payment copy"
-                            )
+            )
+            if rec.mode_of_payment in ("online", "bank"):
+                if not online_payment_attachment_vals:
+                    raise ValidationError(
+                        _(
+                            "Please Attach Online/Bank Transfer Attachment Payment copy"
                         )
+                    )
 
-                return_damage_parts_technician = (
+            return_damage_parts_technician = (
                     vals.get("return_damage_parts_technician")
                     or rec.return_damage_parts_technician
-                )
-                damaged_parts_returned_parts_user = (
+            )
+            damaged_parts_returned_parts_user = (
                     vals.get("damaged_parts_returned_parts_user")
                     or rec.damaged_parts_returned_parts_user
-                )
-                damaged_parts_to_be_returned_technician = (
+            )
+            damaged_parts_to_be_returned_technician = (
                     vals.get("damaged_parts_to_be_returned_technician")
                     or rec.damaged_parts_to_be_returned_technician
-                )
-                service_warranty_id = (
+            )
+            service_warranty_id = (
                     vals.get("service_warranty_id") or rec.service_warranty_id
-                )
-                if (
+            )
+            if (
                     service_warranty_id.warranty_applicable_bool
                     and not service_warranty_id.misuse_warranty_bool
-                ):
-                    if damaged_parts_to_be_returned_technician:
-                        if (
+            ):
+                if damaged_parts_to_be_returned_technician:
+                    if (
                             not return_damage_parts_technician
                             and not damaged_parts_returned_parts_user
-                        ):
+                    ):
+                        raise ValidationError(
+                            _("Return the damaged item to warehouse is there")
+                        )
+
+            if rec.warranty:
+                for line in rec.product_line_ids:
+                    if line.under_warranty_bool:
+                        if line.price_unit > 0:
                             raise ValidationError(
-                                _("Return the damaged item to warehouse is there")
+                                _(
+                                    "For Under Warranty Unit Price is always equal to Zero Only.Please Change the Product %s Price Unit makes to Zero"
+                                    % line.product_id.display_name
+                                )
                             )
 
-                """code added on FEB 02-2026"""
-                if rec.warranty:
-                    for line in rec.product_line_ids:
-                        if line.under_warranty_bool:
-                            if line.price_unit > 0:
-                                raise ValidationError(
-                                    _(
-                                        "For Under Warranty Unit Price is always equal to Zero Only.Please Change the Product %s Price Unit makes to Zero"
-                                        % line.product_id.display_name
-                                    )
-                                )
-
-                                # line.price_unit = 0
-                                # line.total = 0
-
-                """Code added on Mar 06 2026"""
-                if any(
+            if any(
                     l.product_id
                     and l.price_unit > 0
                     and not l.under_warranty_bool
                     and l.vat == 0.0
                     for l in rec.product_line_ids
-                ):
-                        
-                    raise ValidationError(
-                        _("VAT must be entered when Price Unit is greater than zero.")
-                    )
-
-                """Code Added on Mar 09 2026"""
-                invalid_tax_lines = rec.product_line_ids.filtered(
-                    lambda l: l.product_id
-                    and l.price_unit > 0
-                    and not l.product_id.taxes_id
+            ):
+                raise ValidationError(
+                    _("VAT must be entered when Price Unit is greater than zero.")
                 )
 
-                if invalid_tax_lines:
-                    products = ", ".join(invalid_tax_lines.mapped("product_id.name"))
-                    raise ValidationError(_("VAT must be set for: %s") % products)
+            invalid_tax_lines = rec.product_line_ids.filtered(
+                lambda l: l.product_id
+                          and l.price_unit > 0
+                          and not l.product_id.taxes_id
+            )
 
-                """Code Added by Vengatesh On Mar 25 2026"""
-                if any(
+            if invalid_tax_lines:
+                products = ", ".join(invalid_tax_lines.mapped("product_id.name"))
+                raise ValidationError(_("VAT must be set for: %s") % products)
+
+            if any(
                     l.product_id
                     and l.amount_required
                     and not l.under_warranty_bool
                     and l.price_unit == 0.0
                     for l in rec.product_line_ids
-                ):
-                    if ((rec.project_related_amc_bool and rec.paid_service_bool and not (rec.contract_id and rec.maintenance_type == "preventive"))
+            ):
+                if ((rec.project_related_amc_bool and rec.paid_service_bool and not (rec.contract_id and rec.maintenance_type == "preventive"))
                         or (not rec.project_related_amc_bool)):
-                        raise ValidationError(_("Product  must have a price greater than 0 "
+                
+                    raise ValidationError(
+                        _(
+                            "Product  must have a price greater than 0 "
                             "because amount is required."
                         )
                     )
-                    
-                '''Code Added on April 09 2026 by Vijaya Bhaskar'''
-                if rec.service_warranty_id.amount_required:
-                    if rec.grand_total == 0.0 or not rec.product_line_ids:
-                        '''Code Added on June 02 2026 by vijaya Bhaskar'''
-                        if ((rec.project_related_amc_bool and rec.paid_service_bool and not (rec.contract_id and rec.maintenance_type == "preventive"))
-                        or (not rec.project_related_amc_bool)):
-                            raise ValidationError(_("Product  must have a price greater than 0 "
-                                "because amount is required. For Closed State"
-                            )
-                        )        
+                
+            if rec.service_warranty_id.amount_required:
+                if rec.grand_total == 0.0 or not rec.product_line_ids:
+                    '''Code Added on June 02 2026 by vijaya Bhaskar'''
+                    if ((rec.project_related_amc_bool and rec.paid_service_bool and not (rec.contract_id and rec.maintenance_type == "preventive"))
+                        or (not rec.project_related_amc_bool)):                 
+                        raise ValidationError(_("Product  must have a price greater than 0 "
+        		                "because amount is required. For Closed State")
+        		        )
 
-            """Code Added on Nov 17-2025"""
-            if state_changing_to_111:
+    def _validate_inspection_started(self, vals):
+        for rec in self:
+            rec.inspection_started_status_check = True
 
-                self.warranty_verfication_status_check = True
-
-            """State changing to Inspection started state """
-
-            if state_changing_to_113:
-                self.inspection_started_status_check = True
-                '''Code Added on May 21 2026 by Vijaya Bhaskar'''
-                if (not rec.project_related_amc_bool) or rec.emergency_count_exceed:
-                    """Code Added on Jan 20 2026"""
-                    inspection_charges_amount = (
-                        vals.get("inspection_charges_amount")
-                        or rec.inspection_charges_amount
-                    )
-                    inspection_charges_bool = (
-                        vals.get("inspection_charges_bool") or rec.inspection_charges_bool
-                    )
-                    if inspection_charges_amount > 0.0:
-                        if not inspection_charges_bool:
-                            raise ValidationError(
-                                _(
-                                    "Please Tick the Inspection Charges Confirmed.Because Inspection Charges Amount(Inc.VAT) is greater than Zero."
-                                )
-                            )
-    
-                    """Code Added on Jan 21 2026"""
-                    # service_warranty = vals.get('service_warranty_id') or rec.service_warranty_id
-                    # inspection_charges_amount = vals.get('inspection_charges_amount') or rec.inspection_charges_amount
-                    # if not service_warranty.warranty_applicable_bool and not service_warranty.misuse_warranty_bool:
-                    #     if inspection_charges_amount == 0.0:
-                    #         raise ValidationError(_("Please give the Inspection Charges Amount Which always greater than zero"))
-                    #
-    
-                    service_warranty = (
-                        vals.get("service_warranty_id") or rec.service_warranty_id
-                    )
-    
-                    if not service_warranty:
-                        raise ValidationError(_("Please select any one Service Warranty"))
-    
-                    if rec.warranty:
-                        purchase_invoice_no = (
-                            vals.get("purchase_invoice_no") or rec.purchase_invoice_no
-                        )
-                        if not purchase_invoice_no:
-                            raise ValidationError(
-                                _("Please enter Purchase Invoice No in the Job Card")
-                            )
-    
-                        purchase_date = vals.get("purchase_date") or rec.purchase_date
-                        if not purchase_date:
-                            raise ValidationError(
-                                _("Please enter Purchase date in the Job Card")
-                            )
-    
-                        dealer = vals.get("dealer_id") or rec.dealer_id
-                        if not dealer:
-                            raise ValidationError(
-                                _("Please enter Dealer Name in the Job Card")
-                            )
-    
-                        attachment_vals = vals.get("attachment_ids") or rec.attachment_ids
-                        if not attachment_vals:
-                            raise ValidationError(_("Please Attach Invoice Documents"))
-                        if attachment_vals:
-                            allowed_mimetypes = [
-                                "image/jpeg",
-                                "image/png",
-                                "image/gif",
-                                "application/pdf",
-                            ]
-                            for attachment in rec.attachment_ids:
-                                if attachment.mimetype not in allowed_mimetypes:
-                                    raise ValidationError(
-                                        _(
-                                            "Only PDF, JPG, PNG, and GIF files are allowed in the job card.\n"
-                                            f"Invalid file: {attachment.name}"
-                                        )
-                                    )
-    
-                    """Code Added on Jan 21 2026"""
-                    inspection_charges_amount = (
-                        vals.get("inspection_charges_amount")
-                        or rec.inspection_charges_amount
-                    )
-                    if vals.get("service_warranty_id"):
-                        '''Code Added on May 21 2026 By Vijaya Bhaskar due to emergency exit greater than original count'''
-                        if (not rec.project_related_amc_bool) or rec.emergency_count_exceed:
-                            warranty_search = self.env["service.warranty"].search(
-                                [("id", "=", vals.get("service_warranty_id"))], limit=1
-                            )
-                            if (
-                                not warranty_search.warranty_applicable_bool
-                                and not warranty_search.misuse_warranty_bool
-                            ):
-                               
-                                if inspection_charges_amount == 0.0:
-                                    '''Code Added on July 07 2026 by Vijaya Bhaskar due validation is only paid service only for corrective and hhs'''
-                                    if (
-                                        (rec.project_related_amc_bool and
-                                         rec.paid_service_bool and
-                                         not (rec.contract_id and rec.maintenance_type == "preventive"))
-                                        or
-                                        (not rec.project_related_amc_bool)
-                                    ):   
-                                        raise ValidationError(
-                                            _(
-                                                "Please give the Inspection Charges Amount if it is not under warranty"
-                                            )
-                                        )
-                    """Updated Code Added on Feb 03 2026"""
-                    if not vals.get("service_warranty_id"):
-                        if rec.service_warranty_id:
-                            if (
-                                not rec.service_warranty_id.warranty_applicable_bool
-                                and not rec.service_warranty_id.misuse_warranty_bool
-                            ):
-                                # if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                                '''Code Added on July 07 2026 by Vijaya Bhaskar due validation is only paid service only for corrective and hhs'''
-                                if (
-                                        (rec.project_related_amc_bool and
-                                         rec.paid_service_bool and
-                                         not (rec.contract_id and rec.maintenance_type == "preventive"))
-                                        or
-                                        (not rec.project_related_amc_bool)
-                                    ):   
-                                
-                                    if inspection_charges_amount == 0.0:
-                                        raise ValidationError(
-                                            _(
-                                                "Please give the Inspection Charges Amount if it is not under warranty"
-                                            )
-                                        )
-    
-                    if not rec.warranty and rec.inspection_charges_bool:
-                        val = vals.get("inspection_charges_amount")
-                        amount = (
-                            float(val)
-                            if val not in (None, False, "")
-                            else rec.inspection_charges_amount
-                        )
-    
-                        if amount == 0.0:
-                            '''Code Added on July 07 2026 by Vijaya Bhaskar due validation is only paid service only for corrective and hhs'''
-                            if ((rec.project_related_amc_bool and
-                                         rec.paid_service_bool and
-                                         not (rec.contract_id and rec.maintenance_type == "preventive"))
-                                        or
-                                        (not rec.project_related_amc_bool)
-                                    ):   
-                            # if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                                raise ValidationError(
-                                    "Please enter the inspection Charges Amount if it is not under warranty"
-                                )
-    
-                    """Code added on Dec 04-2025 because mode of payment is mandatory for warranty verification to inspection started state"""
-                    if rec.inspection_charges_amount != 0.0:
-                        if not (rec.mode_of_payment or vals.get("mode_of_payment")):
-                            raise ValidationError("Please select the Method of Payment")
-    
-                    """If technician is not set default warehouse then services is not add in the product lines"""
-                    if not (rec.warehouse_id or vals.get("warehouse_id")):
-                        if not rec.current_user_id.property_warehouse_id:
-                            if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                                raise ValidationError(
-                                    "Please add Default Warehouse for the Technician in the User Settings"
-                                )
-                        if rec.current_user_id.property_warehouse_id:
-                            if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                                raise ValidationError(
-                                    _("Please give the warehouse in the Job card")
-                                )
-    
-                    online_payment_attachment_vals = (
-                        vals.get("online_payment_invoice_attachment_ids")
-                        or rec.online_payment_invoice_attachment_ids
-                    )
-                    mode_of_payment_balance_amount = (
-                        vals.get("mode_of_payment_balance_amount")
-                        or rec.mode_of_payment_balance_amount
-                    )
-                    mode_of_payment = vals.get("mode_of_payment") or rec.mode_of_payment
-                    if mode_of_payment in (
-                        "online",
-                        "bank",
-                    ) or mode_of_payment_balance_amount in ("online", "bank"):
-                        if not online_payment_attachment_vals:
-                            raise ValidationError(
-                                _(
-                                    "Please Attach Online/Bank Transfer Attachment Payment copy"
-                                )
-                            )
-                            
-                    # 20260403 gokul
-                    if rec.security_warranty_expiry:
-                        if not rec.text_warranty_expiry:
-                            ''' Code Added on May 05 2026 by Vijaya Bhaskar client asked to warranty expiry alert only for Warranty All '''
-                            if rec.service_warranty_id.warranty_expire_alert_bool:
-                                raise ValidationError(
-                                    "Please Enter Reason to Allow Expired Unit Service for Further  details call Back office user")    
-                                
-    
-
-                self.whatsapp_inspection_started_bool = True
-
-            if (
-                state_changing_to_115
-                or state_changing_to_117
-                or state_changing_to_121
-                or state_changing_to_129
-            ):
-
-                product_id = vals.get("product_id") or rec.product_id.id
-                if not product_id:
-                    raise ValidationError(_("Please enter Model No. in the Job card"))
-
-                product_slno = vals.get("product_slno") or rec.product_slno
-
-                if not product_slno:
+            inspection_charges_amount = (
+                    vals.get("inspection_charges_amount")
+                    or rec.inspection_charges_amount
+            )
+            inspection_charges_bool = (
+                    vals.get("inspection_charges_bool") or rec.inspection_charges_bool
+            )
+            if inspection_charges_amount > 0.0:
+                if not inspection_charges_bool:
                     raise ValidationError(
-                        _("Please enter Serial Number in the Job Card")
+                        _(
+                            "Please Tick the Inspection Charges Confirmed.Because Inspection Charges Amount(Inc.VAT) is greater than Zero."
+                        )
                     )
 
-                service_warranty = (
+            service_warranty = (
                     vals.get("service_warranty_id") or rec.service_warranty_id
-                )
-
-                if not service_warranty:
-                    raise ValidationError(_("Please select any one Service Warranty"))
-
-            if (
-                state_changing_to_121
-                or state_changing_to_128
-                or state_changing_to_125
-                or state_changing_to_117
-                or state_changing_to_116
-                or state_changing_to_129
-                or state_changing_to_130
-            ):
-                # if state_changing_to_121 or state_changing_to_128 or state_changing_to_125 or state_changing_to_117 or state_changing_to_116 or state_changing_to_107 or state_changing_to_129 or state_changing_to_130:
-
-                symptom_line_ids = vals.get("symptoms_line_ids_duplicate") or vals.get(
-                    "symptoms_line_ids"
-                )
-                lines_to_check = rec.symptoms_line_ids or symptom_line_ids
-                if not lines_to_check:
-                    if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                        raise ValidationError(
-                            _("Please give any one of the Symptoms in the Symptoms tab")
-                        )
-
-                defect_type_ids = vals.get("defects_type_ids_duplicate") or vals.get(
-                    "defects_type_ids"
-                )
-                defect_to_check = rec.defects_type_ids or defect_type_ids
-                if not defect_to_check:
-                    if not (rec.contract_id and rec.maintenance_type == 'preventive'):
-                        raise ValidationError(
-                            _("Please give any one of the Defects in the Defects tab")
-                        )
-
-                # service_type_ids = vals.get('service_type_ids_duplicate') or vals.get('service_type_ids')
-                # service_to_check = rec.service_type_ids or service_type_ids
-                # if not service_to_check:
-                #     raise ValidationError(_("Please give any one of the Service in the Service tab"))
-
-            if state_changing_to_112:
-                symptom_line_ids = vals.get("symptoms_line_ids_duplicate") or vals.get(
-                    "symptoms_line_ids"
-                )
-                lines_to_check = rec.symptoms_line_ids or symptom_line_ids
-                if not lines_to_check:
-                    raise ValidationError(
-                        _("Please give any one of the Symptoms in the Symptoms tab")
-                    )
-
-            if state_changing_to_117:
-
-                engineer_comments = (
-                    vals.get("engineer_comments") or rec.engineer_comments
-                )
-                if not engineer_comments:
-                    raise ValidationError(_("Please enter the Technician Comments 1"))
-
-            """Code Added on Jan 20 2026"""
-            if state_changing_to_121:
-                if rec.service_sale_id:
-                    if rec.service_sale_id.state == "done":
-                        balance_paid_amount = (
-                            vals.get("balance_paid") or rec.balance_paid
-                        )
-                        balance_amount_received_bool = (
-                            vals.get("balance_amount_received_bool")
-                            or rec.balance_amount_received_bool
-                        )
-                        mode_of_payment_balance_amount = (
-                            vals.get("mode_of_payment_balance_amount")
-                            or rec.mode_of_payment_balance_amount
-                        )
-                        if (
-                            balance_paid_amount > 0.0
-                            and not mode_of_payment_balance_amount
-                        ):
-                            raise ValidationError(
-                                _("Please Select any one Method Of Payment")
-                            )
-
-                        if (
-                            balance_paid_amount > 0.0
-                            and not balance_amount_received_bool
-                        ):
-                            raise ValidationError(
-                                _(
-                                    "Ensure Amount is received from the customer while clicking the Balance Amount Confirmed."
-                                )
-                            )
-
-                """ code added on Jan 23 2026 """
-                online_payment_attachment_vals = (
-                    vals.get("online_payment_invoice_attachment_ids")
-                    or rec.online_payment_invoice_attachment_ids
-                )
-                if rec.current_user_id.has_group(
-                    "machine_repair_management.group_technical_allocation_user"
-                ):
-                    if rec.mode_of_payment in (
-                        "online",
-                        "bank",
-                    ) or rec.mode_of_payment_balance_amount in ("online", "bank"):
-                        if not online_payment_attachment_vals:
-                            raise ValidationError(
-                                _(
-                                    "Please Attach Online/Bank Transfer Attachment Payment copy"
-                                )
-                            )
-
-                """Code added on Mar 09 2026"""
-                if any(
-                    l.product_id
-                    and l.price_unit > 0
-                    and not l.under_warranty_bool
-                    and l.vat == 0.0
-                    for l in rec.product_line_ids
-                ):
-                    raise ValidationError(
-                        _("VAT must be entered when Price Unit is greater than zero.")
-                    )
-
-                """Code Added on Mar 09 2026"""
-                invalid_tax_lines = rec.product_line_ids.filtered(
-                    lambda l: l.product_id
-                    and l.price_unit > 0
-                    and not l.product_id.taxes_id
-                )
-
-                if invalid_tax_lines:
-                    products = ", ".join(invalid_tax_lines.mapped("product_id.name"))
-                    raise ValidationError(_("VAT must be set for: %s") % products)
-
-            """Currently working correct commented on DEC 08 2025"""
-            warranty_fields_updated = any(
-                field in vals
-                for field in [
-                    "service_warranty_id",
-                    "warranty",
-                    "product_id",
-                    "product_slno",
-                    "purchase_invoice_no",
-                    "purchase_date",
-                    "dealer_id",
-                    "attachment_ids",
-                ]
             )
 
-            if (
-                warranty_fields_updated
-                and not self.env.context.get("skip_warranty_validation")
-                and not self.env.context.get("creating")
-            ):
+            if not service_warranty:
+                raise ValidationError(_("Please select any one Service Warranty"))
 
-                if rec.service_warranty_id or vals.get("service_warranty_id"):
-
-                    warranty_status = (
-                        vals.get("warranty") if "warranty" in vals else rec.warranty
+            if rec.warranty:
+                purchase_invoice_no = (
+                        vals.get("purchase_invoice_no") or rec.purchase_invoice_no
+                )
+                if not purchase_invoice_no:
+                    raise ValidationError(
+                        _("Please enter Purchase Invoice No in the Job Card")
                     )
-                    if warranty_status:
-                        if not state_changing_to_113:
-                            # if not self.env.context.get('skip_warranty_validation'):
-                            #     if rec.service_warranty_id or vals.get('service_warranty_id'):
-                            #         if rec.warranty:
-                            """commented on Oct 17 due to warranty verification status in mobile they don't want to Model no and Serial number mandatory
-                            product_id = vals.get('product_id') or rec.product_id.id
-                            if not product_id:
-                                raise ValidationError(_("Please enter Model No. in the Job card."))
-                            product_slno = vals.get('product_slno') or rec.product_slno
 
-                            if not product_slno:
-                                raise ValidationError(_("Please enter Serial Number in the Job Card"))
-                            """
-                            purchase_invoice_no = (
-                                vals.get("purchase_invoice_no")
-                                or rec.purchase_invoice_no
+                purchase_date = vals.get("purchase_date") or rec.purchase_date
+                if not purchase_date:
+                    raise ValidationError(
+                        _("Please enter Purchase date in the Job Card")
+                    )
+
+                dealer = vals.get("dealer_id") or rec.dealer_id
+                if not dealer:
+                    raise ValidationError(
+                        _("Please enter Dealer Name in the Job Card")
+                    )
+
+                attachment_vals = vals.get("attachment_ids") or rec.attachment_ids
+                if not attachment_vals:
+                    raise ValidationError(_("Please Attach Invoice Documents"))
+                if attachment_vals:
+                    allowed_mimetypes = [
+                        "image/jpeg",
+                        "image/png",
+                        "image/gif",
+                        "application/pdf",
+                    ]
+                    for attachment in rec.attachment_ids:
+                        if attachment.mimetype not in allowed_mimetypes:
+                            raise ValidationError(
+                                _(
+                                    "Only PDF, JPG, PNG, and GIF files are allowed in the job card.\n"
+                                    f"Invalid file: {attachment.name}"
+                                )
                             )
-                            if not purchase_invoice_no:
+
+            inspection_charges_amount = (
+                    vals.get("inspection_charges_amount")
+                    or rec.inspection_charges_amount
+            )
+            if vals.get("service_warranty_id"):
+                if (not rec.project_related_amc_bool) or rec.emergency_count_exceed:
+                    warranty_search = self.env["service.warranty"].search(
+                        [("id", "=", vals.get("service_warranty_id"))], limit=1
+                    )
+                    if (
+                        not warranty_search.warranty_applicable_bool
+                        and not warranty_search.misuse_warranty_bool
+                    ):
+                       
+                        if inspection_charges_amount == 0.0:
+                            '''Code Added on July 07 2026 by Vijaya Bhaskar due validation is only paid service only for corrective and hhs'''
+                            if (
+                                (rec.project_related_amc_bool and
+                                 rec.paid_service_bool and
+                                 not (rec.contract_id and rec.maintenance_type == "preventive"))
+                                or
+                                (not rec.project_related_amc_bool)
+                            ):   
                                 raise ValidationError(
                                     _(
-                                        "Please enter Purchase Invoice No in the Job Card"
+                                        "Please give the Inspection Charges Amount if it is not under warranty"
                                     )
                                 )
-
-                            purchase_date = (
-                                vals.get("purchase_date") or rec.purchase_date
-                            )
-                            if not purchase_date:
+            """Updated Code Added on Feb 03 2026"""
+            if not vals.get("service_warranty_id"):
+                if rec.service_warranty_id:
+                    if (
+                        not rec.service_warranty_id.warranty_applicable_bool
+                        and not rec.service_warranty_id.misuse_warranty_bool
+                    ):
+                        # if not (rec.contract_id and rec.maintenance_type == 'preventive'):
+                        '''Code Added on July 07 2026 by Vijaya Bhaskar due validation is only paid service only for corrective and hhs'''
+                        if (
+                                (rec.project_related_amc_bool and
+                                 rec.paid_service_bool and
+                                 not (rec.contract_id and rec.maintenance_type == "preventive"))
+                                or
+                                (not rec.project_related_amc_bool)
+                            ):   
+                        
+                            if inspection_charges_amount == 0.0:
                                 raise ValidationError(
-                                    _("Please enter Purchase date in the Job Card")
-                                )
-
-                            dealer = vals.get("dealer_id") or rec.dealer_id
-                            if not dealer:
-                                raise ValidationError(
-                                    _("Please enter Dealer Name in the Job Card")
-                                )
-
-                            attachment_vals = (
-                                vals.get("attachment_ids") or rec.attachment_ids
-                            )
-                            if self.env.user.has_group(
-                                "machine_repair_management.group_job_card_mobile_user"
-                            ):
-                                if not attachment_vals:
-                                    raise ValidationError(
-                                        _("Please Attach Invoice Documents")
+                                    _(
+                                        "Please give the Inspection Charges Amount if it is not under warranty"
                                     )
-                            if attachment_vals:
-                                allowed_mimetypes = [
-                                    "image/jpeg",
-                                    "image/png",
-                                    "image/gif",
-                                    "application/pdf",
-                                ]
-                                for attachment in rec.attachment_ids:
-                                    if attachment.mimetype not in allowed_mimetypes:
-                                        raise ValidationError(
-                                            _(
-                                                "Only PDF, JPG, PNG, and GIF files are allowed in the job card.\n"
-                                                f"Invalid file: {attachment.name}"
-                                            )
-                                        )
+                                )
+    
 
-                  
-
-            """Code Added on March 09 2026"""
-            # balance_amount_received_bool = vals.get('balance_amount_received_bool') or rec.balance_amount_received_bool
-            if "balance_amount_received_bool" in vals:
-                invalid_tax_lines = rec.product_line_ids.filtered(
-                    lambda l: l.product_id
-                    and l.price_unit > 0
-                    and not l.product_id.taxes_id
+            if not rec.warranty and rec.inspection_charges_bool:
+                val = vals.get("inspection_charges_amount")
+                amount = (
+                    float(val)
+                    if val not in (None, False, "")
+                    else rec.inspection_charges_amount
                 )
 
-                if invalid_tax_lines:
-                    products = ", ".join(invalid_tax_lines.mapped("product_id.name"))
-                    raise ValidationError(_("VAT must be set for: %s") % products)
+                if amount == 0.0:
+                    '''Code Added on July 07 2026 by Vijaya Bhaskar due validation is only paid service only for corrective and hhs'''
+                    if ((rec.project_related_amc_bool and
+                                 rec.paid_service_bool and
+                                 not (rec.contract_id and rec.maintenance_type == "preventive"))
+                                or
+                                (not rec.project_related_amc_bool)
+                            ):   
+                    # if not (rec.contract_id and rec.maintenance_type == 'preventive'):
+                        raise ValidationError(
+                            "Please enter the inspection Charges Amount if it is not under warranty"
+                        )
 
-            """Code added on Mar 09 2026"""
-            # if any(
-            #     l.product_id
-            #     and l.price_unit > 0
-            #     and not l.under_warranty_bool
-            #     and l.vat == 0.0
-            #     for l in rec.product_line_ids
-            # ):
-            #     raise ValidationError(
-            #         _("VAT must be entered when Price Unit is greater than zero.")
-            #     )
-            #
-            # """Code Added on Mar 09 2026"""
-            # invalid_tax_lines = rec.product_line_ids.filtered(
-            #     lambda l: l.product_id
-            #     and l.price_unit > 0
-            #     and not l.product_id.taxes_id
-            # )
-            #
-            # if invalid_tax_lines:
-            #     products = ", ".join(invalid_tax_lines.mapped("product_id.name"))
-            #     raise ValidationError(_("VAT must be set for: %s") % products)
+            if rec.inspection_charges_amount != 0.0:
+                if not (rec.mode_of_payment or vals.get("mode_of_payment")):
+                    raise ValidationError("Please select the Method of Payment")
+
+            if not (rec.warehouse_id or vals.get("warehouse_id")):
+                if not rec.current_user_id.property_warehouse_id:
+                    if not (self.contract_id and self.maintenance_type == 'preventive'):
+                        raise ValidationError(
+                        "Please add Default Warehouse for the Technician in the User Settings"
+                    )
+                if rec.current_user_id.property_warehouse_id:
+                    if not (self.contract_id and self.maintenance_type == 'preventive'):
+                        raise ValidationError(_("Please give the warehouse in the Job card")
+		            )
+
+            online_payment_attachment_vals = (
+                    vals.get("online_payment_invoice_attachment_ids")
+                    or rec.online_payment_invoice_attachment_ids
+            )
+            mode_of_payment_balance_amount = (
+                    vals.get("mode_of_payment_balance_amount")
+                    or rec.mode_of_payment_balance_amount
+            )
+            mode_of_payment = vals.get("mode_of_payment") or rec.mode_of_payment
+            if mode_of_payment in (
+                    "online",
+                    "bank",
+            ) or mode_of_payment_balance_amount in ("online", "bank"):
+                if not online_payment_attachment_vals:
+                    raise ValidationError(
+                        _(
+                            "Please Attach Online/Bank Transfer Attachment Payment copy"
+                        )
+                    )
+            if rec.security_warranty_expiry:
+                if not rec.text_warranty_expiry:
+                    if rec.service_warranty_id.warranty_expire_alert_bool:
+                        raise ValidationError("Please Enter Reason to Allow Expired Unit Service for Further  details call Back office user")
+            rec.whatsapp_inspection_started_bool = True
+
+    def _is_warranty_fields_updated(self, vals):
+        warranty_fields = ["service_warranty_id", "warranty", "product_id", "product_slno",
+                           "purchase_invoice_no", "purchase_date", "dealer_id", "attachment_ids"]
+        return any(f in vals for f in warranty_fields)
+
+    def _validate_quotation(self, vals):
+        if not self.service_sale_id:
+            raise ValidationError(_("Please first Create Quotation and then Change the Status"))
+        if self.service_sale_id.state == 'cancel':
+            raise ValidationError(_("Please Create Quotation first because already Created Quotation %s is in cancel state" % self.service_sale_id.name))
+
+    def _validate_technician_assignment(self, vals):
+        team_id = vals.get("team_id") or self.team_id.id
+        if not team_id:
+            raise ValidationError(_("Please assign the technician to this Job Card %s " % self.name))
+
+    def _validate_unit_nameplate_image(self, vals):
+        img1 = vals.get("img1") or self.img1
+        if not img1:
+            if not (self.contract_id and self.maintenance_type == 'preventive'):
+                raise ValidationError(_("Please Attach the image of Unit Name Plate"))
+
+    def _validate_product_lines(self, vals, is_state_123=False, is_state_122=False, is_state_207=False, is_state_131=False):
+        if not self.product_line_ids and not vals.get("product_line_ids"):
+            raise ValidationError(_("Please give at least one Product in the product consume Part/services"))
+        product_lines = self.product_line_ids
+        if vals.get("product_line_ids"):
+            for command in vals.get("product_line_ids"):
+                if command[0] == 1:
+                    line_id = command[1]
+                    updates = command[2]
+                    line = product_lines.browse(line_id)
+                    line.parts_reserved_bool = updates.get("parts_reserved_bool", line.parts_reserved_bool)
+                elif command[0] == 0:
+                    new_vals = command[2]
+                    product_lines += product_lines.new(new_vals)
+        if self.current_user_id.has_group("machine_repair_management.group_parts_user"):
+            other_product_found = any(
+                line.product_id
+                and line.product_id.service_type_bool is False
+                and line.product_id.service_product_price_edit_bool is False
+                for line in product_lines
+            )
+            if not other_product_found:
+                raise ValidationError(_("Please enter at-least one parts Product should be added to the Product Consume Parts/Service "))
+        if is_state_131:
+            if any(l.product_id and l.price_unit > 0 and not l.under_warranty_bool and l.vat == 0.0 for l in product_lines):
+                raise ValidationError(_("VAT must be entered when Price Unit is greater than zero."))
+            invalid_tax_lines = product_lines.filtered(lambda l: l.product_id and l.price_unit > 0 and not l.product_id.taxes_id)
+            if invalid_tax_lines:
+                products = ", ".join(invalid_tax_lines.mapped("product_id.name"))
+                raise ValidationError(_("VAT must be set for: %s") % products)
+        if is_state_123:
+            for line in product_lines:
+                if line.product_id and not line.parts_reserved_bool:
+                    raise ValidationError(_("Product %s is not reserved. Please reserve all products before proceeding." % line.product_id.display_name))
+                if line.product_id:
+                    quant = self.env["stock.quant"].search([("product_id", "=", line.product_id.id), ("location_id.warehouse_id", "=", self.warehouse_id.id)], limit=1)
+                    if quant.quantity == 0.0:
+                        raise ValidationError(_("%s Product stock is not available in the Technician Warehouse" % line.product_id.display_name))
+        if is_state_122:
+            for line in product_lines:
+                if line.product_id and not line.parts_reserved_bool and not self.reserve_from_main_warehouse_bool:
+                    raise ValidationError(_("Product %s is not reserved. Please reserve all products before proceeding." % line.product_id.display_name))
+                if line.on_hand_qty == 0.0 and not self.reserve_from_main_warehouse_bool:
+                    raise ValidationError(_("Stock is not available for Product %s. Please contact Administrator." % line.product_id.display_name))
+            if self.inspection_charges_bool and self.inspection_charges_amount > 0:
+                if not any(l.product_id and l.product_id.service_type_bool for l in product_lines):
+                    raise ValidationError(_("Please enter Inspection charge amount in the product line"))
+
+    def _validate_cancellation(self, vals):
+        if self.product_line_ids:
+            raise ValidationError("Please remove all the parts in the Product Consume Parts/Service.")     
+        if self.service_sale_id and self.service_sale_id.state in ['draft','sent','sale','done']:
+            raise ValidationError("Please First Cancel the Quotation and then Cancel the Job Card")
+
+    def _validate_common_required_fields(self, vals, is_state_112=False):
+        symptom_line_ids = vals.get("symptoms_line_ids_duplicate") or vals.get("symptoms_line_ids")
+        lines_to_check = self.symptoms_line_ids or symptom_line_ids
+        if not lines_to_check:
+            if not (self.contract_id and self.maintenance_type == 'preventive'):
+                raise ValidationError(_("Please give any one of the Symptoms in the Symptoms tab"))
+        if not is_state_112:
+            defect_type_ids = vals.get("defects_type_ids_duplicate") or vals.get("defects_type_ids")
+            defect_to_check = self.defects_type_ids or defect_type_ids
+            if not defect_to_check:
+                if not (self.contract_id and self.maintenance_type == 'preventive'):
+                    raise ValidationError(_("Please give any one of the Defects in the Defects tab"))
+
+    def _validate_technician_comments(self, vals):
+        engineer_comments = vals.get("engineer_comments") or self.engineer_comments
+        if not engineer_comments:
+            raise ValidationError(_("Please enter the Technician Comments 1"))
+
+    def _validate_mode_of_payment_for_balance(self, vals):
+        if self.service_sale_id and self.service_sale_id.state == "done":
+            balance_paid_amount = vals.get("balance_paid") or self.balance_paid
+            balance_amount_received_bool = vals.get("balance_amount_received_bool") or self.balance_amount_received_bool
+            mode_of_payment_balance_amount = vals.get("mode_of_payment_balance_amount") or self.mode_of_payment_balance_amount
+            if balance_paid_amount > 0.0 and not mode_of_payment_balance_amount:
+                raise ValidationError(_("Please Select any one Method Of Payment"))
+            if balance_paid_amount > 0.0 and not balance_amount_received_bool:
+                raise ValidationError(_("Ensure Amount is received from the customer while clicking the Balance Amount Confirmed."))
+        online_payment_attachment_vals = vals.get("online_payment_invoice_attachment_ids") or self.online_payment_invoice_attachment_ids
+        if self.current_user_id.has_group("machine_repair_management.group_technical_allocation_user"):
+            if self.mode_of_payment in ("online", "bank") or self.mode_of_payment_balance_amount in ("online", "bank"):
+                if not online_payment_attachment_vals:
+                    raise ValidationError(_("Please Attach Online/Bank Transfer Attachment Payment copy"))
+        if any(l.product_id and l.price_unit > 0 and not l.under_warranty_bool and l.vat == 0.0 for l in self.product_line_ids):
+            raise ValidationError(_("VAT must be entered when Price Unit is greater than zero."))
+        invalid_tax_lines = self.product_line_ids.filtered(lambda l: l.product_id and l.price_unit > 0 and not l.product_id.taxes_id)
+        if invalid_tax_lines:
+            products = ", ".join(invalid_tax_lines.mapped("product_id.name"))
+            raise ValidationError(_("VAT must be set for: %s") % products)
+
+    def _validate_vat_on_products(self):
+        invalid_tax_lines = self.product_line_ids.filtered(lambda l: l.product_id and l.price_unit > 0 and not l.product_id.taxes_id)
+        if invalid_tax_lines:
+            products = ", ".join(invalid_tax_lines.mapped("product_id.name"))
+            raise ValidationError(_("VAT must be set for: %s") % products)
+
+    def _validate_warranty(self, vals, to_113):
+        if self.env.context.get("skip_warranty_validation") or self.env.context.get("creating"):
+            return
+        if self.service_warranty_id or vals.get("service_warranty_id"):
+            warranty_status = vals.get("warranty") if "warranty" in vals else self.warranty
+            if warranty_status:
+                if not to_113:
+                    purchase_invoice_no = vals.get("purchase_invoice_no") or self.purchase_invoice_no
+                    if not purchase_invoice_no:
+                        raise ValidationError(_("Please enter Purchase Invoice No in the Job Card"))
+                    purchase_date = vals.get("purchase_date") or self.purchase_date
+                    if not purchase_date:
+                        raise ValidationError(_("Please enter Purchase date in the Job Card"))
+                    dealer = vals.get("dealer_id") or self.dealer_id
+                    if not dealer:
+                        raise ValidationError(_("Please enter Dealer Name in the Job Card"))
+                    attachment_vals = vals.get("attachment_ids") or self.attachment_ids
+                    if self.env.user.has_group("machine_repair_management.group_job_card_mobile_user"):
+                        if not attachment_vals:
+                            raise ValidationError(_("Please Attach Invoice Documents"))
+                    if attachment_vals:
+                        allowed_mimetypes = ["image/jpeg", "image/png", "image/gif", "application/pdf"]
+                        for attachment in self.attachment_ids:
+                            if attachment.mimetype not in allowed_mimetypes:
+                                raise ValidationError(_("Only PDF, JPG, PNG, and GIF files are allowed in the job card.\nInvalid file: %s" % attachment.name))
+
+    def write(self, vals):
+        if not vals:
+            return super().write(vals)
+
+        minimal_fields = {
+            "message_main_attachment_id",
+            "message_ids",
+            "activity_ids",
+            "write_date",
+            "__last_update",
+            "create_date",
+        }
+        if all(f in minimal_fields for f in vals.keys()) or self.env.context.get("creating"):
+            return super().write(vals)
+
+        if self.env.context.get("skip_state_validation") or self.env.context.get(
+                "skip_warranty_validation"
+        ):
+            return super().write(vals)
+
+        is_state_changing = 'job_state' in vals or 'job_card_state_code' in vals
+        target_state_code = False
+        if is_state_changing:
+            target_state_code = vals.get('job_card_state_code')
+            if not target_state_code and vals.get('job_state'):
+                target_state_code = self.env['project.task.type'].browse(vals['job_state']).code
+
+        def is_changing_to(code):
+            return is_state_changing and target_state_code == code
+
+        for rec in self:
+            to_102 = is_changing_to("102")
+            to_111 = is_changing_to("111")
+            to_112 = is_changing_to("112")
+            to_113 = is_changing_to("113")
+            to_114 = is_changing_to("114")
+            to_115 = is_changing_to("115")
+            to_116 = is_changing_to("116")
+            to_117 = is_changing_to("117")
+            to_121 = is_changing_to("121")
+            to_122 = is_changing_to("122")
+            to_123 = is_changing_to("123")
+            to_124 = is_changing_to("124")
+            to_125 = is_changing_to("125")
+            to_126 = is_changing_to("126")
+            to_127 = is_changing_to("127")
+            to_128 = is_changing_to("128")
+            to_129 = is_changing_to("129")
+            to_130 = is_changing_to("130")
+            to_131 = is_changing_to("131")
+            to_154 = is_changing_to("154")
+            to_207 = is_changing_to("207")
+
+            if to_114 or to_127 or to_128:
+                rec._validate_quotation(vals)
+            if to_102:
+                rec._validate_technician_assignment(vals)
+            if to_129 or to_117 or to_121:
+                rec._validate_unit_nameplate_image(vals)
+            if to_131 or to_207 or to_122 or to_123:
+                rec._validate_product_lines(vals, is_state_123=to_123, is_state_122=to_122, is_state_207=to_207, is_state_131=to_131)
+            if to_154:
+                rec._validate_cancellation(vals)
+            if to_125:
+                rec._validate_ready_to_invoice(vals)
+            if to_126:
+                rec._validate_closed_state(vals)
+            if to_113:
+                rec._validate_inspection_started(vals)
+            if to_121 or to_128 or to_125 or to_117 or to_116 or to_129 or to_130 or to_112:
+                rec._validate_common_required_fields(vals, is_state_112=to_112)
+            if to_117:
+                rec._validate_technician_comments(vals)
+            if to_121:
+                rec._validate_mode_of_payment_for_balance(vals)
+            if rec._is_warranty_fields_updated(vals):
+                rec._validate_warranty(vals, to_113)
+            if "balance_amount_received_bool" in vals:
+                rec._validate_vat_on_products()
+            if to_111:
+                rec.warranty_verfication_status_check = True
 
         res = super().write(vals)
+
+        # 2. Run post-write actions
+        # res = self._handle_post_write_actions(vals, res)
+        for rec in self:
+            res = rec._handle_post_write_actions(vals, res)
+
+        return res
+
+    def _handle_post_write_actions(self, vals, res):
 
         state_date_map = {
             "103": "technician_accepted_date",
             "104": "technician_rejected_date",
-            "109": "technician_started_date",
+            # "109": "technician_started_date",
             "110": "technician_reached_date",
             "115": "job_started_date",
             "121": "job_hold_date",
@@ -7748,15 +4672,19 @@ class ProjectTask(models.Model):
                     old_code = self.job_card_state_code
                     if old_code:
                         self.previous_job_card_state_code = old_code
-
-                valid_codes = (
-                    self.env["project.task.type"].sudo().search([]).mapped("code")
-                )
-
-                # if state.code in ('103', '104', '105', '106', '107', '108', '109', '110', '111', '112', '113', '114', '115', '116', '117', '118', '119',
-                #                   '120', '121', '122', '123', '124', '125', '126', '127', '128','129','130','131', '132', '133', '134','201','202','203','204','205','152','154','156'):
-
-                if state.code in valid_codes:
+                
+                '''Code Commented on June 19 206 for performance issue for sending whatsapp'''
+                # PERFORMANCE: state is already fetched, no need to query valid_codes            
+                # valid_codes = (
+                #     self.env["project.task.type"].sudo().search([]).mapped("code")
+                # )
+                #
+                # # if state.code in ('103', '104', '105', '106', '107', '108', '109', '110', '111', '112', '113', '114', '115', '116', '117', '118', '119',
+                # #                   '120', '121', '122', '123', '124', '125', '126', '127', '128','129','130','131', '132', '133', '134','201','202','203','204','205','152','154','156'):
+                #
+                # if state.code in valid_codes:
+                if state and state.code:
+    
                     self.job_card_state = state.name
                     self.job_card_state_code = state.code
                     self.service_request_id.service_request_state = state.name
@@ -7770,11 +4698,20 @@ class ProjectTask(models.Model):
                     self['technician_accepted_date'] accesses the technician_accepted_date field on the record.
                     """
                     self[state_date_map[state.code]] = fields.Datetime.now()
-
+                
+                '''Code Added on May 16 2026 by Vijaya Bhaskar for second visit Technician Started date'''
+                if state.code == "109":
+                    if not self.second_visit_technician_bool:
+                        self.technician_started_date =  fields.Datetime.now()  
+                    if self.second_visit_technician_bool:
+                        self.technician_started_date_second = fields.Datetime.now()  
+                
                 if state.code == "117":
                     """If Unit pull out don't want to second vist to be bool added on Nov -01-2025"""
                     # self.second_visit_technician_bool = True
+                    '''Code Commented on June 19 206 for performance issue for sending whatsapp'''
                     self._send_unit_receipt_whatsapp()
+                    #self._run_whatsapp_in_thread('_send_unit_receipt_whatsapp') 
                     today = fields.Datetime.now()
                     user_tz = self.env.user.tz or "UTC"
                     user_timezone = pytz.timezone(user_tz)
@@ -7788,13 +4725,14 @@ class ProjectTask(models.Model):
 
                 if state.code == "105":
                     self._send_failed_to_attend_call_status_whatsapp()
+                    pass
 
                 if state.code == "125":
                     if not self.job_card_closed_date_time_enable:
                         self.closed_datetime = fields.Datetime.now()
                     if self.second_visit_technician_bool:
                         if self.current_user_id.has_group(
-                            "machine_repair_management.group_job_card_mobile_user"
+                                "machine_repair_management.group_job_card_mobile_user"
                         ):
                             today = fields.Datetime.now()
                             user_tz = self.env.user.tz or "UTC"
@@ -7807,7 +4745,7 @@ class ProjectTask(models.Model):
                             )
                     if not self.second_visit_technician_bool:
                         if self.current_user_id.has_group(
-                            "machine_repair_management.group_job_card_mobile_user"
+                                "machine_repair_management.group_job_card_mobile_user"
                         ):
                             today = fields.Datetime.now()
                             user_tz = self.env.user.tz or "UTC"
@@ -7827,6 +4765,7 @@ class ProjectTask(models.Model):
                                     not_under_warranty = True
                         if not_under_warranty:
                             self.send_whatsapp_service_charges_receipt()
+                            pass
 
                     self._send_whatsapp_job_card_report_for_ready_to_invoice()
                     self.closed_jobcard_user_id = self.env.user.id
@@ -7851,11 +4790,13 @@ class ProjectTask(models.Model):
                     self._send_whatsapp_for_cancelled_insp_charges_by_cst()
                     if self.inspection_charges_amount > 0:
                         self.send_whatsapp_service_charges_receipt()
+                        pass
 
                 if state.code == "113":
                     self.create_quotation_show_bool = True
                     if self.inspection_charges_amount > 0:
                         self.send_whatsapp_service_charges_receipt()
+                        pass
 
                 if state.code == "121":
                     today = fields.Datetime.now()
@@ -7872,9 +4813,10 @@ class ProjectTask(models.Model):
                     if not self.unit_pull_out_status_check:
                         self._send_whatsapp_for_parts_user()
                         self._send_whatsapp_job_card_report_for_ready_to_invoice()
+                        pass
                     """code added on Jan 21 2026 due to On hold Spare parts reason should not shown on Parts User so it will be shown only for Technician"""
                     if self.current_user_id.has_group(
-                        "machine_repair_management.group_job_card_mobile_user"
+                            "machine_repair_management.group_job_card_mobile_user"
                     ):
                         self.onhold_spareparts_status_check = True
 
@@ -7918,6 +4860,7 @@ class ProjectTask(models.Model):
                                     not_under_warranty = True
                         if not_under_warranty:
                             self.send_whatsapp_invoice_receipt()
+                            pass
 
                     """Code added on March 05 2026"""
                     self.action_status = "Closed"
@@ -7932,6 +4875,7 @@ class ProjectTask(models.Model):
                     if self.service_sale_id.whatsapp_button_click_bool:
                         if self.inspection_charges_amount > 0:
                             self.send_whatsapp_service_charges_receipt()
+                            pass
                         self._send_whatsapp_job_card_report_for_ready_to_invoice()
 
                 if state.code == "129":
@@ -7946,6 +4890,10 @@ class ProjectTask(models.Model):
 
                     """Code added on Jan 08 2026"""
                     self.last_rescheduled_status_code = False
+                    
+                    '''Code Added on April 24 2026 by Vijaya Bhaskar because for dashboard purpose they need date'''
+                    self.cstneedquote_date = fields.Datetime.now()             
+
 
                 if state.code == "130":
                     today = fields.Datetime.now()
@@ -7961,9 +4909,11 @@ class ProjectTask(models.Model):
 
                 if state.code == "133":
                     self._send_whatsapp_rescheduled_with_unit()
+                    pass
 
                 if state.code == "134":
                     self._send_whatsapp_for_rescheduled_with_parts()
+                    pass
 
                 if state.code == "116":
                     today = fields.Datetime.now()
@@ -8031,10 +4981,14 @@ class ProjectTask(models.Model):
                         if self.service_sale_id in ['draft','sent','sale','done']:
                             raise ValidationError("Please First Cancel the Quotation and then Cancel the Job Card")
                     
-                    self.state_status = True
+                    self.state_status = True    
 
                 if state.code not in ("126", "154"):
                     self.action_status = "Not Closed"
+                    
+                '''Code Added on April 27 2026 by Vijaya Bhaskar client asked eventhough No Spare Parts Required job_resume date was updated '''
+                if state.code == '209':
+                    self.job_resume_date = fields.Datetime.now()      
 
                 # if state.code == '133':
                 #     self.team_id = False
@@ -8107,7 +5061,8 @@ class ProjectTask(models.Model):
                                 subtype_xmlid="mail.mt_comment",
                                 author_id=odoo_bot.id,
                             )
-
+                    self._send_whatsapp_scheduled_message()
+                            
                 elif state.code == "103":
                     self.technician_accepted_status_check = False
 
@@ -8348,7 +5303,7 @@ class ProjectTask(models.Model):
                     ('planned_date_begin', '>=', start_datetime),
                     ('planned_date_begin', '<=', end_datetime),
                     ('id', '!=', rec.id),
-                    ('job_card_state_code' , 'in', ('102','103','108','109','110'))
+                    ('job_card_state_code' , 'in', ('102','103', '108','109','110'))
                 ]
     
                 job_cards = self.env['project.task'].sudo().search(domain)
@@ -8412,13 +5367,13 @@ class ProjectTask(models.Model):
                 # if record.job_card_state.scheduling_status_bool:
                 # if record.job_card_state_code == '101':
                 if record.job_card_state_code not in (
-                    "117",
-                    "132",
-                    "204",
-                    "133",
-                    "134",
-                    "122",
-                    "127",
+                        "117",
+                        "132",
+                        "204",
+                        "133",
+                        "134",
+                        "122",
+                        "127",
                 ):
 
                     scheduled_state = self.env["project.task.type"].search(
@@ -8505,12 +5460,12 @@ class ProjectTask(models.Model):
 
                 if record.job_card_state_code == "127":
                     if record.current_user_id.has_group(
-                        "machine_repair_management.group_technical_allocation_user"
+                            "machine_repair_management.group_technical_allocation_user"
                     ):
                         if (
-                            record.unit_pull_out_status_check
-                            and record.service_sale_id.state == "done"
-                            and not record.service_warranty_id.warranty_applicable_bool
+                                record.unit_pull_out_status_check
+                                and record.service_sale_id.state == "done"
+                                and not record.service_warranty_id.warranty_applicable_bool
                         ):
                             if record.balance_amount_received_bool:
                                 scheduled_state = self.env["project.task.type"].search(
@@ -8535,9 +5490,9 @@ class ProjectTask(models.Model):
                                     )
 
             if (
-                vals.get("planned_date_begin")
-                and vals.get("team_id")
-                and record.service_request_id
+                    vals.get("planned_date_begin")
+                    and vals.get("team_id")
+                    and record.service_request_id
             ):
                 record.service_request_id.technician_appointment_date = vals.get(
                     "planned_date_begin"
@@ -8558,8 +5513,8 @@ class ProjectTask(models.Model):
 
             """code added on Dec 05 -2025 client ask the Online payment invoice record"""
             if (
-                vals.get("online_payment_invoice_attachment_ids")
-                and record.service_request_id
+                    vals.get("online_payment_invoice_attachment_ids")
+                    and record.service_request_id
             ):
                 if vals.get("online_payment_invoice_attachment_ids"):
                     record.online_payment_invoice_attachment_ids.write({"public": True})
@@ -8615,15 +5570,15 @@ class ProjectTask(models.Model):
                     "customer_identification_number"
                 )
                 if (
-                    record.customer_identification_scheme == "TIN"
-                    or vals.get("customer_identification_scheme") == "TIN"
+                        record.customer_identification_scheme == "TIN"
+                        or vals.get("customer_identification_scheme") == "TIN"
                 ):
                     record.service_request_id.partner_id.vat = vals.get(
                         "customer_identification_number"
                     )
                 if (
-                    record.customer_identification_scheme != "TIN"
-                    or vals.get("customer_identification_scheme") != "TIN"
+                        record.customer_identification_scheme != "TIN"
+                        or vals.get("customer_identification_scheme") != "TIN"
                 ):
                     record.service_request_id.partner_id.additional_identification_number = vals.get(
                         "customer_identification_number"
@@ -8644,14 +5599,14 @@ class ProjectTask(models.Model):
                 record.service_request_id.partner_id.plot_identification = vals.get(
                     "plot_identification"
                 )
+
             # if vals.get('inspection_charges_bool') or vals.get('inspection_charges_amount') or record.inspection_charges_amount:
-            if ('inspection_charges_bool' in vals or 'inspection_charges_amount' in vals): 
-               
-                ''' the client asked to even inspection charges amount is zero they want to create service item on the product lines.Added on Oct-10-2025  
-               
+            if "inspection_charges_bool" in vals or "inspection_charges_amount" in vals:
+
+                """the client asked to even inspection charges amount is zero they want to create service item on the product lines.Added on Oct-10-2025
+
                 if rec.inspection_charges_amount > 0 and rec.inspection_charges_bool and rec.warehouse_id:
-                ''' 
-              
+                """
                 if record.inspection_charges_bool and record.warehouse_id:
 
                     service_lines = record.product_line_ids.filtered(
@@ -8706,12 +5661,12 @@ class ProjectTask(models.Model):
                         vals = {
                             "product_id": product.id,
                             "price_unit": price_unit,
-                            #'price_unit': price_unit if not record.service_warranty_id.warranty_applicable_bool else 0.0,
-                            #'price_unit': price_unit if (not record.service_warranty_id.warranty_applicable_bool or price_unit > 0) else 0,
+                            # 'price_unit': price_unit if not record.service_warranty_id.warranty_applicable_bool else 0.0,
+                            # 'price_unit': price_unit if (not record.service_warranty_id.warranty_applicable_bool or price_unit > 0) else 0,
                             # 'price_unit': price_unit if not record.warranty else 0.0,
                             "qty": 1,
                             "uom_id": uom_id,
-                            #'under_warranty_bool': under_warranty,
+                            # 'under_warranty_bool': under_warranty,
                             "standard_price": standard_price,
                             "vat": (
                                 vat_amount
@@ -8738,12 +5693,12 @@ class ProjectTask(models.Model):
 
             """Code is added on Sep-05-2025 client asked the create the payment receipt based on the mode of payment check box and inspection charges amount """
             if (
-                vals.get("mode_of_payment") or vals.get("inspection_charges_amount")
+                    vals.get("mode_of_payment") or vals.get("inspection_charges_amount")
             ) or vals.get("inspection_charges_bool") == True:
                 if (
-                    record.mode_of_payment
-                    and record.inspection_charges_bool
-                    and record.inspection_charges_amount > 0.0
+                        record.mode_of_payment
+                        and record.inspection_charges_bool
+                        and record.inspection_charges_amount > 0.0
                 ):
                     if not record.team_id:
                         raise ValidationError("Please enter Team Leader")
@@ -8754,8 +5709,8 @@ class ProjectTask(models.Model):
                     journal = False
 
                     if (
-                        vals.get("mode_of_payment") == "cash"
-                        or record.mode_of_payment == "cash"
+                            vals.get("mode_of_payment") == "cash"
+                            or record.mode_of_payment == "cash"
                     ):
                         journal = self.env["account.journal"].search(
                             [("type", "=", "cash")], limit=1
@@ -8877,17 +5832,17 @@ class ProjectTask(models.Model):
             """Code is added on Sep-05-2025 client asked the create the payment receipt based on the mode of balance payment check box and remaining balance paid amount """
 
             if (
-                vals.get("mode_of_payment_balance_amount")
-                or vals.get("balance_amount_received_bool") == True
+                    vals.get("mode_of_payment_balance_amount")
+                    or vals.get("balance_amount_received_bool") == True
             ):
                 balance_paid = False
                 balance_paid = (
-                    record.grand_total - record.final_inspection_charges_amount
+                        record.grand_total - record.final_inspection_charges_amount
                 )
                 if (
-                    record.mode_of_payment_balance_amount
-                    and record.balance_amount_received_bool
-                    and balance_paid > 0.0
+                        record.mode_of_payment_balance_amount
+                        and record.balance_amount_received_bool
+                        and balance_paid > 0.0
                 ):
                     if not record.team_id:
                         raise ValidationError("Please enter Team Leader")
@@ -8897,8 +5852,8 @@ class ProjectTask(models.Model):
                     payment_receipt_search = self.env["payment.receipt"]
                     journal = False
                     if (
-                        vals.get("mode_of_payment_balance_amount") == "cash"
-                        or record.mode_of_payment_balance_amount == "cash"
+                            vals.get("mode_of_payment_balance_amount") == "cash"
+                            or record.mode_of_payment_balance_amount == "cash"
                     ):
                         journal = self.env["account.journal"].search(
                             [("type", "=", "cash")], limit=1
@@ -9012,10 +5967,10 @@ class ProjectTask(models.Model):
 
             """Code added on Feb 13 2026"""
             closed_datetime = fields.Datetime.to_datetime(
-                vals.get("closed_datetime") or rec.closed_datetime
+                vals.get("closed_datetime") or record.closed_datetime
             )
             if closed_datetime:
-                if closed_datetime < rec.service_created_datetime:
+                if closed_datetime < record.service_created_datetime:
                     raise ValidationError(
                         _(
                             "Completed Date & Time is always greater than Service Created Date & Time"
@@ -9053,7 +6008,7 @@ class ProjectTask(models.Model):
             invoice_no = vals.get("invoice_no") or record.invoice_no
             invoice_date = vals.get("invoice_date") or record.invoice_date
             whatsapp_invoice_sent = (
-                vals.get("whatsapp_invoice_sent") or record.whatsapp_invoice_sent
+                    vals.get("whatsapp_invoice_sent") or record.whatsapp_invoice_sent
             )
             #### Commented on FEB 02 2026 for automatically whatsapp send
             # if record.job_card_state_code == '126':
@@ -9093,6 +6048,7 @@ class ProjectTask(models.Model):
         return res
 
     @api.model
+
     def default_get(self, fields):
         res = super().default_get(fields)
 
@@ -9185,6 +6141,7 @@ class ProjectTask(models.Model):
     )
 
     warranty = fields.Boolean(string="Warranty", default=False)
+
     warranty_expiry_date = fields.Date(string="Warranty Expiry Date", store=True)
 
     symptoms_line_ids = fields.One2many(
@@ -9377,14 +6334,14 @@ class ProjectTask(models.Model):
     product_line_ids_check = fields.Boolean(
         string="Product Lines",
         default=False,
-        store=True,
+        store=False,
         compute="_compute_product_line_ids",
     )
 
     invoice_no_check = fields.Boolean(
         string="Invoice no check",
         default=False,
-        store=True,
+        store=False,
         compute="_compute_invoice_no",
     )
 
@@ -9408,9 +6365,7 @@ class ProjectTask(models.Model):
 
     import_bool = fields.Boolean(string="Import", default=False)
 
-    img1 = fields.Binary(
-        string="Images1",attachment=True
-    )
+    img1 = fields.Binary(string="Images1", attachment=True)
     img2 = fields.Binary(
         string="Images2",
     )
@@ -9524,6 +6479,7 @@ class ProjectTask(models.Model):
             ("bank", "Bank Transfer"),
             ("credit", "Credit"),
         ],
+        default="cash",
         string="Method of Payment",
     )
 
@@ -9698,6 +6654,21 @@ class ProjectTask(models.Model):
     
     '''Code Added on April 27 2026 by Vijaya Bhaskar'''
     technician_travel_hours_min = fields.Char(string = "Technician Travel Hours Min", compute = "_compute_techinical_travel_hours", store = True)
+    
+    
+     
+    '''Code Added on June 15 2026 by Vijaya Bhaskar'''
+    show_quotation_button = fields.Boolean(
+    compute="_compute_show_quotation_button"
+    )
+
+    def _compute_show_quotation_button(self):
+        user = self.env.user
+        for rec in self:
+            rec.show_quotation_button = (
+                not user.has_group('machine_repair_management.group_parts_user')
+                or user.has_group('machine_repair_management.group_parts_supervisor_both')
+            )
     
     
     @api.depends('technician_started_date','technician_reached_date')
@@ -9910,10 +6881,6 @@ class ProjectTask(models.Model):
         store=True
     )
     
-    '''Code Added on May 16 2026 By Vijaya Bhaskar'''
-                        
-    technician_started_date_second = fields.Datetime('Technician Second Date',help = "Technician Travel Started for second Visit")             
-    
     
     @api.depends('service_type_ids','service_type_ids.code.mins_required', 'job_card_state_code')
     def _compute_expected_completion_hours(self):
@@ -9946,6 +6913,103 @@ class ProjectTask(models.Model):
                 rec.expected_completion_hours_min = False
                 
     
+    '''Code Added on May 16 2026 By Vijaya Bhaskar'''
+                        
+    technician_started_date_second = fields.Datetime('Technician Second Date',help = "Technician Travel Started for second Visit")             
+    
+    
+    '''Code Added on July 09 2026 by Vijaya Bhaskar client asked model is shown based on the country selected'''
+    
+    @api.model
+    def _get_manufacturing_country_select(self):
+        
+        country_selection = self.env['ir.config_parameter'].sudo().get_param('machine_repair_management.filtering_data_by_country','KSA')
+        
+        return [
+            (country_selection, country_selection),
+            ('others','Non-KSA'),
+            ('none','None'),
+            ]
+   
+    manufacturing_country_select = fields.Selection(
+            selection = _get_manufacturing_country_select,
+            string = "Manufacturing Country",
+            default='none'
+        )
+    
+    
+    show_manufacturing_country = fields.Boolean(
+        compute="_compute_show_manufacturing_country"
+    )
+    
+    @api.depends_context('uid')
+    def _compute_show_manufacturing_country(self):
+        value = self.env['ir.config_parameter'].sudo().get_param(
+            'machine_repair_management.manufacturing_country_code',
+            default='False'
+        )
+    
+        show = value in ('True', 'true', True)
+    
+        for rec in self:
+            rec.show_manufacturing_country = show
+        
+    
+    
+    @api.onchange('manufacturing_country_select') 
+    def _onchange_manufacturing_country_select(self):
+        for rec in self:
+            rec.product_id = False       
+    
+    available_manufacturing_product_ids = fields.Many2many('product.product', 
+                                                           'product_project_task_rel',
+                                                           'task_id',
+                                                           'product_id',
+                                                           string = "Available_product",
+                                                           compute = "_compute_available_manufacturing_product_ids"
+                                                           )
+    
+   
+    @api.depends(
+    'product_sub_group_id',
+    'product_group_id',
+    'product_category_id',
+    'manufacturing_country_select'
+    )
+    def _compute_available_manufacturing_product_ids(self):
+        country = self.env['ir.config_parameter'].sudo().get_param(
+            'machine_repair_management.filtering_data_by_country', 'KSA'
+        )
+    
+        Product = self.env['product.product']
+    
+        for rec in self:
+            
+            if rec.manufacturing_country_select == 'none':
+                rec.available_manufacturing_product_ids = [(5, 0, 0)]
+                continue
+            
+            domain = []
+    
+            categ = (
+                rec.product_sub_group_id.id
+                or rec.product_group_id.id
+                or rec.product_category_id.id
+            )
+    
+            if categ:
+                domain.append(('categ_id', 'child_of', categ))
+            
+
+            if rec.manufacturing_country_select == country:
+                domain.append(('default_code', 'ilike', country))
+            elif rec.manufacturing_country_select == 'others':
+                domain.append(('default_code', 'not ilike', country))
+    
+            products = Product.search(domain).ids
+
+            rec.available_manufacturing_product_ids = [(6, 0, products)]  
+    
 
     @api.depends("whatsapp_invoice_sent")
     def _compute_whatsapp_invoice_sent_to_customer(self):
@@ -9954,31 +7018,35 @@ class ProjectTask(models.Model):
 
     def action_send_whatsapp_invoice_to_customer(self):
         self.ensure_one()
+
         if self.whatsapp_invoice_sent:
             return False
         if not (
-            self.job_card_state_code == "126"
-            and self.invoice_no
-            # and self.invoice_date
-            # and self.invoice_no_check
+                self.job_card_state_code == "126"
+                and self.invoice_no
+                # and self.invoice_date
+                # and self.invoice_no_check
         ):
             return False
+
         success = self._send_whatsapp_to_customer_after_invoice_no()
+
         if success:
             self.write(
                 {
                     "whatsapp_invoice_sent": True,
                 }
             )
+
         return success
 
     def _send_whatsapp_to_customer_after_invoice_no(self):
 
         if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
+                not self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.whatsapp_send_bool")
+                    == "True"
         ):
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
@@ -10046,7 +7114,7 @@ class ProjectTask(models.Model):
 
         try:
             response = requests.post(
-                f"{base_url}/messages", headers=headers, json=template_payload
+                f"{base_url}/messages", headers=headers, json=template_payload, timeout=(5, 10)
             )
             response.raise_for_status()
             _logger.info(
@@ -10058,6 +7126,8 @@ class ProjectTask(models.Model):
 
         # --- Step 2: Generate PDF ---
         try:
+            import time
+            start_time = time.time()
             datas = self.print_job_card_invoice().get("data", {})
             pdf_content, _ = (
                 self.env["ir.actions.report"]
@@ -10147,7 +7217,7 @@ class ProjectTask(models.Model):
             # rec.final_balance_amount = False
             # if rec.grand_total and rec.final_inspection_charges_amount :
             rec.final_balance_amount = (
-                abs(rec.grand_total - rec.final_inspection_charges_amount) or False
+                    abs(rec.grand_total - rec.final_inspection_charges_amount) or False
             )
 
     @api.onchange("mode_of_payment_balance_amount")
@@ -10173,6 +7243,7 @@ class ProjectTask(models.Model):
     """Client asked job card closed date time enable/disable based on user settings added on Sep 11 -2025 by Vijaya Bhaskar"""
 
     def _compute_job_card_closed_date_time_enable(self):
+
         for rec in self:
             rec.job_card_closed_date_time_enable = False
             job_card_closed_search = (
@@ -10274,11 +7345,11 @@ class ProjectTask(models.Model):
                     )
                 if rec.product_group_id:
                     rec.service_request_id.product_group_id = (
-                        rec.product_group_id.id or None
+                            rec.product_group_id.id or None
                     )
                 if rec.product_sub_group_id:
                     rec.service_request_id.product_sub_group_id = (
-                        rec.product_sub_group_id.id or None
+                            rec.product_sub_group_id.id or None
                     )
                 if rec.product_id:
                     rec.service_request_id.product_id = rec.product_id.id or None
@@ -10335,25 +7406,25 @@ class ProjectTask(models.Model):
                         if len(rec.zip_code) != 5:
                             raise ValidationError("Zip Code  always 5 numbers")
 
-    """ Commented on  Dec 11-2025 by Vijaya Bhaskar because updated code is written on def Write function"""
-
-    # @api.onchange('customer_identification_scheme')
-    # def _onchange_customer_identification_scheme_job_card(self):
-    #     for rec in self:
-    #         if rec.customer_identification_scheme:
-    #             if rec.customer_identification_scheme != 'TIN':
-    #                 rec.customer_identification_number = None
-    #                 rec.building_number = None
-    #                 rec.plot_identification = None
-    #             else:
-    #                 if rec.partner_id.additional_identification_scheme == 'TIN':
-    #                     rec.customer_identification_number = rec.partner_id.vat or None
-    #                     rec.building_number = rec.partner_id.building_number or None
-    #                     rec.plot_identification = rec.partner_id.plot_identification or None
-    #         else:
-    #             rec.customer_identification_number = None
-    #             rec.building_number = None
-    #             rec.plot_identification = None
+    """ Commented on  Dec 11-2025 by Vijaya Bhaskar because updated code is written on def Write function
+    @api.onchange('customer_identification_scheme')
+    def _onchange_customer_identification_scheme_job_card(self):
+        for rec in self:
+            if rec.customer_identification_scheme:
+                if rec.customer_identification_scheme != 'TIN':
+                    rec.customer_identification_number = None
+                    rec.building_number = None
+                    rec.plot_identification = None
+                else:
+                    if rec.partner_id.additional_identification_scheme == 'TIN':
+                        rec.customer_identification_number = rec.partner_id.vat or None
+                        rec.building_number = rec.partner_id.building_number or None
+                        rec.plot_identification = rec.partner_id.plot_identification or None
+            else:
+                rec.customer_identification_number = None
+                rec.building_number = None
+                rec.plot_identification = None
+    """
 
     @api.depends(
         "address_one",
@@ -10420,13 +7491,13 @@ class ProjectTask(models.Model):
                 rec.service_request_id.address_one = rec.address_one or False
                 rec.service_request_id.address_two = rec.address_two or False
                 rec.service_request_id.customer_city_id = (
-                    rec.customer_city_id.id or False
+                        rec.customer_city_id.id or False
                 )
                 rec.service_request_id.country_district_id = (
-                    rec.country_district_id.id or False
+                        rec.country_district_id.id or False
                 )
                 rec.service_request_id.country_state_id = (
-                    rec.country_state_id.id or None
+                        rec.country_state_id.id or None
                 )
                 rec.service_request_id.country_id = rec.country_id.id or False
                 rec.service_request_id.zip_code = rec.zip_code or False
@@ -10437,7 +7508,7 @@ class ProjectTask(models.Model):
                 # rec.service_request_id.plot_identification = rec.plot_identification or False
                 rec.service_request_id.partner_latitude = rec.partner_latitude or False
                 rec.service_request_id.partner_longitude = (
-                    rec.partner_longitude or False
+                        rec.partner_longitude or False
                 )
                 rec.service_request_id.customer_name = rec.customer_name or None
                 # rec.service_request_id.partner_id = rec.partner_id.id or None
@@ -10456,8 +7527,8 @@ class ProjectTask(models.Model):
                 full_address = ", ".join(filter(None, address_parts))
                 if full_address:
                     try:
-                        geolocator = Nominatim(user_agent="odoo_geolocator")
-                        location = geolocator.geocode(full_address, timeout=10)
+                        geolocator = Nominatim(user_agent=f"hhs-odoo/{rec.env.company.name or 'unknown'}")
+                        location = geolocator.geocode(full_address, timeout=3)
                         if location:
                             rec.partner_latitude = location.latitude
                             rec.partner_longitude = location.longitude
@@ -10497,8 +7568,8 @@ class ProjectTask(models.Model):
 
                 """code Added on Jan 29 2026"""
                 if (
-                    not rec.service_warranty_id.warranty_applicable_bool
-                    and not rec.service_warranty_id.misuse_warranty_bool
+                        not rec.service_warranty_id.warranty_applicable_bool
+                        and not rec.service_warranty_id.misuse_warranty_bool
                 ):
                     rec.inspection_charges_bool = False
                     # if not rec.warranty:
@@ -10506,11 +7577,13 @@ class ProjectTask(models.Model):
 
     @api.constrains("attachment_ids", "job_card_state_code")
     def _attachment_ids_check(self):
+
         if self.env.context.get("skip_state_validation"):
             return False
+
         for rec in self:
             if self.env.user.has_group(
-                "machine_repair_management.group_job_card_mobile_user"
+                    "machine_repair_management.group_job_card_mobile_user"
             ):
                 ##commented on Sep 29-2025 due to client ask remove the document invoice
                 # if rec.job_card_state_code in ('125','126'):
@@ -10580,6 +7653,7 @@ class ProjectTask(models.Model):
     """Code added on  March 10 2026"""
 
     ## Added on Raj - 12-03-2026
+
     @api.depends("team_id", "product_category_id")
     def _compute_warehouse_lst_ids(self):
         for rec in self:
@@ -10618,22 +7692,25 @@ class ProjectTask(models.Model):
                     )
 
             if (
-                rec.team_id
-                and not rec.work_center_id.technician_warehouse_required_bool
+                    rec.team_id
+                    and not rec.work_center_id.technician_warehouse_required_bool
             ):
                 user = self.env["res.users"].browse(rec.team_id.leader_id.id)
                 if not user.warehouse_category_user_line_ids:
-                    warehouse = self.env['stock.warehouse'].search([('work_center_ids', 'in', rec.work_center_id.ids),('product_category_ids', 'in', rec.product_category_id.id),('region_default_warehouse_bool', '=', True),('warehouse_type', '=', 'main_warehouse')], limit=1)
-                    # warehouse = self.env["stock.warehouse"].search(
-                    #     [
-                    #         ("work_center_id", "=", rec.work_center_id.id),
-                    #         ("product_category_ids", "in", rec.product_category_id.id),
-                    #         # ('default_work_center_bool', '=', True),
-                    #         ("region_default_warehouse_bool", "=", True),
-                    #         ("warehouse_type", "=", "main_warehouse"),
-                    #     ],
-                    #     limit=1,
-                    # )
+                    warehouse = self.env["stock.warehouse"].search(
+                        [
+                            #code added on April 12 2026 by Vijaya Bhaskar because main warehouse asked Work center group based
+                            #Code Commented by April 15 2026 by Vijaya Bhaskar becuase Client want Work center Many2many
+                            # ('work_center_id.work_center_group_id','=',rec.work_center_group_id.id),
+                              ('work_center_ids', 'in', rec.work_center_id.ids),
+                            # ("work_center_id", "=", rec.work_center_id.id),
+                            ("product_category_ids", "in", rec.product_category_id.id),
+                            # ('default_work_center_bool', '=', True),
+                            ("region_default_warehouse_bool", "=", True),
+                            ("warehouse_type", "=", "main_warehouse"),
+                        ],
+                        limit=1,
+                    )
 
                     if warehouse:
                         rec.warehouse_id = warehouse.id
@@ -10691,12 +7768,15 @@ class ProjectTask(models.Model):
                         "Service Type must have one service if you Select "
                     )
 
+    '''Code Commented on June 202 2026 by Vijaya Bhaskar for faster code performance
     def _compute_payment_receipt_count(self):
         for rec in self:
             receipt_count = self.env["payment.receipt"].search_count(
                 [("job_card_no_id", "=", rec.id)]
             )
             rec.payment_receipt_count = receipt_count
+            
+            
 
     def _compute_quotation_count(self):
         for rec in self:
@@ -10704,12 +7784,27 @@ class ProjectTask(models.Model):
                 [("job_task_id", "=", rec.id)]
             )
             rec.quotation_count = quotation_count
+    
+    '''  
+    '''Code Added on June 20 2026 by Vijaya Bhaskar for faster performance code'''                 
+    def _compute_payment_receipt_count(self):
+        receipt_data = self.env['payment.receipt'].read_group([('job_card_no_id', 'in', self.ids)], ['job_card_no_id'], ['job_card_no_id'])
+        mapped_data = {data['job_card_no_id'][0]: data['job_card_no_id_count'] for data in receipt_data if data.get('job_card_no_id')}
+        for rec in self:
+            rec.payment_receipt_count = mapped_data.get(rec.id, 0)
+    
+    '''Code Added on June 20 2026 by Vijaya Bhaskar for faster performance code'''                 
+    def _compute_quotation_count(self):
+        quotation_data = self.env['service.sale.order'].read_group([('job_task_id', 'in', self.ids)], ['job_task_id'], ['job_task_id'])
+        mapped_data = {data['job_task_id'][0]: data['job_task_id_count'] for data in quotation_data if data.get('job_task_id')}
+        for rec in self:
+            rec.quotation_count = mapped_data.get(rec.id, 0)                
 
     """  This code is used to Product consume service has allowed only 5 product not more than that by Vijaya bhaskar on may 7 2025"""
 
-    @api.constrains('product_line_ids')
+    @api.constrains("product_line_ids")
     def _check_change_product_line(self):
-        if self.env.context.get('skip_state_validation'):
+        if self.env.context.get("skip_state_validation"):
             return False
 
         for rec in self:
@@ -10783,6 +7878,97 @@ class ProjectTask(models.Model):
                         "Appt End Date & Time is always greater than Appt Start Date & Time"
                     )
 
+    # @api.model
+    # def search_fetch(self, domain, field_names, offset=0, limit=None, order=None):
+    #
+    #     user = self.env.user
+    #     ctx = self.env.context
+    #
+    #     # Dynamic AMC Project Check (based on amc_project_id)
+    #     # user.project_ids = list of projects assigned to the user
+    #     hhs_project = self.env["project.project"].search(
+    #         [("name", "=", "HHS")], limit=1
+    #     )
+    #     amc_project = self.env["project.project"].search(
+    #         [("name", "=", "HHS - AMC Project")], limit=1
+    #     )
+    #
+    #     amc_project_ids = user.project_ids.ids
+    #     has_amc_project = bool(amc_project_ids)
+    #
+    #
+    #     if (user.has_group("machine_repair_management.group_job_card_back_office_user")
+    #             and user.has_group(
+    #         "machine_repair_management.group_technical_allocation_user"
+    #     )
+    #     ) and user.default_work_center_id:
+    #         domain += [
+    #             ("work_center_id", "in", user.default_work_center_id.ids),
+    #             # ("job_card_state_code", "!=", "121"),
+    #         ]
+    #         domain += [("amc_project_id", "in", amc_project_ids)]
+    #         return super(ProjectTask, self).search_fetch(
+    #             domain, field_names, offset, limit, order
+    #         )
+    #
+    #
+    #     # SUPERVISOR FILTER
+    #     # if (
+    #     #     user.has_group("machine_repair_management.group_job_card_back_office_user")
+    #     #     and user.has_group(
+    #     #         "machine_repair_management.group_technical_allocation_user"
+    #     #     )
+    #     #     and user.default_work_center_id
+    #     # ):
+    #     #     # Always apply work_center filter
+    #     #     domain += [("work_center_id", "in", user.default_work_center_id.ids)]
+    #
+    #     #     # if has_amc_project:
+    #     #     domain += [("amc_project_id", "in", amc_project_ids)]
+    #
+    #     #     return super(ProjectTask, self).search_fetch(
+    #     #         domain, field_names, offset, limit, order
+    #     #     )
+    #
+    #     # PARTS USER FILTER
+    #     if user.has_group(
+    #         "machine_repair_management.group_job_card_back_office_user"
+    #     ) and user.has_group("machine_repair_management.group_parts_user"):
+    #
+    #         # Job card state codes
+    #         domain += [("job_card_state_code", "in", ("131", "129", "121", "122"))]
+    #
+    #         # AMC projects filter
+    #         # if has_amc_project:
+    #         domain += [("amc_project_id", "in", amc_project_ids)]
+    #
+    #         # Work center filter if exists
+    #         if user.default_work_center_id:
+    #             domain += [("work_center_id", "in", user.default_work_center_id.ids)]
+    #
+    #         return super(ProjectTask, self).search_fetch(
+    #             domain, field_names, offset, limit, order
+    #         )
+    #
+    #     # TECHNICIAN (MOBILE USER)
+    #     if user.has_group("machine_repair_management.group_job_card_mobile_user"):
+    #
+    #         domain += [
+    #             ("technician_id", "=", user.id),
+    #             ("job_card_state_code", "not in", ("124", "126")),  # closed states
+    #         ]
+    #
+    #         # if has_amc_project:
+    #         domain += [("amc_project_id", "in", amc_project_ids)]
+    #
+    #         return super(ProjectTask, self).search_fetch(
+    #             domain, field_names, offset, limit, order
+    #         )
+    #
+    #     return super(ProjectTask, self).search_fetch(
+    #         domain, field_names, offset, limit, order
+    #     )
+    
     @api.model
     def search_fetch(self, domain, field_names, offset=0, limit=None, order=None):
 
@@ -10801,6 +7987,28 @@ class ProjectTask(models.Model):
         amc_project_ids = user.project_ids.ids
         has_amc_project = bool(amc_project_ids)
 
+        if user.has_group('machine_repair_management.group_parts_supervisor_both') and user.has_group('machine_repair_management.group_job_card_back_office_user'):
+            if user.default_work_center_id:
+                domain += [
+                ('work_center_id', 'in', user.default_work_center_id.ids)
+            ]
+            if ctx.get('parts_menu') == 'without_damaged_parts':
+                 domain += [
+                ('job_card_state_code', 'in', ('131','129','121', '122','134')),
+                ]
+            
+            if ctx.get('parts_menu') == 'damaged_parts_only':
+                domain += [
+                ('damaged_parts_returned_parts_user','=',False),
+                ('damaged_parts_to_be_returned_technician','=',True)
+                ]
+            
+            domain += [("amc_project_id", "in", amc_project_ids)]
+   
+            return super(ProjectTask, self).search_fetch(
+                domain, field_names, offset, limit, order
+            )    
+                
 
         if (user.has_group("machine_repair_management.group_job_card_back_office_user")
                 and user.has_group(
@@ -10841,7 +8049,20 @@ class ProjectTask(models.Model):
         ) and user.has_group("machine_repair_management.group_parts_user"):
 
             # Job card state codes
-            domain += [("job_card_state_code", "in", ("131", "129", "121", "122"))]
+            
+            if ctx.get("parts_menu") == "without_damaged_parts":
+                domain += [
+                    ("job_card_state_code", "in", ("131", "129", "121", "122", "134")),
+                ]
+                
+            if ctx.get("parts_menu") == "damaged_parts_only":
+                domain += [
+                    ("damaged_parts_returned_parts_user", "=", False),
+                    ("damaged_parts_to_be_returned_technician", "=", True),
+                ]
+    
+                
+            # domain += [("job_card_state_code", "in", ("131", "129", "121", "122"))]
 
             # AMC projects filter
             # if has_amc_project:
@@ -10860,7 +8081,7 @@ class ProjectTask(models.Model):
 
             domain += [
                 ("technician_id", "=", user.id),
-                ("job_card_state_code", "not in", ("124", "126")),  # closed states
+                ("job_card_state_code", "not in", ("154", "126", "125")),  # closed states
             ]
 
             # if has_amc_project:
@@ -10874,79 +8095,7 @@ class ProjectTask(models.Model):
             domain, field_names, offset, limit, order
         )
 
-    # @api.model
-    # def search_fetch(self, domain, field_names, offset=0, limit=None, order=None):
-    #     user = self.env.user
-    #     ctx = self.env.context
-    #     # Manager gets all records
-    #     # if user.has_group('machine_repair_management.group_machine_repair_manager'):
-    #     #     return super(MachineRepairSupport, self).search_fetch(domain, field_names, offset, limit, order)
-    #     #
-    #     # # Regular user only sees their own records
-    #     # if user.has_group('machine_repair_management.group_machine_repair_user'):
-    #     #     domain += [('user_id', '=', user.id)]
-    #     #     return super(MachineRepairSupport, self).search_fetch(domain, field_names, offset, limit, order)
-    #     #
-    #
-    #     # ##supervisor
-    #     if (user.has_group('machine_repair_management.group_job_card_back_office_user') and
-    #         user.has_group(
-    #             'machine_repair_management.group_technical_allocation_user')) and user.default_work_center_id:
-    #         domain += [
-    #             ('work_center_id', 'in', user.default_work_center_id.ids), ('job_card_state_code', '!=', '121')
-    #         ]
-    #         return super(ProjectTask, self).search_fetch(domain, field_names, offset, limit, order)
-    #     # ##parts User
-    #     if user.has_group('machine_repair_management.group_job_card_back_office_user') and \
-    #             user.has_group('machine_repair_management.group_parts_user'):
-    #         # domain += ['|',
-    #         #     ('job_card_state_code', 'in', ('131','129','121', '122')),
-    #         #     ('damaged_parts_returned_parts_user','=',False),
-    #         #     ('damaged_parts_to_be_returned_technician','=',True)
-    #         # ]
-    #
-    #         if ctx.get('parts_menu') == 'without_damaged_parts':
-    #             domain += [
-    #                 ('job_card_state_code', 'in', ('131', '129', '121', '122', '134')),
-    #             ]
-    #
-    #         if ctx.get('parts_menu') == 'damaged_parts_only':
-    #             domain += [
-    #                 ('damaged_parts_returned_parts_user', '=', False),
-    #                 ('damaged_parts_to_be_returned_technician', '=', True)
-    #             ]
-    #
-    #         # domain += [
-    #         #     ('job_card_state_code', 'in', ('131','129','121', '122')),
-    #         #     ]
-    #         #
-    #
-    #         # domain += [
-    #         #     ('job_card_state','=','On Hold - Spare Parts Required'),('job_card_state_code','=','121')
-    #         # ]
-    #         if user.default_work_center_id:
-    #             domain += [('work_center_id', 'in', user.default_work_center_id.ids)]
-    #         return super(ProjectTask, self).search_fetch(domain, field_names, offset, limit, order)
-    #
-    #     # For mobile users (technicians)
-    #     if user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #         '''Client ask technician also visible closed job card state record on Aug-20-2025'''
-    #         domain += [
-    #             ('technician_id', '=', user.id), ('job_card_state_code', 'not in', ('154', '126', '125'))
-    #         ]
-    #         return super(ProjectTask, self).search_fetch(domain, field_names, offset, limit, order)
-    #
-    #     # if user.has_group('machine_repair_management.group_job_card_back_office_user') and \
-    #     #     user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #     #     domain += [
-    #     #         ('technician_id', '=', user.id)
-    #     #     ]
-    #     #     return super(ProjectTask, self).search_fetch(domain, field_names, offset, limit, order)
-    #     #
-    #
-    #     # Default fallback
-    #     return super(ProjectTask, self).search_fetch(domain, field_names, offset, limit, order)
-
+    
     # Mobile User only visible
 
     # product_line_id = fields.Many2one('product.product', string="Product Consume Parts")
@@ -10991,6 +8140,7 @@ class ProjectTask(models.Model):
 
     def create_receipt(self):
         for rec in self:
+
             if not rec.team_id:
                 raise ValidationError("Please enter Team Leader")
 
@@ -11100,85 +8250,7 @@ class ProjectTask(models.Model):
             "type": "ir.actions.act_window",
         }
 
-    # def create_quotation(self):
-    #     self.ensure_one()
-    #
-    #     # Validate prerequisites
-    #     if not self.product_line_ids:
-    #         raise UserError(_('Please add Product details to create a quotation!'))
-    #     elif not self.team_id:
-    #         raise ValidationError("Please enter Team Leader in Job card")
-    #
-    #     elif not self.planned_date_begin:
-    #         raise ValidationError("Please Enter Appt Start Date & Time")
-    #
-    #     # elif self.product_line_ids:
-    #     #     if self.inspection_charges_bool and self.inspection_charges_amount > 0:
-    #     #         if not any(line.product_id and line.product_id.service_type_bool for line in self.product_line_ids):
-    #     #             raise ValidationError("Please enter service charge amount in the product line")
-    #     #
-    #
-    #     # Create sale order
-    #     order_vals = {
-    #         'job_task_id': self.id,
-    #         'customer_name': self.customer_name,
-    #         'customer_address': self.address,
-    #         'service_sale_quotation_date': fields.Datetime.now(),
-    #         # 'partner_id': self.partner_id.id or '',
-    #         # 'user_id': self.partner_id.user_id.id or False,
-    #         'user_id': self.env.uid or '',
-    #         'warehouse_id': self.warehouse_id.id,
-    #         # 'crm_id':False,
-    #         # 'pricelist_id': self.partner_id.property_product_pricelist.id or False,
-    #     }
-    #
-    #     order = self.env['service.sale.order'].with_context(from_task=True).create(order_vals)
-    #
-    #     # Create order lines
-    #     for line in self.product_line_ids:
-    #         if not line.product_id:
-    #             raise UserError(_('Product not defined on Product Consume/Services!'))
-    #
-    #         # Ensure warehouse is set
-    #
-    #         self.env['service.sale.order.line'].with_context(from_task=True).create({
-    #             'service_sale_id': order.id,
-    #             'product_id': line.product_id.id,
-    #             'product_qty': line.qty,
-    #             'product_uom': line.uom_id.id,
-    #             'price_unit': 0.0 if line.under_warranty_bool else line.price_unit,
-    #             'vat': line.vat,
-    #             'tax_amount': line.tax_amount,
-    #             'total': line.total,
-    #             # 'name': line.product_id.name or '/',
-    #
-    #         })
-    #
-    #     # Update task reference
-    #     self.service_sale_id = order.id
-    #
-    #     # Update task state if needed
-    #     if order.state == 'draft':
-    #         stage = self.env['project.task.type'].search([('code', '=', '114')], limit=1)
-    #         if stage:
-    #             self.write({
-    #                 'job_state': stage.id,
-    #                 'job_card_state_code': stage.code,
-    #                 'job_card_state': stage.name
-    #             })
-    #             self.service_request_id.service_request_state = stage.name
-    #             self.service_request_id.service_request_state_code = stage.code
-    #             self.service_request_id.state = stage.id
-    #
-    #     # Return action
-    #     return {
-    #         'type': 'ir.actions.act_window',
-    #         'res_model': 'service.sale.order',
-    #         'res_id': order.id,
-    #         'views': [(False, 'form')],
-    #         'target': 'current',
-    #         'context': {'create': False},
-    #     }
+
 
     def create_quotation(self):
         self.ensure_one()
@@ -11319,124 +8391,7 @@ class ProjectTask(models.Model):
                 "domain": [("job_task_id", "=", self.id)],
             }
 
-            # '''Code is added on August-29-2025 by Vijaya Bhaskar due to Technician ask to add extra job card work for a single customer'''
-
-    # def duplicate_service_job_card_create(self):
-    #     self.ensure_one()
-    #     duplicate_service_record = self.service_request_id.with_context(
-    #         skip_state_validation=True
-    #     ).copy_data()[0]
-    #
-    #     service_request_creation = self.env['machine.repair.support'].with_context(
-    #         skip_state_validation=True
-    #     ).create(duplicate_service_record)
-    #
-    #     # duplicate_service_record = self.service_request_id.copy_data()[0]
-    #     # service_request_creation = self.env['machine.repair.support'].create(duplicate_service_record)
-    #     service_request_creation.write({'symptom_line_ids': [(0, 0, {'sym_id': line.sym_id.id}) for line in
-    #                                                          self.service_request_id.symptom_line_ids],
-    #                                     'problem': self.service_request_id.problem}
-    #                                    )
-    #
-    #     service_request_creation.task_id.write({'symptoms_line_ids': [(0, 0, {'code': line.sym_id.id}) for line in
-    #                                                                   self.service_request_id.symptom_line_ids]})
-    #     service_request_creation.task_id.team_id = self.team_id.id
-    #     service_request_creation.task_id.technician_id = self.technician_id.id
-    #     service_request_creation.task_id._onchange_team_id_warehouse()
-    #     service_request_creation.task_id.planned_date_begin = fields.Datetime.now() + timedelta(hours=1)
-    #     service_request_creation.task_id._onchange_planned_date_begin()
-    #     service_request_creation.task_id.product_line_ids = [(5, 0, 0)]
-    #     service_request_creation.task_id.product_id = None
-    #     service_request_creation.attachment_ids = [(5, 0, 0)]
-    #     service_request_creation.task_id.attachment_ids = [(5, 0, 0)]
-    #     service_request_creation.sr_service_warranty_id = None
-    #     service_request_creation.purchase_invoice_no = None
-    #     service_request_creation.purchase_date = None
-    #     service_request_creation.dealer_id = None
-    #     service_request_creation.product_sub_group_id = None
-    #     service_request_creation.product_id = None
-    #     service_request_creation.product_slno = None
-    #
-    #     service_request_creation.task_id.service_warranty_id = None
-    #     service_request_creation.task_id.purchase_invoice_no = None
-    #     service_request_creation.task_id.purchase_date = None
-    #     service_request_creation.task_id.dealer_id = None
-    #     service_request_creation.task_id.product_sub_group_id = None
-    #     service_request_creation.task_id.product_id = None
-    #     service_request_creation.task_id.product_slno = None
-    #
-    #     service_request_creation.task_id.technician_first_visit_id = self.technician_id.id
-    #     service_request_creation.task_id.technician_first_visit = self.technician_id.name
-    #     service_request_creation.task_id.technician_first_visit_date = fields.Date.today()
-    #
-    #     service_request_creation.task_id.img1_text = "Unit Name Plate"
-    #     service_request_creation.task_id.img2_text = "Unit Part"
-    #
-    #     # stage = self.env['project.task.type'].search([('code', '=', '111')], limit=1)
-    #     stage = self.env['project.task.type'].search([('code', '=', '110')], limit=1)
-    #
-    #     if stage:
-    #         service_request_creation.task_id.with_context(skip_state_validation=True).sudo().write({
-    #             'job_state': stage.id,
-    #             'job_card_state_code': stage.code,
-    #             'job_card_state': stage.name
-    #         })
-    #         service_request_creation.service_request_state = stage.name
-    #         service_request_creation.service_request_state_code = stage.code
-    #         service_request_creation.state = stage.id
-    #
-    #     self.duplicate_service_button_clicked = True
-    #
-    #     ## this is also Worked
-    #     # message = "Additional Job Card Created Successfully: %s" % service_request_creation.task_id.name
-    #     #
-    #     # # Return both the notification and the action to open the form
-    #     # return {
-    #     #     'type': 'ir.actions.client',
-    #     #     'tag': 'display_notification',
-    #     #     'params': {
-    #     #         'title': 'Success',
-    #     #         'message': message,
-    #     #         'type': 'success',
-    #     #         'sticky': False,
-    #     #         'next': {
-    #     #             'type': 'ir.actions.act_window',
-    #     #             'name': 'Job Card',
-    #     #             'res_model': 'project.task',
-    #     #             'view_mode': 'form',
-    #     #             'res_id': service_request_creation.task_id.id,
-    #     #             'views': [[False, 'form']],
-    #     #             'target': 'current',
-    #     #         },
-    #     #     }
-    #     # }
-    #     #
-    #
-    #     action = {
-    #
-    #         'type': 'ir.actions.act_window',
-    #         'name': 'Job Card',
-    #         'res_model': 'project.task',
-    #         'view_mode': 'form',
-    #         'res_id': service_request_creation.task_id.id,
-    #         'views': [(False, 'form')],
-    #         'target': 'current',
-    #     }
-    #
-    #     return {
-    #
-    #         'type': 'ir.actions.client',
-    #         'tag': 'display_notification',
-    #         'params': {
-    #             'title': 'success',
-    #             'message': 'Additional Job Card Created Successfully %s' % service_request_creation.task_id.name,
-    #             'type': 'success',
-    #             'sticky': False,
-    #             'next': action
-    #
-    #         }
-    #
-    #     }
+   
 
     """Code is added on August-29-2025 by Vijaya Bhaskar due to Technician ask to add extra job card work for a single customer"""
 
@@ -11497,7 +8452,7 @@ class ProjectTask(models.Model):
         service_request_creation.task_id.technician_id = self.technician_id.id
         service_request_creation.task_id._onchange_team_id_warehouse()
         service_request_creation.task_id.planned_date_begin = (
-            fields.Datetime.now() + timedelta(hours=1)
+                fields.Datetime.now() + timedelta(hours=1)
         )
         service_request_creation.task_id._onchange_planned_date_begin()
         service_request_creation.task_id.product_line_ids = [(5, 0, 0)]
@@ -11617,7 +8572,7 @@ class ProjectTask(models.Model):
             "params": {
                 "title": "success",
                 "message": "Additional Job Card Created Successfully %s"
-                % service_request_creation.task_id.name,
+                           % service_request_creation.task_id.name,
                 "type": "success",
                 "sticky": False,
                 "next": action,
@@ -11638,6 +8593,7 @@ class ProjectTask(models.Model):
         }
 
     def cancelled_reason_button_mobile(self):
+
         if self.job_state.code == "124":
             return {
                 "type": "ir.actions.act_window",
@@ -11679,7 +8635,7 @@ class ProjectTask(models.Model):
         # return action
 
     def action_add_product_line(self):
-        '''This is for Used for check product_line_ids more than 5 products in mobile version'''
+        """This is for Used for check product_line_ids more than 5 products in mobile version"""
         for rec in self:
             if rec.product_line_ids:
                 if len(rec.product_line_ids) > 9:
@@ -11687,7 +8643,7 @@ class ProjectTask(models.Model):
                 '''Code Commented on April 06 2026 by Vijaya Bhaskar because client Asked to update into 10 products
                 if len(rec.product_line_ids) > 4:
                     raise ValidationError("Product Consume Part Service is maximum added only 5 product not more than that(including service product) ")
-                '''    
+                '''   
         return {
             'type': 'ir.actions.act_window',
             'name': 'Add Product Line',
@@ -11757,6 +8713,7 @@ class ProjectTask(models.Model):
                 local_dt = pytz.utc.localize(
                     record.service_created_datetime
                 ).astimezone(user_timezone)
+
                 record.call_date = local_dt.date()
                 record.call_time = local_dt.strftime("%H:%M:%S")
                 # record.call_date = record.service_created_datetime.date()
@@ -12021,13 +8978,19 @@ class ProjectTask(models.Model):
 
     @api.constrains("planned_date_begin", "planned_date_end")
     def _valid_check_planned_date_begin_date_end(self):
+
         if self.env.context.get("skip_state_validation"):
             return False
+
         for rec in self:
+
             if not rec.planned_date_begin or not rec.planned_date_end:
                 continue
+
             calendar = rec.env.company.resource_calendar_id
+
             working_day = set(int(att.dayofweek) for att in calendar.attendance_ids)
+
             for field_name in ["planned_date_begin", "planned_date_end"]:
                 field_date = getattr(rec, field_name)
                 work_day = field_date.weekday()
@@ -12046,12 +9009,12 @@ class ProjectTask(models.Model):
             )
             for leave in leaves_search:
                 if (
-                    leave.date_from.date()
-                    <= rec.planned_date_begin.date()
-                    <= leave.date_to.date()
-                    or leave.date_from.date()
-                    <= rec.planned_date_end.date()
-                    <= leave.date_to.date()
+                        leave.date_from.date()
+                        <= rec.planned_date_begin.date()
+                        <= leave.date_to.date()
+                        or leave.date_from.date()
+                        <= rec.planned_date_end.date()
+                        <= leave.date_to.date()
                 ):
                     raise ValidationError(
                         "Planned dates are not comes under public holiday"
@@ -12149,7 +9112,7 @@ class ProjectTask(models.Model):
                 rec.address = False
                 rec.longitude = False
                 rec.latitude = False
-
+                
     """
 
     # rec.address = rec.partner_id.contact_address if rec.partner_id else ''
@@ -12267,9 +9230,8 @@ class ProjectTask(models.Model):
     #                             % (fields.Date.today() - rec.warranty_expiry_date).days,
     #                         }
     #                     }
-    
-    
-    """Code Added on Mar 24 2026"""
+
+    """Code Added on April 22 2026"""
 
     @api.onchange(
         "purchase_date",
@@ -12317,7 +9279,7 @@ class ProjectTask(models.Model):
                             # + timedelta(days=7)
                         )
 
-            print("rec.warranty_expiry_date", rec.warranty_expiry_date)
+           
             #  Validation ONLY if config enabled
             # if not has_access:
             # if rec.security_warranty_expiry and not rec.text_warranty_expiry:
@@ -12328,6 +9290,8 @@ class ProjectTask(models.Model):
                     ''' Code Added on May 05 2026 by Vijaya Bhaskar client asked to warranty expiry alert only for Warranty All '''
                     if rec.service_warranty_id.warranty_expire_alert_bool:
                         if rec.warranty_expiry_date:
+                            '''Code Added on June 10 2026 by Vijaya Bhaskar client asked to when enter purchase date should check from “service created date & time”  to “Purchase Date” 
+                            
                             if (
                                     rec.warranty_expiry_date + relativedelta(days=7)
                                     < fields.Date.today()
@@ -12336,10 +9300,167 @@ class ProjectTask(models.Model):
                                         fields.Date.today()
                                         - (rec.warranty_expiry_date + relativedelta(days=7))
                                 ).days
+                            '''    
+                            if (
+                                    rec.warranty_expiry_date + relativedelta(days=7)
+                                    < rec.service_created_datetime.date()
+                            ):
+                                days = (
+                                        rec.service_created_datetime.date()
+                                        - (rec.warranty_expiry_date + relativedelta(days=7))
+                                ).days
+        
     
                                 raise ValidationError(
                                     f"Your Warranty has expired more than {days} day(s) ago!"
                                 )
+
+
+            # else:
+            #     if rec.warranty_expiry_date:
+            #         if rec.warranty_expiry_date < fields.Date.today():
+            #             return {
+            #                 "warning": {
+            #                     "title": "Warranty Expired",
+            #                     "message": "Your Warranty has expired more than %s days ago"
+            #                     % (fields.Date.today() - rec.warranty_expiry_date).days,
+            #                 }
+            #             }
+
+    # @api.onchange(
+    #     "purchase_date",
+    #     "dealer_id",
+    #     "date_pick_purchase",
+    #     "month_pick_purchase",
+    #     "year_pick_purchase",
+    # )
+    # def _compute_warranty_expiry(self):
+    #     # param = (
+    #     #     self.env["ir.config_parameter"]
+    #     #     .sudo()
+    #     #     .get_param("machine_repair_management.warranty_expiry_enable")
+    #     # )
+    #     has_access = self.env.user.has_group(
+    #         "machine_repair_management.group_job_card_warranty_expired"
+    #     )
+    #
+    #     for rec in self:
+    #         rec.warranty_expiry_date = False
+    #
+    #         if rec.service_warranty_id.warranty_applicable_bool:
+    #             if rec.purchase_date and rec.product_category_id:
+    #
+    #                 if rec.product_category_id.warranty_period_combo == "days":
+    #                     rec.warranty_expiry_date = rec.purchase_date + timedelta(
+    #                         days=rec.product_category_id.warranty_period
+    #                     )
+    #
+    #                 elif rec.product_category_id.warranty_period_combo == "months":
+    #                     rec.warranty_expiry_date = rec.purchase_date + relativedelta(
+    #                         months=rec.product_category_id.warranty_period
+    #                     )
+    #
+    #                 elif rec.product_category_id.warranty_period_combo == "years":
+    #                     rec.warranty_expiry_date = (
+    #                         rec.purchase_date
+    #                         + relativedelta(
+    #                             years=rec.product_category_id.warranty_period
+    #                         )
+    #                         # + timedelta(days=7)
+    #                     )
+    #
+    #         #  Validation ONLY if config enabled
+    #         # if not has_access:
+    #         if rec.security_warranty_expiry and not rec.text_warranty_expiry:
+    #             raise ValidationError(
+    #                 "Please enter the warranty expiry reason/details."
+    #             )
+    #
+    #         if not rec.security_warranty_expiry:
+    #             if rec.warranty_expiry_date:
+    #                 if (
+    #                     rec.warranty_expiry_date + relativedelta(days=7)
+    #                     < fields.Date.today()
+    #                 ):
+    #                     days = (
+    #                         fields.Date.today()
+    #                         - (rec.warranty_expiry_date + relativedelta(days=7))
+    #                     ).days
+    #
+    #                     raise ValidationError(
+    #                         f"Your Warranty has expired more than {days} day(s) ago!"
+    #                     )
+    #
+    #         # else:
+    #         #     if rec.warranty_expiry_date:
+    #         #         if rec.warranty_expiry_date < fields.Date.today():
+    #         #             return {
+    #         #                 "warning": {
+    #         #                     "title": "Warranty Expired",
+    #         #                     "message": "Your Warranty has expired more than %s days ago"
+    #         #                     % (fields.Date.today() - rec.warranty_expiry_date).days,
+    #         #                 }
+    #         #             }
+
+    # def _compute_warranty_expiry(self):
+    #     param = (
+    #         self.env["ir.config_parameter"]
+    #         .sudo()
+    #         .get_param("machine_repair_management.warranty_expiry_enable")
+    #     )
+    #
+    #     for rec in self:
+    #         rec.warranty_expiry_date = False
+    #
+    #         if rec.service_warranty_id.warranty_applicable_bool:
+    #             if rec.purchase_date and rec.product_category_id:
+    #
+    #                 if rec.product_category_id.warranty_period_combo == "days":
+    #                     rec.warranty_expiry_date = rec.purchase_date + timedelta(
+    #                         days=rec.product_category_id.warranty_period
+    #                     )
+    #
+    #                 elif rec.product_category_id.warranty_period_combo == "months":
+    #                     rec.warranty_expiry_date = rec.purchase_date + relativedelta(
+    #                         months=rec.product_category_id.warranty_period
+    #                     )
+    #
+    #                 elif rec.product_category_id.warranty_period_combo == "years":
+    #                     rec.warranty_expiry_date = (
+    #                         rec.purchase_date
+    #                         + relativedelta(
+    #                             years=rec.product_category_id.warranty_period
+    #                         )
+    #                         # + timedelta(days=7)
+    #                     )
+    #
+    #         #  Validation ONLY if config enabled
+    #         if param == "True":
+    #             if rec.warranty_expiry_date:
+    #                 if (
+    #                     rec.warranty_expiry_date + relativedelta(days=7)
+    #                     < fields.Date.today()
+    #                 ):
+    #
+    #                     days = (
+    #                         fields.Date.today()
+    #                         - (rec.warranty_expiry_date + relativedelta(days=7))
+    #                     ).days
+    #
+    #                     raise ValidationError(
+    #                         f"Your Warranty has expired more than {days} day(s) ago!"
+    #                     )
+    #
+    #         else:
+    #             if rec.warranty_expiry_date:
+    #                 if rec.warranty_expiry_date < fields.Date.today():
+    #                     return {
+    #                         "warning": {
+    #                             "title": "Warranty Expired",
+    #                             "message": "Your Warranty has expired more than %s days ago"
+    #                             % (fields.Date.today() - rec.warranty_expiry_date).days,
+    #                         }
+    #                     }
 
     # @api.constrains('product_line_ids', 'job_card_state_code')
     # def _check_parts_ready(self):
@@ -12372,35 +9493,35 @@ class ProjectTask(models.Model):
     """@api.model
     def create(self, vals):
         # Generate sequence if job_card_state_code is '126' on creation
-
+    
         if vals.get('job_card_state_code') == '126':
             vals['invoice_no'] = self._generate_jobcard_sequence(vals)
         return super(ProjectTask, self).create(vals)
-
+    
     def write(self, vals):
         # Generate sequence if job_card_state_code is updated to '126'
         for task in self:
             if vals.get('job_card_state_code') == '126' and not task.invoice_no:
                 vals['invoice_no'] = self._generate_jobcard_sequence(vals)
         return super(ProjectTask, self).write(vals) 
-
-
+    
+    
     def _generate_jobcard_sequence(self, vals):
         now = datetime.now()
         current_month = now.month
         current_year = now.year
         year_str = now.strftime("%y")
         month_str = now.strftime("%m")
-
+    
         sequence = self.env['ir.sequence'].search([('code', '=', 'jobcard.sequence')], limit=1)
         if not sequence:
             raise ValidationError("Sequence 'jobcard.sequence' not found!")
-
+    
         loc = "JC -"  
         number = 1     
         location_id = self.work_center_id
-
-
+    
+    
         if sequence.use_date_range and sequence.use_location_wise:
             domain = [
                 ('sequence_id', '=', sequence.id),
@@ -12413,8 +9534,8 @@ class ProjectTask(models.Model):
                 loc = date_range.location_code or loc
                 number = date_range.number_next_actual
                 date_range.write({'number_next_actual': number + 1})
-
-
+    
+    
         elif sequence.use_date_range:
             domain = [
                 ('sequence_id', '=', sequence.id),
@@ -12426,49 +9547,33 @@ class ProjectTask(models.Model):
                 loc = date_range.location_code or loc
                 number = date_range.number_next_actual
                 date_range.write({'number_next_actual': number + 1})
-
-
+    
+    
         else:
             number = sequence.number_next_actual
             sequence.write({'number_next_actual': number + 1})
-
-
+    
+    
         seq = f"{loc}{year_str}{month_str}{str(number).zfill(4)}"
-
-
+    
+    
         duplicate = self.env['project.task'].search([('invoice_no', '=', seq)], limit=1)
         if duplicate:
             raise ValidationError(f"Job Card with invoice number '{seq}' already exists!")
-
+    
         return seq  """
 
-    # @api.model
-    # def write(self, vals):
-    #     res = super(ProjectTask, self).write(vals)
-    #     if 'code' in vals:
-    #         for rec in self:
-    #             if rec.project_task_id and rec.project_task_id.service_request_id:
-    #                 repair_supports = self.env['machine.repair.support'].search([
-    #                     ('service_request_id', '=', rec.project_task_id.service_request_id.id)
-    #                 ])
-    #                 for repair in repair_supports:
-    #                     repair_lines = [(5, 0, 0)]
-    #                     for symptom in rec.code:
-    #                         repair_vals = {'sym_id': symptom.id}
-    #                         repair_lines.append((0, 0, repair_vals))
-    #                     repair.symptom_line_ids = repair_lines
-    #     return res
-
+  
     """Schedule for Invoice send whatsapp added on Jun 17 2025 by Vijaya Bhaskar"""
 
     # @api.model
     # def _send_jobcard_whatsapp_invoice(self):
     #
     #     job_card_search = self.env['project.task'].search([
-    #         ('job_card_state_code', '=', '126'),
-    #         ('job_card_state', 'ilike', 'closed'),
-    #         ('invoice_no', '!=', False),
-    #         ('whatsapp_invoice_sent', '=', False)])
+    #                                 ('job_card_state_code', '=', '126'),
+    #                                 ('job_card_state', 'ilike', 'closed'),
+    #                                  ('invoice_no', '!=', False),
+    #                                 ('whatsapp_invoice_sent', '=', False)])
     #
     #     for job in job_card_search:
     #         if job.invoice_no and not job.whatsapp_invoice_sent:
@@ -12478,49 +9583,8 @@ class ProjectTask(models.Model):
     #                 _logger.info("Successfully sent WhatsApp invoice for job card %s", job.name)
     #             except Exception as e:
     #                 _logger.error("Failed to send WhatsApp invoice for job card %s: %s", job.name, str(e))
-
-    @api.model
-    def _send_jobcard_whatsapp_invoice(self):
-
-        jobs = self.env["project.task"].search(
-            [
-                ("job_card_state_code", "=", "126"),
-                ("job_card_state", "ilike", "closed"),
-                ("invoice_no", "!=", False),
-                ("whatsapp_invoice_sent", "=", False),
-            ]
-        )
-
-        for job in jobs:
-            # 1️⃣ Try to lock row to avoid duplicate send
-            try:
-                self.env.cr.execute(
-                    "SELECT id FROM project_task WHERE id = %s FOR UPDATE NOWAIT",
-                    (job.id,),
-                )
-            except Exception:
-                _logger.info(
-                    "⏳ Job %s skipped because another worker is processing it.",
-                    job.name,
-                )
-                continue
-
-            # 2️⃣ Process WhatsApp sending safely
-            try:
-                if job.invoice_no and not job.whatsapp_invoice_sent:
-                    job.send_scheduler_whatsapp_invoice_receipt()
-                    job.sudo().write({"whatsapp_invoice_sent": True})
-                    _logger.info(
-                        "✔ WhatsApp invoice sent successfully for job %s", job.name
-                    )
-                    self.env.cr.commit()
-
-            except Exception as e:
-                _logger.error(
-                    "❌ Failed sending WhatsApp invoice for job %s: %s", job.name, e
-                )
-
-    # '''This is for schduler invoice send automatically on June-25-2025 added by Vijaya bhaskar'''
+    #
+    # # '''This is for schduler invoice send automatically on June-25-2025 added by Vijaya bhaskar'''
     # def send_scheduler_whatsapp_invoice_receipt(self):
     #     if not self.whatsapp_send_bool:
     #         _logger.info("❌ No WhatsApp set in res Config Settings")
@@ -12582,10 +9646,10 @@ class ProjectTask(models.Model):
 
         # WhatsApp global enable flag
         if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
+                not self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.whatsapp_send_bool")
+                    == "True"
         ):
             _logger.info("❌ WhatsApp not enabled in system settings")
             return False
@@ -12619,6 +9683,8 @@ class ProjectTask(models.Model):
         # -------------------------------------
         pdf_content = False
         try:
+            import time
+            start_time = time.time()
             report = self.env["ir.actions.report"].sudo()
             datas = self.print_job_card_invoice().get("data", {})
             pdf_content, _ = report._render_qweb_pdf(
@@ -12678,7 +9744,7 @@ class ProjectTask(models.Model):
                 "cic_ref_no": job.control_card_no,
                 "partner_id": job.partner_id.name,
                 "customer_name": job.customer_name or "",
-                "address": job.address,
+                "address": job.address_one or "",
                 "vat": job.partner_id.vat,
                 "job_card_no": job.name,
                 "remarks": job.supervisor_comments,
@@ -12697,7 +9763,7 @@ class ProjectTask(models.Model):
             # total = extended_price + product.tax_amount
 
             product_vals = {
-                "stock_group": product.product_id.categ_id.name,
+                "stock_group": product.product_id.product_category_id.code,
                 "stock_number": product.product_id.default_code,
                 "description": product.product_id.name,
                 "qty": product.qty,
@@ -12715,9 +9781,9 @@ class ProjectTask(models.Model):
             total_extended_price += extended_price
             total_vat_amt += product.tax_amount
             grand_total += total
-            amount_words = num2words(grand_total, to="currency", lang="ar")
-            trans = Translator(from_lang="ar", to_lang="en")
-            amount_words = trans.translate(amount_words)
+        amount_words = num2words(grand_total, to="currency", lang="ar")
+        trans = Translator(from_lang="ar", to_lang="en")
+        amount_words = trans.translate(amount_words)
         total_vals = {
             "total_extended_price": total_extended_price,
             "total_vat_amt": total_vat_amt,
@@ -12791,6 +9857,7 @@ class ProjectTask(models.Model):
                 "sales_man": job.write_uid.name or False,
                 "company_vat": self.env.company.vat or False,
                 "qr_image": job.qr_image if job.qr_image else False,
+                "inv_qrcode_has": job.inv_qrcode_has or False,
                 "building_no": job.building_number or None,
                 "district": job.country_district_id.name or None,
                 "city": job.customer_city_id.name or None,
@@ -12802,16 +9869,16 @@ class ProjectTask(models.Model):
                 "company_name": self.env.company.name,
                 "company_address": self.env.company.street or None,
                 "company_building_number": self.env.company.partner_id.building_number
-                or None,
+                                           or None,
                 "company_street_name": self.env.company.street2 or None,
                 # 'company_district':self.env.company.state_id.name or None,
                 "company_district": self.env.company.partner_id.customer_city_id.country_district_id.name
-                or None,
+                                    or None,
                 "company_city": self.env.company.city or None,
                 "company_country": self.env.company.country_id.name or None,
                 "company_zip_code": self.env.company.zip or None,
                 "company_additional_number": self.env.company.partner_id.plot_identification
-                or None,
+                                             or None,
                 "company_vat": self.env.company.vat or None,
                 "company_other_id": "",
                 "name": job.name,
@@ -12847,14 +9914,14 @@ class ProjectTask(models.Model):
             total_extended_price += extended_price
             total_vat_amt += product.tax_amount
             grand_total += total
-            amount_words_en = num2words(
-                grand_total, to="currency", lang="en", currency="SAR"
-            )
+        amount_words_en = num2words(
+            grand_total, to="currency", lang="en", currency="SAR"
+        )
 
-            # Translate English words to Arabic
-            trans = Translator(from_lang="en", to_lang="ar")
-            # amount_words_ar = trans.translate(grand_total)
-            amount_words_ar = trans.translate(amount_words_en)
+        # Translate English words to Arabic
+        trans = Translator(from_lang="en", to_lang="ar")
+        # amount_words_ar = trans.translate(grand_total)
+        amount_words_ar = trans.translate(amount_words_en)
 
         total_vals = {
             "total_extended_price": total_extended_price,
@@ -12945,24 +10012,24 @@ class ProjectTask(models.Model):
             date = str(order.service_created_datetime or fields.Datetime.now())
 
             # Format invoice details for QR code
-            lf = "\t"
-            invoice = lf.join(
-                [
-                    "Seller name:",
-                    supplier_name,
-                    "Vat Registration Number:",
-                    vat,
-                    "Date:",
-                    date,
-                    "VAT total:",
-                    vat_total,
-                ]
-            )
+            lf = '\t'
+            invoice = lf.join([
+                'Seller name:', supplier_name,
+                'Vat Registration Number:', vat,
+                'Date:', date,
+                'VAT total:', vat_total
+            ])
 
             # Generate QR code
-            qr_img = generate_qr_code(self.inv_qrcode_has)
-            order.write({"qr_image": qr_img})
+            # qr_img = generate_qr_code(invoice)
+            '''Code Added on June 15 2026 by Vijaya Bhaskar for QR code '''
+            qr_img = generate_qr_code(order.inv_qrcode_has)
+            order.write({
+                'qr_image': qr_img
+            })
         return True
+
+  
 
     """this code is for service Charges receipt print"""
 
@@ -13158,9 +10225,9 @@ class ProjectTask(models.Model):
             total_vat_amt += inspection_amount - inspection_amount_without_tax
 
             grand_total += inspection_amount
-            amount_words = num2words(grand_total, to="currency", lang="ar")
-            trans = Translator(from_lang="ar", to_lang="en")
-            amount_words = trans.translate(amount_words)
+        amount_words = num2words(grand_total, to="currency", lang="ar")
+        trans = Translator(from_lang="ar", to_lang="en")
+        amount_words = trans.translate(amount_words)
         total_vals = {
             "total_extended_price": total_extended_price,
             "total_vat_amt": total_vat_amt,
@@ -13261,9 +10328,9 @@ class ProjectTask(models.Model):
             total_extended_price += extended_price
             total_vat_amt += product.tax_amount
             grand_total += total
-            amount_words = num2words(grand_total, to="currency", lang="ar")
-            trans = Translator(from_lang="ar", to_lang="en")
-            amount_words = trans.translate(amount_words)
+        amount_words = num2words(grand_total, to="currency", lang="ar")
+        trans = Translator(from_lang="ar", to_lang="en")
+        amount_words = trans.translate(amount_words)
         total_vals = {
             "total_extended_price": total_extended_price,
             "total_vat_amt": total_vat_amt,
@@ -13356,7 +10423,7 @@ class ProjectTask(models.Model):
                 "cic_ref_no": job.control_card_no,
                 "partner_id": job.partner_id.name,
                 "customer_name": job.customer_name or "",
-                "address": job.address,
+                "address": job.address_one or "",
                 "vat": job.partner_id.vat,
                 "job_card_no": job.name,
                 "engineer_comments": (
@@ -13431,8 +10498,8 @@ class ProjectTask(models.Model):
                 "customer_VAT_no": job.customer_identification_number or "",
                 "engineer_comments_second": job.engineer_comments_second or "",
                 "promised_date_time": (
-                    local_app_start_time.strftime("%d-%m-%Y %H:%M:%S")
-                    if job.planned_date_begin
+                    local_closed_date_time.strftime("%d-%m-%Y %H:%M:%S")
+                    if job.closed_datetime
                     else None
                 ),
                 "second_visit_technician_bool": job.second_visit_technician_bool,
@@ -13466,7 +10533,7 @@ class ProjectTask(models.Model):
             # total = extended_price + product.tax_amount
 
             product_vals = {
-                "stock_group": product.product_id.categ_id.name,
+                "stock_group": product.product_id.product_category_id.code,
                 "stock_number": product.product_id.default_code,
                 "description": product.product_id.name,
                 "qty": product.qty,
@@ -13484,9 +10551,9 @@ class ProjectTask(models.Model):
             total_extended_price += extended_price
             total_vat_amt += product.tax_amount
             grand_total += total
-            amount_words = num2words(grand_total, to="currency", lang="ar")
-            trans = Translator(from_lang="ar", to_lang="en")
-            amount_words = trans.translate(amount_words)
+        amount_words = num2words(grand_total, to="currency", lang="ar")
+        trans = Translator(from_lang="ar", to_lang="en")
+        amount_words = trans.translate(amount_words)
         total_vals = {
             "total_extended_price": total_extended_price,
             "total_vat_amt": total_vat_amt,
@@ -13656,9 +10723,9 @@ class ProjectTask(models.Model):
             total_extended_price += extended_price
             total_vat_amt += product.tax_amount
             grand_total += total
-            amount_words = num2words(grand_total, to="currency", lang="ar")
-            trans = Translator(from_lang="ar", to_lang="en")
-            amount_words = trans.translate(amount_words)
+        amount_words = num2words(grand_total, to="currency", lang="ar")
+        trans = Translator(from_lang="ar", to_lang="en")
+        amount_words = trans.translate(amount_words)
         total_vals = {
             "total_extended_price": total_extended_price,
             "total_vat_amt": total_vat_amt,
@@ -13739,10 +10806,10 @@ class ProjectTask(models.Model):
         #     _logger.info("❌ No WhatsApp set in res Config Settings")
         #     return False
         if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
+                not self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.whatsapp_send_bool")
+                    == "True"
         ):
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
@@ -13795,11 +10862,12 @@ class ProjectTask(models.Model):
         self.send_pdf_to_whatsapp(phone_number, media_id, file_name, self.name)
 
     """ Working code Commented on Oct-15-2025 due to Proforma Invoice Add  Extra Message
+    @postcommit_defer
     def send_whatsapp_service_charges_receipt(self):
         if not self.whatsapp_send_bool:
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
-
+        
         phone_number = self.phone
         country_code = self.country_id.phone_code
 
@@ -13814,7 +10882,7 @@ class ProjectTask(models.Model):
         if not whatsapp_opt_in:
             _logger.info("❌ No WhatsApp opt-in for Customer %s", self.customer_name)
             return False
-
+        
         pdf_content = False    
         try:
             # pdf_content, _ = self.env['ir.actions.report'].sudo()._render_qweb_pdf('machine_repair_management.print_inspection_charge_receipt_template_document',[self.id])
@@ -13828,15 +10896,15 @@ class ProjectTask(models.Model):
         except Exception as e:
             _logger.error("Error rendering PDF for job card %s: %s", self.name, str(e))
             raise ValidationError(f"Failed to generate PDF: {str(e)}")
-
+              
         file_name = f"PRO-FORMA Invoice {self.name}.pdf"
         media_id = self._upload_pdf_meta(pdf_content, file_name)
         if not media_id:
             _logger.info("❌ Failed to upload the media id %s", self.name)
             return
-
+        
         self.send_pdf_to_whatsapp(phone_number, media_id, file_name, self.name)
-
+        
         return {
             'effect':{
                 'type': 'rainbow_man',
@@ -13844,18 +10912,19 @@ class ProjectTask(models.Model):
                 'message': 'Your PRO-FORMA Invoice send Successfully to Customer Whatsapp Number',
                 }
             }
-
+   
     """
 
+    @postcommit_defer
     def send_whatsapp_service_charges_receipt(self):
         # if not self.whatsapp_send_bool:
         #     _logger.info("❌ No WhatsApp set in res Config Settings")
         #     return False
         if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
+                not self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.whatsapp_send_bool")
+                    == "True"
         ):
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
@@ -13910,8 +10979,8 @@ class ProjectTask(models.Model):
             "نرجو منكم مراجعة التفاصيل واتخاذ الإجراءات اللازمة.\n"
             "------------------------------------------------------\n"
             f"Dear {self.customer_name},\n"
-            f"Please find attached the Pro-Forma Invoice No. {self.name}.\n"
-            "Kindly review the details and take the necessary actions.\n"
+            f"Please find attached your Proforma Invoice {self.name}.\n"
+            "Kindly review the details and proceed with the necessary actions.\n"
             "HH-Shaker – Service Team"
         )
 
@@ -13924,7 +10993,7 @@ class ProjectTask(models.Model):
 
         try:
             response = requests.post(
-                f"{base_url}/messages", headers=headers, json=template_payload
+                f"{base_url}/messages", headers=headers, json=template_payload, timeout=(5, 10)
             )
             response.raise_for_status()
             _logger.info(
@@ -13937,7 +11006,7 @@ class ProjectTask(models.Model):
         # --- Step 2: Generate PDF ---
         try:
             datas = self.print_job_card_receipt().get("data", {})
-            pdf_content, _ = (
+            pdf_content, _dummy = (
                 self.env["ir.actions.report"]
                 .sudo()
                 ._render_qweb_pdf(
@@ -13969,23 +11038,42 @@ class ProjectTask(models.Model):
             return False
         # self._send_whatsapp_job_card_report_for_ready_to_invoice()
         # self.send_whatsapp_invoice_receipt()
+        try:
+            self.env["bus.bus"]._sendone(
+                self.env.user.partner_id,
+                "simple_notification",
+                {
+                    "type": "success",
+                    "title": _("Success"),
+                    "message": _("Your PRO-FORMA Invoice was sent successfully to the customer via WhatsApp."),
+                    "sticky": True,
+                },
+            )
+        except Exception as bus_err:
+            _logger.error("❌ Failed to send bus notification: %s", str(bus_err))
+
         return {
-            "effect": {
-                "type": "rainbow_man",
-                "fadeout": "slow",
-                "message": "Your PRO-FORMA Invoice was sent successfully to the customer via WhatsApp.",
-            }
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Success"),
+                "message": _("Your PRO-FORMA Invoice was sent successfully to the customer via WhatsApp."),
+                "type": "success",
+                "sticky": True,
+                "next": {"type": "ir.actions.act_window_close"},
+            },
         }
 
+    @postcommit_defer
     def send_whatsapp_invoice_receipt(self):
         # if not self.whatsapp_send_bool:
         #     _logger.info("❌ No WhatsApp set in res Config Settings")
         #     return False
         if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
+                not self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.whatsapp_send_bool")
+                    == "True"
         ):
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
@@ -14032,13 +11120,28 @@ class ProjectTask(models.Model):
         #     f"Thank you for your business,\nHH-Shaker – Service Team"
         # )
 
+        # message = (
+        #         f"عزيزي {self.customer_name},\n"
+        #         f"نرفق لكم الفاتورة ({self.invoice_no or ''}) الخاصة بالخدمة المطلوبة.\n"
+        #         f"شكراً لتعاونكم.\n"
+        #         "---------------------------------------------------------\n"
+        #         f"Dear {self.customer_name},\n"
+        #         f"Please find attached Invoice ({self.invoice_no or ''}) for the requested service.\n"
+        #         f"Thank you for your cooperation.\n"
+        #         "HH-Shaker – Service Team"
+        #     )
+
+        invoice_part = False
+
+        invoice_part = f"({self.invoice_no})" if self.invoice_no else ""
+
         message = (
             f"عزيزي {self.customer_name},\n"
-            f"نرفق لكم الفاتورة ({self.invoice_no or ''}) الخاصة بالخدمة المطلوبة.\n"
+            f"نرفق لكم الفاتورة {invoice_part} الخاصة بالخدمة المطلوبة.\n"
             f"شكراً لتعاونكم.\n"
             "---------------------------------------------------------\n"
             f"Dear {self.customer_name},\n"
-            f"Please find attached Invoice ({self.invoice_no or ''}) for the requested service.\n"
+            f"Please find attached Invoice {invoice_part} for the requested service.\n"
             f"Thank you for your cooperation.\n"
             "HH-Shaker – Service Team"
         )
@@ -14052,7 +11155,7 @@ class ProjectTask(models.Model):
 
         try:
             response = requests.post(
-                f"{base_url}/messages", headers=headers, json=template_payload
+                f"{base_url}/messages", headers=headers, json=template_payload, timeout=(5, 10)
             )
             response.raise_for_status()
             _logger.info(
@@ -14113,6 +11216,7 @@ class ProjectTask(models.Model):
         }
 
     """  Working code Commented on Oct-15-2025 due to Invoice Add  Extra Message
+    @postcommit_defer
     def send_whatsapp_invoice_receipt(self):
         if not self.whatsapp_send_bool:
             _logger.info("❌ No WhatsApp set in res Config Settings")
@@ -14132,7 +11236,7 @@ class ProjectTask(models.Model):
             return False
         pdf_content = False    
         try:
-
+            
             datas = self.print_job_card_invoice().get('data', {})
             pdf_content, _ = self.env['ir.actions.report'].sudo()._render_qweb_pdf(
                 'machine_repair_management.print_job_card_invoice_template_document',
@@ -14152,15 +11256,15 @@ class ProjectTask(models.Model):
         #
         # except Exception as e: 
         #     _logger.info("Error rendering PDF for order %s: %s", self.name, str(e))
-
+              
         file_name = f"Invoice {self.invoice_no}.pdf"
         media_id = self._upload_pdf_meta(pdf_content, file_name)
         if not media_id:
             _logger.info("❌ Failed to upload the media id %s", self.name)
             return
-
+        
         self.send_pdf_to_whatsapp(phone_number, media_id, file_name, self.name)
-
+        
         return {
             'effect':{
                 'type': 'rainbow_man',
@@ -14172,6 +11276,7 @@ class ProjectTask(models.Model):
     """Whatsapp send for AC service unit Receipt report is added on August 1-2025"""
 
     """This code is worked correctly for whatsapp unit pull out commented on oct 31 2025 due to  unit pull out arabic template and english template
+    @postcommit_defer
     def _send_unit_receipt_whatsapp(self):
         if not self.whatsapp_send_bool:
             _logger.info("❌ No WhatsApp set in res Config Settings")
@@ -14189,7 +11294,7 @@ class ProjectTask(models.Model):
         try:
             pdf_content, _ = self.env['ir.actions.report'].sudo()._render_qweb_pdf('machine_repair_management.ac_unit_service_receipt_document_hhs_report', [self.id])
             _logger.info("PDF generated for job card %s", self.name)
-
+            
         except Exception as e:
             _logger.error("Error rendering PDF for job card %s: %s", self.name, str(e))
             raise ValidationError(f"Failed to generate PDF: {str(e)}")
@@ -14198,20 +11303,21 @@ class ProjectTask(models.Model):
         if not media_id:
             _logger.info("❌ Failed to upload the media id %s", self.name)
             return 
-
+           
         self.send_pdf_to_whatsapp(phone_number, media_id, file_name, self.name)
     """
 
+    @postcommit_defer
     def _send_unit_receipt_whatsapp(self):
 
         # if not self.whatsapp_send_bool:
         #     _logger.info("❌ No WhatsApp set in res Config Settings")
         #     return False
         if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
+                not self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.whatsapp_send_bool")
+                    == "True"
         ):
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
@@ -14233,14 +11339,14 @@ class ProjectTask(models.Model):
                         english.replace("{{customer name}}", self.customer_name or "")
                         .replace("{{service number}}", self.name)
                         .replace(
-                            "{{date}} ", self.planned_date_begin.strftime("%d-%m-%Y")
+                            "{{date}}", self.planned_date_begin.strftime("%d-%m-%Y")
                         )
                     )
                     arabic_format = (
                         arabic.replace("{{customer name}}", self.customer_name or "")
                         .replace("{{service number}}", self.name)
                         .replace(
-                            "{{date}} ", self.planned_date_begin.strftime("%d-%m-%Y")
+                            "{{date}}", self.planned_date_begin.strftime("%d-%m-%Y")
                         )
                     )
                     separator = "\n" + "-" * 50 + "\n"
@@ -14294,7 +11400,7 @@ class ProjectTask(models.Model):
 
         try:
             response = requests.post(
-                f"{base_url}/messages", headers=headers, json=template_payload
+                f"{base_url}/messages", headers=headers, json=template_payload, timeout=(5, 10)
             )
             response.raise_for_status()
             _logger.info(
@@ -14306,7 +11412,7 @@ class ProjectTask(models.Model):
 
         try:
 
-            pdf_content, _ = (
+            pdf_content, _dummy = (
                 self.env["ir.actions.report"]
                 .sudo()
                 ._render_qweb_pdf(
@@ -14336,25 +11442,44 @@ class ProjectTask(models.Model):
             _logger.error("❌ Failed to send PDF to WhatsApp: %s", str(e))
             return False
 
+        try:
+            self.env["bus.bus"]._sendone(
+                self.env.user.partner_id,
+                "simple_notification",
+                {
+                    "type": "success",
+                    "title": _("Success"),
+                    "message": _("Unit Pull Out successfully to the customer via WhatsApp."),
+                    "sticky": True,
+                },
+            )
+        except Exception as bus_err:
+            _logger.error("❌ Failed to send bus notification: %s", str(bus_err))
+
         return {
-            "effect": {
-                "type": "rainbow_man",
-                "fadeout": "slow",
-                "message": "Unit Pull Out successfully to the customer via WhatsApp.",
-            }
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Success"),
+                "message": _("Unit Pull Out successfully to the customer via WhatsApp."),
+                "type": "success",
+                "sticky": True,
+                "next": {"type": "ir.actions.act_window_close"},
+            },
         }
 
     """code added on Nov-11 due to ready to invoice  whatsapp to be sent"""
 
+    @postcommit_defer
     def _send_whatsapp_job_card_report_for_ready_to_invoice(self):
         # if not self.whatsapp_send_bool:
         #     _logger.info("❌ No WhatsApp set in res Config Settings")
         #     return False
         if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
+                not self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.whatsapp_send_bool")
+                    == "True"
         ):
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
@@ -14405,12 +11530,12 @@ class ProjectTask(models.Model):
 
         message = (
             f"عزيزي {self.customer_name}،\n"
-            f"مرفق لكم الفاتورة المبدئية رقم {self.name}\n"
-            "نرجو منكم مراجعة التفاصيل واتخاذ الإجراءات اللازمة.\n"
+            f"مرفق لكم تقرير بطاقه العمل رقم {self.name}\n"
+            "نرجو منكم مراجعة التفاصيل .\n"
             "------------------------------------------------------\n"
             f"Dear {self.customer_name},\n"
-            f"Please find attached the Service Job Card. {self.name}.\n"
-            "Kindly review the details and take the necessary actions.\n"
+            f"Please find attached the Job Card Report.{self.name}.\n"
+            "Kindly review the details.\n"
             "HH-Shaker – Service Team"
         )
 
@@ -14483,12 +11608,13 @@ class ProjectTask(models.Model):
 
     """Code is added on Nov 13 For sending Whatsapp Rescheduled -- 156"""
 
+    @postcommit_defer
     def _send_whatsapp_for_rescheduled_with_parts(self):
         if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
+                not self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.whatsapp_send_bool")
+                    == "True"
         ):
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
@@ -14589,7 +11715,7 @@ class ProjectTask(models.Model):
         }
         try:
             response = requests.post(
-                template_url, headers=headers, json=template_payload
+                template_url, headers=headers, json=template_payload, timeout=(5, 10)
             )
             response.raise_for_status()  # Raise an exception for HTTP errors
 
@@ -14598,7 +11724,7 @@ class ProjectTask(models.Model):
                 body=_(
                     "WhatsApp Job card %s Re-scheduled message With Parts sent successfully to the customer"
                 )
-                % self.name
+                     % self.name
             )
             return True
 
@@ -14609,19 +11735,20 @@ class ProjectTask(models.Model):
                 body=_(
                     "WhatsApp Re-scheduled with Parts message sent successfully to %s"
                 )
-                % self.partner_id.name,
+                     % self.partner_id.name,
                 message_type="notification",
             )
             return False
 
     """Code is added on Nov 20 205 send whatsapp for rescheduled with unit"""
 
+    @postcommit_defer
     def _send_whatsapp_rescheduled_with_unit(self):
         if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
+                not self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.whatsapp_send_bool")
+                    == "True"
         ):
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
@@ -14726,7 +11853,7 @@ class ProjectTask(models.Model):
         }
         try:
             response = requests.post(
-                template_url, headers=headers, json=template_payload
+                template_url, headers=headers, json=template_payload, timeout=(5, 10)
             )
             response.raise_for_status()  # Raise an exception for HTTP errors
 
@@ -14735,7 +11862,7 @@ class ProjectTask(models.Model):
                 body=_(
                     "WhatsApp Job card %s scheduled message sent successfully to the customer"
                 )
-                % self.name
+                     % self.name
             )
             return True
 
@@ -14744,22 +11871,23 @@ class ProjectTask(models.Model):
             # Optionally, notify the user or log the error in the chatter
             self.service_request_id.message_post(
                 body=_("WhatsApp Rescheduled message with Unit sent successfully to %s")
-                % self.customer_name,
+                     % self.customer_name,
                 message_type="notification",
             )
             return False
 
     """ Code is added on Nov 11 -2025 for cancellation reason send to customer whatsapp"""
 
+    @postcommit_defer
     def _send_whatsapp_for_cancellation(self):
         # if not self.whatsapp_send_bool:
         #     _logger.info("❌ No WhatsApp set in res Config Settings")
         #     return False
         if (
-            not self.env["ir.config_parameter"]
-            .sudo()
-            .get_param("machine_repair_management.whatsapp_send_bool")
-            == "True"
+                not self.env["ir.config_parameter"]
+                            .sudo()
+                            .get_param("machine_repair_management.whatsapp_send_bool")
+                    == "True"
         ):
             _logger.info("❌ No WhatsApp set in res Config Settings")
             return False
@@ -14774,8 +11902,8 @@ class ProjectTask(models.Model):
             if scheduled_state.code == self.job_card_state_code:
                 if scheduled_state.whatsapp_bool:
                     if (
-                        self.cancellation_reason_id.name.lower()
-                        == "customer no response"
+                            self.cancellation_reason_id.name.lower()
+                            == "customer no response"
                     ):
                         whatsapp_opt_in = True
                         arabic = scheduled_state.whatsapp_ar_template
@@ -14858,7 +11986,7 @@ class ProjectTask(models.Model):
         }
         try:
             response = requests.post(
-                template_url, headers=headers, json=template_payload
+                template_url, headers=headers, json=template_payload, timeout=(5, 10)
             )
             response.raise_for_status()  # Raise an exception for HTTP errors
 
@@ -14866,7 +11994,7 @@ class ProjectTask(models.Model):
                 body=_(
                     "WhatsApp Job card %s Failed to attend call message sent successfully to the customer"
                 )
-                % self.name
+                     % self.name
             )
             return True
 
@@ -14875,7 +12003,7 @@ class ProjectTask(models.Model):
             # Optionally, notify the user or log the error in the chatter
             self.service_request_id.message_post(
                 body=_("WhatsApp Failed message sent successfully to %s")
-                % self.partner_id.name,
+                     % self.partner_id.name,
                 message_type="notification",
             )
             return False
@@ -14886,9 +12014,9 @@ class ProjectTask(models.Model):
         if not self.phone:
             _logger.error("❌ No Phone Number is linked for task %s", self.name)
             return False
-
+        
         phone_number = self.phone.replace('+', '').replace(' ', '')
-
+        
         try:
             # Determine which report to generate based on conditions
             file_name = False
@@ -14902,25 +12030,25 @@ class ProjectTask(models.Model):
             elif self.inspection_charges_receipt_click:  
                 report_name = 'machine_repair_management.print_inspection_charge_receipt_template_document'
                 file_name = f"Inspection Charges Receipt {self.name}.pdf"
-
+            
             # Generate PDF
             pdf_content, _ = self.env['ir.actions.report'].sudo()._render_qweb_pdf(
                 report_name, 
                 [self.id],
                 data=self.print_inspection_charge_receipt().get('data', {})
             )
-
+            
             _logger.info("✅ PDF generated for Job order %s", self.name)
-
+            
             # Upload to WhatsApp
             media_id = self._upload_pdf_meta(pdf_content, file_name)
             if not media_id:
                 _logger.error("❌ Failed to upload PDF for task %s", self.name)
                 return False
-
+            
             # Send via WhatsApp
             return self.send_pdf_to_whatsapp(phone_number, media_id, file_name, self.name)
-
+            
         except Exception as e:
             _logger.error("❌ Error sending WhatsApp receipt for task %s: %s", self.name, str(e))
             return False    
@@ -14948,7 +12076,7 @@ class ProjectTask(models.Model):
         }
 
         try:
-            response = requests.post(url, headers=headers, files=files)
+            response = requests.post(url, headers=headers, files=files, timeout=(5, 10))
             response.raise_for_status()
             media_id = response.json().get("id")
             _logger.info("✅ Uploaded PDF to WhatsApp. Media ID: %s", media_id)
@@ -14990,7 +12118,7 @@ class ProjectTask(models.Model):
 
         try:
             response = requests.post(
-                document_url, headers=headers, json=document_payload
+                document_url, headers=headers, json=document_payload, timeout=(5, 10)
             )
             response.raise_for_status()
             _logger.info(
@@ -15046,7 +12174,7 @@ class ProjectTask(models.Model):
 
         try:
             response_template = requests.post(
-                template_url, headers=headers, json=template_payload
+                template_url, headers=headers, json=template_payload, timeout=(5, 10)
             )
             response_template.raise_for_status()
             _logger.info(
@@ -15055,7 +12183,7 @@ class ProjectTask(models.Model):
         except requests.exceptions.RequestException as e:
             _logger.error("❌ WhatsApp template send error: %s", str(e))
 
-    """Code added on Nov 19 2025"""
+    """Code added on Feb 08 2026"""
 
     @api.onchange("symptoms_line_ids")
     def _onchange_symptoms_line_ids(self):
@@ -15074,6 +12202,7 @@ class ProjectTask(models.Model):
 
 class SymptomsLine(models.Model):
     _name = "project.task.symptoms"
+    _description = "Project Task Symptoms"
 
     code = fields.Many2one("symptoms", string="Symptoms")
     project_task_id = fields.Many2one("project.task", string="Symptoms Line")
@@ -15144,6 +12273,7 @@ class SymptomsLine(models.Model):
 
 class DefectsLine(models.Model):
     _name = "project.task.defects"
+    _description = "Project Task Defects Line"
 
     code = fields.Many2one("defects", string="Defects")
     # description = fields.Char(string="Description")
@@ -15161,22 +12291,24 @@ class DefectsLine(models.Model):
     @api.constrains("code", "project_task_id")
     def _check_duplicate_defects(self):
         for rec in self:
-            # Check if this defects is already associated with the current job card (defects_id)
-            existing_defects = self.search(
-                [
-                    ("project_task_id", "=", rec.project_task_id.id),
-                    ("code", "=", rec.code.id),
-                    ("id", "!=", rec.id),
-                ]
-            )
-            if existing_defects:
-                raise ValidationError(
-                    "This defects has already been added to the Defects Line for this job card."
+            if rec.code and rec.project_task_id:
+                existing_defects = self.env["project.task.defects"].search(
+                    [
+                        ("project_task_id", "=", rec.project_task_id.id),
+                        ("code", "=", rec.code.id),
+                        ("id", "!=", rec.id),
+                    ],
+                    limit=1,
                 )
+                if existing_defects:
+                    raise ValidationError(
+                        "This defects has already been added to the Defects Line for this job card."
+                    )
 
 
 class serviceLine(models.Model):
     _name = "project.task.service"
+    _description = "Project Task Service Line"
 
     code = fields.Many2one("repair.type", string="Services")
 
@@ -15186,15 +12318,14 @@ class serviceLine(models.Model):
     #     string='Type', required=True, default='preventive')
     under_warranty = fields.Boolean(string="UW", default=False)
     project_task_id = fields.Many2one("project.task", string="Service Line")
-
-    '''Code Added on May 06 2026 by Vijaya Bhaskar client asked to quantity to be added when ready to invoice'''
-    service_quantity = fields.Float(string = "Freon Charge Qty ", default = 0.0, help = "When Ready to Invoice quantity is mandatory for entered.Because Particular service is service_required_applicable_bool is mandatory")
     
+    '''Code Added on May 06 2026 by Vijaya Bhaskar client asked to quantity to be added when ready to invoice'''
+    service_quantity = fields.Float(string = "Freon Charge Qty(Kg)", default = 0.0, help = "When Ready to Invoice quantity is mandatory for entered.Because Particular service is service_required_applicable_bool is mandatory")
     
     '''Code Added on May 13 2026 by Vijaya Bhaskar'''
     service_quantity_bool = fields.Boolean(related = "code.service_required_applicable_bool",string = "Service Quantity Bool")
     
-    
+
     """ This code is commented by Vijaya bhaskar on June -12-2025 for asking validation  """
 
     @api.constrains("code", "project_task_id")
@@ -15202,17 +12333,19 @@ class serviceLine(models.Model):
         for rec in self:
             # Check if this service is already associated with the current job card (defects_id)
 
-            existing_service = self.search(
-                [
-                    ("project_task_id", "=", rec.project_task_id.id),
-                    ("code", "=", rec.code.id),
-                    ("id", "!=", rec.id),
-                ]
-            )
-            if existing_service:
-                raise ValidationError(
-                    "This service has already been added to the Service Line for this job card."
+            if rec.code and rec.project_task_id:
+                existing_service = self.env["project.task.service"].search(
+                    [
+                        ("project_task_id", "=", rec.project_task_id.id),
+                        ("code", "=", rec.code.id),
+                        ("id", "!=", rec.id),
+                    ],
+                    limit=1,
                 )
+                if existing_service:
+                    raise ValidationError(
+                        "This service has already been added to the Service Line for this job card."
+                    )
 
     @api.onchange("code")
     def _onchange_code(self):
@@ -15220,13 +12353,6 @@ class serviceLine(models.Model):
             if rec.code:
                 if rec.project_task_id.warranty:
                     rec.under_warranty = rec.project_task_id.warranty
-
-    # @api.onchange('code')
-    # def _service_description_name_onchange(self):
-    #     for rec in self:
-    #         if rec.code:
-    #             # rec.code_desc = f"{rec.service_type_id.code} - {rec.service_type_id.name}"
-    #             rec.description = rec.code.name
 
 
 class ProductLine(models.Model):
@@ -15243,7 +12369,9 @@ class ProductLine(models.Model):
     product_id = fields.Many2one(
         "product.product",
         string="Product",
+        required=True,
     )
+
     qty = fields.Float(string="Qty", required=True, default=1.0)
     uom_id = fields.Many2one("uom.uom", string="UOM", readonly=True)
     price_unit = fields.Float(string="Unit Price", required=True)
@@ -15301,7 +12429,13 @@ class ProductLine(models.Model):
         store=False,
     )
 
-    overall_qty = fields.Float(string="Branch QTY")
+    
+    overall_qty = fields.Float(
+        string="Company Stock O/H Qty",
+        help="Overall Product Qty on hand",
+        related="product_id.qty_available",
+        store=True,
+    )
 
     amc_project_bool = fields.Boolean("AMC Project", default=False)
 
@@ -15356,6 +12490,7 @@ class ProductLine(models.Model):
         compute="_compute_under_warranty_compute",
         store=True,
     )
+
     """Code Added by Vengatesh On Mar 25 2026"""
     amount_required = fields.Boolean(
         compute="compute_warranty_amount_required", store=True
@@ -15596,8 +12731,8 @@ class ProductLine(models.Model):
 
             if rec.env.user.has_group("machine_repair_management.group_parts_user"):
                 if (
-                    rec.main_warehouse_line_id
-                    and rec.reserve_from_main_warehouse_line_bool
+                        rec.main_warehouse_line_id
+                        and rec.reserve_from_main_warehouse_line_bool
                 ):
                     location = rec.main_warehouse_location_line_id
 
@@ -15623,54 +12758,54 @@ class ProductLine(models.Model):
 
             # Supervisor
             if rec.env.user.has_group(
-                "machine_repair_management.group_technical_allocation_user"
+                    "machine_repair_management.group_technical_allocation_user"
             ):
                 allow_service = (
-                    params.get_param(
-                        "machine_repair_management.supervisor_service_product_add"
-                    )
-                    == "True"
+                        params.get_param(
+                            "machine_repair_management.supervisor_service_product_add"
+                        )
+                        == "True"
                 )
 
                 allow_parts = (
-                    params.get_param(
-                        "machine_repair_management.supervisor_parts_product_add"
-                    )
-                    == "True"
+                        params.get_param(
+                            "machine_repair_management.supervisor_parts_product_add"
+                        )
+                        == "True"
                 )
 
             # Parts User
             elif rec.env.user.has_group("machine_repair_management.group_parts_user"):
                 allow_service = (
-                    params.get_param(
-                        "machine_repair_management.parts_service_product_add"
-                    )
-                    == "True"
+                        params.get_param(
+                            "machine_repair_management.parts_service_product_add"
+                        )
+                        == "True"
                 )
 
                 allow_parts = (
-                    params.get_param(
-                        "machine_repair_management.parts_user_parts_product_add"
-                    )
-                    == "True"
+                        params.get_param(
+                            "machine_repair_management.parts_user_parts_product_add"
+                        )
+                        == "True"
                 )
 
             # Technician
             elif rec.env.user.has_group(
-                "machine_repair_management.group_job_card_mobile_user"
+                    "machine_repair_management.group_job_card_mobile_user"
             ):
                 allow_service = (
-                    params.get_param(
-                        "machine_repair_management.technician_service_product_add"
-                    )
-                    == "True"
+                        params.get_param(
+                            "machine_repair_management.technician_service_product_add"
+                        )
+                        == "True"
                 )
 
                 allow_parts = (
-                    params.get_param(
-                        "machine_repair_management.technician_parts_product_add"
-                    )
-                    == "True"
+                        params.get_param(
+                            "machine_repair_management.technician_parts_product_add"
+                        )
+                        == "True"
                 )
 
             if not allow_service and not allow_parts:
@@ -15684,7 +12819,7 @@ class ProductLine(models.Model):
             elif allow_parts and not allow_service:
                 products = products.filtered(
                     lambda p: not p.service_type_bool
-                    and not p.service_product_price_edit_bool
+                              and not p.service_product_price_edit_bool
                 )
 
             # If both True → no filtering (show all)
@@ -15745,7 +12880,7 @@ class ProductLine(models.Model):
                     ('parts_reserved_bool', '=', True),
                     ('project_task_id.job_card_state_code', 'not in', ('126','124'))
                 ]
-
+    
                 # Only add id!= condition if this is not a new record
                 # if rec.id and isinstance(rec.id, int):
                 #     domain.append(('id', '!=', rec.id))
@@ -15754,7 +12889,7 @@ class ProductLine(models.Model):
                 rec.parts_reserved_qty = sum(line.qty for line in reserved_lines)
             else:
                 rec.parts_reserved_qty = 0.0
-
+     
     """
 
     # @api.depends('parts_reserved_bool', 'product_id', 'project_task_id')
@@ -15859,23 +12994,23 @@ class ProductLine(models.Model):
             if rec.parts_reserved_bool and rec.product_id:
                 warehouse = rec.project_task_id.warehouse_id
                 location = warehouse.lot_stock_id if warehouse else False
-
+    
                 domain = [
                     ('product_id', '=', rec.product_id.id),
                     ('parts_reserved_bool', '=', True),
                     ('project_task_id.job_card_state_code', 'not in', ('126', '124')),
                     ('project_task_id.invoice_no', '!=', True),
                 ]
-
+    
                 if location:
                     domain.append(('project_task_id.warehouse_id.lot_stock_id', '=', location.id))
-
+    
                 reserved_lines = self.env['product.lines'].search(domain)
                 rec.parts_reserved_qty = sum(line.qty for line in reserved_lines) 
-
+    
             else:
                 rec.parts_reserved_qty = 0.0
-
+    
     """
 
     # @api.constrains('on_hand_qty')
@@ -15953,10 +13088,10 @@ class ProductLine(models.Model):
             # if not any(field in rec._get_dirty_fields() for field in ['parts_reserved_qty', 'on_hand_qty']):
             #     continue
             if (
-                rec.product_id
-                and rec.parts_reserved_bool
-                and rec.parts_reserved_qty
-                and rec.on_hand_qty
+                    rec.product_id
+                    and rec.parts_reserved_bool
+                    and rec.parts_reserved_qty
+                    and rec.on_hand_qty
             ):
                 if rec.project_task_id.job_card_state_code not in ("126", "124"):
                     if rec.parts_reserved_qty > rec.on_hand_qty:
@@ -16103,7 +13238,7 @@ class ProductLine(models.Model):
                 location_id = rec.project_task_id.warehouse_id.lot_stock_id.id
                 categ_id = rec.project_task_id.product_category_id.id
                 _logger.debug("Querying stock for location_id: %s, category_id: %s", location_id, categ_id)
-
+    
                 # Updated SQL query with OR condition for detailed_type = 'service'
                 self.env.cr.execute("""
                     SELECT DISTINCT p.id
@@ -16113,7 +13248,7 @@ class ProductLine(models.Model):
                     WHERE sq.location_id = %s
                     AND (
                         (sq.quantity > 0 AND p.is_machine = FALSE AND pt.categ_id = %s)
-
+    
                     )
                 """, (location_id, categ_id))
                 product_ids = [row['id'] for row in self.env.cr.dictfetchall()]
@@ -16263,9 +13398,9 @@ class ProductLine(models.Model):
 
                 if rec.env.user.has_group("machine_repair_management.group_parts_user"):
                     if (
-                        rec.project_task_id.main_warehouse_id
-                        and rec.project_task_id.reserve_from_main_warehouse_bool
-                        and not rec.project_task_id.include_zero_stock_bool
+                            rec.project_task_id.main_warehouse_id
+                            and rec.project_task_id.reserve_from_main_warehouse_bool
+                            and not rec.project_task_id.include_zero_stock_bool
                     ):
                         if main_warehouse_qty_search.quantity == 0.0:
                             raise ValidationError(
@@ -16289,12 +13424,12 @@ class ProductLine(models.Model):
 
                 # rec.on_hand_qty = stock_quant_search.quantity
                 if not (
-                    rec.project_task_id.main_warehouse_id
-                    and rec.project_task_id.reserve_from_main_warehouse_bool
+                        rec.project_task_id.main_warehouse_id
+                        and rec.project_task_id.reserve_from_main_warehouse_bool
                 ):
                     if (
-                        stock_quant_search.quantity == 0.0
-                        and not rec.project_task_id.include_zero_stock_bool
+                            stock_quant_search.quantity == 0.0
+                            and not rec.project_task_id.include_zero_stock_bool
                     ):
                         raise ValidationError(
                             _(
@@ -16324,15 +13459,17 @@ class ProductLine(models.Model):
                     )
                 """code added on Jan 21 2026"""
                 rec.return_damage_to_warehouse = (
-                    rec.product_id.return_damage_item_to_warehouse or False
+                        rec.product_id.return_damage_item_to_warehouse or False
                 )
 
                 rec.service_product_price_edit_bool = (
-                    rec.product_id.service_product_price_edit_bool or False
+                        rec.product_id.service_product_price_edit_bool or False
                 )
 
                 if rec.project_task_id.job_card_state_code == "122":
                     rec.parts_reserved_bool = True
+
+    """Code Added by Vengatesh On Mar 25 2026"""
 
     # @api.constrains("price_unit")
     # def _check_warranty_price_zero(self):
@@ -16398,6 +13535,7 @@ class ProductLine(models.Model):
         for record in self:
             if record.under_warranty_bool == True:
                 record.total = 0.0
+                record.tax_amount = 0.0
             else:
                 record.total = record.qty * record.price_unit * (1 + (record.vat / 100))
                 record.tax_amount = record.qty * record.price_unit * (record.vat / 100)
@@ -16407,23 +13545,7 @@ class ProductLine(models.Model):
                 # record.tax_amount = Decimal(str(record.tax_amount)).quantize(Decimal('0.01'), rounding=ROUND_UP)
                 # record.total = Decimal(str(record.total)).quantize(Decimal('0.01'), rounding=ROUND_UP)
 
-    # @api.onchange('under_warranty_bool')
-    # def _compute_under_warranty_bool(self):
-    #     for rec in self:
-    #         if rec.under_warranty_bool == True:
-    #             rec.total = 0.0
-    #             rec.vat = 0.0
-    #             rec.tax_amount = 0.0
-    #             rec.price_unit = 0.0
-    #         else:
-    #             rec.price_unit = rec.product_id.lst_price
-    #             if rec.product_id.taxes_id:
-    #                 rec.vat = rec.product_id.taxes_id[0].amount
-    #         # if rec.project_task_id.warranty:
-    #         #     rec.under_warranty_bool = rec.project_task_id.warranty
-    #         #     if rec.under_warranty_bool == True:
-    #         #         rec.price_unit = 0.0
-
+    
     @api.onchange("under_warranty_bool")
     def _compute_under_warranty_bool(self):
         for rec in self:

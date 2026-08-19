@@ -327,7 +327,8 @@ workshop machine repair
         "partner_type_hhs",
         # "whatsapp_sale_order_notify",
         "maintenance",
-        "hhs_contract_payment_terms"
+        "hhs_contract_payment_terms",
+        "sale_timesheet"
     ],
     #     'data':[
     #         'security/machine_repair_security.xml',
@@ -502,7 +503,7 @@ workshop machine repair
         "views/visit_count_pivot_view.xml",
         "datas/subscription_contract_cron.xml",
         "report/contract_proforma_invoice_report_template.xml",
-
+         "views/sales_team_views.xml",
     ],
     "installable": True,
     "application": True,
@@ -530,7 +531,9 @@ workshop machine repair
             # 'machine_repair_management/static/src/js/custom_form_controller.js',
             # 'machine_repair_management/static/src/components/auto_trigger_jobcard.js',
             # "machine_repair_management/static/src/js/hide_archive_unarchive.js",
-             'machine_repair_management/static/src/js/maintenance_type_radio.js',
+            
+             'machine_repair_management/static/src/js/hide_my_profile.js',
+              'machine_repair_management/static/src/js/maintenance_type_radio.js',
              'machine_repair_management/static/src/xml/maintenance_type_radio.xml',
              
         ],

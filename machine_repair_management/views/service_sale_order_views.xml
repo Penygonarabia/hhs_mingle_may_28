@@ -35,6 +35,15 @@
                     <button name="action_send_email" string="Send by E-Mail" icon="fa-envelope" type="object"
                             class="oe_highlight"
                             invisible="whatsapp_button_click_bool == True or state !='approve' or not amc_quotation or create_uid != uid"/>
+                    
+                    <button name = "action_sent_approval_manual_service" 
+                   	 		type = "object"
+                   	 		string = "Manual Quotation Sent"
+                   	 		class = "oe_highlight"
+                   	 		invisible = "state !='approve' or not amc_quotation"
+                   	 	
+                   	 />
+                    
                     <button name="action_confirm" id="action_confirm" data-hotkey="q" string="Confirm"
                             class="btn-primary" type="object" invisible="state in ('done','sale','cancel') or crm_id"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,sent,sale"
@@ -42,7 +51,7 @@
                     <field name="amc_quotation" invisible="1"/>
                     <field name="whatsapp_sale_send_bool" invisible="1"/>
                     <button name="action_contract_creation" type="object" string="Confirm" class="btn-primary"
-                            invisible="contract_id or not amc_quotation or state not in ('done', 'sent')"/>
+                            invisible="contract_id or not amc_quotation or state not in ('done', 'sent') or job_task_id"/>
                     <!-- <button name="action_cancel" class="btn-primary" type="object" string="Cancel"-->
                     <!-- confirm="Do you want to cancel this quotation?."-->
                     <!-- data-hotkey="x" invisible="state in ('sale','cancel') or not amc_quotation"/>-->
@@ -51,11 +60,12 @@
                             invisible="state not in ('draft','sent') or crm_id"/>
                     <button name="action_cancel" class="btn-primary" type="object" string="Cancel Quotation"
                             confirm="Do you want to cancel this quotation?." data-hotkey="x"
-                            invisible="state not in ('done') or crm_id or job_task_id.state_status"/>
+                            invisible="state not in ('done') or crm_id or job_card_state_code in ('125','126','154')"/>
                     <!-- or not amc_quotation -->
                     <field name="contract_id" widget="many2one" options="{'no_create': True}" invisible="1"/>
                     <field name="quote_created_user_id" invisible="1"/>
                     <field name="quote_created_by" invisible="1"/>
+                    <field name = "job_card_state_code" invisible = "1"/>
                 </header>
 
                 <sheet>
@@ -270,7 +280,7 @@
                                    readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
                             
                             <label for="street" string="Address" invisible = "job_task_id"/>
-				                <div class="o_address_format"  invisible = "job_task_id">
+				                <div class="o_address_format" invisible = "job_task_id">
 				                    <field name="street" placeholder="Street..." class="o_address_street" readonly="state in ('approve','sent','sale','done','cancel','reject')" invisible = "job_task_id"/>
 				                    <field name="street2" placeholder="Street 2..." class="o_address_street" readonly="state in ('approve','sent','sale','done','cancel','reject')" invisible = "job_task_id"/>
 				                    <field name="customer_city_id" placeholder="City" class="o_address_city" readonly="state in ('approve','sent','sale','done','cancel','reject')" options ="{'no_create':True,'no_edit':True,'no_open':True}" invisible = "job_task_id"/>
@@ -279,7 +289,7 @@
 				                           options="{&quot;no_open&quot;: True}" readonly="state in ('approve','sent','sale','done','cancel','reject')"/>
 				                    <field name="zip" placeholder="ZIP" class="o_address_zip" readonly="state in ('approve','sent','sale','done','cancel','reject')" invisible = "job_task_id"/>
 				                    <field name="country_id" placeholder="Country" class="o_address_country" readonly="state in ('approve','sent','sale','done','cancel','reject')"
-				                           options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"  invisible = "job_task_id"/>
+				                           options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}" invisible = "job_task_id"/>
 				                </div>
                             
                             <field name="customer_address" widget="text" invisible = "not job_task_id"
@@ -338,7 +348,7 @@
                                         class="oe_highlight btn-lg"
                                         style="width:100% !important;
                                         min-height:80px !important;
-                                font-size:15px !important;" invisible = "job_task_id"/>
+                                font-size:15px !important;" invisible= "job_task_id"/>
                             </div>
 
                             <field name="customer_code" invisible="1"/>
@@ -429,7 +439,7 @@
                                         <field name="days_required_for_rpm"
                                                column_invisible="not parent.show_standard_hours or not parent.amc_quotation"
                                                width="195px" sum="Total"/>
-                                        <field name="standard_hours" force_save="1" width="85px" invisible = "parent.job_task_id"/>
+                                        <field name="standard_hours" force_save="1" width="85px" column_invisible="parent.job_task_id"/>
                                         <field name="total_hr"
                                                column_invisible="not parent.show_standard_hours or not parent.amc_quotation"
                                                width="85px" sum="Total"/>
@@ -443,10 +453,10 @@
                                         <field name="margin" column_invisible="parent.job_task_id"/>
                                         <field name="margin_percent" column_invisible="parent.job_task_id"/>
                                         <field name="discount" column_invisible="parent.job_task_id" optional="hide"/>
-                                        <field name="vat" column_invisible="not parent.amc_quotation" force_save = "1" readonly = "1"/>
+                                        <field name="vat" column_invisible="not parent.amc_quotation" readonly = "1" force_save = "1"/>
                                         <field name="vat_percent" column_invisible="not parent.amc_quotation"
                                                sum="Total" digits="[16,2]"/>
-                                        <field name="vat" column_invisible="parent.amc_quotation" force_save = "1" readonly = "1"/>
+                                        <field name="vat" column_invisible="parent.amc_quotation" readonly = "1"  force_save = "1"/>
                                         <field name="tax_amount" column_invisible="1"/>
                                         <field name="total" column_invisible="not parent.job_task_id"/>
                                         <field name="total_amc" column_invisible="parent.job_task_id" digits="[16,2]"

@@ -28,184 +28,782 @@
         </template>
 
         <!-- Custom Report Template -->
-        <template id="report_ac_unit_service_receipt_document_hhs">
         
-        	<t t-call="web.html_container">
-            <t t-foreach="docs" t-as="doc">
+    	<template id="report_ac_unit_service_receipt_document_hhs">
 
-            <t t-call="machine_repair_management.ac_unit_service_receipt_document_template_internal_layout">
+		    <t t-call="web.html_container">
+		
+		        <t t-foreach="docs" t-as="doc">
+		
+		            <t t-call="machine_repair_management.ac_unit_service_receipt_document_template_internal_layout">
+		
+		                <!-- COMPANY -->
+		                <t t-if="doc and 'company_id' in doc">
+		                    <t t-set="company" t-value="doc.company_id"/>
+		                </t>
+		
+		                <t t-if="not doc or not 'company_id' in doc">
+		                    <t t-set="company" t-value="res_company"/>
+		                </t>
+		
+		
+		                <!-- ========================= -->
+		                <!-- HEADER -->
+		                <!-- ========================= -->
+		
+		                <div class="header" t-att-style="report_header_style">
+		
+		                    <div class="row mt32 mb32">
+		
+		                        <!-- LEFT HEADER IMAGE -->
+		                        <div class="col-4 text-left">
+		                            <img
+		                                src="/machine_repair_management/static/src/img/HHS_Header_Left.png"
+		                                alt="img"
+		                                style="
+		                                    height:120px;
+		                                    width:350px;
+		                                    image-rendering:crisp-edges;
+		                                "
+		                            />
+		                        </div>
+		
+		
+		                        <!-- COMPANY LOGO -->
+		                        <div
+		                            class="col-4 text-center"
+		                            style="vertical-align:text-top;"
+		                        >
+		                            <img
+		                                t-if="res_company.logo"
+		                                t-att-src="image_data_uri(res_company.logo)"
+		                                style="
+		                                    max-height:100px;
+		                                    min-height:100px;
+		                                    min-width:200px;
+		                                    max-width:200px;
+		                                "
+		                            />
+		                        </div>
+		
+		
+		                        <!-- RIGHT HEADER IMAGE -->
+		                        <div
+		                            class="col-4 text-right"
+		                            style="
+		                                vertical-align:text-top;
+		                                text-align:right;
+		                            "
+		                        >
+		                            <img
+		                                src="/machine_repair_management/static/src/img/HHS_Header_Right.png"
+		                                alt="img"
+		                                style="
+		                                    height:120px;
+		                                    width:350px;
+		                                    image-rendering:crisp-edges;
+		                                "
+		                            />
+		                        </div>
+		
+		                    </div>
+		
+		
+		                    <!-- REPORT TITLE -->
+		                    <h2
+		                        
+		                    >
+		                         <center style="font-size:35px;">
+		                            AC Unit Service Receipt Report /
+		                            تقرير استلام خدمة وحدة التكييف
+		                        </center>
+		                    </h2>
+		
+		                </div>
+		
+		
+		                <!-- ========================= -->
+		                <!-- PAGE -->
+		                <!-- ========================= -->
+		
+		                <div
+		                    class="page"
+		                    style="
+		                        page-break-after:always;
+		                        font-family:Arial, sans-serif !important;
+		                        font-size:16px !important;
+		                    "
+		                >
+		
+		
+		                    <!-- ========================= -->
+		                    <!-- CUSTOMER INFORMATION -->
+		                    <!-- ========================= -->
+		
+		                    <div class="row mt32 mb32">
+		
+		                        <!-- LEFT TABLE -->
+		                        <div class="col-6">
+		
+		                            <table
+		                                class="table table-bordered border-dark"
+		                                style="
+		                                    width:100%;
+		                                    table-layout:fixed;
+		                                    font-family:Arial, sans-serif !important;
+		                                "
+		                            >
+		
+		                                <colgroup>
+		                                    <col width="25%"/>
+		                                    <col width="50%"/>
+		                                    <col width="25%"/>
+		                                </colgroup>
+		
+		                                <tbody>
+		
+		
+		                                    <!-- JOB CARD -->
+		                                    <tr>
+		
+		                                        <td style="
+		                                            vertical-align:middle;
+		                                            white-space:nowrap;
+		                                        ">
+		                                            <strong style="
+		                                                font-size:18px !important;
+		                                                font-weight:bold !important;
+		                                            ">
+		                                                Job Card No :
+		                                            </strong>
+		                                        </td>
+		
+		
+		                                        <td style="
+		                                            vertical-align:middle;
+		                                            white-space:nowrap;
+		                                        ">
+		                                            <span
+		                                                t-field="doc.name"
+		                                                style="
+		                                                    font-size:16px !important;
+		                                                    font-family:Arial, sans-serif !important;
+		                                                "
+		                                            />
+		                                        </td>
+		
+		
+		                                        <td style="
+		                                            text-align:right;
+		                                            vertical-align:middle;
+		                                            white-space:nowrap;
+		                                        ">
+		                                            <strong style="
+		                                                font-size:18px !important;
+		                                                font-weight:bold !important;
+		                                            ">
+		                                                :رقم بطاقة العمل
+		                                            </strong>
+		                                        </td>
+		
+		                                    </tr>
+		
+		
+		                                    <!-- CUSTOMER NAME -->
+		                                    <tr>
+		
+		                                        <td style="
+		                                            vertical-align:middle;
+		                                            white-space:nowrap;
+		                                        ">
+		                                            <strong style="
+		                                                font-size:18px !important;
+		                                                font-weight:bold !important;
+		                                            ">
+		                                                Customer Name:
+		                                            </strong>
+		                                        </td>
+		
+		
+		                                        <td style="
+		                                            vertical-align:middle;
+		                                            white-space:nowrap;
+		                                        ">
+		                                            <span
+		                                                t-field="doc.customer_name"
+		                                                style="
+		                                                    font-size:16px !important;
+		                                                    font-family:Arial, sans-serif !important;
+		                                                "
+		                                            />
+		                                        </td>
+		
+		
+		                                        <td style="
+		                                            text-align:right;
+		                                            vertical-align:middle;
+		                                            white-space:nowrap;
+		                                        ">
+		                                            <strong style="
+		                                                font-size:18px !important;
+		                                                font-weight:bold !important;
+		                                            ">
+		                                                :اسم العميل
+		                                            </strong>
+		                                        </td>
+		
+		                                    </tr>
+		
+		
+		                                    <!-- PHONE -->
+		                                    <tr>
+		
+		                                        <td style="
+		                                            vertical-align:middle;
+		                                            white-space:nowrap;
+		                                        ">
+		                                            <strong style="
+		                                                font-size:18px !important;
+		                                                font-weight:bold !important;
+		                                            ">
+		                                                Phone:
+		                                            </strong>
+		                                        </td>
+		
+		
+		                                        <td style="
+		                                            vertical-align:middle;
+		                                            white-space:nowrap;
+		                                        ">
+		                                            <span
+		                                                t-field="doc.phone"
+		                                                style="
+		                                                    font-size:16px !important;
+		                                                    font-family:Arial, sans-serif !important;
+		                                                "
+		                                            />
+		                                        </td>
+		
+		
+		                                        <td style="
+		                                            text-align:right;
+		                                            vertical-align:middle;
+		                                            white-space:nowrap;
+		                                        ">
+		                                            <strong style="
+		                                                font-size:18px !important;
+		                                                font-weight:bold !important;
+		                                            ">
+		                                                : رقم الهاتف
+		                                            </strong>
+		                                        </td>
+		
+		                                    </tr>
+		
+		
+		                                    <!-- ADDRESS -->
+		                                   <tr>
+		
+									    <!-- LABEL -->
+									    <td style="
+									        vertical-align:middle;
+									        width:30%;
+									        white-space:nowrap;
+									    ">
+									        <strong style="
+									            font-size:18px !important;
+									            font-weight:bold !important;
+									            font-family:Arial, sans-serif !important;
+									        ">
+									            Address:
+									        </strong>
+									    </td>
+									
+									    <!-- ADDRESS VALUE -->
+									    <td style="
+									        vertical-align:middle;
+									        width:40%;
+									        white-space:normal !important;
+									        word-wrap:break-word !important;
+									        overflow-wrap:break-word !important;
+									        word-break:normal !important;
+									        padding:5px !important;
+									    ">
+									        <span style="
+									            font-size:16px !important;
+									            font-family:Arial, sans-serif !important;
+									            font-weight:normal !important;
+									            white-space:normal !important;
+									            word-wrap:break-word !important;
+									            overflow-wrap:break-word !important;
+									            word-break:normal !important;
+									            line-height:1.4 !important;
+									        ">
+									
+									            <!-- STREET -->
+									            <t t-if="doc.partner_id.street">
+									                <t t-esc="doc.partner_id.street"/>
+									            </t>
+									
+									            <!-- STREET 2 -->
+									            <t t-if="doc.partner_id.street2">
+									                <t t-if="doc.partner_id.street">
+									                    ,
+									                </t>
+									                <t t-esc="doc.partner_id.street2"/>
+									            </t>
+									
+									            <!-- ZIP -->
+									            <t t-if="doc.partner_id.zip">
+									                <t t-if="
+									                    doc.partner_id.street
+									                    or doc.partner_id.street2
+									                ">
+									                    ,
+									                </t>
+									                <t t-esc="doc.partner_id.zip"/>
+									            </t>
+									
+									            <!-- CITY -->
+									            <t t-if="doc.partner_id.city">
+									                <t t-if="
+									                    doc.partner_id.street
+									                    or doc.partner_id.street2
+									                    or doc.partner_id.zip
+									                ">
+									                    ,
+									                </t>
+									                <t t-esc="doc.partner_id.city"/>
+									            </t>
+									
+									            <!-- STATE -->
+									            <t t-if="doc.partner_id.state_id">
+									                <t t-if="
+									                    doc.partner_id.street
+									                    or doc.partner_id.street2
+									                    or doc.partner_id.zip
+									                    or doc.partner_id.city
+									                ">
+									                    ,
+									                </t>
+									                <t t-esc="doc.partner_id.state_id.name"/>
+									            </t>
+									
+									            <!-- COUNTRY -->
+									            <t t-if="doc.partner_id.country_id">
+									                <t t-if="
+									                    doc.partner_id.street
+									                    or doc.partner_id.street2
+									                    or doc.partner_id.zip
+									                    or doc.partner_id.city
+									                    or doc.partner_id.state_id
+									                ">
+									                    ,
+									                </t>
+									                <t t-esc="doc.partner_id.country_id.name"/>
+									            </t>
+									
+									        </span>
+									    </td>
+									
+									    <!-- ARABIC ADDRESS -->
+									    <td style="
+									        text-align:right;
+									        vertical-align:middle;
+									        width:30%;
+									        white-space:nowrap !important;
+									    ">
+									        <strong style="
+									            font-size:18px !important;
+									            font-weight:bold !important;
+									            font-family:Arial, sans-serif !important;
+									            white-space:nowrap !important;
+									        ">
+									            :العنوان
+									        </strong>
+									    </td>
+									
+									</tr>
+		
+		                                </tbody>
+		
+		                            </table>
+		
+		                        </div>
+		
+		
+		                        <!-- ========================= -->
+		                        <!-- RIGHT INFORMATION TABLE -->
+		                        <!-- ========================= -->
+		
+		                        <div class="col-6">
+		
+		                            <table
+		                                class="table table-bordered border-dark"
+		                                style="
+		                                    width:100%;
+		                                    table-layout:fixed;
+		                                    font-family:Arial, sans-serif !important;
+		                                "
+		                            >
+		
+		                                <colgroup>
+		                                    <col width="25%"/>
+		                                    <col width="50%"/>
+		                                    <col width="25%"/>
+		                                </colgroup>
+		
+		                                <tbody>
+		
+		
+		                                    <!-- DATE -->
+		                                    <tr>
+		
+		                                        <td style="
+		                                            vertical-align:middle;
+		                                            white-space:nowrap;
+		                                        ">
+		                                            <strong style="
+		                                                font-size:18px !important;
+		                                                font-weight:bold !important;
+		                                            ">
+		                                                Date:
+		                                            </strong>
+		                                        </td>
+		
+		
+		                                        <td style="
+		                                            vertical-align:middle;
+		                                            white-space:nowrap;
+		                                        ">
+		                                            <span
+		                                                t-field="doc.service_created_datetime"
+		                                                style="
+		                                                    font-size:16px !important;
+		                                                    font-family:Arial, sans-serif !important;
+		                                                "
+		                                            />
+		                                        </td>
+		
+		
+		                                        <td style="
+		                                            text-align:right;
+		                                            vertical-align:middle;
+		                                            white-space:nowrap;
+		                                        ">
+		                                            <strong style="
+		                                                font-size:18px !important;
+		                                                font-weight:bold !important;
+		                                            ">
+		                                                :التاريخ
+		                                            </strong>
+		                                        </td>
+		
+		                                    </tr>
+		
+		
+		                                    <!-- TECHNICIAN -->
+		                                    <tr>
+		
+		                                        <td style="
+		                                            vertical-align:middle;
+		                                            white-space:nowrap;
+		                                        ">
+		                                            <strong style="
+		                                                font-size:18px !important;
+		                                                font-weight:bold !important;
+		                                            ">
+		                                                Technician:
+		                                            </strong>
+		                                        </td>
+		
+		
+		                                        <td style="
+		                                            vertical-align:middle;
+		                                            white-space:nowrap;
+		                                        ">
+		                                            <span
+		                                                t-field="doc.technician_id.name"
+		                                                style="
+		                                                    font-size:16px !important;
+		                                                    font-family:Arial, sans-serif !important;
+		                                                "
+		                                            />
+		                                        </td>
+		
+		
+		                                        <td style="
+		                                            text-align:right;
+		                                            vertical-align:middle;
+		                                            white-space:nowrap;
+		                                        ">
+		                                            <strong style="
+		                                                font-size:18px !important;
+		                                                font-weight:bold !important;
+		                                            ">
+		                                                :الفني
+		                                            </strong>
+		                                        </td>
+		
+		                                    </tr>
+		
+		
+		                                </tbody>
+		
+		                            </table>
+		
+		                        </div>
+		
+		                    </div>
+		
+		
+		                    <!-- ========================= -->
+		                    <!-- AC UNIT DETAILS -->
+		                    <!-- ========================= -->
+		
+		                    <p style="
+							    font-size:18px !important;
+							    font-family:Arial, sans-serif !important;
+							    font-weight:bold !important;
+							    margin-bottom:8px;
+							">
+							    AC Unit Details
+							</p>
+							
+							<table style="
+							    width:100%;
+							    border-collapse:collapse !important;
+							    border:1px solid #888 !important;
+							    font-family:Arial, sans-serif !important;
+							    font-size:16px !important;
+							">
+							
+							    <thead>
+							        <tr style="
+							            text-align:center;
+							            color:#000;
+							        ">
+							
+							            <!-- S/N -->
+							            <th style="
+							                width:10%;
+							                border:1px solid #888 !important;
+							                padding:6px;
+							                font-size:16px !important;
+							                font-weight:bold !important;
+							                vertical-align:middle;
+							            ">
+							                <strong style="font-size:16px !important;">
+							                    تسلسل
+							                </strong>
+							                <br/>
+							                <strong style="font-size:16px !important;">
+							                    S/N
+							                </strong>
+							            </th>
+							
+							            <!-- BRAND -->
+							            <th style="
+							                width:20%;
+							                border:1px solid #888 !important;
+							                padding:6px;
+							                font-size:16px !important;
+							                font-weight:bold !important;
+							                vertical-align:middle;
+							            ">
+							                <strong style="font-size:16px !important;">
+							                    ماركة
+							                </strong>
+							                <br/>
+							                <strong style="font-size:16px !important;">
+							                    Brand
+							                </strong>
+							            </th>
+							
+							            <!-- MODEL -->
+							            <th style="
+							                width:25%;
+							                border:1px solid #888 !important;
+							                padding:6px;
+							                font-size:16px !important;
+							                font-weight:bold !important;
+							                vertical-align:middle;
+							            ">
+							                <strong style="font-size:16px !important;">
+							                    رقم الموديل
+							                </strong>
+							                <br/>
+							                <strong style="font-size:16px !important;">
+							                    Model No
+							                </strong>
+							            </th>
+							
+							            <!-- SERIAL -->
+							            <th style="
+							                width:25%;
+							                border:1px solid #888 !important;
+							                padding:6px;
+							                font-size:16px !important;
+							                font-weight:bold !important;
+							                vertical-align:middle;
+							            ">
+							                <strong style="font-size:16px !important;">
+							                    الرقم التسلسلي
+							                </strong>
+							                <br/>
+							                <strong style="font-size:16px !important;">
+							                    Serial No.
+							                </strong>
+							            </th>
+							
+							            <!-- CAPACITY -->
+							            <th style="
+							                width:20%;
+							                border:1px solid #888 !important;
+							                padding:6px;
+							                font-size:16px !important;
+							                font-weight:bold !important;
+							                vertical-align:middle;
+							            ">
+							                <strong style="font-size:16px !important;">
+							                    سعة
+							                </strong>
+							                <br/>
+							                <strong style="font-size:16px !important;">
+							                    Capacity
+							                </strong>
+							            </th>
+							
+							        </tr>
+							    </thead>
+							
+							    <tbody>
+							
+							        <tr>
+							
+							            <!-- S/N VALUE -->
+							            <td style="
+							                border:1px solid #888 !important;
+							                padding:6px;
+							                text-align:center;
+							                font-size:16px !important;
+							            ">
+							                <span style="font-size:16px !important;">
+							                    1
+							                </span>
+							            </td>
+							
+							            <!-- BRAND VALUE -->
+							            <td style="
+							                border:1px solid #888 !important;
+							                padding:6px;
+							                font-size:16px !important;
+							            ">
+							                <span style="font-size:16px !important;">
+							                    <t t-esc="doc.product_category_id.name"/>
+							                </span>
+							            </td>
+							
+							            <!-- MODEL VALUE -->
+							            <td style="
+							                border:1px solid #888 !important;
+							                padding:6px;
+							                font-size:16px !important;
+							                white-space:nowrap;
+							            ">
+							                <span style="font-size:16px !important;">
+							                    <t t-esc="doc.product_id.default_code"/>
+							                </span>
+							            </td>
+							
+							            <!-- SERIAL VALUE -->
+							            <td style="
+							                border:1px solid #888 !important;
+							                padding:6px;
+							                font-size:16px !important;
+							                white-space:nowrap;
+							            ">
+							                <span style="font-size:16px !important;">
+							                    <t t-esc="doc.product_slno"/>
+							                </span>
+							            </td>
+							
+							            <!-- CAPACITY VALUE -->
+							            <td style="
+							                border:1px solid #888 !important;
+							                padding:6px;
+							                font-size:16px !important;
+							            ">
+							                <span style="font-size:16px !important;">
+							                    <t t-esc="doc.svc_id or ''"/>
+							                </span>
+							            </td>
+							
+							        </tr>
+							
+							    </tbody>
+							
+							</table>
+		
+		                    <!-- ========================= -->
+		                    <!-- RECEIPT DESCRIPTION -->
+		                    <!-- ========================= -->
+		
+		                    <br/>
+		
+		                    <p style="
+		                        text-align:left;
+		                        direction:ltr;
+		                        font-size:16px !important;
+		                        font-family:Arial, sans-serif !important;
+		                        line-height:1.5;
+		                    ">
+		                        Technician has collected the AC unit(s) from the customer
+		                        for indoor/outdoor service.
+		                        A receipt has been provided for acknowledgement.
+		                    </p>
+		
+		
+		                    <p style="
+		                        text-align:right;
+		                        direction:rtl;
+		                        font-size:16px !important;
+		                        font-family:Arial, sans-serif !important;
+		                        line-height:1.5;
+		                    ">
+		                        استلم الفني وحدة / وحدات التكييف من العميل للصيانة الداخلية/الخارجية
+		                        وقد تم تقديم إيصال تأكيد.
+		                    </p>
+		
+		
+		                    <br/>
+		
+		                </div>
+		
+		
+		                <!-- ========================= -->
+		                <!-- FOOTER -->
+		                <!-- ========================= -->
+		
+		                <div class="footer">
+		
+		                    <img
+		                        src="/machine_repair_management/static/src/img/JobCard_Footer_img.png"
+		                        style="
+		                            width:100%;
+		                        "
+		                    />
+		
+		                </div>
+		
+		            </t>
+		
+		        </t>
+		
+		    </t>
+		
+		</template>
         
-            <t t-if="doc and 'company_id' in doc">
-                <t t-set="company" t-value="doc.company_id"/>
-            </t>
-            <t t-if="not doc or not 'company_id' in doc">
-                <t t-set="company" t-value="res_company"/>
-            </t>
-            <div class="header" t-att-style="report_header_style">
-                <div class="row mt32 mb32">
-                    <div class="col-4 text-left">
-                        <img src="/machine_repair_management/static/src/img/HHS_Header_Left.png" alt="img"
-                             style="height: 120px; width: 350px; image-rendering: crisp-edges;"/>
-                    </div>
-                    <div class="col-4 text-center" style="vertical-align:text-top">
-                     	<img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)"
-                                     style="max-height: 100px; min-height:100px; min-width: 200px; max-width: 200px;"/>
-                        <!-- <img t-if="doc.company_id.logo" t-att-src="image_data_uri(doc.company_id.logo)"
-                             style="max-height: 100px; min-height:100px; min-width: 200px; max-width: 200px; image-rendering: crisp-edges;"/> -->
-                    </div>
-                    <div class="col-4 text-right" style="vertical-align:text-top; text-align:right">
-                        <img src="/machine_repair_management/static/src/img/HHS_Header_Right.png" alt="img"
-                             style="height: 120px; width: 350px; image-rendering: crisp-edges;"/>
-                    </div>
-                </div>
-                <h2>
-                    <center>
-                        <t>AC Unit Service Receipt Report</t>
-                    </center>
-                </h2>
-            </div>
-
-            <div class="page" style="page-break-after: always;">
-                <div class="row mt32 mb32">
-                    <div class="col-6">
-                        <table class="table table-bordered border-dark">
-                            <colgroup>
-                                <col width='30%'/>
-                                <col width='30%'/>
-                                <col width='40%'/>
-                            </colgroup>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Job Card No :</strong></td>
-                                    <td><span t-field="doc.name"/></td>
-                                    <td style="text-align:right"><strong> : رقم البطاقة الوظيفية</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Customer Name:</strong></td>
-                                    <td><span t-field="doc.customer_name"/></td>
-                                    <td style="text-align:right"><strong>:اسم العميل</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Phone:</strong></td>
-                                    <td><span t-field="doc.phone"/></td>
-                                    <td style="text-align:right"><strong>  : هاتف</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Address:</strong></td>
-                                     <td>
-                                        <div t-field="doc.partner_id"
-                                             t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
-                                    </td>
-                                      <td style="text-align:right"><strong>: عنوان</strong></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="col-6">
-                        <table class="table table-bordered border-dark">
-                            <colgroup>
-                                <col width='30%'/>
-                                <col width='45%'/>
-                                <col width='25%'/>
-                            </colgroup>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Date:</strong></td>
-                                    <td><span t-field="doc.service_created_datetime"/></td>
-                                    <td style="text-align:right"><strong>: تاريخ</strong></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Technician:</strong></td>
-                                    <td><span t-field="doc.technician_id.name"/></td>
-                                    <td style="text-align:right"><strong>: فني</strong></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <p><b>AC Unit Details</b></p>
-                <table class="table table-bordered border-dark">
-                    <thead>
-                        <tr style="text-align:center; color:black;">
-                            <th width="2%">
-                                <strong>قم</strong><br/>
-                                <strong>S.No</strong></th>
-                            <th width="5%">
-                                <strong>ماركة</strong><br/>
-                                <strong>Brand</strong></th>
-                            <th width="6%">
-                                <strong> رقم الموديل</strong><br/>
-                                <strong>Model No</strong></th>
-                            <th width="7%">
-                                <strong>رقم سري</strong><br/>
-                                <strong>Serial No.</strong></th>
-                            <th width="7%">
-                                <strong> سعة</strong><br/>
-                                <strong>Capacity</strong></th>
-
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <t t-set="counter" t-value="1"/>
-                            <tr>
-                                    <td style="text-align:left"><span t-esc="counter"/></td>
-                                    <td><span t-esc="doc.product_category_id.name"/></td>
-
-
-                                    <td style="text-align:left">
-                                        <span t-esc="doc.product_id.default_code"
-                                              />
-                                    </td>
-                                    <td style="text-align:left">
-                                        <span t-esc="doc.product_slno"
-                                              />
-                                    </td>
-
-                                    <td style="text-align:left">
-                                        <span t-esc="doc.svc_id or None"
-                                              />
-                                    </td>
-
-                                </tr>
-                    </tbody>
-                </table>
-                <br/>
-                <p>Technician has collected the AC unit(s) from the customer for indoor/outdoor service. A receipt has been provided for acknowledgement.</p>
-                <br/>
-                <div class="row mt32 mb32">
-                    <div class="col-4 text-left">
-                        <p style="font-size:18px;">توقيع العميل</p>
-                        <p style="font-size:18px;">Customer Signature</p>
-                    </div>
-                    <div class="col-4"/>
-                    <div class="col-4 text-right">
-                        <p style="font-size:18px;">توقيع الفني</p>
-                        <p style="font-size:18px;">Technician Signature</p>
-                    </div>
-
-                </div>
-            </div>
-            
-             <div class="footer">
-                   <img src="machine_repair_management/static/src/img/JobCard_Footer_img.png"
-                        style="width:100%;"/>
-              </div>
-           <!--  <div class="footer">
-                <div>
-                    <img src="/machine_repair_management/static/src/img/Arabic_Text.png" alt="img"
-                         style="height:60px; width:100%; image-rendering: crisp-edges;"/>
-                </div>
-                <br/>
-                <br/>
-                <div>
-                    <img src="/machine_repair_management/static/src/img/Footer_Address.png" alt="img"
-                         style="height:100px; width:100%;"/>
-                </div>
-            </div> -->
-            </t>
-            </t>
-            </t>
-        </template>
         <!-- Override Default Report Action -->
         <record id="ac_unit_service_receipt_document_hhs_report" model="ir.actions.report">
             <field name="name">AC Service Receipt Report</field>
