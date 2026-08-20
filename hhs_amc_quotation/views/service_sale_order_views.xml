@@ -14,7 +14,7 @@
                 <field name="brand_category_id" force_save="1" optional="show" column_invisible="1" domain ="[('parent_id','=',False),('allowed_is_contract','=', True)]"
                 	options = "{'no_open':True,'no_create':True}"
                 />
-                 <field name="brand_id" column_invisible="not parent.amc_quotation" options = "{'no_open':True,'no_create':True}"/>
+                 <field name="brand_id" column_invisible="not parent.amc_quotation" options = "{'no_open':True,'no_create':True}" domain ="[('name','!=','*')]"/>
             </xpath>
 
             <xpath expr="//field[@name='service_sale_order_line_ids']/tree/field[@name='product_id'][2]" position="after">
