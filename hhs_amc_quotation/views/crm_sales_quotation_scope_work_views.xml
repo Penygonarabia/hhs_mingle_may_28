@@ -7,7 +7,7 @@
         <field name="inherit_id" ref="service_sale_approvals.view_service_order_form_inherit_approval"/>
         <field name="arch" type="xml">
             <xpath expr="//page[@id='service_sale_order_line']" position="after">
-                <page name="scope_of_work" string="Scope of Work / Subject" invisible = "job_task_id">
+                <page name="scope_of_work" string="Scope of Work / Subject" invisible= "job_task_id">
                     <group>
                         <group>
                             <field name="subject" widget="text"  readonly="state in ('approve', 'sent','sale','done','cancel','reject')"/>
@@ -28,7 +28,7 @@
 
             <!-- Exclusion Tab -->
             <xpath expr="//page[@name='scope_of_work']" position="after" >
-                <page name="terms_of_execution" string="Terms of Execution" invisible = "job_task_id">
+                <page name="terms_of_execution" string="Terms of Execution" invisible= "job_task_id">
                     <field name="terms_of_execution"
                            placeholder="Enter terms and conditions here..."
                            readonly="state in ('approve', 'sent','sale','done','cancel','reject')"
@@ -38,7 +38,7 @@
 
             <!-- Payment Tab readonly="state == 'confirmed'"-->
             <xpath expr="//page[@name='terms_of_execution']" position="after">
-                <page name="payment_tab" string="Payment" invisible = "job_task_id">
+                <page name="payment_tab" string="Payment" invisible= "job_task_id">
                     <!-- Payment Schedule Lines -->
                     <field name="payment_term_ids" nolabel="1">
                         <tree editable="bottom" create="0" delete="0" edit="1"
@@ -68,7 +68,7 @@
 
             <!-- Terms of Execution-->
             <xpath expr="//page[@name='payment_tab']" position="after">
-                <page name="exclusions_tab" string="Exclusions/Notes" invisible = "job_task_id">
+                <page name="exclusions_tab" string="Exclusions/Notes" invisible= "job_task_id">
                     <group>
 
                         <group>

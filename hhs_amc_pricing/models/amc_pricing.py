@@ -15,7 +15,7 @@ class AmcPricing(models.Model):
     category_id = fields.Many2one(
         't.mainproducts',
         string='Product Category',
-        required=True,
+        required=False,
     )
     brand_id = fields.Many2one(
         'brand',

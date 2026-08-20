@@ -55,7 +55,6 @@ class JobCardChecklistLine(models.Model):
     '''Code Added on August 05 2026 client asked mandatory for some post checklist items'''
     mandatory_checklist = fields.Boolean(string = 'Mandatory Checklist', related= "template_line_id.mandatory_checklist")
     
-    
     def _compute_answer_display(self):
         for line in self:
             line.answer_display = ''
@@ -123,7 +122,6 @@ class JobCardChecklistPhoto(models.Model):
     )
     
     '''Code Added on August 05 2026 client asked mandatory for some post checklist items'''
-    
     mandatory_photo = fields.Boolean(string = 'Mandatory Photo', related = "template_photo_id.mandatory_photo")
 
 

@@ -177,9 +177,10 @@ class PostServiceChecklistPhoto(models.Model):
         string='Caption',
         help='Description of what this photo shows (e.g., Air Filter, Evaporator Coil)',
     )
-
+    
     '''Code Added on August 05 2026 by Vijaya bhaskar client asked mandatory in the jobcard checklist'''
     mandatory_photo = fields.Boolean(string = "Mandatory", default = False)
+
 
 
 # ========================================================
