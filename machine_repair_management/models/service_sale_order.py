@@ -3141,6 +3141,9 @@ class ServiceSaleOrder(models.Model):
     def _check_service_lines(self):
         for order in self:
             for line in order.service_sale_order_line_ids:
+                if not line.amc_pricing_id:
+                    raise ValidationError(_("Please Select the Pricing Template Compulsory"))
+                
                 if line.product_qty <= 0:
                     raise ValidationError(
                         _("Please enter Product Quantity for all service lines.")

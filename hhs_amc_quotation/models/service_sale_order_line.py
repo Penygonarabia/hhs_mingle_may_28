@@ -40,7 +40,7 @@ class ServiceSaleOrderLine(models.Model):
     amc_pricing_id = fields.Many2one(
         'amc.pricing',
         string='Price Template',        
-        domain="[('active', '=', True), ('category_id', '=', main_category_id), ('brand_id', '=', brand_id)]"
+        # domain="[('active', '=', True), ('category_id', '=', main_category_id), ('brand_id', '=', brand_id)]"
     )
 
     # Unit Cost/Selling Prices (Labor)
@@ -129,39 +129,103 @@ class ServiceSaleOrderLine(models.Model):
     #             rec.brand_id = False
                 
                 
-    @api.onchange('product_id', 'contract_type_id',)
-    def _onchange_amc_template(self):
-        """Show the default template based on the brand, category & AMC unit type selection"""
-        for rec in self:
-            # if rec.product_sub_category_id:
-            if rec.brand_id:
-    
-                domain = [
-                    ('active', '=', True),
-                    ('brand_id', '=', rec.brand_id.id),
-                    # ('category_id', '=', rec.main_category_id.id),
-                    ('category_id', '=', rec.product_sub_category_id.id),
-                    ('is_default', '=', True)
-                ]
-                template = self.env['amc.pricing'].search(domain, limit=1)
-                if template:
-                    rec.amc_pricing_id = template.id
-            
-
-    # @api.onchange('product_id', 'contract_type_id')
+    # @api.onchange('product_id', 'contract_type_id',)
     # def _onchange_amc_template(self):
     #     """Show the default template based on the brand, category & AMC unit type selection"""
     #     for rec in self:
-    #         if rec.main_category_id and rec.brand_id:
+    #         # if rec.product_sub_category_id:
+    #         if rec.brand_id:
+    #
     #             domain = [
     #                 ('active', '=', True),
     #                 ('brand_id', '=', rec.brand_id.id),
-    #                 ('category_id', '=', rec.main_category_id.id),
+    #                 # ('category_id', '=', rec.main_category_id.id),
+    #                 ('category_id', '=', rec.product_sub_category_id.id),
     #                 ('is_default', '=', True)
     #             ]
     #             template = self.env['amc.pricing'].search(domain, limit=1)
     #             if template:
     #                 rec.amc_pricing_id = template.id
+            
+    allowed_amc_pricing_ids = fields.Many2many(
+    'amc.pricing',
+        compute='_compute_allowed_amc_pricing_ids',
+    )
+    
+    @api.depends('product_sub_category_id', 'brand_id')
+    def _compute_allowed_amc_pricing_ids(self):
+        Pricing = self.env['amc.pricing']
+    
+        for record in self:
+            # Base / compulsory domain
+            category_domain = [
+                ('active', '=', True),
+                ('category_id', '=', record.product_sub_category_id.id),
+            ]
+    
+            # If brand is given, first search Category + Brand
+            if record.brand_id:
+                brand_domain = category_domain + [
+                    ('brand_id', '=', record.brand_id.id),
+                ]
+    
+                brand_pricings = Pricing.search(brand_domain)
+    
+                if brand_pricings:
+                    # Brand-specific pricing exists
+                    record.allowed_amc_pricing_ids = brand_pricings
+                else:
+                    # No Brand-specific pricing exists
+                    # Fall back to Category-only pricing
+                    record.allowed_amc_pricing_ids = Pricing.search(
+                        category_domain
+                    )
+    
+            else:
+                # No brand → Category is compulsory
+                record.allowed_amc_pricing_ids = Pricing.search(
+                    category_domain
+                )
+                
+                
+    @api.onchange('product_sub_category_id', 'brand_id')
+    def _onchange_auto_select_amc_pricing(self):
+        if not self.product_sub_category_id:
+            self.amc_pricing_id = False
+            return
+    
+        Pricing = self.env['amc.pricing']
+    
+        # Category is compulsory
+        category_domain = [
+            ('active', '=', True),
+            ('category_id', '=', self.product_sub_category_id.id),
+        ]
+    
+        pricings = Pricing.browse()
+    
+        # Brand given → Category + Brand
+        if self.brand_id:
+            brand_domain = category_domain + [
+                ('brand_id', '=', self.brand_id.id),
+            ]
+    
+            pricings = Pricing.search(brand_domain)
+    
+            # Fallback to Category only
+            if not pricings:
+                pricings = Pricing.search(category_domain)
+    
+        else:
+            # Category only
+            pricings = Pricing.search(category_domain)
+    
+        # Automatically select if exactly one exists
+        if len(pricings) == 1:
+            self.amc_pricing_id = pricings[0]
+        else:
+            self.amc_pricing_id = False  
+            
 
     def action_open_amc_template(self):
         """Open the AMC Pricing Template Form View"""
@@ -320,66 +384,4 @@ class ServiceSaleOrderLine(models.Model):
             rec.total_amc   = round(rec.total_selling_price + rec.vat_percent, 3)
         
 
-    # @api.model
-    # def create(self, vals):
-    #     record = super().create(vals)
-
-    #     if not record.service_sale_id or not record.service_sale_id.contract_id:
-    #         print("Skipping record:", record.id)
-    #         print("Service Sale ID:", record.service_sale_id)
-    #         print("Contract ID:", record.service_sale_id.contract_id if record.service_sale_id else None)
-    #         return record
-
-    #     self.env['subscription.contracts.line'].create({
-    #         'subscription_contract_id': record.service_sale_id.contract_id.id,
-    #         'product_id': record.product_id.id,
-    #         'main_category_id': record.main_category_id.id,
-    #         'brand_category_id': record.brand_category_id.id,
-    #         'contract_type_id': record.contract_type_id.id,
-    #         'amc_pricing_id': record.amc_pricing_id.id,
-    #         'unit_cost_price': record.unit_cost_price,
-    #         'unit_selling_price': record.unit_selling_price,
-    #         'spare_parts_cost_per_category': record.spare_parts_cost_per_category,
-    #         'spare_parts_cost': record.spare_parts_cost,
-    #         'spare_parts_selling_price': record.spare_parts_selling_price,
-    #         'total_selling_price': record.total_selling_price,
-    #         'per_unit_selling_price': record.per_unit_selling_price,
-    #     })
-
-    #     return record
-
-
-    # def write(self, vals):
-    #     res = super().write(vals)
-
-    #     for record in self:
-
-    #         if not record.service_sale_id or not record.service_sale_id.contract_id:
-    #             print("Skipping record:", record.id)
-    #             print("Service Sale ID:", record.service_sale_id)
-    #             print("Contract ID:", record.service_sale_id.contract_id if record.service_sale_id else None)
-    #             continue
-
-    #         contract_line = self.env['subscription.contracts.line'].search([
-    #             ('subscription_contract_id', '=', record.service_sale_id.contract_id.id),
-    #             ('product_id', '=', record.product_id.id),
-    #         ], limit=1)
-
-    #         values = {
-    #             'main_category_id': record.main_category_id.id,
-    #             'brand_category_id': record.brand_category_id.id,
-    #             'contract_type_id': record.contract_type_id.id,
-    #             'amc_pricing_id': record.amc_pricing_id.id,
-    #             'unit_cost_price': record.unit_cost_price,
-    #             'unit_selling_price': record.unit_selling_price,
-    #             'spare_parts_cost_per_category': record.spare_parts_cost_per_category,
-    #             'spare_parts_cost': record.spare_parts_cost,
-    #             'spare_parts_selling_price': record.spare_parts_selling_price,
-    #             'total_selling_price': record.total_selling_price,
-    #             'per_unit_selling_price': record.per_unit_selling_price,
-    #         }
-
-    #         if contract_line:
-    #             contract_line.write(values)
-
-    #     return res 
+   

@@ -10,17 +10,20 @@
             <xpath expr="//field[@name='service_sale_order_line_ids']/tree/field[@name='product_id'][1]" position="before">
                 <!-- Placing categories before product to make Product the 3rd column -->
                 <field name="main_category_id" optional="show" column_invisible="1"/>
-                <field name = "product_sub_category_id" column_invisible="0"/>
+                <field name = "product_sub_category_id" column_invisible="not parent.amc_quotation"/>
                 <field name="brand_category_id" force_save="1" optional="show" column_invisible="1" domain ="[('parent_id','=',False),('allowed_is_contract','=', True)]"
                 	options = "{'no_open':True,'no_create':True}"
                 />
-                 <field name="brand_id" column_invisible="0" options = "{'no_open':True,'no_create':True}"/>
+                 <field name="brand_id" column_invisible="not parent.amc_quotation" options = "{'no_open':True,'no_create':True}"/>
             </xpath>
 
             <xpath expr="//field[@name='service_sale_order_line_ids']/tree/field[@name='product_id'][2]" position="after">
                <!--  <field name="brand_id" column_invisible="1"/> -->
                 <field name="contract_type_id" optional="show" column_invisible="not parent.amc_quotation" options = "{'no_open':True,'no_create':True}"/>
-                <field name="amc_pricing_id" optional="show" column_invisible="not parent.amc_quotation" options = "{'no_open':True,'no_create':True}"/>
+                 <field name="amc_pricing_id" optional="show" column_invisible="not parent.amc_quotation" options = "{'no_open':True,'no_create':True}"
+                	 domain="[('id', 'in', allowed_amc_pricing_ids)]"
+                />
+                <field name="allowed_amc_pricing_ids" column_invisible="1"/>
                 <button name="action_open_amc_template" type="object" icon="fa-external-link" 
                         invisible="not amc_pricing_id" title="Open AMC Template" 
                          
