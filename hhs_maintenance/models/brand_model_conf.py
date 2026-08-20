@@ -5,7 +5,7 @@ class Brand(models.Model):
     _description = 'Equipment Brand'
 
     name = fields.Char(string='Brand', required=True, unique=True)
-    amc_product_category_id = fields.Many2one('product.category', domain ="[('parent_id','=',False)]", string = "Product Category")
+    amc_product_category_id = fields.Many2one('product.category', domain ="[('parent_id','=',False),('allowed_is_contract','=',True)]", string = "Product Category")
 
 
 

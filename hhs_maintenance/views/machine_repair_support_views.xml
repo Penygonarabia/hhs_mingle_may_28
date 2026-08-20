@@ -8,11 +8,15 @@
 		<field name = "arch" type = "xml">
 		
 			<xpath expr = "//field[@name = 'brand']" position = "before">
-				 <field name = "brand_id"  placeholder=" " class="underline-empty" invisible="not project_related_amc_bool" />
+				 <field name = "brand_id"  placeholder=" " class="underline-empty" invisible="not project_related_amc_bool"  options = "{'no_open':True,'no_create':True}"/>
                  <field name = "items_from_own_company_bool" invisible = "not project_related_amc_bool"/>
-                 <field name = "model_id"  placeholder=" " class="underline-empty" invisible="items_from_own_company_bool or not project_related_amc_bool" domain="[('brand_id', '=', brand_id)]" />
+                 <field name = "model_id"  placeholder=" " class="underline-empty" invisible="items_from_own_company_bool or not project_related_amc_bool" domain="[('brand_id', '=', brand_id)]"
+                 	options = "{'no_open':True,'no_create':True}"
+                  />
                	<!--  <field name = "product_unit_type_ids" invisible="1" widget="many2many_tags"/> -->
-                <field name = "product_product_model_id" string = "Model" invisible = "not items_from_own_company_bool" domain ="[('id','in',product_search_ids)]"/>
+                <field name = "product_product_model_id" string = "Model" invisible = "not items_from_own_company_bool" domain ="[('id','in',product_search_ids)]"
+                	options = "{'no_open':True,'no_create':True}"
+                />
                 <field name = "product_search_ids" widget = "many2many_tags" invisible = "1"/>
 				
 			</xpath>

@@ -65,6 +65,29 @@ class ProductProduct(models.Model):
     service_product_price_edit_bool = fields.Boolean(string="Service Product Price Edit", default=False,
                                                      help="Whenever Technician allow to change the service product unit price"
                                                      )
+    
+    '''Code Added on August 18 2026 By Vijaya Bhaskar'''
+    product_sub_category_id = fields.Many2one(
+        "sub_category",
+        string="Product Sub Category",
+        compute="_compute_product_sub_category",
+        inverse="_inverse_product_sub_category",
+        store=True,
+    )
+
+    @api.depends("product_tmpl_id.product_sub_category_id")
+    def _compute_product_sub_category(self):
+        for product in self:
+            product.product_sub_category_id = (
+                product.product_tmpl_id.product_sub_category_id
+            )
+
+    def _inverse_product_sub_category(self):
+        for product in self:
+            product.product_tmpl_id.product_sub_category_id = (
+                product.product_sub_category_id
+            )
+    
     # promoter_user_bool = fields.Boolean(string = "Promoter User",default = False, compute = "_compute_promoter_user_bool")
 
     # def _compute_promoter_user_bool(self):

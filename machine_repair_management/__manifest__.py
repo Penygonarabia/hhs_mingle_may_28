@@ -328,7 +328,10 @@ workshop machine repair
         # "whatsapp_sale_order_notify",
         "maintenance",
         "hhs_contract_payment_terms",
-        "sale_timesheet"
+        "sale_timesheet",
+         "dashboard_groups"
+        
+        
     ],
     #     'data':[
     #         'security/machine_repair_security.xml',

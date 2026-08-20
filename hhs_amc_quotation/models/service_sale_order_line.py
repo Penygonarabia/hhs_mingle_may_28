@@ -12,17 +12,24 @@ class ServiceSaleOrderLine(models.Model):
         related='product_id.product_main_grp_id',
         store=True
     )
+    # brand_category_id = fields.Many2one(
+    #     'product.category',
+    #     string='Brand (Category)',
+    #     related='product_id.product_category_id',
+    #     store=True,
+    #     readonly=False
+    # )
+    
     brand_category_id = fields.Many2one(
         'product.category',
         string='Brand (Category)',
-        related='product_id.product_category_id',
         store=True,
         readonly=False
     )
     brand_id = fields.Many2one(
         'brand',
         string='Brand',
-        compute='_compute_mapped_brand',
+        # compute='_compute_mapped_brand',
         store=True
     )
     contract_type_id = fields.Many2one(
@@ -97,6 +104,12 @@ class ServiceSaleOrderLine(models.Model):
         digits=(16, 3),
         help="(Labor+Parts) / Qty / No. of visits Not  Round"
     )
+    
+    
+    '''Code Added on Augsut 18 2026 by Vijaya Bhaskar'''
+    
+    product_sub_category_id = fields.Many2one('sub_category',string = "Product Sub Category", related='product_id.product_sub_category_id',)
+   
    
     
     '''Code Added on April 09 2026 by Vijaya Bhaskar'''
@@ -106,29 +119,49 @@ class ServiceSaleOrderLine(models.Model):
             if record.service_sale_id.amc_quotation:
                 if not record.product_id and not record.brand_category_id:
                     raise ValidationError(_("Please Add any product in the Order Lines"))
-    @api.depends('brand_category_id')
-    def _compute_mapped_brand(self):
-        for rec in self:
-            if rec.brand_category_id:
-                brand = self.env['brand'].search([('name', '=', rec.brand_category_id.name)], limit=1)
-                rec.brand_id = brand.id if brand else False
-            else:
-                rec.brand_id = False
-
-    @api.onchange('product_id', 'contract_type_id')
+    # @api.depends('brand_category_id')
+    # def _compute_mapped_brand(self):
+    #     for rec in self:
+    #         if rec.brand_category_id:
+    #             brand = self.env['brand'].search([('name', '=', rec.brand_category_id.name)], limit=1)
+    #             rec.brand_id = brand.id if brand else False
+    #         else:
+    #             rec.brand_id = False
+                
+                
+    @api.onchange('product_id', 'contract_type_id',)
     def _onchange_amc_template(self):
         """Show the default template based on the brand, category & AMC unit type selection"""
         for rec in self:
-            if rec.main_category_id and rec.brand_id:
+            # if rec.product_sub_category_id:
+            if rec.brand_id:
+    
                 domain = [
                     ('active', '=', True),
                     ('brand_id', '=', rec.brand_id.id),
-                    ('category_id', '=', rec.main_category_id.id),
+                    # ('category_id', '=', rec.main_category_id.id),
+                    ('category_id', '=', rec.product_sub_category_id.id),
                     ('is_default', '=', True)
                 ]
                 template = self.env['amc.pricing'].search(domain, limit=1)
                 if template:
                     rec.amc_pricing_id = template.id
+            
+
+    # @api.onchange('product_id', 'contract_type_id')
+    # def _onchange_amc_template(self):
+    #     """Show the default template based on the brand, category & AMC unit type selection"""
+    #     for rec in self:
+    #         if rec.main_category_id and rec.brand_id:
+    #             domain = [
+    #                 ('active', '=', True),
+    #                 ('brand_id', '=', rec.brand_id.id),
+    #                 ('category_id', '=', rec.main_category_id.id),
+    #                 ('is_default', '=', True)
+    #             ]
+    #             template = self.env['amc.pricing'].search(domain, limit=1)
+    #             if template:
+    #                 rec.amc_pricing_id = template.id
 
     def action_open_amc_template(self):
         """Open the AMC Pricing Template Form View"""

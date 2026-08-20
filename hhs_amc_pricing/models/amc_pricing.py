@@ -12,10 +12,17 @@ class AmcPricing(models.Model):
         required=True,
         copy=True,
     )
+    # category_id = fields.Many2one(
+    #     't.mainproducts',
+    #     string='Product Category',
+    #     required=False,
+    # )
+    
     category_id = fields.Many2one(
-        't.mainproducts',
-        string='Product Category',
-        required=False,
+        'sub_category',
+        string='Product Sub Category',
+        required=True,
+           ondelete='restrict',
     )
     brand_id = fields.Many2one(
         'brand',

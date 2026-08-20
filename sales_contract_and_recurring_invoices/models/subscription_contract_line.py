@@ -188,7 +188,16 @@ class SubscriptionContractLines(models.Model):
 
     per_unit_selling_price = fields.Float(string='Per Unit Selling Price')
     
-
+    
+    '''Code Added on August 19 2026 by  Vijaya Bhaskar they need brand'''
+    brand_id = fields.Many2one(
+        'brand',
+        string='Brand',
+        
+    )
+    
+    product_sub_category_id = fields.Many2one('sub_category',string = "Product Sub Category")
+    
     @api.depends('amc_pricing_id', 'contract_type_id', 'total_cost', 'total_price', 'qty_ordered', 'no_of_visits_per_year', 'vat')
     def _compute_quotation_prices(self):
         for rec in self:

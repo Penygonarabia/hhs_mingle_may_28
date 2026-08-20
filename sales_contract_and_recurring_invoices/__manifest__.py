@@ -10,7 +10,7 @@
     'company': 'Cybrosys Techno Solutions',
     'maintainer': 'Cybrosys Techno Solutions',
     'website': 'https://www.cybrosys.com',
-    'depends': ['sale_management', 'website','crm', 'project'],
+    'depends': ['sale_management', 'website','crm', 'project', "dashboard_groups"],
     'data': [
         'security/subscription_contracts_security.xml',
         'security/ir.model.access.csv',

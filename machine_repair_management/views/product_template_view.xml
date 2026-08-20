@@ -13,11 +13,12 @@
             </xpath>
 
             <xpath expr="//field[@name ='categ_id']" position="before">
-                <field name="product_main_grp_id"/>
-                <field name="product_category_id" required="1"/>
-                <field name="product_group_id"/>
-                <field name="product_sub_group_id"/>
-                <field name="product_sub_grouping_id"/>
+                <field name="product_main_grp_id" invisible = "1"/>
+                <field name = "product_sub_category_id"  options = "{'no_open':True,'no_create':True}"/>
+                <field name="product_category_id" required="1" options = "{'no_open':True,'no_create':True}"/>
+                <field name="product_group_id" options = "{'no_open':True,'no_create':True}"/>
+                <field name="product_sub_group_id" options = "{'no_open':True,'no_create':True}"/>
+                <field name="product_sub_grouping_id" options = "{'no_open':True,'no_create':True}"/>
             </xpath>
 
             <xpath expr="//field[@name='categ_id']" position="attributes">
@@ -79,11 +80,12 @@
             </xpath>
 
             <xpath expr="//field[@name ='categ_id']" position="before">
-                <field name="product_main_grp_id"/>
-                <field name="product_category_id" required="1"/>
-                <field name="product_group_id"/>
-                <field name="product_sub_group_id"/>
-                <field name="product_sub_grouping_id"/>
+                <field name="product_main_grp_id" invisible = "1"/>
+                <field name = "product_sub_category_id"  options = "{'no_open':True,'no_create':True}" />
+                <field name="product_category_id" required="1"  options = "{'no_open':True,'no_create':True}"/>
+                <field name="product_group_id"  options = "{'no_open':True,'no_create':True}"/>
+                <field name="product_sub_group_id"  options = "{'no_open':True,'no_create':True}"/>
+                <field name="product_sub_grouping_id"  options = "{'no_open':True,'no_create':True}"/>
             </xpath>
 
             <xpath expr="//field[@name='categ_id']" position="attributes">

@@ -123,7 +123,8 @@ class HHSEquipmentTemplate(http.Controller):
                 asset_counter[product_key] += 1
 
                 sheet.write(row, 0, sno)  # SNO
-                sheet.write(row, 1, line.brand_category_id.name if line.brand_category_id else '')  # Brand
+                # sheet.write(row, 1, line.brand_category_id.name if line.brand_category_id else '')  # Brand
+                sheet.write(row, 1, line.brand_id.name if line.brand_id else '')  # Brand
                 sheet.write(row, 2, line.product_id.name if line.product_id else '')  # Unit Type
 
                 # Columns 3,4,5 remain blank

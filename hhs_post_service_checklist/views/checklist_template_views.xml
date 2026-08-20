@@ -37,8 +37,8 @@
                     </div>
                     <group>
                         <group string="Product Info">
-                            <field name="category_id"/>
-                            <field name="service_unit_type_id"/>
+                            <field name="category_id" options = "{'no_open':True,'no_create':True}"/>
+                            <field name="service_unit_type_id" options = "{'no_open':True,'no_create':True}"/>
                         </group>
                         <group string="Settings">
                             <field name="active"/>

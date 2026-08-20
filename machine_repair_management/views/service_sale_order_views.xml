@@ -426,9 +426,9 @@
 
                                         <!-- mar 31 2026 -->
                                         <field name="product_id" width="150px"
-                                               domain="[('detailed_type', '=', 'consu')]"
+                                               domain="[('detailed_type', '=', 'consu')]" options = "{'no_open':True,'no_create':True}"
                                                column_invisible="not parent.job_task_id"/>
-                                        <field name="product_id" domain="[('detailed_type', '=', 'service')]"
+                                        <field name="product_id" domain="[('detailed_type', '=', 'service')]" options = "{'no_open':True,'no_create':True}"
                                                column_invisible="parent.job_task_id"/>
                                         <field name="description" force_save="1" optional="hide" width="150px"/>
                                         <field name="product_qty" width="100px" sum="Total"/>
