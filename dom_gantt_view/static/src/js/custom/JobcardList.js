@@ -269,14 +269,30 @@ export class JobcardList extends Component {
         // Added on Vengatesh - mar-23-2026 amc_project_id ,project_related_amc_bool
         // "&",
         // ["amc_project_id", "=", this.state.project_id],
-        "&",
-        ["project_related_amc_bool", "=", true],
+       // "&",
+        //["project_related_amc_bool", "=", true],
         "|",
         ["job_card_state_code", "in", ALLOWED_JOB_CARD_STATES],
         "&",
         ["job_card_state_code", "=", "127"],
         ["balance_amount_received_bool", "=", true],
       ];
+
+      // const projectIds = this.state.projectIds || [];
+ 
+      // const domain = [
+      //   "&",
+      //   ["customer_city_id", "in", allCityIds],
+      //   "&",
+      // //  ["project_related_amc_bool", "=", true],
+      //   ["amc_project_id", "in", projectIds],
+      //   "|",
+      //   ["job_card_state_code", "in", ALLOWED_JOB_CARD_STATES],
+      //   "&",
+      //   ["job_card_state_code", "=", 127],
+      //   ["balance_amount_received_bool", "=", true],
+      // ];
+
 
       const jobCards = await this.orm.searchRead("project.task", domain, [
         "customer_city_id",

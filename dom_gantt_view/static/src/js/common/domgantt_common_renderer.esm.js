@@ -1328,11 +1328,17 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
       this.workCenterIdToName = {};
       this.userIdToWorkCenterId = {};
 
+      // const wcIdsToFetch = [
+      //   ...new Set(
+      //     filteredUsers
+      //       .map((u) => u.default_work_center_id?.[0])
+      //       .filter(Boolean),
+      //   ),
+      // ];
+      // Code Added on August 18 2026 Work center displayed 
       const wcIdsToFetch = [
         ...new Set(
-          filteredUsers
-            .map((u) => u.default_work_center_id?.[0])
-            .filter(Boolean),
+          filteredUsers.flatMap((u) => u.default_work_center_id || []),
         ),
       ];
 
@@ -2016,15 +2022,16 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
     }
 
     // Disallow Friday (5) and Saturday (6)
-    const startWeekday = newStartTime.weekday;
-    if (startWeekday === 5 || startWeekday === 6) {
+	// commented on August 16 2026 by Vijaya bhaskar because client asked friday also schedule it 
+   /* const startWeekday = newStartTime.weekday;
+    if (startWeekday === 5 ) {
       this.env.services.notification.add(
-        _t("Cannot schedule on Friday or Saturday."),
+        _t("Cannot schedule on Friday."),
         { type: "danger" },
       );
       revert();
       return;
-    }
+    }*/
 
     // Validate date based on scale
     const scale = this.props.model.scale;

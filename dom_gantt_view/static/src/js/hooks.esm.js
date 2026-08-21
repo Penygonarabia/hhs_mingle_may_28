@@ -69,8 +69,8 @@ export function useDomGantt(refName, params) {
           buttonText: _t("Day"),
           slotDuration: "00:30:00",
           slotLabelInterval: "00:30:00", // ✅ Add this!
-          slotMinTime: "08:00:00",
-          slotMaxTime: "18:00:00",
+          // slotMinTime: "08:00:00",
+          // slotMaxTime: "18:00:00",
           slotLabelContent: function (arg) {
             const hour = arg.date.getHours();
             const minute = arg.date.getMinutes();
