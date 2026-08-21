@@ -79,7 +79,8 @@ class PbiServiceDashboardController(_ServiceMixin, http.Controller):
                                                   drill_path, period_months)
             if breakdown is None:
                 model, domain = service_sql.run_terminal_domain(request.env, uid, effective_board, item_cfg, drill_path, date_from, date_to)
-                return {'terminal': True, 'model': model, 'domain': domain, 'name': item_cfg.name}
+                return {'terminal': True, 'model': model, 'domain': domain, 'name': item_cfg.name,
+                        'listViewId': self._flat_list_view_id(request.env, model)}
             return {'terminal': False, 'breakdown': breakdown, 'level': len(drill_path)}
         except Exception as e:
             return {'error': str(e)}

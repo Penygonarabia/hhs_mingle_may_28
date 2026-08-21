@@ -388,10 +388,21 @@ export class PbiServiceDashboard extends Component {
           type: 'ir.actions.act_window',
           res_model: res.model,
           view_mode: 'list,form',
-          views: [[false, 'list'], [false, 'form']],
+          views: [[res.listViewId || false, 'list'], [false, 'form']],
           domain: res.domain,
           name: res.name,
           target: 'current',
+          // Read by our own project.task search_fetch override: machine_repair_management
+          // injects hidden work_center_id/amc_project_id clauses into every list read for
+          // back-office+technical-allocation users, which emptied lists the chart had
+          // counted. The flag scopes the bypass to this drill-through alone.
+          context: { pbi_dashboard_drilldown: true },
+          // project.task's list view carries sample="1", so when a drill
+          // matches no records Odoo fills the list with fabricated demo rows
+          // (REF0001…, lorem ipsum) instead of an empty state — indistinguishable
+          // from real data at a glance. A drill-through that legitimately finds
+          // nothing has to say nothing.
+          useSampleModel: false,
         });
         return; // don't advance this chart's own drillPath past its last real level
       }

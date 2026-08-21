@@ -11,7 +11,6 @@ board/chart-item config in the per-module config files is executed through
 the generic runners at the bottom of this file — there is no per-board SQL.
 """
 import itertools
-from datetime import datetime, timedelta
 
 from .board_config import ChartItemConfig, BoardConfig, GroupByConfig
 
@@ -1110,11 +1109,10 @@ def _lang_for(env):
 
 
 def _groupby_sql(field_map, groupby, env=None):
-    # "week" is NOT handled here — see run_breakdown's week branch /
-    # _resolve_week_bucket below: it needs a relative rank over the
-    # filtered result set's distinct real calendar weeks, which can't be
-    # expressed as a single SELECT-able column expression the way
-    # month_year/plain fields can.
+    # "week" is NOT handled here — see run_breakdown's week branch: a week
+    # level is a LEFT JOIN onto the period's full week series (empty weeks
+    # included), not a column expression the way month_year/plain fields
+    # are.
     field = groupby.field
     col = field_map[field]
     if groupby.interval == "month_year":
@@ -1243,68 +1241,36 @@ def _level_groupby_config(field, item, idx):
     return GroupByConfig(field, interval)
 
 
-def _is_week_bucketed(item: ChartItemConfig):
-    """True when any level this item can display buckets its date column
-    by calendar week — the top-level groupby, or a drill step further
-    down the chain."""
-    if item.groupby is not None and item.groupby.interval == "week":
-        return True
-    return any(step.interval == "week" for step in item.drill)
+# The bucket series every "week" level is built on: one row per calendar
+# (Monday-start) week the SELECTED period touches, from the week holding
+# date_from through the week holding date_to. Deliberately derived from the
+# period alone, never from the data — a week with no records is still a
+# week of that month, and dropping it silently renumbered the following
+# week as "Week-1" (August 2026 starts on a Saturday: its real first week
+# was empty, so "Week-1" showed the 3-9 Aug week's numbers). Both the
+# breakdown and the drill-down reverse lookup read this same definition,
+# so a "Week-N" label always names the same week in both.
+_WEEK_SERIES_SQL = """
+        SELECT generate_series(
+            date_trunc('week', %(date_from)s::timestamp),
+            date_trunc('week', %(date_to)s::timestamp),
+            interval '7 days'
+        ) AS week_start
+"""
 
 
-def _week_aligned_range(date_from, date_to):
-    """The selected range snapped OUTWARD to whole Monday-start weeks (the
-    same week start date_trunc('week', ...) and board_engine's _week_range
-    both use)."""
-    start_day = date_from - timedelta(days=date_from.weekday())
-    start = datetime(start_day.year, start_day.month, start_day.day)
-    end_day = date_to - timedelta(days=date_to.weekday())
-    end = (datetime(end_day.year, end_day.month, end_day.day)
-           + timedelta(days=6, hours=23, minutes=59, seconds=59))
-    return start, end
-
-
-def _item_date_range(item: ChartItemConfig, date_from, date_to):
-    """The date range an item's own queries run under.
-
-    Every source CTE is scoped up front to [date_from, date_to], so a
-    week-bucketed chart under "This Month" loses the days its first and
-    last weeks share with the neighbouring months: August 2026 starts on a
-    Saturday, so its "Week-1" bar counted only Sat+Sun and silently
-    dropped the Mon-Fri that belong to the very same calendar week. A week
-    on a weekly chart has to be a WHOLE week, so those items get the range
-    snapped outward to week boundaries — the partial weeks at both ends
-    are filled in from the adjacent months rather than truncated.
-
-    Only week-bucketed items are widened. KPI tiles and every other chart
-    stay on exactly the period the user picked."""
-    if _is_week_bucketed(item):
-        return _week_aligned_range(date_from, date_to)
-    return date_from, date_to
-
-
-def _resolve_week_bucket(env, cte_sql, cte_name, raw_col, base_clauses, params, week_label):
+def _resolve_week_bucket(env, params, week_label):
     """Reverses a "Week-N" label back into the real date_trunc('week', ...)
-    value it refers to. "Week-N" is a RELATIVE rank — the Nth distinct real
-    (Monday-start) calendar week present in the filtered result set, in
-    chronological order — not an absolute week-of-year number or a
-    day-of-month bucket (verified against the live source: 3 records in
-    ISO week 13 + 2 in ISO week 21 of the same filtered set render as
-    "Week-1"=3, "Week-2"=2). So resolving it back requires re-running the
-    same distinct-week enumeration with the SAME pre-drill filters that
-    produced the original level-0 breakdown."""
+    value it names — the Nth week of _WEEK_SERIES_SQL, counted from the
+    week containing date_from. Reads the period, not the result set, so an
+    empty week in the middle never shifts what the later labels mean."""
     try:
         n = int(str(week_label).split("-")[1])
     except (ValueError, IndexError):
         return None
-    where = (" WHERE " + " AND ".join(base_clauses)) if base_clauses else ""
-    sql = f"""
-        WITH {cte_sql}
-        SELECT DISTINCT date_trunc('week', {raw_col}) AS week_start
-        FROM {cte_name}{where}
-        ORDER BY week_start
-        OFFSET %(_week_offset)s LIMIT 1
-    """
+    if n < 1:
+        return None
+    sql = f"SELECT week_start FROM ({_WEEK_SERIES_SQL}) _w ORDER BY week_start OFFSET %(_week_offset)s LIMIT 1"
     p = dict(params)
     p["_week_offset"] = n - 1
     env.cr.execute(sql, p)
@@ -1312,9 +1278,9 @@ def _resolve_week_bucket(env, cte_sql, cte_name, raw_col, base_clauses, params, 
     return row[0] if row else None
 
 
-def _drill_filter_clause(env, cte_sql, cte_name, field_map, item, idx, code, base_clauses, binder):
+def _drill_filter_clause(env, field_map, item, idx, code, binder):
     """The WHERE fragment that filters rows down to an already-clicked
-    bucket at drill level `idx`. A "week" level 0 needs the reverse-lookup
+    bucket at drill level `idx`. A "week" level needs the reverse-lookup
     above; month_year/plain fields translate directly via the same
     bucketing expression their breakdown was computed with (comparing the
     raw column straight to the label, e.g. "2026-03", is a Postgres type
@@ -1323,7 +1289,7 @@ def _drill_filter_clause(env, cte_sql, cte_name, field_map, item, idx, code, bas
     level_cfg = _level_groupby_config(fields_shown[idx], item, idx)
     if level_cfg.interval == "week":
         raw_col = field_map[fields_shown[idx]]
-        week_start = _resolve_week_bucket(env, cte_sql, cte_name, raw_col, base_clauses, binder.params, code)
+        week_start = _resolve_week_bucket(env, binder.params, code)
         if week_start is None:
             return f"date_trunc('week', {raw_col}) IS NULL"
         return f"date_trunc('week', {raw_col}) = {binder.bind(week_start)}"
@@ -1349,14 +1315,12 @@ def run_breakdown(env, uid, board: BoardConfig, item: ChartItemConfig, date_from
     if idx >= len(fields_shown):
         return None
 
-    range_from, range_to = _item_date_range(item, date_from, date_to)
     binder = ParamBinder()
-    binder.params["date_from"] = range_from
-    binder.params["date_to"] = range_to
+    binder.params["date_from"] = date_from
+    binder.params["date_to"] = date_to
     clauses = _base_where(env, uid, board, item, field_map, binder)
-    base_clauses_snapshot = list(clauses)  # pre-drill filters, needed to resolve any "Week-N" entry consistently
     for i, entry in enumerate(drill_path or []):
-        clauses.append(_drill_filter_clause(env, cte_sql, cte_name, field_map, item, i, entry["code"], base_clauses_snapshot, binder))
+        clauses.append(_drill_filter_clause(env, field_map, item, i, entry["code"], binder))
     where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
 
     level_cfg = _level_groupby_config(fields_shown[idx], item, idx)
@@ -1370,17 +1334,25 @@ def run_breakdown(env, uid, board: BoardConfig, item: ChartItemConfig, date_from
 
     if level_cfg.interval == "week":
         raw_col = field_map[fields_shown[idx]]
+        # LEFT JOIN onto the full week series (see _WEEK_SERIES_SQL), so a
+        # week of the selected period that holds no records still reports a
+        # bucket, with 0, instead of vanishing and renumbering its
+        # successors. The join is on the real week start, so the numbering
+        # is positional — Week-1 is always the week containing date_from.
+        value2_select = ", COALESCE(_agg.value2, 0) AS value2" if item.measure_2 else ""
         sql = f"""
-            WITH {cte_sql}
-            SELECT 'Week-' || ROW_NUMBER() OVER (ORDER BY week_start) AS code,
-                   'Week-' || ROW_NUMBER() OVER (ORDER BY week_start) AS label,
-                   value{', value2' if item.measure_2 else ''}
-            FROM (
+            WITH {cte_sql},
+            _weeks AS ({_WEEK_SERIES_SQL}),
+            _agg AS (
                 SELECT date_trunc('week', {raw_col}) AS week_start, {measure_sql} AS value{measure2_sql}
                 FROM {cte_name}{where}
                 GROUP BY 1
-            ) _wb
-            ORDER BY week_start ASC
+            )
+            SELECT 'Week-' || ROW_NUMBER() OVER (ORDER BY _weeks.week_start) AS code,
+                   'Week-' || ROW_NUMBER() OVER (ORDER BY _weeks.week_start) AS label,
+                   COALESCE(_agg.value, 0) AS value{value2_select}
+            FROM _weeks LEFT JOIN _agg ON _agg.week_start = _weeks.week_start
+            ORDER BY _weeks.week_start ASC
             LIMIT {item.limit}
         """
     else:
@@ -1454,6 +1426,34 @@ def run_table(env, uid, board: BoardConfig, item: ChartItemConfig, date_from, da
     return result
 
 
+# The two rewrites _translate_jobcards_domain performs when turning a
+# DBM-vocabulary domain into a real project.task one: a straight rename, and
+# a search-only field expanded into the real column it stands for.
+_JOBCARDS_DOMAIN_RENAMES = {"job_card_status": "job_card_state"}
+_JOBCARDS_DOMAIN_EXPANDED = frozenset(["is_user_work_location"])
+
+
+def _jobcards_domain_translatable(env, model, fields_used):
+    """Whether every DBM-vocabulary field in fields_used has a real
+    counterpart on `model` once those rewrites are applied.
+
+    Several jobcards columns exist only inside the CTE and have no field
+    behind them — default_work_location, for one, is joined from the
+    *user's* work-location map rather than stored on the task — so a domain
+    naming one is not a domain Odoo can execute ("ValueError: Invalid field
+    project.task.default_work_location in leaf"). Checked against the real
+    model rather than a hand-kept list, so a config that starts grouping on
+    a new CTE-only column degrades to the id-lookup path instead of raising.
+    """
+    model_fields = env[model]._fields
+    for f in fields_used:
+        if f in _JOBCARDS_DOMAIN_EXPANDED:
+            continue
+        if _JOBCARDS_DOMAIN_RENAMES.get(f, f) not in model_fields:
+            return False
+    return True
+
+
 def _has_row_guard(env, uid, source):
     """Whether a row-level guard clause (technician scoping, promoter
     scoping) applies to the current user for this source — i.e. whether
@@ -1478,8 +1478,8 @@ def _translate_jobcards_domain(env, uid, domain):
     ]
     translated = []
     for f, op, v in domain:
-        if f == "job_card_status":
-            f = "job_card_state"
+        if f in _JOBCARDS_DOMAIN_RENAMES:
+            f = _JOBCARDS_DOMAIN_RENAMES[f]
         elif f == "is_user_work_location":
             allowed = get_user_work_location_ids(env, uid)
             negate = not ((op == "=" and v) or (op == "!=" and not v))
@@ -1495,9 +1495,6 @@ def run_terminal_domain(env, uid, board: BoardConfig, item: ChartItemConfig, dri
     date-range scope every breakdown query was computed under, so the
     list matches exactly what was drilled into rather than all-time data."""
     fields_shown = _fields_shown(item)
-    # Same widening run_breakdown applied, so the records behind a weekly
-    # bar are the whole week's, exactly the set the bar counted.
-    range_from, range_to = _item_date_range(item, date_from, date_to)
 
     # jobcards -> project.task: every DBM-vocabulary field used in
     # board.scope/item.domain (task_id/work_center_id/job_card_status/etc.)
@@ -1534,15 +1531,17 @@ def run_terminal_domain(env, uid, board: BoardConfig, item: ChartItemConfig, dri
     # the ORM fast path — it would hand back a domain that shows the whole
     # company's cards. Those fall through to the id-lookup path below,
     # which applies the guard like every other query here does.
+    fields_used = [f for f, _op, _v in list(board.scope) + list(item.domain)] + fields_shown
     if (item.source == "jobcards" and item.record_model == "project.task"
             and not uses_is_my_user_group and not uses_date_interval and not uses_timeline_field
-            and not _has_row_guard(env, uid, item.source)):
+            and not _has_row_guard(env, uid, item.source)
+            and _jobcards_domain_translatable(env, item.record_model, fields_used)):
         domain = list(board.scope) + list(item.domain)
         for i, entry in enumerate(drill_path or []):
             domain.append((fields_shown[i], "=", entry["code"]))
         translated = _translate_jobcards_domain(env, uid, domain)
-        translated.append(("service_created_datetime", ">=", range_from))
-        translated.append(("service_created_datetime", "<=", range_to))
+        translated.append(("service_created_datetime", ">=", date_from))
+        translated.append(("service_created_datetime", "<=", date_to))
         return item.record_model, translated
 
     # message_log -> project.task, usergroup -> machine.repair.support:
@@ -1558,12 +1557,11 @@ def run_terminal_domain(env, uid, board: BoardConfig, item: ChartItemConfig, dri
     # computed via one extra query instead of a rename table.
     cte_sql, field_map, cte_name = _source_ctx(item)
     binder = ParamBinder()
-    binder.params["date_from"] = range_from
-    binder.params["date_to"] = range_to
+    binder.params["date_from"] = date_from
+    binder.params["date_to"] = date_to
     clauses = _base_where(env, uid, board, item, field_map, binder)
-    base_clauses_snapshot = list(clauses)
     for i, entry in enumerate(drill_path or []):
-        clauses.append(_drill_filter_clause(env, cte_sql, cte_name, field_map, item, i, entry["code"], base_clauses_snapshot, binder))
+        clauses.append(_drill_filter_clause(env, field_map, item, i, entry["code"], binder))
     where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
     id_col = _TERMINAL_ID_COL.get(item.source, "task_id")
     sql = f"WITH {cte_sql} SELECT DISTINCT {id_col} FROM {cte_name}{where}"

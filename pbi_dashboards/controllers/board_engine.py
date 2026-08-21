@@ -47,6 +47,19 @@ def _week_range(now, offset_weeks=0):
     return start, end
 
 
+# Odoo resolves [false, 'list'] to the model's lowest-priority list view. For
+# project.task that is project.view_task_tree2, which carries
+# default_group_by="stage_id" — and job cards never get a project stage (all
+# 15,979 active tasks have stage_id NULL on the live DB), so a drilled list
+# opened on it collapses into a single "None (N)" group and shows nothing but
+# the aggregate row. project's own "All Tasks" list is the very same view with
+# default_group_by cleared (identical field set, verified), so name it
+# explicitly instead. Models with no entry here keep Odoo's default view.
+UNGROUPED_LIST_VIEWS = {
+    "project.task": "project.open_view_all_tasks_list_view",
+}
+
+
 class PbiDashboardBoardEngineMixin:
     """Shared instance methods for every generic-engine dashboard controller.
     Concrete controllers inherit this alongside http.Controller — but NOT
@@ -137,6 +150,16 @@ class PbiDashboardBoardEngineMixin:
             if m and m.field.endswith("_amount"):
                 return "millions"
         return "number"
+
+    def _flat_list_view_id(self, env, model):
+        """The list view a drill-through should open for `model` — see
+        UNGROUPED_LIST_VIEWS. Returns False (let Odoo pick) when the model
+        has no entry, or when the named view is absent on this DB."""
+        xmlid = UNGROUPED_LIST_VIEWS.get(model)
+        if not xmlid:
+            return False
+        view = env.ref(xmlid, raise_if_not_found=False)
+        return view.id if view else False
 
     def _resolve_item_info(self, board_cfg, item_cfg):
         """Return per-item info/tooltip string. Override in concrete
