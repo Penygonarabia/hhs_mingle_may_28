@@ -18,7 +18,7 @@ Restricted to database administrators.
 """,
     'author': 'Saravanan',
     'category': 'Technical',
-    'version': '17.0.2.0.0',
+    'version': '17.0.2.3.0',
     'depends': ['web'],
     'data': [
         'security/security.xml',

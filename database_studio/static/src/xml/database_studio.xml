@@ -45,105 +45,120 @@
         </Dialog>
     </t>
 
-    <t t-name="database_studio.OrderByDialog">
-        <Dialog title="'Order by # Configuration'" size="'md'">
-            <div class="mb-3">
-                <p class="text-muted small mb-2">
-                    Specify the <b>Order by #</b> to frame the query columns sequence. Optionally set sort direction (ASC/DESC).
-                </p>
-                <div class="input-group input-group-sm mb-2">
-                    <span class="input-group-text"><i class="fa fa-search"/></span>
-                    <input type="text" class="form-control" placeholder="Search fields or tables..." t-model="state.filter"/>
-                </div>
-                <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
-                    <table class="table table-sm table-bordered align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Table</th>
-                                <th>Field</th>
-                                <th style="width: 100px;">Order by #</th>
-                                <th style="width: 110px;">Sort</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr t-foreach="filteredItems" t-as="item" t-key="item.table + '.' + item.field">
-                                <td><code t-esc="item.table"/></td>
-                                <td><b t-esc="item.field"/></td>
-                                <td>
-                                    <input type="number" class="form-control form-control-sm"
-                                           min="1" placeholder="" t-model="item.order"/>
-                                </td>
-                                <td>
-                                    <select class="form-select form-select-sm" t-model="item.dir">
-                                        <option value="NONE">Default</option>
-                                        <option value="ASC">ASC ▲</option>
-                                        <option value="DESC">DESC ▼</option>
-                                    </select>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+    <t t-name="database_studio.ConvertTypeDialog">
+        <Dialog title="isQuery ? 'Read these result columns as numbers' : 'Change field type to number'" size="'lg'">
+            <div t-if="isQuery" class="sqlms-hint mt-0">
+                These columns come from the query, not from a table, so there is nothing to
+                alter. The query is rewritten to cast them instead — your data is untouched.
             </div>
-            <t t-set-slot="footer">
-                <button class="btn btn-primary" t-on-click="confirm">
-                    <i class="fa fa-code-fork me-1"/>Apply &amp; Build Query
-                </button>
-                <button class="btn btn-secondary" t-on-click="() => this.props.close()">
-                    Cancel
-                </button>
-            </t>
-        </Dialog>
-    </t>
+            <div t-if="state.error" class="alert alert-danger" t-esc="state.error"/>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Convert to</label>
+                <select class="form-select" t-att-value="state.target"
+                        t-on-change="onTargetChange"
+                        t-att-disabled="state.converting">
+                    <option t-foreach="targets" t-as="tgt" t-key="tgt.value"
+                            t-att-value="tgt.value" t-att-selected="tgt.value === state.target"
+                            t-esc="tgt.label"/>
+                </select>
+            </div>
 
-    <t t-name="database_studio.GroupByDialog">
-        <Dialog title="'Group by &amp; Aggregation Configuration'" size="'md'">
-            <div class="mb-3">
-                <p class="text-muted small mb-2">
-                    Select aggregate functions (<b>COUNT</b> for all field types; <b>SUM / AVG / MIN / MAX</b> for numeric fields).
-                </p>
-                <div class="input-group input-group-sm mb-2">
-                    <span class="input-group-text"><i class="fa fa-search"/></span>
-                    <input type="text" class="form-control" placeholder="Search fields or tables..." t-model="state.filter"/>
-                </div>
-                <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
-                    <table class="table table-sm table-bordered align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Table</th>
-                                <th>Field</th>
-                                <th>Type</th>
-                                <th style="width: 170px;">Function</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr t-foreach="filteredItems" t-as="item" t-key="item.table + '.' + item.field">
-                                <td><code t-esc="item.table"/></td>
-                                <td><b t-esc="item.field"/></td>
+            <div t-if="state.loading" class="sqlms-empty">Checking the column values…</div>
+            <t t-else="">
+                <table class="sqlms-grid sqlms-converttable" t-if="columns.length">
+                    <thead>
+                        <tr>
+                            <th>Column</th>
+                            <th>Current type</th>
+                            <th class="text-end">Rows</th>
+                            <th class="text-end">Blank → NULL</th>
+                            <th class="text-end">Rounded</th>
+                            <th>Not a number</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="columns" t-as="c" t-key="c.table + '.' + c.name"
+                            t-att-class="{ 'sqlms-convert-skip': !c.convertible }">
+                            <td><b t-esc="c.name"/> <span class="text-muted" t-esc="c.table"/></td>
+                            <td t-esc="c.type"/>
+                            <t t-if="c.convertible">
+                                <td class="text-end" t-esc="c.total"/>
+                                <td class="text-end" t-esc="c.blanks"/>
+                                <td class="text-end" t-esc="c.fractional"/>
                                 <td>
-                                    <span class="badge bg-secondary" t-esc="item.type"/>
+                                    <t t-if="c.bad">
+                                        <span class="sqlms-convert-bad"><t t-esc="c.bad"/></span>
+                                        <span class="text-muted">
+                                            e.g. <t t-esc="c.samples.join(', ')"/>
+                                        </span>
+                                    </t>
+                                    <t t-else="">—</t>
                                 </td>
-                                <td>
-                                    <select class="form-select form-select-sm" t-model="item.func">
-                                        <option value="NONE">None</option>
-                                        <option value="COUNT">COUNT</option>
-                                        <option value="COUNT_DISTINCT">COUNT (DISTINCT)</option>
-                                        <t t-if="item.isNumeric">
-                                            <option value="SUM">SUM</option>
-                                            <option value="AVG">AVG</option>
-                                            <option value="MIN">MIN</option>
-                                            <option value="MAX">MAX</option>
-                                        </t>
-                                    </select>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                            </t>
+                            <t t-else="">
+                                <td colspan="4" class="text-muted">skipped: <t t-esc="c.reason"/></td>
+                            </t>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div t-if="!convertible.length and !state.error" class="alert alert-warning mt-2">
+                    None of the picked columns can be converted.
                 </div>
-            </div>
+                <t t-else="">
+                    <div t-foreach="state.report.warnings" t-as="w" t-key="w_index"
+                         class="alert alert-warning mt-2 mb-1" t-esc="w"/>
+
+                    <div t-if="badTotal" class="alert mt-2"
+                         t-att-class="isQuery ? 'alert-warning' : 'alert-danger'">
+                        <div>
+                            <b><t t-esc="badTotal"/> value(s)</b> cannot be read as a number.
+                            <t t-if="isQuery">
+                                The rewritten query fails on them unless they are skipped.
+                            </t>
+                            <t t-else="">
+                                The conversion fails unless they are cleared first.
+                            </t>
+                        </div>
+                        <label class="d-block mt-2">
+                            <input type="checkbox" t-att-checked="state.blankBad"
+                                   t-on-change="onBlankBadChange"/>
+                            <t t-if="isQuery">
+                                Return those values as empty (NULL) instead — the stored
+                                data is not touched.
+                            </t>
+                            <t t-else="">
+                                Set those values to empty (NULL) before converting —
+                                <b>this deletes them</b>.
+                            </t>
+                        </label>
+                    </div>
+                    <div t-if="roundTotal" class="sqlms-hint mt-2">
+                        <t t-esc="roundTotal"/> value(s) have decimals and will be rounded
+                        by this target type.
+                    </div>
+                    <div t-if="blankTotal" class="sqlms-hint mt-2">
+                        <t t-esc="blankTotal"/> blank value(s) become NULL.
+                    </div>
+
+                    <div class="mt-3">
+                        <button class="btn btn-link btn-sm p-0" t-on-click="toggleSql">
+                            <i class="fa" t-att-class="state.showSql ? 'fa-caret-down' : 'fa-caret-right'"/>
+                            <t t-if="isQuery">The rewritten query</t>
+                            <t t-else="">SQL that will run</t>
+                        </button>
+                        <pre t-if="state.showSql" class="sqlms-convertsql" t-esc="state.report.sql"/>
+                    </div>
+                </t>
+            </t>
+
             <t t-set-slot="footer">
-                <button class="btn btn-primary" t-on-click="confirm">
-                    <i class="fa fa-code-fork me-1"/>Apply &amp; Build Query
+                <button class="btn btn-primary" t-on-click="confirm"
+                        t-att-disabled="!canConvert">
+                    <i class="fa fa-exchange me-1"/>
+                    <t t-if="state.converting">Converting…</t>
+                    <t t-elif="isQuery">Rewrite query (<t t-esc="convertible.length"/> column(s))</t>
+                    <t t-else="">Convert <t t-esc="convertible.length"/> column(s)</t>
                 </button>
                 <button class="btn btn-secondary" t-on-click="() => this.props.close()">
                     Cancel
@@ -155,11 +170,15 @@
     <t t-name="database_studio.Analyser">
         <div class="sqlms-root" t-ref="rootEl">
             <!-- Left: objects -->
-            <div class="sqlms-sidebar">
+            <div class="sqlms-sidebar" t-ref="sidebarEl">
                 <div class="sqlms-search">
-                    <i class="fa fa-search"/>
-                    <input type="text" placeholder="Search table or view name..."
-                           t-model="state.filter"/>
+                    <span class="sqlms-searchbox">
+                        <i class="fa fa-search"/>
+                        <input type="text" placeholder="Search table or view name..."
+                               t-model="state.filter"/>
+                        <button class="sqlms-searchbox-x" t-if="state.filter"
+                                title="Clear the search" t-on-click="clearFilter">&#215;</button>
+                    </span>
                     <button class="sqlms-hist-btn" title="Query history"
                             t-on-click="openHistory">
                         <i class="fa fa-history"/>
@@ -200,6 +219,10 @@
                                     t-on-click="(ev) => this.toggleFavorite(fav.name, fav.type, ev)">
                                 <i class="fa fa-star"/>
                             </button>
+                            <button class="sqlms-insert" title="Insert into query"
+                                    t-on-click="(ev) => this.insertObject(fav.name, ev)">
+                                <i class="fa fa-code"/>
+                            </button>
                         </li>
                     </ul>
 
@@ -221,6 +244,10 @@
                                     t-att-title="isFavorite(name) ? 'Remove from favourites' : 'Add to favourites'"
                                     t-on-click="(ev) => this.toggleFavorite(name, 'table', ev)">
                                 <i class="fa" t-att-class="isFavorite(name) ? 'fa-star' : 'fa-star-o'"/>
+                            </button>
+                            <button class="sqlms-insert" title="Insert into query"
+                                    t-on-click="(ev) => this.insertObject(name, ev)">
+                                <i class="fa fa-code"/>
                             </button>
                         </li>
                     </ul>
@@ -244,9 +271,20 @@
                                     t-on-click="(ev) => this.toggleFavorite(name, 'view', ev)">
                                 <i class="fa" t-att-class="isFavorite(name) ? 'fa-star' : 'fa-star-o'"/>
                             </button>
+                            <button class="sqlms-insert" title="Insert into query"
+                                    t-on-click="(ev) => this.insertObject(name, ev)">
+                                <i class="fa fa-code"/>
+                            </button>
                         </li>
                     </ul>
                 </div>
+            </div>
+
+            <div class="sqlms-resizer sqlms-resizer-x"
+                 title="Drag to resize the list — double-click to reset"
+                 t-on-pointerdown="(ev) => this.startResize(ev, 'sidebar')"
+                 t-on-dblclick="() => this.resetResize('sidebar')">
+                <span class="sqlms-resizer-grip"/>
             </div>
 
             <!-- Right: detail -->
@@ -266,63 +304,95 @@
                 <div class="sqlms-content">
                     <!-- FIELDS -->
                     <div t-if="state.activeTab === 'fields'" class="sqlms-pane">
-                        <t t-if="!_fieldsTables().length">
-                            <div class="sqlms-empty">Click a table/view (or tick several) on the left to see its fields.</div>
+                        <t t-if="!_fieldsTables().length and !state.fieldGroups.length">
+                            <div class="sqlms-empty">
+                                Click a table/view (or tick several) on the left to see its fields —
+                                or execute a query and its own result columns show up here.
+                            </div>
                         </t>
                         <t t-elif="state.loading">
                             <div class="sqlms-empty">Loading fields…</div>
                         </t>
                         <t t-else="">
                             <div class="sqlms-toolbar">
-                                <div class="sqlms-tab-search">
-                                    <i class="fa fa-search"/>
-                                    <input type="text" placeholder="Search fields or tables..."
-                                           t-model="state.fieldsFilter"/>
-                                    <button class="sqlms-clear-btn" t-if="state.fieldsFilter"
-                                            t-on-click="() => this.state.fieldsFilter = ''"
-                                            title="Clear search">
-                                        <i class="fa fa-times"/>
-                                    </button>
-                                </div>
-                                <button class="btn btn-primary btn-sm" t-if="selectedFieldCount" t-on-click="buildFieldsQuery">
-                                    <i class="fa fa-code-fork"/> Build query (<t t-esc="selectedFieldCount"/>)
+                                <button class="btn btn-primary btn-sm" t-on-click="buildFieldQuery"
+                                        t-att-disabled="!pickedFieldCount or state.loading or hasDerivedPicks"
+                                        t-att-title="hasDerivedPicks ? 'Result columns have no table to select from — pick columns of a table on the left to build a query' : 'Build a SELECT of the ticked fields (joining their tables when there is more than one)'">
+                                    <i class="fa fa-magic"/> Build query
+                                    <t t-if="pickedFieldCount">(<t t-esc="pickedFieldCount"/>)</t>
                                 </button>
-                                <button class="btn btn-secondary btn-sm" t-if="selectedFieldCount" t-on-click="openGroupByDialog" title="Configure Group By and Field Aggregation functions">
-                                    <i class="fa fa-layer-group"/> Group by
+                                <button class="btn btn-secondary btn-sm"
+                                        t-on-click="openConvertType"
+                                        t-att-disabled="!pickedFieldCount or state.loading"
+                                        t-att-title="hasDerivedPicks ? 'Rewrite the query so the ticked result column(s) come back as numbers' : 'Convert the ticked text column(s) to a numeric type'">
+                                    <i class="fa fa-exchange"/> Text &#8594; number
                                 </button>
-                                <button class="btn btn-secondary btn-sm" t-if="selectedFieldCount" t-on-click="openOrderByDialog" title="Configure column order sequence and sort direction">
-                                    <i class="fa fa-sort"/> Order by
-                                </button>
-                                <button class="btn btn-link btn-sm" t-if="selectedFieldCount" t-on-click="clearSelectedFields">
-                                    Clear selection
+                                <button class="btn btn-link btn-sm" t-if="pickedFieldCount"
+                                        t-on-click="clearFieldPicks">
+                                    Clear field selection
                                 </button>
                                 <button class="btn btn-secondary btn-sm" t-on-click="copyFields">
                                     <i class="fa fa-clipboard"/> Copy fields
                                 </button>
+                                <span class="sqlms-searchbox">
+                                    <i class="fa fa-search"/>
+                                    <input type="text" placeholder="Search field name..."
+                                           t-model="state.fieldFilter"/>
+                                    <button class="sqlms-searchbox-x" t-if="state.fieldFilter"
+                                            title="Clear the field search"
+                                            t-on-click="clearFieldFilter">&#215;</button>
+                                </span>
                                 <span class="sqlms-info">
-                                    <t t-esc="fieldCount"/> field(s) in
-                                    <t t-esc="filteredFieldGroups.length"/> table(s)
-                                    <t t-if="state.fieldsFilter">(filtered)</t>
+                                    <t t-if="state.fieldFilter.trim()">
+                                        <t t-esc="visibleFieldCount"/> of
+                                        <t t-esc="fieldCount"/> field(s) match
+                                    </t>
+                                    <t t-else="">
+                                        <t t-esc="fieldCount"/> field(s) in
+                                        <t t-esc="state.fieldGroups.length"/> table(s)
+                                    </t>
+                                </span>
+                                <span class="sqlms-info" t-if="pickedFieldCount">
+                                    · <t t-esc="pickedFieldCount"/> picked,
+                                    <t t-esc="groupedFieldCount"/> grouped,
+                                    <t t-esc="orderedFieldCount"/> ordered
                                 </span>
                             </div>
+                            <div class="sqlms-hint" t-if="groupedFieldCount">
+                                Grouping is on: the picked fields that are not grouped come back
+                                as SUM (numeric) or COUNT(DISTINCT …), next to a COUNT(*).
+                            </div>
                             <div class="sqlms-groupscroll">
+                                <div t-if="!filteredFieldGroups.length" class="sqlms-empty">
+                                    No field matches “<t t-esc="state.fieldFilter"/>”.
+                                </div>
                                 <div t-foreach="filteredFieldGroups" t-as="g" t-key="g.table"
                                      class="sqlms-fieldgroup">
                                     <div class="sqlms-group-title2"
                                          t-on-click="() => this.toggleFieldGroup(g.table)">
-                                        <input type="checkbox" class="sqlms-check me-1"
-                                               t-att-checked="isGroupAllSelected(g)"
-                                               t-on-click="(ev) => this.toggleGroupSelect(g, ev)"
-                                               title="Select/deselect all fields in this table"/>
                                         <i class="fa" t-att-class="!state.collapsedGroups[g.table] ? 'fa-caret-down' : 'fa-caret-right'"/>
                                         <b t-esc="g.table"/>
+                                        <span class="sqlms-derived-tag" t-if="g.derived"
+                                              title="Columns of the last executed query, not of a table">
+                                            from the query
+                                        </span>
                                         <span class="sqlms-count" t-esc="g.fields.length"/>
+                                        <label class="sqlms-allfields"
+                                               t-on-click="(ev) => ev.stopPropagation()"
+                                               title="Tick every field of this table">
+                                            <input type="checkbox"
+                                                   t-att-checked="allFieldsPicked(g)"
+                                                   t-on-click="(ev) => this.toggleAllFields(g, ev)"/>
+                                            all
+                                        </label>
                                     </div>
                                     <div class="sqlms-grouptablewrap" t-if="!state.collapsedGroups[g.table]">
                                         <table class="sqlms-grid">
                                             <thead>
                                                 <tr>
-                                                    <th class="sqlms-check-col"/>
+                                                    <th class="sqlms-pickcol" title="Include in the built query"/>
+                                                    <th class="sqlms-pickcol">Group</th>
+                                                    <th class="sqlms-pickcol">Order</th>
                                                     <th>Field name</th>
                                                     <th>Field type</th>
                                                     <th>Precision / Length</th>
@@ -331,13 +401,36 @@
                                             </thead>
                                             <tbody>
                                                 <tr t-foreach="g.fields" t-as="f" t-key="f.name"
-                                                    t-att-class="{ 'sqlms-active': isFieldSelected(g.table, f.name) }"
-                                                    t-on-click="(ev) => this.toggleFieldSelect(g.table, f.name, ev)">
-                                                    <td class="sqlms-check-col" t-on-click="(ev) => ev.stopPropagation()">
-                                                        <input type="checkbox" class="sqlms-check"
-                                                               t-att-checked="isFieldSelected(g.table, f.name)"
-                                                               t-on-click="(ev) => this.toggleFieldSelect(g.table, f.name, ev)"/>
+                                                    t-att-class="{ 'sqlms-row-picked': isFieldPicked(g.table, f.name) }">
+                                                    <td class="sqlms-pickcol">
+                                                        <input type="checkbox"
+                                                               t-att-checked="isFieldPicked(g.table, f.name)"
+                                                               t-att-title="'Include ' + g.table + '.' + f.name + ' in the built query'"
+                                                               t-on-click="(ev) => this.toggleFieldPick(g.table, f, ev)"/>
                                                     </td>
+                                                    <t t-if="g.derived">
+                                                        <td class="sqlms-pickcol"/>
+                                                        <td class="sqlms-pickcol"/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <td class="sqlms-pickcol">
+                                                            <button class="sqlms-pickbtn"
+                                                                    t-att-class="{ 'sqlms-pickbtn-on': isFieldGrouped(g.table, f.name) }"
+                                                                    title="Group the built query by this field"
+                                                                    t-on-click="(ev) => this.toggleFieldGroupBy(g.table, f, ev)">
+                                                                <i class="fa fa-object-group"/>
+                                                            </button>
+                                                        </td>
+                                                        <td class="sqlms-pickcol">
+                                                            <button class="sqlms-pickbtn"
+                                                                    t-att-class="{ 'sqlms-pickbtn-on': fieldOrderDir(g.table, f.name) }"
+                                                                    title="Order the built query by this field (click again for descending, once more to drop it)"
+                                                                    t-on-click="(ev) => this.cycleFieldOrder(g.table, f, ev)">
+                                                                <i class="fa"
+                                                                   t-att-class="fieldOrderDir(g.table, f.name) === 'desc' ? 'fa-sort-amount-desc' : (fieldOrderDir(g.table, f.name) === 'asc' ? 'fa-sort-amount-asc' : 'fa-sort')"/>
+                                                            </button>
+                                                        </td>
+                                                    </t>
                                                     <td t-esc="f.name"/>
                                                     <td t-esc="f.type"/>
                                                     <td t-esc="f.precision"/>
@@ -359,29 +452,18 @@
                         <t t-elif="state.loading">
                             <div class="sqlms-empty">Loading field mapping…</div>
                         </t>
-                        <t t-elif="filteredMapping">
+                        <t t-elif="state.mapping">
                             <div class="sqlms-toolbar">
-                                <div class="sqlms-tab-search">
-                                    <i class="fa fa-search"/>
-                                    <input type="text" placeholder="Search mapping or columns..."
-                                           t-model="state.mappingFilter"/>
-                                    <button class="sqlms-clear-btn" t-if="state.mappingFilter"
-                                            t-on-click="() => this.state.mappingFilter = ''"
-                                            title="Clear search">
-                                        <i class="fa fa-times"/>
-                                    </button>
-                                </div>
                                 <button class="btn btn-secondary btn-sm" t-on-click="copyMapping"
-                                        t-if="filteredMapping.rows.length">
+                                        t-if="state.mapping.rows.length">
                                     <i class="fa fa-clipboard"/> Copy mapping
                                 </button>
                                 <span class="sqlms-info">
-                                    <t t-esc="filteredMapping.rows.length"/> mapping(s) for
+                                    <t t-esc="state.mapping.rows.length"/> mapping(s) for
                                     <b t-esc="_mappingTables().join(', ')"/>
-                                    <t t-if="state.mappingFilter">(filtered)</t>
                                 </span>
                             </div>
-                            <div class="sqlms-tablewrap" t-if="filteredMapping.rows.length">
+                            <div class="sqlms-tablewrap" t-if="state.mapping.rows.length">
                                 <table class="sqlms-grid">
                                     <thead>
                                         <tr>
@@ -394,7 +476,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr t-foreach="filteredMapping.rows" t-as="m" t-key="m_index">
+                                        <tr t-foreach="state.mapping.rows" t-as="m" t-key="m_index">
                                             <td t-esc="m.from_table"/>
                                             <td t-esc="m.from_column"/>
                                             <td class="sqlms-arrow">&#8594;</td>
@@ -408,18 +490,18 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="sqlms-unrelated" t-if="filteredMapping.unrelated.length">
+                            <div class="sqlms-unrelated" t-if="state.mapping.unrelated.length">
                                 <div class="sqlms-unrelated-head">
                                     <i class="fa fa-exclamation-triangle"/>
                                     No relationship detected for these selected table(s).
                                     Their code/key columns are shown below — define a mapping under
                                     <b>Database Studio ▸ Relations</b> to join them.
                                 </div>
-                                <div class="sqlms-unrelated-item" t-foreach="filteredMapping.unrelated"
+                                <div class="sqlms-unrelated-item" t-foreach="state.mapping.unrelated"
                                      t-as="ut" t-key="ut">
                                     <b t-esc="ut"/>:
                                     <span class="sqlms-cand"
-                                          t-esc="(filteredMapping.candidates[ut] or []).join(', ') or 'no code/key-like columns'"/>
+                                          t-esc="(state.mapping.candidates[ut] or []).join(', ') or 'no code/key-like columns'"/>
                                 </div>
                             </div>
                         </t>
@@ -440,11 +522,45 @@
                                     t-on-click="addQtab">
                                 <i class="fa fa-plus"/>
                             </button>
-                            <button class="sqlms-qtab-close-all" title="Close all query tabs without saving"
-                                    t-if="state.qtabs.length > 0"
-                                    t-on-click="removeAllQtabs">
-                                <i class="fa fa-times me-1"/>Close All Without Save
-                            </button>
+                            <div class="sqlms-tabmenu-wrap" t-if="state.qtabs.length > 1">
+                                <button class="sqlms-qtab-add sqlms-qtab-closeall"
+                                        title="Close query tabs…"
+                                        t-on-click="toggleTabMenu">
+                                    <i class="fa fa-window-close-o"/>
+                                    <i class="fa fa-caret-down"/>
+                                </button>
+                                <t t-if="state.tabMenuOpen">
+                                    <div class="sqlms-tabmenu-backdrop" t-on-click="closeTabMenu"/>
+                                    <div class="sqlms-tabmenu">
+                                        <div class="sqlms-tabmenu-head">Close query tabs</div>
+                                        <button t-att-disabled="!otherQtabCount"
+                                                t-on-click="closeOtherQtabs">
+                                            Close all except this one
+                                            <span class="sqlms-tabmenu-n" t-esc="otherQtabCount"/>
+                                        </button>
+                                        <button t-att-disabled="!leftQtabCount"
+                                                t-on-click="closeQtabsToLeft">
+                                            Close all to the left
+                                            <span class="sqlms-tabmenu-n" t-esc="leftQtabCount"/>
+                                        </button>
+                                        <button t-att-disabled="!rightQtabCount"
+                                                t-on-click="closeQtabsToRight">
+                                            Close all to the right
+                                            <span class="sqlms-tabmenu-n" t-esc="rightQtabCount"/>
+                                        </button>
+                                        <button t-att-disabled="!savedQtabCount"
+                                                t-on-click="closeSavedQtabs"
+                                                title="Tabs already in History close without asking">
+                                            Close saved ones
+                                            <span class="sqlms-tabmenu-n" t-esc="savedQtabCount"/>
+                                        </button>
+                                        <button t-on-click="closeAllQtabs">
+                                            Close all
+                                            <span class="sqlms-tabmenu-n" t-esc="state.qtabs.length"/>
+                                        </button>
+                                    </div>
+                                </t>
+                            </div>
                         </div>
                         <div class="sqlms-toolbar">
                             <button class="btn btn-primary btn-sm" t-on-click="() => this.runQuery(1, true)"
@@ -463,59 +579,64 @@
                             <button class="btn btn-secondary btn-sm" t-on-click="clearQuery">
                                 <i class="fa fa-eraser"/> Clear
                             </button>
-                            <button class="btn btn-secondary btn-sm" t-if="availableFieldsCount" t-on-click="openGroupByDialog" title="Configure Group By and Field Aggregation functions">
-                                <i class="fa fa-layer-group"/> Group by
+                            <button class="btn btn-secondary btn-sm" t-if="state.execRange"
+                                    t-on-click="clearExecHighlight"
+                                    title="Remove the highlight marking the part of the query that was executed">
+                                <i class="fa fa-eraser"/> Clear highlight
                             </button>
-                            <button class="btn btn-secondary btn-sm" t-if="availableFieldsCount" t-on-click="openOrderByDialog" title="Configure column order sequence and sort direction">
-                                <i class="fa fa-sort"/> Order by
-                            </button>
-                            <span class="sqlms-info">Tip: select part of the query to run only that; click a table/view on the left to insert it.</span>
+                            <t t-if="foldableCount">
+                                <button class="btn btn-secondary btn-sm" t-on-click="foldAll"
+                                        title="Collapse every statement">
+                                    <i class="fa fa-compress"/> Fold all
+                                </button>
+                                <button class="btn btn-secondary btn-sm" t-on-click="unfoldAll"
+                                        title="Expand every collapsed statement">
+                                    <i class="fa fa-expand"/> Unfold all
+                                </button>
+                            </t>
+                            <span class="sqlms-info">Tip: select part of the query to run only that; use the +/- icons in the left margin to fold a statement.</span>
                         </div>
-                        <div class="sqlms-blocks" t-ref="blocksContainer"
-                             t-att-class="{ 'sqlms-blocks-multi': queryBlocks.length > 1 }">
-                            <div t-foreach="queryBlocks" t-as="blk" t-key="blk.id" class="sqlms-block">
-                                <div t-if="queryBlocks.length > 1" class="sqlms-block-head"
-                                     t-on-click="() => this.toggleBlockCollapse(blk.id)">
-                                    <i class="fa" t-att-class="blk.collapsed ? 'fa-caret-right' : 'fa-caret-down'"/>
-                                    <span class="sqlms-block-label">Statement <t t-esc="blk.index + 1"/></span>
-                                    <span class="sqlms-block-preview" t-esc="blk.collapsed ? blk.preview : ''"/>
-                                    <span class="sqlms-block-lines"><t t-esc="blk.lineCount"/> line(s)</span>
-                                </div>
-                                <div class="sqlms-editor" t-if="!blk.collapsed">
-                                    <pre class="sqlms-highlight sqlms-block-highlight"
-                                         t-att-data-block-id="blk.id"/>
-                                    <textarea class="sqlms-textarea sqlms-block-textarea"
-                                              t-att-data-block-id="blk.id"
-                                              spellcheck="false"
-                                              placeholder="Type or paste a query..."
-                                              t-on-input="(ev) => this.onBlockInput(blk.id, ev)"
-                                              t-on-keydown="(ev) => this.onBlockKeydown(blk.id, ev)"
-                                              t-on-blur="() => this.onBlockBlur(blk.id)"
-                                              t-on-scroll="onBlockScroll"/>
-                                    <div class="sqlms-autocomplete" t-if="state.autocomplete.visible &amp;&amp; state.autocomplete.blockId === blk.id" t-att-style="state.autocomplete.style">
-                                        <div t-foreach="state.autocomplete.items" t-as="acItem" t-key="acItem.display"
-                                             class="sqlms-ac-item"
-                                             t-att-class="{ 'sqlms-ac-item-active': acItem_index === state.autocomplete.selectedIndex }"
-                                             t-on-mousedown.prevent="() => this.insertAutocomplete(acItem)">
-                                            <div>
-                                                <b t-esc="acItem.label"/>
-                                                <span class="text-muted small ms-1" t-if="acItem.table &amp;&amp; acItem.table !== acItem.label">(<t t-esc="acItem.table"/>)</span>
-                                            </div>
-                                            <span class="badge bg-secondary font-monospace" t-esc="acItem.type || 'field'"/>
-                                        </div>
-                                    </div>
+                        <div class="sqlms-editor" t-ref="editorEl">
+                            <div class="sqlms-gutter">
+                                <div class="sqlms-gutter-inner" t-ref="queryGutter">
+                                    <t t-foreach="sections" t-as="sec" t-key="sec.key">
+                                        <span t-if="sec.foldable" class="sqlms-fold"
+                                              t-att-style="'top:' + sec.top + 'px'"
+                                              t-att-title="(sec.collapsed ? 'Expand' : 'Collapse') + ' statement ' + (sec.index + 1) + ' (' + sec.lineCount + ' lines)'"
+                                              t-on-click="() => this.toggleSection(sec.index)">
+                                            <i class="fa" t-att-class="sec.collapsed ? 'fa-plus-square-o' : 'fa-minus-square-o'"/>
+                                        </span>
+                                    </t>
                                 </div>
                             </div>
+                            <pre class="sqlms-highlight" t-ref="queryHighlight"/>
+                            <textarea class="sqlms-textarea" t-ref="queryTextarea"
+                                      spellcheck="false"
+                                      placeholder="Type or paste a query..."
+                                      t-on-input="onEditorInput"
+                                      t-on-mousedown="clearExecHighlight"
+                                      t-on-scroll="onEditorScroll"/>
+                        </div>
+                        <div class="sqlms-resizer sqlms-resizer-y"
+                             title="Drag to resize the editor — double-click to reset"
+                             t-on-pointerdown="(ev) => this.startResize(ev, 'editor')"
+                             t-on-dblclick="() => this.resetResize('editor')">
+                            <span class="sqlms-resizer-grip"/>
                         </div>
                         <t t-if="state.queryResult">
-                            <div class="sqlms-ran" t-if="state.execQuery">
-                                <span class="sqlms-ran-label">
-                                    <t t-if="state.execWasSelection">Executed selection:</t>
-                                    <t t-else="">Executed:</t>
-                                </span>
-                                <code t-esc="state.execQuery"/>
-                            </div>
                             <div class="sqlms-toolbar">
+                                <label class="sqlms-aggpick" t-if="state.queryResult.columns.length"
+                                       title="Show a total under each selected column, computed over every row of the result — not just the page shown.">
+                                    Totals:
+                                    <select class="sqlms-aggselect" t-model="state.aggFunc">
+                                        <option value="">None</option>
+                                        <option value="sum">Sum</option>
+                                        <option value="count">Count</option>
+                                        <option value="avg">Average</option>
+                                        <option value="min">Min</option>
+                                        <option value="max">Max</option>
+                                    </select>
+                                </label>
                                 <button class="btn btn-secondary btn-sm" t-on-click="copyResults"
                                         t-if="state.queryResult.columns.length"
                                         t-att-title="state.selectedCols.length ? ('Copy the ' + state.selectedCols.length + ' selected column(s)') : 'Copy the currently shown page as tab-separated text'">
@@ -534,6 +655,9 @@
                                 </button>
                                 <span class="sqlms-info" t-if="state.queryResult.message"
                                       t-esc="state.queryResult.message"/>
+                                <span class="sqlms-info" t-if="state.queryResult.columns.length">
+                                    Click column headers to select; Alt+C copies the selected column(s).
+                                </span>
                                 <t t-if="state.queryResult.columns.length">
                                     <t t-call="database_studio.Pager">
                                         <t t-set="res" t-value="state.queryResult"/>
@@ -589,7 +713,7 @@
                         <th t-foreach="res.columns" t-as="col" t-key="col_index"
                             class="sqlms-colhead"
                             t-att-class="{ 'sqlms-col-selected': state.selectedCols.includes(col_index) }"
-                            title="Click to select this column (click again to deselect, click others to select several)"
+                            title="Click to select this column (click again to deselect, click others to select several). Alt+C copies the selection."
                             t-on-click="(ev) => this.toggleColumn(col_index, ev)"
                             t-esc="col"/>
                     </tr>
@@ -607,6 +731,18 @@
                         </t>
                     </tr>
                 </tbody>
+                <tfoot t-if="state.aggFunc and res.aggregates and res.aggregates.length">
+                    <tr>
+                        <td class="sqlms-rownum sqlms-aggcell"
+                            t-att-title="aggLabel + ' over all ' + res.total + ' row(s)'"
+                            t-esc="aggLabel"/>
+                        <t t-foreach="res.columns" t-as="col" t-key="col_index">
+                            <td class="sqlms-aggcell"
+                                t-att-class="{ 'sqlms-col-selected': state.selectedCols.includes(col_index) }"
+                                t-esc="aggValue(res, col_index)"/>
+                        </t>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </t>

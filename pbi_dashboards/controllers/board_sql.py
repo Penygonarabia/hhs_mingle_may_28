@@ -11,6 +11,7 @@ board/chart-item config in the per-module config files is executed through
 the generic runners at the bottom of this file — there is no per-board SQL.
 """
 import itertools
+from datetime import datetime, timedelta
 
 from .board_config import ChartItemConfig, BoardConfig, GroupByConfig
 
@@ -1242,6 +1243,46 @@ def _level_groupby_config(field, item, idx):
     return GroupByConfig(field, interval)
 
 
+def _is_week_bucketed(item: ChartItemConfig):
+    """True when any level this item can display buckets its date column
+    by calendar week — the top-level groupby, or a drill step further
+    down the chain."""
+    if item.groupby is not None and item.groupby.interval == "week":
+        return True
+    return any(step.interval == "week" for step in item.drill)
+
+
+def _week_aligned_range(date_from, date_to):
+    """The selected range snapped OUTWARD to whole Monday-start weeks (the
+    same week start date_trunc('week', ...) and board_engine's _week_range
+    both use)."""
+    start_day = date_from - timedelta(days=date_from.weekday())
+    start = datetime(start_day.year, start_day.month, start_day.day)
+    end_day = date_to - timedelta(days=date_to.weekday())
+    end = (datetime(end_day.year, end_day.month, end_day.day)
+           + timedelta(days=6, hours=23, minutes=59, seconds=59))
+    return start, end
+
+
+def _item_date_range(item: ChartItemConfig, date_from, date_to):
+    """The date range an item's own queries run under.
+
+    Every source CTE is scoped up front to [date_from, date_to], so a
+    week-bucketed chart under "This Month" loses the days its first and
+    last weeks share with the neighbouring months: August 2026 starts on a
+    Saturday, so its "Week-1" bar counted only Sat+Sun and silently
+    dropped the Mon-Fri that belong to the very same calendar week. A week
+    on a weekly chart has to be a WHOLE week, so those items get the range
+    snapped outward to week boundaries — the partial weeks at both ends
+    are filled in from the adjacent months rather than truncated.
+
+    Only week-bucketed items are widened. KPI tiles and every other chart
+    stay on exactly the period the user picked."""
+    if _is_week_bucketed(item):
+        return _week_aligned_range(date_from, date_to)
+    return date_from, date_to
+
+
 def _resolve_week_bucket(env, cte_sql, cte_name, raw_col, base_clauses, params, week_label):
     """Reverses a "Week-N" label back into the real date_trunc('week', ...)
     value it refers to. "Week-N" is a RELATIVE rank — the Nth distinct real
@@ -1308,9 +1349,10 @@ def run_breakdown(env, uid, board: BoardConfig, item: ChartItemConfig, date_from
     if idx >= len(fields_shown):
         return None
 
+    range_from, range_to = _item_date_range(item, date_from, date_to)
     binder = ParamBinder()
-    binder.params["date_from"] = date_from
-    binder.params["date_to"] = date_to
+    binder.params["date_from"] = range_from
+    binder.params["date_to"] = range_to
     clauses = _base_where(env, uid, board, item, field_map, binder)
     base_clauses_snapshot = list(clauses)  # pre-drill filters, needed to resolve any "Week-N" entry consistently
     for i, entry in enumerate(drill_path or []):
@@ -1412,6 +1454,40 @@ def run_table(env, uid, board: BoardConfig, item: ChartItemConfig, date_from, da
     return result
 
 
+def _has_row_guard(env, uid, source):
+    """Whether a row-level guard clause (technician scoping, promoter
+    scoping) applies to the current user for this source — i.e. whether
+    the raw-SQL path is restricting rows in a way no ORM domain built from
+    the config alone would reproduce."""
+    binder = ParamBinder()
+    return bool(_technician_guard_clause(env, uid, binder, source)) or \
+        bool(_promoter_guard_clause(env, uid, binder, source))
+
+
+def _translate_jobcards_domain(env, uid, domain):
+    """A DBM-vocabulary domain (board scope + item domain + drill entries)
+    rewritten as a real project.task ORM domain: "%UID"/"@region:<name>"
+    symbols resolved, job_card_status renamed to its real column, and
+    is_user_work_location — a search-only computed field with no column
+    behind it — expanded into the same work_center_id check the callable
+    itself performs."""
+    domain = [
+        (f, op, [_substitute_symbol(v, uid, env) for v in val] if isinstance(val, (list, tuple))
+         else _substitute_symbol(val, uid, env))
+        for f, op, val in domain
+    ]
+    translated = []
+    for f, op, v in domain:
+        if f == "job_card_status":
+            f = "job_card_state"
+        elif f == "is_user_work_location":
+            allowed = get_user_work_location_ids(env, uid)
+            negate = not ((op == "=" and v) or (op == "!=" and not v))
+            f, op, v = "work_center_id", ("not in" if negate else "in"), (allowed or [0])
+        translated.append((f, op, v))
+    return translated
+
+
 def run_terminal_domain(env, uid, board: BoardConfig, item: ChartItemConfig, drill_path, date_from, date_to):
     """Once a chart's configured drill chain is exhausted, resolve the
     accumulated filters into a plain Odoo domain on item.record_model so
@@ -1419,6 +1495,9 @@ def run_terminal_domain(env, uid, board: BoardConfig, item: ChartItemConfig, dri
     date-range scope every breakdown query was computed under, so the
     list matches exactly what was drilled into rather than all-time data."""
     fields_shown = _fields_shown(item)
+    # Same widening run_breakdown applied, so the records behind a weekly
+    # bar are the whole week's, exactly the set the bar counted.
+    range_from, range_to = _item_date_range(item, date_from, date_to)
 
     # jobcards -> project.task: every DBM-vocabulary field used in
     # board.scope/item.domain (task_id/work_center_id/job_card_status/etc.)
@@ -1450,32 +1529,20 @@ def run_terminal_domain(env, uid, board: BoardConfig, item: ChartItemConfig, dri
         any(f in _TIMELINE_FIELDS for f, _op, _v in list(board.scope) + list(item.domain))
         or any(f in _TIMELINE_FIELDS for f in fields_shown)
     )
+    # A row-level guard (technician / promoter) is a SQL clause with no
+    # project.task-domain equivalent, so an item under one can never take
+    # the ORM fast path — it would hand back a domain that shows the whole
+    # company's cards. Those fall through to the id-lookup path below,
+    # which applies the guard like every other query here does.
     if (item.source == "jobcards" and item.record_model == "project.task"
-            and not uses_is_my_user_group and not uses_date_interval and not uses_timeline_field):
+            and not uses_is_my_user_group and not uses_date_interval and not uses_timeline_field
+            and not _has_row_guard(env, uid, item.source)):
         domain = list(board.scope) + list(item.domain)
         for i, entry in enumerate(drill_path or []):
             domain.append((fields_shown[i], "=", entry["code"]))
-        domain = [
-            (f, op, [_substitute_symbol(v, uid, env) for v in val] if isinstance(val, (list, tuple))
-             else _substitute_symbol(val, uid, env))
-            for f, op, val in domain
-        ]
-        translated = []
-        for f, op, v in domain:
-            if f == "job_card_status":
-                f = "job_card_state"
-            elif f == "is_user_work_location":
-                # Not a real project.task column (it's a search-only
-                # computed field on the jobcards CTE/DBM view) — translate
-                # to the same real-column check the callable itself uses:
-                # the task's own work_center_id is one of the current
-                # user's assigned work locations.
-                allowed = get_user_work_location_ids(env, uid)
-                negate = not ((op == "=" and v) or (op == "!=" and not v))
-                f, op, v = "work_center_id", ("not in" if negate else "in"), (allowed or [0])
-            translated.append((f, op, v))
-        translated.append(("service_created_datetime", ">=", date_from))
-        translated.append(("service_created_datetime", "<=", date_to))
+        translated = _translate_jobcards_domain(env, uid, domain)
+        translated.append(("service_created_datetime", ">=", range_from))
+        translated.append(("service_created_datetime", "<=", range_to))
         return item.record_model, translated
 
     # message_log -> project.task, usergroup -> machine.repair.support:
@@ -1491,8 +1558,8 @@ def run_terminal_domain(env, uid, board: BoardConfig, item: ChartItemConfig, dri
     # computed via one extra query instead of a rename table.
     cte_sql, field_map, cte_name = _source_ctx(item)
     binder = ParamBinder()
-    binder.params["date_from"] = date_from
-    binder.params["date_to"] = date_to
+    binder.params["date_from"] = range_from
+    binder.params["date_to"] = range_to
     clauses = _base_where(env, uid, board, item, field_map, binder)
     base_clauses_snapshot = list(clauses)
     for i, entry in enumerate(drill_path or []):

@@ -77,30 +77,53 @@ export class SqlMsHistoryController extends ListController {
         this.model.load({ domain: domainForHistoryTab(tab) });
     }
 
+    // A tab already holding this history record: the same row is linked by
+    // id, or — as the user sees it — a tab carrying the same name. Auto
+    // labels ("Query 3") are never matched on, only names a record gave.
+    _openTabFor(record, qtabs) {
+        const name = (record.data.name || "").trim();
+        return (qtabs || []).find(
+            (qt) => (qt.historyId && qt.historyId === record.resId) ||
+                (name && qt.fullName && qt.fullName.trim() === name)
+        );
+    }
+
     openRecord(record) {
         const query = record.data.query;
         // If this History list was opened from an Analyser (via its "Query
         // history" button), that Analyser stashed its tabs in the registry
-        // before navigating here — append the picked query to them so the
-        // next Analyser to mount picks up right where that one left off,
+        // before navigating here — so the picked query joins them, and the
+        // next Analyser to mount picks up right where that one left off
         // instead of losing its other tabs. Otherwise start a plain new tab.
         // The tab is linked back to this record (name shown as its label,
         // Save updates it in place) whether it came from Saved or On-the-fly.
-        const tab = makeQtab(query, {
-            name: record.data.name,
-            historyId: record.resId,
-            isSaved: !!record.data.is_favorite,
-        });
-        if (analyserRegistry.pending) {
-            analyserRegistry.pending.qtabs.push(tab);
-            analyserRegistry.pending.activeQtabId = tab.id;
-            analyserRegistry.pending.ts = Date.now();
+        const pending = analyserRegistry.pending;
+        // Picking a query that is already open just brings its tab forward.
+        // Opening a second tab on the same query would leave two of them to
+        // keep in step, and the one being edited would not be obvious. Its
+        // text is left as it stands: that tab may hold unsaved edits, and
+        // silently resetting them to the stored query would lose work.
+        const open = pending && this._openTabFor(record, pending.qtabs);
+        if (open) {
+            pending.activeQtabId = open.id;
+            pending.ts = Date.now();
         } else {
-            analyserRegistry.pending = {
-                qtabs: [tab],
-                activeQtabId: tab.id,
-                ts: Date.now(),
-            };
+            const tab = makeQtab(query, {
+                name: record.data.name,
+                historyId: record.resId,
+                isSaved: !!record.data.is_favorite,
+            });
+            if (pending) {
+                pending.qtabs.push(tab);
+                pending.activeQtabId = tab.id;
+                pending.ts = Date.now();
+            } else {
+                analyserRegistry.pending = {
+                    qtabs: [tab],
+                    activeQtabId: tab.id,
+                    ts: Date.now(),
+                };
+            }
         }
         this.action.doAction({
             type: "ir.actions.client",

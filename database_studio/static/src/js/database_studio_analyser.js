@@ -3,9 +3,8 @@
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Dialog } from "@web/core/dialog/dialog";
-import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { download } from "@web/core/network/download";
-import { Component, useState, useRef, onMounted, onPatched, onWillUnmount } from "@odoo/owl";
+import { Component, useState, useRef, onMounted, onPatched, onWillStart, onWillUnmount } from "@odoo/owl";
 
 // Small dialog to name a query before saving it to history.
 export class SqlMsSaveDialog extends Component {
@@ -69,86 +68,6 @@ SqlMsCloseTabDialog.props = {
     defaultName: { type: String, optional: true },
 };
 
-// Dialog for configuring field selection sequence and Order By #
-export class SqlMsOrderByDialog extends Component {
-    setup() {
-        const fields = (this.props.fields || []).map((item) => ({
-            table: item.table,
-            field: item.field,
-            order: item.order != null ? String(item.order).trim() : "",
-            dir: item.dir || "NONE",
-        }));
-        this.state = useState({ items: fields, filter: "" });
-    }
-    get filteredItems() {
-        const f = (this.state.filter || "").trim().toLowerCase();
-        if (!f) return this.state.items;
-        return this.state.items.filter(
-            (i) => i.table.toLowerCase().includes(f) || i.field.toLowerCase().includes(f)
-        );
-    }
-    confirm() {
-        this.props.onConfirm(this.state.items);
-        this.props.close();
-    }
-}
-SqlMsOrderByDialog.template = "database_studio.OrderByDialog";
-SqlMsOrderByDialog.components = { Dialog };
-SqlMsOrderByDialog.props = {
-    close: Function,
-    onConfirm: Function,
-    fields: Array,
-};
-
-export function isNumericFieldType(type) {
-    if (!type) return false;
-    const t = String(type).toLowerCase();
-    return (
-        t.includes("int") ||
-        t.includes("float") ||
-        t.includes("num") ||
-        t.includes("dec") ||
-        t.includes("monetary") ||
-        t.includes("double") ||
-        t.includes("real")
-    );
-}
-
-// Dialog for configuring field Group By and Aggregation functions
-export class SqlMsGroupByDialog extends Component {
-    setup() {
-        const fields = (this.props.fields || []).map((item) => ({
-            table: item.table,
-            field: item.field,
-            type: item.type || "unknown",
-            isNumeric: isNumericFieldType(item.type),
-            func: item.func || "NONE",
-        }));
-        this.state = useState({ items: fields, filter: "" });
-    }
-    get filteredItems() {
-        const f = (this.state.filter || "").trim().toLowerCase();
-        if (!f) return this.state.items;
-        return this.state.items.filter(
-            (i) =>
-                i.table.toLowerCase().includes(f) ||
-                i.field.toLowerCase().includes(f) ||
-                (i.type && i.type.toLowerCase().includes(f))
-        );
-    }
-    confirm() {
-        this.props.onConfirm(this.state.items);
-        this.props.close();
-    }
-}
-SqlMsGroupByDialog.template = "database_studio.GroupByDialog";
-SqlMsGroupByDialog.components = { Dialog };
-SqlMsGroupByDialog.props = {
-    close: Function,
-    onConfirm: Function,
-    fields: Array,
-};
-
 const KEYWORDS = [
     "SELECT", "FROM", "WHERE", "INSERT", "INTO", "VALUES", "UPDATE", "SET",
     "DELETE", "CREATE", "ALTER", "DROP", "TABLE", "VIEW", "INDEX", "JOIN",
@@ -157,15 +76,11 @@ const KEYWORDS = [
     "BY", "ORDER", "HAVING", "LIMIT", "OFFSET", "DISTINCT", "UNION", "ALL",
     "CASE", "WHEN", "THEN", "ELSE", "END", "ASC", "DESC", "COUNT", "SUM",
     "AVG", "MIN", "MAX", "COALESCE", "CAST", "EXISTS", "WITH", "RETURNING",
-    "USING", "TRUE", "FALSE",
+    "USING", "TRUE", "FALSE", "OVER", "PARTITION", "WINDOW", "INTERSECT",
+    "EXCEPT", "LATERAL", "NATURAL", "RECURSIVE", "BEGIN", "DECLARE",
+    "COMMIT", "ROLLBACK",
 ];
-const KEYWORD_RE = new RegExp("\\b(" + KEYWORDS.join("|") + ")\\b", "gi");
 const KEYWORD_SET = new Set(KEYWORDS);
-const NEWLINE_BEFORE = [
-    "FROM", "WHERE", "LEFT JOIN", "RIGHT JOIN", "INNER JOIN", "FULL JOIN",
-    "OUTER JOIN", "CROSS JOIN", "JOIN", "GROUP BY", "ORDER BY", "HAVING",
-    "LIMIT", "OFFSET", "UNION", "VALUES", "SET", "RETURNING",
-];
 
 // One regex covering every token kind so highlighting is a single, ordered
 // pass. This avoids the placeholder collisions that used to turn string
@@ -179,64 +94,6 @@ const TOKEN_RE = new RegExp(
     "g"
 );
 
-function getClauseContext(textBefore) {
-    const upper = textBefore.toUpperCase();
-    const keywords = [
-        "SELECT", "FROM", "JOIN", "WHERE", "HAVING",
-        "GROUP BY", "ORDER BY", "SET", "INTO", "UPDATE"
-    ];
-    let lastKw = null;
-    let maxPos = -1;
-
-    for (const kw of keywords) {
-        const regex = new RegExp("\\b" + kw.replace(/\s+/g, "\\s+") + "\\b", "gi");
-        let match;
-        while ((match = regex.exec(upper)) !== null) {
-            if (match.index > maxPos) {
-                maxPos = match.index;
-                lastKw = kw;
-            }
-        }
-    }
-
-    if (!lastKw) return "GENERAL";
-
-    if (["SELECT", "WHERE", "HAVING", "GROUP BY", "ORDER BY", "SET"].includes(lastKw)) {
-        return "FIELDS_ONLY";
-    }
-    if (["FROM", "JOIN", "INTO", "UPDATE"].includes(lastKw)) {
-        return "TABLES_ONLY";
-    }
-    return "GENERAL";
-}
-
-function getTablesInStatement(textBefore, stateTables) {
-    const tables = [];
-    const stateTableSet = new Set((stateTables || []).map((t) => String(t).toLowerCase()));
-
-    const fromMatch = textBefore.match(/FROM\s+([\s\S]*?)(?=\b(WHERE|GROUP|ORDER|HAVING|LIMIT|SELECT|UNION|SET)\b|$)/i);
-    if (fromMatch) {
-        const fromClause = fromMatch[1];
-        const idMatches = fromClause.matchAll(/(?:"([^"]+)"|([a-zA-Z0-9_]+))/g);
-        for (const m of idMatches) {
-            const t = (m[1] || m[2] || "").toLowerCase();
-            if (t && stateTableSet.has(t) && !tables.includes(t)) {
-                tables.push(t);
-            }
-        }
-    }
-
-    const joinMatches = textBefore.matchAll(/JOIN\s+(?:"([^"]+)"|([a-zA-Z0-9_]+))/gi);
-    for (const m of joinMatches) {
-        const t = (m[1] || m[2] || "").toLowerCase();
-        if (t && stateTableSet.has(t) && !tables.includes(t)) {
-            tables.push(t);
-        }
-    }
-
-    return tables;
-}
-
 function escapeHtml(text) {
     return text
         .replace(/&/g, "&amp;")
@@ -244,7 +101,17 @@ function escapeHtml(text) {
         .replace(/>/g, "&gt;");
 }
 
-function highlightSql(text) {
+// `range` (a {start, end} of the executed selection) is painted with a
+// selection-like background so the part of the script that was run stays
+// visible after Execute — a textarea shows no selection once it loses focus.
+function highlightSql(text, range) {
+    if (range && range.end > range.start) {
+        return highlightSql(text.slice(0, range.start)) +
+            '<span class="sqlms-execsel">' +
+            highlightSql(text.slice(range.start, range.end)) +
+            "</span>" +
+            highlightSql(text.slice(range.end));
+    }
     let out = "";
     let last = 0;
     let m;
@@ -271,106 +138,656 @@ function highlightSql(text) {
     return out;
 }
 
-function formatSql(text) {
-    if (!text) {
-        return text;
-    }
-    // Protect string literals and comments so formatting never rewrites their
-    // contents (e.g. a comma or keyword inside 'a,b' or '%x%').
-    const protectedTokens = [];
-    let out = text.replace(
-        /('(?:[^']|'')*')|(--[^\n]*|\/\*[\s\S]*?\*\/)/g,
-        (mtok) => {
-            protectedTokens.push(mtok);
-            return " \x00" + (protectedTokens.length - 1) + "\x00 ";
+// ---------------------------------------------------------------------
+// SQL formatter
+//
+// A token-driven pretty printer: it re-lays the query out with one clause
+// per line and real indentation for sub-queries, CTEs and CASE bodies,
+// instead of the old "newline before a few keywords, break after every
+// comma" pass which left everything at column zero. String literals,
+// comments and dollar-quoted bodies are copied through untouched.
+// ---------------------------------------------------------------------
+
+const INDENT_STR = "    ";
+const WORD_RE_Y = /[A-Za-z_][A-Za-z0-9_$]*/y;
+const NUM_RE_Y = /\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/y;
+const PARAM_RE_Y = /\$\d+/y;
+const OP_RE_Y = /::|<=|>=|<>|!=|\|\||->>|->|#>>|#>|:=|=|<|>|\+|-|\*|\/|%|\^|~|@|&|\||!|\?|:/y;
+
+// Clause keywords that start a new line, longest phrase first so "UNION ALL"
+// wins over "UNION" and "GROUP BY" is never read as a bare "GROUP".
+const CLAUSE_PHRASES = [
+    ["DELETE", "FROM"], ["INSERT", "INTO"], ["ON", "CONFLICT"],
+    ["GROUP", "BY"], ["ORDER", "BY"], ["PARTITION", "BY"],
+    ["UNION", "ALL"], ["INTERSECT", "ALL"], ["EXCEPT", "ALL"],
+    ["FETCH", "FIRST"], ["FETCH", "NEXT"],
+    ["WITH"], ["SELECT"], ["FROM"], ["WHERE"], ["HAVING"], ["WINDOW"],
+    ["LIMIT"], ["OFFSET"], ["UNION"], ["INTERSECT"], ["EXCEPT"],
+    ["VALUES"], ["UPDATE"], ["SET"], ["RETURNING"],
+];
+// What each clause does to the lists that follow it.
+const CLAUSE_KEY = {
+    "SELECT": "select", "FROM": "from", "WHERE": "where", "HAVING": "where",
+    "GROUP BY": "group", "ORDER BY": "group", "PARTITION BY": "group",
+    "SET": "set", "VALUES": "values", "RETURNING": "select", "WITH": "with",
+    "INSERT INTO": "other", "DELETE FROM": "from", "UPDATE": "from",
+};
+const JOIN_PHRASES = [
+    ["LEFT", "OUTER", "JOIN"], ["RIGHT", "OUTER", "JOIN"], ["FULL", "OUTER", "JOIN"],
+    ["NATURAL", "LEFT", "JOIN"], ["NATURAL", "RIGHT", "JOIN"],
+    ["LEFT", "JOIN"], ["RIGHT", "JOIN"], ["INNER", "JOIN"], ["FULL", "JOIN"],
+    ["CROSS", "JOIN"], ["NATURAL", "JOIN"], ["JOIN"],
+];
+// Statement/block words that always want a line of their own.
+const BLOCK_WORDS = new Set(["BEGIN", "DECLARE", "COMMIT", "ROLLBACK"]);
+// A clause whose comma-separated list is broken one item per line.
+const LIST_CLAUSES = new Set(["select", "from", "set", "values", "with"]);
+
+// Splits the text into tokens, remembering for each whether the source had
+// whitespace (and a newline) before it: that is what tells `count(*)` from
+// `INSERT INTO t (a, b)`, and a trailing comment from a standalone one.
+function tokenizeSql(text) {
+    const tokens = [];
+    const n = text.length;
+    let i = 0;
+    let ws = false;
+    let nl = false;
+    while (i < n) {
+        const ch = text[i];
+        if (ch === " " || ch === "\t" || ch === "\n" || ch === "\r" || ch === "\f") {
+            ws = true;
+            nl = nl || ch === "\n";
+            i += 1;
+            continue;
         }
-    );
-    out = out.replace(/\s+/g, " ").trim();
-    out = out.replace(KEYWORD_RE, (mkw) => mkw.toUpperCase());
-    const phrases = NEWLINE_BEFORE.slice().sort((a, b) => b.length - a.length);
-    for (const p of phrases) {
-        const re = new RegExp("\\s+" + p.replace(/ /g, "\\s+") + "\\b", "gi");
-        out = out.replace(re, "\n" + p);
+        let type = null;
+        let j = i;
+        if (ch === "'" || ch === '"') {
+            type = "str";
+            j = _skipQuoted(text, i, ch);
+        } else if (ch === "-" && text[i + 1] === "-") {
+            type = "lcomment";
+            j = text.indexOf("\n", i);
+            j = j === -1 ? n : j;
+        } else if (ch === "/" && text[i + 1] === "*") {
+            type = "bcomment";
+            j = text.indexOf("*/", i + 2);
+            j = j === -1 ? n : j + 2;
+        } else if (ch === "$") {
+            const k = _skipDollarQuoted(text, i);
+            if (k > i) {
+                type = "str";
+                j = k;
+            } else {
+                PARAM_RE_Y.lastIndex = i;
+                const param = PARAM_RE_Y.exec(text);
+                if (param) {
+                    type = "num";
+                    j = i + param[0].length;
+                }
+            }
+        }
+        if (type === null) {
+            WORD_RE_Y.lastIndex = i;
+            const word = WORD_RE_Y.exec(text);
+            if (word) {
+                type = "word";
+                j = i + word[0].length;
+            }
+        }
+        if (type === null) {
+            NUM_RE_Y.lastIndex = i;
+            const num = NUM_RE_Y.exec(text);
+            if (num) {
+                type = "num";
+                j = i + num[0].length;
+            }
+        }
+        if (type === null && "(),;.".indexOf(ch) !== -1) {
+            type = "punct";
+            j = i + 1;
+        }
+        if (type === null) {
+            OP_RE_Y.lastIndex = i;
+            const op = OP_RE_Y.exec(text);
+            type = "op";
+            j = i + (op ? op[0].length : 1);
+        }
+        const value = text.slice(i, j);
+        tokens.push({
+            type,
+            value,
+            wsBefore: ws,
+            nlBefore: nl,
+            upper: type === "word" ? value.toUpperCase() : "",
+        });
+        ws = false;
+        nl = false;
+        i = j;
     }
-    out = out.replace(/,\s*/g, ",\n    ");
-    // Restore protected tokens.
-    out = out.replace(/\x00(\d+)\x00/g, (mtok, i) => protectedTokens[Number(i)]);
-    return out.replace(/[ \t]+\n/g, "\n");
+    return tokens;
 }
 
-// Splits a query's text into top-level statements on ';', ignoring
-// semicolons inside string literals, quoted identifiers, and comments so a
-// query tab can render (and collapse) each statement as its own block.
-// Rejoining the returned parts with ";" reconstructs the original text
-// exactly (the separator characters themselves are not included in a part).
-function splitStatements(text) {
-    const parts = [];
+function formatSql(text) {
+    if (!text || !text.trim()) {
+        return text;
+    }
+    const tokens = tokenizeSql(text);
+    if (!tokens.length) {
+        return text;
+    }
+
+    const lines = [];
     let cur = "";
+    let curIndent = 0;
+    let indent = 0;
+    let clause = "";
+    let parens = [];
+    let cases = [];
+    let glueNext = false;
+    let pendingBetween = false;
+
+    function flush() {
+        if (cur.length) {
+            lines.push(INDENT_STR.repeat(curIndent) + cur);
+            cur = "";
+        }
+    }
+    // Ends the current line and sets the indent the next one starts at.
+    function newline(level) {
+        flush();
+        curIndent = level === undefined ? indent : Math.max(0, level);
+        glueNext = false;
+    }
+    function add(value, glue) {
+        const tight = glue === "none" || glueNext;
+        glueNext = false;
+        cur = cur.length ? cur + (tight ? "" : " ") + value : value;
+    }
+
+    function wordAt(k) {
+        const t = tokens[k];
+        return t && t.type === "word" ? t.upper : null;
+    }
+    function matchPhrase(k, phrases) {
+        for (const phrase of phrases) {
+            let hit = true;
+            for (let d = 0; d < phrase.length; d++) {
+                if (wordAt(k + d) !== phrase[d]) {
+                    hit = false;
+                    break;
+                }
+            }
+            if (hit) {
+                return phrase;
+            }
+        }
+        return null;
+    }
+    // True while the innermost parenthesis is an ordinary one (a function
+    // call or an IN list): its contents are kept on one line.
+    function inPlainParen() {
+        return parens.length > 0 && !parens[parens.length - 1].sub;
+    }
+    // "(" opens a sub-query — and so gets its own indented block — when the
+    // first thing inside it starts a query.
+    function opensSubquery(k) {
+        const next = wordAt(k + 1);
+        return next === "SELECT" || next === "WITH" || next === "VALUES";
+    }
+    // Whether the select list about to start holds more than one item, which
+    // is what decides between "SELECT a" and a column-per-line block.
+    function listIsMulti(k) {
+        let depth = 0;
+        for (let x = k; x < tokens.length; x++) {
+            const t = tokens[x];
+            if (t.type !== "punct") {
+                if (depth === 0 && t.type === "word" &&
+                        matchPhrase(x, CLAUSE_PHRASES) && t.upper !== "VALUES") {
+                    return false;
+                }
+                if (depth === 0 && t.type === "word" && t.upper === "INTO") {
+                    return false;
+                }
+                continue;
+            }
+            if (t.value === "(") {
+                depth += 1;
+            } else if (t.value === ")") {
+                if (depth === 0) {
+                    return false;
+                }
+                depth -= 1;
+            } else if (t.value === ";") {
+                return false;
+            } else if (t.value === "," && depth === 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    let i = 0;
+    while (i < tokens.length) {
+        const tok = tokens[i];
+
+        if (tok.type === "lcomment") {
+            // A comment that stood on its own line keeps its own line; one
+            // that trailed code stays at the end of that code. Either way the
+            // line after it resumes at the indent the comment sat at, so a
+            // comment in the middle of a select list doesn't reset it.
+            if (tok.nlBefore && cur.length) {
+                newline(curIndent);
+            }
+            const level = curIndent;
+            add(tok.value);
+            newline(level);
+            i += 1;
+            continue;
+        }
+        if (tok.type === "bcomment") {
+            add(tok.value);
+            i += 1;
+            continue;
+        }
+        if (tok.type === "punct") {
+            if (tok.value === "(") {
+                const sub = opensSubquery(i);
+                add("(", tok.wsBefore ? undefined : "none");
+                parens.push({
+                    sub,
+                    savedIndent: indent,
+                    savedClause: clause,
+                    savedCases: cases.length,
+                });
+                if (sub) {
+                    indent += 1;
+                    newline(indent);
+                    clause = "";
+                } else {
+                    glueNext = true;
+                }
+                i += 1;
+                continue;
+            }
+            if (tok.value === ")") {
+                const open = parens.pop();
+                if (open && open.sub) {
+                    indent = open.savedIndent;
+                    newline(indent);
+                    add(")");
+                } else {
+                    add(")", "none");
+                }
+                if (open) {
+                    clause = open.savedClause;
+                    cases.length = Math.min(cases.length, open.savedCases);
+                }
+                i += 1;
+                continue;
+            }
+            if (tok.value === ",") {
+                add(",", "none");
+                if (!inPlainParen() && LIST_CLAUSES.has(clause)) {
+                    newline(clause === "with" ? indent : indent + 1);
+                }
+                i += 1;
+                continue;
+            }
+            if (tok.value === ";") {
+                add(";", "none");
+                flush();
+                lines.push("");
+                indent = 0;
+                curIndent = 0;
+                clause = "";
+                parens = [];
+                cases = [];
+                pendingBetween = false;
+                i += 1;
+                continue;
+            }
+            if (tok.value === ".") {
+                add(".", "none");
+                glueNext = true;
+                i += 1;
+                continue;
+            }
+        }
+        if (tok.type === "op") {
+            if (tok.value === "::") {
+                add("::", "none");
+                glueNext = true;
+                i += 1;
+                continue;
+            }
+            const prev = tokens[i - 1];
+            const unary = (tok.value === "-" || tok.value === "+") &&
+                (!prev || prev.type === "op" ||
+                    (prev.type === "punct" && prev.value !== ")"));
+            add(tok.value);
+            if (unary) {
+                glueNext = true;
+            }
+            i += 1;
+            continue;
+        }
+        if (tok.type !== "word") {
+            add(tok.value);
+            i += 1;
+            continue;
+        }
+
+        // -- words --------------------------------------------------------
+        const plain = inPlainParen();
+        const join = plain ? null : matchPhrase(i, JOIN_PHRASES);
+        if (join) {
+            newline(indent);
+            for (const w of join) {
+                add(w);
+                i += 1;
+            }
+            clause = "join";
+            continue;
+        }
+        const phrase = plain ? null : matchPhrase(i, CLAUSE_PHRASES);
+        if (phrase) {
+            newline(indent);
+            for (const w of phrase) {
+                add(w);
+                i += 1;
+            }
+            clause = CLAUSE_KEY[phrase.join(" ")] || "other";
+            if (clause === "select") {
+                if (wordAt(i) === "DISTINCT" || wordAt(i) === "ALL") {
+                    add(tokens[i].upper);
+                    i += 1;
+                    if (wordAt(i) === "ON") {
+                        add("ON");
+                        i += 1;
+                    }
+                }
+                if (listIsMulti(i)) {
+                    newline(indent + 1);
+                }
+            }
+            pendingBetween = false;
+            continue;
+        }
+        const upper = tok.upper;
+        if (upper === "CASE") {
+            cases.push({ savedIndent: indent, base: curIndent });
+            add("CASE");
+            indent = curIndent + 1;
+            i += 1;
+            continue;
+        }
+        if ((upper === "WHEN" || upper === "ELSE") && cases.length) {
+            newline(indent);
+            add(upper);
+            i += 1;
+            continue;
+        }
+        if (upper === "END" && cases.length) {
+            const open = cases.pop();
+            indent = open.savedIndent;
+            newline(open.base);
+            add("END");
+            i += 1;
+            continue;
+        }
+        if ((upper === "AND" || upper === "OR") && !plain) {
+            if (pendingBetween && upper === "AND") {
+                pendingBetween = false;
+                add("AND");
+            } else if (clause === "where" || clause === "on") {
+                newline(indent + 1);
+                add(upper);
+            } else {
+                add(upper);
+            }
+            i += 1;
+            continue;
+        }
+        if (upper === "BETWEEN") {
+            pendingBetween = true;
+            add("BETWEEN");
+            i += 1;
+            continue;
+        }
+        if (upper === "ON" && clause === "join") {
+            clause = "on";
+            add("ON");
+            i += 1;
+            continue;
+        }
+        if (BLOCK_WORDS.has(upper) && !plain && !parens.length) {
+            newline(indent);
+            add(upper);
+            i += 1;
+            continue;
+        }
+        add(KEYWORD_SET.has(upper) ? upper : tok.value);
+        i += 1;
+    }
+    flush();
+    // Collapse the run of blank lines a trailing ';' can leave behind.
+    return lines
+        .join("\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .replace(/\s+$/, "");
+}
+
+// ---------------------------------------------------------------------
+// Statement outline + folding
+//
+// The editor is ONE textarea holding the whole query: splitting the text
+// into a textarea per ';' used to break scripts (a DECLARE ... BEGIN ... END
+// body, or anything else carrying inner semicolons, was torn into pieces
+// that could no longer be selected and run as a whole). Statements are now
+// only an *outline*: the scanner below finds their ranges so a fold icon can
+// be offered in the gutter, and folding merely swaps a statement's text for
+// a comment placeholder inside that same textarea.
+// ---------------------------------------------------------------------
+
+// Smallest a dragged panel may be made, so neither can be collapsed to
+// nothing and left with no bar to drag back. The sidebar figure matches its
+// CSS min-width, which would otherwise silently win over a smaller one here.
+const RESIZE_MIN = { sidebar: 240, editor: 140 };
+
+// Both must match the editor CSS (padding / line-height) so the gutter's
+// fold icons line up with the lines they belong to.
+const EDITOR_PAD_TOP = 10;
+const EDITOR_LINE_H = 20;
+
+// Skips a '...' or "..." literal starting at i, returning the index just
+// past its closing quote ('' inside a string is an escaped quote).
+function _skipQuoted(text, i, quote) {
+    const n = text.length;
+    let j = i + 1;
+    while (j < n) {
+        if (text[j] === quote) {
+            if (quote === "'" && text[j + 1] === "'") {
+                j += 2;
+                continue;
+            }
+            return j + 1;
+        }
+        j += 1;
+    }
+    return n;
+}
+
+// Skips a $tag$ ... $tag$ literal starting at i. Dollar quoting is how a
+// plpgsql body (DO $$ DECLARE ... BEGIN ... END $$) carries semicolons, so
+// missing it here is exactly what used to chop such a script apart.
+// Returns i unchanged when this '$' does not open one (e.g. a $1 parameter).
+function _skipDollarQuoted(text, i) {
+    const open = /^\$([A-Za-z_][A-Za-z0-9_]*)?\$/.exec(text.slice(i, i + 64));
+    if (!open) {
+        return i;
+    }
+    const tag = open[0];
+    const close = text.indexOf(tag, i + tag.length);
+    return close === -1 ? text.length : close + tag.length;
+}
+
+// Replaces every string literal / comment / dollar-quoted body with blanks,
+// keeping the length, so keywords can be counted without matching the ones
+// that merely appear inside text.
+function stripNonCode(text) {
+    let out = "";
     let i = 0;
     const n = text.length;
     while (i < n) {
         const ch = text[i];
-        if (ch === "'") {
-            let j = i + 1;
-            while (j < n) {
-                if (text[j] === "'") {
-                    if (text[j + 1] === "'") {
-                        j += 2;
-                        continue;
-                    }
-                    j += 1;
-                    break;
-                }
-                j += 1;
-            }
-            cur += text.slice(i, j);
-            i = j;
-        } else if (ch === '"') {
-            let j = i + 1;
-            while (j < n && text[j] !== '"') {
-                j += 1;
-            }
-            j = Math.min(j + 1, n);
-            cur += text.slice(i, j);
-            i = j;
+        let j = i;
+        if (ch === "'" || ch === '"') {
+            j = _skipQuoted(text, i, ch);
         } else if (ch === "-" && text[i + 1] === "-") {
-            let j = text.indexOf("\n", i);
+            j = text.indexOf("\n", i);
             j = j === -1 ? n : j;
-            cur += text.slice(i, j);
-            i = j;
         } else if (ch === "/" && text[i + 1] === "*") {
-            let j = text.indexOf("*/", i + 2);
+            j = text.indexOf("*/", i + 2);
             j = j === -1 ? n : j + 2;
-            cur += text.slice(i, j);
+        } else if (ch === "$") {
+            j = _skipDollarQuoted(text, i);
+        }
+        if (j > i) {
+            out += text.slice(i, j).replace(/[^\n]/g, " ");
             i = j;
-        } else if (ch === ";") {
-            parts.push(cur);
-            cur = "";
-            i += 1;
         } else {
-            cur += ch;
+            out += ch;
             i += 1;
         }
     }
-    if (cur.trim() || !parts.length) {
-        parts.push(cur);
-    }
-    return parts;
+    return out;
 }
 
-// Tab/block ids only need to be unique within one page load, and the History
+// How many block levels a statement opens (BEGIN/CASE) minus how many it
+// closes (END), so a T-SQL style BEGIN ... END body is outlined as one
+// section instead of one per inner ';'. A bare transaction BEGIN opens
+// nothing, and COMMIT/ROLLBACK close whatever is open.
+function _blockDelta(segment) {
+    const code = stripNonCode(segment);
+    if (/^\s*BEGIN(\s+(WORK|TRANSACTION)\b[\s\S]*)?$/i.test(code)) {
+        return 0;
+    }
+    if (/\b(COMMIT|ROLLBACK)\b/i.test(code)) {
+        return -1;
+    }
+    const opens = (code.match(/\b(BEGIN|CASE)\b/gi) || []).length;
+    const closes = (code.match(/\bEND\b/gi) || []).length;
+    return opens - closes;
+}
+
+// Character ranges of the top-level statements in `text`, each trimmed of
+// surrounding whitespace (so folding a statement never eats the blank line
+// that separates it from the next one). Semicolons inside strings, quoted
+// identifiers, comments and dollar-quoted bodies are not separators.
+export function findStatementRanges(text) {
+    const raw = [];
+    let segStart = 0;
+    let i = 0;
+    const n = text.length;
+    while (i < n) {
+        const ch = text[i];
+        if (ch === "'" || ch === '"') {
+            i = _skipQuoted(text, i, ch);
+        } else if (ch === "-" && text[i + 1] === "-") {
+            const j = text.indexOf("\n", i);
+            i = j === -1 ? n : j;
+        } else if (ch === "/" && text[i + 1] === "*") {
+            const j = text.indexOf("*/", i + 2);
+            i = j === -1 ? n : j + 2;
+        } else if (ch === "$") {
+            const j = _skipDollarQuoted(text, i);
+            i = j > i ? j : i + 1;
+        } else if (ch === ";") {
+            raw.push([segStart, i]);
+            segStart = i + 1;
+            i += 1;
+        } else {
+            i += 1;
+        }
+    }
+    if (segStart < n) {
+        raw.push([segStart, n]);
+    }
+    // Merge the pieces of an unfinished block back together.
+    const merged = [];
+    let depth = 0;
+    let open = null;
+    for (const [s, e] of raw) {
+        if (open === null) {
+            open = s;
+        }
+        depth = Math.max(0, depth + _blockDelta(text.slice(s, e)));
+        if (depth === 0) {
+            merged.push([open, e]);
+            open = null;
+        }
+    }
+    if (open !== null) {
+        merged.push([open, n]);
+    }
+    // Trim, dropping ranges that hold nothing but whitespace.
+    const out = [];
+    for (const [s, e] of merged) {
+        const seg = text.slice(s, e);
+        const lead = seg.length - seg.replace(/^\s+/, "").length;
+        const trail = seg.length - seg.replace(/\s+$/, "").length;
+        if (s + lead < e - trail) {
+            out.push({ start: s + lead, end: e - trail });
+        }
+    }
+    return out;
+}
+
+// A folded statement is replaced, in the editor text itself, by this
+// one-line block comment. Being a real SQL comment means a fold that is
+// somehow executed (e.g. the user selects across it) is simply ignored by
+// Postgres rather than being a syntax error.
+let _foldIdSeq = 0;
+const FOLD_MARK = "/* \u25b8 fold#";
+const FOLD_RE_G = /\/\* \u25b8 fold#(\d+):[\s\S]*?\*\//g;
+
+function foldPlaceholder(id, preview, lines) {
+    return FOLD_MARK + id + ": " + preview + " \u2026 (" + lines + " lines) */";
+}
+function foldRe(id) {
+    return new RegExp("\\/\\* \\u25b8 fold#" + id + ":[\\s\\S]*?\\*\\/");
+}
+
+// Editor text -> the real query: every placeholder swapped back for the
+// text it stands for. Runs to a fixed point so a fold nested inside another
+// folded statement is restored too.
+export function expandFolds(text, folds) {
+    if (!folds || !Object.keys(folds).length || text.indexOf(FOLD_MARK) === -1) {
+        return text;
+    }
+    let out = text;
+    for (let pass = 0; pass < 10; pass++) {
+        let changed = false;
+        out = out.replace(FOLD_RE_G, (m, id) => {
+            const f = folds[id];
+            if (!f) {
+                return m;
+            }
+            changed = true;
+            return f.text;
+        });
+        if (!changed) {
+            break;
+        }
+    }
+    return out;
+}
+
+// Tab ids only need to be unique within one page load, and the History
 // list needs to mint them without an Analyser instance to hand a counter out
 // from — so these live at module scope rather than on component state.
 let _qtabIdSeq = 0;
-let _blockIdSeq = 0;
-
-function makeBlocks(text) {
-    return splitStatements(text || "").map((t) => ({
-        id: ++_blockIdSeq,
-        text: t,
-        collapsed: false,
-    }));
-}
 
 // History names can run long; the qtab bar has room for a short label only.
 function truncateName(name, max = 20) {
@@ -394,12 +811,16 @@ export function makeQtab(query, opts) {
         id,
         name: opts.name ? truncateName(opts.name) : "Query " + id,
         fullName: opts.name || null,
+        // `query` is the real SQL; `display` is what the textarea shows,
+        // which differs only while statements are folded (see expandFolds).
         query: query || "",
-        blocks: makeBlocks(query),
+        display: query || "",
+        folds: {},
         execQuery: "",
-        execWasSelection: false,
+        execRange: null,
         queryResult: null,
         selectedCols: [],
+        aggFunc: "",
         historyId: opts.historyId || null,
         isSaved: !!opts.isSaved,
     };
@@ -422,14 +843,164 @@ export const analyserRegistry = { pending: null };
 // being set.
 const PENDING_TTL_MS = 5 * 60 * 1000;
 
+// The numeric types a text column can be converted to, in the order the
+// dialog offers them.
+export const CONVERT_TARGETS = [
+    { value: "numeric", label: "Number (numeric) — decimals kept exactly" },
+    { value: "integer", label: "Whole number (integer) — decimals rounded" },
+    { value: "bigint", label: "Large whole number (bigint) — decimals rounded" },
+    { value: "double precision", label: "Floating point (double precision)" },
+];
+
+// Name of the pseudo-table the Fields tab uses for a query's own output
+// columns, which belong to no real table.
+export const RESULT_GROUP = "query result";
+
+// Converts the text columns ticked in the Fields tab into a numeric type.
+// Two shapes, depending on where the ticked columns came from:
+//   * a real table — DDL on the live database, so the dialog dry-runs it first
+//     (what each column holds, what would not cast, which views are in the
+//     way) and shows the exact ALTER TABLE before anything is written;
+//   * a query's result columns — there is nothing to ALTER, so the query is
+//     rewritten to cast them, and nothing in the database changes.
+export class SqlMsConvertTypeDialog extends Component {
+    setup() {
+        this.orm = useService("orm");
+        this.state = useState({
+            target: "numeric",
+            blankBad: false,
+            loading: true,
+            converting: false,
+            report: null,
+            error: "",
+            showSql: false,
+        });
+        onWillStart(() => this.check());
+    }
+    get targets() {
+        return CONVERT_TARGETS;
+    }
+    get isQuery() {
+        return this.props.mode === "query";
+    }
+    async check() {
+        this.state.loading = true;
+        this.state.error = "";
+        try {
+            this.state.report = this.isQuery
+                ? await this.orm.call(
+                    "database.studio.analyser", "check_query_conversion",
+                    [this.props.query, this.props.items.map((i) => i.name),
+                     this.state.target, this.state.blankBad]
+                )
+                : await this.orm.call(
+                    "database.studio.analyser", "check_column_conversion",
+                    [this.props.items, this.state.target]
+                );
+        } catch (e) {
+            this.state.report = null;
+            this.state.error = this._errorText(e);
+        } finally {
+            this.state.loading = false;
+        }
+    }
+    _errorText(e) {
+        return (e && e.data && e.data.message) || (e && e.message) || String(e);
+    }
+    onTargetChange(ev) {
+        this.state.target = ev.target.value;
+        this.check();
+    }
+    // Rewriting a query, the "leave the bad values out" choice changes the
+    // generated SQL, so the preview has to be rebuilt for it to stay honest.
+    onBlankBadChange(ev) {
+        this.state.blankBad = ev.target.checked;
+        if (this.isQuery) {
+            this.check();
+        }
+    }
+    get columns() {
+        return (this.state.report && this.state.report.columns) || [];
+    }
+    get convertible() {
+        return this.columns.filter((c) => c.convertible);
+    }
+    get skipped() {
+        return this.columns.filter((c) => !c.convertible);
+    }
+    // Values that will not cast. Unless the user agrees to blank them the
+    // ALTER would fail part way through, so this gates the Convert button.
+    get badTotal() {
+        return this.convertible.reduce((n, c) => n + (c.bad || 0), 0);
+    }
+    get blankTotal() {
+        return this.convertible.reduce((n, c) => n + (c.blanks || 0), 0);
+    }
+    get roundTotal() {
+        return this.convertible.reduce((n, c) => n + (c.fractional || 0), 0);
+    }
+    get canConvert() {
+        return !!(this.state.report && this.state.report.can_convert) &&
+            !this.state.loading && !this.state.converting &&
+            (this.badTotal === 0 || this.state.blankBad);
+    }
+    toggleSql() {
+        this.state.showSql = !this.state.showSql;
+    }
+    async confirm() {
+        if (!this.canConvert) {
+            return;
+        }
+        if (this.isQuery) {
+            // Nothing to execute: the rewritten query is the whole result.
+            this.props.onApply(this.state.report.sql);
+            this.props.close();
+            return;
+        }
+        this.state.converting = true;
+        this.state.error = "";
+        let res;
+        try {
+            res = await this.orm.call(
+                "database.studio.analyser", "convert_columns",
+                [this.convertible.map((c) => ({ table: c.table, name: c.name })),
+                 this.state.target, this.state.blankBad]
+            );
+        } catch (e) {
+            this.state.error = this._errorText(e);
+            return;
+        } finally {
+            this.state.converting = false;
+        }
+        this.props.onDone(res);
+        this.props.close();
+    }
+}
+SqlMsConvertTypeDialog.template = "database_studio.ConvertTypeDialog";
+SqlMsConvertTypeDialog.components = { Dialog };
+SqlMsConvertTypeDialog.props = {
+    close: Function,
+    items: Array,
+    mode: { type: String, optional: true },
+    query: { type: String, optional: true },
+    onDone: { type: Function, optional: true },
+    onApply: { type: Function, optional: true },
+};
+SqlMsConvertTypeDialog.defaultProps = { mode: "table", query: "" };
+
+
 export class SqlMsAnalyser extends Component {
     setup() {
         this.orm = useService("orm");
         this.notification = useService("notification");
         this.action = useService("action");
         this.dialog = useService("dialog");
-        this.blocksRef = useRef("blocksContainer");
+        this.taRef = useRef("queryTextarea");
+        this.preRef = useRef("queryHighlight");
+        this.gutterRef = useRef("queryGutter");
         this.rootRef = useRef("rootEl");
+        this.sidebarRef = useRef("sidebarEl");
+        this.editorRef = useRef("editorEl");
 
         this.state = useState({
             tables: [],
@@ -441,10 +1012,19 @@ export class SqlMsAnalyser extends Component {
             searchMode: "contains",
             fieldGroups: [],
             collapsedGroups: {},
+            fieldFilter: "",
+            // Fields ticked in the Fields tab, keyed "table.column", each
+            // carrying whether it is also grouped/ordered by. Insertion order
+            // is the order they end up in the built SELECT.
+            fieldSel: {},
             mapping: null,
             query: "",
+            display: "",
+            folds: {},
             execQuery: "",
-            execWasSelection: false,
+            // Character range of the last executed selection, kept so the
+            // editor can keep showing which part of the script was run.
+            execRange: null,
             queryResult: null,
             // Query sub-tabs. state.query/execQuery/queryResult always mirror
             // the active tab; switching snapshots them back into their tab.
@@ -457,18 +1037,11 @@ export class SqlMsAnalyser extends Component {
             showTables: true,
             showViews: true,
             checked: {},
+            tabMenuOpen: false,
             selectedCols: [],
-            fieldsFilter: "",
-            mappingFilter: "",
-            selectedFields: {},
-            autocomplete: {
-                visible: false,
-                items: [],
-                selectedIndex: 0,
-                userNavigated: false,
-                blockId: null,
-                style: "",
-            },
+            // Which aggregate ("", sum, count, avg, min, max) the result
+            // grid shows in its totals row.
+            aggFunc: "",
         });
 
         // A query passed directly by a record button (action_open_in_analyser)
@@ -490,11 +1063,9 @@ export class SqlMsAnalyser extends Component {
             this._loadQtab(active);
             this.state.activeTab = "query";
         } else {
-            _qtabIdSeq = 0;
             const first = this._makeQtab(incoming || "");
             this.state.qtabs.push(first);
-            this.state.activeQtabId = first.id;
-            this.state.query = first.query;
+            this._loadQtab(first);
             if (incoming) {
                 this.state.activeTab = "query";
             }
@@ -518,6 +1089,65 @@ export class SqlMsAnalyser extends Component {
             window.addEventListener("resize", this._onResize);
         });
         onWillUnmount(() => window.removeEventListener("resize", this._onResize));
+
+        // Keyboard shortcuts (see _onShortcut). Bound on the document because
+        // the result grid itself is not focusable, so there is no element the
+        // key event would otherwise reach.
+        this._onKeydown = (ev) => this._onShortcut(ev);
+        onMounted(() => document.addEventListener("keydown", this._onKeydown));
+        onWillUnmount(() => document.removeEventListener("keydown", this._onKeydown));
+    }
+
+    // -- resizing the sidebar / editor ---------------------------------
+    // Both used the browser's own `resize`, whose handle is a few pixels in
+    // one corner — an easy thing to miss and a fiddly thing to hit. They are
+    // dragged by a bar running the full length of the edge instead. Pointer
+    // events (not mouse) so a trackpad, touchscreen or pen all work, and the
+    // pointer is captured so the drag survives the cursor outrunning the bar.
+    startResize(ev, what) {
+        const target = what === "sidebar" ? this.sidebarRef.el : this.editorRef.el;
+        if (!target) {
+            return;
+        }
+        ev.preventDefault();
+        const bar = ev.currentTarget;
+        const rect = target.getBoundingClientRect();
+        const horizontal = what === "sidebar";
+        const onMove = (e) => {
+            if (horizontal) {
+                const width = Math.min(
+                    Math.max(e.clientX - rect.left, RESIZE_MIN.sidebar),
+                    window.innerWidth * 0.7
+                );
+                target.style.width = width + "px";
+            } else {
+                const height = Math.min(
+                    Math.max(e.clientY - rect.top, RESIZE_MIN.editor),
+                    Math.max(RESIZE_MIN.editor, window.innerHeight - rect.top - 80)
+                );
+                target.style.height = height + "px";
+            }
+        };
+        const onUp = () => {
+            bar.releasePointerCapture(ev.pointerId);
+            bar.removeEventListener("pointermove", onMove);
+            bar.removeEventListener("pointerup", onUp);
+            bar.removeEventListener("pointercancel", onUp);
+            bar.classList.remove("sqlms-resizer-active");
+        };
+        bar.setPointerCapture(ev.pointerId);
+        bar.classList.add("sqlms-resizer-active");
+        bar.addEventListener("pointermove", onMove);
+        bar.addEventListener("pointerup", onUp);
+        bar.addEventListener("pointercancel", onUp);
+    }
+    // Double-clicking the bar drops the inline size, so the panel falls back
+    // to whatever the stylesheet says.
+    resetResize(what) {
+        const target = what === "sidebar" ? this.sidebarRef.el : this.editorRef.el;
+        if (target) {
+            target.style.removeProperty(what === "sidebar" ? "width" : "height");
+        }
     }
 
     _fitHeight() {
@@ -528,32 +1158,30 @@ export class SqlMsAnalyser extends Component {
         }
     }
 
-    // Each statement block has its own textarea/highlight <pre>, found by
-    // data-block-id rather than a static t-ref (the number of blocks is
-    // dynamic). Re-sync all of them from state whenever the editor DOM is
-    // (re)created (e.g. switching back to the Query tab, or a block just
-    // got split on blur). A block's own text is written into its textarea's
-    // .value verbatim by onBlockInput before this runs, so on a plain
-    // keystroke ta.value already equals blk.text and this is a no-op —
-    // it never fights the user's typing or moves the caret.
+    // The editor is a single textarea with a highlight <pre> behind it and a
+    // fold gutter in front. Both are re-created whenever the user leaves and
+    // returns to the Query tab, so they are re-filled from state here. The
+    // textarea's own value is only written when it actually differs (on a
+    // plain keystroke it already matches), so this never fights the user's
+    // typing or moves the caret.
     _syncEditor() {
-        const root = this.blocksRef.el;
-        if (!root) {
-            return;
+        const ta = this.taRef.el;
+        const text = this.state.display || "";
+        if (ta && ta.value !== text) {
+            ta.value = text;
         }
-        for (const blk of this.queryBlocks) {
-            const ta = root.querySelector(
-                '.sqlms-block-textarea[data-block-id="' + blk.id + '"]'
-            );
-            if (ta && ta.value !== blk.text) {
-                ta.value = blk.text;
-            }
-            const pre = root.querySelector(
-                '.sqlms-block-highlight[data-block-id="' + blk.id + '"]'
-            );
-            if (pre) {
-                pre.innerHTML = highlightSql(blk.text) + "\n";
-            }
+        if (this.preRef.el) {
+            this.preRef.el.innerHTML = highlightSql(text, this.state.execRange) + "\n";
+        }
+        this._syncEditorScroll(ta ? ta.scrollTop : 0, ta ? ta.scrollLeft : 0);
+    }
+    _syncEditorScroll(top, left) {
+        if (this.preRef.el) {
+            this.preRef.el.scrollTop = top;
+            this.preRef.el.scrollLeft = left;
+        }
+        if (this.gutterRef.el) {
+            this.gutterRef.el.style.transform = "translateY(" + -top + "px)";
         }
     }
 
@@ -574,7 +1202,6 @@ export class SqlMsAnalyser extends Component {
         } else {
             this.state.checked[name] = true;
         }
-        this.clearSelectedFields();
         if (this.state.activeTab === "mapping") {
             this.loadMapping();
         } else if (this.state.activeTab === "fields") {
@@ -584,10 +1211,8 @@ export class SqlMsAnalyser extends Component {
     get checkedCount() {
         return Object.keys(this.state.checked).length;
     }
-    async clearChecks() {
+    clearChecks() {
         this.state.checked = {};
-        this.clearSelectedFields();
-        await Promise.all([this.loadFields(), this.loadMapping()]);
     }
     async buildQuery() {
         const tables = Object.keys(this.state.checked);
@@ -599,16 +1224,7 @@ export class SqlMsAnalyser extends Component {
             const res = await this.orm.call(
                 "database.studio.analyser", "build_join_query", [tables]
             );
-            this._snapshotActiveQtab();
-            const curQuery = (this.state.query || "").trim();
-            this.state.activeTab = "query";
-            if (!curQuery) {
-                this.setQuery(res.query);
-            } else {
-                const t = this._makeQtab(res.query);
-                this.state.qtabs.push(t);
-                this._loadQtab(t);
-            }
+            this._openBuiltQuery(res.query);
         } finally {
             this.state.loading = false;
         }
@@ -632,7 +1248,6 @@ export class SqlMsAnalyser extends Component {
         this.state.tables = res.tables;
         this.state.views = res.views;
         this.state.favorites = res.favorites || [];
-        this.loadFields();
     }
 
     // -- favourites ----------------------------------------------------
@@ -681,22 +1296,13 @@ export class SqlMsAnalyser extends Component {
     async selectObject(name, type) {
         this.state.selected = name;
         this.state.selectedType = type;
-        this.state.checked[name] = true;
-        this.clearSelectedFields();
-
-        const stmt = 'SELECT * FROM "' + name + '"';
-        this._snapshotActiveQtab();
-
-        const curQuery = (this.state.query || "").trim();
-        if (!curQuery) {
-            this.setQuery(stmt);
+        if (this.state.activeTab === "mapping") {
+            await this.loadMapping();
         } else {
-            const t = this._makeQtab(stmt);
-            this.state.qtabs.push(t);
-            this._loadQtab(t);
+            // Clicking a table always shows its fields.
+            this.state.activeTab = "fields";
+            await this.loadFields();
         }
-
-        await Promise.all([this.loadFields(), this.loadMapping()]);
     }
 
     async setTab(tab) {
@@ -712,33 +1318,23 @@ export class SqlMsAnalyser extends Component {
         }
     }
 
-    // Fields are shown for the checked tables if any, else for the selected table(s) in query.
+    // Fields are shown for the checked tables if any, else the clicked table.
     _fieldsTables() {
         const checked = Object.keys(this.state.checked);
         if (checked.length) {
             return checked;
         }
-        const set = [];
-        if (this.state.selected) {
-            set.push(this.state.selected);
-        }
-        for (const t of this._tablesInQuery()) {
-            if (!set.includes(t)) {
-                set.push(t);
-            }
-        }
-        return set;
+        return this.state.selected ? [this.state.selected] : [];
     }
     async loadFields() {
         const tables = this._fieldsTables();
-        const tableSet = new Set(tables);
-        for (const tbl of Object.keys(this.state.selectedFields)) {
-            if (!tableSet.has(tbl)) {
-                delete this.state.selectedFields[tbl];
-            }
-        }
         if (!tables.length) {
-            this.state.fieldGroups = [];
+            // Nothing ticked on the left: show what the current query returned
+            // instead. A result assembled from CTEs, JSON or expressions
+            // belongs to no table, so this is the only place its columns and
+            // their types are visible at all.
+            this.state.fieldGroups = this._resultFieldGroups();
+            this._pruneFieldPicks();
             return;
         }
         this.state.loading = true;
@@ -746,8 +1342,36 @@ export class SqlMsAnalyser extends Component {
             this.state.fieldGroups = await this.orm.call(
                 "database.studio.analyser", "get_fields_multi", [tables]
             );
+            // Unticking a table on the left hides its fields; drop any picks
+            // that went with it rather than letting them turn up invisibly in
+            // the next built query.
+            this._pruneFieldPicks();
         } finally {
             this.state.loading = false;
+        }
+    }
+    // The active query tab's result, as a single field group. Empty until a
+    // query has actually returned columns.
+    _resultFieldGroups() {
+        const res = this.state.queryResult;
+        if (!res || !(res.columns || []).length) {
+            return [];
+        }
+        const types = res.column_types || [];
+        return [{
+            table: RESULT_GROUP,
+            derived: true,
+            fields: res.columns.map((name, i) => ({
+                name, type: types[i] || "", precision: "", nullable: "",
+            })),
+        }];
+    }
+    _pruneFieldPicks() {
+        const shown = new Set(this.state.fieldGroups.map((g) => g.table));
+        for (const key of Object.keys(this.state.fieldSel)) {
+            if (!shown.has(this.state.fieldSel[key].table)) {
+                delete this.state.fieldSel[key];
+            }
         }
     }
     toggleFieldGroup(table) {
@@ -757,386 +1381,204 @@ export class SqlMsAnalyser extends Component {
             this.state.collapsedGroups[table] = true;
         }
     }
-    get filteredFieldGroups() {
-        const filter = (this.state.fieldsFilter || "").trim().toLowerCase();
-        if (!filter) {
-            return this.state.fieldGroups || [];
-        }
-        const result = [];
-        for (const group of (this.state.fieldGroups || [])) {
-            const tableMatches = (group.table || "").toLowerCase().includes(filter);
-            const matchingFields = (group.fields || []).filter((f) => {
-                const nameMatch = (f.name || "").toLowerCase().includes(filter);
-                const typeMatch = (f.type || "").toLowerCase().includes(filter);
-                const precMatch = (f.precision != null ? String(f.precision) : "").toLowerCase().includes(filter);
-                const nullMatch = (f.nullable != null ? String(f.nullable) : "").toLowerCase().includes(filter);
-                return nameMatch || typeMatch || precMatch || nullMatch;
-            });
-            if (tableMatches) {
-                result.push(group);
-            } else if (matchingFields.length > 0) {
-                result.push({
-                    ...group,
-                    fields: matchingFields,
-                });
-            }
-        }
-        return result;
-    }
     get fieldCount() {
-        return (this.filteredFieldGroups || []).reduce((n, g) => n + g.fields.length, 0);
+        return (this.state.fieldGroups || []).reduce((n, g) => n + g.fields.length, 0);
     }
-    // -- field selection helper methods --------------------------------
-    isFieldSelected(table, field) {
-        return !!(this.state.selectedFields[table] && this.state.selectedFields[table][field]);
+    // The field list narrowed by the Fields tab's own search box, dropping
+    // tables that have nothing matching. Everything downstream (the "all"
+    // tick box, the counters) works off these, so searching and then ticking
+    // "all" picks exactly what is on screen.
+    get filteredFieldGroups() {
+        const term = (this.state.fieldFilter || "").trim().toLowerCase();
+        const groups = this.state.fieldGroups || [];
+        if (!term) {
+            return groups;
+        }
+        const out = [];
+        for (const g of groups) {
+            const fields = g.fields.filter((f) => f.name.toLowerCase().includes(term));
+            if (fields.length) {
+                out.push({ table: g.table, fields });
+            }
+        }
+        return out;
     }
-    toggleFieldSelect(table, field, ev) {
+    get visibleFieldCount() {
+        return this.filteredFieldGroups.reduce((n, g) => n + g.fields.length, 0);
+    }
+    clearFieldFilter() {
+        this.state.fieldFilter = "";
+    }
+    clearFilter() {
+        this.state.filter = "";
+    }
+
+    // -- field picking (Fields tab) ------------------------------------
+    _fieldKey(table, name) {
+        return table + "." + name;
+    }
+    fieldPick(table, name) {
+        return this.state.fieldSel[this._fieldKey(table, name)] || null;
+    }
+    isFieldPicked(table, name) {
+        return !!this.state.fieldSel[this._fieldKey(table, name)];
+    }
+    fieldOrderDir(table, name) {
+        const pick = this.fieldPick(table, name);
+        return pick ? pick.order : "";
+    }
+    isFieldGrouped(table, name) {
+        const pick = this.fieldPick(table, name);
+        return !!(pick && pick.group);
+    }
+    _pickField(table, field) {
+        const key = this._fieldKey(table, field.name);
+        if (!this.state.fieldSel[key]) {
+            this.state.fieldSel[key] = {
+                table,
+                name: field.name,
+                type: field.type,
+                derived: table === RESULT_GROUP,
+                group: false,
+                order: "",
+                orderSeq: 0,
+            };
+        }
+        return this.state.fieldSel[key];
+    }
+    // Result columns cannot be joined or grouped the way table columns can —
+    // there is no table to select them from — so Build query stays out.
+    get hasDerivedPicks() {
+        return this.pickedFields.some((f) => f.derived);
+    }
+    toggleFieldPick(table, field, ev) {
         if (ev) {
             ev.stopPropagation();
         }
-        if (!this.state.selectedFields[table]) {
-            this.state.selectedFields[table] = {};
-        }
-        if (this.state.selectedFields[table][field]) {
-            delete this.state.selectedFields[table][field];
-            if (!Object.keys(this.state.selectedFields[table]).length) {
-                delete this.state.selectedFields[table];
-            }
+        const key = this._fieldKey(table, field.name);
+        if (this.state.fieldSel[key]) {
+            delete this.state.fieldSel[key];
         } else {
-            this.state.selectedFields[table][field] = { order: "", dir: "NONE" };
+            this._pickField(table, field);
         }
     }
-    isGroupAllSelected(group) {
-        if (!group || !group.fields || !group.fields.length) {
-            return false;
-        }
-        const tblMap = this.state.selectedFields[group.table];
-        if (!tblMap) {
-            return false;
-        }
-        return group.fields.every((f) => tblMap[f.name]);
-    }
-    toggleGroupSelect(group, ev) {
+    // Grouping/ordering a field implies selecting it — you cannot group by
+    // something the query does not pick.
+    toggleFieldGroupBy(table, field, ev) {
         if (ev) {
             ev.stopPropagation();
         }
-        const allSelected = this.isGroupAllSelected(group);
-        if (allSelected) {
-            delete this.state.selectedFields[group.table];
+        const pick = this._pickField(table, field);
+        pick.group = !pick.group;
+    }
+    cycleFieldOrder(table, field, ev) {
+        if (ev) {
+            ev.stopPropagation();
+        }
+        const pick = this._pickField(table, field);
+        if (pick.order === "") {
+            pick.order = "asc";
+            pick.orderSeq = ++SqlMsAnalyser._orderSeq;
+        } else if (pick.order === "asc") {
+            pick.order = "desc";
         } else {
-            if (!this.state.selectedFields[group.table]) {
-                this.state.selectedFields[group.table] = {};
-            }
-            for (const f of group.fields) {
-                if (!this.state.selectedFields[group.table][f.name]) {
-                    this.state.selectedFields[group.table][f.name] = { order: "", dir: "NONE" };
-                }
-            }
+            pick.order = "";
+            pick.orderSeq = 0;
         }
     }
-    clearSelectedFields() {
-        this.state.selectedFields = {};
+    allFieldsPicked(group) {
+        return group.fields.length > 0 &&
+            group.fields.every((f) => this.isFieldPicked(group.table, f.name));
     }
-    getSelectedFieldsList() {
-        const result = [];
-        const typeMap = {};
-        for (const g of (this.state.fieldGroups || [])) {
-            if (!typeMap[g.table]) typeMap[g.table] = {};
-            for (const f of (g.fields || [])) {
-                typeMap[g.table][f.name] = f.type;
-            }
+    toggleAllFields(group, ev) {
+        if (ev) {
+            ev.stopPropagation();
         }
-        for (const [table, fieldsMap] of Object.entries(this.state.selectedFields)) {
-            for (const [field, meta] of Object.keys(fieldsMap).map((f) => [f, fieldsMap[f]])) {
-                if (meta) {
-                    const orderVal = (typeof meta === "object" && meta.order != null) ? String(meta.order) : "";
-                    const dirVal = (typeof meta === "object" && meta.dir) ? meta.dir : "NONE";
-                    const funcVal = (typeof meta === "object" && meta.func) ? meta.func : "NONE";
-                    const fieldType = (typeMap[table] && typeMap[table][field]) || "";
-                    result.push({ table, field, type: fieldType, order: orderVal, dir: dirVal, func: funcVal });
-                }
-            }
-        }
-        return result;
-    }
-    get queryFieldsList() {
-        const selected = this.getSelectedFieldsList();
-        if (selected.length) {
-            return selected;
-        }
-
-        const query = (this.state.query || "").trim();
-        if (!query) {
-            return [];
-        }
-
-        const tables = getTablesInStatement(query, this.state.tables);
-        if (!tables.length && this.state.selected) {
-            tables.push(this.state.selected.toLowerCase());
-        }
-        if (!tables.length) {
-            return [];
-        }
-
-        const typeMap = {};
-        for (const g of (this.state.fieldGroups || [])) {
-            if (!typeMap[g.table.toLowerCase()]) typeMap[g.table.toLowerCase()] = {};
-            for (const f of (g.fields || [])) {
-                typeMap[g.table.toLowerCase()][f.name.toLowerCase()] = f.type;
-            }
-        }
-
-        const result = [];
-        const selectMatch = query.match(/SELECT\s+([\s\S]*?)\s+FROM\b/i);
-
-        if (selectMatch) {
-            const rawProj = selectMatch[1].trim();
-            if (rawProj === "*") {
-                for (const g of (this.state.fieldGroups || [])) {
-                    if (tables.includes(g.table.toLowerCase())) {
-                        for (const f of (g.fields || [])) {
-                            result.push({
-                                table: g.table,
-                                field: f.name,
-                                type: f.type || "field",
-                                order: "",
-                                dir: "NONE",
-                                func: "NONE",
-                            });
-                        }
-                    }
-                }
+        const pickAll = !this.allFieldsPicked(group);
+        for (const f of group.fields) {
+            const key = this._fieldKey(group.table, f.name);
+            if (pickAll) {
+                this._pickField(group.table, f);
             } else {
-                const cols = rawProj.split(",");
-                for (const rawCol of cols) {
-                    const cleanCol = rawCol.trim();
-                    const m = cleanCol.match(/(?:"([^"]+)"|([a-zA-Z0-9_]+))\.(?:"([^"]+)"|([a-zA-Z0-9_]+))/) ||
-                              cleanCol.match(/(?:"([^"]+)"|([a-zA-Z0-9_]+))/);
-                    if (m) {
-                        let tbl = "";
-                        let fld = "";
-                        if (m[3] || m[4]) {
-                            tbl = m[1] || m[2];
-                            fld = m[3] || m[4];
-                        } else {
-                            fld = m[1] || m[2];
-                            tbl = tables[0] || (this.state.selected || "");
-                        }
-                        if (fld && fld.toUpperCase() !== "SELECT" && fld.toUpperCase() !== "DISTINCT") {
-                            const fType = (typeMap[tbl.toLowerCase()] && typeMap[tbl.toLowerCase()][fld.toLowerCase()]) || "";
-                            result.push({
-                                table: tbl,
-                                field: fld,
-                                type: fType,
-                                order: "",
-                                dir: "NONE",
-                                func: "NONE",
-                            });
-                        }
-                    }
-                }
-            }
-        }
-
-        if (!result.length && tables.length) {
-            for (const g of (this.state.fieldGroups || [])) {
-                if (tables.includes(g.table.toLowerCase())) {
-                    for (const f of (g.fields || [])) {
-                        result.push({
-                            table: g.table,
-                            field: f.name,
-                            type: f.type || "field",
-                            order: "",
-                            dir: "NONE",
-                            func: "NONE",
-                        });
-                    }
-                }
-            }
-        }
-
-        return result;
-    }
-    get availableFieldsCount() {
-        return this.selectedFieldCount || this.queryFieldsList.length;
-    }
-    saveFieldOrders(orderedItems) {
-        for (const item of orderedItems) {
-            if (this.state.selectedFields[item.table] && this.state.selectedFields[item.table][item.field]) {
-                const existing = this.state.selectedFields[item.table][item.field];
-                const meta = typeof existing === "object" ? existing : { order: "", dir: "NONE" };
-                meta.order = item.order != null ? String(item.order).trim() : "";
-                meta.dir = item.dir || "NONE";
-                this.state.selectedFields[item.table][item.field] = meta;
+                delete this.state.fieldSel[key];
             }
         }
     }
-    saveFieldGroups(groupByItems) {
-        for (const item of groupByItems) {
-            if (this.state.selectedFields[item.table] && this.state.selectedFields[item.table][item.field]) {
-                const existing = this.state.selectedFields[item.table][item.field];
-                const meta = typeof existing === "object" ? existing : { order: "", dir: "NONE" };
-                meta.func = item.func || "NONE";
-                this.state.selectedFields[item.table][item.field] = meta;
-            }
-        }
+    get pickedFields() {
+        return Object.values(this.state.fieldSel);
     }
-    get selectedFieldCount() {
-        let count = 0;
-        for (const fieldsMap of Object.values(this.state.selectedFields)) {
-            count += Object.keys(fieldsMap).length;
-        }
-        return count;
+    get pickedFieldCount() {
+        return this.pickedFields.length;
     }
-    openOrderByDialog() {
-        const fields = this.queryFieldsList;
-        if (!fields.length) {
+    get groupedFieldCount() {
+        return this.pickedFields.filter((f) => f.group).length;
+    }
+    get orderedFieldCount() {
+        return this.pickedFields.filter((f) => f.order).length;
+    }
+    clearFieldPicks() {
+        this.state.fieldSel = {};
+    }
+    // Turn the ticked text columns into a numeric column. The dialog does the
+    // dry run and the ALTER; here we only report what came back and refresh
+    // the field list so the new types show.
+    openConvertType() {
+        const picked = this.pickedFields;
+        if (!picked.length) {
             return;
         }
-        this.dialog.add(SqlMsOrderByDialog, {
-            fields: fields,
-            onConfirm: (orderedFields) => {
-                this.buildFieldsQuery(orderedFields);
+        const derived = this.hasDerivedPicks;
+        this.dialog.add(SqlMsConvertTypeDialog, {
+            mode: derived ? "query" : "table",
+            query: derived ? (this.state.execQuery || this.state.query || "") : "",
+            items: picked.map((f) => ({ table: f.table, name: f.name })),
+            onApply: (sql) => this._openBuiltQuery(sql),
+            onDone: async (res) => {
+                if (res.converted) {
+                    this.notification.add(res.message, { type: "success" });
+                }
+                for (const r of (res.results || []).filter((r) => !r.ok)) {
+                    this.notification.add(r.table + ": " + r.error,
+                                          { type: "danger", sticky: true });
+                }
+                await this.loadFields();
             },
         });
     }
-    openGroupByDialog() {
-        const fields = this.queryFieldsList;
-        if (!fields.length) {
+    // Builds a SELECT of exactly the ticked columns (joining their tables
+    // when there is more than one) and drops it into the query editor.
+    async buildFieldQuery() {
+        const picked = this.pickedFields;
+        if (!picked.length) {
             return;
         }
-        this.dialog.add(SqlMsGroupByDialog, {
-            fields: fields,
-            onConfirm: (groupByFields) => {
-                this.buildFieldsQuery(groupByFields);
-            },
-        });
-    }
-    async buildFieldsQuery(customList = null) {
-        if (customList) {
-            if (customList.length && customList[0].func !== undefined) {
-                this.saveFieldGroups(customList);
-            }
-            if (customList.length && customList[0].order !== undefined) {
-                this.saveFieldOrders(customList);
-            }
-        }
-        const selected = this.getSelectedFieldsList();
-        if (!selected.length) {
-            return;
-        }
-        const tables = [];
-        for (const item of selected) {
-            if (!tables.includes(item.table)) {
-                tables.push(item.table);
-            }
-        }
-        const multiTable = tables.length > 1;
-
-        const projectionList = [...selected].sort((a, b) => {
-            const numA = parseFloat(a.order);
-            const numB = parseFloat(b.order);
-            const hasA = !isNaN(numA) && String(a.order).trim() !== "";
-            const hasB = !isNaN(numB) && String(b.order).trim() !== "";
-            if (hasA && hasB) return numA - numB;
-            if (hasA) return -1;
-            if (hasB) return 1;
-            return 0;
-        });
-
-        const projection = projectionList
-            .map((item) => {
-                const col = multiTable ? `"${item.table}"."${item.field}"` : `"${item.field}"`;
-                switch (item.func) {
-                    case "COUNT":
-                        return `COUNT(${col}) AS "${item.field}_count"`;
-                    case "COUNT_DISTINCT":
-                        return `COUNT(DISTINCT ${col}) AS "${item.field}_count_distinct"`;
-                    case "SUM":
-                        return `SUM(${col}) AS "${item.field}_sum"`;
-                    case "AVG":
-                        return `AVG(${col}) AS "${item.field}_avg"`;
-                    case "MIN":
-                        return `MIN(${col}) AS "${item.field}_min"`;
-                    case "MAX":
-                        return `MAX(${col}) AS "${item.field}_max"`;
-                    default:
-                        return col;
-                }
-            })
-            .join(", ");
-
-        const hasGroupingOrAgg = selected.some(
-            (item) => item.func && item.func !== "NONE"
-        );
-
-        let groupByClause = "";
-        if (hasGroupingOrAgg) {
-            const groupCols = selected
-                .filter((item) => !item.func || item.func === "NONE")
-                .map((item) => (multiTable ? `"${item.table}"."${item.field}"` : `"${item.field}"`));
-            if (groupCols.length) {
-                groupByClause = "\nGROUP BY " + groupCols.join(", ");
-            }
-        }
-
-        const orderByFields = selected
-            .filter((item) => {
-                const hasOrder = String(item.order).trim() !== "";
-                const hasDir = item.dir && item.dir !== "NONE";
-                return hasOrder || hasDir;
-            })
-            .sort((a, b) => {
-                const numA = parseFloat(a.order);
-                const numB = parseFloat(b.order);
-                const hasA = !isNaN(numA) && String(a.order).trim() !== "";
-                const hasB = !isNaN(numB) && String(b.order).trim() !== "";
-                if (hasA && hasB) return numA - numB;
-                if (hasA) return -1;
-                if (hasB) return 1;
-                return 0;
-            });
-
-        const orderByItems = orderByFields.map((item) => {
-            const col = multiTable ? `"${item.table}"."${item.field}"` : `"${item.field}"`;
-            return item.dir && item.dir !== "NONE" ? `${col} ${item.dir}` : col;
-        });
-
-        const orderByClause = orderByItems.length ? "\nORDER BY " + orderByItems.join(", ") : "";
-
+        const strip = (f) => ({ table: f.table, name: f.name });
+        const orderBy = picked
+            .filter((f) => f.order)
+            .sort((a, b) => a.orderSeq - b.orderSeq)
+            .map((f) => ({ table: f.table, name: f.name, dir: f.order }));
         this.state.loading = true;
+        let res;
         try {
-            const res = await this.orm.call(
-                "database.studio.analyser", "build_join_query", [tables]
+            res = await this.orm.call(
+                "database.studio.analyser", "build_field_query",
+                [picked.map(strip), picked.filter((f) => f.group).map(strip), orderBy]
             );
-            let rawQuery = res.query || "";
-            if (rawQuery.startsWith("SELECT *")) {
-                let body = rawQuery.slice(8);
-                const clauseSuffix = groupByClause + orderByClause;
-                if (clauseSuffix) {
-                    if (body.includes("\nLIMIT ")) {
-                        body = body.replace("\nLIMIT ", clauseSuffix + "\nLIMIT ");
-                    } else {
-                        body += clauseSuffix;
-                    }
-                }
-                rawQuery = "SELECT " + projection + body;
-            } else {
-                rawQuery = `SELECT ${projection}\nFROM "${tables[0]}"${groupByClause}${orderByClause}\nLIMIT 100`;
-            }
-            this._snapshotActiveQtab();
-            const curQuery = (this.state.query || "").trim();
-            this.state.activeTab = "query";
-            if (!curQuery) {
-                this.setQuery(rawQuery);
-            } else {
-                const t = this._makeQtab(rawQuery);
-                this.state.qtabs.push(t);
-                this._loadQtab(t);
-            }
         } finally {
             this.state.loading = false;
         }
+        if (res && res.query) {
+            this._openBuiltQuery(res.query);
+        }
+    }
+    // A generated query lands in a fresh tab whenever the current one already
+    // holds something, so building never silently discards typed work.
+    _openBuiltQuery(query) {
+        this.state.activeTab = "query";
+        if ((this.state.query || "").trim()) {
+            this.addQtab();
+        }
+        this.setQuery(query);
     }
 
     // Tables referenced after FROM/JOIN in the current query (only those that
@@ -1186,38 +1628,6 @@ export class SqlMsAnalyser extends Component {
             this.state.loading = false;
         }
     }
-    get filteredMapping() {
-        if (!this.state.mapping) {
-            return null;
-        }
-        const filter = (this.state.mappingFilter || "").trim().toLowerCase();
-        const rows = this.state.mapping.rows || [];
-        const unrelated = this.state.mapping.unrelated || [];
-        if (!filter) {
-            return this.state.mapping;
-        }
-        const filteredRows = rows.filter((m) => {
-            return (
-                (m.from_table || "").toLowerCase().includes(filter) ||
-                (m.from_column || "").toLowerCase().includes(filter) ||
-                (m.to_table || "").toLowerCase().includes(filter) ||
-                (m.to_column || "").toLowerCase().includes(filter) ||
-                (m.via || "").toLowerCase().includes(filter)
-            );
-        });
-        const filteredUnrelated = unrelated.filter((ut) => {
-            const candidates = (this.state.mapping.candidates && this.state.mapping.candidates[ut]) || [];
-            return (
-                ut.toLowerCase().includes(filter) ||
-                candidates.some((c) => c.toLowerCase().includes(filter))
-            );
-        });
-        return {
-            ...this.state.mapping,
-            rows: filteredRows,
-            unrelated: filteredUnrelated,
-        };
-    }
 
     // -- query sub-tabs ------------------------------------------------
     _makeQtab(query) {
@@ -1232,19 +1642,27 @@ export class SqlMsAnalyser extends Component {
         const t = this.qtab;
         if (t) {
             t.query = this.state.query;
+            t.display = this.state.display;
+            t.folds = this.state.folds;
             t.execQuery = this.state.execQuery;
-            t.execWasSelection = this.state.execWasSelection;
+            t.execRange = this.state.execRange;
             t.queryResult = this.state.queryResult;
             t.selectedCols = this.state.selectedCols;
+            t.aggFunc = this.state.aggFunc;
         }
     }
     _loadQtab(t) {
         this.state.activeQtabId = t.id;
         this.state.query = t.query;
+        // Tabs restored from an older snapshot (or from History) may predate
+        // the folding editor and carry no display/folds of their own.
+        this.state.display = t.display === undefined ? t.query : t.display;
+        this.state.folds = t.folds || {};
         this.state.execQuery = t.execQuery;
-        this.state.execWasSelection = t.execWasSelection;
+        this.state.execRange = t.execRange || null;
         this.state.queryResult = t.queryResult;
         this.state.selectedCols = t.selectedCols || [];
+        this.state.aggFunc = t.aggFunc || "";
         this._syncEditor();
     }
     addQtab() {
@@ -1253,29 +1671,6 @@ export class SqlMsAnalyser extends Component {
         this.state.qtabs.push(t);
         this.state.activeTab = "query";
         this._loadQtab(t);
-    }
-    removeAllQtabs() {
-        this._snapshotActiveQtab();
-        const unsaved = this.state.qtabs.some(
-            (t) => !t.isSaved && (t.query || "").trim().length > 0
-        );
-        if (unsaved) {
-            this.dialog.add(ConfirmationDialog, {
-                title: "Close All Without Save",
-                body: "Are you sure you want to close all query tabs without saving? Unsaved queries will be lost.",
-                confirm: () => this._doRemoveAllQtabs(),
-                cancel: () => {},
-            });
-        } else {
-            this._doRemoveAllQtabs();
-        }
-    }
-    _doRemoveAllQtabs() {
-        _qtabIdSeq = 0;
-        const fresh = this._makeQtab("");
-        fresh.name = "Query 1";
-        this.state.qtabs = [fresh];
-        this._loadQtab(fresh);
     }
     switchQtab(id) {
         this.state.activeTab = "query";
@@ -1323,6 +1718,113 @@ export class SqlMsAnalyser extends Component {
             onDiscard: () => this._doRemoveQtab(id),
         });
     }
+    // -- closing several tabs at once ----------------------------------
+    toggleTabMenu() {
+        this.state.tabMenuOpen = !this.state.tabMenuOpen;
+    }
+    closeTabMenu() {
+        this.state.tabMenuOpen = false;
+    }
+    // How many tabs each menu entry would close, both to label the entries
+    // and to grey out the ones that would do nothing.
+    get otherQtabCount() {
+        return this.state.qtabs.filter((t) => t.id !== this.state.activeQtabId).length;
+    }
+    get leftQtabCount() {
+        const i = this.state.qtabs.findIndex((t) => t.id === this.state.activeQtabId);
+        return i === -1 ? 0 : i;
+    }
+    get rightQtabCount() {
+        const i = this.state.qtabs.findIndex((t) => t.id === this.state.activeQtabId);
+        return i === -1 ? 0 : this.state.qtabs.length - i - 1;
+    }
+    get savedQtabCount() {
+        return this.state.qtabs.filter((t) => t.isSaved).length;
+    }
+    closeOtherQtabs() {
+        const keep = this.state.activeQtabId;
+        return this._closeQtabs(this.state.qtabs.filter((t) => t.id !== keep));
+    }
+    closeQtabsToLeft() {
+        const i = this.state.qtabs.findIndex((t) => t.id === this.state.activeQtabId);
+        return i === -1 ? null : this._closeQtabs(this.state.qtabs.slice(0, i));
+    }
+    closeQtabsToRight() {
+        const i = this.state.qtabs.findIndex((t) => t.id === this.state.activeQtabId);
+        return i === -1 ? null : this._closeQtabs(this.state.qtabs.slice(i + 1));
+    }
+    // Every tab that is already in History — closing these can never lose
+    // anything, so the whole set goes without a single prompt.
+    closeSavedQtabs() {
+        return this._closeQtabs(this.state.qtabs.filter((t) => t.isSaved));
+    }
+    closeAllQtabs() {
+        return this._closeQtabs(this.state.qtabs.slice());
+    }
+    // Closes `targets` in turn, asking about each one that still holds
+    // unsaved text exactly as closing it on its own would. The prompts are
+    // sequential — the next tab is only considered once this one has been
+    // answered — and dismissing a prompt without choosing (Escape, or its X)
+    // stops the whole run rather than ploughing on through the rest.
+    async _closeQtabs(targets) {
+        this.closeTabMenu();
+        this._snapshotActiveQtab();
+        for (const t of targets) {
+            if (!this.state.qtabs.some((x) => x.id === t.id)) {
+                continue;
+            }
+            // Bring the tab being asked about to the front first, so the
+            // dialog is never asking about a query the user cannot see.
+            if (t.id !== this.state.activeQtabId) {
+                this._snapshotActiveQtab();
+                this._loadQtab(t);
+            }
+            if ((await this._confirmCloseQtab(t)) === "cancel") {
+                return;
+            }
+            this._doRemoveQtab(t.id);
+        }
+    }
+    // Resolves "close" once this tab may go — immediately for a saved or
+    // empty one, otherwise after the user picks Save or Discard — and
+    // "cancel" if they dismissed the prompt instead of answering it.
+    _confirmCloseQtab(t) {
+        const query = (t.query || "").trim();
+        if (t.isSaved || !query) {
+            return Promise.resolve("close");
+        }
+        return new Promise((resolve) => {
+            // The dialog closes itself right after handing us the answer, so
+            // onClose fires either way; this tells a real answer apart from a
+            // dismissal. Both handlers set it before their first await, i.e.
+            // while still running synchronously inside the click.
+            let answered = false;
+            this.dialog.add(
+                SqlMsCloseTabDialog,
+                {
+                    tabName: t.name,
+                    defaultName: t.fullName || query.replace(/\s+/g, " ").slice(0, 60),
+                    onSave: async (name) => {
+                        answered = true;
+                        await this._persistSave(t, query, name);
+                        this.notification.add("Query saved ★", { type: "success" });
+                        resolve("close");
+                    },
+                    onDiscard: () => {
+                        answered = true;
+                        resolve("close");
+                    },
+                },
+                {
+                    onClose: () => {
+                        if (!answered) {
+                            resolve("cancel");
+                        }
+                    },
+                }
+            );
+        });
+    }
     // Saves `query` under `name`, updating the tab's linked History record in
     // place if it already has one (opened from History, or a prior Save) so
     // editing + re-saving doesn't fork off a duplicate row; otherwise
@@ -1351,7 +1853,6 @@ export class SqlMsAnalyser extends Component {
         // "Query 1" here rather than continuing the running counter, since
         // from the user's perspective this is a fresh start, not tab N+1.
         if (!this.state.qtabs.length) {
-            _qtabIdSeq = 0;
             const t = this._makeQtab("");
             t.name = "Query 1";
             this.state.qtabs.push(t);
@@ -1365,300 +1866,158 @@ export class SqlMsAnalyser extends Component {
     }
 
     // -- query editor --------------------------------------------------
-    // A query tab's text as a list of persistent ';'-separated statement
-    // blocks, each individually collapsible/foldable (view built from the
-    // active tab's stable block objects — see makeBlocks).
-    get queryBlocks() {
-        const blocks = (this.qtab && this.qtab.blocks) || [];
-        return blocks.map((b, index) => ({
-            id: b.id,
-            index,
-            text: b.text,
-            collapsed: b.collapsed,
-            preview: b.text.trim().replace(/\s+/g, " ").slice(0, 80) || "(empty)",
-            lineCount: (b.text.match(/\n/g) || []).length + 1,
-        }));
+    // The statements found in the editor text, as an outline for the fold
+    // gutter. Nothing here splits the text apart: the whole query stays in
+    // one textarea, so any part of it (or all of it) can be selected and run.
+    get sections() {
+        // Rendering asks for this several times per patch (and a patch happens
+        // on every keystroke), so the scan is memoised on the text it scanned.
+        const text = this.state.display || "";
+        const folds = this.state.folds || {};
+        const stamp = Object.keys(folds).join(",");
+        const cached = this._sectionsCache;
+        if (cached && cached.text === text && cached.stamp === stamp) {
+            return cached.sections;
+        }
+        const sections = this._computeSections(text, folds);
+        this._sectionsCache = { text, stamp, sections };
+        return sections;
     }
-    toggleBlockCollapse(id) {
-        const blk = this.qtab && this.qtab.blocks.find((b) => b.id === id);
-        if (blk) {
-            blk.collapsed = !blk.collapsed;
+    _computeSections(text, folds) {
+        // Every statement is listed, foldable or not: whether an icon is
+        // actually drawn is `foldable` below. Skipping one-line texts here
+        // used to strand a folded single statement — folding collapsed it to
+        // the one-line placeholder, which then had no icon to unfold it with.
+        const ranges = findStatementRanges(text);
+        // Line of each statement's first character, walked in one pass.
+        let line = 0;
+        let pos = 0;
+        const out = [];
+        for (const r of ranges) {
+            while (pos < r.start) {
+                if (text[pos] === "\n") {
+                    line += 1;
+                }
+                pos += 1;
+            }
+            const body = text.slice(r.start, r.end);
+            const marker = /^\/\* \u25b8 fold#(\d+):/.exec(body);
+            const foldId = marker && folds[marker[1]] ? marker[1] : null;
+            const lineCount = foldId
+                ? folds[foldId].lines
+                : (body.match(/\n/g) || []).length + 1;
+            out.push({
+                key: r.start + ":" + (foldId || "0"),
+                index: out.length,
+                start: r.start,
+                end: r.end,
+                line,
+                lineCount,
+                foldId,
+                collapsed: !!foldId,
+                top: EDITOR_PAD_TOP + line * EDITOR_LINE_H,
+                foldable: !!foldId || lineCount > 1,
+            });
+        }
+        return out;
+    }
+    get foldableCount() {
+        return this.sections.filter((sc) => sc.foldable).length;
+    }
+    // Writes new editor text, keeping the real query (folds expanded) in
+    // step and forgetting any fold whose placeholder the user has deleted —
+    // deleting the placeholder line deletes that statement, as it looks like
+    // it should.
+    _setDisplay(text) {
+        // Any edit (or a fold) moves the text under the executed range, so
+        // the "this is what ran" marker is dropped rather than left pointing
+        // at the wrong characters.
+        this.state.execRange = null;
+        this.state.display = text;
+        this.state.query = expandFolds(text, this.state.folds);
+        for (const id of Object.keys(this.state.folds)) {
+            if (!foldRe(id).test(text)) {
+                delete this.state.folds[id];
+            }
+        }
+        this._syncEditor();
+    }
+    toggleSection(index) {
+        const sec = this.sections[index];
+        if (!sec) {
+            return;
+        }
+        if (sec.foldId) {
+            this._unfold(sec.foldId);
+        } else {
+            this._fold(sec);
+        }
+    }
+    _fold(sec) {
+        const text = this.state.display || "";
+        const body = text.slice(sec.start, sec.end);
+        if (!body.trim()) {
+            return;
+        }
+        const id = ++_foldIdSeq;
+        // "*/" inside the preview would close the placeholder comment early.
+        const preview = body
+            .trim()
+            .replace(/\s+/g, " ")
+            .replace(/\*\//g, "*\u2044")
+            .slice(0, 60);
+        this.state.folds[id] = { text: body, preview, lines: sec.lineCount };
+        this._setDisplay(
+            text.slice(0, sec.start) +
+            foldPlaceholder(id, preview, sec.lineCount) +
+            text.slice(sec.end)
+        );
+    }
+    _unfold(id) {
+        const f = this.state.folds[id];
+        if (!f) {
+            return;
+        }
+        this._setDisplay((this.state.display || "").replace(foldRe(id), () => f.text));
+    }
+    foldAll() {
+        // Fold from the bottom up so folding one statement doesn't shift the
+        // character ranges of the ones still to be folded.
+        for (const sec of this.sections.slice().reverse()) {
+            if (sec.foldable && !sec.foldId) {
+                this._fold(sec);
+            }
+        }
+    }
+    unfoldAll() {
+        for (const id of Object.keys(this.state.folds)) {
+            this._unfold(id);
         }
     }
     setQuery(text) {
+        this.state.execRange = null;
+        this.state.folds = {};
         this.state.query = text;
-        const t = this.qtab;
-        if (t) {
-            t.blocks = makeBlocks(text);
-        }
+        this.state.display = text;
         this._syncEditor();
     }
-    // Fired on every keystroke in a block's own textarea: just record its
-    // new text verbatim (no re-splitting, no touching other blocks) so the
-    // block's DOM node is never restructured mid-edit — see _syncEditor.
-    onBlockInput(id, ev) {
-        const t = this.qtab;
-        const blk = t && t.blocks.find((b) => b.id === id);
-        if (!blk) {
-            return;
-        }
-        blk.text = ev.target.value;
-        this.state.query = t.blocks.map((b) => b.text).join(";");
-        this.checkAutocomplete(id, ev.target);
+    // Fired on every keystroke: record the new text (and the query it stands
+    // for) without ever rewriting the textarea, so the caret stays put.
+    onEditorInput(ev) {
+        this._setDisplay(ev.target.value);
     }
-    onBlockKeydown(id, ev) {
-        if (this.state.autocomplete.visible && this.state.autocomplete.blockId === id) {
-            const items = this.state.autocomplete.items;
-            if (ev.key === "ArrowDown") {
-                ev.preventDefault();
-                this.state.autocomplete.userNavigated = true;
-                this.state.autocomplete.selectedIndex =
-                    (this.state.autocomplete.selectedIndex + 1) % items.length;
-                return;
-            }
-            if (ev.key === "ArrowUp") {
-                ev.preventDefault();
-                this.state.autocomplete.userNavigated = true;
-                this.state.autocomplete.selectedIndex =
-                    (this.state.autocomplete.selectedIndex - 1 + items.length) % items.length;
-                return;
-            }
-            if (ev.key === "Tab" || (ev.key === "Enter" && this.state.autocomplete.userNavigated)) {
-                ev.preventDefault();
-                const item = items[this.state.autocomplete.selectedIndex];
-                if (item) {
-                    this.insertAutocomplete(item, ev.target);
-                }
-                return;
-            }
-            if (ev.key === "Escape") {
-                ev.preventDefault();
-                this.state.autocomplete.visible = false;
-                return;
-            }
-            if (ev.key === "Enter") {
-                this.state.autocomplete.visible = false;
-            }
+    // The band marking what the last Execute ran. It goes when the user
+    // asks for it to go (the toolbar button) and when they put the caret
+    // back in the editor, which is the point at which it stops describing
+    // anything they are looking at.
+    clearExecHighlight() {
+        if (this.state.execRange) {
+            this.state.execRange = null;
+            this._syncEditor();
         }
     }
-    checkAutocomplete(blkId, taEl) {
-        if (!taEl) {
-            this.state.autocomplete.visible = false;
-            return;
-        }
-        const caretPos = taEl.selectionStart;
-        const textBefore = taEl.value.slice(0, caretPos);
-
-        const match = textBefore.match(/([a-zA-Z0-9_".]+)$/);
-        if (!match) {
-            this.state.autocomplete.visible = false;
-            return;
-        }
-        const fullTyped = match[1];
-        const typedWord = fullTyped.replace(/"/g, "").toLowerCase();
-
-        if (!typedWord) {
-            this.state.autocomplete.visible = false;
-            return;
-        }
-
-        const clauseCtx = getClauseContext(textBefore);
-        const candidates = [];
-
-        const fromTables = getTablesInStatement(textBefore, this.state.tables);
-        if (!this.state.fieldGroups || !this.state.fieldGroups.length) {
-            this.loadFields();
-        } else if (fromTables.length) {
-            const loadedSet = new Set((this.state.fieldGroups || []).map((g) => (g.table || "").toLowerCase()));
-            if (fromTables.some((t) => !loadedSet.has(t))) {
-                this.loadFields();
-            }
-        }
-
-        const checkedNames = Object.keys(this.state.checked).filter((k) => this.state.checked[k]);
-        const targetTables = fromTables.length
-            ? fromTables
-            : (checkedNames.length ? checkedNames.map((t) => t.toLowerCase()) : (this.state.selected ? [this.state.selected.toLowerCase()] : []));
-
-        if (clauseCtx === "TABLES_ONLY") {
-            const allTables = this.state.tables || [];
-            const allViews = this.state.views || [];
-            for (const t of allTables) {
-                candidates.push({
-                    label: t,
-                    table: t,
-                    type: "table",
-                    display: `"${t}"`,
-                });
-            }
-            for (const v of allViews) {
-                candidates.push({
-                    label: v,
-                    table: v,
-                    type: "view",
-                    display: `"${v}"`,
-                });
-            }
-        } else if (clauseCtx === "FIELDS_ONLY") {
-            const allGroups = this.state.fieldGroups || [];
-            const multiTable = targetTables.length > 1;
-
-            for (const g of allGroups) {
-                const gTable = (g.table || "").toLowerCase();
-                if (!targetTables.length || targetTables.includes(gTable)) {
-                    for (const f of (g.fields || [])) {
-                        const label = multiTable ? `${g.table}.${f.name}` : f.name;
-                        const display = multiTable ? `"${g.table}"."${f.name}"` : `"${f.name}"`;
-                        candidates.push({
-                            label: label,
-                            field: f.name,
-                            table: g.table,
-                            type: f.type || "field",
-                            display: display,
-                        });
-                    }
-                }
-            }
-        } else {
-            const allGroups = this.state.fieldGroups || [];
-            const multiTable = targetTables.length > 1;
-
-            for (const g of allGroups) {
-                const gTable = (g.table || "").toLowerCase();
-                if (!targetTables.length || targetTables.includes(gTable)) {
-                    for (const f of (g.fields || [])) {
-                        const label = multiTable ? `${g.table}.${f.name}` : f.name;
-                        const display = multiTable ? `"${g.table}"."${f.name}"` : `"${f.name}"`;
-                        candidates.push({
-                            label: label,
-                            field: f.name,
-                            table: g.table,
-                            type: f.type || "field",
-                            display: display,
-                        });
-                    }
-                }
-            }
-            for (const t of this.state.tables || []) {
-                candidates.push({
-                    label: t,
-                    table: t,
-                    type: "table",
-                    display: `"${t}"`,
-                });
-            }
-        }
-
-        // Deduplicate and filter candidates
-        const seen = new Set();
-        const filtered = [];
-        for (const c of candidates) {
-            if (seen.has(c.label)) continue;
-            const matchTarget = (c.label + " " + (c.table || "") + " " + (c.type || "")).toLowerCase();
-            if (matchTarget.includes(typedWord)) {
-                seen.add(c.label);
-                filtered.push(c);
-            }
-        }
-
-        if (filtered.length > 0) {
-            const lines = textBefore.split("\n");
-            const lineIndex = lines.length - 1;
-            const colIndex = lines[lineIndex].length;
-
-            const editorHeight = taEl.clientHeight || 200;
-            let topPos = lineIndex * 20 + 26;
-            if (topPos + 180 > editorHeight && lineIndex * 20 > 180) {
-                topPos = lineIndex * 20 - 180;
-            }
-            const leftPos = Math.min(colIndex * 7.5, Math.max((taEl.clientWidth || 400) - 300, 10));
-
-            this.state.autocomplete.visible = true;
-            this.state.autocomplete.items = filtered.slice(0, 30);
-            this.state.autocomplete.selectedIndex = 0;
-            this.state.autocomplete.userNavigated = false;
-            this.state.autocomplete.blockId = blkId;
-            this.state.autocomplete.style = `top: ${topPos}px; left: ${leftPos}px;`;
-        } else {
-            this.state.autocomplete.visible = false;
-        }
-    }
-    insertAutocomplete(item, taEl) {
-        if (!item) return;
-        const blkId = this.state.autocomplete.blockId;
-        const root = this.blocksRef.el;
-        const ta = taEl || (root && root.querySelector(`.sqlms-textarea[data-block-id="${blkId}"]`));
-        if (!ta) {
-            this.state.autocomplete.visible = false;
-            return;
-        }
-        const caretPos = ta.selectionStart;
-        const textBefore = ta.value.slice(0, caretPos);
-        const textAfter = ta.value.slice(caretPos);
-
-        const match = textBefore.match(/([a-zA-Z0-9_".]*)$/);
-        const wordLen = match ? match[1].length : 0;
-
-        const prefix = textBefore.slice(0, textBefore.length - wordLen);
-        const inserted = item.display;
-        const newText = prefix + inserted + textAfter;
-
-        ta.value = newText;
-        const newCaret = prefix.length + inserted.length;
-        ta.setSelectionRange(newCaret, newCaret);
-
-        const t = this.qtab;
-        const blk = t && t.blocks.find((b) => b.id === blkId);
-        if (blk) {
-            blk.text = newText;
-            this.state.query = t.blocks.map((b) => b.text).join(";");
-        }
-        this.state.autocomplete.visible = false;
-        this._syncEditor();
-        ta.focus();
-    }
-    // Only on losing focus (not every keystroke) do we check whether the
-    // user finished typing a new statement (a ';' now sits inside this
-    // block) and, if so, fold it into separate blocks.
-    onBlockBlur(id) {
-        const t = this.qtab;
-        if (!t) {
-            return;
-        }
-        const idx = t.blocks.findIndex((b) => b.id === id);
-        if (idx === -1) {
-            return;
-        }
-        // An emptied-out statement collapses away entirely instead of
-        // lingering as a blank section, as long as it isn't the tab's only
-        // block (a single empty block is just the normal empty-editor state).
-        if (!t.blocks[idx].text.trim() && t.blocks.length > 1) {
-            t.blocks.splice(idx, 1);
-            this.state.query = t.blocks.map((b) => b.text).join(";");
-            return;
-        }
-        const pieces = splitStatements(t.blocks[idx].text);
-        if (pieces.length <= 1) {
-            return;
-        }
-        const fresh = pieces.map((text) => ({
-            id: ++_blockIdSeq,
-            text,
-            collapsed: false,
-        }));
-        t.blocks.splice(idx, 1, ...fresh);
-        this.state.query = t.blocks.map((b) => b.text).join(";");
-    }
-    onBlockScroll(ev) {
-        const id = ev.target.dataset.blockId;
-        const root = this.blocksRef.el;
-        const pre = root && root.querySelector(
-            '.sqlms-block-highlight[data-block-id="' + id + '"]'
-        );
-        if (pre) {
-            pre.scrollTop = ev.target.scrollTop;
-            pre.scrollLeft = ev.target.scrollLeft;
-        }
+    onEditorScroll(ev) {
+        this._syncEditorScroll(ev.target.scrollTop, ev.target.scrollLeft);
     }
     formatQuery() {
         this.setQuery(formatSql(this.state.query));
@@ -1702,34 +2061,20 @@ export class SqlMsAnalyser extends Component {
         // Run only the highlighted selection when the user has one, like a
         // real query analyser; otherwise run the whole editor content. A
         // textarea keeps its selectionStart/End after it is blurred (e.g. by
-        // clicking the Execute button), so check every block's textarea
-        // rather than requiring one to still have focus.
-        const root = this.blocksRef.el;
-        const textareas = root ? root.querySelectorAll(".sqlms-block-textarea") : [];
-        for (const ta of textareas) {
-            if (ta.selectionEnd > ta.selectionStart) {
-                const sel = ta.value.substring(ta.selectionStart, ta.selectionEnd).trim();
-                if (sel) {
-                    return { query: sel, isSelection: true };
-                }
+        // clicking the Execute button), so this works even though the button
+        // click took the focus away. Folded statements caught in the
+        // selection are restored to their real text before running.
+        const ta = this.taRef.el;
+        if (ta && ta.selectionEnd > ta.selectionStart) {
+            const sel = ta.value.substring(ta.selectionStart, ta.selectionEnd).trim();
+            if (sel) {
+                return {
+                    query: expandFolds(sel, this.state.folds).trim(),
+                    range: { start: ta.selectionStart, end: ta.selectionEnd },
+                };
             }
         }
-        return { query: this._fullQueryForExec(), isSelection: false };
-    }
-    // Joins the active tab's statement blocks for execution, skipping any
-    // that are blank. A block can end up empty from a stray double ';' (or a
-    // fresh, not-yet-typed-into one) — sending that straight to Postgres as
-    // "...; ; ..." is a guaranteed syntax error, so it's dropped here rather
-    // than surfacing as a confusing failure on Execute.
-    _fullQueryForExec() {
-        const t = this.qtab;
-        if (!t) {
-            return this.state.query;
-        }
-        return t.blocks
-            .filter((b) => b.text.trim())
-            .map((b) => b.text)
-            .join(";");
+        return { query: this.state.query, range: null };
     }
 
     // `fresh` distinguishes a real Execute click (re-capture the editor's
@@ -1740,14 +2085,15 @@ export class SqlMsAnalyser extends Component {
         if (fresh) {
             const active = this._activeQuery();
             this.state.execQuery = active.query;
-            this.state.execWasSelection = active.isSelection;
+            this.state.execRange = active.range;
+            this._syncEditor();
             // A new run may have a different column set; don't carry a
             // column selection over from whatever was run before.
             this.state.selectedCols = [];
         }
         const query = this.state.execQuery || this.state.query;
         const execQuery = this.state.execQuery;
-        const execWasSelection = this.state.execWasSelection;
+        const execRange = this.state.execRange;
         // Remember which tab this run belongs to: if the user switches query
         // tabs before the RPC resolves, the result must land on that tab
         // instead of clobbering whatever tab is active by then.
@@ -1767,7 +2113,7 @@ export class SqlMsAnalyser extends Component {
             const t = this.state.qtabs.find((x) => x.id === qtabId);
             if (t) {
                 t.execQuery = execQuery;
-                t.execWasSelection = execWasSelection;
+                t.execRange = execRange;
                 t.queryResult = result;
             }
         }
@@ -1777,6 +2123,85 @@ export class SqlMsAnalyser extends Component {
         if (fresh && query && query.trim()) {
             this.orm.call("database.studio.query", "log_query_run", [query]).catch(() => {});
         }
+    }
+
+    // -- keyboard shortcuts ---------------------------------------------
+    // Alt+C copies the selected column(s) from anywhere in the analyser, and
+    // plain Ctrl/Cmd+C does the same while columns are picked and nothing
+    // else is highlighted — so a column can be selected and copied without
+    // reaching for the mouse again. (Ctrl+Shift+C is deliberately not used:
+    // browsers keep that one for their own devtools.)
+    _onShortcut(ev) {
+        if (ev.defaultPrevented || !this.rootRef.el || !this.rootRef.el.isConnected) {
+            return;
+        }
+        const res = this.state.queryResult;
+        if (!res || !res.columns.length) {
+            return;
+        }
+        // ev.key is unreliable under Alt (Option+C types "ç" on a Mac), so
+        // the physical key is what's matched.
+        if (ev.code !== "KeyC" && (ev.key || "").toLowerCase() !== "c") {
+            return;
+        }
+        // Never take a key away from the query editor or any other field:
+        // there Alt+C/Ctrl+C still mean whatever they normally mean.
+        const target = ev.target || {};
+        const tag = (target.tagName || "").toLowerCase();
+        if (tag === "input" || tag === "textarea" || tag === "select" ||
+                target.isContentEditable) {
+            return;
+        }
+        if (ev.altKey && !ev.ctrlKey && !ev.metaKey) {
+            ev.preventDefault();
+            this.copyResults();
+            return;
+        }
+        if ((ev.ctrlKey || ev.metaKey) && !ev.altKey && !ev.shiftKey) {
+            const selection = window.getSelection && window.getSelection().toString();
+            if (!selection && this.state.selectedCols.length) {
+                ev.preventDefault();
+                this.copyResults();
+            }
+        }
+    }
+
+    // -- result aggregates ----------------------------------------------
+    // Sum/count/average (plus min/max) come back with the result, computed
+    // server-side over *every* row the query returned — not just the page on
+    // screen — so the totals row means what it says on a paginated result.
+    get aggLabels() {
+        return {
+            count: "Count",
+            sum: "Sum",
+            avg: "Average",
+            min: "Min",
+            max: "Max",
+        };
+    }
+    get aggLabel() {
+        return this.aggLabels[this.state.aggFunc] || "";
+    }
+    setAggFunc(func) {
+        this.state.aggFunc = func;
+    }
+    // The aggregate shown under one column: only for the selected column(s)
+    // when any are picked (that is the point of picking them), for every
+    // column that has one otherwise. Blank where the function doesn't apply,
+    // e.g. the sum of a text column.
+    aggValue(res, index) {
+        if (!this.state.aggFunc) {
+            return "";
+        }
+        if (this.state.selectedCols.length && !this.state.selectedCols.includes(index)) {
+            return "";
+        }
+        const agg = (res.aggregates || [])[index];
+        if (!agg) {
+            return "";
+        }
+        const value = agg[this.state.aggFunc];
+        return value === undefined || value === null ? "" : String(value);
     }
 
     // -- copy helpers --------------------------------------------------
@@ -1817,15 +2242,14 @@ export class SqlMsAnalyser extends Component {
     }
     copyMapping() {
         const header = ["from_table", "from_column", "to_table", "to_column", "via"].join("\t");
-        const mapping = this.filteredMapping;
-        const rows = (mapping && mapping.rows) || [];
+        const rows = (this.state.mapping && this.state.mapping.rows) || [];
         const body = rows
             .map((m) => [m.from_table, m.from_column, m.to_table, m.to_column, m.via].join("\t"))
             .join("\n");
         this._copy(header + "\n" + body, "Mapping");
     }
     copyFields() {
-        const groups = this.filteredFieldGroups || [];
+        const groups = this.state.fieldGroups || [];
         const header = ["table", "name", "type", "precision/length", "nullable"].join("\t");
         const lines = [header];
         for (const g of groups) {
@@ -1895,5 +2319,8 @@ export class SqlMsAnalyser extends Component {
 }
 
 SqlMsAnalyser.template = "database_studio.Analyser";
+// Bumped each time a field is switched into ORDER BY, so the ORDER BY clause
+// follows the order the user actually picked them in.
+SqlMsAnalyser._orderSeq = 0;
 
 registry.category("actions").add("database_studio.analyser", SqlMsAnalyser);

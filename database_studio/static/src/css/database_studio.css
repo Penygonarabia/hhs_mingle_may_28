@@ -33,13 +33,11 @@
     max-width: 70vw;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid #dee2e6;
     background: #ffffff;
     /* Table/view names are often long and truncated at this default width;
-       drag the right edge to widen it. Its own children (search, list)
-       already scroll independently, so hidden here just clips the resize
-       boundary itself. */
-    resize: horizontal;
+       the bar along its right edge widens it (see .sqlms-resizer-x). Its own
+       children (search, list) scroll independently, so hidden here only
+       clips the panel's own boundary. */
     overflow: hidden;
 }
 .sqlms-search {
@@ -50,13 +48,8 @@
     border-bottom: 1px solid #e9ecef;
 }
 .sqlms-search i { color: #868e96; }
-.sqlms-search input {
-    flex: 1;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    padding: 4px 8px;
-    outline: none;
-}
+.sqlms-search .sqlms-searchbox { flex: 1; }
+.sqlms-search .sqlms-searchbox input { width: auto; flex: 1; }
 .sqlms-hist-btn {
     border: 1px solid #ced4da;
     background: #fff;
@@ -91,27 +84,47 @@
 
 /* field groups (multi-table) */
 .sqlms-groupscroll { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+/* The whole Fields pane is one scrollport (.sqlms-groupscroll) so that the
+   table name and its column headings can stick to the top of it while you
+   scroll through a table's fields, exactly like the FAVOURITES / TABLES /
+   VIEWS headers in the sidebar. That rules out `overflow` on anything in
+   between -- a scroll container of its own would trap the sticky headers
+   inside it -- so the card grows to its table's width instead of scrolling
+   its own contents. */
 .sqlms-fieldgroup {
     border: 1px solid #dee2e6;
-    border-radius: 4px;
-    overflow: hidden;
+    border-radius: 6px;
     margin-bottom: 10px;
+    min-width: min-content;
 }
 .sqlms-group-title2 {
+    position: sticky;
+    top: 0;
+    z-index: 3;
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 10px;
+    /* An exact height so the column headings below can be parked at exactly
+       this offset (see SQLMS_GROUP_TITLE_H below). */
+    height: 34px;
+    box-sizing: border-box;
+    padding: 0 10px;
     background: #eceff1;
+    border-radius: 6px 6px 0 0;
     cursor: pointer;
     user-select: none;
     font-family: monospace;
     border-bottom: 1px solid #dee2e6;
 }
 .sqlms-group-title2 .sqlms-count { margin-left: auto; }
-.sqlms-grouptablewrap { overflow-x: auto; }
-.sqlms-fieldgroup .sqlms-grid thead th { position: static; }
-.sqlms-check-col { width: 32px; min-width: 32px; max-width: 32px; text-align: center !important; }
+.sqlms-grouptablewrap { overflow: visible; }
+/* 34px == .sqlms-group-title2's height: the headings stop directly under
+   the table name rather than sliding beneath it. */
+.sqlms-fieldgroup .sqlms-grid thead th {
+    position: sticky;
+    top: 34px;
+    z-index: 2;
+}
 .sqlms-group-title {
     position: sticky;
     top: 0;
@@ -227,40 +240,6 @@
     flex-wrap: wrap;
 }
 .sqlms-info { color: #868e96; }
-.sqlms-tab-search {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: #ffffff;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    padding: 3px 8px;
-    min-width: 200px;
-    max-width: 300px;
-}
-.sqlms-tab-search i.fa-search {
-    color: #868e96;
-}
-.sqlms-tab-search input {
-    border: none;
-    outline: none;
-    padding: 0;
-    font-size: 12px;
-    width: 100%;
-    background: transparent;
-}
-.sqlms-clear-btn {
-    border: none;
-    background: transparent;
-    color: #868e96;
-    cursor: pointer;
-    padding: 0 2px;
-    display: flex;
-    align-items: center;
-}
-.sqlms-clear-btn:hover {
-    color: #343a40;
-}
 
 /* ---- grid ---- */
 .sqlms-tablewrap {
@@ -300,6 +279,29 @@
 .sqlms-colhead:hover { background: #dde3e8; }
 .sqlms-grid .sqlms-col-selected { background: #d0ebff !important; }
 .sqlms-grid thead th.sqlms-col-selected { color: #1971c2; }
+.sqlms-grid tfoot td {
+    position: sticky;
+    bottom: 0;
+    background: #eceff1;
+    border-top: 2px solid #ced4da;
+    font-weight: 600;
+    text-align: right;
+    z-index: 1;
+}
+.sqlms-aggpick {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    color: #495057;
+}
+.sqlms-aggselect {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 2px 4px;
+    background: #fff;
+    color: #212529;
+}
 .sqlms-rownum {
     color: #adb5bd;
     text-align: right;
@@ -333,17 +335,23 @@
 .sqlms-null { color: #c92a2a; font-style: italic; }
 
 /* executed-query banner above the query result */
-.sqlms-ran {
-    margin-bottom: 8px;
-    padding: 6px 8px;
-    background: #f1f3f5;
-    border-left: 3px solid #5b899e;
-    border-radius: 3px;
-    max-height: 72px;
-    overflow: auto;
+/* The part of the script the last Execute actually ran. A textarea draws no
+   selection once it loses focus, so this is painted on the highlight layer
+   behind it and survives the click on Execute. */
+.sqlms-execsel {
+    /* Same blue the result grid uses for a selected column, so "selected"
+       looks like one thing throughout. The vertical padding closes the gap
+       the line-height leaves between lines, matching the unbroken band a real
+       textarea selection draws -- padding on an inline box grows only its
+       background, so the text underneath stays where it was and this layer
+       still lines up with the textarea on top of it. Horizontal padding (or a
+       border) WOULD shift the text and must not be added here. */
+    background: #d0ebff;
+    padding: 2.5px 0;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
 }
-.sqlms-ran-label { font-weight: 600; color: #495057; margin-right: 6px; }
-.sqlms-ran code { color: #212529; white-space: pre-wrap; word-break: break-word; }
+
 
 /* ---- pager ---- */
 .sqlms-pager { display: inline-flex; align-items: center; gap: 4px; }
@@ -400,98 +408,59 @@
     color: #495057;
 }
 .sqlms-qtab-add:hover { background: #f8f9fa; color: #212529; }
-.sqlms-qtab-close-all {
-    margin-left: auto;
-    border: 1px solid #f5c2c7;
-    background: #f8d7da;
-    color: #842029;
-    font-size: 12px;
-    cursor: pointer;
-    padding: 3px 10px;
-    border-radius: 4px;
-    transition: all 0.15s ease-in-out;
-}
-.sqlms-qtab-close-all:hover {
-    background: #ea868f;
-    border-color: #ea868f;
-    color: #ffffff;
-}
 .sqlms-editor {
     position: relative;
-    height: 220px;
+    /* One editor now holds the whole script, so it starts taller; the bar
+       underneath it drags the height (see .sqlms-resizer-y). */
+    height: 300px;
     min-height: 140px;
     max-height: 70vh;
     border: 1px solid #ced4da;
     border-radius: 4px;
     overflow: hidden;
     background: #fdfdfd;
-    margin-bottom: 8px;
     flex: 0 0 auto;
-    /* Drag the bottom-right corner to grow/shrink the query box. */
-    resize: vertical;
+    /* Height is dragged by the bar underneath it (.sqlms-resizer-y). */
 }
 
-/* ---- statement blocks (fold each ';'-separated statement) ---- */
-.sqlms-blocks {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 8px;
-    flex: 0 0 auto;
-}
-.sqlms-blocks-multi {
-    max-height: 440px;
-    overflow-y: auto;
-    padding-right: 2px;
-    resize: vertical;
-    min-height: 140px;
-}
-.sqlms-block {
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
+/* ---- fold gutter (statement outline inside the single editor) ---- */
+.sqlms-gutter {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 26px;
     overflow: hidden;
-    flex: 0 0 auto;
+    background: #f1f3f5;
+    border-right: 1px solid #e9ecef;
+    z-index: 2;
 }
-.sqlms-block-head {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 10px;
-    background: #eceff1;
+.sqlms-gutter-inner { position: relative; height: 100%; }
+.sqlms-fold {
+    position: absolute;
+    left: 4px;
+    width: 18px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    font-size: 13px;
+    color: #adb5bd;
     cursor: pointer;
-    user-select: none;
-    font-family: monospace;
 }
-.sqlms-block-label { font-weight: 600; color: #495057; flex: 0 0 auto; }
-.sqlms-block-preview {
-    color: #868e96;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    flex: 1;
-    min-width: 0;
-}
-.sqlms-block-lines { margin-left: auto; color: #868e96; font-size: 11px; flex: 0 0 auto; }
-.sqlms-blocks-multi .sqlms-block .sqlms-editor {
-    height: 160px;
-    margin-bottom: 0;
-    border: none;
-    border-top: 1px solid #dee2e6;
-    border-radius: 0;
-    /* The outer .sqlms-blocks-multi is already resizable; a resize handle
-       per statement block too would just be confusing nested UI. */
-    resize: none;
-}
+.sqlms-fold:hover { color: #1971c2; }
 .sqlms-highlight, .sqlms-textarea {
     box-sizing: border-box !important;
     margin: 0 !important;
     border: 0 !important;
-    padding: 10px !important;
+    /* Left padding clears the fold gutter; the line-height is a whole
+       number of pixels because the gutter positions its icons by it (see
+       EDITOR_LINE_H in database_studio_analyser.js). */
+    padding: 10px 10px 10px 32px !important;
     font-family: monospace !important;
     font-size: 13px !important;
     font-weight: 400 !important;
     font-style: normal !important;
-    line-height: 1.5 !important;
+    line-height: 20px !important;
     letter-spacing: normal !important;
     word-spacing: normal !important;
     text-indent: 0 !important;
@@ -529,29 +498,411 @@
 .sqlms-num { color: #e8590c; }
 .sqlms-comment { color: #868e96; font-style: italic; }
 
-/* Autocomplete suggestions popup */
-.sqlms-autocomplete {
-    position: absolute;
-    z-index: 1050;
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-    max-height: 200px;
-    overflow-y: auto;
-    width: 280px;
+/* ---- field picking (Fields tab) ---- */
+.sqlms-hint {
+    margin: -4px 0 8px;
+    padding: 5px 8px;
+    background: #fff9db;
+    border-left: 3px solid #f0c33c;
+    border-radius: 3px;
+    color: #6b5900;
 }
-.sqlms-ac-item {
-    padding: 6px 10px;
+.sqlms-pickcol { text-align: center; width: 1%; white-space: nowrap; }
+.sqlms-grid tbody tr.sqlms-row-picked { background: #e7f5ff; }
+.sqlms-allfields {
+    margin: 0 0 0 10px;
+    font-weight: 400;
+    color: #868e96;
     cursor: pointer;
-    font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 12px;
-    display: flex;
-    justify-content: space-between;
+    display: inline-flex;
     align-items: center;
-    border-bottom: 1px solid #f1f5f9;
+    gap: 4px;
 }
-.sqlms-ac-item:hover, .sqlms-ac-item-active {
-    background-color: #e0f2fe;
-    color: #0284c7;
+.sqlms-pickbtn {
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 3px;
+    padding: 0 6px;
+    color: #adb5bd;
+    cursor: pointer;
+}
+.sqlms-pickbtn:hover { color: #1971c2; border-color: #ced4da; }
+.sqlms-pickbtn-on { color: #1971c2; background: #d0ebff; border-color: #a5d8ff; }
+
+.sqlms-searchbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    background: #fff;
+}
+.sqlms-searchbox i { color: #868e96; }
+.sqlms-searchbox input {
+    border: 0;
+    outline: none;
+    background: transparent;
+    width: 190px;
+    padding: 2px 0;
+    min-width: 0;
+}
+.sqlms-searchbox-x {
+    border: 0;
+    background: transparent;
+    color: #868e96;
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+    padding: 0 2px;
+}
+.sqlms-searchbox-x:hover { color: #c92a2a; }
+
+/* =====================================================================
+   Depth pass
+   ---------------------------------------------------------------------
+   Everything below only adds relief -- shadows, bevel gradients laid over
+   whatever background-color an element already has, and a press effect on
+   click. Nothing here may change the metrics of .sqlms-highlight /
+   .sqlms-textarea (font, padding, line-height): those two are stacked on
+   top of each other and the fold gutter positions its icons from the same
+   numbers, so a stray pixel there misaligns the whole editor.
+   ===================================================================== */
+.sqlms-root {
+    background: linear-gradient(180deg, #eef1f5 0%, #f7f9fb 55%, #eef1f5 100%);
+}
+.sqlms-root .sqlms-sidebar {
+    box-shadow: 2px 0 8px rgba(16, 24, 40, 0.06);
+    z-index: 2;
+}
+.sqlms-root .sqlms-search,
+.sqlms-root .sqlms-searchmode {
+    background: linear-gradient(180deg, #ffffff, #f4f6f8);
+}
+.sqlms-root .sqlms-search input,
+.sqlms-root .sqlms-searchmode select,
+.sqlms-root .sqlms-searchbox,
+.sqlms-root .sqlms-aggselect {
+    box-shadow: inset 0 1px 2px rgba(16, 24, 40, 0.09);
+}
+.sqlms-root .sqlms-search input:focus,
+.sqlms-root .sqlms-searchbox:focus-within {
+    border-color: #74a9d8;
+    box-shadow: inset 0 1px 2px rgba(16, 24, 40, 0.09), 0 0 0 3px rgba(116, 169, 216, 0.22);
+}
+
+/* raised cards */
+.sqlms-root .sqlms-editor,
+.sqlms-root .sqlms-tablewrap,
+.sqlms-root .sqlms-fieldgroup,
+.sqlms-root .sqlms-hint {
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 12px rgba(16, 24, 40, 0.08);
+}
+.sqlms-root .sqlms-editor { background: #fff; }
+.sqlms-root .sqlms-group-title2,
+.sqlms-root .sqlms-group-title {
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(0, 0, 0, 0.05));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* View tabs (Query / Fields / Field Mapping). The selected one is a raised
+   card capped with the theme's own teal, and it merges into the pane below
+   by painting over the strip's bottom rule -- so it reads as the front sheet
+   of the stack rather than just a differently shaded button. */
+.sqlms-root .sqlms-tabs {
+    background: linear-gradient(180deg, #ffffff, #eef1f5);
+    gap: 4px;
+}
+.sqlms-root .sqlms-tabs button {
+    position: relative;
+    padding: 8px 20px 7px;
+    border-radius: 8px 8px 0 0;
+    color: #6b7885;
+    font-weight: 500;
+    transition: background 0.12s ease, box-shadow 0.12s ease, color 0.12s ease;
+}
+.sqlms-root .sqlms-tabs button:hover:not(.sqlms-tab-active) {
+    background: rgba(255, 255, 255, 0.75);
+    color: #3f9ea2;
+}
+.sqlms-root .sqlms-tabs button.sqlms-tab-active {
+    background: linear-gradient(180deg, #ffffff 0%, #f6f9fa 100%);
+    border-color: #cdd8dc;
+    color: #14555a;
+    font-weight: 700;
+    box-shadow: 0 -4px 12px rgba(16, 24, 40, 0.10), inset 0 1px 0 #fff;
+}
+.sqlms-root .sqlms-tabs button.sqlms-tab-active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 8px 8px 0 0;
+    background: linear-gradient(90deg, #3f9ea2, #6cc6b6);
+}
+/* covers the 1px rule under the tab strip, joining tab to pane */
+.sqlms-root .sqlms-tabs button.sqlms-tab-active::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #f6f9fa;
+}
+
+/* query sub-tabs */
+.sqlms-root .sqlms-qtab {
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(0, 0, 0, 0.04));
+}
+.sqlms-root .sqlms-qtab-active {
+    box-shadow: 0 2px 6px rgba(16, 24, 40, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+/* buttons: a bevel over whatever colour Bootstrap gave them, and a real
+   press on :active so clicks feel physical */
+.sqlms-root .btn,
+.sqlms-root .sqlms-hist-btn,
+.sqlms-root .sqlms-pickbtn,
+.sqlms-root .sqlms-qtab-add {
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(0, 0, 0, 0.07));
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.12), 0 2px 4px rgba(16, 24, 40, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    border-radius: 5px;
+    transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.12s ease;
+}
+.sqlms-root .btn:hover,
+.sqlms-root .sqlms-hist-btn:hover,
+.sqlms-root .sqlms-pickbtn:hover,
+.sqlms-root .sqlms-qtab-add:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(16, 24, 40, 0.16), 0 6px 12px rgba(16, 24, 40, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.sqlms-root .btn:active,
+.sqlms-root .sqlms-hist-btn:active,
+.sqlms-root .sqlms-pickbtn:active,
+.sqlms-root .sqlms-qtab-add:active {
+    transform: translateY(1px);
+    box-shadow: inset 0 2px 4px rgba(16, 24, 40, 0.22);
+}
+.sqlms-root .btn:disabled,
+.sqlms-root .btn[disabled] {
+    transform: none;
+    box-shadow: none;
+    background-image: none;
+}
+/* link buttons and the icon-only affordances stay flat */
+.sqlms-root .btn-link,
+.sqlms-root .sqlms-fav,
+.sqlms-root .sqlms-insert,
+.sqlms-root .sqlms-qtab-close,
+.sqlms-root .sqlms-searchbox-x,
+.sqlms-root .sqlms-fold {
+    background-image: none;
+    box-shadow: none;
+}
+.sqlms-root .btn-link:hover { transform: none; box-shadow: none; }
+
+/* result / field grids */
+.sqlms-root .sqlms-grid thead th {
+    background-image: linear-gradient(180deg, #f3f5f7, #dfe4e8);
+    box-shadow: inset 0 1px 0 #fff, 0 2px 4px rgba(16, 24, 40, 0.10);
+}
+.sqlms-root .sqlms-grid tfoot td {
+    background-image: linear-gradient(180deg, #f3f5f7, #dfe4e8);
+    box-shadow: inset 0 1px 0 #fff, 0 -2px 4px rgba(16, 24, 40, 0.10);
+}
+.sqlms-root .sqlms-grid tbody tr:hover {
+    box-shadow: inset 0 0 0 9999px rgba(116, 169, 216, 0.10);
+}
+.sqlms-root .sqlms-rownum {
+    background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0));
+}
+
+/* sidebar list */
+.sqlms-root .sqlms-list li { transition: background 0.1s ease, box-shadow 0.1s ease; }
+.sqlms-root .sqlms-list li.sqlms-active {
+    box-shadow: inset 3px 0 0 #5b899e, 0 1px 2px rgba(16, 24, 40, 0.08);
+}
+.sqlms-root .sqlms-count {
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(0, 0, 0, 0.06));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 1px rgba(16, 24, 40, 0.10);
+}
+.sqlms-root .sqlms-selbar {
+    background-image: linear-gradient(180deg, #f0f8ff, #dbeeff);
+    box-shadow: inset 0 -1px 0 rgba(16, 24, 40, 0.06);
+}
+
+/* the fold gutter reads as a groove cut into the editor */
+.sqlms-root .sqlms-gutter {
+    background-image: linear-gradient(90deg, #e9edf1, #f4f6f8);
+    box-shadow: inset -2px 0 3px -2px rgba(16, 24, 40, 0.28);
+}
+
+/* slimmer, rounded scrollbars so the panels read as floating surfaces */
+.sqlms-root ::-webkit-scrollbar { width: 11px; height: 11px; }
+.sqlms-root ::-webkit-scrollbar-track { background: transparent; }
+.sqlms-root ::-webkit-scrollbar-thumb {
+    background: #c3ccd5;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    border-radius: 8px;
+}
+.sqlms-root ::-webkit-scrollbar-thumb:hover { background-clip: padding-box; background-color: #9fadbb; }
+
+/* ---- the close-tabs menu ---- */
+.sqlms-tabmenu-wrap { position: relative; display: inline-flex; }
+.sqlms-qtab-closeall {
+    width: auto;
+    padding: 0 7px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.sqlms-qtab-closeall:hover { color: #c92a2a; }
+/* Catches the next click anywhere else, so the menu closes the way a menu
+   should without a document-level listener to install and tear down. */
+.sqlms-tabmenu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+}
+.sqlms-tabmenu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 21;
+    min-width: 232px;
+    padding: 4px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 7px;
+    box-shadow: 0 6px 20px rgba(16, 24, 40, 0.18), 0 1px 3px rgba(16, 24, 40, 0.10);
+}
+.sqlms-tabmenu-head {
+    padding: 4px 10px 6px;
+    color: #868e96;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.sqlms-tabmenu button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 10px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: #212529;
+    text-align: left;
+    cursor: pointer;
+}
+.sqlms-tabmenu button:hover:not(:disabled) { background: #e7f5ff; color: #14555a; }
+.sqlms-tabmenu button:disabled { color: #adb5bd; cursor: default; }
+.sqlms-tabmenu-n {
+    margin-left: auto;
+    min-width: 20px;
+    padding: 0 6px;
+    border-radius: 9px;
+    background: #eceff1;
+    color: #495057;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+}
+.sqlms-tabmenu button:disabled .sqlms-tabmenu-n { color: #adb5bd; }
+
+/* ---- drag-to-resize bars ----
+   A full-length edge is a far bigger target than the browser's own corner
+   grip, which these replace. The ::after below stretches the *hit* area
+   several pixels past the bar on both sides, so the thing stays slim to
+   look at while being forgiving to grab -- a 7px-wide strip is precise
+   mousework, which is the whole complaint about the corner grip. */
+.sqlms-resizer {
+    position: relative;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    touch-action: none;
+    z-index: 3;
+}
+.sqlms-resizer::after {
+    content: "";
+    position: absolute;
+}
+.sqlms-resizer-x::after { top: 0; bottom: 0; left: -5px; right: -5px; }
+.sqlms-resizer-y::after { left: 0; right: 0; top: -5px; bottom: -5px; }
+.sqlms-resizer-x {
+    width: 7px;
+    align-self: stretch;
+    cursor: col-resize;
+    border-left: 1px solid #dee2e6;
+}
+.sqlms-resizer-y {
+    height: 9px;
+    margin-bottom: 4px;
+    cursor: row-resize;
+}
+.sqlms-resizer-grip {
+    display: block;
+    border-radius: 3px;
+    background: #ced4da;
+    transition: background 0.12s ease, transform 0.12s ease;
+}
+.sqlms-resizer-x .sqlms-resizer-grip { width: 3px; height: 34px; }
+.sqlms-resizer-y .sqlms-resizer-grip { width: 46px; height: 3px; }
+.sqlms-resizer:hover .sqlms-resizer-grip,
+.sqlms-resizer-active .sqlms-resizer-grip {
+    background: #3f9ea2;
+}
+.sqlms-resizer-x:hover .sqlms-resizer-grip,
+.sqlms-resizer-x.sqlms-resizer-active .sqlms-resizer-grip { transform: scaleX(1.6); }
+.sqlms-resizer-y:hover .sqlms-resizer-grip,
+.sqlms-resizer-y.sqlms-resizer-active .sqlms-resizer-grip { transform: scaleY(1.6); }
+.sqlms-resizer-x:hover, .sqlms-resizer-x.sqlms-resizer-active { background: rgba(63, 158, 162, 0.10); }
+.sqlms-resizer-y:hover, .sqlms-resizer-y.sqlms-resizer-active { background: rgba(63, 158, 162, 0.10); }
+
+/* Text -> number conversion dialog */
+.sqlms-converttable { width: 100%; font-size: 13px; }
+.sqlms-converttable td, .sqlms-converttable th { white-space: normal; }
+.sqlms-converttable tbody tr.sqlms-convert-skip { color: #868e96; }
+.sqlms-convert-bad {
+    display: inline-block;
+    margin-right: 6px;
+    padding: 0 6px;
+    border-radius: 8px;
+    background: #ffe3e3;
+    color: #c92a2a;
+    font-weight: 600;
+}
+.sqlms-convertsql {
+    margin: 6px 0 0;
+    padding: 8px 10px;
+    max-height: 220px;
+    overflow: auto;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre;
+}
+.sqlms-derived-tag {
+    margin-left: 6px;
+    padding: 0 6px;
+    border-radius: 8px;
+    background: #e7f5ff;
+    color: #1971c2;
+    font-size: 11px;
+    font-weight: 600;
 }
