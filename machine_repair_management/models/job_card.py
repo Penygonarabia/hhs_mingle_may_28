@@ -8344,6 +8344,7 @@ class ProjectTask(models.Model):
                     "tax_amount": line.tax_amount,
                     "total": line.total,
                     "under_warranty_bool": line.under_warranty_bool,
+                      'product_description' : line.product_description or '',
                     # 'name': line.product_id.name or '/',
                 }
             )
@@ -12513,202 +12514,17 @@ class ProductLine(models.Model):
                 if rec.under_warranty_compute:
                     rec.price_unit = 0.0
 
-    # @api.depends('project_task_id.amc_project_id')
-    # def _compute_amc_project_bool(self):
-    #     for rec in self:
-    #         print("Raj", rec.project_task_id.amc_project_id)
-    #         rec.amc_project_bool = False
-    #         if rec.project_task_id.amc_project_id:
-    #             rec.amc_project_bool = True
-
-    # @api.depends('location_id', 'project_task_id')
-    # def _compute_product_id_domain(self):
-    #     """Compute the domain for product_id based on location and user groups."""
-    #     for record in self:
-    #         product_ids = record._get_product_domain()
-    #         record.product_id_domain = product_ids or []
-    #
-    # def _get_product_domain(self):
-    #     """Return list of product IDs with available stock in the specified location."""
-    #     # Get location: priority to self.location_id, fallback to project's location_id
-    #     location = False
-    #     if self.location_id:
-    #         location = self.location_id
-    #     elif self.project_task_id and hasattr(self.project_task_id, 'location_id') and self.project_task_id.location_id:
-    #         location = self.project_task_id.location_id
-    #
-    #     # Log location for debugging
-    #     _logger.info("Location used for product_id domain: %s (ID: %s)",
-    #                  location.name if location else "None", location.id if location else None)
-    #
-    #     # Initialize product_ids
-    #     product_ids = []
-    #     if location:
-    #         # Get products with available stock in the specified location
-    #         quants = self.env['stock.quant'].search([
-    #             ('location_id', '=', location.id),
-    #             ('quantity', '>', 0),
-    #             ('product_id.active', '=', True),
-    #         ])
-    #         product_ids = quants.mapped('product_id').ids
-    #         _logger.info("Products found in location %s: %s (Count: %s)",
-    #                      location.name, product_ids, len(product_ids))
-    #
-    #     # Filter by user group and service/parts type
-    #     if self.env.user.has_group('machine_repair_management.group_technical_allocation_user'):
-    #         supervisor_service = self.env['ir.config_parameter'].sudo().get_param(
-    #             'machine_repair_management.supervisor_service_product_add') == 'True'
-    #         supervisor_parts = self.env['ir.config_parameter'].sudo().get_param(
-    #             'machine_repair_management.supervisor_parts_product_add') == 'True'
-    #
-    #         if supervisor_service and not supervisor_parts:
-    #             product_ids = self.env['product.product'].search([
-    #                 ('id', 'in', product_ids),
-    #                 ('service_type_bool', '=', True),
-    #                 ('active', '=', True)
-    #             ]).ids
-    #         elif supervisor_parts and not supervisor_service:
-    #             product_ids = self.env['product.product'].search([
-    #                 ('id', 'in', product_ids),
-    #                 ('service_type_bool', '=', False),
-    #                 ('active', '=', True)
-    #             ]).ids
-    #         elif not supervisor_service and not supervisor_parts:
-    #             product_ids = []
-    #             _logger.info("No service or parts allowed, no products returned")
-    #
-    #     if not product_ids:
-    #         _logger.info("No products available for location %s or user group restrictions",
-    #                      location.name if location else "None")
-    #
-    #     return product_ids
-
+    
     product_id_domain = fields.Char(
         string="Product ID Domain",
         compute="_compute_product_id_domain",
         readonly=True,
         store=False,
     )
+    
+    product_description = fields.Char(string = "Product Description")
 
-    # @api.depends('project_task_id', 'location_id')
-    # def _compute_product_id_domain(self):
-    #     """Compute the domain for product_id based on location and user groups."""
-    #     for rec in self:
-    #         rec.product_id_domain = False
-    #         if rec.product_categ_id and not rec.project_task_id.project_related_amc_bool:
-    #             products = self.env['product.product'].search([('categ_id', 'child_of', rec.product_categ_id.id)])
-    #             location = rec.location_id or (
-    #                 rec.project_task_id.location_id
-    #                 if rec.project_task_id and hasattr(rec.project_task_id, 'location_id')
-    #                 else False
-    #             )
-    #
-    #             if location:
-    #                 quants = self.env['stock.quant'].search([
-    #                     ('location_id', '=', location.id),
-    #                     ('product_id.active', '=', True),
-    #                 ])
-    #                 products = quants.mapped('product_id')
-    #
-    #             # Filter by user group and service/parts type
-    #             if rec.env.user.has_group('machine_repair_management.group_technical_allocation_user'):
-    #                 supervisor_service = rec.env['ir.config_parameter'].sudo().get_param(
-    #                     'machine_repair_management.supervisor_service_product_add') == 'True'
-    #                 supervisor_parts = rec.env['ir.config_parameter'].sudo().get_param(
-    #                     'machine_repair_management.supervisor_parts_product_add') == 'True'
-    #
-    #                 if supervisor_service and not supervisor_parts:
-    #                     products = products.filtered(lambda p: p.service_type_bool)
-    #                 elif supervisor_parts and not supervisor_service:
-    #                     products = products.filtered(lambda p: not p.service_type_bool)
-    #
-    #             elif rec.env.user.has_group('machine_repair_management.group_parts_user'):
-    #                 parts_service = rec.env['ir.config_parameter'].sudo().get_param(
-    #                     'machine_repair_management.parts_service_product_add') == 'True'
-    #                 parts_parts = rec.env['ir.config_parameter'].sudo().get_param(
-    #                     'machine_repair_management.parts_user_parts_product_add') == 'True'
-    #
-    #                 if parts_service and not parts_parts:
-    #                     products = products.filtered(lambda p: p.service_type_bool)
-    #                 elif parts_parts and not parts_service:
-    #                     products = products.filtered(lambda p: not p.service_type_bool)
-    #
-    #             elif rec.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                 tech_service = rec.env['ir.config_parameter'].sudo().get_param(
-    #                     'machine_repair_management.technician_service_product_add') == 'True'
-    #                 tech_parts = rec.env['ir.config_parameter'].sudo().get_param(
-    #                     'machine_repair_management.technician_parts_product_add') == 'True'
-    #
-    #                 if tech_service and not tech_parts:
-    #                     products = products.filtered(lambda p: p.service_type_bool)
-    #                 elif tech_parts and not tech_service:
-    #                     products = products.filtered(lambda p: not p.service_type_bool)
-    #
-    #             if not products:
-    #
-    #                 rec.product_id_domain = "[('id', 'in', [])]"
-    #             else:
-    #                 rec.product_id_domain = "[('id', 'in', %s)]" % products.ids
-    #         else:
-    #             if rec.project_task_id.project_related_amc_bool:
-    #                 print("Raj >>>>>>>>>>>><<<<<<<<<<<<<<<< 11", rec.location_id.id, rec.location_id.name)
-    #                 products = self.env['product.product'].search(
-    #                     [('stock_quant_ids.location_id', '=', rec.location_id.id)])
-    #                 print("PRODUCT COUNT >>>>>>>>>>>>>", len(products))
-    #
-    #                 location = rec.location_id or (
-    #                     rec.project_task_id.location_id
-    #                     if rec.project_task_id and hasattr(rec.project_task_id, 'location_id')
-    #                     else False
-    #                 )
-    #
-    #                 if location:
-    #                     quants = self.env['stock.quant'].search([
-    #                         ('location_id', '=', location.id),
-    #                         ('product_id.active', '=', True),
-    #                     ])
-    #                     products = quants.mapped('product_id')
-    #
-    #                 # Filter by user group and service/parts type
-    #                 if rec.env.user.has_group('machine_repair_management.group_technical_allocation_user'):
-    #                     supervisor_service = rec.env['ir.config_parameter'].sudo().get_param(
-    #                         'machine_repair_management.supervisor_service_product_add') == 'True'
-    #                     supervisor_parts = rec.env['ir.config_parameter'].sudo().get_param(
-    #                         'machine_repair_management.supervisor_parts_product_add') == 'True'
-    #
-    #                     if supervisor_service and not supervisor_parts:
-    #                         products = products.filtered(lambda p: p.service_type_bool)
-    #                     elif supervisor_parts and not supervisor_service:
-    #                         products = products.filtered(lambda p: not p.service_type_bool)
-    #
-    #                 elif rec.env.user.has_group('machine_repair_management.group_parts_user'):
-    #                     parts_service = rec.env['ir.config_parameter'].sudo().get_param(
-    #                         'machine_repair_management.parts_service_product_add') == 'True'
-    #                     parts_parts = rec.env['ir.config_parameter'].sudo().get_param(
-    #                         'machine_repair_management.parts_user_parts_product_add') == 'True'
-    #
-    #                     if parts_service and not parts_parts:
-    #                         products = products.filtered(lambda p: p.service_type_bool)
-    #                     elif parts_parts and not parts_service:
-    #                         products = products.filtered(lambda p: not p.service_type_bool)
-    #
-    #                 elif rec.env.user.has_group('machine_repair_management.group_job_card_mobile_user'):
-    #                     tech_service = rec.env['ir.config_parameter'].sudo().get_param(
-    #                         'machine_repair_management.technician_service_product_add') == 'True'
-    #                     tech_parts = rec.env['ir.config_parameter'].sudo().get_param(
-    #                         'machine_repair_management.technician_parts_product_add') == 'True'
-    #
-    #                     if tech_service and not tech_parts:
-    #                         products = products.filtered(lambda p: p.service_type_bool)
-    #                     elif tech_parts and not tech_service:
-    #                         products = products.filtered(lambda p: not p.service_type_bool)
-    #
-    #                 if not products:
-    #
-    #                     rec.product_id_domain = "[('id', 'in', [])]"
-    #                 else:
-    #                     rec.product_id_domain = "[('id', 'in', %s)]" % products.ids
-
+  
     @api.depends(
         "project_task_id",
         "location_id",
@@ -12892,47 +12708,6 @@ class ProductLine(models.Model):
      
     """
 
-    # @api.depends('parts_reserved_bool', 'product_id', 'project_task_id')
-    # def _compute_parts_reserved_qty(self):
-    #     # Initialize the computed field to 0.0 for all records
-    #     for rec in self:
-    #         rec.parts_reserved_qty = 0.0
-    #
-    #     # Filter records that need computation
-    #     valid_records = self.filtered(lambda r: r.parts_reserved_bool and r.product_id)
-    #     if not valid_records:
-    #         return
-    #
-    #     # Prepare data for batch query
-    #     product_ids = valid_records.mapped('product_id.id')
-    #     task_ids = valid_records.mapped('project_task_id.id')
-    #     warehouse_ids = valid_records.mapped('project_task_id.warehouse_id.id')
-    #     location_ids = valid_records.mapped('project_task_id.warehouse_id.lot_stock_id.id')
-    #
-    #     # Base domain for the query
-    #     domain = [
-    #         ('product_id', 'in', product_ids),
-    #         ('parts_reserved_bool', '=', True),
-    #         ('project_task_id.job_card_state_code', 'not in', ('126', '124')),
-    #         ('project_task_id.invoice_no', '!=', True),
-    #     ]
-    #
-    #     # Add location filter if applicable
-    #     if location_ids:
-    #         domain.append(('project_task_id.warehouse_id.lot_stock_id', 'in', location_ids))
-    #
-    #     # Use read_group to aggregate quantities by product_id
-    #     grouped_data = self.env['product.lines'].read_group(
-    #         domain,
-    #         ['product_id', 'qty:sum'],
-    #         ['product_id']
-    #     )
-    #
-    #     # Map aggregated quantities to records
-    #     qty_by_product = {item['product_id'][0]: item['qty'] for item in grouped_data}
-    #
-    #     for rec in valid_records:
-    #         rec.parts_reserved_qty = qty_by_product.get(rec.product_id.id, 0.0)
 
     @api.depends("parts_reserved_bool", "product_id", "project_task_id")
     def _compute_parts_reserved_qty(self):
@@ -13035,50 +12810,7 @@ class ProductLine(models.Model):
 
     """ It is working """
 
-    # @api.constrains('parts_reserved_qty', 'on_hand_qty')
-    # def _valid_check_parts_bool(self):
-    #
-    #     if self.env.context.get('from_list_view'):
-    #         return
-    #     for rec in self:
-    #         # if not any(field in rec._get_dirty_fields() for field in ['parts_reserved_qty', 'on_hand_qty']):
-    #         #     continue
-    #         if rec.product_id and rec.parts_reserved_bool and rec.parts_reserved_qty and rec.on_hand_qty:
-    #             if rec.project_task_id.job_card_state_code not in ('126', '124'):
-    #                 if rec.parts_reserved_qty > rec.on_hand_qty:
-    #                     warehouse = rec.project_task_id.warehouse_id
-    #                     location = warehouse.lot_stock_id if warehouse else False
-    #                     # Find all tasks where this product is reserved
-    #                     domain = [
-    #                         ('product_id', '=', rec.product_id.id),
-    #                         ('parts_reserved_bool', '=', True),
-    #                         ('project_task_id.job_card_state_code', 'not in', ('126', '124')),
-    #                         ('project_task_id.invoice_no', '!=', True),
-    #                         ('id', '!=', rec.id)  # Exclude current record
-    #                     ]
-    #                     if location:
-    #                         domain.append(('project_task_id.warehouse_id.lot_stock_id', '=', location.id))
-    #
-    #                     reserved_lines = self.env['product.lines'].search(domain)
-    #
-    #                     if reserved_lines:
-    #                         task_names = ", ".join(
-    #                             set(line.project_task_id.name for line in reserved_lines if line.project_task_id.name))
-    #                         raise ValidationError(
-    #                             "%s Stock is not available. "
-    #                             "This item is allocated to Job Card No(s): %s"
-    #                             % (rec.product_id.display_name, task_names)
-    #                         )
-    #                     else:
-    #                         raise ValidationError(
-    #                             "Insufficient Stock %s Please Contact Administrator !"
-    #                             % rec.product_id.display_name)
-    #         # if rec.product_id:
-    #         #     if rec.parts_reserved_bool:
-    #         #         if rec.parts_reserved_qty and rec.on_hand_qty:
-    #         #             if rec.parts_reserved_qty > rec.on_hand_qty:
-    #         #                 raise ValidationError("Parts of the product %s is not have valid quantity available " %rec.project_task_id.name)
-
+    
     @api.constrains("parts_reserved_qty", "on_hand_qty")
     def _valid_check_parts_bool(self):
 
@@ -13151,82 +12883,7 @@ class ProductLine(models.Model):
         )
         return [q["product_id"][0] for q in quants if q["product_id"]]
 
-    # @api.depends('project_task_id', 'project_task_id.warehouse_id',
-    #                 'project_task_id.warehouse_id.lot_stock_id','project_task_id.job_card_state_code')
-    # def _compute_product_ids_list(self):
-    #     """Compute product_ids by appending product IDs with stock > 0 in warehouse's lot_stock_id or services in same category."""
-    #     for rec in self:
-    #         # _logger.info("Computing product_ids for record: %s", rec)
-    #         rec.product_ids = [(5, 0, 0)]  # Clear existing product_ids
-    #
-    #         if rec.project_task_id and rec.project_task_id.job_state and rec.project_task_id.job_card_state_code in ('124', '126'):
-    #             # _logger.info("Skipping computation as job state is %s", rec.project_task_id.job_card_state_code)
-    #             continue
-    #
-    #         if rec.project_task_id and rec.project_task_id.product_category_id:
-    #             categ_id = rec.project_task_id.product_category_id.id
-    #             location_id = rec.project_task_id.warehouse_id.lot_stock_id.id if rec.project_task_id.warehouse_id and rec.project_task_id.warehouse_id.lot_stock_id else None
-    #
-    #             ''' This code is commented on July-07-2025 client asked all the quantity to be shown irrespective of quantity had in the warehouse
-    #             query = """
-    #                 SELECT DISTINCT p.id
-    #                 FROM product_product p
-    #                 JOIN product_template pt ON p.product_tmpl_id = pt.id
-    #                 WHERE pt.categ_id = %s
-    #                 AND p.is_machine = FALSE
-    #                 AND (
-    #                     (pt.detailed_type = 'service')
-    #                     OR
-    #                     (%s IS NOT NULL AND p.id IN (
-    #                         SELECT sq.product_id
-    #                         FROM stock_quant sq
-    #                         WHERE sq.location_id = %s AND sq.quantity > 0
-    #                     ))
-    #                 )
-    #             """
-    #             params = (categ_id, location_id, location_id) if location_id else (categ_id, None, None)
-    #             '''
-    #             query = """
-    #                 SELECT DISTINCT p.id
-    #                 FROM product_product p
-    #                 JOIN product_template pt ON p.product_tmpl_id = pt.id
-    #                 WHERE pt.categ_id = %s
-    #                 AND p.is_machine = FALSE
-    #                 AND (
-    #                     (pt.detailed_type = 'service')
-    #                     OR
-    #                     (%s IS NOT NULL AND p.id IN (
-    #                         SELECT sq.product_id
-    #                         FROM stock_quant sq
-    #                     ))
-    #                 )
-    #             """
-    #             params = (categ_id, location_id) if location_id else (categ_id, None, None)
-    #
-    #             # _logger.debug("Querying products with query: %s and params: %s", query, params)
-    #             self.env.cr.execute(query, params)
-    #             product_ids = [row['id'] for row in self.env.cr.dictfetchall()]
-    #
-    #             if product_ids and rec.warehouse_id:
-    #                 # Update warehouse_id for products using a single SQL query
-    #                 self.env.cr.execute("""
-    #                     UPDATE product_product
-    #                     SET warehouse_id = %s
-    #                     WHERE id IN %s
-    #                 """, (rec.warehouse_id.id, tuple(product_ids)))
-    #
-    #             # _logger.info("Appending product IDs to product_ids: %s", product_ids)
-    #             if product_ids:
-    #                 rec.product_ids = [(6, 0, product_ids)]  # Append product IDs
-    #
-    #                 # if rec.warehouse_id:
-    #                 #     self.env['product.product'].browse(product_ids).write({'warehouse_id': rec.warehouse_id})
-    #             else:
-    #                 rec.product_ids = [(5, 0, 0)]  # Ensure empty
-    #         else:
-    #             _logger.info("No project_task_id or category, setting product_ids to empty")
-    #
-
+   
     ''' Commented By Vijaya bhaskar on June 19- 2025 because they need service also comes under product catgeory.so it is commented 
     @api.depends('project_task_id', 'project_task_id.warehouse_id', 'project_task_id.warehouse_id.lot_stock_id')
     def _compute_product_ids_list(self):
@@ -13296,63 +12953,14 @@ class ProductLine(models.Model):
                     "This product has already been added to the Product Consume Part/Service for this job card."
                 )
 
-    # @api.onchange('product_id')
-    # def _product_line_onchange(self):
-    #     for rec in self:
-    #         quantity = False
-    #         if rec.product_id:
-    #             rec.uom_id = rec.product_id.uom_id
-    #             ''' service product is not go to warranty set up'''
-    #             ''' it is working
-    #             if rec.product_id.detailed_type != 'service':
-    #                 rec.under_warranty_bool = rec.project_task_id.warranty
-    #             else:
-    #                 rec.under_warranty_bool = False
-    #             '''
-    #             '''This is newly added on Jun-19-2025 by VIJAYA BHASKAR'''
-    #             rec.under_warranty_bool = rec.project_task_id.warranty
-    #
-    #             '''If Mis use warranty bool then warranty also tick code is added on Oct 17 -2025 '''
-    #
-    #             if rec.under_warranty_bool:
-    #                 if rec.project_task_id.service_warranty_id.misuse_warranty_bool:
-    #                     rec.under_warranty_bool = False
-    #             # if rec.under_warranty_bool == True:
-    #             #     rec.total = 0.0
-    #             # else:
-    #             rec.price_unit = rec.product_id.lst_price
-    #             rec.standard_price = rec.product_id.lst_price
-    #             stock_quant_search = self.env['stock.quant'].search([('product_id', '=', rec.product_id.id),
-    #                                                                  ('location_id', '=',
-    #                                                                   rec.project_task_id.warehouse_id.lot_stock_id.id)],
-    #                                                                 limit=1)
-    #
-    #             rec.on_hand_qty = stock_quant_search.quantity
-    #             if rec.on_hand_qty == 0.0:
-    #                 raise ValidationError(
-    #                     _("This Product '%s' has no Stock.Please Select another one " % rec.product_id.name))
-    #
-    #             '''Overall quantity display added on Aug 20-2025'''
-    #             quanity_search = self.env['stock.quant'].search([('product_id', '=', rec.product_id.id)])
-    #             for quant in quanity_search:
-    #                 quantity += quant.quantity
-    #
-    #             rec.overall_qty = quantity
-    #
-    #             if rec.product_id.taxes_id:
-    #                 rec.vat = rec.product_id.taxes_id[0].amount
-    #             else:
-    #                 rec.vat = 0.0
-    #
-    #             if rec.project_task_id.job_card_state_code == '122':
-    #                 rec.parts_reserved_bool = True
-
+  
     @api.onchange("product_id")
     def _product_line_onchange(self):
         for rec in self:
             quantity = False
             main_warehouse_qty = False
             if rec.product_id:
+                rec.product_description = rec.product_id.name
                 rec.uom_id = rec.product_id.uom_id
                 """ service product is not go to warranty set up"""
                 """ it is working
@@ -13471,46 +13079,11 @@ class ProductLine(models.Model):
 
     """Code Added by Vengatesh On Mar 25 2026"""
 
-    # @api.constrains("price_unit")
-    # def _check_warranty_price_zero(self):
-    #     for rec in self:
-    #         warranty = rec.project_task_id.service_warranty_id
-
-    #         if (
-    #             warranty
-    #             and warranty.amount_required
-    #             and rec.price_unit == 0
-    #             and not rec.under_warranty_bool
-    #         ):
-    #             raise ValidationError(
-    #                 _(
-    #                     "Product '%s' must have a price greater than 0 "
-    #                     "because amount is required."
-    #                 )
-    #                 % rec.product_id.display_name
-    #             )
+   
 
     """ working code """
 
-    # @api.onchange('product_id')
-    # def _product_line_onchange(self):
-    #     for rec in self:
-    #         if rec.product_id:
-    #             rec.uom_id = rec.product_id.uom_id
-    #             ''' service product is not go to warranty set up'''
-    #             if rec.product_id.detailed_type != 'service':
-    #                 rec.under_warranty_bool = rec.project_task_id.warranty
-    #             else:
-    #                 rec.under_warranty_bool = False
-    #             # if rec.under_warranty_bool == True:
-    #             #     rec.total = 0.0
-    #             # else:
-    #             rec.price_unit = rec.product_id.lst_price
-    #             rec.standard_price = rec.product_id.lst_price
-    #             if rec.product_id.taxes_id:
-    #                 rec.vat = rec.product_id.taxes_id[0].amount
-    #             else:
-    #                 rec.vat = 0.0
+   
 
     def _compute_on_hand_qty(self):
         for rec in self:

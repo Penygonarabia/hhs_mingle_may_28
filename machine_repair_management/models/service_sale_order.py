@@ -1789,6 +1789,10 @@ class ServiceSaleOrder(models.Model):
     store=False)
     
     
+    project_related_amc_bool = fields.Boolean(
+    related="job_task_id.project_related_amc_bool",
+    store=False,)
+    
     '''Code Added on June 16 2026 by Vijaya Bhaskar client asked site address similar to address'''
 
     def write(self, vals):
@@ -3216,6 +3220,8 @@ class ServiceSaleOrderLine(models.Model):
         string="Total Selling Price", compute="_compute_total_hour_cost", store=True
     )
     amc_quotation_id = fields.Many2one("pm.service", string="Quotation")
+    
+    product_description = fields.Char(string = "Product Description")
 
     @api.onchange("product_id")
     def _onchange_standard_hours(self):

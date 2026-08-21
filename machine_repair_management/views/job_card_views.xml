@@ -792,6 +792,8 @@
                                                domain="product_id_domain"/>
 
                                         <!-- <field name="product_id" domain="[('stock_quant_ids.location_id', '=', location_id)]" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}" context="{'location': location_id}" /> -->
+                                        
+                                        <field name = "product_description" column_invisible="not parent.project_related_amc_bool"/>
                                         <field name="parts_reserved_bool" column_invisible="0"/>
                                         <field name="main_warehouse_on_hand_qty" readonly="1" force_save="1"/>
                                         <field name="on_hand_qty" column_invisible="0" readonly="1" force_save="1"/>
@@ -2040,7 +2042,8 @@
 
 
                                     <!--   <field name="product_id" domain="[('stock_quant_ids.location_id', '=', location_id)]" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}" context="{'location': location_id}" /> -->
-
+										
+									<field name = "product_description"  column_invisible="not parent.project_related_amc_bool"/> 	
                                     <field name="parts_reserved_bool" column_invisible="0"/>
                                     <field name="main_warehouse_on_hand_qty" readonly="1" force_save="1"/>
 
@@ -2097,7 +2100,8 @@
                                            column_invisible="not parent.project_related_amc_bool"
                                            domain="product_id_domain"/>
                                     <!--  <field name="product_id" domain="[('stock_quant_ids.location_id', '=', location_id)]" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}" context="{'location': location_id}" /> -->
-                                    <field name="parts_reserved_bool" column_invisible="0"/>
+                                    
+                                     <field name = "product_description"  column_invisible="not parent.project_related_amc_bool"/>                                           <field name="parts_reserved_bool" column_invisible="0"/>
                                     <field name="main_warehouse_on_hand_qty" readonly="1" force_save="1"/>
 
                                     <field name="on_hand_qty" invisible="0" readonly="1" force_save="1"/>
@@ -2291,6 +2295,7 @@
                            invisible="not amc_project_bool" domain="product_id_domain"/>
 
                     <!--  <field name="product_id"  options = "{'no_open':True,'no_create_edit':True,'no_create':True}" domain="[('stock_quant_ids.location_id', '=', location_id)]" context="{'location': location_id}"/> -->
+                    <field name = "product_description" invisible="not parent.project_related_amc_bool" />     
                     <field name="parts_reserved_bool" invisible="0"/>
                     <field name="main_warehouse_on_hand_qty" readonly="1" force_save="1"/>
 

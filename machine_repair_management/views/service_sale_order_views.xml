@@ -367,6 +367,7 @@
                             <field name="amc_quotation" invisible="1"/>
                             <field name="quote_created_user_id" invisible="1"/>
                             <field name="quote_created_by" invisible="1"/>
+                             <field name="project_related_amc_bool" invisible="1"/>
                         </group>
                     </group>
 
@@ -430,7 +431,10 @@
                                                column_invisible="not parent.job_task_id"/>
                                         <field name="product_id" domain="[('detailed_type', '=', 'service')]" options = "{'no_open':True,'no_create':True}"
                                                column_invisible="parent.job_task_id"/>
-                                        <field name="description" force_save="1" optional="hide" width="150px"/>
+                                        
+                                        <field name = "product_description" column_invisible="not parent.job_task_id or not parent.project_related_amc_bool"/>
+                                         <field name="description" force_save="1" optional="hide" width="150px" column_invisible = "1"/>
+
                                         <field name="product_qty" width="100px" sum="Total"/>
                                         <field name="no_of_visits_per_year" column_invisible="not parent.amc_quotation"
                                                width="210px"/>

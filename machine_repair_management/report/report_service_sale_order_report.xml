@@ -515,10 +515,24 @@
                                               t-esc="counter"/>
                                     </td>
 
-                                    <td>
+                                    <!-- <td>
                                         <span style="font-size:16px !important;"
                                               t-field="line.product_id.display_name"/>
-                                    </td>
+                                    </td> -->
+                                    
+                                     <td>
+                                    	<t t-if = "line.product_description">
+										    <span style="font-size:16px !important;"
+										          t-esc="'[%s] %s' % (line.product_id.default_code or '', line.product_description or '')"/>
+										</t>
+										<t t-else ="">
+											<span style="font-size:16px !important;"
+                                              t-field="line.product_id.display_name"/>
+										
+										</t>
+										
+									</td>
+                                    
 
                                     <td style="text-align:right">
                                         <span style="font-size:16px !important;"
