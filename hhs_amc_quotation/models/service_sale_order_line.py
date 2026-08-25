@@ -176,6 +176,7 @@ class ServiceSaleOrderLine(models.Model):
                     ('brand_id.name', '=','*')
                     
                 ]
+                brand_pricings = Pricing.search(brand_domain)
     
                 if brand_pricings:
                     # Brand-specific pricing exists
