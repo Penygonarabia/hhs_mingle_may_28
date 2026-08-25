@@ -177,9 +177,17 @@ class ServiceSaleOrderLine(models.Model):
                 else:
                     # No Brand-specific pricing exists
                     # Fall back to Category-only pricing
-                    record.allowed_amc_pricing_ids = Pricing.search(
+                    '''Code Added on August 25 2026 by vijaya bhaskar if not category and brand is not matched then take * brand alone '''
+                    """ record.allowed_amc_pricing_ids = Pricing.search(
                         category_domain
-                    )
+                    )"""
+                    brand_domain = category_domain + [
+                        ('brand_id.name', '=','*'),
+                    ]
+        
+                    brand_pricings = Pricing.search(brand_domain)
+                    
+                    record.allowed_amc_pricing_ids = brand_pricings
     
             else:
                 # No brand → Category is compulsory
@@ -214,7 +222,14 @@ class ServiceSaleOrderLine(models.Model):
     
             # Fallback to Category only
             if not pricings:
+                '''Code Added on August 25 2026 by vijaya bhaskar if not category and brand is not matched then take * brand alone
                 pricings = Pricing.search(category_domain)
+                '''
+                brand_star_domain = category_domain + [
+                ('brand_id.name', '=', '*'),
+                ]
+        
+                pricings = Pricing.search(brand_star_domain)
     
         else:
             # Category only

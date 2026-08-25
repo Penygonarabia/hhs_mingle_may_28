@@ -105,6 +105,23 @@ class AmcPricing(models.Model):
     _sql_constraints = [
         ('name_uniq', 'unique(name)', 'The AMC Pricing template name must be unique!'),
     ]
+    
+    '''Code Added on August 25 2026 when we duplicate it will cause the error'''
+    def copy(self, default=None):
+        self.ensure_one()
+        default = dict(default or {})
+    
+        base_name = self.name
+        copy_name = f"{base_name} (Copy)"
+    
+        count = 1
+        while self.search_count([('name', '=', copy_name)]):
+            count += 1
+            copy_name = f"{base_name} (Copy {count})"
+    
+        default['name'] = copy_name
+    
+        return super().copy(default)
 
     # @api.depends(
     #     'line_ids.total_cost',
