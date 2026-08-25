@@ -2677,9 +2677,21 @@ class ProjectTask(models.Model):
             # ----------------------------
             # AMC Preventive Hide
             # ----------------------------
+            # if (
+            #     rec.project_related_amc_bool
+            #     and rec.maintenance_type == "preventive"
+            #     and "111" in allowed
+            # ):
+            #     allowed = [
+            #         c for c in allowed
+            #         if c != "111"
+            #     ]
+            
+            '''Code Added on August 25 2026 by Vijaya Bhaskar Client Asked if preventive job card  if 111 comes don't show '''
             if (
                 rec.project_related_amc_bool
                 and rec.maintenance_type == "preventive"
+                and rec.job_card_state_code != "110"
                 and "111" in allowed
             ):
                 allowed = [
@@ -2710,13 +2722,32 @@ class ProjectTask(models.Model):
             # -------------------------------------------------
             # REPLACE 124 WITH 107
             # -------------------------------------------------
+            # if (
+            #     rec.job_card_state_code == "110"
+            #     and rec.project_related_amc_bool
+            #     and "124" in allowed
+            # ):
+            #     allowed = [
+            #         "107" if code == "124" else code
+            #         for code in allowed
+            #     ]
+            #
+            #     # Remove duplicates while preserving order
+            #     seen = set()
+            #     allowed = [
+            #         x for x in allowed
+            #         if not (x in seen or seen.add(x))
+            #     ]
+            
+            '''Code Added on August 25 2026 by Vijaya Bhaskar client asked in 110 state if 124 is there it will be redirected to 107 and  111 into 113'''
             if (
                 rec.job_card_state_code == "110"
                 and rec.project_related_amc_bool
-                and "124" in allowed
             ):
                 allowed = [
-                    "107" if code == "124" else code
+                    "107" if code == "124" else
+                    "113" if code == "111" else
+                    code
                     for code in allowed
                 ]
             
