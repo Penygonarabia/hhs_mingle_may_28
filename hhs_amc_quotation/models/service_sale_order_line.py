@@ -243,7 +243,8 @@ class ServiceSaleOrderLine(models.Model):
             pricings = Pricing.search(category_domain)
     
         # Automatically select if exactly one exists
-        if len(pricings) == 1:
+        # if len(pricings) == 1:
+        if pricings:
             self.amc_pricing_id = pricings[0]
         else:
             self.amc_pricing_id = False  
