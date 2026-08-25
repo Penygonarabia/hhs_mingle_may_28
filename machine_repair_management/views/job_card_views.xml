@@ -1149,13 +1149,21 @@
                 <!-- groups="machine_repair_management.group_job_card_back_office_user,machine_repair_management.group_job_card_mobile_user"-->
                 <!-- invisible="quotation_count == 0"/>-->
 
-                <button class="oe_stat_button" icon="fa-pencil-square" name="show_quotation" string="Quotation"
+                <!-- <button class="oe_stat_button" icon="fa-pencil-square" name="show_quotation" string="Quotation"
                         type="object" groups="!machine_repair_management.group_parts_user"
                         invisible="quotation_count == 0"/>
 
                 <button class="oe_stat_button" icon="fa-pencil-square" name="show_quotation" string="Quotation"
-                        type="object" groups="machine_repair_management.group_parts_user" invisible="1"/>
+                        type="object" groups="machine_repair_management.group_parts_user" invisible="1"/> -->
 
+               <button class="oe_stat_button"
+				        icon="fa-pencil-square"
+				        name="show_quotation"
+				        string="Quotation"
+				        type="object"
+				        invisible="not show_quotation_button or quotation_count == 0"
+				        readonly="state_status == True"/>	
+				
                 <!--                <button class="oe_stat_button" icon="fa-pencil-square" name="show_receipt" string="Payment Receipt"-->
                 <!-- type="object"-->
                 <!-- invisible="payment_receipt_count == 0"/>-->
@@ -1185,6 +1193,7 @@
                 <field name="action_status" invisible="1"/>
                 <field name="work_center_group_id" invisible="1"/>
                 <field name="scheduled_uid" invisible="1"/>
+                 <field name = "show_quotation_button" invisible = "1"/>
             </xpath>
 
             <xpath expr="//form/sheet/notebook/page[last()]" position="before">

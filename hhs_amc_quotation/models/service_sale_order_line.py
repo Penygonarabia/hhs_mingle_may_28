@@ -165,11 +165,17 @@ class ServiceSaleOrderLine(models.Model):
     
             # If brand is given, first search Category + Brand
             if record.brand_id:
+                '''Code Added on August 25 2026 by vijaya bhaskar if not category and brand is not matched then take * brand alone.if both matched then brand '*" is also included 
                 brand_domain = category_domain + [
                     ('brand_id', '=', record.brand_id.id),
                 ]
-    
-                brand_pricings = Pricing.search(brand_domain)
+                
+                '''
+                brand_domain = category_domain + ['|',
+                    ('brand_id', '=', record.brand_id.id),
+                    ('brand_id.name', '=','*')
+                    
+                ]
     
                 if brand_pricings:
                     # Brand-specific pricing exists
