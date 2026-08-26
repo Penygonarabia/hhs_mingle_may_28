@@ -12982,9 +12982,10 @@ class ProductLine(models.Model):
                 ]
             )
             if existing_service:
-                raise ValidationError(
-                    "This product has already been added to the Product Consume Part/Service for this job card."
-                )
+                '''Code Added on August 26 2026 by Vijaya Bhaskar Others Product is added many times during contract record'''
+                if not rec.amc_project_bool:
+                    raise ValidationError("This product has already been added to the Product Consume Part/Service for this job card."
+                    )
 
   
     @api.onchange("product_id")
