@@ -93,6 +93,92 @@ export function truncateLabel(text, maxWidth, fontSize = 10) {
   return text.slice(0, Math.max(1, maxChars - 1)) + '…';
 }
 
+// Character-based truncation, next to truncateLabel's pixel-based one. A
+// caption cut to a pixel width changes length as the chart resizes; cut to a
+// character count it is the same everywhere, which is what makes a column of
+// captions line up. The ellipsis is one character, so a limit of 25 yields at
+// most 25 characters, not 26.
+export function truncateChars(text, maxChars) {
+  if (!text || text.length <= maxChars) return text;
+  return text.slice(0, Math.max(1, maxChars - 1)) + '…';
+}
+
+// Font size and side padding the category captions are laid out with — the
+// two numbers that decide how much of a caption fits inside one group slot.
+// Named because the truncation maths and the SVG have to agree on them.
+const CAT_LABEL_FONT = 10;
+const CAT_LABEL_PAD = 10;
+
+function escapeAttr(text) {
+  return String(text ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+// Shrink any category caption still wider than its slot, one character at a
+// time, until it fits — then mark it for the hover tooltip so the full text
+// stays reachable. Runs against the real rendered glyphs (getComputedTextLength),
+// so it is correct for any font, weight or mix of upper and lower case.
+export function fitCaptionsToSlot(el, maxWidth) {
+  if (!(maxWidth > 0)) return;
+  // Category captions, not axis ticks: both carry class "axis-label", and what
+  // separates them is that a caption emits a <title> holding its full text.
+  // Selecting on that rather than on data-code lets this serve the older
+  // dashboards too, whose captions carry no data-code.
+  el.querySelectorAll('text.axis-label').forEach(node => {
+    const titleEl = node.querySelector('title');
+    if (!titleEl) return;
+    const full = titleEl.textContent;
+    const textNode = node.lastChild;
+    if (!textNode || textNode.nodeType !== 3) return;
+    if (node.getComputedTextLength() > maxWidth) {
+      let body = textNode.nodeValue.endsWith('…')
+        ? textNode.nodeValue.slice(0, -1)
+        : textNode.nodeValue;
+      while (body.length > 1) {
+        body = body.slice(0, -1);
+        textNode.nodeValue = body + '…';
+        if (node.getComputedTextLength() <= maxWidth) break;
+      }
+    }
+    // Marked on whatever is not showing its whole caption — including one this
+    // pass did not touch because the caller had already shortened it. The
+    // tooltip is for the reader, who cannot tell which pass did the cutting.
+    if (textNode.nodeValue !== full) {
+      node.setAttribute('data-cap-tip', full);
+    }
+  });
+}
+
+// Marks EVERY category caption for the tooltip, cut or not. fitCaptionsToSlot
+// only marks what it had to shorten, which is the right default for a board
+// whose captions normally read in full; the sales boards want the tooltip
+// everywhere, because their categories share long prefixes and a caption that
+// merely fits is still worth confirming. Call it between fitCaptionsToSlot and
+// attachCaptionTooltips. A caption is the axis-label that carries a <title>,
+// the same test fitCaptionsToSlot uses, so y-axis ticks are never touched.
+export function markAllCaptionsForTooltip(el) {
+  el.querySelectorAll('text.axis-label > title').forEach(titleEl => {
+    // A blank caption is skipped rather than marked with '': some categories
+    // arrive with no name at all, and marking one popped an empty tooltip box
+    // on hover -- worse than the nothing it replaced.
+    if (titleEl.textContent) {
+      titleEl.parentNode.setAttribute('data-cap-tip', titleEl.textContent);
+    }
+  });
+}
+
+// A truncated category caption shows its full text on hover, in the same
+// styled tooltip the bars use. The <title> element is still emitted alongside
+// — that is the browser's own tooltip and needs no JS — but it waits about a
+// second before appearing, which is too slow to be the answer to "what does
+// that cut-off label say". Only truncated captions carry the attribute, so a
+// caption that already reads in full gets no tooltip and no listeners.
+export function attachCaptionTooltips(el) {
+  el.querySelectorAll('[data-cap-tip]').forEach(node => {
+    node.addEventListener('mousemove', evt => showTip(evt, `<b>${node.getAttribute('data-cap-tip')}</b>`));
+    node.addEventListener('mouseleave', hideTip);
+  });
+}
+
 export function attachBarTooltips(el) {
   el.querySelectorAll('rect[data-tip]').forEach(rect => {
     rect.addEventListener('mousemove', evt => {
@@ -188,18 +274,58 @@ export function axisTickLabel(val, valueFmt) {
 // Also used for dual-measure bar items (e.g. Estimated vs Actual Hours),
 // which pass seriesKeys=['value', 'value2'].
 // ---------------------------------------------------------------------
-export function groupedBarChart(el, data, seriesKeys, seriesColors, seriesLabels, onCategoryClick, valueFmt = fmt) {
+// The defaults below ARE the house chart design — every PBI board is meant to
+// look the same, so the tuned values live here rather than being passed in by
+// one board. opts stays for the rare chart that genuinely needs to differ:
+//   perGroup       min horizontal room per category. Widen it to stop the
+//                  value labels above adjacent bars colliding.
+//   barGap         gap between the bars WITHIN one category. Narrow it to
+//                  read a Budget/BIDATA pair as one unit rather than two.
+//   groupFill      share of a category's slot the bars may occupy (default
+//                  0.9); the remainder is the gap to the next set. Lower it to
+//                  keep sets visibly apart once maxBarW lets the bars grow.
+//   maxBarW        cap on the width of one bar. Raise it when the chart is
+//                  meant to fill a wide container: the spare width then goes
+//                  into the bars rather than into the gaps between sets.
+//   maxGroupW      cap on the width one category may occupy. Without it the
+//                  chart always stretches to fill its container, so with few
+//                  categories the sets drift far apart and perGroup — a
+//                  MINIMUM — never binds. Capping keeps the spacing between
+//                  sets the same whether a breakdown returns 4 groups or 40,
+//                  at the cost of the chart not filling a wide card.
+//   maxLabelChars  truncate the category caption to this many characters
+//                  (with an ellipsis) instead of to the pixel width of its
+//                  slot. The full caption stays in the <title> either way.
+export function groupedBarChart(el, data, seriesKeys, seriesColors, seriesLabels, onCategoryClick, valueFmt = fmt, opts = {}) {
   seriesLabels = seriesLabels.map(t);
-  const perGroup = 180;
-  const W = Math.max(el.clientWidth || 480, data.length * perGroup), H = 230;
+  const perGroup = opts.perGroup ?? 100;
+  // perGroup is a floor (scroll rather than crush); maxGroupW is a ceiling
+  // (stop stretching rather than fill). The floor wins if the two conflict.
+  const natural = Math.max(el.clientWidth || 480, data.length * perGroup);
+  const W = opts.maxGroupW
+    ? Math.max(Math.min(natural, data.length * opts.maxGroupW), data.length * perGroup)
+    : natural;
+  const H = 230;
   const marginL = 54, marginR = 10, marginT = 10, marginB = 46;
   const plotW = W - marginL - marginR, plotH = H - marginT - marginB;
   const maxRaw = Math.max(1, ...data.flatMap(d => seriesKeys.map(k => d[k] || 0)));
   const tickVals = niceAxisTicks(maxRaw, valueFmt);
   const maxVal = tickVals[tickVals.length - 1];
   const groupW = plotW / data.length;
-  const gap = 6;
-  const barW = Math.min(32, (groupW - gap * (seriesKeys.length - 1)) / seriesKeys.length * 0.9);
+  const gap = opts.barGap ?? 9;
+  // maxBarW caps how wide a single bar may grow. It matters whenever the chart
+  // fills a container wider than its categories need: with a low cap the spare
+  // width all becomes gap and the sets drift apart, whereas letting the bars
+  // grow spends it on the data instead. 32 is the historic value and stays the
+  // default, so boards that do not pass it are unchanged.
+  // groupFill is the share of its slot a set of bars may occupy; what is left
+  // over becomes the gap to the next set. It has to be tunable alongside
+  // maxBarW: once the bars are allowed to grow into a filled width, 0.9 leaves
+  // so little over that the space between two SETS collapses to the space
+  // between the two bars inside one, and the grouping stops reading at all.
+  const groupFill = opts.groupFill ?? 0.73;
+  const barW = Math.min(opts.maxBarW ?? 120,
+                        (groupW - gap * (seriesKeys.length - 1)) / seriesKeys.length * groupFill);
   const clickable = !!onCategoryClick;
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" width="${W}px" height="${H}">`;
@@ -220,12 +346,28 @@ export function groupedBarChart(el, data, seriesKeys, seriesColors, seriesLabels
       svg += `<rect data-code="${d.code}" data-tip="${d.label}||${seriesLabels[si]}||${val}" rx="2" ry="2" x="${x}" y="${y}" width="${barW}" height="${Math.max(barH, 1)}" fill="${seriesColors[si]}" style="${clickable ? 'cursor:pointer' : ''}"/>`;
       svg += `<text class="bar-value" x="${x + barW / 2}" y="${y - 3}" text-anchor="middle">${valueFmt(val)}</text>`;
     });
-    const label = truncateLabel(d.label, groupW - 8);
-    svg += `<text class="axis-label${clickable ? ' cat-label-clickable' : ''}" data-code="${d.code}" x="${marginL + gi * groupW + groupW / 2}" y="${H - 24}" text-anchor="middle"><title>${d.label}</title>${label}</text>`;
+    // The caption's boundary is its own category slot. maxLabelChars alone
+    // could not enforce that: it is a flat character count, so at a narrow
+    // groupW a 25-character caption drew ~150px wide into a ~130px slot and
+    // ran under its neighbours. Fit to the slot first, then apply
+    // maxLabelChars as an upper bound, so a caption never leaves its group's
+    // boundary however wide the chart gets.
+    const slotChars = Math.max(1, Math.floor((groupW - CAT_LABEL_PAD) / (CAT_LABEL_FONT * 0.6)));
+    const label = truncateChars(d.label, Math.min(opts.maxLabelChars ?? slotChars, slotChars));
+    const truncated = label !== d.label;
+    svg += `<text class="axis-label${clickable ? ' cat-label-clickable' : ''}" data-code="${d.code}"${truncated ? ` data-cap-tip="${escapeAttr(d.label)}"` : ''} x="${marginL + gi * groupW + groupW / 2}" y="${H - 24}" text-anchor="middle"><title>${d.label}</title>${label}</text>`;
   });
   svg += `</svg>`;
   el.innerHTML = legendHtml(seriesLabels, seriesColors) + svg;
+  // The character estimate above gets a caption close to its slot; this makes
+  // it exact. Estimating by character count under-counts uppercase — "WINDOW
+  // DELUXE IN…" measured 117px in a 114px slot — and no single factor is right
+  // for both "PORTABLE AC" and "Concealed". Measuring the rendered text is the
+  // only way to actually guarantee the boundary, and it can only happen once
+  // the SVG is in the DOM.
+  fitCaptionsToSlot(el, groupW - CAT_LABEL_PAD);
   attachBarTooltips(el);
+  attachCaptionTooltips(el);
   attachLegendScroll(el);
   if (onCategoryClick) {
     el.querySelectorAll('[data-code]').forEach(elm => {

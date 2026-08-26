@@ -776,6 +776,91 @@ CONTRACTS_FIELD_MAP = {
 }
 
 
+# ---------------------------------------------------------------------
+# budget_compare CTE — backs "PBI Dashboards > Budget Dashboards > Budget
+# Analysis". One row per budget cell per month, carrying OUR budget and
+# BIDATA's budget as two separate measures so a single chart can draw both
+# series (the same shape sales_comparison uses for target vs actual).
+#
+# UNION ALL rather than a join between the two views. Joining them on the
+# dimension tuple would need every one of a dozen nullable columns to
+# match, and a row that failed to pair would vanish silently from BOTH
+# series — which is the one failure a reconciliation screen must not have.
+# Unioning, each side contributes its own measure and zero for the other,
+# so SUM() per dimension gives both totals and nothing can be dropped.
+#
+# budget_line_id is the terminal drill target (sales.budget.line). BIDATA
+# rows have no Odoo record behind them and carry 0, an id that matches
+# nothing — so drilling to the bottom lands on our budget lines, which are
+# the only records there are to open.
+#
+# Scoped by MONTH, not by day: budget has no dates, only (year, month), so
+# the period string is compared the way sales_comparison compares its own.
+# ---------------------------------------------------------------------
+_BUDGET_COMPARE_CTE_SQL = """
+    budget_compare AS (
+        SELECT
+            COALESCE(b.budget_line_id, 0)      AS budget_line_id,
+            b.year                             AS year,
+            (b.year || '-' || b.month)         AS period,
+            b.region_id                        AS region_id,
+            b.city_id                          AS city_id,
+            b.partner_classification_id        AS partner_classification_id,
+            b.salestype_group_id               AS salestype_group_id,
+            b.main_category_id                 AS main_category_id,
+            b.sub_category_id                  AS sub_category_id,
+            b.product_group_id                 AS group_id,
+            b.product_subgroup_id              AS subgroup_id,
+            b.franchise_code                   AS franchise_code,
+            b.customer_code                    AS customer_code,
+            b.salesman_code                    AS salesman_code,
+            COALESCE(b.budget_qty, 0)          AS budget_qty,
+            COALESCE(b.budget_amount, 0)       AS budget_amount,
+            0::double precision                AS bidata_qty,
+            0::double precision                AS bidata_amount
+        FROM v_sales_budget_month_edit b
+        WHERE (b.year || '-' || b.month) BETWEEN
+            to_char(%(date_from)s::date, 'YYYY-MM') AND to_char(%(date_to)s::date, 'YYYY-MM')
+        UNION ALL
+        SELECT
+            0                                  AS budget_line_id,
+            d.year                             AS year,
+            (d.year || '-' || d.month)         AS period,
+            d.region_id, d.city_id, d.partner_classification_id, d.salestype_group_id,
+            d.main_category_id, d.sub_category_id,
+            d.product_group_id                 AS group_id,
+            d.product_subgroup_id              AS subgroup_id,
+            d.franchise_code, d.customer_code, d.salesman_code,
+            0::double precision                AS budget_qty,
+            0::double precision                AS budget_amount,
+            COALESCE(d.budget_qty, 0)          AS bidata_qty,
+            COALESCE(d.budget_amount, 0)       AS bidata_amount
+        FROM v_bidata_budget_month d
+        WHERE (d.year || '-' || d.month) BETWEEN
+            to_char(%(date_from)s::date, 'YYYY-MM') AND to_char(%(date_to)s::date, 'YYYY-MM')
+    )
+"""
+
+BUDGET_COMPARE_FIELD_MAP = {
+    "budget_line_id": "budget_line_id",
+    "year": "year", "period": "period",
+    # region_id / city_id / group_id / subgroup_id are named to match the
+    # keys _LABEL_LOOKUP already carries (res_region, res_city, and
+    # product_category twice), so they render their names with no new
+    # lookup entry.
+    "region_id": "region_id", "city_id": "city_id",
+    "group_id": "group_id", "subgroup_id": "subgroup_id",
+    "partner_classification_id": "partner_classification_id",
+    "salestype_group_id": "salestype_group_id",
+    "main_category_id": "main_category_id",
+    "sub_category_id": "sub_category_id",
+    "franchise_code": "franchise_code",
+    "customer_code": "customer_code", "salesman_code": "salesman_code",
+    "budget_qty": "budget_qty", "budget_amount": "budget_amount",
+    "bidata_qty": "bidata_qty", "bidata_amount": "bidata_amount",
+}
+
+
 _SOURCE_CTE = {
     "jobcards": (_JOBCARDS_CTE_SQL, JOBCARDS_FIELD_MAP, "jobcards"),
     "usergroup": (_USERGROUP_CTE_SQL, USERGROUP_FIELD_MAP, "usergroup"),
@@ -784,6 +869,7 @@ _SOURCE_CTE = {
     "promoter_sales": (_PROMOTER_SALES_CTE_SQL, PROMOTER_SALES_FIELD_MAP, "promoter_sales"),
     "sales_comparison": (_SALES_COMPARISON_CTE_SQL, SALES_COMPARISON_FIELD_MAP, "sales_comparison"),
     "contracts": (_CONTRACTS_CTE_SQL, CONTRACTS_FIELD_MAP, "contracts"),
+    "budget_compare": (_BUDGET_COMPARE_CTE_SQL, BUDGET_COMPARE_FIELD_MAP, "budget_compare"),
 }
 
 # Terminal drill target's id column, by source — defaults to "task_id"
@@ -796,6 +882,7 @@ _TERMINAL_ID_COL = {
     "promoter_sales": "sales_id",
     "sales_comparison": "target_id",
     "contracts": "contract_id",
+    "budget_compare": "budget_line_id",
 }
 
 
@@ -1073,6 +1160,11 @@ _LABEL_LOOKUP = {
     # customer (res.partner.name, plain varchar, not translate=True).
     "sales_person_user_id": "res_users_partner_name",
     "partner_id": ("res_partner", "name"),
+    # budget_compare — the four dimension masters dashboard_groups owns.
+    "partner_classification_id": ("partner_classification", "complete_name"),
+    "salestype_group_id": ("salestypes_group", "salgrp_name"),
+    "main_category_id": ("main_category", "maincat_name"),
+    "sub_category_id": ("sub_category", "subcat_name"),
 }
 
 # Deliberately nested rather than the more obvious single
