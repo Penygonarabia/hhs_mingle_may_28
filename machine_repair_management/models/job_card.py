@@ -12469,7 +12469,7 @@ class ProductLine(models.Model):
         store=True,
     )
 
-    amc_project_bool = fields.Boolean("AMC Project", default=False)
+    amc_project_bool = fields.Boolean("AMC Project", related = "project_task_id.project_related_amc_bool")
 
     return_damage_to_warehouse = fields.Boolean(
         string="Return Damaged Item To Warehouse", default=False
