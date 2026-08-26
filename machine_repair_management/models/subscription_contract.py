@@ -750,7 +750,8 @@ class SubscriptionContracts(models.Model):
                             "spare_parts_selling_price": line.spare_parts_selling_price,
                             "total_selling_price": line.total_selling_price,
                             "per_unit_selling_price": line.per_unit_selling_price,
-                             'product_sub_category_id' : line.product_sub_category_id.id,
+                             'brand_id' : line.brand_id.id,
+                            'product_sub_category_id' : line.product_sub_category_id.id,
                             # 'analytic_account_id': self.amc_quotation_id.analytic_account_id.id,
                         },
                     )
