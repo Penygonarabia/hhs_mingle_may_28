@@ -2756,7 +2756,9 @@ class ProjectTask(models.Model):
                 allowed = [
                     x for x in allowed
                     if not (x in seen or seen.add(x))
-                ]    
+                ]
+                '''Code Added on August 26 2026 Vijaya bhaskar because we skip the warranty verification status '''
+                rec.warranty_verfication_status_check = True    
                 
                 
     
