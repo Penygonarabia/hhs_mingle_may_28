@@ -103,6 +103,7 @@ class ReportAMCQuotation(models.AbstractModel):
                     JOIN product_product pp ON pp.id = ps.service_unit_type_id
                     WHERE ps.service_unit_type_id = %s
                     AND ps.service_type_id = %s
+                    AND psl.active = 'true'
                     ORDER BY
                         ps.sort_order_header,
                         CASE
@@ -550,7 +551,8 @@ class ReportAMCQuotation(models.AbstractModel):
             'contact_no': rec.mobile if rec and rec.mobile else '',
             'scope_of_work': scopes_of_work,
             'scope_work': (rec.scope_of_work or '').replace('\n', '<br/>') if rec else '',
-            'customer_name': rec.customer_name,
+            # 'customer_name': rec.customer_name,
+            'customer_name': rec.partner_name,
             'payment_advance': payments,
             # 'payment_date': payment_date,
             # 'amount':rec.amount,
