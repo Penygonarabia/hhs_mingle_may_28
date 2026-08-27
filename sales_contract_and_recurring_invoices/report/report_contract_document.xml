@@ -1579,7 +1579,8 @@ td {
 				<!-- Brand -->
 				<td style="width:13%; padding:8px; text-align:center;">
 				    <strong>
-				        <t t-esc="line.brand_category_id.name or ''"/>
+				     <t t-esc="line.brand_id.name or ''"/>
+				        <!-- <t t-esc="line.brand_category_id.name or ''"/> -->
 				    </strong>
 				</td>
 				
