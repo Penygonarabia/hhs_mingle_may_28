@@ -1964,7 +1964,9 @@ class MachineRepairSupport(models.Model):
             # rec.product_category = rec.asset_id.brand_id.amc_product_category_id.id or False
            
             '''Code Added on August 19 2026 by Vijaya bhaskar product category based on the equipment tag no Service Unit type'''
-            rec.product_category = rec.asset_id.service_products_code_id.product_category_id.id or False
+            # rec.product_category = rec.asset_id.service_products_code_id.product_category_id.id or False
+            rec.product_category = rec.asset_id.brand_id.amc_product_category_id.id or False
+
             '''Code Added on May 23 2026 by Vijaya Bhaskar'''
             rec.used_location_equipment = rec.asset_id.location or False
             rec.product_id = rec.asset_id.service_products_code_id.id or False

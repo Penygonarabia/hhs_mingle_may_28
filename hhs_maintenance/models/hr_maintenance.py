@@ -592,9 +592,9 @@ class MaintenanceEquipment(models.Model):
                         'customer_identification_number': rec.contract_id.customer_identification_number or False,
                         'building_number': rec.contract_id.building_number or False,
                         'plot_identification': rec.contract_id.plot_identification or False,
-                        # 'product_category': rec.brand_id.amc_product_category_id.id or False,
+                         'product_category': rec.brand_id.amc_product_category_id.id or False,
                        
-                         'product_category': rec.service_products_code_id.product_category_id.id or False,
+                         # 'product_category': rec.service_products_code_id.product_category_id.id or False,
                         'used_location_equipment': rec.location or False,
                         'brand_id': rec.brand_id.id or False,
                         'items_from_own_company_bool': rec.items_from_own_company_bool or False,
@@ -800,8 +800,8 @@ class MaintenanceEquipment(models.Model):
                 'customer_identification_number': rec.contract_id.customer_identification_number or False,
                 'building_number': rec.contract_id.building_number or False,
                 'plot_identification': rec.contract_id.plot_identification or False,
-                # 'product_category': rec.brand_id.amc_product_category_id.id or False,
-                 'product_category': rec.service_products_code_id.product_category_id.id or False,
+                 'product_category': rec.brand_id.amc_product_category_id.id or False,
+                 # 'product_category': rec.service_products_code_id.product_category_id.id or False,
                 
                 'used_location_equipment' :rec.location or False,
                 'brand_id' : rec.brand_id.id or False,
