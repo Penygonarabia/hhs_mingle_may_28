@@ -25,6 +25,7 @@ from collections import OrderedDict
 import ast
 import copy
 from datetime import date
+from markupsafe import Markup, escape
 
 _logger = logging.getLogger(__name__)
 
