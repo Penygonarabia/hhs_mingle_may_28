@@ -1118,8 +1118,7 @@
                 <field name="preventive_completed" invisible="1"/>
                 <field name="corrective_completed" invisible="1"/>
                	<field name = "available_manufacturing_product_ids" invisible = "1" widget = "many2many_tags"/>	
-                
-
+                <field name = "warranty_expiry_notification_sent" invisible ="1"/> 
 
             </xpath>
 

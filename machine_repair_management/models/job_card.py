@@ -4671,6 +4671,16 @@ class ProjectTask(models.Model):
         # res = self._handle_post_write_actions(vals, res)
         for rec in self:
             res = rec._handle_post_write_actions(vals, res)
+            
+        '''Code Added on August 28 2026 by Vijaya Bhaskar Client Asked notification send to technician regarding Supervisor added reason for the text'''
+        
+        if (
+            "text_warranty_expiry" in vals
+            and vals.get("text_warranty_expiry")
+           
+        ):
+            self._create_warranty_expiry_date_notification()
+    
 
         return res
 
@@ -9348,179 +9358,77 @@ class ProjectTask(models.Model):
                                 raise ValidationError(
                                     f"Your Warranty has expired more than {days} day(s) ago!"
                                 )
+                                
+    '''Code Added on August 28 2026 by Vijaya Bhaskar Client Asked notification send to technician regarding Supervisor added reason for the text'''
+    
+    warranty_expiry_notification_sent = fields.Boolean(
+    string="Warranty Expiry Notification Sent",
+    default=False,
+    )                        
+    
+    
+    def _create_warranty_expiry_date_notification(self):
+        
+        for rec in self:
+            if not rec.text_warranty_expiry:
+                continue
+            
+            if not rec.team_id:
+                continue
+            
+            technician_user = rec.team_id.leader_id
+            
+            if not technician_user.partner_id:
+                continue
+            
+            odoo_bot = self.env.user.partner_id
+            
+            if not odoo_bot:
+                continue
+            
+            
+            channel_name = f"{odoo_bot.name},{technician_user.name}"
+            
+            channel = self.env['discuss.channel'].search([
+                    
+                    ('name','ilike',channel_name),
+                    ('channel_type','=','chat')
+                
+                
+                
+                ],limit=1)
+            
+            if not channel:
+                channel = self.env['discuss.channel'].create(
+                    {  
+                   'name' : channel_name,
+                   'channel_type':'chat',
+                   'channel_partner_ids':[(4,technician_user.partner_id.id)]
+                   
+                   }
+                   
+                   )
+                
+            message_body = Markup(
+                f"<b>Warranty Expiry Notification</b><br/><br/>"
+                f"Job Card <b>{escape(rec.name)}</b> has an expired warranty "
+                f"and the supervisor has allowed the unit to continue service.<br/><br/>"
+                f"<b>Reason:</b> {escape(rec.text_warranty_expiry)}"
+            )
+                        
+            
+            channel.message_post(
+                body = message_body,
+                subject = "Warranty Expiry Notification",
+                author_id = odoo_bot.id,
+                message_type="notification",
+                subtype_xmlid="mail.mt_comment",
+                
+                ) 
+            
+            rec.warranty_expiry_notification_sent = True
+                                  
 
-
-            # else:
-            #     if rec.warranty_expiry_date:
-            #         if rec.warranty_expiry_date < fields.Date.today():
-            #             return {
-            #                 "warning": {
-            #                     "title": "Warranty Expired",
-            #                     "message": "Your Warranty has expired more than %s days ago"
-            #                     % (fields.Date.today() - rec.warranty_expiry_date).days,
-            #                 }
-            #             }
-
-    # @api.onchange(
-    #     "purchase_date",
-    #     "dealer_id",
-    #     "date_pick_purchase",
-    #     "month_pick_purchase",
-    #     "year_pick_purchase",
-    # )
-    # def _compute_warranty_expiry(self):
-    #     # param = (
-    #     #     self.env["ir.config_parameter"]
-    #     #     .sudo()
-    #     #     .get_param("machine_repair_management.warranty_expiry_enable")
-    #     # )
-    #     has_access = self.env.user.has_group(
-    #         "machine_repair_management.group_job_card_warranty_expired"
-    #     )
-    #
-    #     for rec in self:
-    #         rec.warranty_expiry_date = False
-    #
-    #         if rec.service_warranty_id.warranty_applicable_bool:
-    #             if rec.purchase_date and rec.product_category_id:
-    #
-    #                 if rec.product_category_id.warranty_period_combo == "days":
-    #                     rec.warranty_expiry_date = rec.purchase_date + timedelta(
-    #                         days=rec.product_category_id.warranty_period
-    #                     )
-    #
-    #                 elif rec.product_category_id.warranty_period_combo == "months":
-    #                     rec.warranty_expiry_date = rec.purchase_date + relativedelta(
-    #                         months=rec.product_category_id.warranty_period
-    #                     )
-    #
-    #                 elif rec.product_category_id.warranty_period_combo == "years":
-    #                     rec.warranty_expiry_date = (
-    #                         rec.purchase_date
-    #                         + relativedelta(
-    #                             years=rec.product_category_id.warranty_period
-    #                         )
-    #                         # + timedelta(days=7)
-    #                     )
-    #
-    #         #  Validation ONLY if config enabled
-    #         # if not has_access:
-    #         if rec.security_warranty_expiry and not rec.text_warranty_expiry:
-    #             raise ValidationError(
-    #                 "Please enter the warranty expiry reason/details."
-    #             )
-    #
-    #         if not rec.security_warranty_expiry:
-    #             if rec.warranty_expiry_date:
-    #                 if (
-    #                     rec.warranty_expiry_date + relativedelta(days=7)
-    #                     < fields.Date.today()
-    #                 ):
-    #                     days = (
-    #                         fields.Date.today()
-    #                         - (rec.warranty_expiry_date + relativedelta(days=7))
-    #                     ).days
-    #
-    #                     raise ValidationError(
-    #                         f"Your Warranty has expired more than {days} day(s) ago!"
-    #                     )
-    #
-    #         # else:
-    #         #     if rec.warranty_expiry_date:
-    #         #         if rec.warranty_expiry_date < fields.Date.today():
-    #         #             return {
-    #         #                 "warning": {
-    #         #                     "title": "Warranty Expired",
-    #         #                     "message": "Your Warranty has expired more than %s days ago"
-    #         #                     % (fields.Date.today() - rec.warranty_expiry_date).days,
-    #         #                 }
-    #         #             }
-
-    # def _compute_warranty_expiry(self):
-    #     param = (
-    #         self.env["ir.config_parameter"]
-    #         .sudo()
-    #         .get_param("machine_repair_management.warranty_expiry_enable")
-    #     )
-    #
-    #     for rec in self:
-    #         rec.warranty_expiry_date = False
-    #
-    #         if rec.service_warranty_id.warranty_applicable_bool:
-    #             if rec.purchase_date and rec.product_category_id:
-    #
-    #                 if rec.product_category_id.warranty_period_combo == "days":
-    #                     rec.warranty_expiry_date = rec.purchase_date + timedelta(
-    #                         days=rec.product_category_id.warranty_period
-    #                     )
-    #
-    #                 elif rec.product_category_id.warranty_period_combo == "months":
-    #                     rec.warranty_expiry_date = rec.purchase_date + relativedelta(
-    #                         months=rec.product_category_id.warranty_period
-    #                     )
-    #
-    #                 elif rec.product_category_id.warranty_period_combo == "years":
-    #                     rec.warranty_expiry_date = (
-    #                         rec.purchase_date
-    #                         + relativedelta(
-    #                             years=rec.product_category_id.warranty_period
-    #                         )
-    #                         # + timedelta(days=7)
-    #                     )
-    #
-    #         #  Validation ONLY if config enabled
-    #         if param == "True":
-    #             if rec.warranty_expiry_date:
-    #                 if (
-    #                     rec.warranty_expiry_date + relativedelta(days=7)
-    #                     < fields.Date.today()
-    #                 ):
-    #
-    #                     days = (
-    #                         fields.Date.today()
-    #                         - (rec.warranty_expiry_date + relativedelta(days=7))
-    #                     ).days
-    #
-    #                     raise ValidationError(
-    #                         f"Your Warranty has expired more than {days} day(s) ago!"
-    #                     )
-    #
-    #         else:
-    #             if rec.warranty_expiry_date:
-    #                 if rec.warranty_expiry_date < fields.Date.today():
-    #                     return {
-    #                         "warning": {
-    #                             "title": "Warranty Expired",
-    #                             "message": "Your Warranty has expired more than %s days ago"
-    #                             % (fields.Date.today() - rec.warranty_expiry_date).days,
-    #                         }
-    #                     }
-
-    # @api.constrains('product_line_ids', 'job_card_state_code')
-    # def _check_parts_ready(self):
-    #     for rec in self:
-    #         if rec.job_card_state_code in ('122', '126'):
-    #             if rec.product_line_ids:
-    #                 # for line in rec.product_line_ids:
-    #                 #     if not line.parts_reserved_bool:
-    #                 #         raise ValidationError("Product %s  is not reserved with Product Consume Parts/Services")
-    #                 #
-    #                 for line in rec.product_line_ids:
-    #                     if line.product_id:
-    #                         if not line.parts_reserved_bool:
-    #                             raise ValidationError("Please check all the Products should be Reserved.This Product is not reserved")
-    #                     if line.on_hand_qty == 0.0:
-    #                         raise ValidationError("Please Stock is not available %s.Please Contact Administrator" % line.product_id.display_name)
-    #
-    #             if not rec.product_line_ids:
-    #                 raise ValidationError("Please give any one of the Product in the product consume Part/services")
-    #
-    #         # if rec.job_card_state_code == '126':
-    #         #     if rec.product_line_ids:
-    #         #         if self.inspection_charges_bool and self.inspection_charges_amount > 0:
-    #         #             if not any(line.product_id and line.product_id.service_type_bool for line in rec.product_line_ids):
-    #         #                 raise ValidationError("Please enter service charge amount in the product line")
-    #         #
 
     # # currently working but commented by Vijaya bhaskar on Jun 02-2025 due to not required for the invoice genrated automatically not based on the location
 
