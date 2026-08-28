@@ -6,3 +6,16 @@
 .pm_radio_inline .o_radio_item label {
   margin-right: 10px;
 }
+
+
+.manufacturing_country_center {
+    width: 100%;
+    text-align: center !important;
+}
+
+.manufacturing_country_center .o_field_radio,
+.manufacturing_country_center .o_radio,
+.manufacturing_country_center .o_horizontal {
+    justify-content: center !important;
+    text-align: center !important;
+}
