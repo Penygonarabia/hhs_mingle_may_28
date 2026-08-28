@@ -5720,6 +5720,7 @@ class ProjectTask(models.Model):
                             # 'vat': vat_amount if not record.service_warranty_id.warranty_applicable_bool else 0.0,
                             "on_hand_qty": on_hand_qty,
                             "overall_qty": overall_qty,
+                            "product_description" : product.name,
                             # 'parts_reserved_bool': parts_reserved_bool,
                         }
                         if service_lines:
