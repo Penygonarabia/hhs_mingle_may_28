@@ -9028,12 +9028,12 @@ class ProjectTask(models.Model):
             for field_name in ["planned_date_begin", "planned_date_end"]:
                 field_date = getattr(rec, field_name)
                 work_day = field_date.weekday()
-                if work_day not in working_day:
-                    """Added on Dec 15 HHS Client Asked Saturday also technician want to assign but RTAT hours need not calculate"""
-                    if not work_day == 5:
-                        raise ValidationError(
-                            "Date is not comes under Company Working Day"
-                        )
+                # if work_day not in working_day:
+                #     """Added on Dec 15 HHS Client Asked Saturday also technician want to assign but RTAT hours need not calculate"""
+                #     if not work_day == 5:
+                #         raise ValidationError(
+                #             "Date is not comes under Company Working Day"
+                #         )
             leaves_search = self.env["resource.calendar.leaves"].search(
                 [
                     ("calendar_id", "=", calendar.id),
