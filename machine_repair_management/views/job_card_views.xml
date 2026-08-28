@@ -197,87 +197,74 @@
                             <div class="question">Warranty Verification</div>
                             <div class="list">
                                 <group groups="machine_repair_management.group_job_card_mobile_user, machine_repair_management.group_job_card_back_office_user">
-
+                                    
                                     <group>
-                                        <field name="service_warranty_id"
-                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True"
-                                               options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}"/>
-                                        <field name="purchase_invoice_no"
-                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True"
-                                               invisible="warranty == False" required="warranty == True"/>
-                                        <!--                                        <field name = "purchase_date" readonly = "job_card_state_code in ('124','126') or technician_accepted_status_check == True "-->
-                                        <!--                                        invisible = "warranty == False"-->
-                                        <!--                                        required = "warranty == True"-->
-                                        <!--                                        />-->
-                                        <div style="font-weight: bold;"
-                                             readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
-                                             invisible="warranty == False">Purchase Date
-                                        </div>
+                                     	<field name = "service_warranty_id" readonly = "job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+	                                         options="{'no_quick_create': True, 'no_create_edit': True,'no_create': True, 'no_open': True}"
+	                                         />
+                                        <field name = "purchase_invoice_no" readonly = "job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+	                                        invisible = "warranty == False"
+	                                        required = "warranty == True"
+                                        />
+                                     <!--   <field name = "purchase_date" readonly = "job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True "
+                                        invisible = "warranty == False"
+                                        required = "warranty == True"
+                                        />-->
+                                        
+                                       <div style="font-weight: bold;" readonly = "job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+                                        invisible = "warranty == False">Purchase Date</div>
+                                        
+                                        
                                         <div class="o_row">
-                                            <field name="date_pick_purchase" class="oe_inline"
-                                                   readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
-                                                   invisible="warranty == False"/>
-                                            <field name="month_pick_purchase" class="oe_inline"
-                                                   readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
-                                                   invisible="warranty == False"/>
-                                            <field name="year_pick_purchase" class="oe_inline"
-                                                   readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
-                                                   invisible="warranty == False"/>
+                                            <field name="date_pick_purchase" class="oe_inline" readonly = "job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+                                                invisible = "warranty == False"/>
+                                            <field name="month_pick_purchase" class="oe_inline" readonly = "job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+                                                invisible = "warranty == False"/>
+                                            <field name="year_pick_purchase" class="oe_inline" readonly = "job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+                                                invisible = "warranty == False"/>
                                         </div>
-
-                                        <field name="combine_date_purchase" invisible="1"/>
-
-                                        <field name="dealer_id"
-                                               readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True"
-                                               placeholder=" " classService="underline-empty"
-                                               options="{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"
-                                               domain="[('partner_type_hhs','=','customer'),('sub_partner_type','=','dealer')]"
-                                               context="{
+											
+                                        <field name = "combine_date_purchase" invisible = "1"/>
+                                        
+                                       
+                                        <field name = "dealer_id"  readonly = "job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True" placeholder = " " classService = "underline-empty"
+                                	  		 options = "{'no_quick_create': True, 'no_create_edit': True, 'no_open': True}"
+                                	  		  domain ="[('partner_type_hhs','=','customer'),('sub_partner_type','=','dealer')]"
+                                	  		  context = "{
 									        'default_partner_type_hhs': 'customer',
 									        'default_sub_partner_type': 'dealer'
-									   		 }" invisible="warranty == False" required="warranty == True"/>
-
-                                        <!-- <div style="font-weight: bold;">Warranty Expiry Date</div> -->
-
-                                        <!--                                			<div class="o_row">-->
-                                        <!--											    <field name="date_pick_warranty_expiry" class="oe_inline" invisible = "1"/>-->
-                                        <!--											    <field name="month_pick_warranty_expiry" class="oe_inline" invisible = "1"/>-->
-                                        <!--											    <field name="year_pick_warranty_expiry" class="oe_inline" invisible = "1"/>-->
-                                        <!--											</div>-->
-
-                                        <div style="font-weight: bold;"
-                                             readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
-                                             invisible="warranty == False">Warranty Expiry Date
-                                        </div>
-
-                                        <div class="o_row">
-                                            <field name="date_pick_warranty_expiry" class="oe_inline"
-                                                   readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
-                                                   invisible="warranty == False"/>
-                                            <field name="month_pick_warranty_expiry" class="oe_inline"
-                                                   readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
-                                                   invisible="warranty == False"/>
-                                            <field name="year_pick_warranty_expiry" class="oe_inline"
-                                                   readonly="job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
-                                                   invisible="warranty == False"/>
-                                        </div>
-
-                                        <field name="combine_date_warranty_expiry" invisible="1"/>
-                                        <!-- <div style="font-weight: bold;">Warranty Expiry Date</div>
-                                        <div class="o_row">
-                                            <field name="date_pick" class="oe_inline"/>
-                                            <field name="month_pick" class="oe_inline"/>
-                                            <field name="year_pick" class="oe_inline"/>
-                                        </div>
-
-                                        <field name = "combine_date" invisible = "1"/>
-                                        <field name = "expiry_date" invisible = "0" placeholder ="...YYYY-MM-DD"/> -->
-                                        <!--                             			<field name = "warranty_expiry_date"  readonly = "job_card_state_code in ('124','126') or technician_accepted_status_check == True"/>-->
-
-                                        <!--                                         <field name="purchase_dealer_name" readonly="job_card_state_code in ('124','126')"/>-->
-                                        <!--<field name = "warranty" readonly = "job_card_state_code in ('124','126')" invisible = "1"/>-->
-
-                                        <label for="text_warranty_expiry"
+									   		 }"
+                                	  		  invisible = "warranty == False"
+                                	  		  required = "warranty == True"
+                                			/>	
+                                			
+                                		<div style="font-weight: bold;" readonly = "job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+                                        invisible = "warranty == False">Warranty Expiry Date</div>
+                                			
+                                			<div class="o_row">
+											    <field name="date_pick_warranty_expiry" class="oe_inline" readonly = "job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+                                       					 invisible = "warranty == False"/>
+											    <field name="month_pick_warranty_expiry" class="oe_inline" readonly = "job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+                                        				invisible = "warranty == False"/>
+											    <field name="year_pick_warranty_expiry" class="oe_inline" readonly = "job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"
+                                        				invisible = "warranty == False"/>
+											</div>
+											
+											<field name = "combine_date_warranty_expiry" invisible = "1"/>
+                                			<!-- <div style="font-weight: bold;">Warranty Expiry Date</div>
+                                			<div class="o_row">
+											    <field name="date_pick" class="oe_inline"/>
+											    <field name="month_pick" class="oe_inline"/>
+											    <field name="year_pick" class="oe_inline"/>
+											</div>
+											
+											<field name = "combine_date" invisible = "1"/>
+											<field name = "expiry_date" invisible = "0" placeholder ="...YYYY-MM-DD"/> -->
+                             			<!-- <field name = "warranty_expiry_date"  readonly = "job_card_state_code in ('124','126') or technician_accepted_status_check == True or warranty_verfication_status_check != True"/>-->
+                                				
+<!--                                         <field name="purchase_dealer_name" readonly="job_card_state_code in ('124','126')"/>
+ -->                                     
+ 										 <label for="text_warranty_expiry"
                                                string="Reason to Allow Expired Unit Service"
                                                invisible="not security_warranty_expiry"/>
 
@@ -287,21 +274,18 @@
                                                    readonly="1"
                                                    nolabel="1"/>
                                         </div>
-
-                                        <field name="warranty" readonly="1" force_save="1" invisible="1"/>
-
-                                        <div style="font-size:15px;font-weight:bold;color: #070808ff;"
-                                             invisible="warranty == False">Document Invoice
-                                        </div>
-                                        <div width="70%" height="400px">
-                                            <field name="attachment_ids" widget="many2many_binary"
-                                                   invisible="warranty == False"/>
-                                        </div>
-
+ 										<field name = "warranty" readonly = "1" force_save = "1" invisible = "1"/>
+ 
+ 		                                  <div style="font-size:15px;font-weight:bold;color: #070808ff;" invisible = "warranty == False">Document Invoice</div>
+						                    <div  width="70%" height="400px">
+						                        <field name="attachment_ids" widget="many2many_binary" invisible = "warranty == False"/>
+						                    </div>
+                                        
                                     </group>
                                 </group>
                             </div>
                         </div>
+                        
                     </div>
 
 
