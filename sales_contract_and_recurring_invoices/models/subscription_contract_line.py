@@ -196,7 +196,7 @@ class SubscriptionContractLines(models.Model):
         
     )
     
-    product_sub_category_id = fields.Many2one('sub_category',string = "Product Sub Category")
+    product_sub_category_id = fields.Many2one('sub.category',string = "Product Sub Category")
     
     @api.depends('amc_pricing_id', 'contract_type_id', 'total_cost', 'total_price', 'qty_ordered', 'no_of_visits_per_year', 'vat')
     def _compute_quotation_prices(self):

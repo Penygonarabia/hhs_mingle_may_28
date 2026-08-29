@@ -68,7 +68,7 @@ class ProductProduct(models.Model):
     
     '''Code Added on August 18 2026 By Vijaya Bhaskar'''
     product_sub_category_id = fields.Many2one(
-        "sub_category",
+        "sub.category",
         string="Product Sub Category",
         compute="_compute_product_sub_category",
         inverse="_inverse_product_sub_category",

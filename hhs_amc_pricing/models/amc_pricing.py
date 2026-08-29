@@ -19,7 +19,7 @@ class AmcPricing(models.Model):
     # )
     
     category_id = fields.Many2one(
-        'sub_category',
+        'sub.category',
         string='Product Sub Category',
         required=True,
            ondelete='restrict',

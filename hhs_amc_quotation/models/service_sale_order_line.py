@@ -108,7 +108,7 @@ class ServiceSaleOrderLine(models.Model):
     
     '''Code Added on Augsut 18 2026 by Vijaya Bhaskar'''
     
-    product_sub_category_id = fields.Many2one('sub_category',string = "Product Sub Category", related='product_id.product_sub_category_id',)
+    product_sub_category_id = fields.Many2one('sub.category',string = "Product Sub Category", related='product_id.product_sub_category_id',)
    
    
     

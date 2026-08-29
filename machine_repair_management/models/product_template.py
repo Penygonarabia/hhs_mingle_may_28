@@ -63,7 +63,7 @@ class ProductTemplate(models.Model):
                                                      help="Whenever Technician allow to change the service product unit price"
                                                      )
 
-    product_sub_category_id = fields.Many2one('sub_category', string = "Product Sub Category")
+    product_sub_category_id = fields.Many2one('sub.category', string = "Product Sub Category")
     
     @api.depends('product_variant_ids.use_for_promoter')
     def _compute_use_for_promoter(self):
