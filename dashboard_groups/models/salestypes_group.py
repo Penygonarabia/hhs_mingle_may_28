@@ -1,7 +1,8 @@
-from odoo import models, fields
+from odoo import models, fields, _
+from odoo.exceptions import UserError
 
 class SalesTypesGroup(models.Model):
-    _name = 'salestypes_group'
+    _name = 'salestypes.group'
     _description = 'Sales Type Group'
     _rec_name = 'salgrp_name'
 
@@ -15,7 +16,7 @@ class SalesTypesGroup(models.Model):
 
     def unlink(self):
         for record in self:
-            if self.env['sale_types'].search_count([('saltype_group', '=', record.id)]) > 0:
-                from odoo.exceptions import UserError
+            if self.env['sale.types'].search_count([('saltype_group', '=', record.id)]) > 0:
+                
                 raise UserError(f"You cannot delete the Sales Type Group '{record.salgrp_name}' because it is currently assigned to one or more Sale Types. Please reassign or delete the associated Sale Types first.")
         return super(SalesTypesGroup, self).unlink()

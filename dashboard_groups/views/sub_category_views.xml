@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="view_sub_category_tree" model="ir.ui.view">
-        <field name="name">sub_category.tree</field>
-        <field name="model">sub_category</field>
+        <field name="name">sub.category.tree</field>
+        <field name="model">sub.category</field>
         <field name="arch" type="xml">
             <tree>
                 <field name="subcat_ref"/>
@@ -14,8 +14,8 @@
     </record>
 
     <record id="view_sub_category_form" model="ir.ui.view">
-        <field name="name">sub_category.form</field>
-        <field name="model">sub_category</field>
+        <field name="name">sub.category.form</field>
+        <field name="model">sub.category</field>
         <field name="arch" type="xml">
             <form>
                 <sheet>
@@ -33,8 +33,8 @@
     </record>
 
     <record id="view_sub_category_search" model="ir.ui.view">
-        <field name="name">sub_category.search</field>
-        <field name="model">sub_category</field>
+        <field name="name">sub.category.search</field>
+        <field name="model">sub.category</field>
         <field name="arch" type="xml">
             <search>
                 <field name="subcat_name"/>
@@ -45,7 +45,7 @@
 
     <record id="action_sub_category" model="ir.actions.act_window">
         <field name="name">Sub Category</field>
-        <field name="res_model">sub_category</field>
+        <field name="res_model">sub.category</field>
         <field name="view_mode">tree,form</field>
     </record>
 </odoo>

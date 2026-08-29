@@ -1,6 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_salestypes_group,salestypes.group,model_salestypes_group,,1,1,1,1
-access_sale_types,sale.types,model_sale_types,,1,1,1,1
-access_main_category,main.category,model_main_category,,1,1,1,1
-access_sub_category,sub.category,model_sub_category,,1,1,1,1
-
+dashboard_groups.access_salestypes_group,salestypes.group,dashboard_groups.model_salestypes_group,base.group_user,1,1,1,1
+dashboard_groups.access_sale_types,sale.types,dashboard_groups.model_sale_types,base.group_user,1,1,1,1
+dashboard_groups.access_main_category,main.category,dashboard_groups.model_main_category,base.group_user,1,1,1,1
+dashboard_groups.access_sub_category,sub.category,dashboard_groups.model_sub_category,base.group_user,1,1,1,1

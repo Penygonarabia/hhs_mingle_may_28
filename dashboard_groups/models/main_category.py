@@ -1,7 +1,8 @@
-from odoo import models, fields
+from odoo import models, fields,_,api
+from odoo.exceptions import UserError
 
 class MainCategory(models.Model):
-    _name = 'main_category'
+    _name = 'main.category'
     _description = 'Main Category'
     _rec_name = 'maincat_name'
 
@@ -15,7 +16,7 @@ class MainCategory(models.Model):
 
     def unlink(self):
         for record in self:
-            if self.env['sub_category'].search_count([('subcat_maincategory_id', '=', record.id)]) > 0:
-                from odoo.exceptions import UserError
+            if self.env['sub.category'].search_count([('subcat_maincategory_id', '=', record.id)]) > 0:
+                
                 raise UserError(f"You cannot delete the Main Category '{record.maincat_name}' because it is currently assigned to one or more Sub Categories. Please reassign or delete the associated Sub Categories first.")
         return super(MainCategory, self).unlink()
