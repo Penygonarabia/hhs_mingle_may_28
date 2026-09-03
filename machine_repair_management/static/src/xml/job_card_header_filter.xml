@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="machine_repair_management.JobCardHeaderFilter"
+       t-inherit="web.ListView"
+       t-inherit-mode="extension">
+        <xpath expr="//t[@t-component='props.Renderer']" position="before">
+            <t t-if="props.resModel === 'project.task' and filterState and filterState.hasFilterAccess">
+                <div class="px-3 py-2 bg-white border-bottom d-flex align-items-center gap-2" style="z-index: 10;">
+                    <select class="form-select form-select-sm"
+                            style="width: auto; min-width: 180px; background-color: #ffffff; color: #111111; border: 2px solid #282828; border-radius: 6px; padding: 0.35rem 0.65rem; font-weight: 600; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);"
+                            t-on-change="onWorkCenterChange"
+                            t-model="filterState.selectedWorkCenterId">
+                        <option value="" t-att-selected="!filterState.selectedWorkCenterId" style="color: #111111; font-weight: 600;">-- Work Center --</option>
+                        <t t-foreach="filterState.workCenters" t-as="wc" t-key="wc.id">
+                            <option t-att-value="wc.id" t-att-selected="filterState.selectedWorkCenterId == wc.id" style="color: #111111; font-weight: 600;">
+                                <t t-esc="wc.name"/>
+                            </option>
+                        </t>
+                    </select>
+
+                    <select class="form-select form-select-sm"
+                            style="width: auto; min-width: 180px; background-color: #ffffff; color: #111111; border: 2px solid #282828; border-radius: 6px; padding: 0.35rem 0.65rem; font-weight: 600; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);"
+                            t-on-change="onTechnicianChange"
+                            t-model="filterState.selectedTechnicianId"
+                            t-att-disabled="!filterState.selectedWorkCenterId">
+                        <option value="" t-att-selected="!filterState.selectedTechnicianId" style="color: #111111; font-weight: 600;">-- Technician --</option>
+                        <t t-foreach="filterState.technicians" t-as="tech" t-key="tech.id">
+                            <option t-att-value="tech.id" t-att-selected="filterState.selectedTechnicianId == tech.id" style="color: #111111; font-weight: 600;">
+                                <t t-esc="tech.display_name or tech.name"/>
+                            </option>
+                        </t>
+                    </select>
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>

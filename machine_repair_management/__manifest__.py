@@ -539,6 +539,10 @@ workshop machine repair
               'machine_repair_management/static/src/js/maintenance_type_radio.js',
              'machine_repair_management/static/src/xml/maintenance_type_radio.xml',
              
+             
+              "machine_repair_management/static/src/js/job_card_header_filter.js",
+               "machine_repair_management/static/src/xml/job_card_header_filter.xml",
+             
         ],
     },
 }
