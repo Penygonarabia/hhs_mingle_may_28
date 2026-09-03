@@ -9,6 +9,7 @@ import { useState, onWillStart } from "@odoo/owl";
 const STORAGE_KEY_WC = "job_card_selected_wc_id";
 const STORAGE_KEY_TECH = "job_card_selected_tech_id";
 const STORAGE_KEY_ACCESS = "job_card_user_has_filter_access";
+const STORAGE_KEY_POPULATED = "job_card_is_populated";
 
 // Safely capture original domain getter from SearchModel prototype
 const originalDomainGetter = Object.getOwnPropertyDescriptor(SearchModel.prototype, "domain")?.get;
@@ -23,6 +24,7 @@ patch(SearchModel.prototype, {
             // Clear saved Job Card filters when visiting any other non-Job Card screen
             sessionStorage.removeItem(STORAGE_KEY_WC);
             sessionStorage.removeItem(STORAGE_KEY_TECH);
+            sessionStorage.removeItem(STORAGE_KEY_POPULATED);
             return domain;
         }
 
@@ -36,6 +38,16 @@ patch(SearchModel.prototype, {
 
         // If accessCache is null (first load before group check finishes), default to standard domain until group check completes
         if (accessCache === null && (!this.headerFilterState || !this.headerFilterState.isInitialized)) {
+            return domain;
+        }
+
+        const isPopulated =
+            this.headerFilterState?.isPopulated ||
+            sessionStorage.getItem(STORAGE_KEY_POPULATED) === "true";
+
+        if (!isPopulated) {
+            // Display empty list view until user clicks the 'Populate' button
+            domain.push(["id", "=", 0]);
             return domain;
         }
 
@@ -78,20 +90,23 @@ patch(PhonePopupListController.prototype, {
         const isBreadcrumbReturn = breadcrumbs.length > 0;
 
         if (!isBreadcrumbReturn) {
-            // Opening fresh from menu: clear previous session filters so it starts fresh & empty
+            // Opening fresh from menu: clear previous session filters and populated status
             sessionStorage.removeItem(STORAGE_KEY_WC);
             sessionStorage.removeItem(STORAGE_KEY_TECH);
+            sessionStorage.removeItem(STORAGE_KEY_POPULATED);
         }
 
         const savedWcId = sessionStorage.getItem(STORAGE_KEY_WC) || "";
         const savedTechId = sessionStorage.getItem(STORAGE_KEY_TECH) || "";
         const initialAccess = sessionStorage.getItem(STORAGE_KEY_ACCESS);
+        const initialPopulated = sessionStorage.getItem(STORAGE_KEY_POPULATED) === "true";
 
         this.filterState = useState({
             workCenters: [],
             technicians: [],
             selectedWorkCenterId: savedWcId,
             selectedTechnicianId: savedTechId,
+            isPopulated: initialPopulated,
             userProjectIds: [],
             isCoordinator: false,
             hasFilterAccess: initialAccess === "true" ? true : (initialAccess === "false" ? false : null),
@@ -134,26 +149,33 @@ patch(PhonePopupListController.prototype, {
         this.filterState.technicians = [];
 
         if (wcId) {
-            sessionStorage.setItem(STORAGE_KEY_WC, wcId);
-            sessionStorage.removeItem(STORAGE_KEY_TECH);
             this.filterState.technicians = await this._fetchTechnicians(wcId);
-        } else {
-            sessionStorage.removeItem(STORAGE_KEY_WC);
-            sessionStorage.removeItem(STORAGE_KEY_TECH);
         }
-
-        this._triggerSearchReload();
     },
 
     async onTechnicianChange(ev) {
         const techId = ev.target.value;
         this.filterState.selectedTechnicianId = techId;
+    },
+
+    async onPopulateClick() {
+        const wcId = this.filterState.selectedWorkCenterId;
+        const techId = this.filterState.selectedTechnicianId;
+
+        if (wcId) {
+            sessionStorage.setItem(STORAGE_KEY_WC, wcId);
+        } else {
+            sessionStorage.removeItem(STORAGE_KEY_WC);
+        }
 
         if (techId) {
             sessionStorage.setItem(STORAGE_KEY_TECH, techId);
         } else {
             sessionStorage.removeItem(STORAGE_KEY_TECH);
         }
+
+        this.filterState.isPopulated = true;
+        sessionStorage.setItem(STORAGE_KEY_POPULATED, "true");
 
         this._triggerSearchReload();
     },

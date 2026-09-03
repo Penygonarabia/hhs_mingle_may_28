@@ -30,6 +30,12 @@
                             </option>
                         </t>
                     </select>
+
+                    <button class="btn btn-primary btn-sm px-3"
+                            style="background-color: #3f9ea2; border: 2px solid #282828; border-radius: 6px; padding: 0.35rem 0.85rem; font-weight: 600; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);"
+                            t-on-click="onPopulateClick">
+                        Populate
+                    </button>
                 </div>
             </t>
         </xpath>
