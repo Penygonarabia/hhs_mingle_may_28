@@ -185,6 +185,39 @@ class SqlMsAnalyser(models.AbstractModel):
         return {"tables": tables, "views": views, "favorites": self.get_favorites()}
 
     @api.model
+    def get_schema_for_autocomplete(self):
+        """Return table and view names along with all their columns and data types for instant autocomplete."""
+        self._check_access()
+        self.env.cr.execute(
+            """
+            SELECT c.relname AS table_name,
+                   a.attname AS column_name,
+                   format_type(a.atttypid, a.atttypmod) AS data_type,
+                   CASE WHEN c.relkind IN ('v', 'm') THEN 'VIEW' ELSE 'BASE TABLE' END AS table_type
+            FROM pg_class c
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            JOIN pg_attribute a ON a.attrelid = c.oid
+            WHERE n.nspname = 'public'
+              AND c.relkind IN ('r', 'v', 'm', 'p', 'f')
+              AND a.attnum > 0
+              AND NOT a.attisdropped
+            ORDER BY c.relname, a.attnum
+            """
+        )
+        schema = {}
+        for tname, cname, dtype, ttype in self.env.cr.fetchall():
+            if tname not in schema:
+                schema[tname] = {
+                    "type": "view" if ttype == "VIEW" else "table",
+                    "columns": [],
+                }
+            schema[tname]["columns"].append({
+                "name": cname,
+                "type": dtype,
+            })
+        return schema
+
+    @api.model
     def get_favorites(self):
         """The current user's favourite tables/views."""
         self._check_access()
@@ -253,6 +286,45 @@ class SqlMsAnalyser(models.AbstractModel):
                 continue
             groups.append({"table": table, "fields": self.get_fields(table)})
         return groups
+
+    @api.model
+    def get_view_script(self, name):
+        """The SQL behind a view, as a statement that would recreate it.
+
+        Read straight out of the catalog with pg_get_viewdef: PostgreSQL does
+        not keep the original text of a CREATE VIEW, so this is the normalised
+        (fully-qualified, reformatted) definition it stores, not the script as
+        it was first typed.
+        """
+        self._check_access()
+        # Not _validate_object: that one looks in information_schema.tables,
+        # which knows nothing of materialized views. The catalog lookup below
+        # is the existence check, and the name only ever travels as a
+        # parameter -- never interpolated into the statement.
+        if not name or not _IDENT_RE.match(name):
+            raise UserError(_("Invalid object name: %s") % name)
+        self.env.cr.execute(
+            """
+            SELECT c.relkind, pg_get_viewdef(c.oid, true)
+            FROM pg_class c
+            JOIN pg_namespace ns ON ns.oid = c.relnamespace
+            WHERE ns.nspname = 'public' AND c.relname = %s
+              AND c.relkind IN ('v', 'm')
+            """,
+            (name,),
+        )
+        row = self.env.cr.fetchone()
+        if not row:
+            raise UserError(_("%s is not a view.") % name)
+        kind, definition = row
+        body = (definition or "").strip().rstrip(";").strip()
+        header = ('CREATE MATERIALIZED VIEW "%s" AS' if kind == "m"
+                  else 'CREATE OR REPLACE VIEW "%s" AS')
+        return {
+            "name": name,
+            "kind": "materialized view" if kind == "m" else "view",
+            "script": (header % name) + "\n" + body + ";\n",
+        }
 
     @api.model
     def get_data(self, table, page=1, limit=100):
@@ -364,19 +436,87 @@ class SqlMsAnalyser(models.AbstractModel):
         return {"rows": rows, "unrelated": unrelated, "candidates": candidates}
 
     @api.model
-    def run_query(self, query, page=1, limit=100):
+    def run_query(self, query, page=1, limit=100, execution_id=None, *args, **kwargs):
         """Execute an arbitrary query and return a paginated result set."""
         self._check_access()
+        if not execution_id and args:
+            execution_id = args[0]
+        if not execution_id and kwargs.get("execution_id"):
+            execution_id = kwargs.get("execution_id")
         empty = {"columns": [], "column_types": [], "rows": [], "total": 0,
                  "page": 1, "pages": 1, "limit": limit, "message": "",
                  "aggregates": []}
         if not query or not query.strip():
             return empty
+
+        backend_pid = None
+        if execution_id:
+            try:
+                if hasattr(self.env.cr, "_cnx") and hasattr(self.env.cr._cnx, "get_backend_pid"):
+                    backend_pid = self.env.cr._cnx.get_backend_pid()
+                elif hasattr(self.env.cr, "connection") and hasattr(self.env.cr.connection, "get_backend_pid"):
+                    backend_pid = self.env.cr.connection.get_backend_pid()
+                elif hasattr(self.env.cr, "raw_connection"):
+                    raw_cnx = self.env.cr.raw_connection
+                    if hasattr(raw_cnx, "get_backend_pid"):
+                        backend_pid = raw_cnx.get_backend_pid()
+
+                if backend_pid:
+                    with self.env.registry.cursor() as new_cr:
+                        new_cr.execute("""
+                            CREATE TABLE IF NOT EXISTS database_studio_execution (
+                                id SERIAL PRIMARY KEY,
+                                execution_id VARCHAR(128) NOT NULL,
+                                backend_pid INTEGER NOT NULL,
+                                user_id INTEGER NOT NULL,
+                                create_date TIMESTAMP WITHOUT TIME ZONE DEFAULT (NOW() AT TIME ZONE 'UTC')
+                            )
+                        """)
+                        new_cr.execute("CREATE INDEX IF NOT EXISTS database_studio_execution_exec_id_idx ON database_studio_execution (execution_id)")
+                        new_cr.execute("DELETE FROM database_studio_execution WHERE create_date < (NOW() AT TIME ZONE 'UTC' - INTERVAL '1 hour')")
+                        new_cr.execute("INSERT INTO database_studio_execution (execution_id, backend_pid, user_id) VALUES (%s, %s, %s)", (execution_id, backend_pid, self.env.uid))
+                        new_cr.commit()
+            except Exception:
+                pass
+
         try:
             self.env.cr.execute(query)
         except Exception as e:
             self.env.cr.rollback()
-            raise UserError(str(e))
+            err_str = str(e)
+            if "canceling statement due to user request" in err_str.lower() or "57014" in err_str:
+                return {
+                    "columns": [],
+                    "column_types": [],
+                    "rows": [],
+                    "total": 0,
+                    "page": 1,
+                    "pages": 1,
+                    "limit": limit,
+                    "message": _("Query execution was cancelled."),
+                    "aggregates": [],
+                    "cancelled": True,
+                }
+            return {
+                "columns": [],
+                "column_types": [],
+                "rows": [],
+                "total": 0,
+                "page": 1,
+                "pages": 1,
+                "limit": limit,
+                "error": err_str,
+                "message": _("Error: %s") % err_str,
+                "aggregates": [],
+            }
+        finally:
+            if execution_id:
+                try:
+                    with self.env.registry.cursor() as new_cr:
+                        new_cr.execute("DELETE FROM database_studio_execution WHERE execution_id = %s", (execution_id,))
+                        new_cr.commit()
+                except Exception:
+                    pass
 
         rowcount = self.env.cr.rowcount
         description = self.env.cr.description
@@ -408,6 +548,45 @@ class SqlMsAnalyser(models.AbstractModel):
             result["message"] = _("%s row(s) affected") % rowcount
 
         return result
+
+    @api.model
+    def cancel_query(self, execution_id):
+        """Cancel a running query execution by signalling its PostgreSQL backend process."""
+        self._check_access()
+        if not execution_id:
+            return {"success": False, "message": _("No execution ID provided.")}
+
+        backend_pid = None
+        try:
+            with self.env.registry.cursor() as new_cr:
+                new_cr.execute("""
+                    SELECT backend_pid FROM database_studio_execution
+                    WHERE execution_id = %s AND (user_id = %s OR %s)
+                    LIMIT 1
+                """, (execution_id, self.env.uid, self.env.is_superuser()))
+                row = new_cr.fetchone()
+                if row:
+                    backend_pid = row[0]
+                    new_cr.execute("DELETE FROM database_studio_execution WHERE execution_id = %s", (execution_id,))
+        except Exception as e:
+            return {"success": False, "message": str(e)}
+
+        if not backend_pid:
+            return {"success": False, "message": _("Execution not found or already finished.")}
+
+        cancelled = False
+        try:
+            with self.env.registry.cursor() as new_cr:
+                new_cr.execute("SELECT pg_cancel_backend(%s)", (backend_pid,))
+                res = new_cr.fetchone()
+                cancelled = res and res[0]
+        except Exception as e:
+            return {"success": False, "message": str(e)}
+
+        return {
+            "success": bool(cancelled),
+            "message": _("Execution cancel signal sent.") if cancelled else _("Query already finished or backend process not found.")
+        }
 
     # Hard cap on rows written to an "Export Excel" file, so a huge result
     # set can't exhaust worker memory. Used by the export controller.

@@ -12,13 +12,14 @@ users:
 * See the field mapping (foreign-key relationships) for the selected table(s).
 * Build, format and execute SQL like a query analyser, with keyword highlighting,
   run-the-selection, and a paginated, copyable result grid.
+* Open a view's own SQL script (pg_get_viewdef) in its own query tab.
 * Save/star queries and browse them in a History list.
 
 Restricted to database administrators.
 """,
     'author': 'Saravanan',
     'category': 'Technical',
-    'version': '17.0.2.3.0',
+    'version': '17.0.2.5.0',
     'depends': ['web'],
     'data': [
         'security/security.xml',

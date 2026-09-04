@@ -125,6 +125,11 @@ export class SqlMsHistoryController extends ListController {
                 };
             }
         }
+        // The snapshot otherwise restores whichever tab was last in front,
+        // which after picking a query here would hide the query just picked.
+        if (analyserRegistry.pending) {
+            analyserRegistry.pending.activeTab = "query";
+        }
         this.action.doAction({
             type: "ir.actions.client",
             tag: "database_studio.analyser",

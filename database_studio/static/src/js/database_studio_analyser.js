@@ -4,7 +4,114 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Dialog } from "@web/core/dialog/dialog";
 import { download } from "@web/core/network/download";
+import { browser } from "@web/core/browser/browser";
+import { ErrorDialog, RPCErrorDialog } from "@web/core/errors/error_dialogs";
+import { patch } from "@web/core/utils/patch";
 import { Component, useState, useRef, onMounted, onPatched, onWillStart, onWillUnmount } from "@odoo/owl";
+
+/**
+ * Universal clipboard copy helper supporting secure (navigator.clipboard)
+ * and insecure/HTTP contexts (textarea + execCommand('copy') fallback).
+ */
+export async function copyToClipboard(text) {
+    if (text === null || text === undefined) {
+        return false;
+    }
+    const str = String(text);
+    let ok = false;
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function" && window.isSecureContext) {
+        try {
+            await navigator.clipboard.writeText(str);
+            ok = true;
+        } catch (e) {
+            ok = false;
+        }
+    }
+    if (!ok) {
+        try {
+            const ta = document.createElement("textarea");
+            ta.value = str;
+            ta.setAttribute("readonly", "");
+            ta.style.position = "fixed";
+            ta.style.top = "0";
+            ta.style.left = "-9999px";
+            ta.style.opacity = "0";
+            ta.style.pointerEvents = "none";
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            if (ta.setSelectionRange) {
+                ta.setSelectionRange(0, str.length);
+            }
+            ok = document.execCommand("copy");
+            document.body.removeChild(ta);
+        } catch (e) {
+            ok = false;
+        }
+    }
+    return ok;
+}
+
+// Global patch for Odoo error dialogs so "Copy to clipboard" works reliably
+// on both HTTPS and HTTP (insecure context) deployments.
+if (ErrorDialog) {
+    patch(ErrorDialog.prototype, {
+        async onClickClipboard() {
+            const parts = [
+                this.props.name,
+                this.props.message,
+                this.props.traceback || (this.props.data && this.props.data.debug) || "",
+            ].filter(Boolean);
+            const text = parts.join("\n\n") || this.props.message || "";
+            await copyToClipboard(text);
+            this.state.isCopied = true;
+        },
+    });
+}
+
+if (RPCErrorDialog) {
+    patch(RPCErrorDialog.prototype, {
+        async onClickClipboard() {
+            const traceback = this.props.traceback || (this.props.data && this.props.data.debug) || "";
+            const parts = [
+                this.props.name,
+                this.props.message,
+                traceback,
+            ].filter(Boolean);
+            const text = parts.join("\n\n") || this.props.message || "";
+            await copyToClipboard(text);
+            this.state.isCopied = true;
+        },
+    });
+}
+
+// Fallback for browser.navigator.clipboard.writeText
+try {
+    if (browser && browser.navigator) {
+        if (!browser.navigator.clipboard) {
+            try {
+                browser.navigator.clipboard = {};
+            } catch (e) {
+                try {
+                    browser.navigator = Object.create(window.navigator);
+                    browser.navigator.clipboard = {};
+                } catch (e2) {}
+            }
+        }
+        if (browser.navigator.clipboard) {
+            const origWrite = typeof browser.navigator.clipboard.writeText === "function"
+                ? browser.navigator.clipboard.writeText.bind(browser.navigator.clipboard)
+                : null;
+            browser.navigator.clipboard.writeText = async function (text) {
+                const ok = await copyToClipboard(text);
+                if (!ok && origWrite) {
+                    return origWrite(text);
+                }
+            };
+        }
+    }
+} catch (e) {}
+
 
 // Small dialog to name a query before saving it to history.
 export class SqlMsSaveDialog extends Component {
@@ -632,9 +739,11 @@ function _skipDollarQuoted(text, i) {
     return close === -1 ? text.length : close + tag.length;
 }
 
-// Replaces every string literal / comment / dollar-quoted body with blanks,
-// keeping the length, so keywords can be counted without matching the ones
-// that merely appear inside text.
+// Replaces single-quoted string literals, comments and dollar-quoted bodies
+// with blanks (preserving length), so keywords/identifiers are counted and
+// extracted cleanly without matching contents of string literals or comments.
+// Note: Double-quoted strings ("...") are SQL identifiers (tables, columns)
+// and must NOT be stripped.
 function stripNonCode(text) {
     let out = "";
     let i = 0;
@@ -642,7 +751,7 @@ function stripNonCode(text) {
     while (i < n) {
         const ch = text[i];
         let j = i;
-        if (ch === "'" || ch === '"') {
+        if (ch === "'") {
             j = _skipQuoted(text, i, ch);
         } else if (ch === "-" && text[i + 1] === "-") {
             j = text.indexOf("\n", i);
@@ -823,25 +932,63 @@ export function makeQtab(query, opts) {
         aggFunc: "",
         historyId: opts.historyId || null,
         isSaved: !!opts.isSaved,
+        // Set for a tab holding a view's own definition (see showViewScript):
+        // the view it came from, and the flag that stops closing it from
+        // asking to save something the database already holds.
+        viewName: opts.viewName || null,
+        isScript: !!opts.viewName,
     };
 }
 
-// Lets a query opened from the History list land in a new tab of whatever
-// Analyser it was opened from, instead of losing other open tabs. This holds
-// actual tab *data*, not a component reference: navigating to History fully
-// destroys the Analyser component (Odoo doesn't keep client-action
-// controllers alive off-screen the way it does act_window breadcrumbs), so
-// by the time a history row is clicked there is no live instance left to
-// call back into — only a plain object surviving in this module can bridge
-// the trip to History and back.
+// Holds the Analyser's whole workspace between visits. Odoo doesn't keep
+// client-action controllers alive off-screen the way it does act_window
+// breadcrumbs, so stepping out to *any* other menu destroys the component
+// outright — there is no live instance left to call back into. This holds
+// actual state *data*, not a component reference, so a plain object
+// surviving in this module is what bridges the trip away and back: the open
+// query tabs and their results, plus what the Fields and Mapping tabs were
+// showing. It doubles as the hand-off for a query picked in the History
+// list (see database_studio_history_list.js), which appends its tab to
+// whatever is already parked here.
 export const analyserRegistry = { pending: null };
 
-// If the user leaves for History and then wanders off elsewhere instead of
-// coming back (e.g. switches to an unrelated app), the snapshot above would
-// otherwise sit around indefinitely and resurface as a surprise the next
-// time an Analyser happens to open. Only honor it within this window of it
-// being set.
-const PENDING_TTL_MS = 5 * 60 * 1000;
+// Everything outside the query tabs that makes up "where I was": the picked
+// object on the left and the two other tabs' contents. Snapshotted and
+// restored wholesale so returning to the Analyser puts back the same view of
+// it rather than a blank Fields/Mapping pane.
+const SESSION_KEYS = [
+    "activeTab", "selected", "selectedType", "filter", "searchMode",
+    "showFavorites", "showTables", "showViews", "checked",
+    "fieldGroups", "collapsedGroups", "fieldFilter", "fieldSel", "fieldCols",
+    "mapping", "mappingCols",
+];
+
+// The snapshot lives only as long as the browser tab does, but a stale one
+// resurfacing a day later would be a surprise rather than a convenience.
+// This is generous enough to cover a working day's worth of stepping away
+// and back, and short enough that tomorrow starts clean.
+const PENDING_TTL_MS = 12 * 60 * 60 * 1000;
+
+// The Fields tab's copyable columns, in the order Copy writes them. `table`
+// has no header cell of its own (it is the group title above each grid), so
+// it cannot be picked — it is only written when nothing is picked at all.
+const FIELD_COLUMNS = [
+    { key: "table", label: "table" },
+    { key: "name", label: "name" },
+    { key: "type", label: "type" },
+    { key: "precision", label: "precision/length" },
+    { key: "nullable", label: "nullable" },
+];
+
+// Same, for the Mapping tab. Every one of these has a header, so any of them
+// can be picked.
+const MAPPING_COLUMNS = [
+    { key: "from_table", label: "from_table" },
+    { key: "from_column", label: "from_column" },
+    { key: "to_table", label: "to_table" },
+    { key: "to_column", label: "to_column" },
+    { key: "via", label: "via" },
+];
 
 // The numeric types a text column can be converted to, in the order the
 // dialog offers them.
@@ -988,6 +1135,534 @@ SqlMsConvertTypeDialog.props = {
 };
 SqlMsConvertTypeDialog.defaultProps = { mode: "table", query: "" };
 
+// ---------------------------------------------------------------------
+// SQL Query Autocomplete & Intelligent Suggestions
+// ---------------------------------------------------------------------
+
+const SQL_AUTOCOMPLETE_KEYWORDS = [
+    "SELECT", "FROM", "WHERE", "JOIN", "LEFT JOIN", "RIGHT JOIN", "INNER JOIN",
+    "FULL JOIN", "CROSS JOIN", "ON", "GROUP BY", "ORDER BY", "HAVING", "LIMIT",
+    "OFFSET", "AS", "AND", "OR", "NOT", "IN", "IS NULL", "IS NOT NULL", "LIKE",
+    "ILIKE", "BETWEEN", "EXISTS", "DISTINCT", "UNION", "UNION ALL", "INTERSECT",
+    "EXCEPT", "CASE", "WHEN", "THEN", "ELSE", "END", "WITH", "WITH RECURSIVE",
+    "INSERT INTO", "VALUES", "UPDATE", "SET", "DELETE FROM", "CREATE TABLE",
+    "ALTER TABLE", "DROP TABLE", "TRUNCATE", "ASC", "DESC", "NULLS FIRST",
+    "NULLS LAST", "COALESCE", "NULLIF", "CAST", "RETURNING", "OVER", "PARTITION BY"
+];
+
+const SQL_AUTOCOMPLETE_FUNCTIONS = [
+    { name: "COUNT(*)", insertText: "COUNT(*)", detail: "Count rows" },
+    { name: "COUNT()", insertText: "COUNT()", cursorOffset: 6, detail: "Count expression" },
+    { name: "SUM()", insertText: "SUM()", cursorOffset: 4, detail: "Sum values" },
+    { name: "AVG()", insertText: "AVG()", cursorOffset: 4, detail: "Average value" },
+    { name: "MIN()", insertText: "MIN()", cursorOffset: 4, detail: "Minimum value" },
+    { name: "MAX()", insertText: "MAX()", cursorOffset: 4, detail: "Maximum value" },
+    { name: "COALESCE()", insertText: "COALESCE()", cursorOffset: 9, detail: "First non-null" },
+    { name: "CONCAT()", insertText: "CONCAT()", cursorOffset: 7, detail: "Concatenate strings" },
+    { name: "SUBSTRING()", insertText: "SUBSTRING()", cursorOffset: 10, detail: "Extract substring" },
+    { name: "LOWER()", insertText: "LOWER()", cursorOffset: 6, detail: "Lower-case text" },
+    { name: "UPPER()", insertText: "UPPER()", cursorOffset: 6, detail: "Upper-case text" },
+    { name: "TRIM()", insertText: "TRIM()", cursorOffset: 5, detail: "Trim whitespace" },
+    { name: "REPLACE()", insertText: "REPLACE()", cursorOffset: 8, detail: "Replace substring" },
+    { name: "LENGTH()", insertText: "LENGTH()", cursorOffset: 7, detail: "String length" },
+    { name: "SPLIT_PART()", insertText: "SPLIT_PART()", cursorOffset: 11, detail: "Split string" },
+    { name: "NOW()", insertText: "NOW()", detail: "Current timestamp" },
+    { name: "CURRENT_DATE", insertText: "CURRENT_DATE", detail: "Current date" },
+    { name: "CURRENT_TIMESTAMP", insertText: "CURRENT_TIMESTAMP", detail: "Current timestamp" },
+    { name: "DATE_TRUNC()", insertText: "DATE_TRUNC('month', )", cursorOffset: 20, detail: "Truncate timestamp" },
+    { name: "AGE()", insertText: "AGE()", cursorOffset: 4, detail: "Calculate age/interval" },
+    { name: "EXTRACT()", insertText: "EXTRACT(YEAR FROM )", cursorOffset: 18, detail: "Extract date field" },
+    { name: "TO_CHAR()", insertText: "TO_CHAR()", cursorOffset: 8, detail: "Format to string" },
+    { name: "TO_DATE()", insertText: "TO_DATE()", cursorOffset: 8, detail: "Parse to date" },
+    { name: "ROUND()", insertText: "ROUND()", cursorOffset: 6, detail: "Round number" },
+    { name: "FLOOR()", insertText: "FLOOR()", cursorOffset: 6, detail: "Floor number" },
+    { name: "CEIL()", insertText: "CEIL()", cursorOffset: 5, detail: "Ceiling number" },
+    { name: "ABS()", insertText: "ABS()", cursorOffset: 4, detail: "Absolute value" },
+    { name: "STRING_AGG()", insertText: "STRING_AGG(, ', ')", cursorOffset: 11, detail: "Aggregate strings" },
+    { name: "ARRAY_AGG()", insertText: "ARRAY_AGG()", cursorOffset: 10, detail: "Aggregate to array" },
+    { name: "JSON_AGG()", insertText: "JSON_AGG()", cursorOffset: 9, detail: "Aggregate to JSON array" },
+    { name: "JSONB_AGG()", insertText: "JSONB_AGG()", cursorOffset: 10, detail: "Aggregate to JSONB array" },
+    { name: "JSONB_BUILD_OBJECT()", insertText: "JSONB_BUILD_OBJECT()", cursorOffset: 19, detail: "Build JSONB object" },
+    { name: "ROW_NUMBER() OVER ()", insertText: "ROW_NUMBER() OVER (PARTITION BY  ORDER BY )", cursorOffset: 32, detail: "Window row number" },
+    { name: "DENSE_RANK() OVER ()", insertText: "DENSE_RANK() OVER (ORDER BY )", cursorOffset: 28, detail: "Window dense rank" },
+    { name: "LAG() OVER ()", insertText: "LAG() OVER (ORDER BY )", cursorOffset: 21, detail: "Window lag value" },
+    { name: "LEAD() OVER ()", insertText: "LEAD() OVER (ORDER BY )", cursorOffset: 22, detail: "Window lead value" },
+];
+
+const CARET_STYLE_PROPERTIES = [
+    "direction", "boxSizing", "width", "height", "overflowX", "overflowY",
+    "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth", "borderStyle",
+    "paddingTop", "paddingRight", "paddingBottom", "paddingLeft",
+    "fontStyle", "fontVariant", "fontWeight", "fontStretch", "fontSize", "fontSizeAdjust",
+    "lineHeight", "fontFamily", "textAlign", "textTransform", "textIndent",
+    "textDecoration", "letterSpacing", "wordSpacing", "tabSize", "MozTabSize"
+];
+
+function getCaretCoordinates(element, position) {
+    if (!element) return { top: 10, left: 32, lineHeight: 20 };
+    const div = document.createElement("div");
+    div.id = "sqlms-caret-position-mirror";
+    document.body.appendChild(div);
+
+    const style = div.style;
+    const computed = window.getComputedStyle(element);
+
+    style.whiteSpace = "pre";
+    style.position = "absolute";
+    style.visibility = "hidden";
+    style.top = "0";
+    style.left = "-9999px";
+
+    CARET_STYLE_PROPERTIES.forEach((prop) => {
+        style[prop] = computed[prop];
+    });
+
+    style.overflow = "hidden";
+
+    div.textContent = element.value.substring(0, position);
+
+    const span = document.createElement("span");
+    span.textContent = element.value.substring(position) || ".";
+    div.appendChild(span);
+
+    const coordinates = {
+        top: span.offsetTop + parseInt(computed.borderTopWidth || 0, 10),
+        left: span.offsetLeft + parseInt(computed.borderLeftWidth || 0, 10),
+        lineHeight: parseInt(computed.lineHeight, 10) || 20,
+    };
+
+    document.body.removeChild(div);
+    return coordinates;
+}
+
+function findTableSchema(schemaCache, tableName) {
+    if (!tableName || !schemaCache) return null;
+    let clean = String(tableName).replace(/['"`]/g, "").trim();
+    if (clean.includes(".")) {
+        clean = clean.split(".").pop();
+    }
+    if (schemaCache[clean]) return { name: clean, info: schemaCache[clean] };
+    const lower = clean.toLowerCase();
+    for (const [key, val] of Object.entries(schemaCache)) {
+        if (key.toLowerCase() === lower) {
+            return { name: key, info: val };
+        }
+    }
+    return null;
+}
+
+function extractTablesAndAliases(sqlText) {
+    const cleanSql = stripNonCode(sqlText || "");
+    const tables = [];
+    const aliases = {};
+    const reservedWords = new Set([
+        "WHERE", "JOIN", "LEFT", "RIGHT", "INNER", "OUTER", "CROSS", "FULL", "ON",
+        "GROUP", "ORDER", "LIMIT", "OFFSET", "HAVING", "SET", "UNION", "SELECT", "USING",
+        "NATURAL", "AND", "OR", "AS", "BY", "ASC", "DESC", "IN", "NOT", "NULL", "IS",
+        "CASE", "WHEN", "THEN", "ELSE", "END", "FROM", "INTO", "UPDATE", "TABLE", "VALUES",
+        "WITH", "RETURNING", "DISTINCT", "ALL", "EXISTS", "BETWEEN", "LIKE", "ILIKE"
+    ]);
+
+    const normalize = (name) => {
+        if (!name) return "";
+        let clean = name.replace(/['"`]/g, "").trim();
+        if (clean.includes(".")) {
+            clean = clean.split(".").pop();
+        }
+        return clean;
+    };
+
+    const addTableAndAlias = (tblName, aliasName) => {
+        const rawTable = normalize(tblName);
+        if (rawTable && !reservedWords.has(rawTable.toUpperCase())) {
+            if (!tables.some((t) => t.toLowerCase() === rawTable.toLowerCase())) {
+                tables.push(rawTable);
+            }
+            const normAlias = normalize(aliasName);
+            if (normAlias && !reservedWords.has(normAlias.toUpperCase()) && normAlias.toLowerCase() !== rawTable.toLowerCase()) {
+                aliases[normAlias.toLowerCase()] = rawTable;
+            }
+        }
+    };
+
+    // 1. Scan for FROM / INTO / UPDATE / JOIN blocks
+    const clauseRegex = /\b(?:FROM|INTO|UPDATE|(?:(?:LEFT|RIGHT|FULL|INNER|CROSS|NATURAL|OUTER)\s+)*JOIN)\s+([^;]+?)(?=\b(?:WHERE|GROUP\s+BY|ORDER\s+BY|HAVING|LIMIT|OFFSET|UNION|ON|USING|SET|RETURNING|WINDOW|VALUES|\)|\;|$))/gi;
+    let match;
+    while ((match = clauseRegex.exec(cleanSql)) !== null) {
+        const clauseBody = match[1];
+        const subParts = clauseBody.split(/,|\b(?:INNER|LEFT|RIGHT|FULL|CROSS|NATURAL|OUTER)?\s*JOIN\b/i);
+        for (let part of subParts) {
+            part = part.trim();
+            if (!part || part.startsWith("(")) continue;
+            const tokens = part.split(/\s+/).filter(Boolean);
+            if (tokens.length >= 1) {
+                const rawTable = tokens[0];
+                let alias = null;
+                if (tokens.length >= 2) {
+                    if (tokens[1].toUpperCase() === "AS" && tokens[2]) {
+                        alias = tokens[2];
+                    } else if (tokens[1].toUpperCase() !== "AS") {
+                        alias = tokens[1];
+                    }
+                }
+                addTableAndAlias(rawTable, alias);
+            }
+        }
+    }
+
+    // 2. Direct regex scan for table + alias patterns (e.g. `FROM table alias`, `JOIN table alias`, `FROM table AS alias`)
+    const directRegex = /\b(?:FROM|JOIN|UPDATE|INTO)\s+([a-zA-Z0-9_."`]+)(?:\s+(?:AS\s+)?([a-zA-Z0-9_"`]+))?/gi;
+    while ((match = directRegex.exec(cleanSql)) !== null) {
+        addTableAndAlias(match[1], match[2]);
+    }
+
+    // 3. Comma-separated tables in FROM clause (e.g. `FROM t1 a, t2 b, t3 c`)
+    const fromListMatch = /\bFROM\s+([^;]+?)(?=\b(?:WHERE|GROUP\s+BY|ORDER\s+BY|HAVING|LIMIT|OFFSET|UNION|JOIN|\)|\;|$))/gi;
+    while ((match = fromListMatch.exec(cleanSql)) !== null) {
+        const parts = match[1].split(",");
+        for (let p of parts) {
+            p = p.trim();
+            if (!p || p.startsWith("(")) continue;
+            const tokens = p.split(/\s+/).filter(Boolean);
+            if (tokens.length >= 1) {
+                let alias = null;
+                if (tokens.length >= 2) {
+                    if (tokens[1].toUpperCase() === "AS" && tokens[2]) {
+                        alias = tokens[2];
+                    } else if (tokens[1].toUpperCase() !== "AS") {
+                        alias = tokens[1];
+                    }
+                }
+                addTableAndAlias(tokens[0], alias);
+            }
+        }
+    }
+
+    return { tables, aliases };
+}
+
+function detectSqlContext(cleanBefore) {
+    const kwRegex = /\b(SELECT|FROM|INNER\s+JOIN|LEFT\s+JOIN|RIGHT\s+JOIN|FULL\s+JOIN|CROSS\s+JOIN|JOIN|WHERE|ON|USING|GROUP\s+BY|ORDER\s+BY|HAVING|SET|INTO|UPDATE|TABLE|VALUES)\b/gi;
+    let lastKw = "";
+    let lastMatch = null;
+    let m;
+    while ((m = kwRegex.exec(cleanBefore)) !== null) {
+        lastMatch = m;
+        lastKw = m[1].toUpperCase().replace(/\s+/g, " ");
+    }
+
+    if (!lastKw) {
+        return { clause: "", isTableContext: false, isFieldContext: false };
+    }
+
+    const afterKw = cleanBefore.substring(lastMatch.index + lastMatch[0].length).trim();
+
+    if (lastKw === "FROM" || lastKw.includes("JOIN") || lastKw === "INTO" || lastKw === "UPDATE" || lastKw === "TABLE") {
+        const wordsAfter = afterKw.split(/\s+/).filter(Boolean);
+        const isTableContext = wordsAfter.length <= 1 && !afterKw.includes(",");
+        return {
+            clause: lastKw,
+            isTableContext,
+            isFieldContext: !isTableContext,
+        };
+    }
+
+    const isFieldContext = ["SELECT", "WHERE", "ON", "USING", "GROUP BY", "ORDER BY", "HAVING", "SET"].includes(lastKw);
+    return {
+        clause: lastKw,
+        isTableContext: false,
+        isFieldContext,
+    };
+}
+
+function formatMatchParts(text, prefix) {
+    if (!prefix) return null;
+    const lower = text.toLowerCase();
+    const pLower = prefix.toLowerCase();
+    const idx = lower.indexOf(pLower);
+    if (idx === -1) return null;
+    return {
+        pre: text.substring(0, idx),
+        match: text.substring(idx, idx + prefix.length),
+        post: text.substring(idx + prefix.length),
+    };
+}
+
+function getAutocompleteSuggestions(fullText, caretPos, schemaCache, knownTables, knownViews) {
+    const textBefore = fullText.substring(0, caretPos);
+    if (!textBefore) return { items: [], replaceStart: 0, replaceEnd: 0, prefix: "" };
+
+    const cleanBefore = stripNonCode(textBefore);
+    const { tables: queryTables, aliases } = extractTablesAndAliases(fullText);
+    const { clause, isTableContext, isFieldContext } = detectSqlContext(cleanBefore);
+
+    // Check if after dot (e.g. `res_partner.` or `rp.` or `"res_partner".` or `"rp".` or `th.trn`)
+    const dotMatch = /["`]?([a-zA-Z0-9_]+)["`]?\.["`]?([a-zA-Z0-9_]*)$/.exec(textBefore);
+    if (dotMatch) {
+        const qualifier = dotMatch[1].toLowerCase();
+        const fieldPrefix = dotMatch[2] || "";
+        const replaceStart = caretPos - fieldPrefix.length;
+        const replaceEnd = caretPos;
+
+        // Resolve table name from alias or qualifier
+        const resolvedTable = aliases[qualifier] || qualifier;
+        const entry = findTableSchema(schemaCache, resolvedTable);
+
+        const items = [];
+        if (entry && entry.info && entry.info.columns) {
+            for (let i = 0; i < entry.info.columns.length; i++) {
+                const col = entry.info.columns[i];
+                const lowerCol = col.name.toLowerCase();
+                const pLower = fieldPrefix.toLowerCase();
+                if (!fieldPrefix || lowerCol.includes(pLower)) {
+                    const starts = !fieldPrefix || lowerCol.startsWith(pLower);
+                    items.push({
+                        id: `col_${entry.name}_${col.name}`,
+                        name: col.name,
+                        insertText: col.name,
+                        category: "field",
+                        categoryLabel: dotMatch[1],
+                        dtype: col.type || "",
+                        detail: entry.name,
+                        matchParts: formatMatchParts(col.name, fieldPrefix),
+                        score: starts ? (1400 - i) : (900 - i),
+                    });
+                }
+            }
+        }
+
+        items.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+        return {
+            items: items.slice(0, 40),
+            replaceStart,
+            replaceEnd,
+            prefix: fieldPrefix,
+        };
+    }
+
+    // Normal word prefix match
+    const wordMatch = /([a-zA-Z0-9_]+)$/.exec(textBefore);
+    const prefix = wordMatch ? wordMatch[1] : "";
+    const pLower = prefix.toLowerCase();
+
+    // If prefix is empty, only trigger if we are in a field context with query tables or in a table clause
+    if (!prefix && !isTableContext && !(isFieldContext && queryTables.length > 0)) {
+        return { items: [], replaceStart: caretPos, replaceEnd: caretPos, prefix: "" };
+    }
+
+    const replaceStart = caretPos - prefix.length;
+    const replaceEnd = caretPos;
+    const items = [];
+
+    // 1. Columns / Fields from tables present in the query (Highest Priority)
+    const activeTables = queryTables.length ? queryTables : (isFieldContext ? [] : (knownTables || []).slice(0, 5));
+    const seenColKeys = new Set();
+
+    // Alias-prefixed fields (e.g. `th.trn_id` if alias `th` exists)
+    if (isFieldContext && Object.keys(aliases).length > 0) {
+        for (const [aliasName, targetTable] of Object.entries(aliases)) {
+            const entry = findTableSchema(schemaCache, targetTable);
+            if (entry && entry.info && entry.info.columns) {
+                for (let i = 0; i < entry.info.columns.length; i++) {
+                    const col = entry.info.columns[i];
+                    const lowerCol = col.name.toLowerCase();
+                    const qualifiedName = `${aliasName}.${col.name}`;
+                    const qualifiedLower = qualifiedName.toLowerCase();
+                    if (!prefix || lowerCol.includes(pLower) || qualifiedLower.includes(pLower) || aliasName.toLowerCase().startsWith(pLower)) {
+                        const starts = !prefix || qualifiedLower.startsWith(pLower) || lowerCol.startsWith(pLower);
+                        let score = starts ? 1500 : 1100;
+                        score -= i;
+                        const key = `alias_${qualifiedName}`;
+                        if (!seenColKeys.has(key)) {
+                            seenColKeys.add(key);
+                            items.push({
+                                id: `col_alias_${aliasName}_${col.name}`,
+                                name: qualifiedName,
+                                insertText: qualifiedName,
+                                category: "field",
+                                categoryLabel: aliasName,
+                                dtype: col.type || "",
+                                detail: targetTable,
+                                matchParts: formatMatchParts(qualifiedName, prefix) || formatMatchParts(col.name, prefix),
+                                score,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Bare fields from query tables
+    for (const tName of activeTables) {
+        const entry = findTableSchema(schemaCache, tName);
+        if (entry && entry.info && entry.info.columns) {
+            for (let i = 0; i < entry.info.columns.length; i++) {
+                const col = entry.info.columns[i];
+                const lowerCol = col.name.toLowerCase();
+                if (!prefix || lowerCol.includes(pLower)) {
+                    const starts = !prefix || lowerCol.startsWith(pLower);
+                    let score = starts ? 1400 : 1000;
+                    if (isFieldContext) score += 200;
+                    score -= i; // preserve column order for ties
+
+                    const key = `${entry.name}.${col.name}`;
+                    if (!seenColKeys.has(key)) {
+                        seenColKeys.add(key);
+                        items.push({
+                            id: `col_${entry.name}_${col.name}`,
+                            name: col.name,
+                            insertText: col.name,
+                            category: "field",
+                            categoryLabel: "field",
+                            dtype: col.type || "",
+                            detail: entry.name,
+                            matchParts: formatMatchParts(col.name, prefix),
+                            score,
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    // 2. Table Aliases (e.g. `th.` if `FROM transaction_header th`)
+    if (isFieldContext && Object.keys(aliases).length > 0) {
+        for (const [aliasName, targetTable] of Object.entries(aliases)) {
+            const aLower = aliasName.toLowerCase();
+            if (!prefix || aLower.startsWith(pLower) || aLower.includes(pLower)) {
+                const starts = !prefix || aLower.startsWith(pLower);
+                items.push({
+                    id: `alias_${aliasName}`,
+                    name: `${aliasName}.`,
+                    insertText: `${aliasName}.`,
+                    category: "table",
+                    categoryLabel: "alias",
+                    detail: `Alias for ${targetTable}`,
+                    matchParts: formatMatchParts(`${aliasName}.`, prefix),
+                    score: starts ? 1350 : 950,
+                });
+            }
+        }
+    }
+
+    // 3. Tables & Views
+    const allTables = new Set([...(knownTables || []), ...Object.keys(schemaCache || {})]);
+    const allViews = new Set(knownViews || []);
+
+    // If queryTables exist and we are in field context, suppress or deprioritize tables so they don't pollute column completions
+    const showAllTables = isTableContext || queryTables.length === 0 || (!isFieldContext && prefix.length >= 2);
+
+    if (showAllTables && (prefix || isTableContext)) {
+        for (const tName of allTables) {
+            const lower = tName.toLowerCase();
+            const isView = allViews.has(tName) || (schemaCache[tName] && schemaCache[tName].type === "view");
+            if (!prefix || lower.includes(pLower)) {
+                const starts = !prefix || lower.startsWith(pLower);
+                let score = starts ? 500 : 200;
+                if (isTableContext) {
+                    score += 1000;
+                }
+                items.push({
+                    id: `tbl_${tName}`,
+                    name: tName,
+                    insertText: tName + " ",
+                    category: isView ? "view" : "table",
+                    categoryLabel: isView ? "view" : "table",
+                    detail: isView ? "View" : "Table",
+                    matchParts: formatMatchParts(tName, prefix),
+                    score,
+                });
+            }
+        }
+    }
+
+    // 4. Other columns from all tables across database (only when no query tables are specified and prefix >= 2)
+    if (!activeTables.length && prefix.length >= 2) {
+        for (const [tName, info] of Object.entries(schemaCache || {})) {
+            if (info && info.columns) {
+                for (const col of info.columns) {
+                    const lowerCol = col.name.toLowerCase();
+                    if (lowerCol.includes(pLower)) {
+                        const starts = lowerCol.startsWith(pLower);
+                        const key = `${tName}.${col.name}`;
+                        if (!seenColKeys.has(key)) {
+                            seenColKeys.add(key);
+                            items.push({
+                                id: `col_${tName}_${col.name}`,
+                                name: col.name,
+                                insertText: col.name,
+                                category: "field",
+                                categoryLabel: "field",
+                                dtype: col.type || "",
+                                detail: tName,
+                                matchParts: formatMatchParts(col.name, prefix),
+                                score: starts ? 400 : 150,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // 5. SQL Functions (e.g. COUNT(), SUM(), AVG(), COALESCE(), etc.)
+    if (!isTableContext) {
+        for (const fn of SQL_AUTOCOMPLETE_FUNCTIONS) {
+            const lower = fn.name.toLowerCase();
+            if (!prefix || lower.includes(pLower)) {
+                const starts = !prefix || lower.startsWith(pLower);
+                let score = starts ? 700 : 350;
+                if (isFieldContext) score += 50;
+                items.push({
+                    id: `fn_${fn.name}`,
+                    name: fn.name,
+                    insertText: fn.insertText,
+                    cursorOffset: fn.cursorOffset,
+                    category: "function",
+                    categoryLabel: "func",
+                    detail: fn.detail,
+                    matchParts: formatMatchParts(fn.name, prefix),
+                    score,
+                });
+            }
+        }
+    }
+
+    // 6. SQL Keywords
+    if (prefix) {
+        for (const kw of SQL_AUTOCOMPLETE_KEYWORDS) {
+            const lower = kw.toLowerCase();
+            if (lower.includes(pLower)) {
+                const starts = lower.startsWith(pLower);
+                let score = starts ? 600 : 250;
+                if (isTableContext && (kw === "JOIN" || kw === "ON" || kw === "AS" || kw === "WHERE")) {
+                    score += 600;
+                }
+                items.push({
+                    id: `kw_${kw}`,
+                    name: kw,
+                    insertText: kw + " ",
+                    category: "keyword",
+                    categoryLabel: "keyword",
+                    detail: "SQL Keyword",
+                    matchParts: formatMatchParts(kw, prefix),
+                    score,
+                });
+            }
+        }
+    }
+
+    items.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+
+    return {
+        items: items.slice(0, 40),
+        replaceStart,
+        replaceEnd,
+        prefix,
+    };
+}
+
 
 export class SqlMsAnalyser extends Component {
     setup() {
@@ -1001,6 +1676,9 @@ export class SqlMsAnalyser extends Component {
         this.rootRef = useRef("rootEl");
         this.sidebarRef = useRef("sidebarEl");
         this.editorRef = useRef("editorEl");
+        this.acListRef = useRef("acListEl");
+        this.autocompleteRef = useRef("autocompleteEl");
+        this.schemaCache = {};
 
         this.state = useState({
             tables: [],
@@ -1013,24 +1691,24 @@ export class SqlMsAnalyser extends Component {
             fieldGroups: [],
             collapsedGroups: {},
             fieldFilter: "",
-            // Fields ticked in the Fields tab, keyed "table.column", each
-            // carrying whether it is also grouped/ordered by. Insertion order
-            // is the order they end up in the built SELECT.
             fieldSel: {},
+            // Header columns picked in the Fields / Mapping grids, by their
+            // index in FIELD_COLUMNS / MAPPING_COLUMNS. Copy narrows to
+            // these; empty means "every column", as it does for results.
+            fieldCols: [],
             mapping: null,
+            mappingCols: [],
             query: "",
             display: "",
             folds: {},
             execQuery: "",
-            // Character range of the last executed selection, kept so the
-            // editor can keep showing which part of the script was run.
             execRange: null,
             queryResult: null,
-            // Query sub-tabs. state.query/execQuery/queryResult always mirror
-            // the active tab; switching snapshots them back into their tab.
             qtabs: [],
             activeQtabId: null,
             loading: false,
+            currentExecutionId: null,
+            cancelling: false,
             exporting: false,
             favorites: [],
             showFavorites: true,
@@ -1039,39 +1717,47 @@ export class SqlMsAnalyser extends Component {
             checked: {},
             tabMenuOpen: false,
             selectedCols: [],
-            // Which aggregate ("", sum, count, avg, min, max) the result
-            // grid shows in its totals row.
             aggFunc: "",
+            autocomplete: {
+                visible: false,
+                items: [],
+                selectedIndex: -1,
+                top: 0,
+                left: 0,
+                replaceStart: 0,
+                replaceEnd: 0,
+                prefix: "",
+            },
         });
 
-        // A query passed directly by a record button (action_open_in_analyser)
-        // is an explicit, one-off request — it always wins over any leftover
-        // registry snapshot. Otherwise, a still-fresh snapshot left by a
-        // history-list click (this Analyser's own tabs, plus the newly picked
-        // query) is restored instead of starting blank.
+        // Pick up where the last visit left off. A still-fresh snapshot —
+        // parked by the previous Analyser on its way out, or by a
+        // history-list click — restores the whole workspace; a query handed
+        // in by a record button (action_open_in_analyser) joins it as one
+        // more tab rather than replacing it. With neither, start on a single
+        // blank tab.
         const act = this.props.action || {};
         const incoming = (act.params && act.params.query) ||
             (act.context && act.context.default_query);
         const pending = analyserRegistry.pending;
         analyserRegistry.pending = null;
-        const usePending = !incoming && pending && pending.qtabs && pending.qtabs.length &&
+        const usePending = pending && pending.qtabs && pending.qtabs.length &&
             (Date.now() - pending.ts) < PENDING_TTL_MS;
         if (usePending) {
-            this.state.qtabs = pending.qtabs;
-            const active = pending.qtabs.find((t) => t.id === pending.activeQtabId) ||
-                pending.qtabs[pending.qtabs.length - 1];
-            this._loadQtab(active);
-            this.state.activeTab = "query";
-        } else {
-            const first = this._makeQtab(incoming || "");
-            this.state.qtabs.push(first);
-            this._loadQtab(first);
+            this._restoreSession(pending);
+        }
+        if (incoming || !usePending) {
+            this._snapshotActiveQtab();
+            const t = this._makeQtab(incoming || "");
+            this.state.qtabs.push(t);
+            this._loadQtab(t);
             if (incoming) {
                 this.state.activeTab = "query";
             }
         }
 
         onMounted(() => this.loadObjects());
+        onMounted(() => this.loadSchemaForAutocomplete());
         // Populate the textarea/highlight from the initial active tab.
         onMounted(() => this._syncEditor());
         // The query editor's <textarea> is destroyed/recreated whenever the
@@ -1096,6 +1782,39 @@ export class SqlMsAnalyser extends Component {
         this._onKeydown = (ev) => this._onShortcut(ev);
         onMounted(() => document.addEventListener("keydown", this._onKeydown));
         onWillUnmount(() => document.removeEventListener("keydown", this._onKeydown));
+
+        // Leaving for another menu destroys this component, so park the
+        // workspace on the way out; the next Analyser to mount picks it up
+        // above. This covers every exit, the "Query history" button included
+        // (which is why openHistory no longer snapshots for itself).
+        onWillUnmount(() => this._snapshotSession());
+    }
+
+    // -- workspace snapshot / restore ----------------------------------
+    _snapshotSession() {
+        this._snapshotActiveQtab();
+        const snap = {
+            qtabs: this.state.qtabs,
+            activeQtabId: this.state.activeQtabId,
+            ts: Date.now(),
+        };
+        for (const key of SESSION_KEYS) {
+            snap[key] = this.state[key];
+        }
+        analyserRegistry.pending = snap;
+    }
+    _restoreSession(snap) {
+        this.state.qtabs = snap.qtabs;
+        const active = snap.qtabs.find((t) => t.id === snap.activeQtabId) ||
+            snap.qtabs[snap.qtabs.length - 1];
+        this._loadQtab(active);
+        // After _loadQtab, which may point `selected` at a script tab's view:
+        // the snapshot is the more recent truth about what was on screen.
+        for (const key of SESSION_KEYS) {
+            if (snap[key] !== undefined) {
+                this.state[key] = snap[key];
+            }
+        }
     }
 
     // -- resizing the sidebar / editor ---------------------------------
@@ -1231,15 +1950,10 @@ export class SqlMsAnalyser extends Component {
     }
 
     openHistory() {
-        // Snapshot our tabs so that, if the user picks a row there, this
-        // Analyser's work isn't lost even though the component itself is
-        // about to be destroyed (see analyserRegistry's docstring above).
-        this._snapshotActiveQtab();
-        analyserRegistry.pending = {
-            qtabs: this.state.qtabs,
-            activeQtabId: this.state.activeQtabId,
-            ts: Date.now(),
-        };
+        // Park the workspace now rather than waiting for onWillUnmount: the
+        // History list needs it in place before its own rows can be clicked,
+        // and doAction may resolve either side of the unmount.
+        this._snapshotSession();
         this.action.doAction("database_studio.action_sql_ms_query");
     }
 
@@ -1248,6 +1962,7 @@ export class SqlMsAnalyser extends Component {
         this.state.tables = res.tables;
         this.state.views = res.views;
         this.state.favorites = res.favorites || [];
+        this.loadSchemaForAutocomplete();
     }
 
     // -- favourites ----------------------------------------------------
@@ -1319,12 +2034,21 @@ export class SqlMsAnalyser extends Component {
     }
 
     // Fields are shown for the checked tables if any, else the clicked table.
+    // While a view's script tab is the one in front, that view is shown too
+    // (first) whatever else is picked, so its columns are always at hand next
+    // to the script -- and ticking a table alongside it still works, which is
+    // how the view's fields get compared with a table's.
     _fieldsTables() {
         const checked = Object.keys(this.state.checked);
-        if (checked.length) {
-            return checked;
+        const tables = checked.length
+            ? checked
+            : (this.state.selected ? [this.state.selected] : []);
+        const t = this.qtab;
+        const view = t && t.viewName ? t.viewName : null;
+        if (view && !tables.includes(view)) {
+            return [view].concat(tables);
         }
-        return this.state.selected ? [this.state.selected] : [];
+        return tables;
     }
     async loadFields() {
         const tables = this._fieldsTables();
@@ -1342,6 +2066,16 @@ export class SqlMsAnalyser extends Component {
             this.state.fieldGroups = await this.orm.call(
                 "database.studio.analyser", "get_fields_multi", [tables]
             );
+            if (this.state.fieldGroups) {
+                for (const g of this.state.fieldGroups) {
+                    if (g.table && g.fields) {
+                        this.schemaCache[g.table] = {
+                            type: (this.state.views || []).includes(g.table) ? "view" : "table",
+                            columns: g.fields.map((f) => ({ name: f.name, type: f.type })),
+                        };
+                    }
+                }
+            }
             // Unticking a table on the left hides its fields; drop any picks
             // that went with it rather than letting them turn up invisibly in
             // the next built query.
@@ -1664,6 +2398,16 @@ export class SqlMsAnalyser extends Component {
         this.state.selectedCols = t.selectedCols || [];
         this.state.aggFunc = t.aggFunc || "";
         this._syncEditor();
+        // A script tab is about one view, so fronting it points the rest of
+        // the tool at that view too: it lights up in the list on the left and
+        // the Fields tab lists its columns (see _fieldsTables).
+        if (t.viewName) {
+            this.state.selected = t.viewName;
+            this.state.selectedType = "view";
+            if (this.state.activeTab === "fields") {
+                this.loadFields();
+            }
+        }
     }
     addQtab() {
         this._snapshotActiveQtab();
@@ -1694,6 +2438,13 @@ export class SqlMsAnalyser extends Component {
         // Make sure we test the up-to-date text of the active tab.
         if (id === this.state.activeQtabId) {
             this._snapshotActiveQtab();
+        }
+        // A view's definition is the database's text, not the user's: it can
+        // be pulled from the view again whenever it is wanted, so closing it
+        // has nothing to save.
+        if (t.isScript) {
+            this._doRemoveQtab(id);
+            return;
         }
         // Already saved (starred) — it's persisted, so there's nothing this
         // close could lose. Don't ask again.
@@ -1790,7 +2541,7 @@ export class SqlMsAnalyser extends Component {
     // "cancel" if they dismissed the prompt instead of answering it.
     _confirmCloseQtab(t) {
         const query = (t.query || "").trim();
-        if (t.isSaved || !query) {
+        if (t.isSaved || t.isScript || !query) {
             return Promise.resolve("close");
         }
         return new Promise((resolve) => {
@@ -2005,6 +2756,120 @@ export class SqlMsAnalyser extends Component {
     // for) without ever rewriting the textarea, so the caret stays put.
     onEditorInput(ev) {
         this._setDisplay(ev.target.value);
+        this.updateAutocomplete(ev.target);
+    }
+    // Handle keyboard navigation for autocomplete and Tab indenting
+    onEditorKeyDown(ev) {
+        const ac = this.state.autocomplete;
+        if (ac && ac.visible && ac.items.length) {
+            if (ev.key === "ArrowDown") {
+                ev.preventDefault();
+                this.navigateAutocomplete(1);
+                return;
+            }
+            if (ev.key === "ArrowUp") {
+                ev.preventDefault();
+                this.navigateAutocomplete(-1);
+                return;
+            }
+            if (ev.key === "Enter") {
+                if (ac.selectedIndex >= 0 && ac.items[ac.selectedIndex]) {
+                    ev.preventDefault();
+                    this.selectAutocompleteItem();
+                    return;
+                } else {
+                    // No suggestion was focused/selected by the user: dismiss popup and allow standard Enter (newline)
+                    this.closeAutocomplete();
+                    return;
+                }
+            }
+            if (ev.key === "Tab") {
+                if (ac.selectedIndex >= 0 && ac.items[ac.selectedIndex]) {
+                    ev.preventDefault();
+                    this.selectAutocompleteItem();
+                    return;
+                }
+                // If not explicitly focused, close autocomplete and allow Tab indent
+                this.closeAutocomplete();
+            }
+            if (ev.key === "Escape") {
+                ev.preventDefault();
+                this.closeAutocomplete();
+                return;
+            }
+        }
+
+        if (ev.key !== "Tab") {
+            return;
+        }
+        ev.preventDefault();
+        const ta = ev.target;
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        const val = ta.value;
+        const isMultiLine = val.substring(start, end).includes("\n");
+
+        if (!ev.shiftKey && !isMultiLine) {
+            // Single cursor or single line selection: insert 4 spaces (or replace selection)
+            let inserted = false;
+            try {
+                inserted = document.execCommand("insertText", false, INDENT_STR);
+            } catch (e) {
+                inserted = false;
+            }
+            if (!inserted) {
+                const before = val.substring(0, start);
+                const after = val.substring(end);
+                ta.value = before + INDENT_STR + after;
+                ta.selectionStart = ta.selectionEnd = start + INDENT_STR.length;
+                this._setDisplay(ta.value);
+            }
+            return;
+        }
+
+        // Multi-line block or Shift+Tab: indent or unindent whole lines
+        const lineStart = val.lastIndexOf("\n", start - 1) + 1;
+        let lineEnd = val.indexOf("\n", end);
+        if (lineEnd === -1) {
+            lineEnd = val.length;
+        }
+
+        const lines = val.substring(lineStart, lineEnd).split("\n");
+
+        if (ev.shiftKey) {
+            // Shift+Tab: Unindent lines
+            let firstLineRemoved = 0;
+            let totalRemoved = 0;
+            const modified = lines.map((line, idx) => {
+                let removeCount = 0;
+                if (line.startsWith("\t")) {
+                    removeCount = 1;
+                } else {
+                    while (removeCount < INDENT_STR.length && line[removeCount] === " ") {
+                        removeCount++;
+                    }
+                }
+                if (idx === 0) {
+                    firstLineRemoved = removeCount;
+                }
+                totalRemoved += removeCount;
+                return line.substring(removeCount);
+            });
+
+            const newBlock = modified.join("\n");
+            ta.value = val.substring(0, lineStart) + newBlock + val.substring(lineEnd);
+            ta.selectionStart = Math.max(lineStart, start - firstLineRemoved);
+            ta.selectionEnd = Math.max(ta.selectionStart, end - totalRemoved);
+            this._setDisplay(ta.value);
+        } else {
+            // Tab with multi-line selection: Indent lines
+            const modified = lines.map((line) => INDENT_STR + line);
+            const newBlock = modified.join("\n");
+            ta.value = val.substring(0, lineStart) + newBlock + val.substring(lineEnd);
+            ta.selectionStart = start + INDENT_STR.length;
+            ta.selectionEnd = end + (INDENT_STR.length * lines.length);
+            this._setDisplay(ta.value);
+        }
     }
     // The band marking what the last Execute ran. It goes when the user
     // asks for it to go (the toolbar button) and when they put the caret
@@ -2018,6 +2883,167 @@ export class SqlMsAnalyser extends Component {
     }
     onEditorScroll(ev) {
         this._syncEditorScroll(ev.target.scrollTop, ev.target.scrollLeft);
+        if (this.state.autocomplete.visible) {
+            this.closeAutocomplete();
+        }
+    }
+    onEditorBlur() {
+        setTimeout(() => {
+            if (this.state && this.state.autocomplete) {
+                this.closeAutocomplete();
+            }
+        }, 200);
+    }
+    async loadSchemaForAutocomplete() {
+        try {
+            const schema = await this.orm.call("database.studio.analyser", "get_schema_for_autocomplete", []);
+            if (schema && typeof schema === "object") {
+                this.schemaCache = Object.assign(this.schemaCache || {}, schema);
+            }
+        } catch (e) {
+            // Non-blocking fallback
+        }
+    }
+    async _fetchMissingTableSchema(tableNames) {
+        if (!tableNames || !tableNames.length || this._fetchingMissingTables) return;
+        this._fetchingMissingTables = true;
+        try {
+            const groups = await this.orm.call("database.studio.analyser", "get_fields_multi", [tableNames]);
+            if (groups && groups.length) {
+                if (!this.schemaCache) this.schemaCache = {};
+                for (const g of groups) {
+                    if (g.table && g.fields) {
+                        this.schemaCache[g.table] = {
+                            type: (this.state.views || []).includes(g.table) ? "view" : "table",
+                            columns: g.fields.map((f) => ({ name: f.name, type: f.type })),
+                        };
+                    }
+                }
+                const ta = this.taRef.el;
+                if (ta && document.activeElement === ta) {
+                    this.updateAutocomplete(ta);
+                }
+            }
+        } catch (e) {
+            // Non-blocking fallback
+        } finally {
+            this._fetchingMissingTables = false;
+        }
+    }
+    updateAutocomplete(ta) {
+        if (!ta) return;
+        const caretPos = ta.selectionStart;
+        const fullText = ta.value;
+
+        // Check if query has tables not yet loaded in schemaCache
+        const { tables: queryTables } = extractTablesAndAliases(fullText);
+        if (queryTables && queryTables.length) {
+            const missing = queryTables.filter((t) => !findTableSchema(this.schemaCache, t));
+            if (missing.length && !this._fetchingMissingTables) {
+                this._fetchMissingTableSchema(missing);
+            }
+        }
+
+        const { items, replaceStart, replaceEnd, prefix } = getAutocompleteSuggestions(
+            fullText,
+            caretPos,
+            this.schemaCache || {},
+            this.state.tables || [],
+            this.state.views || []
+        );
+
+        if (!items.length) {
+            this.closeAutocomplete();
+            return;
+        }
+
+        const coords = getCaretCoordinates(ta, caretPos);
+        const editorEl = this.editorRef.el;
+        const editorRect = editorEl ? editorEl.getBoundingClientRect() : { width: 600, height: 300 };
+
+        let top = coords.top - ta.scrollTop + coords.lineHeight + 6;
+        let left = coords.left - ta.scrollLeft;
+
+        left = Math.max(32, Math.min(left, (editorRect.width || 600) - 340));
+
+        const popupHeight = Math.min(260, items.length * 32 + 60);
+        if (top + popupHeight > (editorRect.height || 300) && coords.top - ta.scrollTop > popupHeight) {
+            top = Math.max(10, coords.top - ta.scrollTop - popupHeight - 4);
+        } else {
+            top = Math.max(10, top);
+        }
+
+        this.state.autocomplete = {
+            visible: true,
+            items,
+            selectedIndex: -1,
+            top,
+            left,
+            replaceStart,
+            replaceEnd,
+            prefix,
+        };
+    }
+    navigateAutocomplete(delta) {
+        const ac = this.state.autocomplete;
+        if (!ac.visible || !ac.items.length) return;
+        const count = ac.items.length;
+        let nextIndex;
+        if (ac.selectedIndex < 0) {
+            nextIndex = delta > 0 ? 0 : count - 1;
+        } else {
+            nextIndex = (ac.selectedIndex + delta) % count;
+            if (nextIndex < 0) nextIndex += count;
+        }
+        ac.selectedIndex = nextIndex;
+
+        const listEl = this.acListRef.el;
+        if (listEl && listEl.children[nextIndex]) {
+            listEl.children[nextIndex].scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+    }
+    selectAutocompleteItem(item) {
+        const ta = this.taRef.el;
+        if (!ta) return;
+        const ac = this.state.autocomplete;
+        const chosen = item || (ac.selectedIndex >= 0 && ac.items && ac.items[ac.selectedIndex]);
+        if (!chosen) {
+            this.closeAutocomplete();
+            return;
+        }
+
+        const val = ta.value;
+        const start = ac.replaceStart;
+        const end = ac.replaceEnd;
+        const before = val.substring(0, start);
+        const after = val.substring(end);
+        const insertText = chosen.insertText;
+
+        ta.value = before + insertText + after;
+
+        let newCursorPos = start + insertText.length;
+        if (chosen.cursorOffset != null) {
+            newCursorPos = start + chosen.cursorOffset;
+        }
+
+        ta.selectionStart = newCursorPos;
+        ta.selectionEnd = newCursorPos;
+        this._setDisplay(ta.value);
+
+        this.closeAutocomplete();
+        ta.focus();
+    }
+    closeAutocomplete() {
+        if (this.state.autocomplete) {
+            this.state.autocomplete.visible = false;
+            this.state.autocomplete.items = [];
+            this.state.autocomplete.selectedIndex = -1;
+        }
+    }
+    onAutocompleteHover(index) {
+        if (this.state.autocomplete) {
+            this.state.autocomplete.selectedIndex = index;
+        }
     }
     formatQuery() {
         this.setQuery(formatSql(this.state.query));
@@ -2055,6 +3081,39 @@ export class SqlMsAnalyser extends Component {
         // separate statement instead of dropping the bare name after FROM.
         const cur = this.state.query.replace(/;\s*$/, "").trimEnd();
         this.setQuery(cur ? cur + ";\n" + stmt : stmt);
+    }
+
+    // -- view scripts --------------------------------------------------
+    // The SELECT behind a view, fetched from the catalog and dropped into a
+    // query tab of its own, where it can be read, folded, edited and run like
+    // any other query. Asking a second time refreshes the tab already showing
+    // that view instead of stacking a duplicate next to it.
+    async showViewScript(name, ev) {
+        if (ev) {
+            ev.stopPropagation();
+        }
+        this.state.loading = true;
+        let info;
+        try {
+            info = await this.orm.call(
+                "database.studio.analyser", "get_view_script", [name]
+            );
+        } finally {
+            this.state.loading = false;
+        }
+        this._snapshotActiveQtab();
+        let tab = this.state.qtabs.find((t) => t.viewName === name);
+        if (tab) {
+            tab.query = info.script;
+            tab.display = info.script;
+            tab.folds = {};
+            tab.execRange = null;
+        } else {
+            tab = makeQtab(info.script, { name: name, viewName: name });
+            this.state.qtabs.push(tab);
+        }
+        this.state.activeTab = "query";
+        this._loadQtab(tab);
     }
 
     _activeQuery() {
@@ -2098,14 +3157,50 @@ export class SqlMsAnalyser extends Component {
         // tabs before the RPC resolves, the result must land on that tab
         // instead of clobbering whatever tab is active by then.
         const qtabId = this.state.activeQtabId;
+        const executionId = "exec_" + Date.now() + "_" + Math.random().toString(36).slice(2, 9);
+        this.state.currentExecutionId = executionId;
         this.state.loading = true;
+        this.state.cancelling = false;
         let result;
         try {
             result = await this.orm.call(
                 "database.studio.analyser", "run_query", [query, page, 100]
             );
+        } catch (err) {
+            if (this.state.cancelling) {
+                this.notification.add("SQL execution was cancelled.", { type: "info" });
+                return;
+            }
+            const errMsg =
+                (err && err.data && err.data.message) ||
+                (err && err.message) ||
+                String(err || "Query execution failed");
+            result = {
+                columns: [],
+                column_types: [],
+                rows: [],
+                total: 0,
+                page: 1,
+                pages: 1,
+                limit: 100,
+                error: errMsg,
+                message: errMsg,
+                aggregates: [],
+            };
         } finally {
             this.state.loading = false;
+            this.state.cancelling = false;
+            this.state.currentExecutionId = null;
+        }
+        if (result && result.cancelled) {
+            this.notification.add("SQL execution was cancelled.", { type: "info" });
+            if (qtabId === this.state.activeQtabId) {
+                this.state.queryResult = result;
+            }
+            return;
+        }
+        if (result && result.error) {
+            this.notification.add(result.error, { type: "danger" });
         }
         if (qtabId === this.state.activeQtabId) {
             this.state.queryResult = result;
@@ -2117,11 +3212,32 @@ export class SqlMsAnalyser extends Component {
                 t.queryResult = result;
             }
         }
-        // A successful Execute (not a pager click) logs to History under the
+        // A successful Execute (not a pager click and not an error) logs to History under the
         // "On the fly" tab, same as the old always-log behavior — but never
         // lets logging failures surface as if the query itself had failed.
-        if (fresh && query && query.trim()) {
+        if (fresh && query && query.trim() && !(result && result.error)) {
             this.orm.call("database.studio.query", "log_query_run", [query]).catch(() => {});
+        }
+    }
+
+    async cancelQuery() {
+        if (!this.state.loading || !this.state.currentExecutionId) {
+            return;
+        }
+        this.state.cancelling = true;
+        try {
+            const res = await this.orm.call(
+                "database.studio.analyser", "cancel_query", [this.state.currentExecutionId]
+            );
+            if (res && res.message) {
+                this.notification.add(res.message, {
+                    type: res.success ? "info" : "warning",
+                });
+            }
+        } catch (err) {
+            this.notification.add(err.message || "Failed to cancel query execution", {
+                type: "warning",
+            });
         }
     }
 
@@ -2206,58 +3322,85 @@ export class SqlMsAnalyser extends Component {
 
     // -- copy helpers --------------------------------------------------
     async _copy(text, label) {
-        let ok = false;
-        try {
-            if (navigator.clipboard && window.isSecureContext) {
-                await navigator.clipboard.writeText(text);
-                ok = true;
-            }
-        } catch (e) {
-            ok = false;
-        }
-        if (!ok) {
-            // navigator.clipboard is unavailable on insecure (http) origins;
-            // fall back to a hidden textarea + execCommand.
-            try {
-                const ta = document.createElement("textarea");
-                ta.value = text;
-                ta.setAttribute("readonly", "");
-                ta.style.position = "fixed";
-                ta.style.top = "0";
-                ta.style.left = "0";
-                ta.style.opacity = "0";
-                document.body.appendChild(ta);
-                ta.focus();
-                ta.select();
-                ok = document.execCommand("copy");
-                document.body.removeChild(ta);
-            } catch (e) {
-                ok = false;
-            }
-        }
+        const ok = await copyToClipboard(text);
         this.notification.add(
             ok ? label + " copied to clipboard" : "Could not copy to clipboard",
             { type: ok ? "success" : "danger" }
         );
     }
+    // -- Fields / Mapping column selection ------------------------------
+    // The same gesture the result grid has: click a header to add that
+    // column to the selection, click it again to drop it, and Copy then puts
+    // just those columns on the clipboard. With nothing picked, Copy writes
+    // every column — exactly what it did before.
+    _toggleCol(list, index) {
+        const i = list.indexOf(index);
+        if (i === -1) {
+            list.push(index);
+        } else {
+            list.splice(i, 1);
+        }
+    }
+    _pickedCols(list, defs) {
+        return list.length
+            ? list.slice().sort((a, b) => a - b)
+            : defs.map((c, i) => i);
+    }
+    // Tab-separated so a paste lands in one spreadsheet column per column.
+    _copyRows(cols, defs, rows, label) {
+        const lines = [cols.map((i) => defs[i].label).join("\t")];
+        for (const row of rows) {
+            lines.push(cols.map((i) => {
+                const v = row[defs[i].key];
+                return v === null || v === undefined ? "" : v;
+            }).join("\t"));
+        }
+        this._copy(lines.join("\n"), label);
+    }
+    toggleFieldColumn(index, ev) {
+        if (ev) {
+            ev.stopPropagation();
+        }
+        this._toggleCol(this.state.fieldCols, index);
+    }
+    isFieldColSelected(index) {
+        return this.state.fieldCols.includes(index);
+    }
+    clearFieldColumns() {
+        this.state.fieldCols = [];
+    }
+    toggleMappingColumn(index, ev) {
+        if (ev) {
+            ev.stopPropagation();
+        }
+        this._toggleCol(this.state.mappingCols, index);
+    }
+    isMappingColSelected(index) {
+        return this.state.mappingCols.includes(index);
+    }
+    clearMappingColumns() {
+        this.state.mappingCols = [];
+    }
     copyMapping() {
-        const header = ["from_table", "from_column", "to_table", "to_column", "via"].join("\t");
+        const cols = this._pickedCols(this.state.mappingCols, MAPPING_COLUMNS);
         const rows = (this.state.mapping && this.state.mapping.rows) || [];
-        const body = rows
-            .map((m) => [m.from_table, m.from_column, m.to_table, m.to_column, m.via].join("\t"))
-            .join("\n");
-        this._copy(header + "\n" + body, "Mapping");
+        this._copyRows(cols, MAPPING_COLUMNS, rows, "Mapping");
     }
     copyFields() {
-        const groups = this.state.fieldGroups || [];
-        const header = ["table", "name", "type", "precision/length", "nullable"].join("\t");
-        const lines = [header];
-        for (const g of groups) {
+        const cols = this._pickedCols(this.state.fieldCols, FIELD_COLUMNS);
+        const rows = [];
+        for (const g of this.state.fieldGroups || []) {
             for (const f of g.fields) {
-                lines.push([g.table, f.name, f.type, f.precision, f.nullable].join("\t"));
+                rows.push({
+                    table: g.table,
+                    name: f.name,
+                    type: f.type,
+                    precision: f.precision,
+                    nullable: f.nullable,
+                });
             }
         }
-        this._copy(lines.join("\n"), "Fields");
+        this._copyRows(cols, FIELD_COLUMNS, rows, "Fields");
     }
     // -- result column selection ---------------------------------------
     // Clicking a column header toggles it in/out of the selection (no

@@ -223,6 +223,11 @@
                                     t-on-click="(ev) => this.insertObject(fav.name, ev)">
                                 <i class="fa fa-code"/>
                             </button>
+                            <button class="sqlms-insert sqlms-script" t-if="fav.type === 'view'"
+                                    title="Show this view's SQL script in its own query tab"
+                                    t-on-click="(ev) => this.showViewScript(fav.name, ev)">
+                                <i class="fa fa-file-code-o"/>
+                            </button>
                         </li>
                     </ul>
 
@@ -275,6 +280,11 @@
                                     t-on-click="(ev) => this.insertObject(name, ev)">
                                 <i class="fa fa-code"/>
                             </button>
+                            <button class="sqlms-insert sqlms-script"
+                                    title="Show this view's SQL script in its own query tab"
+                                    t-on-click="(ev) => this.showViewScript(name, ev)">
+                                <i class="fa fa-file-code-o"/>
+                            </button>
                         </li>
                     </ul>
                 </div>
@@ -298,6 +308,12 @@
                             t-on-click="() => this.setTab('mapping')">Field Mapping</button>
                     <span class="sqlms-selected" t-if="state.selected">
                         <t t-esc="state.selectedType"/>: <b t-esc="state.selected"/>
+                        <button t-if="state.selectedType === 'view'"
+                                class="sqlms-script-btn"
+                                title="Show this view's SQL script in its own query tab"
+                                t-on-click="() => this.showViewScript(state.selected)">
+                            <i class="fa fa-file-code-o me-1"/>Script
+                        </button>
                     </span>
                 </div>
 
@@ -331,8 +347,14 @@
                                         t-on-click="clearFieldPicks">
                                     Clear field selection
                                 </button>
-                                <button class="btn btn-secondary btn-sm" t-on-click="copyFields">
+                                <button class="btn btn-secondary btn-sm" t-on-click="copyFields"
+                                        t-att-title="state.fieldCols.length ? ('Copy the ' + state.fieldCols.length + ' selected column(s)') : 'Copy every column as tab-separated text'">
                                     <i class="fa fa-clipboard"/> Copy fields
+                                    <t t-if="state.fieldCols.length">(<t t-esc="state.fieldCols.length"/>)</t>
+                                </button>
+                                <button class="btn btn-link btn-sm" t-if="state.fieldCols.length"
+                                        t-on-click="clearFieldColumns">
+                                    Clear column selection
                                 </button>
                                 <span class="sqlms-searchbox">
                                     <i class="fa fa-search"/>
@@ -393,10 +415,25 @@
                                                     <th class="sqlms-pickcol" title="Include in the built query"/>
                                                     <th class="sqlms-pickcol">Group</th>
                                                     <th class="sqlms-pickcol">Order</th>
-                                                    <th>Field name</th>
-                                                    <th>Field type</th>
-                                                    <th>Precision / Length</th>
-                                                    <th>Nullable</th>
+                                                    <!-- Clicking a header picks that column for Copy fields;
+                                                         the pick spans every table's grid, since they all
+                                                         carry the same columns. -->
+                                                    <th class="sqlms-colhead"
+                                                        t-att-class="{ 'sqlms-col-selected': isFieldColSelected(1) }"
+                                                        title="Click to select this column (click again to deselect). Copy fields then copies just the selection."
+                                                        t-on-click="(ev) => this.toggleFieldColumn(1, ev)">Field name</th>
+                                                    <th class="sqlms-colhead"
+                                                        t-att-class="{ 'sqlms-col-selected': isFieldColSelected(2) }"
+                                                        title="Click to select this column (click again to deselect). Copy fields then copies just the selection."
+                                                        t-on-click="(ev) => this.toggleFieldColumn(2, ev)">Field type</th>
+                                                    <th class="sqlms-colhead"
+                                                        t-att-class="{ 'sqlms-col-selected': isFieldColSelected(3) }"
+                                                        title="Click to select this column (click again to deselect). Copy fields then copies just the selection."
+                                                        t-on-click="(ev) => this.toggleFieldColumn(3, ev)">Precision / Length</th>
+                                                    <th class="sqlms-colhead"
+                                                        t-att-class="{ 'sqlms-col-selected': isFieldColSelected(4) }"
+                                                        title="Click to select this column (click again to deselect). Copy fields then copies just the selection."
+                                                        t-on-click="(ev) => this.toggleFieldColumn(4, ev)">Nullable</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -431,10 +468,14 @@
                                                             </button>
                                                         </td>
                                                     </t>
-                                                    <td t-esc="f.name"/>
-                                                    <td t-esc="f.type"/>
-                                                    <td t-esc="f.precision"/>
-                                                    <td t-esc="f.nullable"/>
+                                                    <td t-att-class="{ 'sqlms-col-selected': isFieldColSelected(1) }"
+                                                        t-esc="f.name"/>
+                                                    <td t-att-class="{ 'sqlms-col-selected': isFieldColSelected(2) }"
+                                                        t-esc="f.type"/>
+                                                    <td t-att-class="{ 'sqlms-col-selected': isFieldColSelected(3) }"
+                                                        t-esc="f.precision"/>
+                                                    <td t-att-class="{ 'sqlms-col-selected': isFieldColSelected(4) }"
+                                                        t-esc="f.nullable"/>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -455,8 +496,14 @@
                         <t t-elif="state.mapping">
                             <div class="sqlms-toolbar">
                                 <button class="btn btn-secondary btn-sm" t-on-click="copyMapping"
-                                        t-if="state.mapping.rows.length">
+                                        t-if="state.mapping.rows.length"
+                                        t-att-title="state.mappingCols.length ? ('Copy the ' + state.mappingCols.length + ' selected column(s)') : 'Copy every column as tab-separated text'">
                                     <i class="fa fa-clipboard"/> Copy mapping
+                                    <t t-if="state.mappingCols.length">(<t t-esc="state.mappingCols.length"/>)</t>
+                                </button>
+                                <button class="btn btn-link btn-sm" t-if="state.mappingCols.length"
+                                        t-on-click="clearMappingColumns">
+                                    Clear column selection
                                 </button>
                                 <span class="sqlms-info">
                                     <t t-esc="state.mapping.rows.length"/> mapping(s) for
@@ -467,22 +514,41 @@
                                 <table class="sqlms-grid">
                                     <thead>
                                         <tr>
-                                            <th>From table</th>
-                                            <th>From column</th>
+                                            <th class="sqlms-colhead"
+                                                t-att-class="{ 'sqlms-col-selected': isMappingColSelected(0) }"
+                                                title="Click to select this column (click again to deselect). Copy mapping then copies just the selection."
+                                                t-on-click="(ev) => this.toggleMappingColumn(0, ev)">From table</th>
+                                            <th class="sqlms-colhead"
+                                                t-att-class="{ 'sqlms-col-selected': isMappingColSelected(1) }"
+                                                title="Click to select this column (click again to deselect). Copy mapping then copies just the selection."
+                                                t-on-click="(ev) => this.toggleMappingColumn(1, ev)">From column</th>
                                             <th/>
-                                            <th>To table</th>
-                                            <th>To column</th>
-                                            <th>Via</th>
+                                            <th class="sqlms-colhead"
+                                                t-att-class="{ 'sqlms-col-selected': isMappingColSelected(2) }"
+                                                title="Click to select this column (click again to deselect). Copy mapping then copies just the selection."
+                                                t-on-click="(ev) => this.toggleMappingColumn(2, ev)">To table</th>
+                                            <th class="sqlms-colhead"
+                                                t-att-class="{ 'sqlms-col-selected': isMappingColSelected(3) }"
+                                                title="Click to select this column (click again to deselect). Copy mapping then copies just the selection."
+                                                t-on-click="(ev) => this.toggleMappingColumn(3, ev)">To column</th>
+                                            <th class="sqlms-colhead"
+                                                t-att-class="{ 'sqlms-col-selected': isMappingColSelected(4) }"
+                                                title="Click to select this column (click again to deselect). Copy mapping then copies just the selection."
+                                                t-on-click="(ev) => this.toggleMappingColumn(4, ev)">Via</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr t-foreach="state.mapping.rows" t-as="m" t-key="m_index">
-                                            <td t-esc="m.from_table"/>
-                                            <td t-esc="m.from_column"/>
+                                            <td t-att-class="{ 'sqlms-col-selected': isMappingColSelected(0) }"
+                                                t-esc="m.from_table"/>
+                                            <td t-att-class="{ 'sqlms-col-selected': isMappingColSelected(1) }"
+                                                t-esc="m.from_column"/>
                                             <td class="sqlms-arrow">&#8594;</td>
-                                            <td t-esc="m.to_table"/>
-                                            <td t-esc="m.to_column"/>
-                                            <td>
+                                            <td t-att-class="{ 'sqlms-col-selected': isMappingColSelected(2) }"
+                                                t-esc="m.to_table"/>
+                                            <td t-att-class="{ 'sqlms-col-selected': isMappingColSelected(3) }"
+                                                t-esc="m.to_column"/>
+                                            <td t-att-class="{ 'sqlms-col-selected': isMappingColSelected(4) }">
                                                 <span t-att-class="'sqlms-via sqlms-via-' + m.via"
                                                       t-esc="m.via"/>
                                             </td>
@@ -514,7 +580,10 @@
                                  class="sqlms-qtab"
                                  t-att-class="{ 'sqlms-qtab-active': qt.id === state.activeQtabId }"
                                  t-on-click="() => this.switchQtab(qt.id)">
-                                <span class="sqlms-qtab-name" t-esc="qt.name" t-att-title="qt.fullName || qt.name"/>
+                                <i t-if="qt.isScript" class="fa fa-eye sqlms-qtab-icon"
+                                   t-att-title="'Script of view ' + qt.viewName"/>
+                                <span class="sqlms-qtab-name" t-esc="qt.name"
+                                      t-att-title="qt.isScript ? ('Script of view ' + qt.viewName) : (qt.fullName || qt.name)"/>
                                 <span class="sqlms-qtab-close" title="Close tab"
                                       t-on-click="(ev) => this.removeQtab(qt.id, ev)">&#215;</span>
                             </div>
@@ -563,33 +632,49 @@
                             </div>
                         </div>
                         <div class="sqlms-toolbar">
-                            <button class="btn btn-primary btn-sm" t-on-click="() => this.runQuery(1, true)"
-                                    t-att-disabled="state.loading">
+                            <button class="btn btn-primary btn-sm" t-if="!state.loading"
+                                    t-on-click="() => this.runQuery(1, true)">
                                 <i class="fa fa-play"/> Execute
                             </button>
-                            <button class="btn btn-secondary btn-sm" t-on-click="formatQuery">
+                            <button class="btn btn-danger btn-sm" t-if="state.loading"
+                                    t-on-click="cancelQuery"
+                                    t-att-disabled="state.cancelling"
+                                    title="Abort the running SQL execution">
+                                <i class="fa fa-stop" t-if="!state.cancelling"/>
+                                <i class="fa fa-spinner fa-spin" t-if="state.cancelling"/>
+                                <t t-if="state.cancelling"> Cancelling…</t>
+                                <t t-else=""> Cancel execution</t>
+                            </button>
+                            <button class="btn btn-secondary btn-sm" t-on-click="formatQuery"
+                                    t-att-disabled="state.loading">
                                 <i class="fa fa-indent"/> Format
                             </button>
-                            <button class="btn btn-secondary btn-sm" t-on-click="saveQuery">
+                            <button class="btn btn-secondary btn-sm" t-on-click="saveQuery"
+                                    t-att-disabled="state.loading">
                                 <i class="fa fa-star"/> Save
                             </button>
-                            <button class="btn btn-secondary btn-sm" t-on-click="copyQuery">
+                            <button class="btn btn-secondary btn-sm" t-on-click="copyQuery"
+                                    t-att-disabled="state.loading">
                                 <i class="fa fa-clipboard"/> Copy query
                             </button>
-                            <button class="btn btn-secondary btn-sm" t-on-click="clearQuery">
+                            <button class="btn btn-secondary btn-sm" t-on-click="clearQuery"
+                                    t-att-disabled="state.loading">
                                 <i class="fa fa-eraser"/> Clear
                             </button>
                             <button class="btn btn-secondary btn-sm" t-if="state.execRange"
                                     t-on-click="clearExecHighlight"
+                                    t-att-disabled="state.loading"
                                     title="Remove the highlight marking the part of the query that was executed">
                                 <i class="fa fa-eraser"/> Clear highlight
                             </button>
                             <t t-if="foldableCount">
                                 <button class="btn btn-secondary btn-sm" t-on-click="foldAll"
+                                        t-att-disabled="state.loading"
                                         title="Collapse every statement">
                                     <i class="fa fa-compress"/> Fold all
                                 </button>
                                 <button class="btn btn-secondary btn-sm" t-on-click="unfoldAll"
+                                        t-att-disabled="state.loading"
                                         title="Expand every collapsed statement">
                                     <i class="fa fa-expand"/> Unfold all
                                 </button>
@@ -614,8 +699,56 @@
                                       spellcheck="false"
                                       placeholder="Type or paste a query..."
                                       t-on-input="onEditorInput"
+                                      t-on-keydown="onEditorKeyDown"
                                       t-on-mousedown="clearExecHighlight"
-                                      t-on-scroll="onEditorScroll"/>
+                                      t-on-scroll="onEditorScroll"
+                                      t-on-blur="onEditorBlur"/>
+                            <div t-if="state.autocomplete and state.autocomplete.visible and state.autocomplete.items.length"
+                                 class="sqlms-autocomplete"
+                                 t-ref="autocompleteEl"
+                                 t-att-style="'top:' + state.autocomplete.top + 'px; left:' + state.autocomplete.left + 'px;'">
+                                <div class="sqlms-ac-header">
+                                    <span class="sqlms-ac-title">
+                                        <i class="fa fa-magic text-primary"/> Suggestions
+                                    </span>
+                                    <span class="sqlms-ac-count" t-esc="state.autocomplete.items.length + ' found'"/>
+                                </div>
+                                <div class="sqlms-ac-list" t-ref="acListEl">
+                                    <t t-foreach="state.autocomplete.items" t-as="item" t-key="item.id || item_index">
+                                        <div class="sqlms-ac-item"
+                                             t-att-class="{'sqlms-ac-active': item_index === state.autocomplete.selectedIndex}"
+                                             t-on-mousedown.prevent="() => this.selectAutocompleteItem(item)"
+                                             t-on-mouseenter="() => this.onAutocompleteHover(item_index)">
+                                            <span class="sqlms-ac-badge" t-att-class="'sqlms-ac-badge-' + item.category">
+                                                <t t-if="item.category === 'keyword'"><i class="fa fa-bolt"/></t>
+                                                <t t-elif="item.category === 'function'">ƒ()</t>
+                                                <t t-elif="item.category === 'table'"><i class="fa fa-database"/></t>
+                                                <t t-elif="item.category === 'view'"><i class="fa fa-eye"/></t>
+                                                <t t-elif="item.category === 'field'"><i class="fa fa-columns"/></t>
+                                                <t t-elif="item.category === 'alias'"><i class="fa fa-tag"/></t>
+                                                <span t-esc="item.categoryLabel"/>
+                                            </span>
+                                            <span class="sqlms-ac-label">
+                                                <t t-if="item.matchParts">
+                                                    <span t-esc="item.matchParts.pre"/>
+                                                    <b class="sqlms-ac-part-match" t-esc="item.matchParts.match"/>
+                                                    <span t-esc="item.matchParts.post"/>
+                                                </t>
+                                                <t t-else="">
+                                                    <t t-esc="item.name"/>
+                                                </t>
+                                            </span>
+                                            <span t-if="item.detail" class="sqlms-ac-detail" t-esc="item.detail"/>
+                                            <span t-if="item.dtype" class="sqlms-ac-dtype" t-esc="item.dtype"/>
+                                        </div>
+                                    </t>
+                                </div>
+                                <div class="sqlms-ac-footer">
+                                    <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+                                    <span><kbd>Tab</kbd> or <kbd>↵</kbd> select</span>
+                                    <span><kbd>Esc</kbd> dismiss</span>
+                                </div>
+                            </div>
                         </div>
                         <div class="sqlms-resizer sqlms-resizer-y"
                              title="Drag to resize the editor — double-click to reset"
@@ -623,8 +756,28 @@
                              t-on-dblclick="() => this.resetResize('editor')">
                             <span class="sqlms-resizer-grip"/>
                         </div>
+                        <div t-if="state.loading" class="sqlms-running-bar">
+                            <div class="sqlms-running-status">
+                                <i class="fa fa-spinner fa-spin"/> Executing query…
+                            </div>
+                            <button class="btn btn-danger btn-sm" t-on-click="cancelQuery"
+                                    t-att-disabled="state.cancelling"
+                                    title="Abort the running SQL execution">
+                                <i class="fa fa-stop" t-if="!state.cancelling"/>
+                                <i class="fa fa-spinner fa-spin" t-if="state.cancelling"/>
+                                <t t-if="state.cancelling"> Cancelling…</t>
+                                <t t-else=""> Cancel execution</t>
+                            </button>
+                        </div>
                         <t t-if="state.queryResult">
-                            <div class="sqlms-toolbar">
+                            <div t-if="state.queryResult.error" class="sqlms-query-error alert alert-danger mx-3 my-2 p-3 d-flex align-items-start gap-2" role="alert">
+                                <i class="fa fa-exclamation-triangle mt-1 flex-shrink-0"/>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold mb-1">Query Error</div>
+                                    <pre class="mb-0 text-danger" style="white-space: pre-wrap; font-family: monospace; font-size: 12px; background: transparent; border: none; padding: 0;" t-esc="state.queryResult.error"/>
+                                </div>
+                            </div>
+                            <div class="sqlms-toolbar" t-if="!state.queryResult.error || state.queryResult.columns.length">
                                 <label class="sqlms-aggpick" t-if="state.queryResult.columns.length"
                                        title="Show a total under each selected column, computed over every row of the result — not just the page shown.">
                                     Totals:
