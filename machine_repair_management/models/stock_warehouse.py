@@ -24,7 +24,12 @@ class StockWarehouse(models.Model):
         string="Warehouse Type")
     
     work_center_ids = fields.Many2many('work.center.location','stock_warehouse_work_center_rel','warehouse_id','work_center_id',string = "Work Centers")
-
+    
+    service_next_number = fields.Integer(string = "Service Next Number", default = 1)
+    
+    amc_next_number  = fields.Integer(string = "AMC Next Number", default = 1)
+    
+    
     @api.depends('name', 'code')
     def _compute_complete_name(self):
         for rec in self:

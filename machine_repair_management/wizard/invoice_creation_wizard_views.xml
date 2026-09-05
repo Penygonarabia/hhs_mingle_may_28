@@ -1,0 +1,31 @@
+<?xml version = "1.0" encoding = "utf-8" ?>
+<odoo>
+
+	<record id="view_invoice_creation_wizard_form" model="ir.ui.view">
+	    <field name="name">invoice.creation.wizard.form</field>
+	    <field name="model">invoice.creation.wizard</field>
+	    <field name="arch" type="xml">
+	        <form string="Invoice Creation">
+	            <sheet>
+	                <group>
+	                	<field name = "job_task_id" readonly = "1"/>
+	                    <!-- <label string="Are you sure you want to create the invoice number?"/> -->
+	                </group>
+	
+	                <footer>
+	                    <button name="action_confirm"
+	                            type="object"
+	                            string="OK"
+	                            class="btn-primary"/>
+	
+	                    <button string="Cancel"
+	                            special="cancel"
+	                            class="btn-secondary"/>
+	                </footer>
+	            </sheet>
+	        </form>
+	    </field>
+	</record>
+
+
+</odoo>

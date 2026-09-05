@@ -199,7 +199,13 @@ class ResConfigSettings(models.TransientModel):
     filtering_data_by_country = fields.Char(string = "Filtering Data", default = "KSA", config_parameter = "machine_repair_management.filtering_data_by_country" , help = "Filtering Data Based on the country should be visible in the Model")
     
     
+    service_invoice_creation_prefix = fields.Char(string = "Service Invoice Creation Prefix", config_parameter = "machine_repair_management.service_invoice_creation_prefix", default = 'SIN')
+    
+    amc_invoice_creation_prefix = fields.Char(string = "AMC Contract Invoice Creation Prefix", config_parameter = "machine_repair_management.amc_invoice_creation_prefix", default = 'CIN')
+    
 
+
+    
     @api.model
     def get_values(self):
         res = super(ResConfigSettings, self).get_values()
@@ -302,7 +308,12 @@ class ResConfigSettings(models.TransientModel):
             
             filtering_data_by_country = params.get_param('machine_repair_management.filtering_data_by_country', default='KSA'),
             
+            service_invoice_creation_prefix = params.get_param('machine_repair_management.service_invoice_creation_prefix', default='SIN'),
+
             
+            amc_invoice_creation_prefix = params.get_param('machine_repair_management.amc_invoice_creation_prefix', default='CIN'),
+
+      
             
             
 
@@ -442,6 +453,13 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('machine_repair_management.manufacturing_country_code', self.manufacturing_country_code)
         
         self.env['ir.config_parameter'].sudo().set_param('machine_repair_management.filtering_data_by_country',self.filtering_data_by_country)
+        
+        
+        self.env['ir.config_parameter'].sudo().set_param('machine_repair_management.service_invoice_creation_prefix',self.service_invoice_creation_prefix)
+        
+        
+        self.env['ir.config_parameter'].sudo().set_param('machine_repair_management.amc_invoice_creation_prefix',self.amc_invoice_creation_prefix)
+
         
         
         return res

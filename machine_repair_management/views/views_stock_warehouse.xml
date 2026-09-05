@@ -16,6 +16,8 @@
 				<field name = "region_default_warehouse_bool" />
 				<field name = "warehouse_type" required = "1"/>
 				<field name = "work_center_id" invisible = "1"/>
+				<field name = "service_next_number" invisible = "0" readonly = "1" force_save = "1"/>
+				<field name = "amc_next_number" invisible = "0" readonly = "1" force_save = "1"/>
             </xpath>
         </field>
     </record>

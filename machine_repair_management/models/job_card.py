@@ -6700,7 +6700,19 @@ class ProjectTask(models.Model):
     '''Code Added on April 27 2026 by Vijaya Bhaskar'''
     technician_travel_hours_min = fields.Char(string = "Technician Travel Hours Min", compute = "_compute_techinical_travel_hours", store = True)
     
-    
+    def manual_invoice_creation_button(self):
+        self.ensure_one()
+
+        return {
+        'type': 'ir.actions.act_window',
+        'name': 'Invoice Creation',
+        'res_model': 'invoice.creation.wizard',
+        'view_mode': 'form',
+        'target': 'new',
+        'context': {
+            'default_job_task_id': self.id,
+        },
+    }
      
     '''Code Added on June 15 2026 by Vijaya Bhaskar'''
     show_quotation_button = fields.Boolean(

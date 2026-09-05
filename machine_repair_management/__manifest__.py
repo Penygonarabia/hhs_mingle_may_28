@@ -507,6 +507,7 @@ workshop machine repair
         "datas/subscription_contract_cron.xml",
         "report/contract_proforma_invoice_report_template.xml",
          "views/sales_team_views.xml",
+         "wizard/invoice_creation_wizard_views.xml"
     ],
     "installable": True,
     "application": True,

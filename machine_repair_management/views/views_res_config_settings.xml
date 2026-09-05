@@ -230,7 +230,41 @@
                             </div>
                         </div>
                     </div>
-
+				
+				 <h2>Service Invoice Creation Prefix</h2>
+                    <div class="text-muted mb-2 ms-3">
+                        Service Invoice Creation Prefix
+                    </div>
+                    
+                    <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                               
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="service_invoice_creation_prefix" class="oe_inline" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>  
+                        
+                    <h2>AMC Invoice Creation Prefix</h2>
+                    <div class="text-muted mb-2 ms-3">
+                        AMC Invoice Creation Prefix
+                    </div>
+                    
+                    <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane">
+                               
+                                <div class="content-group">
+                                    <div class="mt16">
+                                        <field name="amc_invoice_creation_prefix" class="oe_inline" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>    
+				
 
                     <div class="app_settings_block" data-string="Cost Calculation" string="Cost Calculation" data-key="cost_calculation">
 
