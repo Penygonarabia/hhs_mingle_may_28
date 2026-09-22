@@ -1,0 +1,1 @@
+../pbi_dashboard_configurations/sql/merge_inverter_product_families.sql

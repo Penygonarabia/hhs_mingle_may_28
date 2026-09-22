@@ -31,6 +31,48 @@
               <input type="date" class="filter-select" t-att-value="state.customEnd"
                      t-on-change="(ev) => this.selectCustomEnd(ev.target.value)"/>
             </div>
+            <!-- Franchise (brand) — every board, searchable because the
+                 brand list is long. Same visual weight as the selects
+                 beside it; the panel is a plain div, so closeAllPickers
+                 (a capture-phase document click) is what shuts it. -->
+            <div class="filter-group">
+              <span class="filter-label"><t t-esc="t('Franchise')"/></span>
+              <div class="pbi-ms pbi-franchise-ms">
+                <button class="filter-select pbi-ms-toggle"
+                        t-att-class="state.franchise !== 'all' ? 'pbi-ms-active' : ''"
+                        t-att-aria-expanded="state.franchiseMenuOpen ? 'true' : 'false'"
+                        t-on-click="toggleFranchiseMenu">
+                  <span class="pbi-ms-toggle-text"><t t-esc="franchiseLabel"/></span>
+                  <i class="fa fa-caret-down pbi-ms-caret"/>
+                </button>
+                <div class="pbi-ms-panel" t-if="state.franchiseMenuOpen">
+                  <div class="pbi-ms-search">
+                    <i class="fa fa-search"/>
+                    <input type="text"
+                           t-att-placeholder="t('Search franchise...')"
+                           t-att-value="state.franchiseSearch"
+                           t-on-input="(ev) => this.updateFranchiseSearch(ev.target.value)"/>
+                  </div>
+                  <div class="pbi-ms-list">
+                    <div class="pbi-ms-option"
+                         t-att-class="state.franchise === 'all' ? 'selected' : ''"
+                         t-on-click="() => this.selectFranchise('all')">
+                      <t t-esc="t('All Franchises')"/>
+                    </div>
+                    <t t-foreach="franchiseMatches" t-as="f" t-key="f">
+                      <div class="pbi-ms-option"
+                           t-att-class="state.franchise === f ? 'selected' : ''"
+                           t-on-click="() => this.selectFranchise(f)">
+                        <t t-esc="f"/>
+                      </div>
+                    </t>
+                    <div class="pbi-ms-empty" t-if="!franchiseMatches.length">
+                      <t t-esc="t('No franchise matches')"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div class="filter-group" t-if="state.regionFilterable">
               <span class="filter-label"><t t-esc="t('Region')"/></span>
               <select class="filter-select" t-on-change="(ev) => this.selectRegion(ev.target.value)">
@@ -62,8 +104,15 @@
             <t t-foreach="chartItems" t-as="item" t-key="item.key">
               <div class="pbi-card" t-att-data-item-key="item.key">
                 <h2>
-                  <t t-esc="t(item.name)"/>
+                  <span class="pbi-card-title-text"><t t-esc="t(item.name)"/></span>
                   <span t-if="isDebugMode &amp;&amp; item.info" class="info-icon" t-on-mouseenter="(ev) => this.onInfoEnter(ev, item.info)" t-on-mouseleave="onInfoLeave">i</span>
+                  <button t-if="item.hasDetail"
+                          class="pbi-chart-formula-btn"
+                          t-att-title="t('View the formula and the records behind this chart')"
+                          t-on-click="() => this.openDetailModal(item.key)">
+                    <i class="fa fa-calculator me-1"/>
+                    <span><t t-esc="t('Formula &amp; Details')"/></span>
+                  </button>
                 </h2>
                 <div class="drill-breadcrumb" t-if="state.charts[item.key] and state.charts[item.key].breadcrumb.length">
                   <span class="crumb" t-on-click="() => this.drillTo(item.key, -1)"><t t-esc="t('All')"/></span>
@@ -85,6 +134,271 @@
         <footer><t t-esc="t('PBI Dashboards')"/> &gt; <t t-esc="t('Service Dashboards')"/> &gt; <t t-esc="state.title"/> — <t t-esc="t('live from')"/> project_task</footer>
       </div>
       <div class="pbi-tooltip" t-ref="tooltip"/>
+
+      <!-- Formula & Details modal — generic over every chart that carries
+           a DetailConfig (service_config.py); columns come from the payload. -->
+      <div class="pbi-modal-backdrop" t-if="state.detailModal &amp;&amp; state.detailModal.isOpen" t-on-click="closeDetailModal">
+        <div class="pbi-modal-dialog pbi-labor-hours-modal" t-on-click.stop="">
+          <div class="pbi-modal-header">
+            <div class="pbi-modal-title-wrap">
+              <div class="pbi-modal-badge"><i class="fa fa-calculator me-1"/><t t-esc="t('Calculation Breakdown')"/></div>
+              <h3><t t-esc="t(state.detailModal.title)"/></h3>
+              <div class="pbi-modal-sub-meta">
+                <span class="pbi-meta-pill"><i class="fa fa-calendar me-1"/><t t-esc="state.periodLabel"/></span>
+                <span class="pbi-meta-pill" t-if="state.region &amp;&amp; state.region !== 'all'"><i class="fa fa-map-marker me-1"/><t t-esc="state.region"/></span>
+                <span class="pbi-meta-pill" t-else=""><i class="fa fa-globe me-1"/><t t-esc="t('All Regions')"/></span>
+                <span class="pbi-meta-pill" t-if="state.franchise &amp;&amp; state.franchise !== 'all'"><i class="fa fa-tag me-1"/><t t-esc="state.franchise"/></span>
+              </div>
+            </div>
+            <button class="pbi-modal-close" t-on-click="closeDetailModal" aria-label="Close">×</button>
+          </div>
+
+          <!-- Summary figures, in the header rather than above the table: the
+               table is what the reader came for, and these are four short
+               numbers that read fine at header size. -->
+          <div class="pbi-modal-kpi-row in-header" t-if="state.detailModal.summary">
+            <div class="pbi-kpi-chip">
+              <span class="pbi-chip-label"><t t-esc="t(state.detailModal.summary.record_label)"/></span>
+              <span class="pbi-chip-val"><t t-esc="filteredDetailTotals.count"/></span>
+            </div>
+            <div class="pbi-kpi-chip" t-if="filteredDetailTotals.agg === 'avg' &amp;&amp; filteredDetailTotals.counted !== filteredDetailTotals.count">
+              <span class="pbi-chip-label"><t t-esc="t('Counted')"/></span>
+              <span class="pbi-chip-val"><t t-esc="filteredDetailTotals.counted"/></span>
+            </div>
+            <div class="pbi-kpi-chip" t-if="state.detailModal.valueColumn &amp;&amp; state.detailModal.valueColumn.shown">
+              <span class="pbi-chip-label"><t t-esc="t('Total')"/> — <t t-esc="t(state.detailModal.summary.value_label)"/></span>
+              <span class="pbi-chip-val"><t t-esc="filteredDetailTotals.totalFormatted"/></span>
+            </div>
+            <div class="pbi-kpi-chip primary" t-if="filteredDetailTotals.agg === 'avg'">
+              <span class="pbi-chip-label"><t t-esc="t('Average')"/></span>
+              <span class="pbi-chip-val"><t t-esc="filteredDetailTotals.avgFormatted"/></span>
+            </div>
+            <div class="pbi-kpi-chip" t-if="filteredDetailTotals.agg === 'utilization'">
+              <span class="pbi-chip-label"><t t-esc="t('Divisor')"/></span>
+              <span class="pbi-chip-val"><t t-esc="filteredDetailTotals.divisorLabel"/></span>
+            </div>
+            <div class="pbi-kpi-chip primary" t-if="filteredDetailTotals.agg === 'utilization'">
+              <span class="pbi-chip-label"><t t-esc="t('Utilization')"/></span>
+              <span class="pbi-chip-val"><t t-esc="filteredDetailTotals.utilizationFormatted"/></span>
+            </div>
+          </div>
+
+          <div class="pbi-modal-body">
+            <!-- Formula -->
+            <div class="pbi-formula-banner" t-if="state.detailModal.formula">
+              <div class="pbi-formula-header">
+                <div class="pbi-formula-tag"><i class="fa fa-superscript me-1"/><t t-esc="t('Formula Logic')"/></div>
+                <div class="pbi-formula-equation">
+                  <span class="pbi-eq-expression"><t t-esc="t(state.detailModal.formula.expression)"/></span>
+                </div>
+                <!-- The formula itself always shows; the term definitions and
+                     scope open with it, and this toggle folds them away for
+                     this modal when the rows want the space. -->
+                <button class="pbi-formula-toggle"
+                        t-att-aria-expanded="state.detailModal.formulaOpen ? 'true' : 'false'"
+                        t-att-title="state.detailModal.formulaOpen ? t('Hide definitions &amp; scope') : t('Show definitions &amp; scope')"
+                        t-on-click="toggleDetailFormula">
+                  <i t-att-class="state.detailModal.formulaOpen ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"/>
+                  <span><t t-esc="state.detailModal.formulaOpen ? t('Hide definitions &amp; scope') : t('Show definitions &amp; scope')"/></span>
+                </button>
+              </div>
+              <div class="pbi-formula-grid" t-if="state.detailModal.formulaOpen">
+                <t t-foreach="state.detailModal.formula.terms" t-as="term" t-key="term_index">
+                  <div class="pbi-formula-item">
+                    <span class="pbi-item-icon calc"><i class="fa fa-angle-right"/></span>
+                    <div class="pbi-item-content">
+                      <strong><t t-esc="t(term.label)"/></strong>
+                      <p><t t-esc="t(term.definition)"/></p>
+                    </div>
+                  </div>
+                </t>
+                <div class="pbi-formula-item" t-if="state.detailModal.formula.scope">
+                  <span class="pbi-item-icon end"><i class="fa fa-filter"/></span>
+                  <div class="pbi-item-content">
+                    <strong><t t-esc="t('Scope')"/></strong>
+                    <p><t t-esc="t(state.detailModal.formula.scope)"/></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Toolbar: search + entity filter. Download Excel lives in the
+                 modal footer only — it used to be duplicated here too. -->
+            <div class="pbi-modal-toolbar">
+              <div class="pbi-toolbar-left">
+                <div class="pbi-search-box">
+                  <i class="fa fa-search pbi-search-icon"/>
+                  <input type="text"
+                         class="pbi-search-input"
+                         t-att-placeholder="t('Search records, name, work center, status...')"
+                         t-att-value="state.detailModal.searchQuery"
+                         t-on-input="(ev) => this.updateDetailSearch(ev.target.value)"/>
+                  <button t-if="state.detailModal.searchQuery"
+                          class="pbi-search-clear"
+                          t-on-click="() => this.updateDetailSearch('')">×</button>
+                </div>
+                <!-- Entity picker: MULTI-select. No selection at all means
+                     every entity, so the table opens showing everything. -->
+                <div class="pbi-filter-group" t-if="state.detailModal.summary &amp;&amp; state.detailModal.summary.entities &amp;&amp; state.detailModal.summary.entities.length > 1">
+                  <div class="pbi-ms pbi-entity-ms">
+                    <button class="pbi-tech-select pbi-ms-toggle"
+                            t-att-class="state.detailModal.selectedEntities.length ? 'pbi-ms-active' : ''"
+                            t-att-aria-expanded="state.detailModal.entityMenuOpen ? 'true' : 'false'"
+                            t-on-click="toggleDetailEntityMenu">
+                      <span class="pbi-ms-toggle-text"><t t-esc="detailEntityLabel"/></span>
+                      <i class="fa fa-caret-down pbi-ms-caret"/>
+                    </button>
+                    <div class="pbi-ms-panel" t-if="state.detailModal.entityMenuOpen">
+                      <div class="pbi-ms-search">
+                        <i class="fa fa-search"/>
+                        <input type="text"
+                               t-att-placeholder="t('Search') + ' ' + t(state.detailModal.summary.entity_label) + '...'"
+                               t-att-value="state.detailModal.entitySearch"
+                               t-on-input="(ev) => this.updateDetailEntitySearch(ev.target.value)"/>
+                      </div>
+                      <div class="pbi-ms-actions">
+                        <button t-on-click="selectAllDetailEntities"><t t-esc="t('Select all')"/></button>
+                        <button t-on-click="clearDetailEntities"><t t-esc="t('Clear')"/></button>
+                      </div>
+                      <div class="pbi-ms-list">
+                        <t t-foreach="detailEntityMatches" t-as="ent" t-key="ent.id">
+                          <div class="pbi-ms-option pbi-ms-check"
+                               t-att-class="isDetailEntitySelected(ent.id) ? 'selected' : ''"
+                               t-on-click="() => this.toggleDetailEntity(ent.id)">
+                            <i t-att-class="isDetailEntitySelected(ent.id) ? 'fa fa-check-square pbi-ms-box on' : 'fa fa-square-o pbi-ms-box'"/>
+                            <span class="pbi-ms-opt-name" t-att-title="ent.name"><t t-esc="ent.name"/></span>
+                            <span class="pbi-ms-opt-meta">(<t t-esc="ent.count"/> - <t t-esc="ent.value_formatted"/>)</span>
+                          </div>
+                        </t>
+                        <div class="pbi-ms-empty" t-if="!detailEntityMatches.length">
+                          <t t-esc="t('No match')"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Record table -->
+            <div class="pbi-modal-table-wrap">
+              <div class="pbi-modal-loading" t-if="state.detailModal.loading">
+                <i class="fa fa-spinner fa-spin me-2"/> <t t-esc="t('Loading details...')"/>
+              </div>
+              <div class="pbi-modal-error" t-elif="state.detailModal.error">
+                <i class="fa fa-exclamation-triangle me-2"/> <t t-esc="state.detailModal.error"/>
+              </div>
+              <div class="pbi-modal-empty" t-elif="filteredDetailRecords.length === 0">
+                <i class="fa fa-inbox me-2"/> <t t-esc="t('No records found for the selected period / criteria.')"/>
+              </div>
+              <table class="pbi-detail-table" t-else="">
+                <thead>
+                  <tr>
+                    <th class="col-num">#</th>
+                    <th class="col-jc" t-on-click="() => this.sortDetail('name')">
+                      <t t-esc="t('Job Card #')"/>
+                      <i t-att-class="getSortIcon('name')"/>
+                    </th>
+                    <th class="col-tech" t-on-click="() => this.sortDetail('entity_name')">
+                      <t t-esc="t(state.detailModal.summary.entity_label)"/>
+                      <i t-att-class="getSortIcon('entity_name')"/>
+                    </th>
+                    <th class="col-wc" t-on-click="() => this.sortDetail('work_center')">
+                      <t t-esc="t('Work Center')"/>
+                      <i t-att-class="getSortIcon('work_center')"/>
+                    </th>
+                    <th class="col-reg" t-on-click="() => this.sortDetail('region')">
+                      <t t-esc="t('Region')"/>
+                      <i t-att-class="getSortIcon('region')"/>
+                    </th>
+                    <th class="col-status text-center" t-on-click="() => this.sortDetail('status')">
+                      <t t-esc="t('Status')"/>
+                      <i t-att-class="getSortIcon('status')"/>
+                    </th>
+                    <t t-foreach="state.detailModal.columns" t-as="col" t-key="col.key">
+                      <th class="col-ts text-center" t-on-click="() => this.sortDetail(col.key)">
+                        <t t-esc="t(col.label)"/>
+                        <i t-att-class="getSortIcon(col.key)"/>
+                      </th>
+                    </t>
+                    <th class="col-hrs-fmt text-end"
+                        t-if="state.detailModal.valueColumn &amp;&amp; state.detailModal.valueColumn.shown"
+                        t-on-click="() => this.sortDetail('value')">
+                      <t t-esc="t(state.detailModal.summary.value_label)"/>
+                      <i t-att-class="getSortIcon('value')"/>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <t t-foreach="filteredDetailRecords" t-as="rec" t-key="rec.task_id">
+                    <tr t-att-class="rec.counted ? '' : 'pbi-row-uncounted'"
+                        t-att-title="rec.counted ? undefined : t('This record has no completed interval yet, so it is listed but not counted in the average.')">
+                      <td class="col-num text-center"><t t-esc="rec_index + 1"/></td>
+                      <td class="col-jc">
+                        <a href="javascript:void(0)" class="pbi-jc-link" t-on-click="() => this.openTaskForm(rec.task_id)" t-att-title="t('Open Job Card')">
+                          <t t-esc="rec.name"/>
+                        </a>
+                      </td>
+                      <td class="col-tech" t-att-title="rec.entity_name"><strong><t t-esc="rec.entity_name"/></strong></td>
+                      <td class="col-wc" t-att-title="rec.work_center"><t t-esc="rec.work_center"/></td>
+                      <td class="col-reg" t-att-title="rec.region"><t t-esc="rec.region"/></td>
+                      <td class="col-status text-center">
+                        <span t-att-class="'pbi-status-badge ' + (rec.status === 'Closed' ? 'closed' : 'ready')">
+                          <t t-esc="rec.status"/>
+                        </span>
+                      </td>
+                      <t t-foreach="state.detailModal.columns" t-as="col" t-key="col.key">
+                        <td t-att-class="'col-ts text-center ' + (col.kind === 'text' ? '' : 'font-monospace')">
+                          <span t-if="rec[col.key] !== '-'" class="ts-valid"><t t-esc="rec[col.key]"/></span>
+                          <span t-else="" class="ts-missing">-</span>
+                        </td>
+                      </t>
+                      <td class="col-hrs-fmt font-monospace text-end"
+                          t-if="state.detailModal.valueColumn &amp;&amp; state.detailModal.valueColumn.shown">
+                        <span class="pbi-hrs-val"><t t-esc="rec.value_formatted"/></span>
+                      </td>
+                    </tr>
+                  </t>
+                </tbody>
+                <tfoot>
+                  <tr class="pbi-table-total-row">
+                    <td colspan="2" class="text-start">
+                      <strong><t t-esc="t('Total')"/> (<t t-esc="filteredDetailRecords.length"/> <t t-esc="t(state.detailModal.summary.record_label)"/>)</strong>
+                    </td>
+                    <td colspan="4"></td>
+                    <!-- One cell per extra column, rather than one spanning
+                         cell: a column that declares total=true (e.g. the
+                         scheduling formula's "Number of New Jobs" divisor)
+                         prints its sum directly under itself. -->
+                    <t t-foreach="state.detailModal.columns" t-as="col" t-key="col.key">
+                      <td class="col-ts text-center">
+                        <strong t-if="col.total"><t t-esc="detailColumnTotals[col.key]"/></strong>
+                      </td>
+                    </t>
+                    <td class="font-monospace text-end"
+                        t-if="state.detailModal.valueColumn &amp;&amp; state.detailModal.valueColumn.shown">
+                      <strong><t t-esc="filteredDetailTotals.totalFormatted"/></strong>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          <div class="pbi-modal-footer">
+            <div class="pbi-footer-summary">
+              <span><t t-esc="t('Showing')"/> <strong><t t-esc="filteredDetailRecords.length"/></strong> <t t-esc="t('of')"/> <strong><t t-esc="state.detailModal.records.length"/></strong> <t t-esc="t('records')"/></span>
+            </div>
+            <div class="pbi-footer-actions">
+              <button class="btn btn-secondary" t-on-click="closeDetailModal"><t t-esc="t('Close')"/></button>
+              <button class="btn btn-primary pbi-download-excel-btn" t-on-click="downloadDetailExcel">
+                <i class="fa fa-file-excel-o me-1"/> <t t-esc="t('Download Excel')"/>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </t>
 </templates>
+

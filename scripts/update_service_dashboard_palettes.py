@@ -88,7 +88,7 @@ def resolve_palette(palette_list, item_name, item_type, name_counters):
 def main():
     conn = psycopg2.connect(
         host="localhost", port=5434,
-        dbname="dbcloud", user="odoo", password="odoo",
+        dbname="dbprod", user="odoo", password="odoo",
     )
     cur = conn.cursor()
 

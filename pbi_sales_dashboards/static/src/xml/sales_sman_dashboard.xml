@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+  <t t-name="pbi_sales_dashboards.sales_sman_dashboard">
+    <div class="pbi-sales-dashboard pbi-sales-kpi-dashboard pbi-sales-kpi-dashboard-new pbi-sales-sman-dashboard"
+         t-ref="root" t-att-dir="isArabicUI() ? 'rtl' : 'ltr'">
+      <div class="wrap">
+        <header>
+          <h1><t t-esc="t('Sales Dashboard With Salesman')"/></h1>
+          <!--
+              The period and the current scope, side by side and always on
+              screen. The toolbar below can be collapsed away; this line cannot,
+              so there is never a moment where the charts are narrowed to one
+              city or one salesman with nothing visible saying so.
+          -->
+          <p class="scope-line">
+            <t t-if="isDebugMode"><t t-esc="t('Source')"/>: <code>transaction_header + transaction_details</code> · </t>
+            <t t-foreach="filterSummary" t-as="chip" t-key="chip.id">
+              <span t-att-class="'scope-chip' + (chip.off ? ' off-default' : '')">
+                <span class="k" t-on-click="() => this.onScopeChipClick(chip.id)" style="cursor: pointer;"><t t-esc="chip.k"/></span>
+                <span class="v" t-on-click="() => this.onScopeChipClick(chip.id)" style="cursor: pointer;"><t t-esc="chip.v"/></span>
+                <!-- Only on a chip that is off what the dashboard opens with.
+                     An x on a chip already at its default would be a control
+                     that does nothing, which is worse than no control. -->
+                <button t-if="chip.off" type="button" class="chip-x"
+                        t-att-title="t('Reset') + ' — ' + chip.k"
+                        t-att-aria-label="t('Reset') + ' — ' + chip.k"
+                        t-on-click="() => this.clearChip(chip.id)">×</button>
+              </span>
+            </t>
+            <!-- Only when there is something to clear. A button that is always
+                 there but usually does nothing teaches people to ignore it. -->
+            <button type="button" class="scope-clear" t-if="hasNarrowing" t-on-click="clearAll">
+              <t t-esc="t('Clear all')"/>
+            </button>
+          </p>
+        </header>
+
+        <div class="pbi-toolbar">
+          <div class="toolbar-section" t-att-class="state.filtersCollapsed ? 'collapsed' : ''">
+            <button type="button" class="toolbar-toggle-btn" t-on-click="toggleFilters"
+                    t-att-aria-expanded="state.filtersCollapsed ? 'false' : 'true'">
+              <span class="toolbar-toggle-icon">▾</span>
+              <t t-esc="t('Filters')"/>
+            </button>
+
+            <div class="toolbar-body" t-if="!state.filtersCollapsed">
+              <div class="filters">
+                <!-- Scope: what the whole dashboard is about before any level is
+                     narrowed. Sub-category View leads, because it decides how the
+                     category levels are keyed, and the period is read inside
+                     that. It belongs up here at all — rather than beside the charts —
+                     because it re-keys levels 7 AND 8, so a control that only
+                     appeared at level 8 would leave a user on the Main Categories
+                     tab looking at a breakdown decided by an off-screen widget. -->
+                <div class="filter-row filter-row-inline filter-row-scope">
+                  <div class="filter-group">
+                    <span class="filter-label"><t t-esc="t('Sub-category View')"/></span>
+                    <select class="filter-select" t-att-data-value="state.subCategoryMode"
+                            t-on-change="(ev) => this.selectSubCategoryMode(ev.target.value)">
+                      <t t-foreach="subCategoryOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.subCategoryMode ? true : undefined">
+                          <t t-esc="t(opt.l)"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <!-- Developer mode only: the two scopes are not comparable
+                       (SAR 601m in scope against 477m for every MDA line — lower,
+                       because the lines outside the scope are the negative
+                       discount pseudo-parts), so this is a diagnostic, not a
+                       control anyone should reach for on a real report. -->
+                  <div class="filter-group" t-if="isDebugMode">
+                    <span class="filter-label"><t t-esc="t('Scope')"/></span>
+                    <select class="filter-select" t-att-data-value="state.scope"
+                            t-on-change="(ev) => this.selectScope(ev.target.value)">
+                      <t t-foreach="scopeOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.scope ? true : undefined">
+                          <t t-esc="opt.l"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <div class="filter-group">
+                    <span class="filter-label"><t t-esc="t('Year')"/></span>
+                    <select class="filter-select" t-att-data-value="state.year"
+                            t-on-change="(ev) => this.selectYear(ev.target.value)">
+                      <t t-foreach="state.yearOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.year ? true : undefined">
+                          <t t-esc="opt.l"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <div class="filter-group">
+                    <span class="filter-label"><t t-esc="t('Month')"/></span>
+                    <select class="filter-select" t-att-data-value="state.month"
+                            t-on-change="(ev) => this.selectMonth(ev.target.value)">
+                      <t t-foreach="monthOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.month ? true : undefined">
+                          <t t-esc="t(opt.l)"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="toolbar-section" t-att-class="state.levelsCollapsed ? 'collapsed' : ''">
+            <button type="button" class="toolbar-toggle-btn" t-on-click="toggleLevels"
+                    t-att-aria-expanded="state.levelsCollapsed ? 'false' : 'true'">
+              <span class="toolbar-toggle-icon">▾</span>
+              <t t-esc="t('Levels')"/>
+            </button>
+
+            <div class="toolbar-body" t-if="!state.levelsCollapsed">
+              <div class="filters">
+                <!-- One dropdown per drill level, so any of the ten can be
+                     narrowed without drilling down to it first. A level reached
+                     by clicking a bar shows that value here too: drilling and
+                     picking are the same act against the same level, and
+                     levelValue() is what keeps the two displays as one. -->
+                <div class="filter-row filter-row-inline filter-row-levels">
+                  <t t-foreach="levelFilterList" t-as="lf" t-key="lf.v">
+                    <div class="filter-group">
+                      <span class="filter-label"><t t-esc="lf.l"/></span>
+                      <select class="filter-select" t-att-data-value="levelValue(lf.v)"
+                              t-on-change="(ev) => this.selectLevelFilter(lf.v, ev.target.value)">
+                        <option value="all" t-att-selected="levelValue(lf.v) === 'all' ? true : undefined">
+                          <t t-esc="t('All')"/>
+                        </option>
+                        <t t-foreach="levelOptions(lf.v)" t-as="opt" t-key="opt.v">
+                          <option t-att-value="opt.v" t-att-selected="opt.v === levelValue(lf.v) ? true : undefined">
+                            <t t-esc="opt.l"/>
+                          </option>
+                        </t>
+                      </select>
+                    </div>
+                  </t>
+                </div>
+              </div>
+
+              <div class="level-nav">
+                <t t-foreach="levelNav" t-as="lvl" t-key="lvl.v">
+                  <button type="button"
+                          t-att-class="'level-nav-btn' + (state.level === lvl.v ? ' active' : '')"
+                          t-on-click="() => this.jumpToLevel(lvl.v)">
+                    <t t-esc="lvl.l"/>
+                  </button>
+                </t>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="error-banner" t-if="state.error"><t t-esc="state.error"/></div>
+
+        <div class="dashboard" t-att-class="state.loading ? 'loading' : ''">
+          <div class="measure-toggle">
+            <t t-foreach="measureOptions" t-as="opt" t-key="opt.v">
+              <button type="button"
+                      t-att-class="'measure-btn' + (state.measure === opt.v ? ' active' : '')"
+                      t-on-click="() => this.selectMeasure(opt.v)">
+                <t t-esc="t(opt.l)"/>
+              </button>
+            </t>
+            <!--
+                The figures on this board come from a snapshot that rebuilds on
+                a schedule, so an ERP correction is not on the chart until it
+                runs. This asks for that rebuild. It QUEUES the job and returns
+                immediately (the work happens in the cron's own thread, never
+                in this request) so it cannot stall the server however often
+                it is pressed. Disabled while one is already on the way, and
+                while the scheduled job is switched off: a button that silently
+                does nothing is worse than one that says it cannot.
+            -->
+            <button type="button"
+                    t-att-class="'pbi-refresh-btn' + (state.refresh.state === 'pending' ? ' pending' : '')"
+                    t-att-disabled="state.refresh.busy
+                                    || state.refresh.state === 'pending'
+                                    || state.refresh.state === 'cron_off'
+                                    || state.refresh.state === 'unavailable' ? 'disabled' : false"
+                    t-att-title="refreshTitle"
+                    t-on-click="() => this.queueRefresh()">
+              <span class="pbi-refresh-icon" aria-hidden="true">⟳</span>
+              <t t-esc="refreshLabel"/>
+            </button>
+            <span class="pbi-refresh-msg" t-if="state.refresh.message">
+              <t t-esc="state.refresh.message"/>
+            </span>
+          </div>
+
+          <div class="pbi-kpi-row twelve" t-ref="kpiRow"/>
+
+          <!--
+              The one line on the board that says the gesture exists. Neither
+              right-click nor long-press announces itself, and a menu nobody
+              knows to open is a menu nobody opens. It names the plain click
+              too, so the sentence reads as "here is how drilling works" rather
+              than as a note about one hidden extra.
+
+              Both halves are in the markup and CSS picks which to show: a
+              hint naming right-click on a phone reads as an instruction the
+              reader has failed to follow. See .pbi-drill-hint in
+              pbi_dashboards/static/src/css/pbi_drill_menu.css.
+          -->
+          <p class="pbi-drill-hint">
+            <span class="pbi-drill-hint-icon" aria-hidden="true">◢</span>
+            <span class="on-pointer"><t t-esc="drillHintPointer"/></span>
+            <span class="on-touch"><t t-esc="drillHintTouch"/></span>
+          </p>
+
+          <div class="pbi-card-grid-wide">
+            <div class="pbi-card wide-bar">
+              <h2><t t-esc="t(chartTitle('mtd', 'bar'))"/></h2>
+              <p class="subtitle"><t t-esc="chartSubtitle()"/></p>
+              <div class="chart-scroll" t-ref="mtdBar"/>
+            </div>
+            <div class="pbi-card">
+              <h2><t t-esc="t(chartTitle('mtd', 'donut'))"/></h2>
+              <p class="subtitle"><t t-esc="chartSubtitle()"/></p>
+              <div class="donut-pad" t-ref="mtdDonut"/>
+            </div>
+          </div>
+
+          <div class="pbi-card-grid-wide">
+            <div class="pbi-card wide-bar">
+              <h2><t t-esc="t(chartTitle('ytd', 'bar'))"/></h2>
+              <p class="subtitle"><t t-esc="chartSubtitle()"/></p>
+              <div class="chart-scroll" t-ref="ytdBar"/>
+            </div>
+            <div class="pbi-card">
+              <h2><t t-esc="t(chartTitle('ytd', 'donut'))"/></h2>
+              <p class="subtitle"><t t-esc="chartSubtitle()"/></p>
+              <div class="donut-pad" t-ref="ytdDonut"/>
+            </div>
+          </div>
+        </div>
+
+        <footer>
+          <t t-esc="t('PBI Dashboards')"/> &gt; <t t-esc="t('Sales Dashboards')"/> &gt;
+          <t t-esc="t('Sales Dashboard With Salesman')"/><t t-if="isDebugMode">
+          — <t t-esc="t('live from')"/> transaction_header + transaction_details</t>
+        </footer>
+      </div>
+      <div class="pbi-tooltip" t-ref="tooltip"/>
+    </div>
+  </t>
+</templates>

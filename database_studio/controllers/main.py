@@ -20,6 +20,11 @@ class DatabaseStudioController(http.Controller):
         query = (query or "").strip()
         if not query:
             return request.not_found()
+        if Analyser._statement_verbs(query)[1]:
+            # Exporting runs the statement again, and this one changes data.
+            return request.make_response(
+                "Exporting would run this data-changing statement again. "
+                "Export a SELECT of the rows instead.", status=400)
 
         cr = request.env.cr
         try:

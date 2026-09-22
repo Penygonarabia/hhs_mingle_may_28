@@ -1,0 +1,591 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+  <!--
+    "Sales Analysis with Salesman" — 17-page stacked report layout matching
+    the attached PDF presentation reference.
+  -->
+  <t t-name="pbi_sales_dashboards.sales_mail_sman_dashboard">
+    <div class="pbi-sales-dashboard pbi-sales-mail-dashboard pbi-sales-mail-sman-dashboard" t-ref="root" t-att-dir="isArabicUI() ? 'rtl' : 'ltr'">
+      <div class="wrap">
+        <header>
+          <h1><t t-esc="t('Sales Analysis with Salesman')"/></h1>
+          <p t-if="isDebugMode"><t t-esc="t('Source')"/>: <code>transaction_header</code> + <code>v_sales_budget_month</code> · <t t-esc="state.periodLabel"/>
+            <span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'scope')" t-on-mouseleave="onInfoLeave">i</span>
+          </p>
+          <p t-else=""><t t-esc="state.periodLabel"/>
+            <span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'scope')" t-on-mouseleave="onInfoLeave">i</span></p>
+        </header>
+
+        <div class="pbi-toolbar filters-panel">
+          <div class="toolbar-section" t-att-class="state.filtersCollapsed ? 'collapsed' : ''">
+            <button type="button" class="toolbar-toggle-btn filters-toggle-btn" t-on-click="toggleFilters"
+                    t-att-aria-expanded="state.filtersCollapsed ? 'false' : 'true'">
+              <span class="toolbar-toggle-icon filters-toggle-icon">▾</span>
+              <t t-esc="t('Filters, Export &amp; Notes')"/>
+            </button>
+            <div class="toolbar-body" t-if="!state.filtersCollapsed">
+              <div class="filters">
+                <div class="filter-row filter-row-inline">
+                  <div class="filter-group">
+                    <span class="filter-label"><t t-esc="t('Year')"/></span>
+                    <select class="filter-select" t-att-disabled="state.editMode ? 'disabled' : undefined" t-on-change="(ev) => this.selectYear(ev.target.value)">
+                      <t t-foreach="state.yearOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.year ? true : undefined">
+                          <t t-esc="opt.l"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <div class="filter-group">
+                    <span class="filter-label"><t t-esc="t('Month')"/></span>
+                    <select class="filter-select" t-att-disabled="state.editMode ? 'disabled' : undefined" t-on-change="(ev) => this.selectMonth(ev.target.value)">
+                      <t t-foreach="monthOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.month ? true : undefined">
+                          <t t-esc="t(opt.l)"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <div class="filter-group">
+                    <span class="filter-label"><t t-esc="t('Sub-category View')"/></span>
+                    <select class="filter-select" t-att-disabled="state.editMode ? 'disabled' : undefined" t-on-change="(ev) => this.selectSubMode(ev.target.value)">
+                      <t t-foreach="submodeOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.subMode ? true : undefined">
+                          <t t-esc="t(opt.l)"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <div class="filter-group" t-if="isDebugMode">
+                    <span class="filter-label"><t t-esc="t('Scope')"/></span>
+                    <select class="filter-select" t-att-disabled="state.editMode ? 'disabled' : undefined"
+                            t-on-change="(ev) => this.selectScope(ev.target.value)">
+                      <t t-foreach="scopeOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.scope ? true : undefined">
+                          <t t-esc="opt.l"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <div class="filter-group export-actions">
+                    <span class="filter-label"><t t-esc="t('Export')"/></span>
+                    <div class="pill-filter">
+                      <button type="button" t-on-click="exportPptx" t-att-disabled="(pptxReady &amp;&amp; !state.editMode) ? undefined : 'disabled'"
+                              t-att-title="pptxReady ? undefined : pptxMessage"><t t-esc="t('Export PowerPoint')"/></button>
+                    </div>
+                  </div>
+                  <div class="filter-group notes-actions">
+                    <span class="filter-label"><t t-esc="t('Notes')"/></span>
+                    <div class="pill-filter">
+                      <button type="button" t-if="!state.editMode" t-on-click="startEditNotes"
+                              t-att-disabled="state.loading ? 'disabled' : undefined"><t t-esc="t('Edit Notes')"/></button>
+                      <t t-else="">
+                        <button type="button" class="notes-save" t-on-click="saveNotes"
+                                t-att-disabled="state.savingNotes ? 'disabled' : undefined"><t t-esc="t('Save Notes')"/></button>
+                        <!-- Reset every section at once, beside the per-section
+                             reset icon every note editor already carries. Only
+                             while the note editors are on screen: with them
+                             closed there is nothing to reset that Cancel would
+                             not already have undone. -->
+                        <button type="button" class="notes-reset-all" t-on-click="resetAllNotes"
+                                t-att-disabled="state.savingNotes ? 'disabled' : undefined"
+                                t-att-title="t('Reset all sections to the default computed notes')"
+                                t-att-aria-label="t('Reset all sections to the default computed notes')">
+                          <span class="notes-reset-icon" aria-hidden="true">↻</span><t t-esc="t('Reset All')"/>
+                        </button>
+                        <button type="button" t-on-click="cancelEditNotes"
+                                t-att-disabled="state.savingNotes ? 'disabled' : undefined"><t t-esc="t('Cancel')"/></button>
+                      </t>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="notes-edit-hint" t-if="state.editMode" style="margin-top: 6px; font-size: 12px; color: var(--text-secondary);">
+                  <t t-if="state.noteDirty"><t t-esc="dirtyLabel"/> · </t>
+                  <t t-esc="t('Filters are locked while notes are being edited.')"/>
+                  <t t-if="state.noteStatus"> · <t t-esc="state.noteStatus"/></t>
+                </div>
+
+                <div class="filter-row pbi-dep-row" t-if="!pptxReady" style="margin-top: 6px;">
+                  <div class="pbi-dep-note"><t t-esc="pptxMessage"/></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="toolbar-section" t-att-class="state.levelsCollapsed ? 'collapsed' : ''">
+            <button type="button" class="toolbar-toggle-btn filters-toggle-btn" t-on-click="toggleLevels"
+                    t-att-aria-expanded="state.levelsCollapsed ? 'false' : 'true'">
+              <span class="toolbar-toggle-icon filters-toggle-icon">▾</span>
+              <t t-esc="t('Levels')"/>
+            </button>
+
+            <div class="toolbar-body" t-if="!state.levelsCollapsed">
+              <div class="filters">
+                <div class="filter-row filter-row-inline filter-row-levels">
+                  <t t-foreach="levelFilterList" t-as="lf" t-key="lf.v">
+                    <div class="filter-group">
+                      <span class="filter-label"><t t-esc="lf.l"/></span>
+                      <select class="filter-select" t-att-data-value="levelValue(lf.v)"
+                              t-att-disabled="state.editMode ? 'disabled' : undefined"
+                              t-on-change="(ev) => this.selectLevelFilter(lf.v, ev.target.value)">
+                        <option value="all" t-att-selected="levelValue(lf.v) === 'all' ? true : undefined">
+                          <t t-esc="t('All')"/>
+                        </option>
+                        <t t-foreach="levelOptions(lf.v)" t-as="opt" t-key="opt.v">
+                          <option t-att-value="opt.v" t-att-selected="opt.v === levelValue(lf.v) ? true : undefined">
+                            <t t-esc="opt.l"/>
+                          </option>
+                        </t>
+                      </select>
+                    </div>
+                  </t>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="error-banner" t-if="state.error">
+          <t t-esc="state.error"/>
+        </div>
+
+        <div class="dashboard" t-att-class="state.loading ? 'loading' : ''">
+          <h3 class="kpi-heading"><t t-esc="t('Value')"/><span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'kpi-amount')" t-on-mouseleave="onInfoLeave">i</span></h3>
+          <div class="pbi-kpi-row six" t-ref="kpiAmountRow"/>
+          <h3 class="kpi-heading"><t t-esc="t('Quantity')"/><span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'kpi-qty')" t-on-mouseleave="onInfoLeave">i</span></h3>
+          <div class="pbi-kpi-row six" t-ref="kpiQtyRow"/>
+
+          <!-- Page 1: Total Company Sales vs. Target & Last Year by Value & QTY -->
+          <section class="pbi-page">
+            <h2>1. <t t-esc="t('Total Company Sales vs. Target &amp; Last Year by Value &amp; QTY')"/><span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'total-company')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two">
+                  <div class="pbi-card"><h3><t t-esc="state.periodLabel"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="totalCompanyMtdValueChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.periodLabel"/> - <t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="totalCompanyMtdQtyChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/> <t t-esc="t('YTD')"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="totalCompanyYtdValueChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/> <t t-esc="t('YTD')"/> - <t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="totalCompanyYtdQtyChart"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="totalCompanyNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 2: Sales Achievement and Growth Trends by Department & Region -->
+          <section class="pbi-page">
+            <h2>2. <t t-esc="t('Sales Achievement and Growth Trends by Department &amp; Region')"/><span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'class-region-trends')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two stacked-full">
+                  <div class="pbi-card">
+                    <h3><t t-esc="t('Sales by Department - Achievement - YoY Growth')"/></h3>
+                    <div class="chart-scroll" t-ref="classTrendChart"/>
+                  </div>
+                  <div class="pbi-card">
+                    <h3><t t-esc="t('Dealers by region Sales - Achievement - YoY Growth')"/></h3>
+                    <div class="chart-scroll" t-ref="regionTrendChart"/>
+                  </div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="classRegionTrendsNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 3: Total Company Sales Quarterly Sales Progression -->
+          <section class="pbi-page">
+            <h2>3. <t t-esc="t('Total Company Sales Quarterly Sales Progression')"/> (<t t-esc="state.year"/>)<span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'quarterly-company')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card">
+                  <h3><t t-esc="t('Quarterly Sales Performance')"/></h3>
+                  <div class="chart-scroll" t-ref="quarterlyCompanyChart"/>
+                </div>
+              </div>
+              <div class="narrative" t-ref="quarterlyCompanyNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 4: Total Company Sales Quarterly Sales Progression (by Department) -->
+          <section class="pbi-page">
+            <h2>4. <t t-esc="t('Total Company Sales Quarterly Sales Progression')"/> (<t t-esc="state.year"/>)<span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'quarterly-saletypegroup')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="toggle-bar">
+                  <t t-foreach="state.quarterTabs" t-as="tab" t-key="tab.v">
+                    <button type="button"
+                      t-att-class="'toggle-btn' + (state.toggleState.quarterlySaleTypeGroup === tab.v ? ' active' : '')"
+                      t-on-click="() => this.setToggle('quarterlySaleTypeGroup', tab.v)">
+                      <t t-esc="tab.l"/>
+                    </button>
+                  </t>
+                </div>
+                <div t-if="hasTab(state.quarterTabs, 'q1')" t-att-class="'toggle-panel' + (state.toggleState.quarterlySaleTypeGroup === 'q1' ? ' active' : '')">
+                  <div class="pbi-card">
+                    <h3><t t-esc="tabLabel(state.quarterTabs, 'q1')"/> — <t t-esc="t('Quarterly Sales Progression by Department')"/></h3>
+                    <div class="chart-scroll" t-ref="quarterlyStgChart_q1"/>
+                  </div>
+                </div>
+                <div t-if="hasTab(state.quarterTabs, 'q2')" t-att-class="'toggle-panel' + (state.toggleState.quarterlySaleTypeGroup === 'q2' ? ' active' : '')">
+                  <div class="pbi-card">
+                    <h3><t t-esc="tabLabel(state.quarterTabs, 'q2')"/> — <t t-esc="t('Quarterly Sales Progression by Department')"/></h3>
+                    <div class="chart-scroll" t-ref="quarterlyStgChart_q2"/>
+                  </div>
+                </div>
+                <div t-if="hasTab(state.quarterTabs, 'q3')" t-att-class="'toggle-panel' + (state.toggleState.quarterlySaleTypeGroup === 'q3' ? ' active' : '')">
+                  <div class="pbi-card">
+                    <h3><t t-esc="tabLabel(state.quarterTabs, 'q3')"/> — <t t-esc="t('Quarterly Sales Progression by Department')"/></h3>
+                    <div class="chart-scroll" t-ref="quarterlyStgChart_q3"/>
+                  </div>
+                </div>
+                <div t-if="hasTab(state.quarterTabs, 'q4')" t-att-class="'toggle-panel' + (state.toggleState.quarterlySaleTypeGroup === 'q4' ? ' active' : '')">
+                  <div class="pbi-card">
+                    <h3><t t-esc="tabLabel(state.quarterTabs, 'q4')"/> — <t t-esc="t('Quarterly Sales Progression by Department')"/></h3>
+                    <div class="chart-scroll" t-ref="quarterlyStgChart_q4"/>
+                  </div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="quarterlyStgNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 5: Dealers Department Quarterly Sales Progression -->
+          <section class="pbi-page">
+            <h2>5. <t t-esc="t('Dealers Department Quarterly Sales Progression')"/> (<t t-esc="state.year"/>)<span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'quarterly-region')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="toggle-bar">
+                  <t t-foreach="state.quarterTabs" t-as="tab" t-key="tab.v">
+                    <button type="button"
+                      t-att-class="'toggle-btn' + (state.toggleState.quarterlyRegion === tab.v ? ' active' : '')"
+                      t-on-click="() => this.setToggle('quarterlyRegion', tab.v)">
+                      <t t-esc="tab.l"/>
+                    </button>
+                  </t>
+                </div>
+                <div t-if="hasTab(state.quarterTabs, 'q1')" t-att-class="'toggle-panel' + (state.toggleState.quarterlyRegion === 'q1' ? ' active' : '')">
+                  <div class="pbi-card">
+                    <h3><t t-esc="tabLabel(state.quarterTabs, 'q1')"/> — <t t-esc="t('Dealers Dept. Quarterly Sales Progress')"/></h3>
+                    <div class="chart-scroll" t-ref="quarterlyRegionChart_q1"/>
+                  </div>
+                </div>
+                <div t-if="hasTab(state.quarterTabs, 'q2')" t-att-class="'toggle-panel' + (state.toggleState.quarterlyRegion === 'q2' ? ' active' : '')">
+                  <div class="pbi-card">
+                    <h3><t t-esc="tabLabel(state.quarterTabs, 'q2')"/> — <t t-esc="t('Dealers Dept. Quarterly Sales Progress')"/></h3>
+                    <div class="chart-scroll" t-ref="quarterlyRegionChart_q2"/>
+                  </div>
+                </div>
+                <div t-if="hasTab(state.quarterTabs, 'q3')" t-att-class="'toggle-panel' + (state.toggleState.quarterlyRegion === 'q3' ? ' active' : '')">
+                  <div class="pbi-card">
+                    <h3><t t-esc="tabLabel(state.quarterTabs, 'q3')"/> — <t t-esc="t('Dealers Dept. Quarterly Sales Progress')"/></h3>
+                    <div class="chart-scroll" t-ref="quarterlyRegionChart_q3"/>
+                  </div>
+                </div>
+                <div t-if="hasTab(state.quarterTabs, 'q4')" t-att-class="'toggle-panel' + (state.toggleState.quarterlyRegion === 'q4' ? ' active' : '')">
+                  <div class="pbi-card">
+                    <h3><t t-esc="tabLabel(state.quarterTabs, 'q4')"/> — <t t-esc="t('Dealers Dept. Quarterly Sales Progress')"/></h3>
+                    <div class="chart-scroll" t-ref="quarterlyRegionChart_q4"/>
+                  </div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="quarterlyRegionNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 6: Total Company Sales vs. Target & Last Year by Group by Value -->
+          <section class="pbi-page">
+            <h2>6. <t t-esc="t('Total Company Sales vs. Target &amp; Last Year by Group by Value')"/><span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'main-categories')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two">
+                  <div class="pbi-card"><h3><t t-esc="state.periodLabel"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="mainCategoriesMtdWSChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.periodLabel"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="mainCategoriesMtdLCChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/> <t t-esc="t('YTD')"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="mainCategoriesYtdWSChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/> <t t-esc="t('YTD')"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="mainCategoriesYtdLCChart"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="mainCategoriesNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 7: Total Company Sales vs. Target & Last Year by Sub-Group Value & QTY -->
+          <section class="pbi-page">
+            <h2>7. <t t-esc="t('Total Company Sales vs. Target &amp; Last Year by Sub-Group Value &amp; QTY')"/><span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'subcats-top8')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two stacked-full">
+                  <div class="pbi-card"><h3><t t-esc="t('YTD Value')"/></h3><div class="chart-scroll" t-ref="subcatsTop8ValueChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="t('YTD - Qty')"/></h3><div class="chart-scroll" t-ref="subcatsTop8QtyChart"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="subcatsTop8Notes"/>
+            </div>
+          </section>
+
+          <!-- Page 8: Total Company Split Sales Distribution by Category by Value & QTY -->
+          <section class="pbi-page">
+            <h2>8. <t t-esc="t('Total Company Split Sales Distribution by Category by Value &amp; QTY')"/><span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'subcats-distribution')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two stacked-full">
+                  <div class="pbi-card"><h3><t t-esc="state.year - 1"/></h3><div class="donut-pad" t-ref="subcatsDistributionDonutLY"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/></h3><div class="donut-pad" t-ref="subcatsDistributionDonutTY"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="subcatsDistributionNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 9: Total Company Sales Distribution by Category by Value -->
+          <section class="pbi-page">
+            <h2>9. <t t-esc="t('Total Company Sales Distribution by Category by Value')"/><span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'maincats-distribution')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two stacked-full">
+                  <div class="pbi-card"><h3><t t-esc="state.year - 1"/> <t t-esc="t('by Value')"/></h3><div class="donut-pad" t-ref="maincatsDistributionDonutLY"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/> <t t-esc="t('by Value')"/></h3><div class="donut-pad" t-ref="maincatsDistributionDonutTY"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="maincatsDistributionNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 10: Total Company Sales vs. Target & Last Year by Department by Value & QTY -->
+          <section class="pbi-page">
+            <h2>10. <t t-esc="t('Total Company Sales vs. Target &amp; Last Year by Department by Value &amp; QTY')"/><span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'saletypegroups')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two">
+                  <div class="pbi-card"><h3><t t-esc="state.periodLabel"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="stgMtdValueChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.periodLabel"/> - <t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="stgMtdQtyChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/> <t t-esc="t('YTD')"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="stgYtdValueChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/> <t t-esc="t('YTD')"/> - <t t-esc="t('Quantity')"/></h3><div class="chart-scroll" t-ref="stgYtdQtyChart"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="stgNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 11: Total Company Sales Distribution by Channel by Value & QTY -->
+          <section class="pbi-page">
+            <h2>11. <t t-esc="t('Total Company Sales Distribution by Channel by Value &amp; QTY')"/><span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'saletypegroups-distribution')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two">
+                  <div class="pbi-card"><h3><t t-esc="state.year - 1"/> <t t-esc="t('by Value')"/></h3><div class="donut-pad" t-ref="stgDistributionDonutValueLY"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/> <t t-esc="t('by Value')"/></h3><div class="donut-pad" t-ref="stgDistributionDonutValueTY"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year - 1"/> <t t-esc="t('by QTY')"/></h3><div class="donut-pad" t-ref="stgDistributionDonutQtyLY"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/> <t t-esc="t('by QTY')"/></h3><div class="donut-pad" t-ref="stgDistributionDonutQtyTY"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="stgDistributionNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 12: Total Company Sales vs. Target & Last Year by Sub-Group Value & QTY (LCAC) -->
+          <section class="pbi-page">
+            <h2>12. <t t-esc="t('Total Company Sales vs. Target &amp; Last Year by Sub-Group Value &amp; QTY')"/> <span class="derived-tag"><t t-esc="t('LCAC Product Groups')"/></span><span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'topcat-subcats')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two stacked-full">
+                  <div class="pbi-card"><h3><t t-esc="state.periodLabel"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="topcatSubcatsMtdChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="state.year"/> <t t-esc="t('YTD')"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="topcatSubcatsYtdChart"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="topcatSubcatsNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 13: Total Sales vs. Target & Last Year by Department & Category by Value & Qty -->
+          <section class="pbi-page">
+            <h2>13. <t t-esc="t('Total Sales vs. Target &amp; Last Year by Department &amp; Category by Value &amp; Qty')"/><span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'top3-by-class')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="toggle-bar">
+                  <t t-foreach="state.classTabs" t-as="tab" t-key="tab.v">
+                    <button type="button"
+                      t-att-class="'toggle-btn' + (state.toggleState.top3ByClass === tab.v ? ' active' : '')"
+                      t-on-click="() => this.setToggle('top3ByClass', tab.v)">
+                      <t t-esc="tab.l"/>
+                    </button>
+                  </t>
+                </div>
+                <div t-att-class="'toggle-panel' + (state.toggleState.top3ByClass === 'c1' ? ' active' : '')">
+                  <div class="pbi-card-grid two stacked-full">
+                    <div class="pbi-card"><h3><t t-esc="tabLabel(state.classTabs, 'c1')"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="top3ByClassValueChart_c1"/></div>
+                    <div class="pbi-card"><h3><t t-esc="tabLabel(state.classTabs, 'c1')"/> - <t t-esc="t('Qty')"/></h3><div class="chart-scroll" t-ref="top3ByClassQtyChart_c1"/></div>
+                  </div>
+                </div>
+                <div t-att-class="'toggle-panel' + (state.toggleState.top3ByClass === 'c2' ? ' active' : '')">
+                  <div class="pbi-card-grid two stacked-full">
+                    <div class="pbi-card"><h3><t t-esc="tabLabel(state.classTabs, 'c2')"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="top3ByClassValueChart_c2"/></div>
+                    <div class="pbi-card"><h3><t t-esc="tabLabel(state.classTabs, 'c2')"/> - <t t-esc="t('Qty')"/></h3><div class="chart-scroll" t-ref="top3ByClassQtyChart_c2"/></div>
+                  </div>
+                </div>
+                <div t-att-class="'toggle-panel' + (state.toggleState.top3ByClass === 'c3' ? ' active' : '')">
+                  <div class="pbi-card-grid two stacked-full">
+                    <div class="pbi-card"><h3><t t-esc="tabLabel(state.classTabs, 'c3')"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="top3ByClassValueChart_c3"/></div>
+                    <div class="pbi-card"><h3><t t-esc="tabLabel(state.classTabs, 'c3')"/> - <t t-esc="t('Qty')"/></h3><div class="chart-scroll" t-ref="top3ByClassQtyChart_c3"/></div>
+                  </div>
+                </div>
+                <div t-att-class="'toggle-panel' + (state.toggleState.top3ByClass === 'c4' ? ' active' : '')">
+                  <div class="pbi-card-grid two stacked-full">
+                    <div class="pbi-card"><h3><t t-esc="tabLabel(state.classTabs, 'c4')"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="top3ByClassValueChart_c4"/></div>
+                    <div class="pbi-card"><h3><t t-esc="tabLabel(state.classTabs, 'c4')"/> - <t t-esc="t('Qty')"/></h3><div class="chart-scroll" t-ref="top3ByClassQtyChart_c4"/></div>
+                  </div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="top3ByClassNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 14: Total Sales vs. Target & Last Year by Department by Value & Qty -->
+          <section class="pbi-page">
+            <h2>14. <t t-esc="t('Total Sales vs. Target &amp; Last Year by Department by Value &amp; Qty')"/><span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'regions-by-class')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="toggle-bar">
+                  <t t-foreach="state.classTabs" t-as="tab" t-key="tab.v">
+                    <button type="button"
+                      t-att-class="'toggle-btn' + (state.toggleState.regionsByClass === tab.v ? ' active' : '')"
+                      t-on-click="() => this.setToggle('regionsByClass', tab.v)">
+                      <t t-esc="tab.l"/>
+                    </button>
+                  </t>
+                </div>
+                <div t-att-class="'toggle-panel' + (state.toggleState.regionsByClass === 'c1' ? ' active' : '')">
+                  <div class="pbi-card-grid two stacked-full">
+                    <div class="pbi-card"><h3><t t-esc="tabLabel(state.classTabs, 'c1')"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="regionsByClassValueChart_c1"/></div>
+                    <div class="pbi-card"><h3><t t-esc="tabLabel(state.classTabs, 'c1')"/> - <t t-esc="t('Qty')"/></h3><div class="chart-scroll" t-ref="regionsByClassQtyChart_c1"/></div>
+                  </div>
+                </div>
+                <div t-att-class="'toggle-panel' + (state.toggleState.regionsByClass === 'c2' ? ' active' : '')">
+                  <div class="pbi-card-grid two stacked-full">
+                    <div class="pbi-card"><h3><t t-esc="tabLabel(state.classTabs, 'c2')"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="regionsByClassValueChart_c2"/></div>
+                    <div class="pbi-card"><h3><t t-esc="tabLabel(state.classTabs, 'c2')"/> - <t t-esc="t('Qty')"/></h3><div class="chart-scroll" t-ref="regionsByClassQtyChart_c2"/></div>
+                  </div>
+                </div>
+                <div t-att-class="'toggle-panel' + (state.toggleState.regionsByClass === 'c3' ? ' active' : '')">
+                  <div class="pbi-card-grid two stacked-full">
+                    <div class="pbi-card"><h3><t t-esc="tabLabel(state.classTabs, 'c3')"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="regionsByClassValueChart_c3"/></div>
+                    <div class="pbi-card"><h3><t t-esc="tabLabel(state.classTabs, 'c3')"/> - <t t-esc="t('Qty')"/></h3><div class="chart-scroll" t-ref="regionsByClassQtyChart_c3"/></div>
+                  </div>
+                </div>
+                <div t-att-class="'toggle-panel' + (state.toggleState.regionsByClass === 'c4' ? ' active' : '')">
+                  <div class="pbi-card-grid two stacked-full">
+                    <div class="pbi-card"><h3><t t-esc="tabLabel(state.classTabs, 'c4')"/> - <t t-esc="t('Value')"/></h3><div class="chart-scroll" t-ref="regionsByClassValueChart_c4"/></div>
+                    <div class="pbi-card"><h3><t t-esc="tabLabel(state.classTabs, 'c4')"/> - <t t-esc="t('Qty')"/></h3><div class="chart-scroll" t-ref="regionsByClassQtyChart_c4"/></div>
+                  </div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="regionsByClassNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 15: Total Sales vs. Target & Last Year by Dealers & Category by Region by Value -->
+          <section class="pbi-page">
+            <h2>15. <t t-esc="t('Total Sales vs. Target &amp; Last Year by Dealers &amp; Category by Region by Value')"/><span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'stg-region-maincats')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="toggle-bar">
+                  <t t-foreach="state.regionTabs" t-as="tab" t-key="tab.v">
+                    <button type="button"
+                      t-att-class="'toggle-btn' + (state.toggleState.stgRegionMaincats === tab.v ? ' active' : '')"
+                      t-on-click="() => this.setToggle('stgRegionMaincats', tab.v)">
+                      <t t-esc="tab.l"/>
+                    </button>
+                  </t>
+                </div>
+                <div t-att-class="'toggle-panel' + (state.toggleState.stgRegionMaincats === 'r1' ? ' active' : '')">
+                  <div class="pbi-card">
+                    <h3><t t-esc="tabLabel(state.regionTabs, 'r1')"/> — <t t-esc="t('Main Categories by Value')"/></h3>
+                    <div class="chart-scroll" t-ref="stgRegionMaincatsChart_r1"/>
+                  </div>
+                </div>
+                <div t-att-class="'toggle-panel' + (state.toggleState.stgRegionMaincats === 'r2' ? ' active' : '')">
+                  <div class="pbi-card">
+                    <h3><t t-esc="tabLabel(state.regionTabs, 'r2')"/> — <t t-esc="t('Main Categories by Value')"/></h3>
+                    <div class="chart-scroll" t-ref="stgRegionMaincatsChart_r2"/>
+                  </div>
+                </div>
+                <div t-att-class="'toggle-panel' + (state.toggleState.stgRegionMaincats === 'r3' ? ' active' : '')">
+                  <div class="pbi-card">
+                    <h3><t t-esc="tabLabel(state.regionTabs, 'r3')"/> — <t t-esc="t('Main Categories by Value')"/></h3>
+                    <div class="chart-scroll" t-ref="stgRegionMaincatsChart_r3"/>
+                  </div>
+                </div>
+                <div t-att-class="'toggle-panel' + (state.toggleState.stgRegionMaincats === 'r4' ? ' active' : '')">
+                  <div class="pbi-card">
+                    <h3><t t-esc="tabLabel(state.regionTabs, 'r4')"/> — <t t-esc="t('Main Categories by Value')"/></h3>
+                    <div class="chart-scroll" t-ref="stgRegionMaincatsChart_r4"/>
+                  </div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="stgRegionMaincatsNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 16: Total Sales vs. Target & Last Year by Dealers by Region by Value (Split) -->
+          <section class="pbi-page">
+            <h2>16. <t t-esc="t('Total Sales vs. Target &amp; Last Year by Dealers by Region by Value (Split)')"/><span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'stg-region-subcats')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="toggle-bar">
+                  <t t-foreach="state.regionTabs" t-as="tab" t-key="tab.v">
+                    <button type="button"
+                      t-att-class="'toggle-btn' + (state.toggleState.stgRegionSubcats === tab.v ? ' active' : '')"
+                      t-on-click="() => this.setToggle('stgRegionSubcats', tab.v)">
+                      <t t-esc="tab.l"/>
+                    </button>
+                  </t>
+                </div>
+                <div t-att-class="'toggle-panel' + (state.toggleState.stgRegionSubcats === 'r1' ? ' active' : '')">
+                  <div class="pbi-card">
+                    <h3><t t-esc="tabLabel(state.regionTabs, 'r1')"/> — <t t-esc="t('Product Sub-Group by Value (Split)')"/></h3>
+                    <div class="chart-scroll" t-ref="stgRegionSubcatsChart_r1"/>
+                  </div>
+                </div>
+                <div t-att-class="'toggle-panel' + (state.toggleState.stgRegionSubcats === 'r2' ? ' active' : '')">
+                  <div class="pbi-card">
+                    <h3><t t-esc="tabLabel(state.regionTabs, 'r2')"/> — <t t-esc="t('Product Sub-Group by Value (Split)')"/></h3>
+                    <div class="chart-scroll" t-ref="stgRegionSubcatsChart_r2"/>
+                  </div>
+                </div>
+                <div t-att-class="'toggle-panel' + (state.toggleState.stgRegionSubcats === 'r3' ? ' active' : '')">
+                  <div class="pbi-card">
+                    <h3><t t-esc="tabLabel(state.regionTabs, 'r3')"/> — <t t-esc="t('Product Sub-Group by Value (Split)')"/></h3>
+                    <div class="chart-scroll" t-ref="stgRegionSubcatsChart_r3"/>
+                  </div>
+                </div>
+                <div t-att-class="'toggle-panel' + (state.toggleState.stgRegionSubcats === 'r4' ? ' active' : '')">
+                  <div class="pbi-card">
+                    <h3><t t-esc="tabLabel(state.regionTabs, 'r4')"/> — <t t-esc="t('Product Sub-Group by Value (Split)')"/></h3>
+                    <div class="chart-scroll" t-ref="stgRegionSubcatsChart_r4"/>
+                  </div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="stgRegionSubcatsNotes"/>
+            </div>
+          </section>
+
+          <!-- Page 17: Total Projects Sales vs. Target & Last Year by Category By Value & QTY -->
+          <section class="pbi-page">
+            <h2>17. <t t-esc="t('Total Projects Sales vs. Target &amp; Last Year by Category By Value &amp; QTY')"/><span class="info-icon" t-if="isDebugMode" t-on-mouseenter="(ev) => this.onInfoEnter(ev, 'stg-productgroups')" t-on-mouseleave="onInfoLeave">i</span></h2>
+            <div class="chart-row">
+              <div class="chart-col">
+                <div class="pbi-card-grid two stacked-full">
+                  <div class="pbi-card"><h3><t t-esc="t('Sales by Category by Value')"/></h3><div class="chart-scroll" t-ref="stgProductgroupsValueChart"/></div>
+                  <div class="pbi-card"><h3><t t-esc="t('Sales by Category by Qty')"/></h3><div class="chart-scroll" t-ref="stgProductgroupsQtyChart"/></div>
+                </div>
+              </div>
+              <div class="narrative" t-ref="stgProductgroupsNotes"/>
+            </div>
+          </section>
+        </div>
+
+        <footer><t t-esc="t('PBI Dashboards')"/> &gt; <t t-esc="t('Sales Dashboards')"/> &gt; <t t-esc="t('Sales Analysis with Salesman')"/> — <t t-esc="t('live from')"/> transaction_header</footer>
+      </div>
+      <div class="pbi-tooltip" t-ref="tooltip"/>
+    </div>
+  </t>
+</templates>

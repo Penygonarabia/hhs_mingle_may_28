@@ -133,6 +133,61 @@ addLabels({
   // series labels (dual-measure bar)
   "Estimated Hours": "الساعات المقدرة",
   "Actual Hours": "الساعات الفعلية",
+  // Formula & Details modal — the record-level audit behind a chart.
+  // The formula text, term definitions and column labels themselves come
+  // from the server (service_config.py's DetailConfig) and are translated
+  // through the same t() call, so adding a formula there needs its strings
+  // added here and nowhere else.
+  "Formula & Details": "المعادلة والتفاصيل",
+  "View the formula and the records behind this chart": "عرض المعادلة والسجلات خلف هذا الرسم البياني",
+  "Calculation Breakdown": "تفاصيل الحساب والمعادلة",
+  "Formula Logic": "منطق المعادلة",
+  "Scope": "النطاق",
+  "Unit": "الوحدة",
+  "Total Job Cards": "إجمالي بطاقات العمل",
+  "Records": "السجلات",
+  "Job Cards": "بطاقات العمل",
+  "Counted": "المحتسبة",
+  "Not counted (no value yet)": "غير محتسبة (لا توجد قيمة بعد)",
+  "Total": "الإجمالي",
+  "Average": "المتوسط",
+  "Divisor": "المقسوم عليه",
+  "Utilization": "نسبة الاستغلال",
+  "Search records, name, work center, status...": "البحث في السجلات، الاسم، مركز العمل، الحالة...",
+  "All": "الكل",
+  "Download Excel": "تحميل ملف إكسل",
+  "Download the table below as an Excel (.xlsx) file": "تحميل الجدول أدناه كملف إكسل (.xlsx)",
+  "Show definitions & scope": "عرض التعريفات والنطاق",
+  "Hide definitions & scope": "إخفاء التعريفات والنطاق",
+  "Loading details...": "جاري تحميل التفاصيل...",
+  "No records found for the selected period / criteria.": "لم يتم العثور على سجلات للفترة أو المعايير المحددة.",
+  "Job Card #": "رقم بطاقة العمل",
+  "Number of New Jobs": "عدد الأعمال الجديدة",
+  "Technician": "الفني",
+  "Coordinator": "المنسق",
+  "Spare Parts Coordinator": "منسق قطع الغيار",
+  "Work Center": "مركز العمل",
+  "Region": "المنطقة",
+  "Status": "الحالة",
+  "Open Job Card": "فتح بطاقة العمل",
+  "This record has no completed interval yet, so it is listed but not counted in the average.":
+    "لم تكتمل الفترة الزمنية لهذا السجل بعد، لذا يظهر في القائمة دون احتسابه في المتوسط.",
+  "Showing": "عرض",
+  "of": "من",
+  "records": "سجلات",
+  "Close": "إغلاق",
+  // Franchise filter (filter bar) + the modal's multi-select entity picker.
+  // "Franchise" itself is already in pbi_i18n.js's shared chrome set (the
+  // Sales Study board's own filter bar uses it) — not repeated here, so
+  // both boards keep saying the same word.
+  "All Franchises": "كل الامتيازات",
+  "Search franchise...": "ابحث عن امتياز...",
+  "No franchise matches": "لا يوجد امتياز مطابق",
+  "Search": "بحث",
+  "selected": "محددة",
+  "Select all": "تحديد الكل",
+  "Clear": "مسح",
+  "No match": "لا توجد نتائج",
 });
 
 // Same 7-option vocabulary/order/date-math as service_main.py's
@@ -176,6 +231,35 @@ function saveStoredFilters(boardKey, filters) {
   }
 }
 
+function emptyDetailModal() {
+  return {
+    isOpen: false,
+    loading: false,
+    error: '',
+    itemKey: '',
+    title: '',
+    formula: null,       // {expression, terms:[{label, definition}], scope, unit}
+    summary: null,       // {agg, entity_label, value_label, entities:[...], ...}
+    columns: [],         // [{key, label, kind}] — the formula's own inputs
+    valueColumn: null,   // {label, kind, shown}
+    records: [],
+    // Multi-select: an EMPTY list means "every entity", which is what the
+    // modal opens on. Ids are kept as given by the payload (numbers), so
+    // the row filter can compare them without coercing on every record.
+    selectedEntities: [],
+    entityMenuOpen: false,
+    entitySearch: '',
+    // The term definitions and scope start open on every chart — a reader
+    // checks what a figure means before reading the rows. Deliberately not
+    // remembered: the toggle folds them for the modal at hand, and the next
+    // one opens expanded again.
+    formulaOpen: true,
+    searchQuery: '',
+    sortBy: 'value',
+    sortAsc: false,
+  };
+}
+
 export class PbiServiceDashboard extends Component {
   static template = "pbi_dashboards.service_dashboard";
   static props = ["*"];
@@ -211,6 +295,18 @@ export class PbiServiceDashboard extends Component {
       // Analysis, the 4 boards with a "Regions" custom filter on the
       // source dashboard). region: 'all' means no restriction.
       regionFilterable: false, regionOptions: [], region: stored.region || 'all', scopeInfo: '',
+      // Franchise (brand: Midea / Beko / Candy / ...) filter — offered on
+      // EVERY board, unlike region: the franchise lives on the job card
+      // itself, so there is no board it cannot narrow. Rendered as a
+      // type-to-search dropdown rather than a plain <select> because the
+      // list runs to dozens of brands.
+      franchiseOptions: [], franchise: stored.franchise || 'all',
+      franchiseMenuOpen: false, franchiseSearch: '',
+      // "Formula & Details" modal — the record-level audit behind one
+      // chart's bars. Every field below is filled from the server payload
+      // (columns included), so the same modal serves every chart that
+      // declares a DetailConfig in service_config.py.
+      detailModal: emptyDetailModal(),
     });
 
     this.dateFilterOptions = DATE_FILTER_OPTIONS;
@@ -221,16 +317,27 @@ export class PbiServiceDashboard extends Component {
     onPatched(() => this.renderAll());
 
     this._onMouseMove = evt => moveTip(evt);
+    // Both pickers are open panels rather than native <select>s, so
+    // nothing closes them for free — a click anywhere outside the panel
+    // that owns them has to.
+    this._onDocClick = evt => {
+      if (!evt.target.closest || !evt.target.closest('.pbi-ms')) {
+        this.closeAllPickers();
+      }
+    };
     onMounted(() => {
       setTooltipEl(this.tooltipRef.el);
       document.addEventListener('mousemove', this._onMouseMove);
+      document.addEventListener('click', this._onDocClick, true);
       this.load();
     });
     onWillUnmount(() => {
       document.removeEventListener('mousemove', this._onMouseMove);
+      document.removeEventListener('click', this._onDocClick, true);
       clearTooltipEl(this.tooltipRef.el);
     });
   }
+
 
   get kpiItems() { return this.state.items.filter(i => i.type === 'kpi_single' || i.type === 'kpi_dual'); }
   get chartItems() { return this.state.items.filter(i => i.type !== 'kpi_single' && i.type !== 'kpi_dual'); }
@@ -250,6 +357,7 @@ export class PbiServiceDashboard extends Component {
       customStart: this.state.customStart,
       customEnd: this.state.customEnd,
       region: this.state.region,
+      franchise: this.state.franchise,
     };
   }
 
@@ -270,6 +378,13 @@ export class PbiServiceDashboard extends Component {
       this.state.periodLabel = tDate(res.period.label);
       this.state.regionFilterable = res.regionFilterable;
       this.state.regionOptions = res.regionOptions || [];
+      this.state.franchiseOptions = res.franchiseOptions || [];
+      // A franchise that no longer exists (renamed/archived since the
+      // choice was stored) would otherwise silently empty every chart.
+      if (this.state.franchise !== 'all' && !this.state.franchiseOptions.includes(this.state.franchise)) {
+        this.state.franchise = 'all';
+        this.persistFilters();
+      }
       this.state.items = res.items;
       const charts = {};
       for (const item of res.items) {
@@ -289,6 +404,7 @@ export class PbiServiceDashboard extends Component {
       customStart: this.state.customStart,
       customEnd: this.state.customEnd,
       region: this.state.region,
+      franchise: this.state.franchise,
     });
   }
 
@@ -312,6 +428,47 @@ export class PbiServiceDashboard extends Component {
 
   selectRegion(value) {
     this.state.region = value;
+    this.persistFilters();
+    this.load();
+  }
+
+  // ---------------------------------------------------------------
+  // Franchise picker (filter bar) — type-to-search over the brands the
+  // server sent, one choice at a time (the scope compiler ANDs its
+  // clauses, so two franchises would mean "a card that is both").
+  // ---------------------------------------------------------------
+  get franchiseLabel() {
+    return this.state.franchise === 'all' ? t('All Franchises') : this.state.franchise;
+  }
+
+  get franchiseMatches() {
+    const q = (this.state.franchiseSearch || '').toLowerCase().trim();
+    const opts = this.state.franchiseOptions || [];
+    return q ? opts.filter(o => String(o).toLowerCase().includes(q)) : opts;
+  }
+
+  closeAllPickers() {
+    if (this.state.franchiseMenuOpen) { this.state.franchiseMenuOpen = false; }
+    if (this.state.detailModal && this.state.detailModal.entityMenuOpen) {
+      this.state.detailModal.entityMenuOpen = false;
+    }
+  }
+
+  toggleFranchiseMenu() {
+    const open = !this.state.franchiseMenuOpen;
+    this.closeAllPickers();
+    this.state.franchiseMenuOpen = open;
+    if (open) { this.state.franchiseSearch = ''; }
+  }
+
+  updateFranchiseSearch(value) {
+    this.state.franchiseSearch = value;
+  }
+
+  selectFranchise(value) {
+    this.state.franchiseMenuOpen = false;
+    if (value === this.state.franchise) { return; }
+    this.state.franchise = value;
     this.persistFilters();
     this.load();
   }
@@ -430,7 +587,303 @@ export class PbiServiceDashboard extends Component {
     }
   }
 
+  // ---------------------------------------------------------------
+  // "Formula & Details" modal
+  // ---------------------------------------------------------------
+  get detailSearchableKeys() {
+    // Mirrors service_main.py's _searchable_cols, so the on-screen search
+    // and the one replayed for a download narrow to the same rows.
+    const cols = (this.state.detailModal.columns || []).map(c => c.key);
+    return ['name', 'entity_name', 'work_center', 'region', 'status', 'value_formatted', ...cols];
+  }
+
+  get filteredDetailRecords() {
+    const modal = this.state.detailModal;
+    if (!modal || !modal.records) return [];
+    let list = [...modal.records];
+
+    // No selection at all means every entity — the same reading as the
+    // old "All" option, without a magic value in the list.
+    if (modal.selectedEntities && modal.selectedEntities.length) {
+      const picked = new Set(modal.selectedEntities.map(Number));
+      list = list.filter(r => picked.has(Number(r.entity_id)));
+    }
+
+    if (modal.searchQuery) {
+      const q = modal.searchQuery.toLowerCase().trim();
+      const keys = this.detailSearchableKeys;
+      list = list.filter(r => keys.some(k => String(r[k] ?? '').toLowerCase().includes(q)));
+    }
+
+    if (modal.sortBy) {
+      const field = modal.sortBy;
+      const asc = modal.sortAsc;
+      const isBlank = v => v === undefined || v === null;
+      list.sort((a, b) => {
+        // A record with no value sinks to the bottom in BOTH directions —
+        // reversing it into first place would bury the rows the reader
+        // opened the table to see. service_main.py's _apply_view_filters
+        // does the same, so a download matches what is on screen.
+        const blankA = isBlank(a[field]);
+        const blankB = isBlank(b[field]);
+        if (blankA || blankB) return blankA && blankB ? 0 : (blankA ? 1 : -1);
+        let valA = a[field];
+        let valB = b[field];
+        if (typeof valA === 'number' && typeof valB === 'number') {
+          return asc ? valA - valB : valB - valA;
+        }
+        valA = String(valA).toLowerCase();
+        valB = String(valB).toLowerCase();
+        if (valA < valB) return asc ? -1 : 1;
+        if (valA > valB) return asc ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return list;
+  }
+
+  // Totals over the rows on screen, rolled up the same way the chart
+  // rolls them up (service_main.py's _view_totals is the server twin).
+  get filteredDetailTotals() {
+    const modal = this.state.detailModal;
+    const summary = modal.summary || {};
+    const kind = summary.value_kind || 'hours';
+    const agg = summary.agg || 'sum';
+    const list = this.filteredDetailRecords;
+    // A record whose interval never completed is listed but not counted —
+    // that is exactly why the row count and the denominator can differ.
+    const counted = list.filter(r => r.counted && r.value !== null && r.value !== undefined);
+    const total = counted.reduce((acc, r) => acc + Number(r.value || 0), 0);
+    const avg = counted.length ? total / counted.length : 0;
+    const fmt = v => (kind === 'hours' ? fmtHours(v) : v.toFixed(2));
+
+    const out = {
+      agg,
+      count: list.length,
+      counted: agg === 'count' ? list.length : counted.length,
+      total,
+      totalFormatted: fmt(total),
+      avg,
+      avgFormatted: fmt(avg),
+    };
+    if (agg === 'utilization') {
+      const divisor = Number(summary.divisor || 0);
+      out.divisor = divisor;
+      out.divisorLabel = summary.divisor_label || '';
+      out.utilizationPct = divisor ? (total / divisor) * 100 : 0;
+      out.utilizationFormatted = out.utilizationPct.toFixed(2) + '%';
+    }
+    return out;
+  }
+
+  // Sums for the columns whose DetailColumn declares total=true — the
+  // scheduling formula's "Number of New Jobs" divisor is the one that does.
+  // Over the rows ON SCREEN, like every other figure in this modal, so
+  // narrowing to one coordinator shows the divisor that coordinator's own
+  // bar was computed with.
+  get detailColumnTotals() {
+    const modal = this.state.detailModal;
+    const cols = (modal && modal.columns) || [];
+    const totals = {};
+    if (!cols.some(c => c.total)) { return totals; }
+    const rows = this.filteredDetailRecords;
+    for (const col of cols) {
+      if (!col.total) { continue; }
+      // *_raw is the unformatted value run_chart_detail sends alongside
+      // each cell; the displayed one is a string and would concatenate.
+      totals[col.key] = rows.reduce((acc, r) => acc + Number(r[col.key + '_raw'] || 0), 0);
+    }
+    return totals;
+  }
+
+  getSortIcon(col) {
+    const modal = this.state.detailModal;
+    if (!modal || modal.sortBy !== col) return 'fa fa-sort text-muted ms-1';
+    return modal.sortAsc ? 'fa fa-sort-amount-asc text-primary ms-1' : 'fa fa-sort-amount-desc text-primary ms-1';
+  }
+
+  async openDetailModal(itemKey) {
+    const item = this.state.items.find(i => i.key === itemKey);
+    const modal = emptyDetailModal();
+    modal.isOpen = true;
+    modal.loading = true;
+    modal.itemKey = itemKey;
+    modal.title = item ? item.name : '';
+    this.state.detailModal = modal;
+    try {
+      const res = await this.rpc('/pbi_dashboards/service/chart', {
+        board: this.boardKey,
+        item: itemKey,
+        details: true,
+        ...this.filterParams(),
+      });
+      const m = this.state.detailModal;
+      if (m.itemKey !== itemKey) return;  // user opened another chart meanwhile
+      if (res.error) {
+        m.error = res.error;
+        m.loading = false;
+        return;
+      }
+      m.formula = res.formula;
+      m.summary = res.summary;
+      m.columns = res.columns || [];
+      m.valueColumn = res.valueColumn || { shown: false };
+      m.records = res.records || [];
+      // A count chart has no per-record value to sort on.
+      m.sortBy = m.valueColumn.shown ? 'value' : 'entity_name';
+      m.sortAsc = !m.valueColumn.shown;
+      m.loading = false;
+    } catch (e) {
+      this.state.detailModal.error = 'Failed to load details: ' + e.message;
+      this.state.detailModal.loading = false;
+    }
+  }
+
+  closeDetailModal() {
+    if (this.state.detailModal) {
+      this.state.detailModal.isOpen = false;
+    }
+  }
+
+  toggleDetailFormula() {
+    const modal = this.state.detailModal;
+    if (modal) modal.formulaOpen = !modal.formulaOpen;
+  }
+
+  updateDetailSearch(val) {
+    if (this.state.detailModal) {
+      this.state.detailModal.searchQuery = val;
+    }
+  }
+
+  // ---------------------------------------------------------------
+  // Entity picker (Formula & Details modal) — multi-select. Filtering
+  // stays in the browser (the payload already carries every record), and
+  // the same id list is replayed server-side for the download so the file
+  // matches the table.
+  // ---------------------------------------------------------------
+  get detailEntities() {
+    const modal = this.state.detailModal;
+    return (modal && modal.summary && modal.summary.entities) || [];
+  }
+
+  get detailEntityMatches() {
+    const q = ((this.state.detailModal && this.state.detailModal.entitySearch) || '').toLowerCase().trim();
+    const list = this.detailEntities;
+    return q ? list.filter(e => String(e.name || '').toLowerCase().includes(q)) : list;
+  }
+
+  get detailEntityLabel() {
+    const modal = this.state.detailModal;
+    const picked = (modal && modal.selectedEntities) || [];
+    const entityLabel = t((modal && modal.summary && modal.summary.entity_label) || 'Entity');
+    if (!picked.length) { return `${t('All')} — ${entityLabel}`; }
+    if (picked.length === 1) {
+      const one = this.detailEntities.find(e => Number(e.id) === Number(picked[0]));
+      return one ? one.name : entityLabel;
+    }
+    return `${picked.length} ${entityLabel} ${t('selected')}`;
+  }
+
+  isDetailEntitySelected(id) {
+    const picked = (this.state.detailModal && this.state.detailModal.selectedEntities) || [];
+    return picked.some(p => Number(p) === Number(id));
+  }
+
+  toggleDetailEntityMenu() {
+    const modal = this.state.detailModal;
+    if (!modal) { return; }
+    const open = !modal.entityMenuOpen;
+    this.closeAllPickers();
+    modal.entityMenuOpen = open;
+    if (open) { modal.entitySearch = ''; }
+  }
+
+  updateDetailEntitySearch(val) {
+    if (this.state.detailModal) {
+      this.state.detailModal.entitySearch = val;
+    }
+  }
+
+  toggleDetailEntity(id) {
+    const modal = this.state.detailModal;
+    if (!modal) { return; }
+    const picked = modal.selectedEntities.filter(p => Number(p) !== Number(id));
+    if (picked.length === modal.selectedEntities.length) {
+      picked.push(Number(id));
+    }
+    modal.selectedEntities = picked;
+  }
+
+  // "Select all" over what the picker's own search is showing, so it
+  // means "all of these" rather than "all of them" when a query is typed.
+  selectAllDetailEntities() {
+    const modal = this.state.detailModal;
+    if (!modal) { return; }
+    modal.selectedEntities = this.detailEntityMatches.map(e => Number(e.id));
+  }
+
+  clearDetailEntities() {
+    if (this.state.detailModal) {
+      this.state.detailModal.selectedEntities = [];
+    }
+  }
+
+  sortDetail(col) {
+    const modal = this.state.detailModal;
+    if (!modal) return;
+    if (modal.sortBy === col) {
+      modal.sortAsc = !modal.sortAsc;
+    } else {
+      modal.sortBy = col;
+      // text columns read best A-Z first; a value column reads best
+      // largest-first, which is what the chart's own bars show.
+      modal.sortAsc = col !== 'value';
+    }
+  }
+
+  async openTaskForm(taskId) {
+    if (!taskId) return;
+    await this.actionService.doAction({
+      type: 'ir.actions.act_window',
+      res_model: 'project.task',
+      res_id: taskId,
+      views: [[false, 'form']],
+      target: 'current',
+    });
+  }
+
+  // The download is a separate request, so the server re-runs the query
+  // and has to be told about the narrowing the user did on screen —
+  // otherwise the file comes back with rows the table isn't showing.
+  // service_main.py's _apply_view_filters replays exactly these.
+  detailExportUrl(format) {
+    const p = this.filterParams();
+    const modal = this.state.detailModal || {};
+    const query = new URLSearchParams({
+      board: this.boardKey,
+      item: modal.itemKey || '',
+      dateFilter: p.dateFilter || '',
+      customStart: p.customStart || '',
+      customEnd: p.customEnd || '',
+      region: p.region || '',
+      franchise: p.franchise || '',
+      // Empty string = no entity restriction, matching the table on screen.
+      entityIds: (modal.selectedEntities || []).join(','),
+      search: modal.searchQuery || '',
+      sortBy: modal.sortBy || '',
+      sortAsc: modal.sortAsc ? '1' : '0',
+    });
+    return `/pbi_dashboards/service/detail_export_${format}?${query.toString()}`;
+  }
+
+  downloadDetailExcel() {
+    window.location.href = this.detailExportUrl('xlsx');
+  }
+
 }
+
 
 for (const key of BOARD_KEYS) {
   class Bound extends PbiServiceDashboard {}

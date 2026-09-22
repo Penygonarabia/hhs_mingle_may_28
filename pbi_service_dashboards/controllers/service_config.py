@@ -26,9 +26,248 @@ from odoo.addons.pbi_dashboards.controllers.board_config import (
     GroupByConfig,
     DrillStep,
     TableColumnConfig,
+    DetailColumn,
+    DetailConfig,
     ChartItemConfig,
     BoardConfig,
 )
+
+
+# ---------------------------------------------------------------------
+# "Formula & Details" configuration for the KPIs whose formula the service
+# spec spells out. Each factory returns the DetailConfig for one formula;
+# the same formula appears on both the team-wide board and its personal
+# "my ..." mirror, so they are functions rather than shared constants (a
+# DetailConfig is a mutable dataclass — one instance per item keeps an
+# accidental edit from leaking across boards).
+#
+# The timestamp columns below are deliberately the "_eff" ones wherever
+# the measure itself is built from a COALESCE (board_sql.py's
+# _TIMELINE_DERIVED_COLUMNS): the table has to show the endpoints that
+# actually produced the number, or it cannot be used to check the bar.
+# ---------------------------------------------------------------------
+def _detail_closed_job_cards(entity_label="Technician", entity_col="technician_id"):
+    return DetailConfig(
+        expression=f"Closed Job Cards = COUNT(Job Cards with Status = Closed), per {entity_label}",
+        entity_label=entity_label, entity_col=entity_col, agg="count",
+        terms=[
+            ("Counted", "One row per job card whose status reached Closed within the selected period."),
+            ("Not counted", "Job cards in any other status, and job cards created outside the period."),
+        ],
+        columns=[
+            DetailColumn("created_at", "Job Created", "service_created_datetime", "datetime"),
+            DetailColumn("closed_at", "Closed On", "closed_ts_eff", "datetime"),
+        ],
+        scope=f"Job Cards where Status = Closed, grouped by {entity_label}.",
+    )
+
+
+def _detail_avg_rtat(entity_label="Technician", entity_col="technician_id"):
+    return DetailConfig(
+        expression="Average RTAT = SUM(RTAT Hours) ÷ COUNT(Closed Job Cards)",
+        entity_label=entity_label, entity_col=entity_col, agg="avg",
+        value_col="rtat_hours", value_label="RTAT (Hours)", value_kind="hours",
+        terms=[
+            ("RTAT Hours", "The job card's own RTAT figure — elapsed working hours from job "
+                           "creation to closing, excluding non-working days per the company calendar."),
+            ("In-House only", "Only Closed job cards are averaged; an open card has no RTAT yet "
+                              "and would drag the average toward zero."),
+        ],
+        columns=[
+            DetailColumn("created_at", "New (Job Created)", "service_created_datetime", "datetime"),
+            DetailColumn("closed_at", "Closed On", "closed_ts_eff", "datetime"),
+        ],
+        scope=f"Closed Job Cards with an assigned {entity_label}.",
+    )
+
+
+def _detail_utilization(entity_label="Technician", entity_col="technician_id", period_scaled=True):
+    return DetailConfig(
+        expression="Utilization (%) = ((Total Labor Hours + Total Travel Hours) ÷ 176) × 100",
+        entity_label=entity_label, entity_col=entity_col, agg="utilization",
+        period_scaled=period_scaled,
+        # The per-record input of a ratio: the two hour columns added
+        # together. The 176-hour divisor is applied once over the total,
+        # not per record, so it lives in the summary rather than here.
+        value_expr="COALESCE(jc.labor_hours, 0) + COALESCE(jc.travel_time_hours, 0)",
+        value_label="Labor + Travel (Hours)", value_kind="hours",
+        terms=[
+            ("Labor Hours", "Ready to Invoice / Closed − Technician Reached at site."),
+            ("Travel Hours", "Technician Reached at site − Technician Travel Started."),
+            ("176", "Nominal working hours in one month, scaled by the number of months the "
+                    "selected period spans (so 'This Year' divides by 176 × 12)."),
+        ],
+        columns=[
+            DetailColumn("travel_started_at", "Travel Started", "travel_started_ts_eff", "datetime"),
+            DetailColumn("reached_at", "Reached Site", "reached_ts_eff", "datetime"),
+            DetailColumn("ready_at", "Ready to Invoice / Closed", "ready_to_invoice_ts_eff", "datetime"),
+            DetailColumn("travel_hours", "Travel Hours", "travel_time_hours", "hours"),
+            DetailColumn("labor_hours", "Labor Hours", "labor_hours", "hours"),
+        ],
+        scope=f"Job Cards in status Ready to Invoice or Closed with an assigned {entity_label}.",
+    )
+
+
+def _detail_labor_hours(entity_label="Technician", entity_col="technician_id"):
+    return DetailConfig(
+        expression="Labor Hours = Ready to Invoice Date & Time − Technician Reached (Job Started) Date & Time",
+        entity_label=entity_label, entity_col=entity_col, agg="sum",
+        value_col="labor_hours", value_label="Labor Hours", value_kind="hours",
+        terms=[
+            ("Start Time", "Timestamp when the technician reached the site and the job started."),
+            ("End Time", "Timestamp when the job was marked Ready to Invoice (or Closed)."),
+            ("Example", "Job Start 08:00, Ready to Invoice 12:30 → Labor Hours = 4:30."),
+        ],
+        columns=[
+            DetailColumn("start_time", "Start Time (Reached)", "reached_ts_eff", "datetime"),
+            DetailColumn("end_time", "End Time (Ready / Closed)", "ready_to_invoice_ts_eff", "datetime"),
+        ],
+        scope=f"Job Cards in status Ready to Invoice or Closed with an assigned {entity_label}.",
+    )
+
+
+def _detail_travel_hours(entity_label="Technician", entity_col="technician_id"):
+    return DetailConfig(
+        expression="Travel Hours = Technician Reached Date & Time − Technician Travel Started Date & Time",
+        entity_label=entity_label, entity_col=entity_col, agg="sum",
+        value_col="travel_time_hours", value_label="Travel Hours", value_kind="hours",
+        terms=[
+            ("Start Time", "Timestamp when the technician started travelling to the site."),
+            ("End Time", "Timestamp when the technician reached the job site."),
+            ("Example", "Travel Started 07:30, Reached 08:00 → Travel Hours = 0:30."),
+        ],
+        columns=[
+            DetailColumn("start_time", "Travel Started", "travel_started_ts_eff", "datetime"),
+            DetailColumn("end_time", "Reached Job Site", "reached_ts_eff", "datetime"),
+        ],
+        scope=f"Closed Job Cards with an assigned {entity_label}.",
+    )
+
+
+def _detail_scheduling_performance(entity_label="Coordinator", entity_col="scheduled_by_uid",
+                                   show_new_jobs=True):
+    return DetailConfig(
+        expression="Average Scheduling Time = SUM(Scheduled Date & Time − New Date & Time) ÷ Number of New Jobs",
+        entity_label=entity_label, entity_col=entity_col, agg="avg",
+        value_col="scheduling_hours", value_label="Scheduling Time (Hours)", value_kind="hours",
+        terms=[
+            ("New Date & Time", "When the job card was created."),
+            ("Scheduled Date & Time", "When it was moved to Scheduled — attributed to the user who "
+                                      "actually performed that transition, from the status tracking log."),
+            ("Denominator", "Only job cards that reached Scheduled are averaged; one still waiting "
+                            "has no interval yet and is shown but not counted."),
+        ],
+        columns=[
+            DetailColumn("start_time", "New (Job Created)", "service_created_datetime", "datetime"),
+            DetailColumn("end_time", "Scheduled On", "scheduled_ts", "datetime"),
+        ] + ([
+            # The formula's DENOMINATOR, made checkable. Every other part of
+            # "SUM(Scheduled - New) / Number of New Jobs" had a column of its
+            # own; the divisor was only ever a figure in the header, so the
+            # division could not be verified from the table. 1 where the card
+            # reached Scheduled (scheduling_hours is NULL, not 0, until it
+            # does — see _hours_between), 0 where it has not, and the column
+            # totals to the divisor the average actually used.
+            DetailColumn("new_jobs", "Number of New Jobs", kind="integer",
+                         expr="CASE WHEN jc.scheduling_hours IS NOT NULL THEN 1 ELSE 0 END",
+                         total=True),
+        ] if show_new_jobs else []),
+        scope=f"Job Cards scheduled by a {entity_label}, within the selected period and region.",
+    )
+
+
+def _detail_job_closing_performance(entity_label="Coordinator", entity_col="closed_by_uid"):
+    return DetailConfig(
+        expression="Average Job Closing Time = SUM(Closed Date & Time − Ready to Invoice Date & Time) ÷ Number of Ready to Invoice Jobs",
+        entity_label=entity_label, entity_col=entity_col, agg="avg",
+        value_col="job_closing_hours", value_label="Closing Time (Hours)", value_kind="hours",
+        terms=[
+            ("Ready to Invoice Date & Time", "When the job card became Ready to Invoice."),
+            ("Closed Date & Time", "When it was closed — attributed to the user who performed "
+                                   "that transition, from the status tracking log."),
+            ("Denominator", "Only job cards that reached Closed are averaged."),
+        ],
+        columns=[
+            DetailColumn("start_time", "Ready to Invoice", "ready_to_invoice_ts_eff", "datetime"),
+            DetailColumn("end_time", "Closed On", "closed_ts_eff", "datetime"),
+        ],
+        scope=f"Job Cards closed by a {entity_label}, within the selected period and region.",
+    )
+
+
+def _detail_spare_part_requests(entity_label="Spare Parts Coordinator", entity_col="parts_handler_uid"):
+    return DetailConfig(
+        expression=f"Total Spare Part Requests = COUNT(Job Cards placed On Hold - SP Req OR raised as Customer Need Quotation), per {entity_label}",
+        entity_label=entity_label, entity_col=entity_col, agg="count",
+        terms=[
+            ("Counted", "A job card that ever entered On Hold - SP Req or Customer Need Quote — "
+                        "not merely the ones sitting in that status right now, so requests the "
+                        "coordinator has already finished handling still count."),
+            ("Handler", f"The first {entity_label} to act on the request, from the status tracking log "
+                        "— not the technician who raised it."),
+        ],
+        columns=[
+            DetailColumn("onhold_at", "On Hold On", "onhold_ts_eff", "datetime"),
+            DetailColumn("quote_at", "Customer Need Quote On", "cst_need_quote_ts_eff", "datetime"),
+        ],
+        scope="Job Cards that are spare part requests, within the selected period and region.",
+    )
+
+
+def _detail_onhold_to_parts_ready(entity_label="Spare Parts Coordinator", entity_col="parts_handler_uid"):
+    return DetailConfig(
+        expression="Average Waiting Period = SUM(Parts Ready Date & Time − On Hold Date & Time) ÷ Number of Spare Part Requests",
+        entity_label=entity_label, entity_col=entity_col, agg="avg",
+        value_col="onhold_to_ready_hours", value_label="Waiting (Hours)", value_kind="hours",
+        terms=[
+            ("On Hold Date & Time", "When the request was placed On Hold - SP Req."),
+            ("Parts Ready Date & Time", "When the spare parts were marked Parts Ready."),
+            ("Denominator", "Only requests that reached Parts Ready are averaged; one still "
+                            "waiting is shown but not counted, so it does not read as '0 hours waited'."),
+        ],
+        columns=[
+            DetailColumn("start_time", "On Hold On", "onhold_ts_eff", "datetime"),
+            DetailColumn("end_time", "Parts Ready On", "parts_ready_ts", "datetime"),
+        ],
+        scope="Spare part requests handled within the selected period and region.",
+    )
+
+
+def _detail_parts_ready_to_handover(entity_label="Spare Parts Coordinator", entity_col="parts_handler_uid"):
+    return DetailConfig(
+        expression="Average Waiting Period = SUM(Spare Part Hand Over Date & Time − Parts Ready Date & Time) ÷ Number of Hand Over Requests",
+        entity_label=entity_label, entity_col=entity_col, agg="avg",
+        value_col="ready_to_handover_hours", value_label="Waiting (Hours)", value_kind="hours",
+        terms=[
+            ("Parts Ready Date & Time", "When the spare parts were marked Parts Ready."),
+            ("Hand Over Date & Time", "When the spare parts were handed over to the technician."),
+            ("Denominator", "Only requests that reached Hand Over are averaged."),
+        ],
+        columns=[
+            DetailColumn("start_time", "Parts Ready On", "parts_ready_ts", "datetime"),
+            DetailColumn("end_time", "Handed Over On", "handover_ts", "datetime"),
+        ],
+        scope="Spare part requests handled within the selected period and region.",
+    )
+
+
+def _detail_quote_to_parts_added(entity_label="Spare Parts Coordinator", entity_col="parts_handler_uid"):
+    return DetailConfig(
+        expression="Average Time = SUM(Parts Added & Service Charge Request Date & Time − Customer Need Quotation Date & Time) ÷ Number of Customer Need Quotations",
+        entity_label=entity_label, entity_col=entity_col, agg="avg",
+        value_col="quote_to_parts_added_hours", value_label="Elapsed (Hours)", value_kind="hours",
+        terms=[
+            ("Customer Need Quotation Date & Time", "When the customer's quotation request was raised."),
+            ("Parts Added & Service Charge Request Date & Time",
+             "When the required parts were added and the Service Charge Request was created."),
+            ("Denominator", "Only requests that reached Parts Added are averaged."),
+        ],
+        columns=[
+            DetailColumn("start_time", "Customer Need Quote On", "cst_need_quote_ts_eff", "datetime"),
+            DetailColumn("end_time", "Parts Added & Service Charge On", "parts_added_ts", "datetime"),
+        ],
+        scope="Spare part requests handled within the selected period and region.",
+    )
 
 
 BOARDS: dict = {
@@ -527,9 +766,21 @@ BOARDS["service_analysis_cc"] = BoardConfig(
             domain_2=[("service_request_state", "=", "Closed"), ("user_group", "=", "call-center")],
         ),
         ChartItemConfig(
+            # The source ks_domain ANDs ("work_center_group_id", "!=", False)
+            # onto this chart — presumably to keep a "None" bar out of the
+            # Region drill — but the KPI above it does not, so the two tiles
+            # on the same board counted different populations: the tile read
+            # 3236 while the months under it summed to 2828, the 408
+            # requests raised with no region yet. A chart called "Total Job
+            # Cards - Month wise" has to total the same job cards its own
+            # board's total does, so the clause is dropped. Those requests
+            # now land in their month, and drilling a month shows them under
+            # a "None" region bucket — which the engine already handles
+            # (see board_sql.py's _drill_filter_clause NULL branch) and
+            # which other boards already display for untagged dimensions.
             key="total_job_cards_month_wise", name="Total Job Cards - Month wise",
             type="bar", source="usergroup",
-            domain=[("user_group", "=", "call-center"), ("work_center_group_id", "!=", False)],
+            domain=[("user_group", "=", "call-center")],
             groupby=GroupByConfig("request_date", interval="month_year"),
             drill=[DrillStep("work_center_group_id", "Region")],
             record_model="machine.repair.support",
@@ -609,6 +860,9 @@ BOARDS["service_analysis_crd"] = BoardConfig(
             measure=MeasureConfig("scheduling_hours", "avg"),
             groupby=GroupByConfig("scheduled_by_uid"),
             drill=[DrillStep("work_center_group_id", "Region"), DrillStep("work_center_id", "Work Center")],
+            # No "Number of New Jobs" column on this board's popup — the
+            # CRD Users mirror still carries it.
+            detail=_detail_scheduling_performance(show_new_jobs=False),
         ),
         ChartItemConfig(
             key="job_closing_performance", name="Job Closing Performance",
@@ -617,6 +871,7 @@ BOARDS["service_analysis_crd"] = BoardConfig(
             measure=MeasureConfig("job_closing_hours", "avg"),
             groupby=GroupByConfig("closed_by_uid"),
             drill=[DrillStep("work_center_group_id", "Region"), DrillStep("work_center_id", "Work Center")],
+            detail=_detail_job_closing_performance(),
         ),
         ChartItemConfig(
             key="total_closed_job_cards_coordinator", name="Total Closed Job Cards",
@@ -624,6 +879,7 @@ BOARDS["service_analysis_crd"] = BoardConfig(
             domain=[("closed_by_uid", "!=", False), ("job_card_status", "=", "Closed")],
             groupby=GroupByConfig("closed_by_uid"),
             drill=[DrillStep("work_center_group_id", "Region"), DrillStep("work_center_id", "Work Center")],
+            detail=_detail_closed_job_cards("Coordinator", "closed_by_uid"),
         ),
     ],
 )
@@ -637,7 +893,6 @@ BOARDS["service_analysis_parts"] = BoardConfig(
             key="cst_need_quote", name="Cst Need Quote",
             type="kpi_single", source="jobcards",
             domain=[("job_card_status", "in", ["Customer Need Quote"])],
-            measure=MeasureConfig("parts_revenue", "sum"),
         ),
         ChartItemConfig(
             key="on_hold_sp_req", name="On Hold - SP Req",
@@ -683,6 +938,7 @@ BOARDS["service_analysis_parts"] = BoardConfig(
                     ("is_spare_part_request", "=", True)],
             groupby=GroupByConfig("parts_handler_uid"),
             drill=[DrillStep("work_center_group_id", "Region"), DrillStep("work_center_id", "Work Center")],
+            detail=_detail_spare_part_requests(),
         ),
         ChartItemConfig(
             # Was sum(onhold_hours), which measured the WRONG interval:
@@ -698,6 +954,7 @@ BOARDS["service_analysis_parts"] = BoardConfig(
             measure=MeasureConfig("onhold_to_ready_hours", "avg"),
             groupby=GroupByConfig("parts_handler_uid"),
             drill=[DrillStep("work_center_group_id", "Region"), DrillStep("work_center_id", "Work Center")],
+            detail=_detail_onhold_to_parts_ready(),
         ),
         ChartItemConfig(
             # Not expressible at all before the timeline CTE — both ends
@@ -709,6 +966,7 @@ BOARDS["service_analysis_parts"] = BoardConfig(
             measure=MeasureConfig("ready_to_handover_hours", "avg"),
             groupby=GroupByConfig("parts_handler_uid"),
             drill=[DrillStep("work_center_group_id", "Region"), DrillStep("work_center_id", "Work Center")],
+            detail=_detail_parts_ready_to_handover(),
         ),
         ChartItemConfig(
             # Was sum(cstneedquote_hours) = job_resume_date -
@@ -723,6 +981,7 @@ BOARDS["service_analysis_parts"] = BoardConfig(
             measure=MeasureConfig("quote_to_parts_added_hours", "avg"),
             groupby=GroupByConfig("parts_handler_uid"),
             drill=[DrillStep("work_center_group_id", "Region"), DrillStep("work_center_id", "Work Center")],
+            detail=_detail_quote_to_parts_added(),
         ),
     ],
 )
@@ -742,25 +1001,21 @@ BOARDS["technician_analysis"] = BoardConfig(
             key="scheduled", name="Scheduled",
             type="kpi_single", source="jobcards",
             domain=[("job_card_status", "in", ["Scheduled"]), ("is_user_work_location", "=", True)],
-            measure=MeasureConfig("total_revenue", "sum"),
         ),
         ChartItemConfig(
             key="parts_ready_rescheduled", name="Parts Ready & Rescheduled",
             type="kpi_single", source="jobcards",
             domain=[("job_card_status", "in", ["Parts Ready & Reschedule"]), ("is_user_work_location", "=", True)],
-            measure=MeasureConfig("parts_revenue", "sum"),
         ),
         ChartItemConfig(
             key="cst_need_quote", name="Cst Need Quote",
             type="kpi_single", source="jobcards",
             domain=[("job_card_status", "in", ["Customer Need Quote"]), ("is_user_work_location", "=", True)],
-            measure=MeasureConfig("parts_revenue", "sum"),
         ),
         ChartItemConfig(
             key="on_hold", name="On hold",
             type="kpi_single", source="jobcards",
             domain=[("job_card_status", "in", ["On Hold -SP Req"]), ("is_user_work_location", "=", True)],
-            measure=MeasureConfig("warranty_spareparts_revenue", "sum"),
         ),
         ChartItemConfig(
             # "Display the total number of Closed Job Cards completed by
@@ -772,6 +1027,7 @@ BOARDS["technician_analysis"] = BoardConfig(
                     ("job_card_status", "=", "Closed")],
             groupby=GroupByConfig("technician_id"),
             drill=[DrillStep("work_center_id", "Work Center")],
+            detail=_detail_closed_job_cards(),
         ),
         ChartItemConfig(
             # Average RTAT over Closed job cards only. rtat_hours is
@@ -787,6 +1043,7 @@ BOARDS["technician_analysis"] = BoardConfig(
             measure=MeasureConfig("rtat_hours", "avg"),
             groupby=GroupByConfig("technician_id"),
             drill=[DrillStep("work_center_id", "Work Center")],
+            detail=_detail_avg_rtat(),
         ),
         ChartItemConfig(
             # Utilization (%) = ((Labor Hours + Travel Hours) / 176) * 100,
@@ -796,7 +1053,8 @@ BOARDS["technician_analysis"] = BoardConfig(
             # _period_months for the {period_months} scaling.
             key="technician_utilization", name="Technician Utilization",
             type="bar", source="jobcards",
-            domain=[("technician_id", "!=", False), ("is_user_work_location", "=", True)],
+            domain=[("technician_id", "!=", False), ("is_user_work_location", "=", True),
+                    ("job_card_status", "in", ["Ready to Invoice", "Closed"])],
             measure=MeasureConfig(
                 "utilization_pct", "expr",
                 expr=(
@@ -806,6 +1064,7 @@ BOARDS["technician_analysis"] = BoardConfig(
             ),
             groupby=GroupByConfig("technician_id"),
             drill=[DrillStep("work_center_id", "Work Center")],
+            detail=_detail_utilization(),
         ),
         ChartItemConfig(
             # The Labor Hours half of the utilization formula, surfaced on
@@ -813,10 +1072,12 @@ BOARDS["technician_analysis"] = BoardConfig(
             # Invoice - "Technician Reached - Job Started", per technician.
             key="technician_labor_hours", name="Technician Labor Hours",
             type="bar", source="jobcards",
-            domain=[("technician_id", "!=", False), ("is_user_work_location", "=", True)],
+            domain=[("technician_id", "!=", False), ("is_user_work_location", "=", True),
+                    ("job_card_status", "in", ["Ready to Invoice", "Closed"])],
             measure=MeasureConfig("labor_hours", "sum"),
             groupby=GroupByConfig("technician_id"),
             drill=[DrillStep("work_center_id", "Work Center")],
+            detail=_detail_labor_hours(),
         ),
         ChartItemConfig(
             # The Travel Hours half: "Technician Reached" - "Technician
@@ -829,40 +1090,19 @@ BOARDS["technician_analysis"] = BoardConfig(
             # same pattern already fixed on Sales & Cost Analysis.)
             key="technician_travel_hours", name="Technician Travel Hours",
             type="bar", source="jobcards",
-            domain=[("technician_id", "!=", False), ("is_user_work_location", "=", True)],
+            domain=[("technician_id", "!=", False), ("is_user_work_location", "=", True),
+                    ("job_card_status", "=", "Closed")],
             measure=MeasureConfig("travel_time_hours", "sum"),
             groupby=GroupByConfig("technician_id"),
             drill=[DrillStep("work_center_group_id", "Region"), DrillStep("work_center_id", "Work Center")],
+            detail=_detail_travel_hours(),
         ),
         ChartItemConfig(
-            # A genuinely separate 10th tile (legacy_item_306), distinct
-            # from "...Estimated vs Actual Hours" below — same domain/
-            # groupby but a single measure (total_worked_hours only). No
-            # drill_actions_data.py entry under this exact name; given the
-            # dual-measure sibling immediately below (identical domain/
-            # groupby) drills on work_center_id, that's used here too
-            # rather than leaving this tile unclickable.
             key="employee_performance_actual_hours", name="Employee Performance Analysis - Actual Hours",
             type="bar", source="jobcards",
-            domain=[("is_my_user_group", "=", True), ("total_worked_hours", "!=", 0)],
+            domain=[("is_my_user_group", "=", True), ("total_worked_hours", "!=", 0),
+                    ("job_card_status", "in", ["Ready to Invoice", "Closed"])],
             measure=MeasureConfig("total_worked_hours", "sum"),
-            groupby=GroupByConfig("work_center_group_id"),
-            drill=[DrillStep("work_center_id", "Work Center")],
-        ),
-        ChartItemConfig(
-            # Genuinely a 2-measure chart in source (ks_chart_measure_field
-            # carries BOTH expected_completion_hours and total_worked_hours)
-            # — rendered here as a dual-series bar (see service_sql.py's
-            # run_breakdown measure_2 support / service_dashboard.js
-            # renderChart), not force-fit into the single-measure shape
-            # every other bar item uses.
-            key="employee_performance_estimated_vs_actual",
-            name="Employee Performance Analysis - Estimated vs Actual Hours",
-            type="bar", source="jobcards",
-            domain=[("is_my_user_group", "=", True), ("total_worked_hours", "!=", 0)],
-            measure=MeasureConfig("expected_completion_hours", "sum"),
-            measure_2=MeasureConfig("total_worked_hours", "sum"),
-            series_labels=("Estimated Hours", "Actual Hours"),
             groupby=GroupByConfig("work_center_group_id"),
             drill=[DrillStep("work_center_id", "Work Center")],
         ),
@@ -944,6 +1184,7 @@ BOARDS["service_analysis_crd_users"] = BoardConfig(
             measure=MeasureConfig("scheduling_hours", "avg"),
             groupby=GroupByConfig("service_created_datetime", interval="month_year"),
             drill=[DrillStep("work_center_group_id", "Region"), DrillStep("work_center_id", "Work Center")],
+            detail=_detail_scheduling_performance(),
         ),
         ChartItemConfig(
             key="my_job_closing_performance", name="My Job Closing Performance",
@@ -952,6 +1193,7 @@ BOARDS["service_analysis_crd_users"] = BoardConfig(
             measure=MeasureConfig("job_closing_hours", "avg"),
             groupby=GroupByConfig("service_created_datetime", interval="month_year"),
             drill=[DrillStep("work_center_group_id", "Region"), DrillStep("work_center_id", "Work Center")],
+            detail=_detail_job_closing_performance(),
         ),
         ChartItemConfig(
             key="my_closed_job_cards", name="My Closed Job Cards",
@@ -959,6 +1201,7 @@ BOARDS["service_analysis_crd_users"] = BoardConfig(
             domain=[("closed_by_uid", "in", ["%UID"]), ("job_card_status", "=", "Closed")],
             groupby=GroupByConfig("service_created_datetime", interval="month_year"),
             drill=[DrillStep("work_center_group_id", "Region"), DrillStep("work_center_id", "Work Center")],
+            detail=_detail_closed_job_cards("Coordinator", "closed_by_uid"),
         ),
     ],
 )
@@ -1000,6 +1243,7 @@ BOARDS["service_analysis_parts_users"] = BoardConfig(
                     ("is_spare_part_request", "=", True)],
             groupby=GroupByConfig("service_created_datetime", interval="month_year"),
             drill=[DrillStep("work_center_group_id", "Region"), DrillStep("work_center_id", "Work Center")],
+            detail=_detail_spare_part_requests(),
         ),
         ChartItemConfig(
             key="onhold_sp_req_hours", name="Average Waiting Period: On Hold to Parts Ready",
@@ -1008,6 +1252,7 @@ BOARDS["service_analysis_parts_users"] = BoardConfig(
             measure=MeasureConfig("onhold_to_ready_hours", "avg"),
             groupby=GroupByConfig("service_created_datetime", interval="month_year"),
             drill=[DrillStep("work_center_group_id", "Region"), DrillStep("work_center_id", "Work Center")],
+            detail=_detail_onhold_to_parts_ready(),
         ),
         ChartItemConfig(
             key="parts_ready_to_handover_hours", name="Average Waiting Period: Parts Ready to Hand Over",
@@ -1016,6 +1261,7 @@ BOARDS["service_analysis_parts_users"] = BoardConfig(
             measure=MeasureConfig("ready_to_handover_hours", "avg"),
             groupby=GroupByConfig("service_created_datetime", interval="month_year"),
             drill=[DrillStep("work_center_group_id", "Region"), DrillStep("work_center_id", "Work Center")],
+            detail=_detail_parts_ready_to_handover(),
         ),
         ChartItemConfig(
             key="cust_need_quote_hours",
@@ -1025,6 +1271,7 @@ BOARDS["service_analysis_parts_users"] = BoardConfig(
             measure=MeasureConfig("quote_to_parts_added_hours", "avg"),
             groupby=GroupByConfig("service_created_datetime", interval="month_year"),
             drill=[DrillStep("work_center_group_id", "Region"), DrillStep("work_center_id", "Work Center")],
+            detail=_detail_quote_to_parts_added(),
         ),
     ],
 )
@@ -1076,6 +1323,7 @@ BOARDS["service_analysis_technicians"] = BoardConfig(
             domain=[("technician_id", "in", ["%UID"]), ("job_card_status", "=", "Closed")],
             groupby=GroupByConfig("service_created_datetime", interval="month_year"),
             drill=[DrillStep("work_center_id", "Work Center")],
+            detail=_detail_closed_job_cards(),
         ),
         ChartItemConfig(
             key="my_rtat_avg", name="My Jobs - Average RTAT",
@@ -1084,6 +1332,7 @@ BOARDS["service_analysis_technicians"] = BoardConfig(
             measure=MeasureConfig("rtat_hours", "avg"),
             groupby=GroupByConfig("service_created_datetime", interval="month_year"),
             drill=[DrillStep("work_center_id", "Work Center")],
+            detail=_detail_avg_rtat(),
         ),
         ChartItemConfig(
             key="my_utilization", name="My Utilization",
@@ -1102,6 +1351,9 @@ BOARDS["service_analysis_technicians"] = BoardConfig(
             ),
             groupby=GroupByConfig("service_created_datetime", interval="month_year"),
             drill=[DrillStep("work_center_id", "Work Center")],
+            # Each bar here is one month, so the 176-hour denominator must
+            # not scale with the length of the selected range.
+            detail=_detail_utilization(period_scaled=False),
         ),
         ChartItemConfig(
             key="my_labor_hours", name="My Labor Hours",
@@ -1110,6 +1362,7 @@ BOARDS["service_analysis_technicians"] = BoardConfig(
             measure=MeasureConfig("labor_hours", "sum"),
             groupby=GroupByConfig("service_created_datetime", interval="month_year"),
             drill=[DrillStep("work_center_id", "Work Center")],
+            detail=_detail_labor_hours(),
         ),
         ChartItemConfig(
             key="technician_travel_hours", name="Technician Travel Hours",
@@ -1118,6 +1371,7 @@ BOARDS["service_analysis_technicians"] = BoardConfig(
             measure=MeasureConfig("travel_time_hours", "sum"),
             groupby=GroupByConfig("service_created_datetime", interval="month_year"),
             drill=[DrillStep("work_center_group_id", "Region"), DrillStep("work_center_id", "Work Center")],
+            detail=_detail_travel_hours(),
         ),
     ],
 )
@@ -1163,8 +1417,11 @@ ITEM_INFO_DESCRIPTIONS = {
 
     # Single KPIs - Role Specific & Pending
     "total_job_cards_scheduled": "<b>Formula:</b> COUNT(job cards where state = 'Scheduled').<br><b>Scope:</b> Job cards scheduled for service.",
+    "scheduled": "<b>Formula:</b> COUNT(job cards where state = 'Scheduled').<br><b>Scope:</b> Job cards scheduled for service.",
+    "parts_ready_rescheduled": "<b>Formula:</b> COUNT(job cards where state = 'Parts Ready & Reschedule').<br><b>Scope:</b> Job cards with parts ready and rescheduled.",
     "total_job_cards_closed": "<b>Formula:</b> COUNT(job cards where state = 'Closed').<br><b>Scope:</b> Completed and closed job cards.",
     "cst_need_quote": "<b>Formula:</b> COUNT(job cards in 'Customer Quotation Request' state).<br><b>Scope:</b> Pending quotation approval.",
+    "on_hold": "<b>Formula:</b> COUNT(job cards in 'On Hold - SP Required' state).<br><b>Scope:</b> Pending spare parts availability.",
     "on_hold_sp_req": "<b>Formula:</b> COUNT(job cards in 'On Hold - SP Required' state).<br><b>Scope:</b> Pending spare parts availability.",
     "total_spare_part_requests": "<b>Formula:</b> COUNT(spare part request lines) for job cards in selected period.",
 
@@ -1217,6 +1474,7 @@ ITEM_INFO_DESCRIPTIONS = {
     "actual_hours_worked": "<b>Formula:</b> Total Worked Hours = SUM(actual labor hours logged on job card work logs) grouped by Region / Work Center.<br><b>Field:</b> <code>total_worked_hours</code>.",
     "my_closed_job_cards": "<b>Formula:</b> COUNT(Closed job cards) for current technician grouped by created month.",
     "my_labor_hours": "<b>Formula:</b> Labor Hours = SUM(hours elapsed from Technician Reached to Job Completion) for current technician grouped by created month.",
+    "technician_labor_hours": "<b>Formula:</b> Labor Hours = SUM(hours elapsed from Technician Reached at site to Job Completion) grouped by Technician.<br><b>Field:</b> <code>labor_hours</code> = End Time (Ready to Invoice / Closed) − Start Time (Technician Reached).",
     "technician_travel_hours": "<b>Formula:</b> Travel Hours = SUM(hours elapsed from Travel Started to Technician Reached at site) grouped by Region / Work Center.<br><b>Field:</b> <code>travel_time_hours</code> (travel log timestamps).",
 
     # Sales & Cost Analysis

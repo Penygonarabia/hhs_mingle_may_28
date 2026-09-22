@@ -472,16 +472,35 @@
     top: 0;
     bottom: 0;
     left: 0;
-    width: 26px;
+    /* Set inline from gutterWidth: wide enough for the largest line number
+       plus the fold icon. The editor's padding-left is read off the same
+       variable, so the two can never drift apart. */
+    width: var(--sqlms-gutter-w, 46px);
     overflow: hidden;
     background: #f1f3f5;
     border-right: 1px solid #e9ecef;
     z-index: 2;
 }
 .sqlms-gutter-inner { position: relative; height: 100%; }
+/* Line numbers and fold icons are placed by `top` alone, measured off the
+   rendered line divs -- so a wrapped line pushes the next number down with
+   it instead of the gutter sliding out of step with the text. */
+.sqlms-lineno {
+    position: absolute;
+    left: 2px;
+    right: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: right;
+    font-family: monospace;
+    font-size: 12px;
+    color: #adb5bd;
+    user-select: none;
+    pointer-events: none;
+}
 .sqlms-fold {
     position: absolute;
-    left: 4px;
+    right: 1px;
     width: 18px;
     height: 20px;
     line-height: 20px;
@@ -495,10 +514,11 @@
     box-sizing: border-box !important;
     margin: 0 !important;
     border: 0 !important;
-    /* Left padding clears the fold gutter; the line-height is a whole
-       number of pixels because the gutter positions its icons by it (see
-       EDITOR_LINE_H in database_studio_analyser.js). */
-    padding: 10px 10px 10px 32px !important;
+    /* Left padding clears the gutter, from the same variable the gutter is
+       sized by; the line-height is a whole number of pixels because it is
+       the gutter's fallback spacing before the lines have been measured
+       (see EDITOR_LINE_H in database_studio_analyser.js). */
+    padding: 10px 10px 10px calc(var(--sqlms-gutter-w, 46px) + 6px) !important;
     font-family: monospace !important;
     font-size: 13px !important;
     font-weight: 400 !important;
@@ -535,6 +555,41 @@
     outline: none;
     z-index: 1;
 }
+/* One source line, one block: its offsetTop is what places that line's
+   number and fold icon in the gutter. min-height keeps a blank line a line
+   tall -- an empty div would otherwise collapse to nothing. */
+.sqlms-line { min-height: 20px; }
+
+/* ---- soft wrap ----
+   Both layers must wrap at exactly the same character or the highlight
+   slides off the text, so they get identical white-space, breaking and
+   scrollbar-gutter rules. The highlight's own scrollbar is made invisible
+   rather than removed: it still has to reserve the same width as the
+   textarea's, or the two would wrap differently. */
+.sqlms-editor.sqlms-wrap .sqlms-highlight,
+.sqlms-editor.sqlms-wrap .sqlms-textarea {
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    overflow-wrap: anywhere;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    scrollbar-gutter: stable;
+}
+/* Invisible, but NOT removed: `scrollbar-width: none` here would give the
+   highlight a narrower gutter than the textarea and the two would wrap at
+   different columns. Only the paint is dropped. Specific enough to beat the
+   themed scrollbar rules further down the file. */
+.sqlms-root .sqlms-highlight::-webkit-scrollbar { width: 11px; height: 11px; background: transparent; }
+.sqlms-root .sqlms-highlight::-webkit-scrollbar-thumb { background: transparent; border: 0; }
+/* Firefox only. `scrollbar-color` is what hides the bar there, but in Chrome
+   setting it *disables* the ::-webkit-scrollbar rules above -- and the width
+   then falls back to the platform's 15px while the textarea keeps its styled
+   11px, which is exactly the 4px of width difference that makes the two
+   layers wrap at different columns. */
+@supports not selector(::-webkit-scrollbar) {
+    .sqlms-root .sqlms-highlight { scrollbar-color: transparent transparent; }
+}
+
 .sqlms-kw { color: #1971c2; font-weight: 600; }
 .sqlms-str { color: #2f9e44; }
 .sqlms-ident { color: #9c36b5; }
@@ -1159,4 +1214,236 @@
     color: #495057;
     font-family: monospace;
     margin: 0 1px;
+}
+
+/* ---- result panels -------------------------------------------------
+   One panel per statement of a run. A single statement fills the pane the
+   way the one result grid always did; several stack in a scroller, each
+   capped in height and collapsible from its own bar so a long script can be
+   read as a list of outcomes rather than one endless page. */
+.sqlms-results {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+.sqlms-results-multi {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    gap: 8px;
+    padding-right: 2px;
+}
+.sqlms-resultset {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+.sqlms-resultbody {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+/* Only a stack of panels gets a frame and a bar; a lone result stays the
+   bare grid it has always been. */
+.sqlms-resultset-multi {
+    flex: 0 0 auto;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background: #f8f9fa;
+    overflow: hidden;
+}
+.sqlms-resultset-multi .sqlms-resultbody {
+    display: block;
+    padding: 8px 10px 10px;
+}
+.sqlms-resultset-multi .sqlms-tablewrap {
+    flex: none;
+    max-height: 320px;
+}
+.sqlms-resultset-active { border-color: #74c0fc; }
+
+.sqlms-resultbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 12px;
+    background-image: linear-gradient(180deg, #ffffff, #eef1f4);
+    border-bottom: 1px solid #dee2e6;
+}
+.sqlms-resultbar:hover { background-image: linear-gradient(180deg, #f1f9ff, #dbeeff); }
+.sqlms-resultset-collapsed .sqlms-resultbar { border-bottom: none; }
+.sqlms-resultbar-caret { width: 10px; color: #495057; }
+.sqlms-resultbar-idx {
+    min-width: 20px;
+    height: 18px;
+    padding: 0 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #495057;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+}
+.sqlms-resultbar-sql {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: monospace;
+    color: #343a40;
+}
+.sqlms-resultbar-status {
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.sqlms-rstat-ok { background: #d3f9d8; color: #2b8a3e; }
+.sqlms-rstat-error { background: #ffe3e3; color: #c92a2a; }
+.sqlms-rstat-skipped { background: #fff3bf; color: #e67700; }
+.sqlms-resultbar-hint {
+    width: 34px;
+    text-align: right;
+    color: #868e96;
+}
+
+/* The strip above the stack: how many statements ran, and one control for
+   all of their bars at once. */
+.sqlms-resultsbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0 6px;
+}
+.sqlms-resultsbar-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    margin-right: auto;
+}
+/* A bar with nothing behind it doesn't pretend to be a control. */
+.sqlms-resultbar-static { cursor: default; }
+.sqlms-resultbar-static:hover { background-image: linear-gradient(180deg, #ffffff, #eef1f4); }
+
+/* ---- column selection, resizing and fitting (every grid) ---- */
+/* A picked column reads like pgAdmin's: a solid blue header over
+   light-blue cells. */
+.sqlms-root .sqlms-grid thead th.sqlms-col-selected {
+    background: #3d6591 !important;
+    color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 2px 4px rgba(16, 24, 40, 0.10);
+}
+.sqlms-grid td.sqlms-col-selected { background: #dceaf7 !important; }
+.sqlms-grid td.sqlms-null.sqlms-col-selected { color: #c92a2a; }
+/* The "#" corner header selects every column. */
+.sqlms-grid thead th.sqlms-corner { cursor: pointer; user-select: none; }
+.sqlms-grid thead th.sqlms-corner:hover:not(.sqlms-col-selected) { background: #dde3e8; }
+.sqlms-root .sqlms-grid thead th.sqlms-corner.sqlms-col-selected { color: #dceaf7; }
+/* Header: the column name, with its type (when the result carries one)
+   underneath. */
+.sqlms-colhead-label { display: inline-block; vertical-align: top; }
+.sqlms-colhead-name,
+.sqlms-colhead-type {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sqlms-colhead-type { font-weight: 400; font-size: 0.9em; color: #6c757d; }
+.sqlms-grid thead th.sqlms-col-selected .sqlms-colhead-type { color: #dceaf7; }
+/* Resize grip on each header's right edge. thead th is already sticky,
+   which positions the grip against it. */
+.sqlms-grid thead th.sqlms-colhead { padding-right: 12px; }
+.sqlms-colresize {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 7px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 3;
+}
+.sqlms-colresize:hover,
+.sqlms-colresize.sqlms-colresize-active { background: rgba(25, 113, 194, 0.45); }
+body.sqlms-col-resizing,
+body.sqlms-col-resizing * { cursor: col-resize !important; user-select: none !important; }
+/* Once a grid's widths are pinned (table-layout: fixed, set by _fitGrids)
+   the widths decide, not the old 520px cell cap; anything wider than its
+   column ends in an ellipsis. The label spans must be able to shrink too. */
+.sqlms-grid[data-sized] th,
+.sqlms-grid[data-sized] td { max-width: none; }
+.sqlms-grid[data-sized] .sqlms-colhead-label { display: block; }
+
+/* ---- commit / rollback prompt after an INSERT/UPDATE/DELETE/MERGE run ---- */
+.sqlms-txn-list {
+    list-style: none;
+    margin: 0 0 10px;
+    padding: 0;
+    max-height: 240px;
+    overflow: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+.sqlms-txn-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 5px 8px;
+    border-bottom: 1px solid #f1f3f5;
+}
+.sqlms-txn-list li:last-child { border-bottom: none; }
+.sqlms-txn-idx { color: #adb5bd; min-width: 1.5em; text-align: right; }
+.sqlms-txn-sql {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #212529;
+}
+.sqlms-txn-msg { white-space: nowrap; font-weight: 600; }
+/* The prompt's buttons sit in the body, not .modal-footer (see
+   SqlMsForcedDialog), laid out as a footer would be. */
+.sqlms-txn-actions {
+    display: flex;
+    gap: 6px;
+    margin: 14px -16px -16px;
+    padding: 12px 16px;
+    border-top: 1px solid #dee2e6;
+}
+
+/* ---- triggers in the list on the left ---- */
+.sqlms-trg-icon { color: #f08c00; flex: 0 0 auto; width: 13px; text-align: center; }
+.sqlms-trg-table { color: #868e96; font-weight: 400; margin-left: 4px; }
+.sqlms-list li.sqlms-trg-disabled .sqlms-name { color: #adb5bd; text-decoration: line-through; }
+.sqlms-list li.sqlms-trg-disabled .sqlms-trg-icon { color: #ced4da; }
+.sqlms-trg-off {
+    flex: 0 0 auto;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #868e96;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0 5px;
+}
+.sqlms-list li.sqlms-trg-none { color: #adb5bd; cursor: default; font-style: italic; }
+.sqlms-list li.sqlms-trg-none:hover { background: none; }
+
+/* Nothing under the editor (no results, or "Hide results"): it takes the
+   pane. !important so a height dragged by hand (inline style) is only set
+   aside, and comes back with the results. */
+.sqlms-editor.sqlms-editor-full {
+    flex: 1 1 auto;
+    height: auto !important;
+    max-height: none;
 }

@@ -1,0 +1,691 @@
+/* Configurations page.
+ *
+ * Reads as a settings screen, not a dashboard: no cards-in-a-grid chrome, no
+ * chart palette. It borrows the suite's tokens (--surface-1, --border,
+ * --text-secondary, --series-1) so it sits inside the same theme, but the
+ * layout is a document with one section per thing you can act on.
+ */
+
+.pbi-config-page {
+  padding: 28px 32px 48px;
+  color: var(--text-primary, #1a1a1a);
+  /* FULL WIDTH, and the cap lives on the prose instead -- see
+     .pbi-config-lede and .pbi-config-note, which hold themselves to 62ch and
+     68ch. Capping the PAGE at 900px put the cap on the scroll container too,
+     so the scrollbar appeared 900px in rather than at the window edge, and the
+     cards stopped short of the space available to their tables. Constrain the
+     line length, never the panel. */
+  /* The backend theme wraps a client action in a container with
+     overflow-y:hidden and a viewport-height cap, so anything taller than one
+     screen is CLIPPED -- no scrollbar, no indication there is more. Every board
+     in this suite carries these two lines for that reason (see
+     .pbi-sales-dashboard in pbi_dashboards/static/src/css/pbi_dashboard_base.css);
+     this page was the one that did not, and it went unnoticed while it was
+     short enough to fit. It stopped fitting at ten cards. */
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Breathing room under the last card.
+ *
+ * The page's own padding-bottom is not enough on its own: a scroll container's
+ * bottom padding is unreliable once the content overflows it, and the last card
+ * ended up flush against the bottom of the viewport with its button touching
+ * the edge. A generated block is a real box in the flow, so it always counts
+ * toward the scroll height -- it cannot be collapsed away by a margin or
+ * dropped by the container. */
+.pbi-config-page::after {
+  content: "";
+  display: block;
+  height: 56px;
+}
+
+.pbi-config-header h1 {
+  margin: 0 0 8px;
+  font-size: 22px; font-weight: 700; line-height: 1.2;
+}
+.pbi-config-lede {
+  margin: 0; max-width: 62ch;
+  font-size: 13px; line-height: 1.6; color: var(--text-secondary, #6b7280);
+}
+
+.pbi-config-error,
+.pbi-config-loading {
+  margin-top: 20px; padding: 12px 14px;
+  font-size: 13px; border-radius: 8px;
+  border: 1px solid var(--border, #e5e7eb); background: var(--surface-1, #fff);
+}
+.pbi-config-error { border-color: #d97706; color: #92400e; }
+
+.pbi-config-section { margin-top: 28px; }
+.pbi-config-section > h2 {
+  margin: 0 0 12px;
+  font-size: 12px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-secondary, #6b7280);
+}
+
+.pbi-config-cards { display: flex; flex-direction: column; gap: 14px; }
+
+.pbi-config-card {
+  border: 1px solid var(--border, #e5e7eb); border-radius: 10px;
+  background: var(--surface-1, #fff); padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.pbi-config-card-head {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.pbi-config-card-head h3 {
+  margin: 0; font-size: 15px; font-weight: 600; flex: 1 1 auto;
+}
+
+/* State is carried by the chip, not by colouring the whole card: the card is
+   not itself good or bad, its snapshot has a state. */
+.pbi-config-chip {
+  font-size: 11px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; padding: 4px 9px; border-radius: 4px;
+  white-space: nowrap;
+}
+.pbi-config-chip.ok      { background: #e6f4ee; color: #1f6b4d; }
+.pbi-config-chip.pending { background: #e8f0fb; color: #1f4f8b; }
+.pbi-config-chip.warn    { background: #fdf0dc; color: #92400e; }
+.pbi-config-chip.muted   { background: #eef0f2; color: #5a6472; }
+
+.pbi-config-note {
+  margin: 0; max-width: 68ch;
+  font-size: 12.5px; line-height: 1.6; color: var(--text-secondary, #6b7280);
+}
+
+.pbi-config-facts { margin: 0; display: flex; gap: 28px; flex-wrap: wrap; }
+.pbi-config-facts > div { display: flex; flex-direction: column; gap: 3px; }
+.pbi-config-facts dt {
+  font-size: 11px; font-weight: 600; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--text-secondary, #6b7280);
+}
+.pbi-config-facts dd {
+  margin: 0; font-size: 13px; font-variant-numeric: tabular-nums;
+}
+
+.pbi-config-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.pbi-config-btn {
+  font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1;
+  color: #fff; background: var(--series-1, #2f5d8c);
+  border: 1px solid var(--series-1, #2f5d8c); border-radius: 8px;
+  padding: 10px 18px; cursor: pointer;
+  transition: opacity .12s, background .12s;
+}
+.pbi-config-btn:hover:not([disabled]) { opacity: .9; }
+.pbi-config-btn:focus-visible {
+  outline: 2px solid var(--series-1, #2f5d8c); outline-offset: 2px;
+}
+/* Disabled covers three different situations -- already queued, cron switched
+   off, module absent -- and the button's own label says which. */
+.pbi-config-btn[disabled] { opacity: .5; cursor: default; }
+
+.pbi-config-msg { font-size: 12.5px; color: var(--text-secondary, #6b7280); }
+
+@media (max-width: 640px) {
+  .pbi-config-page { padding: 20px 16px 40px; }
+}
+
+/* ---- maintenance scripts & date groups ---- */
+
+.pbi-config-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.pbi-config-section-header > div:first-child {
+  flex: 1 1 auto;
+}
+.pbi-config-group-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.pbi-config-btn.sm {
+  padding: 6px 12px;
+  font-size: 11.5px;
+  border-radius: 6px;
+}
+
+.pbi-config-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.pbi-config-group {
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+  background: var(--surface-1, #fff);
+  overflow: hidden;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.pbi-config-group:hover {
+  border-color: #cbd5e1;
+}
+
+.pbi-config-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 18px;
+  background: #f8fafc;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid transparent;
+  transition: background 0.12s ease;
+}
+.pbi-config-group.expanded .pbi-config-group-header {
+  border-bottom-color: var(--border, #e5e7eb);
+  background: #f1f5f9;
+}
+.pbi-config-group-header:hover {
+  background: #edf2f7;
+}
+
+.pbi-config-group-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pbi-config-date-badge {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: #e2e8f0;
+  color: #334155;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.pbi-config-date-badge.workflow {
+  background: #e0e7ff;
+  color: #3730a3;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+}
+
+.pbi-config-group-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.pbi-config-group-titles h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a1a);
+}
+.pbi-config-group-titles .pbi-config-note {
+  font-size: 11.5px;
+  color: var(--text-secondary, #64748b);
+  line-height: 1.4;
+}
+
+.pbi-config-group-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.pbi-config-count-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.pbi-config-group-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.pbi-config-group-toggle:hover {
+  background: #fff;
+  color: #1e293b;
+  border-color: #94a3b8;
+}
+.pbi-config-chevron {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.pbi-config-group-content {
+  padding: 16px 18px;
+  background: #fafbfc;
+}
+.pbi-config-group-content .pbi-config-cards {
+  gap: 12px;
+}
+.pbi-config-group-content .pbi-config-card {
+  border-color: #e2e8f0;
+  background: #ffffff;
+}
+
+.pbi-config-step-badge {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: #dbeafe;
+  color: #1e40af;
+  flex-shrink: 0;
+}
+
+.pbi-config-section-note { margin-bottom: 14px; }
+
+.pbi-config-file {
+  margin: 0; font-family: ui-monospace, Menlo, monospace;
+  font-size: 11.5px; color: var(--text-secondary, #6b7280);
+}
+
+/* A script that writes gets a different button, not just a different chip:
+   the chip explains, the button is what someone actually presses. */
+.pbi-config-btn.danger {
+  background: #92400e; border-color: #92400e;
+}
+
+.pbi-config-output {
+  margin-top: 14px; padding: 14px 16px;
+  border: 1px solid var(--border, #e5e7eb); border-radius: 8px;
+  background: var(--surface-1, #fff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+.pbi-config-output-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+}
+.pbi-config-output-head h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #1e293b);
+}
+.pbi-config-output > h3 { margin: 0 0 12px; font-size: 14px; font-weight: 600; }
+
+.pbi-config-failed {
+  margin-bottom: 14px; padding: 10px 12px; border-radius: 6px;
+  background: #fdecec; color: #7f1d1d; font-size: 12.5px;
+}
+
+.pbi-config-narration {
+  margin: 0 0 16px; padding: 12px 14px; border-radius: 6px;
+  background: #f6f7f9; color: var(--text-secondary, #6b7280);
+  font-family: ui-monospace, Menlo, monospace; font-size: 11.5px;
+  line-height: 1.55; white-space: pre-wrap; overflow-x: auto;
+}
+
+.pbi-config-block { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border, #e5e7eb); }
+.pbi-config-block:first-of-type { border-top: 0; padding-top: 0; }
+
+.pbi-config-stmt {
+  display: block; margin-bottom: 8px;
+  font-family: ui-monospace, Menlo, monospace; font-size: 11.5px;
+  color: var(--text-secondary, #6b7280); word-break: break-word;
+}
+
+/* NOTICEs are how the guarded scripts report what they decided -- CREATED,
+   SKIPPED, UPDATED -- so they get more weight than the statement that raised
+   them, not less. */
+.pbi-config-notice {
+  margin: 4px 0; padding: 7px 10px; border-radius: 5px;
+  background: #e8f0fb; color: #1f4f8b; font-size: 12.5px;
+}
+
+/* Wide result sets scroll in their own box; the page itself never does. */
+.pbi-config-tablewrap { overflow-x: auto; margin-top: 8px; }
+.pbi-config-table { border-collapse: collapse; font-size: 12px; }
+.pbi-config-table th, .pbi-config-table td {
+  padding: 5px 10px; border-bottom: 1px solid var(--border, #e5e7eb);
+  text-align: left; white-space: nowrap;
+}
+.pbi-config-table th {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--text-secondary, #6b7280);
+}
+.pbi-config-table td { font-variant-numeric: tabular-nums; }
+
+.pbi-config-rowcount {
+  margin: 6px 0 0; font-size: 11.5px; color: var(--text-secondary, #6b7280);
+}
+
+/* Moving bidata between servers: a row of year checkboxes, then the actions.
+   Wraps rather than scrolls, because on a server with many years the controls
+   must all stay reachable. */
+.pbi-config-bidata { flex-wrap: wrap; gap: .5rem .75rem; align-items: center; }
+.pbi-config-year {
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-size: .82rem; white-space: nowrap; cursor: pointer;
+}
+.pbi-config-year input { cursor: pointer; }
+.pbi-config-file-input { font-size: .8rem; max-width: 14rem; }
+
+/* An install command is a thing to COPY, not a thing to press. It gets a code
+   block and a Copy control so that reads unambiguously -- the previous version
+   set it in the same muted mono as the .sql filenames above it, which invited
+   the reasonable question of whether clicking it would install anything. It
+   does not; nothing on this page runs pip. */
+.pbi-config-cmd-label { font-style: italic; }
+.pbi-config-cmd {
+  display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+  background: var(--sunk, #f1f3f5); border: 1px solid var(--border, #e3e6ea);
+  border-radius: 4px; padding: .45rem .5rem .45rem .7rem;
+}
+.pbi-config-cmd code {
+  font-family: ui-monospace, Menlo, monospace; font-size: 12.5px;
+  color: var(--text-primary, #1a1a1a); user-select: all; flex: 1 1 auto;
+  overflow-x: auto; white-space: nowrap;
+}
+.pbi-config-btn.ghost {
+  background: transparent; color: var(--text-secondary, #6b7280);
+  border: 1px solid var(--border, #e3e6ea); flex: 0 0 auto;
+}
+.pbi-config-btn.ghost:hover { color: var(--text-primary, #1a1a1a); }
+
+/* ==========================================================================
+   Progress Bar with Percentage & Running Status
+   ========================================================================== */
+
+.pbi-config-progress-box {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  animation: pbi-fade-in 0.2s ease-out;
+}
+
+.pbi-config-progress-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pbi-config-progress-status-msg {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-primary, #1e293b);
+}
+
+.pbi-config-mini-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #cbd5e1;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: pbi-spin 0.75s linear infinite;
+  flex-shrink: 0;
+}
+
+.pbi-config-icon-done {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #10b981;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.pbi-config-icon-fail {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.pbi-config-pct-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.pbi-config-pct-badge.running {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.pbi-config-pct-badge.done {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.pbi-config-pct-badge.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.pbi-config-pct-badge.cancelled {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+}
+
+.pbi-config-progress-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pbi-config-btn-cancel {
+  appearance: none;
+  background: #fff;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.3;
+}
+
+.pbi-config-btn-cancel:hover {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.pbi-config-progress-track {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+  position: relative;
+}
+
+.pbi-config-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.pbi-config-progress-fill.running {
+  background: linear-gradient(90deg, #2563eb, #06b6d4, #3b82f6);
+  background-size: 200% 100%;
+  animation: pbi-shimmer 2s linear infinite;
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
+}
+
+.pbi-config-progress-fill.done {
+  background: linear-gradient(90deg, #10b981, #059669);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.35);
+}
+
+.pbi-config-progress-fill.error {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.35);
+}
+
+.pbi-config-progress-fill.cancelled {
+  background: #94a3b8;
+  box-shadow: none;
+}
+
+@keyframes pbi-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pbi-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@keyframes pbi-fade-in {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pbi-pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(37, 99, 235, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+}
+
+.pbi-config-btn.ghost.light {
+  color: #cbd5e1;
+  border-color: #475569;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.pbi-config-btn.ghost.light:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-color: #94a3b8;
+}
+
+
+/* ---- companion Odoo apps: the third party that is not a pip package ----
+ *
+ * These cards report and never act, so they carry no buttons and the colour
+ * has to do the work a button's label would. Three states, and the middle one
+ * is the one worth looking at: "installed, but older than the column we read"
+ * looks identical to "not installed" from a board, and until it was told apart
+ * here it cost an afternoon each time.
+ */
+.pbi-config-card-critical {
+  border-left: 4px solid #b91c1c;
+  background: #fff8f8;
+}
+
+/* A table or column this database does not have, named exactly as Postgres
+   names it -- "res_region", "product_category.code" -- so it can be pasted
+   straight into a query rather than translated first. */
+.pbi-config-miss {
+  display: inline-block;
+  margin: 2px 4px 2px 0;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  background: #fdf0dc;
+  color: #92400e;
+  border: 1px solid #f3d9ae;
+}
+
+/* One module and its state, side by side. Several of these sit in a row where
+   any one of them satisfies the requirement (the res.region declarers), which
+   is why the state is on the chip rather than in a sentence underneath. */
+.pbi-config-modchip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  margin: 2px 6px 2px 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  border: 1px solid var(--border, #e5e7eb);
+  background: var(--surface-1, #fff);
+}
+.pbi-config-modchip code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+}
+.pbi-config-modchip.ok    { background: #e6f4ee; color: #1f6b4d; border-color: #bfe3d2; }
+.pbi-config-modchip.warn  { background: #fdf0dc; color: #92400e; border-color: #f3d9ae; }
+.pbi-config-modchip.muted { background: #eef0f2; color: #5a6472; border-color: #dfe3e8; }
+
+/* What an absence actually costs, which is the sentence people skip and then
+   need. Given a rule so it reads as consequence rather than more prose. */
+.pbi-config-impact {
+  border-left: 3px solid #b45309;
+  padding: 6px 10px;
+  background: #fffbeb;
+  border-radius: 0 6px 6px 0;
+}
+
+/* The aside a card needs when the obvious next action is the wrong one --
+   "do not look for this in Apps", "this ships the shape, not the rows". Was
+   three different inline styles; one class, so they stop drifting apart. */
+.pbi-config-hint {
+  background: #f5f7ff;
+  border: 1px solid #dfe4fa;
+  border-radius: 6px;
+  padding: 8px 10px;
+}

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--
+            The snapshot behind "Sales Dashboard With Salesman" and "Sales
+            Analysis with Salesman". Rebuilding it costs ~9s, so it is not
+            rebuilt per request; it is rebuilt nightly, after the legacy ERP
+            feed has landed. REFRESH ... CONCURRENTLY holds no read lock, so
+            the boards keep serving the previous snapshot while it runs.
+
+            NOT ONLY NIGHTLY. This same cron is also queued on demand
+            whenever the master data behind any of the ten levels is edited:
+            sales type groups and sale types, partner classifications,
+            regions, cities, main and sub categories, product categories.
+            Postgres triggers on those tables write the ir_cron_trigger row,
+            so the edit is on the charts within a minute or two instead of the
+            next morning; see _install_master_data_triggers in
+            models/sales_sman_fact_view.py. The nightly run stays, because the
+            ERP feed's own tables are not triggered on.
+
+            Switching this cron OFF therefore costs more than a night of
+            freshness now. It also stops master data edits from reaching the
+            boards at all. The triggers check `active` and quietly do nothing
+            while it is off.
+
+            noupdate="1" so an admin can retime it without a module upgrade
+            putting 02:30 back.
+        -->
+        <record id="ir_cron_pbi_sales_sman_fact_refresh" model="ir.cron">
+            <field name="name">PBI: refresh Sales (Salesman) fact snapshot</field>
+            <field name="model_id" ref="model_pbi_sales_sman_fact"/>
+            <field name="state">code</field>
+            <field name="code">model.refresh_fact()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+            <field name="nextcall" eval="(datetime.now().replace(hour=2, minute=30, second=0) + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        </record>
+    </data>
+</odoo>

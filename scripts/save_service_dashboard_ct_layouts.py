@@ -28,7 +28,7 @@ MODE B — Live DB CSV export (fallback, requires DB access)
 Run the following SQL inside the Odoo container (or via psql on the host):
 
     docker exec -i cloud-web-1 psql \\
-        -U odoo -d dbcloud \\
+        -U odoo -d dbprod \\
         -c "\\COPY (
               SELECT
                 b.id   AS board_id,
@@ -43,7 +43,7 @@ Run the following SQL inside the Odoo container (or via psql on the host):
             ) TO '/tmp/sd_boards_ct.json' CSV HEADER"
 
     docker exec -i cloud-web-1 psql \\
-        -U odoo -d dbcloud \\
+        -U odoo -d dbprod \\
         -c "\\COPY (
               SELECT
                 it.id   AS item_id,
@@ -546,7 +546,7 @@ def main():
     print("  git diff service_dashboards_ct/data/service_dashboard_layout.xml")
     print("  git add service_dashboards_ct/data/service_dashboard_layout.xml")
     print("  git commit -m 'service_dashboards_ct: snapshot chart layout positions'")
-    print("  # Then on server: odoo -u service_dashboards_ct -d dbcloud --stop-after-init")
+    print("  # Then on server: odoo -u service_dashboards_ct -d dbprod --stop-after-init")
 
 
 if __name__ == "__main__":

@@ -74,6 +74,65 @@ class TableColumnConfig:
 
 
 @dataclass
+class DetailColumn:
+    """One record-level column in a chart's "Formula & Details" table —
+    typically an input the formula reads (a status timestamp) rather than a
+    descriptive field, since the point of the table is to let a viewer
+    recompute the bar by hand."""
+    key: str          # key this column takes on each returned row
+    label: str
+    col: str = ""     # column on the item's source CTE (board_sql.py)
+    kind: str = "text"  # 'text' | 'datetime' | 'hours' | 'number' | 'integer'
+    # Raw SQL over the ``jc`` alias, for a column the formula DERIVES rather
+    # than reads off one CTE column — e.g. a row's 1/0 contribution to an
+    # average's denominator. Takes precedence over col, which is then unused.
+    # Config-authored SQL only, never request data (same contract as
+    # DetailConfig.value_expr).
+    expr: Optional[str] = None
+    # Show this column's sum in the table's total row. Only meaningful for
+    # a numeric column, and the point of it: a denominator column that
+    # cannot be added up does not let anyone check the division.
+    total: bool = False
+
+
+@dataclass
+class DetailConfig:
+    """Makes a chart's number auditable. With this set, the chart grows a
+    "Formula & Details" button that opens the formula, the records behind
+    the bars, the timestamps the formula reads on each one, and the value
+    it produced — the same figure the bar aggregates.
+
+    Only supported on 'jobcards'-sourced bar items (board_sql.py's
+    run_chart_detail), which is every KPI whose formula the service spec
+    spells out."""
+    expression: str                     # the formula, in the spec's own words
+    entity_label: str = "Technician"    # what the bars group by
+    entity_col: str = "technician_id"   # res.users id column on the source CTE
+    # (term, definition) pairs — the inputs of the formula, explained
+    terms: List[Tuple[str, str]] = field(default_factory=list)
+    columns: List[DetailColumn] = field(default_factory=list)
+    # The per-record figure the chart aggregates. value_col names a column;
+    # value_expr is raw SQL over the ``jc`` alias, for the one KPI
+    # (utilization) whose per-record input is two columns added together.
+    # Both None => a pure count chart, where the record list IS the value.
+    value_col: Optional[str] = None
+    value_expr: Optional[str] = None
+    value_label: str = "Value"
+    value_kind: str = "hours"           # 'hours' | 'number'
+    # How the chart rolls those per-record values up — decides which
+    # summary figures the modal shows. 'utilization' is 'sum' plus the
+    # period-scaled 176-hour divisor and the resulting percentage.
+    agg: str = "sum"                    # 'sum' | 'avg' | 'count' | 'utilization'
+    # utilization only: whether the 176-hour divisor scales with the length
+    # of the selected period. False on a chart whose every bar is already
+    # one month (the personal boards), where one month's hours is the right
+    # denominator no matter how long the range is.
+    period_scaled: bool = True
+    scope: str = ""                     # plain-English "which records" line
+    record_label: str = "Job Cards"
+
+
+@dataclass
 class ChartItemConfig:
     key: str
     name: str
@@ -93,6 +152,8 @@ class ChartItemConfig:
     limit: int = 15
     table_columns: List[TableColumnConfig] = field(default_factory=list)  # 'table' type only
     info: Optional[str] = None
+    # Set to expose the "Formula & Details" button on this chart.
+    detail: Optional[DetailConfig] = None
 
 
 @dataclass

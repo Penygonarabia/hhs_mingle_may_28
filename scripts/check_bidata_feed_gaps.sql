@@ -1,0 +1,1 @@
+../pbi_dashboard_configurations/sql/check_bidata_feed_gaps.sql

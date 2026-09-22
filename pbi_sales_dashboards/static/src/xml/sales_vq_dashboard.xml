@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+  <!--
+      One card's header controls: which shape its chart is drawn in, chart or
+      table, the CSV over a table, and full page. Chart and table are separate
+      buttons rather than one that flips, because which view you are on is a
+      fact about the card and a single toggle makes the reader work out whether
+      the icon shows where they are or where they would go; the pressed one is
+      highlighted. The four chart SHAPES are a list under the chart button
+      instead — see the comment on it below.
+
+      Its own template because the icons are the bulk of it and four copies of
+      an inline SVG is four places to change a stroke width. `cardId` comes in
+      from the t-call, and `inModal` with it from the full-page panel.
+  -->
+  <!--
+      One shape's icon, by name. Called from the chart button (for the shape
+      the card is on) and once per row of the list it drops, so the four
+      drawings exist once rather than twice each:
+
+        <t t-call="pbi_sales_dashboards.sales_vq_chart_icon">
+          <t t-set="kind" t-value="'pie'"/>
+        </t>
+
+      Each is its own <svg> rather than one with four bodies, because the bar
+      and pie shapes are filled while the line and area ones are stroked.
+  -->
+  <t t-name="pbi_sales_dashboards.sales_vq_chart_icon">
+    <svg t-if="kind === 'bar'" viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true" focusable="false">
+      <rect x="1.5" y="8.5" width="3.2" height="6" rx="0.7"/>
+      <rect x="6.4" y="5" width="3.2" height="9.5" rx="0.7"/>
+      <rect x="11.3" y="1.5" width="3.2" height="13" rx="0.7"/>
+    </svg>
+    <svg t-elif="kind === 'pie'" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor"
+         stroke-width="1.3" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <circle cx="8" cy="8" r="6.2"/>
+      <path d="M8 1.8V8l4.4 4.4" fill="none"/>
+    </svg>
+    <svg t-elif="kind === 'line'" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor"
+         stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M1.6 13.4h12.8"/>
+      <path d="M2.6 10.6 6 6.9l3 2.6 4.4-5.4"/>
+    </svg>
+    <svg t-else="" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor"
+         stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M1.6 13.4h12.8"/>
+      <path d="M2.6 10.6 6 6.9l3 2.6 4.4-5.4V13H2.6Z" fill="currentColor" fill-opacity="0.25"/>
+    </svg>
+  </t>
+
+  <t t-name="pbi_sales_dashboards.sales_vq_view_toggle">
+    <div class="view-toggle">
+      <!--
+          The chart button carries the shape the card is on and drops the list
+          of all four. Four permanent buttons would say the same thing in four
+          times the room, and this header already holds the table switch, the
+          CSV and the full-page control on a card a quarter of the board wide.
+          It is still the "show as chart" control: pressing a shape switches a
+          table back to the chart as well as setting the shape.
+      -->
+      <div class="kind-picker">
+        <button type="button"
+                t-att-class="'view-btn kind-btn' + (cardView(cardId) === 'chart' ? ' active' : '')"
+                t-att-title="t('Chart type') + ': ' + chartKindLabel(cardId)"
+                t-att-aria-label="t('Chart type') + ': ' + chartKindLabel(cardId)"
+                aria-haspopup="true"
+                t-att-aria-expanded="kindMenuOpen(cardId, inModal) ? 'true' : 'false'"
+                t-on-click="() => this.toggleKindMenu(cardId, inModal)">
+          <t t-call="pbi_sales_dashboards.sales_vq_chart_icon">
+            <t t-set="kind" t-value="cardKind(cardId)"/>
+          </t>
+          <span class="kind-caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="kind-menu" t-if="kindMenuOpen(cardId, inModal)" role="menu">
+          <t t-foreach="chartKindList" t-as="opt" t-key="opt.v">
+            <button type="button" role="menuitem"
+                    t-att-class="'kind-item' + (cardKind(cardId) === opt.v ? ' active' : '')"
+                    t-on-click="() => this.setCardKind(cardId, opt.v)">
+              <t t-call="pbi_sales_dashboards.sales_vq_chart_icon">
+                <t t-set="kind" t-value="opt.v"/>
+              </t>
+              <span><t t-esc="t(opt.l)"/></span>
+            </button>
+          </t>
+        </div>
+      </div>
+      <button type="button"
+              t-att-class="'view-btn' + (cardView(cardId) === 'table' ? ' active' : '')"
+              t-att-title="t('Show as table')"
+              t-att-aria-label="t('Show as table')"
+              t-att-aria-pressed="cardView(cardId) === 'table' ? 'true' : 'false'"
+              t-on-click="() => this.setCardView(cardId, 'table')">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor"
+             stroke-width="1.3" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <rect x="1.6" y="2.6" width="12.8" height="10.8" rx="1.2"/>
+          <path d="M1.6 6.4h12.8M1.6 10h12.8M6.4 2.6v10.8"/>
+        </svg>
+      </button>
+      <!-- Only over a table. It downloads the table's own rows, and an icon
+           offering that beside a chart would have to explain which rows it
+           meant. -->
+      <button t-if="cardView(cardId) === 'table'" type="button" class="view-btn"
+              t-att-title="t('Download CSV')" t-att-aria-label="t('Download CSV')"
+              t-on-click="() => this.downloadCard(cardId)">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor"
+             stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true" focusable="false">
+          <path d="M8 1.8v8.4M4.8 7.2 8 10.4l3.2-3.2M2.4 13.2h11.2"/>
+        </svg>
+      </button>
+      <!-- Absent inside the panel itself, where it would offer to open what is
+           already open; the close button takes its place there. -->
+      <button t-if="!inModal" type="button" class="view-btn"
+              t-att-title="t('Open full page')" t-att-aria-label="t('Open full page')"
+              t-on-click="() => this.openModal(cardId)">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor"
+             stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true" focusable="false">
+          <path d="M6.2 2.4H2.4v3.8M9.8 2.4h3.8v3.8M13.6 9.8v3.8H9.8M2.4 9.8v3.8h3.8"/>
+        </svg>
+      </button>
+    </div>
+  </t>
+
+  <t t-name="pbi_sales_dashboards.sales_vq_dashboard">
+    <!--
+        "Sales Dashboard - VQ" — the "Sales Dashboard With Salesman" template
+        with one thing changed: each row is a value chart beside its quantity
+        chart, where that board has a value chart beside its contribution
+        donut. Everything else here — header, scope line, toolbar, ten level
+        filters, level nav, KPI row — is that board's, and the component behind
+        it is literally that board's class (static/src/js/sales_vq_dashboard.js).
+
+        It keeps .pbi-sales-sman-dashboard among its classes so the ten-level
+        toolbar/scope-chip styling applies unchanged, and adds
+        .pbi-sales-vq-dashboard for the two rules that differ.
+    -->
+    <div class="pbi-sales-dashboard pbi-sales-kpi-dashboard pbi-sales-kpi-dashboard-new pbi-sales-sman-dashboard pbi-sales-vq-dashboard"
+         t-ref="root" t-att-dir="isArabicUI() ? 'rtl' : 'ltr'">
+      <div class="wrap">
+        <header>
+          <h1><t t-esc="t('Sales Dashboard - VQ')"/></h1>
+          <!--
+              The period and the current scope, side by side and always on
+              screen. The toolbar below can be collapsed away; this line cannot,
+              so there is never a moment where the charts are narrowed to one
+              city or one salesman with nothing visible saying so.
+          -->
+          <p class="scope-line">
+            <t t-if="isDebugMode"><t t-esc="t('Source')"/>: <code>transaction_header + transaction_details</code> · </t>
+            <t t-foreach="filterSummary" t-as="chip" t-key="chip.id">
+              <span t-att-class="'scope-chip' + (chip.off ? ' off-default' : '')">
+                <span class="k" t-on-click="() => this.onScopeChipClick(chip.id)" style="cursor: pointer;"><t t-esc="chip.k"/></span>
+                <span class="v" t-on-click="() => this.onScopeChipClick(chip.id)" style="cursor: pointer;"><t t-esc="chip.v"/></span>
+                <!-- Only on a chip that is off what the dashboard opens with.
+                     An x on a chip already at its default would be a control
+                     that does nothing, which is worse than no control. -->
+                <button t-if="chip.off" type="button" class="chip-x"
+                        t-att-title="t('Reset') + ' — ' + chip.k"
+                        t-att-aria-label="t('Reset') + ' — ' + chip.k"
+                        t-on-click="() => this.clearChip(chip.id)">×</button>
+              </span>
+            </t>
+            <!-- Only when there is something to clear. A button that is always
+                 there but usually does nothing teaches people to ignore it. -->
+            <button type="button" class="scope-clear" t-if="hasNarrowing" t-on-click="clearAll">
+              <t t-esc="t('Clear all')"/>
+            </button>
+          </p>
+        </header>
+
+        <div class="pbi-toolbar">
+          <div class="toolbar-section" t-att-class="state.filtersCollapsed ? 'collapsed' : ''">
+            <button type="button" class="toolbar-toggle-btn" t-on-click="toggleFilters"
+                    t-att-aria-expanded="state.filtersCollapsed ? 'false' : 'true'">
+              <span class="toolbar-toggle-icon">▾</span>
+              <t t-esc="t('Filters')"/>
+            </button>
+
+            <div class="toolbar-body" t-if="!state.filtersCollapsed">
+              <div class="filters">
+                <!-- Scope: what the whole dashboard is about before any level is
+                     narrowed. Sub-category View leads, because it decides how the
+                     category levels are keyed, and the period is read inside
+                     that. It belongs up here at all — rather than beside the charts —
+                     because it re-keys levels 7 AND 8, so a control that only
+                     appeared at level 8 would leave a user on the Main Categories
+                     tab looking at a breakdown decided by an off-screen widget. -->
+                <div class="filter-row filter-row-inline filter-row-scope">
+                  <div class="filter-group">
+                    <span class="filter-label"><t t-esc="t('Year')"/></span>
+                    <select class="filter-select" t-att-data-value="state.year"
+                            t-on-change="(ev) => this.selectYear(ev.target.value)">
+                      <t t-foreach="state.yearOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.year ? true : undefined">
+                          <t t-esc="opt.l"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <div class="filter-group">
+                    <span class="filter-label"><t t-esc="t('Month')"/></span>
+                    <select class="filter-select" t-att-data-value="state.month"
+                            t-on-change="(ev) => this.selectMonth(ev.target.value)">
+                      <t t-foreach="monthOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.month ? true : undefined">
+                          <t t-esc="t(opt.l)"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <div class="filter-group">
+                    <span class="filter-label"><t t-esc="t('Sub-category View')"/></span>
+                    <select class="filter-select" t-att-data-value="state.subCategoryMode"
+                            t-on-change="(ev) => this.selectSubCategoryMode(ev.target.value)">
+                      <t t-foreach="subCategoryOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.subCategoryMode ? true : undefined">
+                          <t t-esc="t(opt.l)"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <!-- Developer mode only: the two scopes are not comparable
+                       (SAR 601m in scope against 477m for every MDA line — lower,
+                       because the lines outside the scope are the negative
+                       discount pseudo-parts), so this is a diagnostic, not a
+                       control anyone should reach for on a real report. -->
+                  <div class="filter-group" t-if="isDebugMode">
+                    <span class="filter-label"><t t-esc="t('Scope')"/></span>
+                    <select class="filter-select" t-att-data-value="state.scope"
+                            t-on-change="(ev) => this.selectScope(ev.target.value)">
+                      <t t-foreach="scopeOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.scope ? true : undefined">
+                          <t t-esc="opt.l"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="toolbar-section" t-att-class="state.levelsCollapsed ? 'collapsed' : ''">
+            <button type="button" class="toolbar-toggle-btn" t-on-click="toggleLevels"
+                    t-att-aria-expanded="state.levelsCollapsed ? 'false' : 'true'">
+              <span class="toolbar-toggle-icon">▾</span>
+              <t t-esc="t('Levels')"/>
+            </button>
+
+            <div class="toolbar-body" t-if="!state.levelsCollapsed">
+              <div class="filters">
+                <!-- One dropdown per drill level, so any of the ten can be
+                     narrowed without drilling down to it first. A level reached
+                     by clicking a bar shows that value here too: drilling and
+                     picking are the same act against the same level, and
+                     levelValue() is what keeps the two displays as one. -->
+                <div class="filter-row filter-row-inline filter-row-levels">
+                  <t t-foreach="levelFilterList" t-as="lf" t-key="lf.v">
+                    <div class="filter-group">
+                      <span class="filter-label"><t t-esc="lf.l"/></span>
+                      <select class="filter-select" t-att-data-value="levelValue(lf.v)"
+                              t-on-change="(ev) => this.selectLevelFilter(lf.v, ev.target.value)">
+                        <option value="all" t-att-selected="levelValue(lf.v) === 'all' ? true : undefined">
+                          <t t-esc="t('All')"/>
+                        </option>
+                        <t t-foreach="levelOptions(lf.v)" t-as="opt" t-key="opt.v">
+                          <option t-att-value="opt.v" t-att-selected="opt.v === levelValue(lf.v) ? true : undefined">
+                            <t t-esc="opt.l"/>
+                          </option>
+                        </t>
+                      </select>
+                    </div>
+                  </t>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="level-nav">
+            <t t-foreach="levelNav" t-as="lvl" t-key="lvl.v">
+              <button type="button"
+                      t-att-class="'level-nav-btn' + (state.level === lvl.v ? ' active' : '')"
+                      t-on-click="() => this.jumpToLevel(lvl.v)">
+                <t t-esc="lvl.l"/>
+              </button>
+            </t>
+          </div>
+        </div>
+
+        <div class="error-banner" t-if="state.error"><t t-esc="state.error"/></div>
+
+        <div class="dashboard" t-att-class="state.loading ? 'loading' : ''">
+          <!-- Both measures are drawn at all times below, so this no longer
+               chooses what is charted: it chooses which twelve KPI tiles are
+               shown, and says so. An unlabelled toggle over charts that ignore
+               it would read as broken. -->
+          <div class="measure-toggle">
+            <span class="measure-label"><t t-esc="t('KPI Tiles')"/></span>
+            <t t-foreach="measureOptions" t-as="opt" t-key="opt.v">
+              <button type="button"
+                      t-att-class="'measure-btn' + (state.measure === opt.v ? ' active' : '')"
+                      t-on-click="() => this.selectMeasure(opt.v)">
+                <t t-esc="t(opt.l)"/>
+              </button>
+            </t>
+          </div>
+
+          <div class="pbi-kpi-row twelve" t-ref="kpiRow"/>
+
+          <!--
+              The one line on the board that says the gesture exists. Neither
+              right-click nor long-press announces itself, and a menu nobody
+              knows to open is a menu nobody opens. It names the plain click
+              too, so the sentence reads as "here is how drilling works" rather
+              than as a note about one hidden extra.
+
+              Both halves are in the markup and CSS picks which to show: a
+              hint naming right-click on a phone reads as an instruction the
+              reader has failed to follow. See .pbi-drill-hint in
+              pbi_dashboards/static/src/css/pbi_drill_menu.css.
+          -->
+          <p class="pbi-drill-hint">
+            <span class="pbi-drill-hint-icon" aria-hidden="true">◢</span>
+            <span class="on-pointer"><t t-esc="drillHintPointer"/></span>
+            <span class="on-touch"><t t-esc="drillHintTouch"/></span>
+          </p>
+
+          <!-- One period per row, value on the left and quantity on the
+               right, both scrollable and both the same width: neither measure
+               is the main one here. The nth bar is the same category on both,
+               so a row reads across as well as down. Each caption carries that
+               category's contribution % in its own chart's measure — the
+               number the donut used to hold. -->
+          <div class="pbi-card-grid-wide">
+            <div class="pbi-card wide-bar">
+              <div class="card-head">
+                <div class="card-head-text">
+                  <h2><t t-esc="t(vqChartTitle('mtd', 'amount'))"/></h2>
+                  <p class="subtitle"><t t-esc="vqSubtitle('mtd', 'amount')"/></p>
+                </div>
+                <t t-call="pbi_sales_dashboards.sales_vq_view_toggle">
+                  <t t-set="cardId" t-value="'mtdAmount'"/>
+                </t>
+              </div>
+              <div class="chart-scroll" t-ref="mtdBar"/>
+            </div>
+            <div class="pbi-card wide-bar">
+              <div class="card-head">
+                <div class="card-head-text">
+                  <h2><t t-esc="t(vqChartTitle('mtd', 'qty'))"/></h2>
+                  <p class="subtitle"><t t-esc="vqSubtitle('mtd', 'qty')"/></p>
+                </div>
+                <t t-call="pbi_sales_dashboards.sales_vq_view_toggle">
+                  <t t-set="cardId" t-value="'mtdQty'"/>
+                </t>
+              </div>
+              <div class="chart-scroll" t-ref="mtdQtyBar"/>
+            </div>
+          </div>
+
+          <div class="pbi-card-grid-wide">
+            <div class="pbi-card wide-bar">
+              <div class="card-head">
+                <div class="card-head-text">
+                  <h2><t t-esc="t(vqChartTitle('ytd', 'amount'))"/></h2>
+                  <p class="subtitle"><t t-esc="vqSubtitle('ytd', 'amount')"/></p>
+                </div>
+                <t t-call="pbi_sales_dashboards.sales_vq_view_toggle">
+                  <t t-set="cardId" t-value="'ytdAmount'"/>
+                </t>
+              </div>
+              <div class="chart-scroll" t-ref="ytdBar"/>
+            </div>
+            <div class="pbi-card wide-bar">
+              <div class="card-head">
+                <div class="card-head-text">
+                  <h2><t t-esc="t(vqChartTitle('ytd', 'qty'))"/></h2>
+                  <p class="subtitle"><t t-esc="vqSubtitle('ytd', 'qty')"/></p>
+                </div>
+                <t t-call="pbi_sales_dashboards.sales_vq_view_toggle">
+                  <t t-set="cardId" t-value="'ytdQty'"/>
+                </t>
+              </div>
+              <div class="chart-scroll" t-ref="ytdQtyBar"/>
+            </div>
+          </div>
+        </div>
+
+        <footer>
+          <t t-esc="t('PBI Dashboards')"/> &gt; <t t-esc="t('Sales Dashboards')"/> &gt;
+          <t t-esc="t('Sales Dashboard - VQ')"/><t t-if="isDebugMode">
+          — <t t-esc="t('live from')"/> transaction_header + transaction_details</t>
+        </footer>
+      </div>
+      <!--
+          One card, full page. Not a copy of it: the panel reads and writes the
+          same per-card view state, so the chart/table switch inside it moves
+          the card underneath too and closing leaves the board as the reader
+          left it. Backdrop click and Escape both close, because a panel with
+          only one way out is a trap on a board people skim.
+      -->
+      <div class="pbi-vq-modal" t-if="state.modal" t-on-click="closeModal">
+        <div class="pbi-vq-modal-panel" role="dialog" aria-modal="true" t-on-click.stop="">
+          <div class="card-head">
+            <div class="card-head-text">
+              <h2><t t-esc="t(vqChartTitle(modalCard.period, modalCard.measure))"/></h2>
+              <p class="subtitle"><t t-esc="vqSubtitle(modalCard.period, modalCard.measure)"/></p>
+            </div>
+            <div class="modal-controls">
+              <t t-call="pbi_sales_dashboards.sales_vq_view_toggle">
+                <t t-set="cardId" t-value="state.modal"/>
+                <t t-set="inModal" t-value="true"/>
+              </t>
+              <button type="button" class="modal-close" t-att-title="t('Close')"
+                      t-att-aria-label="t('Close')" t-on-click="closeModal">×</button>
+            </div>
+          </div>
+          <div class="modal-body" t-ref="modalBody"/>
+        </div>
+      </div>
+
+      <div class="pbi-tooltip" t-ref="tooltip"/>
+    </div>
+  </t>
+</templates>

@@ -1,0 +1,1 @@
+../pbi_dashboard_configurations/sql/check_sman_fact_budget_integrity.sql

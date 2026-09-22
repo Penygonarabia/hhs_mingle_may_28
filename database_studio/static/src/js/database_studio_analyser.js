@@ -143,6 +143,56 @@ SqlMsSaveDialog.props = {
     defaultName: { type: String, optional: true },
 };
 
+// Odoo's Dialog, with every way out except its own buttons taken away: no
+// close button in the header (the TxnDialog template gives it a title-only
+// header), and Escape -- or the fullscreen back arrow on a small screen --
+// does nothing. The TxnDialog also keeps its buttons out of .modal-footer,
+// because Dialog's Ctrl+Enter hotkey clicks the first footer button, which
+// would be Commit.
+class SqlMsForcedDialog extends Dialog {
+    onEscape() {}
+    async dismiss() {}
+}
+
+// Asked at the end of a run that changed data with INSERT/UPDATE/DELETE/MERGE: the run
+// was executed inside a transaction the server is still holding open, and
+// nothing is saved until Commit. The dialog cannot be closed without
+// answering (see SqlMsForcedDialog); what is left -- the countdown running
+// out, leaving the page anyway, the server restarting -- rolls back.
+export class SqlMsTxnDialog extends Component {
+    setup() {
+        this.state = useState({ remaining: this.props.ttl, busy: false });
+        this._timer = setInterval(() => {
+            this.state.remaining = Math.max(0, this.state.remaining - 1);
+            if (!this.state.remaining) {
+                this.decide(false);
+            }
+        }, 1000);
+        onWillUnmount(() => clearInterval(this._timer));
+    }
+    get countdown() {
+        const r = this.state.remaining;
+        return Math.floor(r / 60) + ":" + String(r % 60).padStart(2, "0");
+    }
+    async decide(commit) {
+        if (this.state.busy) {
+            return;
+        }
+        this.state.busy = true;
+        clearInterval(this._timer);
+        await this.props.onDecide(commit);
+        this.props.close();
+    }
+}
+SqlMsTxnDialog.template = "database_studio.TxnDialog";
+SqlMsTxnDialog.components = { Dialog: SqlMsForcedDialog };
+SqlMsTxnDialog.props = {
+    close: Function,
+    onDecide: Function,
+    writes: Array,
+    ttl: Number,
+};
+
 // Shown when closing a query tab that still holds unsaved text: lets the user
 // save it to history (with a name) or discard it before the tab is removed.
 export class SqlMsCloseTabDialog extends Component {
@@ -208,41 +258,127 @@ function escapeHtml(text) {
         .replace(/>/g, "&gt;");
 }
 
-// `range` (a {start, end} of the executed selection) is painted with a
-// selection-like background so the part of the script that was run stays
-// visible after Execute — a textarea shows no selection once it loses focus.
-function highlightSql(text, range) {
-    if (range && range.end > range.start) {
-        return highlightSql(text.slice(0, range.start)) +
-            '<span class="sqlms-execsel">' +
-            highlightSql(text.slice(range.start, range.end)) +
-            "</span>" +
-            highlightSql(text.slice(range.end));
-    }
-    let out = "";
+// Splits the text into coloured pieces without regard for line breaks:
+// strings, block comments and dollar-quoted bodies may all span lines, so
+// the scan has to see the whole text at once. `highlightSql` then re-cuts
+// the pieces at every newline.
+function sqlPieces(text) {
+    const out = [];
     let last = 0;
     let m;
     TOKEN_RE.lastIndex = 0;
     while ((m = TOKEN_RE.exec(text)) !== null) {
-        out += escapeHtml(text.slice(last, m.index));
-        const raw = escapeHtml(m[0]);
-        if (m[1]) {
-            out += '<span class="sqlms-str">' + raw + "</span>";
-        } else if (m[2]) {
-            out += '<span class="sqlms-ident">' + raw + "</span>";
-        } else if (m[3]) {
-            out += '<span class="sqlms-comment">' + raw + "</span>";
-        } else if (m[4]) {
-            out += '<span class="sqlms-num">' + raw + "</span>";
-        } else if (KEYWORD_SET.has(m[0].toUpperCase())) {
-            out += '<span class="sqlms-kw">' + raw + "</span>";
-        } else {
-            out += raw;
+        if (m.index > last) {
+            out.push({ text: text.slice(last, m.index), cls: "" });
         }
+        let cls = "";
+        if (m[1]) {
+            cls = "sqlms-str";
+        } else if (m[2]) {
+            cls = "sqlms-ident";
+        } else if (m[3]) {
+            cls = "sqlms-comment";
+        } else if (m[4]) {
+            cls = "sqlms-num";
+        } else if (KEYWORD_SET.has(m[0].toUpperCase())) {
+            cls = "sqlms-kw";
+        }
+        out.push({ text: m[0], cls });
         last = m.index + m[0].length;
     }
-    out += escapeHtml(text.slice(last));
+    if (last < text.length) {
+        out.push({ text: text.slice(last), cls: "" });
+    }
     return out;
+}
+
+// `range` (a {start, end} of the executed selection) is painted with a
+// selection-like background so the part of the script that was run stays
+// visible after Execute -- a textarea shows no selection once it loses focus.
+//
+// Every source line comes out as its own <div class="sqlms-line">. That is
+// what the gutter is built on: line numbers and fold icons are placed from
+// each line div's own offsetTop, so they stay level with their line even
+// when soft wrap turns one source line into several visual rows. Nothing
+// may therefore straddle a newline -- the executed band included, which is
+// why it is applied per piece rather than as one span wrapped round it.
+function highlightSql(text, range) {
+    const lines = [""];
+    const push = (chunk, cls, exec) => {
+        if (!chunk) {
+            return;
+        }
+        const parts = chunk.split("\n");
+        for (let i = 0; i < parts.length; i++) {
+            if (i) {
+                lines.push("");
+            }
+            if (!parts[i]) {
+                continue;
+            }
+            const cn = cls && exec ? cls + " sqlms-execsel"
+                : (cls || (exec ? "sqlms-execsel" : ""));
+            lines[lines.length - 1] += cn
+                ? '<span class="' + cn + '">' + escapeHtml(parts[i]) + "</span>"
+                : escapeHtml(parts[i]);
+        }
+    };
+    const banded = !!(range && range.end > range.start);
+    let pos = 0;
+    for (const p of sqlPieces(text)) {
+        const start = pos;
+        const end = pos + p.text.length;
+        pos = end;
+        if (!banded || end <= range.start || start >= range.end) {
+            push(p.text, p.cls, false);
+            continue;
+        }
+        // The band cuts across this piece: emit it in up to three slices so
+        // only the characters that actually ran carry the marker class.
+        const a = Math.max(start, range.start) - start;
+        const b = Math.min(end, range.end) - start;
+        push(p.text.slice(0, a), p.cls, false);
+        push(p.text.slice(a, b), p.cls, true);
+        push(p.text.slice(b), p.cls, false);
+    }
+    return lines.map((h) => '<div class="sqlms-line">' + h + "</div>").join("");
+}
+
+// Generated SQL names tables and columns bare, the way they are typed by
+// hand, and quotes one only where PostgreSQL would otherwise misread it: a
+// name that is not plain lower-case, or one of its non-unreserved keywords
+// (`order`, `user`, `default`, ...). This is the list
+// pg_get_keywords() reports with catcode <> 'U' (PostgreSQL 15), i.e. what
+// quote_ident() itself quotes.
+const SQL_QUOTE_WORDS = new Set([
+    "all", "analyse", "analyze", "and", "any", "array", "as", "asc",
+    "asymmetric", "authorization", "between", "bigint", "binary", "bit",
+    "boolean", "both", "case", "cast", "char", "character", "check",
+    "coalesce", "collate", "collation", "column", "concurrently", "constraint",
+    "create", "cross", "current_catalog", "current_date", "current_role",
+    "current_schema", "current_time", "current_timestamp", "current_user",
+    "dec", "decimal", "default", "deferrable", "desc", "distinct", "do",
+    "else", "end", "except", "exists", "extract", "false", "fetch", "float",
+    "for", "foreign", "freeze", "from", "full", "grant", "greatest", "group",
+    "grouping", "having", "ilike", "in", "initially", "inner", "inout", "int",
+    "integer", "intersect", "interval", "into", "is", "isnull", "join",
+    "lateral", "leading", "least", "left", "like", "limit", "localtime",
+    "localtimestamp", "national", "natural", "nchar", "none", "normalize",
+    "not", "notnull", "null", "nullif", "numeric", "offset", "on", "only",
+    "or", "order", "out", "outer", "overlaps", "overlay", "placing",
+    "position", "precision", "primary", "real", "references", "returning",
+    "right", "row", "select", "session_user", "setof", "similar", "smallint",
+    "some", "substring", "symmetric", "table", "tablesample", "then", "time",
+    "timestamp", "to", "trailing", "treat", "trim", "true", "union", "unique",
+    "user", "using", "values", "varchar", "variadic", "verbose", "when",
+    "where", "window", "with", "xmlattributes", "xmlconcat", "xmlelement",
+    "xmlexists", "xmlforest", "xmlnamespaces", "xmlparse", "xmlpi", "xmlroot",
+    "xmlserialize", "xmltable",
+]);
+function sqlIdent(name) {
+    return /^[a-z_][a-z0-9_$]*$/.test(name) && !SQL_QUOTE_WORDS.has(name)
+        ? name
+        : '"' + String(name).replace(/"/g, '""') + '"';
 }
 
 // ---------------------------------------------------------------------
@@ -252,7 +388,12 @@ function highlightSql(text, range) {
 // per line and real indentation for sub-queries, CTEs and CASE bodies,
 // instead of the old "newline before a few keywords, break after every
 // comma" pass which left everything at column zero. String literals,
-// comments and dollar-quoted bodies are copied through untouched.
+// comments, dollar-quoted bodies and "quoted" identifiers are copied through
+// untouched; everything else comes out in lower case (unquoted identifiers
+// are case-insensitive, so that changes nothing about what the query does).
+// SELECT, FROM, WHERE, GROUP BY, ORDER BY and HAVING each stand alone on
+// their line with their items one indent below, and every statement ends in
+// a ';'.
 // ---------------------------------------------------------------------
 
 const INDENT_STR = "    ";
@@ -288,7 +429,12 @@ const JOIN_PHRASES = [
 // Statement/block words that always want a line of their own.
 const BLOCK_WORDS = new Set(["BEGIN", "DECLARE", "COMMIT", "ROLLBACK"]);
 // A clause whose comma-separated list is broken one item per line.
-const LIST_CLAUSES = new Set(["select", "from", "set", "values", "with"]);
+const LIST_CLAUSES = new Set(["select", "from", "set", "values", "with", "group"]);
+// Clauses whose keyword gets a line of its own, their items starting on the
+// next line one indent in.
+const BLOCK_CLAUSES = new Set([
+    "SELECT", "FROM", "WHERE", "HAVING", "GROUP BY", "ORDER BY",
+]);
 
 // Splits the text into tokens, remembering for each whether the source had
 // whitespace (and a newline) before it: that is what tells `count(*)` from
@@ -383,6 +529,16 @@ function formatSql(text) {
     if (!tokens.length) {
         return text;
     }
+    // Every statement ends in ';' -- the last one included. It goes after the
+    // last piece of code, so a trailing comment cannot swallow it.
+    let last = tokens.length - 1;
+    while (last >= 0 && (tokens[last].type === "lcomment" || tokens[last].type === "bcomment")) {
+        last -= 1;
+    }
+    if (last >= 0 && !(tokens[last].type === "punct" && tokens[last].value === ";")) {
+        tokens.splice(last + 1, 0,
+            { type: "punct", value: ";", wsBefore: false, nlBefore: false, upper: "" });
+    }
 
     const lines = [];
     let cur = "";
@@ -442,38 +598,6 @@ function formatSql(text) {
         const next = wordAt(k + 1);
         return next === "SELECT" || next === "WITH" || next === "VALUES";
     }
-    // Whether the select list about to start holds more than one item, which
-    // is what decides between "SELECT a" and a column-per-line block.
-    function listIsMulti(k) {
-        let depth = 0;
-        for (let x = k; x < tokens.length; x++) {
-            const t = tokens[x];
-            if (t.type !== "punct") {
-                if (depth === 0 && t.type === "word" &&
-                        matchPhrase(x, CLAUSE_PHRASES) && t.upper !== "VALUES") {
-                    return false;
-                }
-                if (depth === 0 && t.type === "word" && t.upper === "INTO") {
-                    return false;
-                }
-                continue;
-            }
-            if (t.value === "(") {
-                depth += 1;
-            } else if (t.value === ")") {
-                if (depth === 0) {
-                    return false;
-                }
-                depth -= 1;
-            } else if (t.value === ";") {
-                return false;
-            } else if (t.value === "," && depth === 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     let i = 0;
     while (i < tokens.length) {
         const tok = tokens[i];
@@ -504,11 +628,14 @@ function formatSql(text) {
                 parens.push({
                     sub,
                     savedIndent: indent,
+                    lineIndent: curIndent,
                     savedClause: clause,
                     savedCases: cases.length,
                 });
                 if (sub) {
-                    indent += 1;
+                    // One in from the line the '(' sits on, which may itself
+                    // be an item already indented under its clause.
+                    indent = curIndent + 1;
                     newline(indent);
                     clause = "";
                 } else {
@@ -521,7 +648,7 @@ function formatSql(text) {
                 const open = parens.pop();
                 if (open && open.sub) {
                     indent = open.savedIndent;
-                    newline(indent);
+                    newline(open.lineIndent);
                     add(")");
                 } else {
                     add(")", "none");
@@ -543,6 +670,12 @@ function formatSql(text) {
             }
             if (tok.value === ";") {
                 add(";", "none");
+                // A comment trailing the statement stays on its line.
+                const after = tokens[i + 1];
+                if (after && after.type === "lcomment" && !after.nlBefore) {
+                    add(after.value);
+                    i += 1;
+                }
                 flush();
                 lines.push("");
                 indent = 0;
@@ -589,9 +722,10 @@ function formatSql(text) {
         const plain = inPlainParen();
         const join = plain ? null : matchPhrase(i, JOIN_PHRASES);
         if (join) {
-            newline(indent);
+            // A join is one more item of the FROM block above it.
+            newline(indent + 1);
             for (const w of join) {
-                add(w);
+                add(w.toLowerCase());
                 i += 1;
             }
             clause = "join";
@@ -601,22 +735,23 @@ function formatSql(text) {
         if (phrase) {
             newline(indent);
             for (const w of phrase) {
-                add(w);
+                add(w.toLowerCase());
                 i += 1;
             }
-            clause = CLAUSE_KEY[phrase.join(" ")] || "other";
+            const name = phrase.join(" ");
+            clause = CLAUSE_KEY[name] || "other";
             if (clause === "select") {
                 if (wordAt(i) === "DISTINCT" || wordAt(i) === "ALL") {
-                    add(tokens[i].upper);
+                    add(tokens[i].value.toLowerCase());
                     i += 1;
                     if (wordAt(i) === "ON") {
-                        add("ON");
+                        add("on");
                         i += 1;
                     }
                 }
-                if (listIsMulti(i)) {
-                    newline(indent + 1);
-                }
+            }
+            if (BLOCK_CLAUSES.has(name)) {
+                newline(indent + 1);
             }
             pendingBetween = false;
             continue;
@@ -624,14 +759,14 @@ function formatSql(text) {
         const upper = tok.upper;
         if (upper === "CASE") {
             cases.push({ savedIndent: indent, base: curIndent });
-            add("CASE");
+            add("case");
             indent = curIndent + 1;
             i += 1;
             continue;
         }
         if ((upper === "WHEN" || upper === "ELSE") && cases.length) {
             newline(indent);
-            add(upper);
+            add(upper.toLowerCase());
             i += 1;
             continue;
         }
@@ -639,42 +774,46 @@ function formatSql(text) {
             const open = cases.pop();
             indent = open.savedIndent;
             newline(open.base);
-            add("END");
+            add("end");
             i += 1;
             continue;
         }
         if ((upper === "AND" || upper === "OR") && !plain) {
             if (pendingBetween && upper === "AND") {
                 pendingBetween = false;
-                add("AND");
-            } else if (clause === "where" || clause === "on") {
+                add("and");
+            } else if (clause === "where") {
                 newline(indent + 1);
-                add(upper);
+                add(upper.toLowerCase());
+            } else if (clause === "on") {
+                // Under its join, which is itself one in from FROM.
+                newline(indent + 2);
+                add(upper.toLowerCase());
             } else {
-                add(upper);
+                add(upper.toLowerCase());
             }
             i += 1;
             continue;
         }
         if (upper === "BETWEEN") {
             pendingBetween = true;
-            add("BETWEEN");
+            add("between");
             i += 1;
             continue;
         }
         if (upper === "ON" && clause === "join") {
             clause = "on";
-            add("ON");
+            add("on");
             i += 1;
             continue;
         }
         if (BLOCK_WORDS.has(upper) && !plain && !parens.length) {
             newline(indent);
-            add(upper);
+            add(upper.toLowerCase());
             i += 1;
             continue;
         }
-        add(KEYWORD_SET.has(upper) ? upper : tok.value);
+        add(tok.value.toLowerCase());
         i += 1;
     }
     flush();
@@ -898,6 +1037,10 @@ export function expandFolds(text, folds) {
 // from — so these live at module scope rather than on component state.
 let _qtabIdSeq = 0;
 
+// Same for result panels: one per statement of a run, keyed by an id so the
+// t-foreach keeps a panel's collapsed state and column picks attached to it.
+let _resultSetIdSeq = 0;
+
 // History names can run long; the qtab bar has room for a short label only.
 function truncateName(name, max = 20) {
     if (!name) {
@@ -927,8 +1070,8 @@ export function makeQtab(query, opts) {
         folds: {},
         execQuery: "",
         execRange: null,
-        queryResult: null,
-        selectedCols: [],
+        resultSets: [],
+        focusedSetId: null,
         aggFunc: "",
         historyId: opts.historyId || null,
         isSaved: !!opts.isSaved,
@@ -936,7 +1079,10 @@ export function makeQtab(query, opts) {
         // the view it came from, and the flag that stops closing it from
         // asking to save something the database already holds.
         viewName: opts.viewName || null,
-        isScript: !!opts.viewName,
+        // The same for a trigger's script (see showTriggerScript): its
+        // "table.trigger" key.
+        triggerKey: opts.triggerKey || null,
+        isScript: !!(opts.viewName || opts.triggerKey),
     };
 }
 
@@ -958,7 +1104,7 @@ export const analyserRegistry = { pending: null };
 // it rather than a blank Fields/Mapping pane.
 const SESSION_KEYS = [
     "activeTab", "selected", "selectedType", "filter", "searchMode",
-    "showFavorites", "showTables", "showViews", "checked",
+    "showFavorites", "showTables", "showViews", "showTriggers", "checked", "resultsHidden",
     "fieldGroups", "collapsedGroups", "fieldFilter", "fieldSel", "fieldCols",
     "mapping", "mappingCols",
 ];
@@ -989,6 +1135,13 @@ const MAPPING_COLUMNS = [
     { key: "to_column", label: "to_column" },
     { key: "via", label: "via" },
 ];
+
+// Grid column sizing (see _fitGrids). A column first fits its header or its
+// widest value, whichever is wider; only a value's width is capped, so a
+// long text column cannot push the rest of the grid off screen while a
+// header is never cut short.
+const GRID_FIT_CAP = 520;
+const GRID_MIN_COL = 32;
 
 // The numeric types a text column can be converted to, in the order the
 // dialog offers them.
@@ -1195,7 +1348,10 @@ const CARET_STYLE_PROPERTIES = [
     "paddingTop", "paddingRight", "paddingBottom", "paddingLeft",
     "fontStyle", "fontVariant", "fontWeight", "fontStretch", "fontSize", "fontSizeAdjust",
     "lineHeight", "fontFamily", "textAlign", "textTransform", "textIndent",
-    "textDecoration", "letterSpacing", "wordSpacing", "tabSize", "MozTabSize"
+    "textDecoration", "letterSpacing", "wordSpacing", "tabSize", "MozTabSize",
+    // Copied so the mirror wraps exactly where the textarea does; without
+    // them the suggestion popup lands on the wrong row in wrap mode.
+    "whiteSpace", "overflowWrap", "wordBreak"
 ];
 
 function getCaretCoordinates(element, position) {
@@ -1207,7 +1363,6 @@ function getCaretCoordinates(element, position) {
     const style = div.style;
     const computed = window.getComputedStyle(element);
 
-    style.whiteSpace = "pre";
     style.position = "absolute";
     style.visibility = "hidden";
     style.top = "0";
@@ -1218,6 +1373,14 @@ function getCaretCoordinates(element, position) {
     });
 
     style.overflow = "hidden";
+    // getComputedStyle reports the *content* width, which with the copied
+    // border-box sizing would make the mirror narrower than the textarea by
+    // its padding -- and so wrap a few characters early. Pin the content box
+    // to the textarea's own, scrollbar and padding already discounted.
+    const padX = (parseFloat(computed.paddingLeft) || 0) + (parseFloat(computed.paddingRight) || 0);
+    style.boxSizing = "content-box";
+    style.width = Math.max(0, element.clientWidth - padX) + "px";
+    style.height = "auto";
 
     div.textContent = element.value.substring(0, position);
 
@@ -1701,12 +1864,35 @@ export class SqlMsAnalyser extends Component {
             query: "",
             display: "",
             folds: {},
+            // The measured top of every source line. The editor always soft
+            // wraps, which makes a line's position unpredictable, so the
+            // gutter reads it back off the rendered line divs instead of
+            // computing it (see _measureLines).
+            lineTops: [],
             execQuery: "",
             execRange: null,
-            queryResult: null,
+            // One panel per statement of the last Execute. Running a script
+            // in one go used to show the last statement's rows only, so the
+            // statements before it were executed with nothing to show for
+            // them; each now gets its own collapsible panel here. A single
+            // statement is simply a list of one, and looks exactly as it
+            // always did.
+            resultSets: [],
+            // Which panel the result-wide actions (Copy, Export, Alt+C, the
+            // Fields tab's "Query result" group) work on: the one last
+            // clicked, or the first that returned columns.
+            focusedSetId: null,
             qtabs: [],
             activeQtabId: null,
+            // `loading` is any server round trip (the Fields/Mapping panes,
+            // Build query, a view script); `executing` is only a query run.
+            // They are kept apart because the query toolbar -- Execute vs
+            // Cancel execution, the running bar -- must follow the run alone:
+            // ticking a table reloads both panes, and sharing one flag made
+            // Cancel execution flash on every tick (and, mid-run, the panes
+            // finishing first hid it while the query was still going).
             loading: false,
+            executing: false,
             currentExecutionId: null,
             cancelling: false,
             exporting: false,
@@ -1714,9 +1900,12 @@ export class SqlMsAnalyser extends Component {
             showFavorites: true,
             showTables: true,
             showViews: true,
+            showTriggers: true,
+            triggers: [],
+            // "Hide results" in the query toolbar: the editor gets the pane.
+            resultsHidden: false,
             checked: {},
             tabMenuOpen: false,
-            selectedCols: [],
             aggFunc: "",
             autocomplete: {
                 visible: false,
@@ -1765,16 +1954,39 @@ export class SqlMsAnalyser extends Component {
         // highlight overlay from state so the typed query is never lost.
         onPatched(() => this._syncEditor());
 
+        // Column widths per grid, keyed by the grid's data-grid-key. Kept off
+        // the reactive state on purpose: a drag writes them on every mouse
+        // move, and they are applied to the DOM directly, not rendered.
+        this._gridWidths = new Map();
+        onMounted(() => this._fitGrids());
+        onPatched(() => this._fitGrids());
+
         // The backend theme forces the action container to full-viewport
         // height below the navbar, so our panel would overflow the bottom of
         // the screen. Pin the root's height to the space actually available
         // from its top to the viewport bottom, and keep it correct on resize.
-        this._onResize = () => this._fitHeight();
+        this._onResize = () => {
+            this._fitHeight();
+            this._measureLines();
+        };
         onMounted(() => {
             this._fitHeight();
             window.addEventListener("resize", this._onResize);
         });
         onWillUnmount(() => window.removeEventListener("resize", this._onResize));
+
+        // Dragging the sidebar or the editor's own resizer changes where the
+        // text wraps without firing a window resize, and so would leave the
+        // line numbers pointing at the wrong rows.
+        if (window.ResizeObserver) {
+            this._editorRO = new ResizeObserver(() => this._measureLines());
+            onMounted(() => {
+                if (this.editorRef.el) {
+                    this._editorRO.observe(this.editorRef.el);
+                }
+            });
+            onWillUnmount(() => this._editorRO.disconnect());
+        }
 
         // Keyboard shortcuts (see _onShortcut). Bound on the document because
         // the result grid itself is not focusable, so there is no element the
@@ -1788,6 +2000,28 @@ export class SqlMsAnalyser extends Component {
         // above. This covers every exit, the "Query history" button included
         // (which is why openHistory no longer snapshots for itself).
         onWillUnmount(() => this._snapshotSession());
+
+        // While an INSERT/UPDATE/DELETE/MERGE transaction waits for its
+        // answer, reloading or closing the page first asks the browser's
+        // "Leave site?"; leaving anyway (or leaving the analyser) rolls it
+        // back. The rollback goes on pagehide, not beforeunload, so choosing
+        // to stay does not throw the transaction away.
+        this._onBeforeUnload = (ev) => {
+            if (this._openTxnId) {
+                ev.preventDefault();
+                ev.returnValue = "";
+            }
+        };
+        this._onPageHide = () => this._rollbackOpenTxnBeacon();
+        onMounted(() => {
+            window.addEventListener("beforeunload", this._onBeforeUnload);
+            window.addEventListener("pagehide", this._onPageHide);
+        });
+        onWillUnmount(() => {
+            window.removeEventListener("beforeunload", this._onBeforeUnload);
+            window.removeEventListener("pagehide", this._onPageHide);
+            this._rollbackOpenTxnBeacon();
+        });
     }
 
     // -- workspace snapshot / restore ----------------------------------
@@ -1890,9 +2124,31 @@ export class SqlMsAnalyser extends Component {
             ta.value = text;
         }
         if (this.preRef.el) {
-            this.preRef.el.innerHTML = highlightSql(text, this.state.execRange) + "\n";
+            this.preRef.el.innerHTML = highlightSql(text, this.state.execRange);
         }
         this._syncEditorScroll(ta ? ta.scrollTop : 0, ta ? ta.scrollLeft : 0);
+        this._measureLines();
+    }
+    // Reads back where each source line actually landed. With soft wrap on,
+    // a line is as many visual rows tall as it needs, so the old
+    // "PAD_TOP + n * LINE_H" arithmetic no longer places the gutter -- the
+    // rendered line divs are the only thing that knows. Writing the state
+    // only when the numbers really changed is what stops the
+    // render -> measure -> render loop from spinning.
+    _measureLines() {
+        const pre = this.preRef.el;
+        if (!pre) {
+            return;
+        }
+        const kids = pre.children;
+        const tops = new Array(kids.length);
+        for (let i = 0; i < kids.length; i++) {
+            tops[i] = kids[i].offsetTop;
+        }
+        const cur = this.state.lineTops;
+        if (cur.length !== tops.length || tops.some((v, i) => v !== cur[i])) {
+            this.state.lineTops = tops;
+        }
     }
     _syncEditorScroll(top, left) {
         if (this.preRef.el) {
@@ -1910,6 +2166,9 @@ export class SqlMsAnalyser extends Component {
     toggleViews() {
         this.state.showViews = !this.state.showViews;
     }
+    toggleTriggers() {
+        this.state.showTriggers = !this.state.showTriggers;
+    }
 
     // -- multi-select checkboxes ---------------------------------------
     toggleCheck(name, ev) {
@@ -1921,17 +2180,16 @@ export class SqlMsAnalyser extends Component {
         } else {
             this.state.checked[name] = true;
         }
-        if (this.state.activeTab === "mapping") {
-            this.loadMapping();
-        } else if (this.state.activeTab === "fields") {
-            this.loadFields();
-        }
+        this._loadDetails();
     }
     get checkedCount() {
         return Object.keys(this.state.checked).length;
     }
     clearChecks() {
         this.state.checked = {};
+        // Both grids were showing the ticked tables; leaving them as they
+        // were would show a selection that no longer exists.
+        this._loadDetails();
     }
     async buildQuery() {
         const tables = Object.keys(this.state.checked);
@@ -1961,6 +2219,7 @@ export class SqlMsAnalyser extends Component {
         const res = await this.orm.call("database.studio.analyser", "get_objects", []);
         this.state.tables = res.tables;
         this.state.views = res.views;
+        this.state.triggers = res.triggers || [];
         this.state.favorites = res.favorites || [];
         this.loadSchemaForAutocomplete();
     }
@@ -1990,6 +2249,13 @@ export class SqlMsAnalyser extends Component {
     get filteredViews() {
         return this._filter(this.state.views);
     }
+    // A trigger is found by its own name or by the table it is on.
+    get filteredTriggers() {
+        const list = this.state.triggers || [];
+        const byName = new Set(this._filter(list, (t) => t.name));
+        const byTable = new Set(this._filter(list, (t) => t.table));
+        return list.filter((t) => byName.has(t) || byTable.has(t));
+    }
     _filter(list, getName) {
         const f = this.state.filter.trim().toLowerCase();
         if (!f) {
@@ -2011,13 +2277,20 @@ export class SqlMsAnalyser extends Component {
     async selectObject(name, type) {
         this.state.selected = name;
         this.state.selectedType = type;
-        if (this.state.activeTab === "mapping") {
-            await this.loadMapping();
-        } else {
-            // Clicking a table always shows its fields.
+        // Clicking a table brings its fields to the front, but both panes are
+        // filled: switching to Field Mapping afterwards shows the mapping for
+        // what was clicked straight away, rather than an empty grid until
+        // something is clicked again.
+        if (this.state.activeTab !== "mapping") {
             this.state.activeTab = "fields";
-            await this.loadFields();
         }
+        await this._loadDetails();
+    }
+
+    // Fields and mapping together, in one round trip each. Both describe the
+    // same selection, so anything that changes the selection refreshes both.
+    async _loadDetails() {
+        await Promise.all([this.loadFields(), this.loadMapping()]);
     }
 
     async setTab(tab) {
@@ -2029,7 +2302,7 @@ export class SqlMsAnalyser extends Component {
         } else if (tab === "query" && this.state.selected && !this.state.query.trim()) {
             // Prefill a SELECT for the currently selected table/view, but only
             // when the editor is empty so a typed query is never overwritten.
-            this.setQuery('SELECT * FROM "' + this.state.selected + '"');
+            this.setQuery(formatSql("SELECT * FROM " + sqlIdent(this.state.selected)));
         }
     }
 
@@ -2050,6 +2323,19 @@ export class SqlMsAnalyser extends Component {
         }
         return tables;
     }
+    // loadFields and loadMapping now run side by side (see _loadDetails), so
+    // the spinner is reference-counted: whichever finishes first must not
+    // clear it while the other is still in flight.
+    _beginLoad() {
+        this._loadDepth = (this._loadDepth || 0) + 1;
+        this.state.loading = true;
+    }
+    _endLoad() {
+        this._loadDepth = Math.max(0, (this._loadDepth || 1) - 1);
+        if (!this._loadDepth) {
+            this.state.loading = false;
+        }
+    }
     async loadFields() {
         const tables = this._fieldsTables();
         if (!tables.length) {
@@ -2061,7 +2347,7 @@ export class SqlMsAnalyser extends Component {
             this._pruneFieldPicks();
             return;
         }
-        this.state.loading = true;
+        this._beginLoad();
         try {
             this.state.fieldGroups = await this.orm.call(
                 "database.studio.analyser", "get_fields_multi", [tables]
@@ -2080,14 +2366,48 @@ export class SqlMsAnalyser extends Component {
             // that went with it rather than letting them turn up invisibly in
             // the next built query.
             this._pruneFieldPicks();
+            // Whatever the server left out no longer exists (dropped since
+            // the list on the left was read).
+            const got = new Set((this.state.fieldGroups || []).map((g) => g.table));
+            this._forgetMissingObjects(tables.filter((t) => !got.has(t)));
         } finally {
-            this.state.loading = false;
+            this._endLoad();
         }
+    }
+    // A table/view that was dropped behind the page's back: take it out of
+    // the selection and the ticked set, say so once, and re-read the lists
+    // (which also drops it from the favourites).
+    _forgetMissingObjects(names) {
+        if (!names.length) {
+            return;
+        }
+        for (const n of names) {
+            if (this.state.selected === n) {
+                this.state.selected = null;
+            }
+            delete this.state.checked[n];
+        }
+        // A script tab of a dropped view keeps its text (it may be exactly
+        // what is needed to create the view again) but stops being tied to
+        // the view -- otherwise every refresh of the Fields tab would look
+        // the view up again and repeat this notice.
+        for (const t of this.state.qtabs) {
+            if (t.viewName && names.includes(t.viewName)) {
+                t.viewName = null;
+                t.isScript = false;
+            }
+        }
+        this.notification.add(
+            names.join(", ") + (names.length > 1 ? " no longer exist" : " no longer exists") +
+                " \u2014 removed from the list.",
+            { type: "warning" }
+        );
+        this.loadObjects().catch(() => {});
     }
     // The active query tab's result, as a single field group. Empty until a
     // query has actually returned columns.
     _resultFieldGroups() {
-        const res = this.state.queryResult;
+        const res = this.activeResult;
         if (!res || !(res.columns || []).length) {
             return [];
         }
@@ -2264,7 +2584,7 @@ export class SqlMsAnalyser extends Component {
         const derived = this.hasDerivedPicks;
         this.dialog.add(SqlMsConvertTypeDialog, {
             mode: derived ? "query" : "table",
-            query: derived ? (this.state.execQuery || this.state.query || "") : "",
+            query: derived ? (this._focusedSql() || "") : "",
             items: picked.map((f) => ({ table: f.table, name: f.name })),
             onApply: (sql) => this._openBuiltQuery(sql),
             onDone: async (res) => {
@@ -2306,13 +2626,14 @@ export class SqlMsAnalyser extends Component {
         }
     }
     // A generated query lands in a fresh tab whenever the current one already
-    // holds something, so building never silently discards typed work.
+    // holds something, so building never silently discards typed work. It
+    // arrives already laid out the way Format would lay it out.
     _openBuiltQuery(query) {
         this.state.activeTab = "query";
         if ((this.state.query || "").trim()) {
             this.addQtab();
         }
-        this.setQuery(query);
+        this.setQuery(formatSql(query));
     }
 
     // Tables referenced after FROM/JOIN in the current query (only those that
@@ -2353,13 +2674,13 @@ export class SqlMsAnalyser extends Component {
             this.state.mapping = [];
             return;
         }
-        this.state.loading = true;
+        this._beginLoad();
         try {
             this.state.mapping = await this.orm.call(
                 "database.studio.analyser", "get_field_mapping", [tables]
             );
         } finally {
-            this.state.loading = false;
+            this._endLoad();
         }
     }
 
@@ -2380,8 +2701,8 @@ export class SqlMsAnalyser extends Component {
             t.folds = this.state.folds;
             t.execQuery = this.state.execQuery;
             t.execRange = this.state.execRange;
-            t.queryResult = this.state.queryResult;
-            t.selectedCols = this.state.selectedCols;
+            t.resultSets = this.state.resultSets;
+            t.focusedSetId = this.state.focusedSetId;
             t.aggFunc = this.state.aggFunc;
         }
     }
@@ -2394,8 +2715,8 @@ export class SqlMsAnalyser extends Component {
         this.state.folds = t.folds || {};
         this.state.execQuery = t.execQuery;
         this.state.execRange = t.execRange || null;
-        this.state.queryResult = t.queryResult;
-        this.state.selectedCols = t.selectedCols || [];
+        this.state.resultSets = t.resultSets || [];
+        this.state.focusedSetId = t.focusedSetId || null;
         this.state.aggFunc = t.aggFunc || "";
         this._syncEditor();
         // A script tab is about one view, so fronting it points the rest of
@@ -2404,8 +2725,8 @@ export class SqlMsAnalyser extends Component {
         if (t.viewName) {
             this.state.selected = t.viewName;
             this.state.selectedType = "view";
-            if (this.state.activeTab === "fields") {
-                this.loadFields();
+            if (this.state.activeTab === "fields" || this.state.activeTab === "mapping") {
+                this._loadDetails();
             }
         }
     }
@@ -2675,6 +2996,40 @@ export class SqlMsAnalyser extends Component {
     get foldableCount() {
         return this.sections.filter((sc) => sc.foldable).length;
     }
+
+    // -- gutter (line numbers + fold icons) ----------------------------
+    get lineCount() {
+        const text = this.state.display || "";
+        return (text.match(/\n/g) || []).length + 1;
+    }
+    // Where line `i` sits inside the editor. The measurement is the truth
+    // whenever there is one; the arithmetic is the fallback for the first
+    // render, before the line divs exist to be measured.
+    lineTop(i) {
+        const tops = this.state.lineTops;
+        if (tops && tops.length > i) {
+            return tops[i];
+        }
+        return EDITOR_PAD_TOP + i * EDITOR_LINE_H;
+    }
+    // Wide enough for the largest line number plus the fold icon beside it.
+    get gutterWidth() {
+        const digits = String(Math.max(this.lineCount, 10)).length;
+        return 24 + digits * 8;
+    }
+    get gutterRows() {
+        const foldAt = {};
+        for (const sc of this.sections) {
+            if (sc.foldable) {
+                foldAt[sc.line] = sc;
+            }
+        }
+        const rows = [];
+        for (let i = 0; i < this.lineCount; i++) {
+            rows.push({ line: i, top: this.lineTop(i), sec: foldAt[i] || null });
+        }
+        return rows;
+    }
     // Writes new editor text, keeping the real query (folds expanded) in
     // step and forgetting any fold whose placeholder the user has deleted —
     // deleting the placeholder line deletes that statement, as it looks like
@@ -2754,12 +3109,35 @@ export class SqlMsAnalyser extends Component {
     }
     // Fired on every keystroke: record the new text (and the query it stands
     // for) without ever rewriting the textarea, so the caret stays put.
+    //
+    // The suggestion list opens only when a character is typed: a letter,
+    // a digit, _ $ " or the "." that starts an alias's column. Enter, a
+    // space or a paste close it rather than pop it up on whatever the new
+    // position happens to suggest. Deleting keeps a list that is already
+    // open in step with the text, but never opens a closed one, and closes
+    // it once the caret is back on whitespace.
     onEditorInput(ev) {
-        this._setDisplay(ev.target.value);
-        this.updateAutocomplete(ev.target);
+        const ta = ev.target;
+        this._setDisplay(ta.value);
+        const type = ev.inputType || "";
+        const typed = type === "insertText" && /^[\w$."]+$/.test(ev.data || "");
+        const before = ta.value[ta.selectionStart - 1];
+        const deleting = type.startsWith("delete") &&
+            this.state.autocomplete.visible && before && !/\s/.test(before);
+        if (typed || deleting) {
+            this.updateAutocomplete(ta);
+        } else {
+            this.closeAutocomplete();
+        }
     }
     // Handle keyboard navigation for autocomplete and Tab indenting
     onEditorKeyDown(ev) {
+        // Ctrl+/ (Cmd+/ on a Mac): the Comment button's shortcut.
+        if ((ev.ctrlKey || ev.metaKey) && ev.key === "/") {
+            ev.preventDefault();
+            this.toggleComment();
+            return;
+        }
         const ac = this.state.autocomplete;
         if (ac && ac.visible && ac.items.length) {
             if (ev.key === "ArrowDown") {
@@ -2871,6 +3249,69 @@ export class SqlMsAnalyser extends Component {
             this._setDisplay(ta.value);
         }
     }
+    // -- comment / uncomment lines ---------------------------------------
+    // Puts "-- " in front of every line the selection touches (or the
+    // caret's line), at the lines' common indentation so a formatted query
+    // keeps its shape; when every one of them is commented already it takes
+    // the markers off again. Blank lines are left alone. The lines are
+    // replaced through insertText, so Ctrl+Z undoes the change like any
+    // other edit.
+    toggleComment() {
+        const ta = this.taRef.el;
+        if (!ta || this.state.executing) {
+            return;
+        }
+        const val = ta.value;
+        const start = ta.selectionStart;
+        let end = ta.selectionEnd;
+        // A selection that ends at the very start of a line (the usual
+        // result of selecting whole lines) does not take that line in.
+        if (end > start && val[end - 1] === "\n") {
+            end -= 1;
+        }
+        const lineStart = val.lastIndexOf("\n", start - 1) + 1;
+        let lineEnd = val.indexOf("\n", end);
+        if (lineEnd === -1) {
+            lineEnd = val.length;
+        }
+        const block = val.substring(lineStart, lineEnd);
+        if (block.includes(FOLD_MARK)) {
+            // A folded statement is one placeholder line standing for many:
+            // commenting it would comment only its first line once unfolded.
+            this.notification.add(
+                "Unfold the folded statement(s) in the selection first, then comment them.",
+                { type: "warning" }
+            );
+            return;
+        }
+        const lines = block.split("\n");
+        const code = lines.filter((l) => l.trim());
+        if (!code.length) {
+            return;
+        }
+        let out;
+        if (code.every((l) => /^\s*--/.test(l))) {
+            out = lines.map((l) => l.replace(/^(\s*)-- ?/, "$1"));
+        } else {
+            const indent = Math.min(...code.map((l) => l.match(/^\s*/)[0].length));
+            out = lines.map((l) => (l.trim() ? l.slice(0, indent) + "-- " + l.slice(indent) : l));
+        }
+        const newBlock = out.join("\n");
+        ta.focus();
+        ta.setSelectionRange(lineStart, lineEnd);
+        let inserted = false;
+        try {
+            inserted = document.execCommand("insertText", false, newBlock);
+        } catch (e) {
+            inserted = false;
+        }
+        if (!inserted) {
+            ta.value = val.substring(0, lineStart) + newBlock + val.substring(lineEnd);
+            this._setDisplay(ta.value);
+        }
+        // Keep the same lines selected, so pressing it again undoes it.
+        ta.setSelectionRange(lineStart, lineStart + newBlock.length);
+    }
     // The band marking what the last Execute ran. It goes when the user
     // asks for it to go (the toolbar button) and when they put the caret
     // back in the editor, which is the point at which it stops describing
@@ -2919,8 +3360,10 @@ export class SqlMsAnalyser extends Component {
                         };
                     }
                 }
+                // Refresh a list that is showing with the columns just
+                // fetched; never open one the user has not asked for.
                 const ta = this.taRef.el;
-                if (ta && document.activeElement === ta) {
+                if (ta && document.activeElement === ta && this.state.autocomplete.visible) {
                     this.updateAutocomplete(ta);
                 }
             }
@@ -2938,7 +3381,14 @@ export class SqlMsAnalyser extends Component {
         // Check if query has tables not yet loaded in schemaCache
         const { tables: queryTables } = extractTablesAndAliases(fullText);
         if (queryTables && queryTables.length) {
-            const missing = queryTables.filter((t) => !findTableSchema(this.schemaCache, t));
+            // Only names the database has: while a name is being typed each
+            // prefix of it ("t_reg", "t_regi", ...) would otherwise be asked
+            // for, one refused request per keystroke -- and so would the
+            // target of a SELECT ... INTO before it exists.
+            const known = new Set([...(this.state.tables || []), ...(this.state.views || [])]);
+            const missing = queryTables.filter(
+                (t) => known.has(t) && !findTableSchema(this.schemaCache, t)
+            );
             if (missing.length && !this._fetchingMissingTables) {
                 this._fetchMissingTableSchema(missing);
             }
@@ -3048,8 +3498,31 @@ export class SqlMsAnalyser extends Component {
     formatQuery() {
         this.setQuery(formatSql(this.state.query));
     }
+    // The editor fills the query pane whenever there is nothing under it to
+    // share the space with: no results yet (a new or cleared tab), or the
+    // results hidden. A height dragged by hand is kept for when they return.
+    get editorFull() {
+        return !this.state.resultSets.length || this.state.resultsHidden;
+    }
+    toggleResults() {
+        this.state.resultsHidden = !this.state.resultsHidden;
+    }
+    // The backend theme draws a focused button filled in, so any button
+    // clicked here (Format, Hide results, ...) stayed lit up afterwards as
+    // if it had been switched on. A mouse click lets go of the focus again;
+    // a click made from the keyboard (detail 0) keeps it, so Tab/Enter
+    // navigation still works.
+    onRootClick(ev) {
+        if (ev.detail > 0) {
+            const button = ev.target.closest && ev.target.closest("button");
+            if (button) {
+                button.blur();
+            }
+        }
+    }
     clearQuery() {
-        this.state.queryResult = null;
+        this.state.resultSets = [];
+        this.state.focusedSetId = null;
         this.setQuery("");
     }
     copyQuery() {
@@ -3076,11 +3549,12 @@ export class SqlMsAnalyser extends Component {
             ev.stopPropagation();
         }
         this.state.activeTab = "query";
-        const stmt = 'SELECT * FROM "' + name + '"';
+        const stmt = formatSql("SELECT * FROM " + sqlIdent(name));
         // Each click builds a full SELECT for the clicked table. Stack it as a
-        // separate statement instead of dropping the bare name after FROM.
+        // separate statement instead of dropping the bare name after FROM,
+        // a blank line apart the way Format lays statements out.
         const cur = this.state.query.replace(/;\s*$/, "").trimEnd();
-        this.setQuery(cur ? cur + ";\n" + stmt : stmt);
+        this.setQuery(cur ? cur + ";\n\n" + stmt : stmt);
     }
 
     // -- view scripts --------------------------------------------------
@@ -3101,15 +3575,68 @@ export class SqlMsAnalyser extends Component {
         } finally {
             this.state.loading = false;
         }
+        if (!info || info.missing) {
+            this._forgetMissingObjects([name]);
+            return;
+        }
         this._snapshotActiveQtab();
+        const script = formatSql(info.script);
         let tab = this.state.qtabs.find((t) => t.viewName === name);
+        if (tab) {
+            tab.query = script;
+            tab.display = script;
+            tab.folds = {};
+            tab.execRange = null;
+        } else {
+            tab = makeQtab(script, { name: name, viewName: name });
+            this.state.qtabs.push(tab);
+        }
+        this.state.activeTab = "query";
+        this._loadQtab(tab);
+    }
+
+    // -- trigger scripts -------------------------------------------------
+    // A trigger's script -- its function, then the trigger -- in a query tab
+    // of its own, refreshed in place when asked for again. Kept as the
+    // catalog writes it: Format is built for queries, and would break a
+    // CREATE TRIGGER's "INSERT OR UPDATE" apart and flatten the function.
+    async showTriggerScript(trg, ev) {
+        if (ev) {
+            ev.stopPropagation();
+        }
+        this.state.loading = true;
+        let info;
+        try {
+            info = await this.orm.call(
+                "database.studio.analyser", "get_trigger_script", [trg.table, trg.name]
+            );
+        } finally {
+            this.state.loading = false;
+        }
+        const key = trg.table + "." + trg.name;
+        if (!info || info.missing) {
+            for (const t of this.state.qtabs) {
+                if (t.triggerKey === key) {
+                    t.triggerKey = null;
+                    t.isScript = false;
+                }
+            }
+            this.notification.add(
+                "Trigger " + trg.name + " on " + trg.table + " no longer exists \u2014 removed from the list.",
+                { type: "warning" }
+            );
+            this.loadObjects().catch(() => {});
+            return;
+        }
+        this._snapshotActiveQtab();
+        let tab = this.state.qtabs.find((t) => t.triggerKey === key);
         if (tab) {
             tab.query = info.script;
             tab.display = info.script;
             tab.folds = {};
             tab.execRange = null;
         } else {
-            tab = makeQtab(info.script, { name: name, viewName: name });
+            tab = makeQtab(info.script, { name: trg.name, triggerKey: key });
             this.state.qtabs.push(tab);
         }
         this.state.activeTab = "query";
@@ -3136,36 +3663,184 @@ export class SqlMsAnalyser extends Component {
         return { query: this.state.query, range: null };
     }
 
-    // `fresh` distinguishes a real Execute click (re-capture the editor's
-    // selection/text as the query to run) from a pager click (First/Previous/
-    // Next/Last must keep paging through the already-executed query, even
-    // though First also requests page 1).
-    async runQuery(page = 1, fresh = false) {
-        if (fresh) {
-            const active = this._activeQuery();
-            this.state.execQuery = active.query;
-            this.state.execRange = active.range;
-            this._syncEditor();
-            // A new run may have a different column set; don't carry a
-            // column selection over from whatever was run before.
-            this.state.selectedCols = [];
+    // A run's statements, as the pieces to execute and report one by one.
+    // Comment-only fragments and stray semicolons are dropped so they can't
+    // turn into empty panels; text no scanner can split (an unterminated
+    // block, say) is kept whole and left to Postgres to complain about.
+    _splitStatements(query) {
+        const parts = findStatementRanges(query)
+            .map((r) => query.slice(r.start, r.end))
+            .filter((p) => stripNonCode(p).trim());
+        if (parts.length) {
+            return parts;
         }
-        const query = this.state.execQuery || this.state.query;
-        const execQuery = this.state.execQuery;
-        const execRange = this.state.execRange;
+        return query.trim() ? [query.trim()] : [];
+    }
+
+    // The bar label of a result panel: the statement squeezed onto one line
+    // and cut short, so a script's panels can be told apart while collapsed.
+    // Comments in front of a statement belong to it (they are part of its
+    // range) but say nothing about what it does, so the label starts at the
+    // SQL itself.
+    _statementLabel(sql) {
+        const code = (sql || "").replace(/^\s*(?:--[^\n]*\n|\/\*[\s\S]*?\*\/)\s*/g, "");
+        const text = (code.trim() ? code : (sql || "")).replace(/\s+/g, " ").trim();
+        return text.length > 90 ? text.slice(0, 90) + "\u2026" : text;
+    }
+
+    _makeResultSet(sql) {
+        return {
+            id: ++_resultSetIdSeq,
+            sql: sql,
+            label: this._statementLabel(sql),
+            collapsed: false,
+            loading: false,
+            result: null,
+            // Column picks are per panel: Copy on one result has no business
+            // narrowing itself to columns picked on another.
+            selectedCols: [],
+        };
+    }
+
+    _errorResult(message) {
+        return {
+            columns: [], column_types: [], rows: [], total: 0, page: 1,
+            pages: 1, limit: 100, error: message, message: message,
+            aggregates: [],
+        };
+    }
+
+    // -- result panels ---------------------------------------------------
+    // Everything that acts on "the result" (Copy, Export, Alt+C, the Fields
+    // tab's derived column group, Convert type) works on one panel: the one
+    // last clicked, falling back to the first that actually returned rows.
+    get activeSet() {
+        const sets = this.state.resultSets;
+        return sets.find((rs) => rs.id === this.state.focusedSetId) ||
+            sets.find((rs) => rs.result && rs.result.columns.length) ||
+            sets[0] || null;
+    }
+    get activeResult() {
+        const rs = this.activeSet;
+        return rs ? rs.result : null;
+    }
+    _focusedSql() {
+        const rs = this.activeSet;
+        return (rs && rs.sql) || this.state.execQuery || this.state.query || "";
+    }
+    focusResultSet(rs) {
+        // Guarded: clicking anywhere in a panel's body calls this, and a
+        // pointless write would re-render the whole result area each time.
+        if (this.state.focusedSetId !== rs.id) {
+            this.state.focusedSetId = rs.id;
+        }
+    }
+    // Rows or an error are the only things worth opening a panel for: a
+    // statement that just reports how many rows it touched, or one the run
+    // never reached, is fully told by its own bar.
+    resultHasBody(rs) {
+        const res = rs && rs.result;
+        return !!(res && (res.columns.length || res.error));
+    }
+    toggleResultSet(rs) {
+        if (!this.resultHasBody(rs)) {
+            return;
+        }
+        rs.collapsed = !rs.collapsed;
+        if (!rs.collapsed) {
+            this.state.focusedSetId = rs.id;
+        }
+    }
+    setAllResultsCollapsed(collapsed) {
+        for (const rs of this.state.resultSets) {
+            rs.collapsed = collapsed;
+        }
+    }
+    // What a collapsed panel's bar says about its statement, so a script can
+    // be read off the bars alone without expanding anything.
+    resultStatus(rs) {
+        const res = rs.result;
+        if (!res) {
+            return "";
+        }
+        if (res.error) {
+            return "Error";
+        }
+        if (res.skipped) {
+            return "Not executed";
+        }
+        if (res.columns.length) {
+            return res.total + (res.total === 1 ? " row" : " rows");
+        }
+        return res.message || "Done";
+    }
+    resultStatusClass(rs) {
+        const res = rs.result || {};
+        if (res.error) {
+            return "sqlms-rstat-error";
+        }
+        if (res.skipped) {
+            return "sqlms-rstat-skipped";
+        }
+        return "sqlms-rstat-ok";
+    }
+
+    // `fresh` distinguishes a real Execute click (re-capture the editor's
+    // selection/text and run it, one panel per statement) from a pager
+    // click, which must keep paging the panel it belongs to.
+    async runQuery(page = 1, fresh = false) {
+        if (!fresh) {
+            const rs = this.activeSet;
+            return rs ? this.runSetPage(rs, page) : undefined;
+        }
+        if (this._openTxnId) {
+            this.notification.add(
+                "Commit or roll back the open transaction before running anything else.",
+                { type: "warning" }
+            );
+            return;
+        }
+        const active = this._activeQuery();
+        this.state.execQuery = active.query;
+        this.state.execRange = active.range;
+        this._syncEditor();
+        // A statement that is nothing but comments (commented out whole)
+        // has nothing to run: PostgreSQL would only answer "can't execute
+        // an empty query".
+        const statements = this._splitStatements(active.query)
+            .filter((st) => stripNonCode(st).trim());
+        if (!statements.length) {
+            this.state.resultSets = [];
+            this.state.focusedSetId = null;
+            if (active.query.trim()) {
+                this.notification.add(
+                    "Nothing to run: every line is commented out.", { type: "info" }
+                );
+            }
+            return;
+        }
         // Remember which tab this run belongs to: if the user switches query
-        // tabs before the RPC resolves, the result must land on that tab
+        // tabs before the RPC resolves, the results must land on that tab
         // instead of clobbering whatever tab is active by then.
         const qtabId = this.state.activeQtabId;
+        const execQuery = this.state.execQuery;
+        const execRange = this.state.execRange;
         const executionId = "exec_" + Date.now() + "_" + Math.random().toString(36).slice(2, 9);
         this.state.currentExecutionId = executionId;
-        this.state.loading = true;
+        this.state.executing = true;
         this.state.cancelling = false;
-        let result;
+        let pairs;
+        let txn = null;
         try {
-            result = await this.orm.call(
-                "database.studio.analyser", "run_query", [query, page, 100]
+            const out = await this.orm.call(
+                "database.studio.analyser", "run_queries", [statements, 100, executionId]
             );
+            const results = Array.isArray(out) ? out : (out && out.results) || [];
+            txn = (out && out.txn) || null;
+            pairs = statements.map((sql, i) => [
+                sql,
+                (results || [])[i] || this._errorResult("No result returned"),
+            ]);
         } catch (err) {
             if (this.state.cancelling) {
                 this.notification.add("SQL execution was cancelled.", { type: "info" });
@@ -3175,53 +3850,214 @@ export class SqlMsAnalyser extends Component {
                 (err && err.data && err.data.message) ||
                 (err && err.message) ||
                 String(err || "Query execution failed");
-            result = {
-                columns: [],
-                column_types: [],
-                rows: [],
-                total: 0,
-                page: 1,
-                pages: 1,
-                limit: 100,
-                error: errMsg,
-                message: errMsg,
-                aggregates: [],
-            };
+            // The call itself failed (access denied, server error): there is
+            // no per-statement outcome to split up, so the whole run is
+            // reported as the one thing that went wrong.
+            pairs = [[active.query.trim(), this._errorResult(errMsg)]];
         } finally {
-            this.state.loading = false;
+            this.state.executing = false;
             this.state.cancelling = false;
             this.state.currentExecutionId = null;
         }
-        if (result && result.cancelled) {
+        const sets = pairs.map(([sql, result]) => {
+            const rs = this._makeResultSet(sql);
+            rs.result = result;
+            return rs;
+        });
+        if (sets.some((rs) => rs.result.cancelled)) {
             this.notification.add("SQL execution was cancelled.", { type: "info" });
-            if (qtabId === this.state.activeQtabId) {
-                this.state.queryResult = result;
-            }
-            return;
         }
-        if (result && result.error) {
-            this.notification.add(result.error, { type: "danger" });
+        if (txn && txn.state === "rolled_back") {
+            this.notification.add(
+                "The run stopped before the end, so its data changes were rolled back.",
+                { type: "warning" }
+            );
         }
+        const failed = sets.find((rs) => rs.result.error);
+        if (failed) {
+            this.notification.add(
+                sets.length > 1
+                    ? "Statement " + (sets.indexOf(failed) + 1) + ": " + failed.result.error
+                    : failed.result.error,
+                { type: "danger" }
+            );
+        }
+        const focus = (sets.find((rs) => rs.result.columns.length) || sets[0]).id;
         if (qtabId === this.state.activeQtabId) {
-            this.state.queryResult = result;
+            this.state.resultSets = sets;
+            this.state.focusedSetId = focus;
+            // A run always shows what it did, even if the results were hidden.
+            this.state.resultsHidden = false;
         } else {
             const t = this.state.qtabs.find((x) => x.id === qtabId);
             if (t) {
                 t.execQuery = execQuery;
                 t.execRange = execRange;
-                t.queryResult = result;
+                t.resultSets = sets;
+                t.focusedSetId = focus;
             }
         }
-        // A successful Execute (not a pager click and not an error) logs to History under the
-        // "On the fly" tab, same as the old always-log behavior — but never
-        // lets logging failures surface as if the query itself had failed.
-        if (fresh && query && query.trim() && !(result && result.error)) {
-            this.orm.call("database.studio.query", "log_query_run", [query]).catch(() => {});
+        // A successful Execute (not a pager click and not an error) logs to
+        // History under the "On the fly" tab — but never lets logging
+        // failures surface as if the query itself had failed.
+        //
+        // What is logged is the tab's whole text, not the statements that
+        // were run: running one highlighted statement out of a script used
+        // to file that fragment alone, so re-opening the entry from History
+        // gave back a tab that was missing everything around it. A tab is
+        // stored the way the user left it, however many statements it holds
+        // and however little of it was run.
+        if (!failed) {
+            const t = this.state.qtabs.find((x) => x.id === qtabId);
+            const whole = (qtabId === this.state.activeQtabId
+                ? this.state.query
+                : (t && t.query)) || active.query;
+            if (whole && whole.trim()) {
+                this.orm.call("database.studio.query", "log_query_run",
+                    [whole, (t && t.fullName) || false]).catch(() => {});
+            }
+        }
+        if (txn && txn.state === "open") {
+            this._askCommit(txn, sets);
+        }
+        // A run that can add, drop or rename a table or view (CREATE, DROP,
+        // ALTER, SELECT ... INTO) re-reads the object list, so the new table
+        // shows up on the left without leaving the page.
+        const ddl = /^\s*(create|drop|alter)\b|^\s*select\b[\s\S]*\binto\b/i;
+        if (sets.some((rs, i) => !rs.result.error && !rs.result.skipped &&
+                ddl.test(stripNonCode(statements[i] || "")))) {
+            this.loadObjects().catch(() => {});
+        }
+    }
+
+    // -- UPDATE / DELETE transactions -----------------------------------
+    // A run holding INSERT/UPDATE/DELETE/MERGE comes back with its transaction still open
+    // on the server. Ask whether to keep the changes; the answer is sent
+    // exactly once, whichever way the dialog is left.
+    _askCommit(txn, sets) {
+        this._openTxnId = txn.id;
+        const writes = (txn.writes || [])
+            .filter((i) => sets[i])
+            .map((i) => ({
+                index: i + 1,
+                sql: sets[i].label,
+                message: sets[i].result.message || "",
+            }));
+        let answered = false;
+        const decide = async (commit) => {
+            if (answered) {
+                return;
+            }
+            answered = true;
+            await this._endTransaction(txn.id, commit, sets, txn.writes || []);
+        };
+        this.dialog.add(SqlMsTxnDialog, {
+            writes,
+            // A few seconds short of the server's own timeout, so running
+            // out answers "Rollback" itself instead of finding the
+            // transaction already gone.
+            ttl: Math.max(10, (txn.ttl || 120) - 5),
+            onDecide: decide,
+        }, {
+            // Closed with the X or Escape: that is a rollback, not a "later".
+            onClose: () => decide(false),
+        });
+    }
+    async _endTransaction(txnId, commit, sets, writeIdx) {
+        let res;
+        try {
+            res = await this.orm.call(
+                "database.studio.analyser", "end_transaction", [txnId, commit]
+            );
+        } catch (err) {
+            res = { success: false, state: "unknown",
+                    message: (err && err.data && err.data.message) || (err && err.message) || String(err) };
+        } finally {
+            if (this._openTxnId === txnId) {
+                this._openTxnId = null;
+            }
+        }
+        const outcome = res.success
+            ? (res.state === "committed" ? "committed" : "rolled back")
+            : (res.state === "unknown" ? "" : "rolled back");
+        // Stamp the outcome on the statements that changed data, so the
+        // result panels no longer read as if the changes simply happened.
+        // (Looked up again through state: `sets` are the plain objects the
+        // run built, and writing to those would not re-render anything.)
+        if (outcome) {
+            const live = [
+                ...this.state.resultSets,
+                ...this.state.qtabs.flatMap((t) => t.resultSets || []),
+            ];
+            for (const i of writeIdx) {
+                const rs = sets[i] && live.find((r) => r.id === sets[i].id);
+                if (rs && rs.result && rs.result.message) {
+                    rs.result.message += " \u2014 " + outcome;
+                }
+            }
+        }
+        if (res.success) {
+            this.notification.add(
+                res.state === "committed" ? "Changes committed." : "Changes rolled back.",
+                { type: res.state === "committed" ? "success" : "info" }
+            );
+        } else {
+            this.notification.add(res.message || "Could not end the transaction.", {
+                type: "warning", sticky: true,
+            });
+        }
+    }
+    // Leaving the page with a transaction still open rolls it back rather
+    // than leaving its row locks behind until the server's timeout. The
+    // beacon survives the page going away, where an awaited RPC would not.
+    _rollbackOpenTxnBeacon() {
+        const id = this._openTxnId;
+        if (!id || !navigator.sendBeacon) {
+            return;
+        }
+        this._openTxnId = null;
+        const body = JSON.stringify({
+            jsonrpc: "2.0", method: "call", id: Date.now(),
+            params: {
+                model: "database.studio.analyser", method: "end_transaction",
+                args: [id, false], kwargs: {},
+            },
+        });
+        navigator.sendBeacon(
+            "/web/dataset/call_kw/database.studio.analyser/end_transaction",
+            new Blob([body], { type: "application/json" })
+        );
+    }
+
+    // Paging one panel re-runs that panel's statement alone for the page
+    // asked for: the other panels keep showing what they already hold.
+    async runSetPage(rs, page) {
+        if (!rs || !rs.sql || rs.loading) {
+            return;
+        }
+        rs.loading = true;
+        try {
+            const result = await this.orm.call(
+                "database.studio.analyser", "run_query", [rs.sql, page, 100]
+            );
+            if (result && result.error) {
+                this.notification.add(result.error, { type: "danger" });
+            }
+            rs.result = result;
+        } catch (err) {
+            const errMsg =
+                (err && err.data && err.data.message) ||
+                (err && err.message) ||
+                String(err || "Query execution failed");
+            rs.result = this._errorResult(errMsg);
+            this.notification.add(errMsg, { type: "danger" });
+        } finally {
+            rs.loading = false;
         }
     }
 
     async cancelQuery() {
-        if (!this.state.loading || !this.state.currentExecutionId) {
+        if (!this.state.executing || !this.state.currentExecutionId) {
             return;
         }
         this.state.cancelling = true;
@@ -3229,10 +4065,11 @@ export class SqlMsAnalyser extends Component {
             const res = await this.orm.call(
                 "database.studio.analyser", "cancel_query", [this.state.currentExecutionId]
             );
-            if (res && res.message) {
-                this.notification.add(res.message, {
-                    type: res.success ? "info" : "warning",
-                });
+            // A cancel that lands is announced once, by runQuery, when the
+            // run comes back cancelled ("SQL execution was cancelled.");
+            // only a cancel that could not be delivered is reported here.
+            if (res && !res.success && res.message) {
+                this.notification.add(res.message, { type: "warning" });
             }
         } catch (err) {
             this.notification.add(err.message || "Failed to cancel query execution", {
@@ -3251,8 +4088,8 @@ export class SqlMsAnalyser extends Component {
         if (ev.defaultPrevented || !this.rootRef.el || !this.rootRef.el.isConnected) {
             return;
         }
-        const res = this.state.queryResult;
-        if (!res || !res.columns.length) {
+        const rs = this.activeSet;
+        if (!rs || !rs.result || !rs.result.columns.length) {
             return;
         }
         // ev.key is unreliable under Alt (Option+C types "ç" on a Mac), so
@@ -3270,14 +4107,14 @@ export class SqlMsAnalyser extends Component {
         }
         if (ev.altKey && !ev.ctrlKey && !ev.metaKey) {
             ev.preventDefault();
-            this.copyResults();
+            this.copyResults(rs);
             return;
         }
         if ((ev.ctrlKey || ev.metaKey) && !ev.altKey && !ev.shiftKey) {
             const selection = window.getSelection && window.getSelection().toString();
-            if (!selection && this.state.selectedCols.length) {
+            if (!selection && rs.selectedCols.length) {
                 ev.preventDefault();
-                this.copyResults();
+                this.copyResults(rs);
             }
         }
     }
@@ -3305,14 +4142,14 @@ export class SqlMsAnalyser extends Component {
     // when any are picked (that is the point of picking them), for every
     // column that has one otherwise. Blank where the function doesn't apply,
     // e.g. the sum of a text column.
-    aggValue(res, index) {
+    aggValue(rs, index) {
         if (!this.state.aggFunc) {
             return "";
         }
-        if (this.state.selectedCols.length && !this.state.selectedCols.includes(index)) {
+        if (rs.selectedCols.length && !rs.selectedCols.includes(index)) {
             return "";
         }
-        const agg = (res.aggregates || [])[index];
+        const agg = ((rs.result && rs.result.aggregates) || [])[index];
         if (!agg) {
             return "";
         }
@@ -3369,6 +4206,17 @@ export class SqlMsAnalyser extends Component {
     clearFieldColumns() {
         this.state.fieldCols = [];
     }
+    // The Fields grids' corner header: their four visible columns (the
+    // table name is a copy-only column with no header to click).
+    allFieldColumnsSelected() {
+        return [1, 2, 3, 4].every((i) => this.state.fieldCols.includes(i));
+    }
+    toggleAllFieldColumns(ev) {
+        if (ev) {
+            ev.stopPropagation();
+        }
+        this.state.fieldCols = this.allFieldColumnsSelected() ? [] : [1, 2, 3, 4];
+    }
     toggleMappingColumn(index, ev) {
         if (ev) {
             ev.stopPropagation();
@@ -3380,6 +4228,16 @@ export class SqlMsAnalyser extends Component {
     }
     clearMappingColumns() {
         this.state.mappingCols = [];
+    }
+    allMappingColumnsSelected() {
+        return this.state.mappingCols.length === MAPPING_COLUMNS.length;
+    }
+    toggleAllMappingColumns(ev) {
+        if (ev) {
+            ev.stopPropagation();
+        }
+        this.state.mappingCols = this.allMappingColumnsSelected()
+            ? [] : MAPPING_COLUMNS.map((c, i) => i);
     }
     copyMapping() {
         const cols = this._pickedCols(this.state.mappingCols, MAPPING_COLUMNS);
@@ -3407,31 +4265,196 @@ export class SqlMsAnalyser extends Component {
     // modifier key needed, several columns can be picked this way). Copy
     // then exports only the selected columns; with none selected it exports
     // every column, same as before.
-    toggleColumn(index, ev) {
+    toggleColumn(rs, index, ev) {
         if (ev) {
             ev.stopPropagation();
         }
-        const i = this.state.selectedCols.indexOf(index);
+        this.focusResultSet(rs);
+        const i = rs.selectedCols.indexOf(index);
         if (i === -1) {
-            this.state.selectedCols.push(index);
+            rs.selectedCols.push(index);
         } else {
-            this.state.selectedCols.splice(i, 1);
+            rs.selectedCols.splice(i, 1);
         }
     }
-    clearColumnSelection() {
-        this.state.selectedCols = [];
+    clearColumnSelection(rs) {
+        rs.selectedCols = [];
+    }
+    // The "#" corner header: select every column, or clear the selection
+    // when every column is already selected.
+    allColumnsSelected(rs) {
+        const n = rs.result ? rs.result.columns.length : 0;
+        return n > 0 && rs.selectedCols.length === n;
+    }
+    toggleAllColumns(rs, ev) {
+        if (ev) {
+            ev.stopPropagation();
+        }
+        this.focusResultSet(rs);
+        const n = rs.result ? rs.result.columns.length : 0;
+        rs.selectedCols = this.allColumnsSelected(rs) ? [] : [...Array(n).keys()];
+    }
+    // -- grid column sizing --------------------------------------------
+    // Every grid carrying a data-grid-key is laid out once in the browser's
+    // own auto layout, where nowrap cells make each column exactly as wide
+    // as its header or its widest value; those widths are then pinned with
+    // table-layout: fixed so a column can be dragged narrower or wider than
+    // its content. A new key (a new run, other columns, another table)
+    // fits afresh; the same key reuses the stored widths, so paging or
+    // switching tabs keeps what the user dragged.
+    _fitGrids() {
+        const root = this.rootRef.el;
+        if (!root) {
+            return;
+        }
+        for (const table of root.querySelectorAll("table.sqlms-grid[data-grid-key]")) {
+            const key = table.dataset.gridKey;
+            const ths = this._gridHeads(table);
+            if (!ths.length || (table.dataset.sizedKey === key && ths[0].style.width)) {
+                continue;
+            }
+            let widths = this._gridWidths.get(key);
+            if (!widths || widths.length !== ths.length) {
+                widths = this._naturalWidths(table, ths);
+                if (!widths) {
+                    continue; // not displayed: fit it once it shows
+                }
+                this._gridWidths.set(key, widths);
+            }
+            this._applyGridWidths(table, ths, widths);
+            table.dataset.sizedKey = key;
+        }
+    }
+    _gridHeads(table) {
+        const row = table.tHead && table.tHead.rows[0];
+        return row ? Array.from(row.cells) : [];
+    }
+    _unsizeGrid(table, ths) {
+        delete table.dataset.sized;
+        delete table.dataset.sizedKey;
+        table.style.tableLayout = "";
+        table.style.width = "";
+        for (const th of ths) {
+            th.style.width = "";
+        }
+    }
+    // Header cells' widths under auto layout: max(header, widest value),
+    // with the value side capped at GRID_FIT_CAP and the header side never.
+    // Measured at max-content, since some grids (the Fields tab's) would
+    // otherwise be stretched across the pane and every column padded out.
+    // Null when the grid is not displayed.
+    _naturalWidths(table, ths) {
+        this._unsizeGrid(table, ths);
+        table.style.width = "max-content";
+        if (!table.offsetWidth) {
+            table.style.width = "";
+            return null;
+        }
+        return ths.map((th) => {
+            const natural = Math.ceil(th.getBoundingClientRect().width);
+            const label = th.querySelector(".sqlms-colhead-label");
+            if (!label) {
+                return natural;
+            }
+            const cs = getComputedStyle(th);
+            const chrome = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight)
+                + parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+            const head = Math.ceil(label.getBoundingClientRect().width + chrome);
+            return Math.max(head, Math.min(natural, GRID_FIT_CAP));
+        });
+    }
+    _applyGridWidths(table, ths, widths) {
+        ths.forEach((th, i) => {
+            th.style.width = widths[i] + "px";
+        });
+        table.style.tableLayout = "fixed";
+        table.style.width = widths.reduce((a, b) => a + b, 0) + "px";
+        table.dataset.sized = "1";
+    }
+    _gridColumnOf(ev) {
+        const th = ev.currentTarget.closest("th");
+        const table = th && th.closest("table.sqlms-grid[data-grid-key]");
+        if (!table) {
+            return null;
+        }
+        const ths = this._gridHeads(table);
+        const key = table.dataset.gridKey;
+        let widths = this._gridWidths.get(key);
+        if (!widths || widths.length !== ths.length) {
+            widths = ths.map((h) => Math.round(h.getBoundingClientRect().width));
+        }
+        return { table, ths, key, index: ths.indexOf(th), widths: widths.slice() };
+    }
+    startColResize(ev) {
+        if (ev.button !== 0) {
+            return;
+        }
+        const col = this._gridColumnOf(ev);
+        if (!col || col.index < 0) {
+            return;
+        }
+        ev.preventDefault(); // no text selection while dragging
+        const { table, ths, key, index, widths } = col;
+        const grip = ev.currentTarget;
+        const startX = ev.clientX;
+        const startW = widths[index];
+        let moved = false;
+        grip.classList.add("sqlms-colresize-active");
+        document.body.classList.add("sqlms-col-resizing");
+        const onMove = (e) => {
+            const w = Math.max(GRID_MIN_COL, Math.round(startW + e.clientX - startX));
+            if (w !== widths[index]) {
+                moved = true;
+                widths[index] = w;
+                this._applyGridWidths(table, ths, widths);
+            }
+        };
+        const onUp = () => {
+            window.removeEventListener("mousemove", onMove);
+            window.removeEventListener("mouseup", onUp);
+            grip.classList.remove("sqlms-colresize-active");
+            document.body.classList.remove("sqlms-col-resizing");
+            this._gridWidths.set(key, widths);
+            table.dataset.sizedKey = key;
+            if (moved) {
+                // Releasing over the header would otherwise land as a click
+                // on it and toggle that column's selection.
+                const swallow = (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                };
+                window.addEventListener("click", swallow, true);
+                setTimeout(() => window.removeEventListener("click", swallow, true), 0);
+            }
+        };
+        window.addEventListener("mousemove", onMove);
+        window.addEventListener("mouseup", onUp);
+    }
+    // Double-clicking a grip fits that one column again to its header or
+    // widest value (on the rows shown), leaving the other columns as they are.
+    autoFitColumn(ev) {
+        ev.stopPropagation();
+        const col = this._gridColumnOf(ev);
+        if (!col || col.index < 0) {
+            return;
+        }
+        const { table, ths, key, index, widths } = col;
+        widths[index] = this._naturalWidths(table, ths)[index];
+        this._gridWidths.set(key, widths);
+        this._applyGridWidths(table, ths, widths);
+        table.dataset.sizedKey = key;
     }
     // Copies only the currently displayed page (unlike Export Excel, which
     // pulls the full, unpaginated result set) since clipboard copy is meant
     // for pasting a quick look, not the whole result set. Restricted to the
     // selected column(s) when any are picked, else every column.
-    copyResults() {
-        const res = this.state.queryResult;
+    copyResults(rs) {
+        const res = rs && rs.result;
         if (!res || !res.columns.length) {
             return;
         }
-        const cols = this.state.selectedCols.length
-            ? this.state.selectedCols.slice().sort((a, b) => a - b)
+        const cols = rs.selectedCols.length
+            ? rs.selectedCols.slice().sort((a, b) => a - b)
             : res.columns.map((c, i) => i);
         const header = cols.map((i) => res.columns[i]).join("\t");
         const lines = (res.rows || []).map(
@@ -3442,8 +4465,10 @@ export class SqlMsAnalyser extends Component {
     // Full, unpaginated result set as a downloaded .xlsx — a normal file
     // download isn't bound by clipboard permissions/activation, so it works
     // regardless of result size or origin security.
-    async exportExcel() {
-        const query = this.state.execQuery || this.state.query;
+    async exportExcel(rs) {
+        // One panel exports its own statement, not the whole script: the
+        // export controller returns a single sheet.
+        const query = (rs && rs.sql) || this.state.execQuery || this.state.query;
         if (!query || !query.trim()) {
             return;
         }

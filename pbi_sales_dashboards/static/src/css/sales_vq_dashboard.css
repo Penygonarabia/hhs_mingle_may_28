@@ -1,0 +1,331 @@
+/*
+ * "Sales Dashboard - VQ".
+ *
+ * The root carries .pbi-sales-dashboard, .pbi-sales-kpi-dashboard,
+ * .pbi-sales-kpi-dashboard-new AND .pbi-sales-sman-dashboard, so every rule
+ * from those four — KPI tiles, bar labels, legend, level nav, the ten-level
+ * toolbar grid, the scope chips, the contribution % under a caption — applies
+ * unchanged. Only what this board genuinely adds is styled here, and that is
+ * four things.
+ */
+
+/*
+ * Chart palette — matching "Sales Analysis with Salesman" (Office theme accents:
+ * Target: blue #4472C4, This Year: orange #ED7D31, Last Year: grey #A5A5A5).
+ */
+.pbi-sales-vq-dashboard {
+  --report-target:       #4472C4; /* blue   - Target            (Office accent 1) */
+  --report-this-year:    #ED7D31; /* orange - This Year         (Office accent 2) */
+  --report-last-year:    #A5A5A5; /* grey   - Last Year         (Office accent 3) */
+  --report-vs-target:    #D99B00; /* gold   - Vs. Target        (Office accent 4) */
+  --report-vs-last-year: #5B9BD5; /* sky    - Vs. Last Year     (Office accent 5) */
+}
+
+/* KPI tile background colors mapped directly from legend */
+.pbi-sales-vq-dashboard .tile-color-0,
+.pbi-sales-vq-dashboard .tile-color-3,
+.pbi-sales-vq-dashboard .tile-color-6,
+.pbi-sales-vq-dashboard .tile-color-9 {
+  background: var(--report-this-year, #ED7D31);
+  border-color: var(--report-this-year, #ED7D31);
+}
+
+.pbi-sales-vq-dashboard .tile-color-1,
+.pbi-sales-vq-dashboard .tile-color-4 {
+  background: var(--report-target, #4472C4);
+  border-color: var(--report-target, #4472C4);
+}
+
+.pbi-sales-vq-dashboard .tile-color-2,
+.pbi-sales-vq-dashboard .tile-color-5 {
+  background: var(--report-vs-target, #D99B00);
+  border-color: var(--report-vs-target, #D99B00);
+}
+
+.pbi-sales-vq-dashboard .tile-color-7,
+.pbi-sales-vq-dashboard .tile-color-10 {
+  background: var(--report-last-year, #A5A5A5);
+  border-color: var(--report-last-year, #A5A5A5);
+}
+
+.pbi-sales-vq-dashboard .tile-color-8,
+.pbi-sales-vq-dashboard .tile-color-11 {
+  background: var(--report-vs-last-year, #5B9BD5);
+  border-color: var(--report-vs-last-year, #5B9BD5);
+}
+
+/* One. The row is two charts of equal weight, not a wide chart beside a narrow
+   donut, so the 2fr/1fr of .pbi-card-grid-wide becomes 1fr/1fr. Neither
+   measure is the main one on a Value-and-Quantity board, and a value chart
+   twice the width of its quantity chart would say otherwise. */
+.pbi-sales-vq-dashboard .pbi-card-grid-wide {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* Two. The measure toggle governs the KPI tiles alone here — both measures are
+   charted at all times — so it is labelled. The label is part of the same
+   control, hence its baseline is aligned to the buttons rather than sitting
+   above them. */
+.pbi-sales-vq-dashboard .measure-toggle {
+  align-items: center;
+}
+.pbi-sales-vq-dashboard .measure-label {
+  margin-right: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+[dir="rtl"] .pbi-sales-vq-dashboard .measure-label {
+  margin-right: 0;
+  margin-left: 4px;
+}
+
+/* Three. Each card's chart/table toggle, and the table it switches to.
+   ------------------------------------------------------------------ */
+
+/* The heading and the toggle are one line, the heading free to wrap under it.
+   align-items:start rather than center so a two-line title does not drag the
+   buttons down to its middle — they belong to the card, not to the sentence. */
+.pbi-sales-vq-dashboard .card-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pbi-sales-vq-dashboard .card-head-text { min-width: 0; }
+
+/* Two segments of one control, so they share a border and sit tight together
+   rather than reading as two unrelated buttons. Small and quiet until hovered:
+   this is a view switch on a card the reader may never touch, not a filter. */
+.pbi-sales-vq-dashboard .view-toggle {
+  display: inline-flex;
+  flex: none;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  /* NOT overflow:hidden, which used to round the segments by clipping them:
+     the first segment now drops a menu, and clipping would cut it off at the
+     control's own edge. The two end segments round themselves instead, in
+     logical properties so the RTL board rounds the other end. */
+  overflow: visible;
+}
+.pbi-sales-vq-dashboard .view-toggle > :first-child,
+.pbi-sales-vq-dashboard .view-toggle .kind-btn {
+  border-start-start-radius: 6px;
+  border-end-start-radius: 6px;
+}
+.pbi-sales-vq-dashboard .view-toggle > :last-child {
+  border-start-end-radius: 6px;
+  border-end-end-radius: 6px;
+}
+.pbi-sales-vq-dashboard .view-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+/* Between segments, whatever a segment happens to be: the first one is now a
+   wrapper around its button rather than the button itself. */
+.pbi-sales-vq-dashboard .view-toggle > * + * { border-left: 1px solid var(--border); }
+.pbi-sales-vq-dashboard .view-btn:hover { color: var(--series-1); }
+.pbi-sales-vq-dashboard .view-btn.active {
+  background: var(--series-1);
+  color: #fff;
+}
+
+/* The chart button and the list of shapes it drops. The button shows the
+   shape the card is on; the list is absolutely positioned under it, aligned to
+   its trailing edge so a card at the right of the board opens the menu inwards
+   rather than off the edge. */
+.pbi-sales-vq-dashboard .kind-picker {
+  position: relative;
+  display: inline-flex;
+}
+.pbi-sales-vq-dashboard .kind-btn {
+  width: 38px;
+  gap: 2px;
+}
+.pbi-sales-vq-dashboard .kind-caret {
+  font-size: 9px;
+  line-height: 1;
+}
+.pbi-sales-vq-dashboard .kind-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  inset-inline-end: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  min-width: 132px;
+  padding: 4px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(11, 11, 11, .14);
+}
+.pbi-sales-vq-dashboard .kind-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pbi-sales-vq-dashboard .kind-item:hover { background: var(--grid); color: var(--series-1); }
+.pbi-sales-vq-dashboard .kind-item.active { color: var(--series-1); font-weight: 600; }
+
+/* Same table look as the Contract board's list tile (.pbi-table there), which
+   is the only other raw-table tile in this module — a second visual language
+   for a table one menu away would be gratuitous. Restated rather than shared
+   because that rule set is scoped to .pbi-contract-dashboard. */
+.pbi-sales-vq-dashboard .pbi-table-scroll { overflow-x: auto; }
+.pbi-sales-vq-dashboard .pbi-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.pbi-sales-vq-dashboard .pbi-table th,
+.pbi-sales-vq-dashboard .pbi-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+.pbi-sales-vq-dashboard .pbi-table thead th {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+.pbi-sales-vq-dashboard .pbi-table th.num,
+.pbi-sales-vq-dashboard .pbi-table td.num { text-align: right; }
+/* The first column is the only one that can be long, so it is the only one
+   allowed to take the room and, past that, to be cut. */
+.pbi-sales-vq-dashboard .pbi-table td:first-child {
+  white-space: normal;
+  min-width: 140px;
+}
+.pbi-sales-vq-dashboard .pbi-table tbody tr.row-clickable { cursor: pointer; }
+.pbi-sales-vq-dashboard .pbi-table tbody tr.row-clickable:hover { background: var(--grid); }
+.pbi-sales-vq-dashboard .pbi-table-empty {
+  text-align: center;
+  color: var(--text-muted);
+  cursor: default;
+}
+/* The total line closes the table rather than continuing it: no bottom rule,
+   a heavier top one, and the shares above it add up to the 100.0% here. */
+.pbi-sales-vq-dashboard .pbi-table tfoot th {
+  border-bottom: 0;
+  border-top: 2px solid var(--border);
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* Four. One card, full page — the panel, and the extra icons that reach it.
+   ----------------------------------------------------------------------- */
+
+/* Fixed, not absolute: the board scrolls, and a panel anchored to the document
+   would scroll away from the reader who opened it. */
+.pbi-sales-vq-dashboard .pbi-vq-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(17, 24, 39, .55);
+}
+.pbi-sales-vq-dashboard .pbi-vq-modal-panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1400px;
+  max-height: 100%;
+  padding: 18px 20px 20px;
+  border-radius: 12px;
+  background: var(--surface-0, var(--surface-1));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .32);
+  overflow: hidden;
+}
+/* The body scrolls, the head does not: the title and the controls that close
+   the panel must stay reachable however long the table is. */
+.pbi-sales-vq-dashboard .pbi-vq-modal-panel .modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.pbi-sales-vq-dashboard .modal-controls {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+}
+.pbi-sales-vq-dashboard .modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+.pbi-sales-vq-dashboard .modal-close:hover {
+  border-color: var(--series-1);
+  color: var(--series-1);
+}
+
+/* Five. Phone layout.
+ *
+ * The 1fr/1fr above is unconditional, and it is declared LATER than
+ * sales_kpi_dashboard_new.css's own `@media (max-width: 900px)` collapse of
+ * .pbi-card-grid-wide — same specificity, later source — so this board alone
+ * kept two columns all the way down to a phone. Verified on an iPhone 15 Pro
+ * Max (430pt): each panel got ~200pt, the chart canvas overflowed it, and the
+ * rightmost bar lost its label ("160." for 160.4M), its caption ("Proje…")
+ * and the sign off its contribution % ("14.3" for 14.3%). The same chart
+ * opened through the panel's expand control — full width, same code — drew
+ * perfectly, which is what says the charts are fine and only the column count
+ * is wrong.
+ *
+ * So: restore the collapse this board had opted out of. Value above Quantity
+ * rather than beside it keeps both measures and loses only the side-by-side
+ * comparison, which a 200pt column was not delivering anyway.
+ */
+@media (max-width: 900px) {
+  .pbi-sales-vq-dashboard .pbi-card-grid-wide { grid-template-columns: 1fr; }
+}
+
+/* Twelve tiles at the inherited 3-across leave ~120pt each, and every caption
+   is `white-space: nowrap` + ellipsis (sales_kpi_dashboard.css) — so four of
+   them read "MTD - This Y…", "YTD - TY Sal…" and cannot be told apart. Two per
+   row on a phone, and let the caption wrap instead of truncating: these tiles
+   are already fixed-height boxes with room under the figure. */
+@media (max-width: 600px) {
+  .pbi-sales-vq-dashboard .pbi-kpi-row.twelve {
+    grid-template-columns: repeat(2, 1fr);
+    overflow-x: visible;
+  }
+  .pbi-sales-vq-dashboard .pbi-kpi .label {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+}

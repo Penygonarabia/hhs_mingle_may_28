@@ -1,0 +1,1 @@
+../pbi_dashboard_configurations/sql/sync_and_repair_all_masters.sql

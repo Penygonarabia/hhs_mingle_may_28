@@ -1,0 +1,383 @@
+/*
+ * "Sales Analysis with Salesman" — the root carries .pbi-sales-dashboard AND
+ * .pbi-sales-mail-dashboard (same as "Sales Analysis" and "Sales Analysis -
+ * New"), so every shared rule in sales_mail_dashboard.css — KPI tile grid,
+ * toggle bar/panel, card grids, donut/bar label styles, legend, filters-panel
+ * collapse and the whole @media print pagination system — applies here
+ * unchanged. This file only carries what the stacked-page variant changes,
+ * which is exactly what sales_mail_dashboard_new.css carries for its own
+ * variant.
+ *
+ * MUST be @media screen-scoped: .pbi-page also matches every .toggle-page
+ * section (they carry both classes), and this file loads AFTER
+ * sales_mail_dashboard.css in the bundle. An unscoped rule here would tie
+ * with — and, being later in the cascade, beat — that file's own
+ * "@media print .toggle-page { display:flex }" rule, collapsing the intended
+ * 2x2 toggle-panel print grid (pages 4/5/13/14/15/16) into 4 full-width
+ * blocks spilling across extra pages. Scoping to screen keeps print entirely
+ * governed by the base file's already-tuned pagination.
+ */
+/*
+ * Chart palette — the colours of the client's own Excel deck ("SEP-REPORT From
+ * HHS.pdf"), sampled from it rather than guessed: they are the Office theme
+ * accents 1-5, which is what Excel gives a three-series clustered column chart
+ * out of the box. This board is the one that EXPORTS that deck, so its bars and
+ * the deck's bars have to be the same colour or a reader flipping between them
+ * reads two different reports.
+ *
+ * Deliberately NOT a remap of --series-1/2/3: those are the shared
+ * pbi_dashboard_base.css chrome colours as well as chart colours here (active
+ * pill backgrounds, focus borders, the "Edited note" tag, link hovers), so
+ * repointing them would recolour half the toolbar to orange. Own names, read by
+ * seriesColors()/lineColors() in sales_mail_sman_dashboard.js, which fall back
+ * to the --series-* values if this block is ever dropped.
+ *
+ * Order matches the legend: Target, This Year (A. 2025), Last Year (A. 2024),
+ * then the two combo-chart trend lines.
+ */
+.pbi-sales-mail-sman-dashboard {
+  --report-target:       #4472C4; /* blue   - Target            (Office accent 1) */
+  --report-this-year:    #ED7D31; /* orange - A. 2025           (Office accent 2) */
+  --report-last-year:    #A5A5A5; /* grey   - A. 2024           (Office accent 3) */
+  --report-vs-target:    #FFC000; /* gold   - Vs. Target line   (Office accent 4) */
+  --report-vs-last-year: #5B9BD5; /* sky    - Vs. Last Year line(Office accent 5) */
+}
+
+/* KPI tile background colors mapped directly from legend */
+.pbi-sales-mail-sman-dashboard .tile-color-0 {
+  background: var(--report-this-year, #ED7D31);
+  border-color: var(--report-this-year, #ED7D31);
+}
+
+.pbi-sales-mail-sman-dashboard .tile-color-1 {
+  background: var(--report-target, #4472C4);
+  border-color: var(--report-target, #4472C4);
+}
+
+.pbi-sales-mail-sman-dashboard .tile-color-2 {
+  background: var(--report-last-year, #A5A5A5);
+  border-color: var(--report-last-year, #A5A5A5);
+}
+
+@media screen {
+  .pbi-sales-mail-sman-dashboard .pbi-page { display: block !important; }
+  /* Bottom spacing so stacked charts, narrative panels and footer are not hidden or clipped at the bottom */
+  .pbi-sales-mail-sman-dashboard {
+    padding-bottom: 60px;
+  }
+  .pbi-sales-mail-sman-dashboard footer {
+    margin-bottom: 24px;
+  }
+}
+
+.pbi-sales-mail-sman-dashboard .section-divider {
+  stroke: var(--grid-dark, #cbd5e1);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.pbi-sales-mail-sman-dashboard .quarter-section-title {
+  fill: var(--text-primary);
+  font-weight: 700;
+  font-size: 11px;
+}
+
+/* Pages 2, 6, 7, 12, 13, 14, 17: on-screen only, stack the two-up chart pairs
+   into single full-width rows instead of side-by-side. Kept as an added
+   modifier (not a replacement of .two) so the print stylesheet's
+   .pbi-card-grid.two selectors still match and the existing print pagination
+   for these pages is untouched. */
+@media screen {
+  .pbi-sales-mail-sman-dashboard .pbi-card-grid.stacked-full { grid-template-columns: 1fr; }
+}
+
+.pbi-sales-mail-sman-dashboard .toolbar-section { margin-bottom: 8px; }
+.pbi-sales-mail-sman-dashboard .toolbar-section.collapsed .toolbar-toggle-icon { transform: rotate(-90deg); }
+.pbi-sales-mail-sman-dashboard .toolbar-section .toolbar-toggle-btn { margin-bottom: 6px; }
+.pbi-sales-mail-sman-dashboard .toolbar-section .filters { margin-bottom: 0; }
+
+/* Filter selects — grid of fixed-width cells with label stacked over its select,
+   matching Sales Dashboard - VQ / Sales Dashboard With Salesman. */
+.pbi-sales-mail-sman-dashboard .filter-row-inline {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px 16px;
+}
+.pbi-sales-mail-sman-dashboard .filter-row-inline .filter-group {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+}
+.pbi-sales-mail-sman-dashboard .filter-row-inline .filter-label {
+  width: auto;
+}
+.pbi-sales-mail-sman-dashboard .filter-row-inline .filter-select {
+  min-width: 0;
+  width: 100%;
+}
+
+/* Target tile with no budget behind it — see renderKpis(). Keeps its slot and
+   colour position so the row does not reflow when a Salesman is picked. */
+.pbi-sales-mail-sman-dashboard .pbi-kpi.no-target {
+    opacity: .45;
+    filter: grayscale(1);
+}
+.pbi-sales-mail-sman-dashboard .pbi-kpi.no-target .value {
+    font-weight: 400;
+}
+.pbi-sales-mail-sman-dashboard .bar-share {
+    fill: var(--text-secondary);
+    font-size: 9.5px;
+    font-weight: 600;
+}
+
+/* Page 2 only: each trend card is a wide chart plus a narrow Total slot.
+   The Total row is the sum of every category beside it, so sharing one
+   value axis with them left the categories as a flat strip along the
+   baseline; it now gets its own axis in its own slot. The slot is a fixed
+   width rather than a fraction, so the categories keep essentially the
+   whole card and the Total reads as an aside. Its legend is suppressed —
+   the two charts are drawn with the same series in the same order, so the
+   chart it sits beside already names the colours.
+
+   Not @media screen-scoped, unlike the page rules at the top of this file:
+   these class names exist nowhere in sales_mail_dashboard.css, so there is
+   no print rule for them to outrank. In print the base file's
+   "svg { width: 100% }" scales the Total's chart into the same 200px slot. */
+.pbi-sales-mail-sman-dashboard .trend-split {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+.pbi-sales-mail-sman-dashboard .trend-split .trend-main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.pbi-sales-mail-sman-dashboard .trend-split .trend-total {
+    flex: 0 0 200px;
+    min-width: 0;
+    border-left: 1px solid var(--border);
+    padding-left: 14px;
+}
+.pbi-sales-mail-sman-dashboard .trend-split .trend-total h4 {
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+.pbi-sales-mail-sman-dashboard .trend-split .trend-total .pbi-legend-wrap {
+    display: none;
+}
+
+/* ------------------------------------------------------------------
+   Note editing (Edit Notes in the Filters & Export panel).
+
+   The narrative panels are written by JS into a .narrative div, so all of
+   this styles innerHTML rather than template markup: .note-editor is the
+   pair of textareas that replaces the whole panel while editing.
+
+   Read mode has no styles of its own here. It draws the note and nothing
+   else — the requirement and the "Edited note" tag are edit-mode furniture
+   and are not rendered once Save Notes closes the editor.
+   ------------------------------------------------------------------ */
+.pbi-sales-mail-sman-dashboard .notes-edit-hint {
+    font-size: 12px;
+    color: var(--text-secondary);
+    align-self: center;
+}
+
+/* Edit mode. */
+.pbi-sales-mail-sman-dashboard .note-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.pbi-sales-mail-sman-dashboard .note-field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-top: 6px;
+}
+.pbi-sales-mail-sman-dashboard .note-editor textarea {
+    width: 100%;
+    font: inherit;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    resize: vertical;
+}
+.pbi-sales-mail-sman-dashboard .note-editor textarea:focus {
+    outline: none;
+    border-color: var(--series-1);
+}
+/* The requirement's preset row: a dropdown of the predefined instructions
+   plus whatever was added here, and the two buttons that grow and shrink
+   that list. The select takes the room left over — the entries are whole
+   sentences, so it is the only control that benefits from the width. */
+.pbi-sales-mail-sman-dashboard .note-preset-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+/* The narrative column is 340px: the select gets a line of its own and the
+   two buttons sit under it, right-aligned, rather than three controls
+   fighting over one row. */
+.pbi-sales-mail-sman-dashboard .note-preset-row .note-preset {
+    flex: 1 1 100%;
+    min-width: 0;
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 6px;
+}
+.pbi-sales-mail-sman-dashboard .note-preset-row button {
+    flex: none;
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 8px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+/* Only the first button pushes off the left edge; the second follows it. */
+.pbi-sales-mail-sman-dashboard .note-preset-row button + button { margin-left: 0; }
+.pbi-sales-mail-sman-dashboard .note-preset-row button:hover {
+    border-color: var(--series-1);
+    color: var(--series-1);
+}
+
+/* The note is the long field — the requirement is a line or two. */
+.pbi-sales-mail-sman-dashboard .note-editor .note-text { min-height: 240px; }
+.pbi-sales-mail-sman-dashboard .note-editor .note-req { min-height: 48px; }
+/* The per-section reset sits at the TOP of the editor, on the Requirement
+   label's own line. It used to sit under the note box — below a 240px
+   textarea, off the bottom of a panel the reader had to scroll to reach — and
+   was simply not found. Same row as the label it resets, same glyph as the
+   toolbar's Reset All, so the two read as the one control at two scopes. */
+.pbi-sales-mail-sman-dashboard .note-editor-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.pbi-sales-mail-sman-dashboard .note-editor-head .note-field-label { margin: 0; }
+.pbi-sales-mail-sman-dashboard .note-editor .note-reset {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex: none;
+    font-size: 11px;
+    line-height: 1;
+    color: var(--text-secondary);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px 9px;
+    cursor: pointer;
+}
+.pbi-sales-mail-sman-dashboard .note-editor .note-reset:hover {
+    border-color: var(--series-1);
+    color: var(--series-1);
+}
+/* The glyph carries the meaning at a glance; the words stay for the reader who
+   has not learned the glyph yet. Sized up because ↻ draws small for its em. */
+.pbi-sales-mail-sman-dashboard .note-reset-icon,
+.pbi-sales-mail-sman-dashboard .notes-reset-icon {
+    font-size: 1.25em;
+    line-height: 1;
+}
+/* The toolbar twin of the per-section reset. It sits in .pill-filter with Save
+   and Cancel, which style their own buttons, so this only adds the icon row and
+   a warning tint — it is the destructive one of the three. */
+.pbi-sales-mail-sman-dashboard .notes-actions .pill-filter button.notes-reset-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.pbi-sales-mail-sman-dashboard .notes-actions .pill-filter button.notes-reset-all:hover:not([disabled]) {
+    background: var(--series-6, #e34948);
+    border-color: var(--series-6, #e34948);
+    color: #fff;
+}
+.pbi-sales-mail-sman-dashboard .edited-note-tag.inline {
+    display: inline-block;
+    margin-left: 6px;
+}
+
+/* Printing a board that is mid-edit would otherwise put a scrollable form
+   control on the page: print what the note says, not the box it is in. */
+@media print {
+    .pbi-sales-mail-sman-dashboard .note-editor textarea {
+        border: none;
+        background: none;
+        padding: 0;
+        min-height: 0 !important;
+        height: auto;
+        resize: none;
+    }
+    .pbi-sales-mail-sman-dashboard .note-reset,
+    .pbi-sales-mail-sman-dashboard .note-preset-row { display: none; }
+}
+
+
+/* ---------------------------------------------------------------------------
+ * Phone: each six-tile KPI row as two columns — MTD down the left, YTD down
+ * the right. Matches what the Salesman and VQ boards do with their twelve-tile
+ * row (sales_sman_dashboard.css), so the three boards read the same way on a
+ * phone.
+ *
+ * Both rows (Value, Quantity) are emitted in reading order for a six-across
+ * desktop row: MTD this-year / target / last-year, then the same three for
+ * YTD. Folded into two columns that pairing inverts — "MTD - This Year" lands
+ * beside "MTD - Target" — so the reader has to walk the grid to find the YTD
+ * figure for the number they are looking at.
+ *
+ * Each tile therefore gets an explicit `order`: left column the three MTD
+ * tiles, right column their YTD counterparts, row by row (this-year beside
+ * this-year, target beside target, last-year beside last-year). Grid honours
+ * `order`, so nothing moves in the DOM and the desktop layout is untouched
+ * above this breakpoint. The tile colour is keyed off the DOM index
+ * (tile-color-${i % 3} in renderKpis), so it rides along with the tile: each
+ * row of the phone grid ends up one colour, which is what makes the pairing
+ * legible.
+ *
+ * Screen-scoped for the reason given at the top of this file, and because the
+ * base file's @media print rule reflows these same rows to flex/nowrap for the
+ * printed tiles page — that pagination stays exactly as tuned.
+ *
+ * sales_mail_dashboard.css collapses the row to three across at 900px and
+ * floors each column at 150px with overflow-x:auto, which on a 375pt phone is
+ * a horizontally scrolling strip. Below 600px that floor and the scroll both
+ * go, and the shared nowrap+ellipsis caption is allowed to wrap instead of
+ * truncating — the tiles have room under the figure.
+ * --------------------------------------------------------------------------- */
+@media screen and (max-width: 600px) {
+  .pbi-sales-mail-sman-dashboard .pbi-kpi-row.six {
+    grid-template-columns: repeat(2, 1fr);
+    overflow-x: visible;
+  }
+  .pbi-sales-mail-sman-dashboard .pbi-kpi .label {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .pbi-sales-mail-sman-dashboard .pbi-kpi-row.six > .pbi-kpi:nth-child(1) { order: 1; }
+  .pbi-sales-mail-sman-dashboard .pbi-kpi-row.six > .pbi-kpi:nth-child(4) { order: 2; }
+  .pbi-sales-mail-sman-dashboard .pbi-kpi-row.six > .pbi-kpi:nth-child(2) { order: 3; }
+  .pbi-sales-mail-sman-dashboard .pbi-kpi-row.six > .pbi-kpi:nth-child(5) { order: 4; }
+  .pbi-sales-mail-sman-dashboard .pbi-kpi-row.six > .pbi-kpi:nth-child(3) { order: 5; }
+  .pbi-sales-mail-sman-dashboard .pbi-kpi-row.six > .pbi-kpi:nth-child(6) { order: 6; }
+}

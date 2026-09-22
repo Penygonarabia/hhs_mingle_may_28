@@ -1,0 +1,1 @@
+../pbi_dashboard_configurations/sql/create_bidata_table_and_live_view.sql

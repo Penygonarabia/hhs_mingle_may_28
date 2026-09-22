@@ -28,3 +28,17 @@ from odoo.addons.pbi_dashboards.controllers.board_sql import (
     run_table,
     run_terminal_domain,
 )
+
+try:
+    from odoo.addons.pbi_dashboards.controllers.board_sql import run_chart_detail
+except ImportError:
+    # A pbi_dashboards that predates the Formula & Details engine. The
+    # controller degrades to a clear "update the base module" message
+    # rather than a 500.
+    run_chart_detail = None
+
+try:
+    from odoo.addons.pbi_dashboards.controllers.board_sql import run_labor_hours_detail
+except ImportError:
+    run_labor_hours_detail = None
+

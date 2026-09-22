@@ -3,6 +3,8 @@
 import { registry } from "@web/core/registry";
 import { listView } from "@web/views/list/list_view";
 import { ListController } from "@web/views/list/list_controller";
+import { SearchModel } from "@web/search/search_model";
+import { Domain } from "@web/core/domain";
 import { useService } from "@web/core/utils/hooks";
 import { useState, onMounted, onPatched } from "@odoo/owl";
 import { analyserRegistry, makeQtab } from "./database_studio_analyser";
@@ -12,6 +14,64 @@ import { analyserRegistry, makeQtab } from "./database_studio_analyser";
 // logged automatically. Same underlying list/model — just a different domain.
 function domainForHistoryTab(tab) {
     return [["is_favorite", "=", tab === "saved"]];
+}
+
+// The Saved / On-the-fly split is a domain the search model owns, not one the
+// action carries. Two things follow, and both are the point of it:
+//
+//  * it is ANDed *under* the facets, so searching, filtering or grouping the
+//    list works normally on either tab -- the previous "reload with this
+//    domain" approach was wiped out by the next facet the user touched, which
+//    silently dropped them back onto Saved; and
+//  * each tab keeps its own facets. Narrowing the on-the-fly log to today's
+//    runs leaves the Saved list exactly as it was, and switching back and
+//    forth restores each side's search as it was left.
+export class SqlMsHistorySearchModel extends SearchModel {
+    setup(services) {
+        super.setup(services);
+        this.histTab = "saved";
+        this.histQueries = {};
+    }
+
+    _getDomain(params = {}) {
+        const domain = super._getDomain(params);
+        const withGlobal = "withGlobal" in params ? params.withGlobal : true;
+        // withGlobal:false is how a favourite being saved asks for "just the
+        // facets". The tab is not one of them -- baking it in would freeze
+        // that filter to whichever tab happened to be open.
+        if (!withGlobal) {
+            return domain;
+        }
+        const combined = Domain.and([domain, domainForHistoryTab(this.histTab)]);
+        return params.raw ? combined : combined.toList(this.domainEvalContext);
+    }
+
+    setHistTab(tab) {
+        if (tab === this.histTab) {
+            return;
+        }
+        this.histQueries[this.histTab] = this.query;
+        this.histTab = tab;
+        this.query = this.histQueries[tab] || [];
+        this._notify();
+    }
+
+    // Coming back to History through the breadcrumb rebuilds the search model
+    // from an exported state; carry the tab and both sides' facets across it
+    // so the list returns to what was left behind rather than to Saved.
+    exportState() {
+        return Object.assign(super.exportState(), {
+            histTab: this.histTab,
+            histQueries: this.histQueries,
+        });
+    }
+    _importState(state) {
+        super._importState(state);
+        if (state.histTab) {
+            this.histTab = state.histTab;
+        }
+        this.histQueries = state.histQueries || {};
+    }
 }
 
 // Clicking a history row opens the Analyser with that query loaded, instead of
@@ -24,7 +84,7 @@ export class SqlMsHistoryController extends ListController {
         // database_studio_query_views.xml) already opens on the "saved"
         // tab; this just tracks which one is active for the button styling
         // and for reloading with the other tab's domain on click.
-        this.histState = useState({ tab: "saved" });
+        this.histState = useState({ tab: this.env.searchModel.histTab || "saved" });
         // The Saved/On-the-fly toggle is injected as plain DOM into the
         // control panel rather than through a custom t-inherit="web.ListView"
         // template. A template patch is only compiled lazily, on first use —
@@ -74,7 +134,10 @@ export class SqlMsHistoryController extends ListController {
         if (sync) {
             sync();
         }
-        this.model.load({ domain: domainForHistoryTab(tab) });
+        // Hand the switch to the search model rather than reloading with a
+        // domain of our own: that keeps the facets working on both tabs and
+        // gives each of them its own (see SqlMsHistorySearchModel).
+        this.env.searchModel.setHistTab(tab);
     }
 
     // A tab already holding this history record: the same row is linked by
@@ -141,4 +204,5 @@ export class SqlMsHistoryController extends ListController {
 registry.category("views").add("database_studio_history_list", {
     ...listView,
     Controller: SqlMsHistoryController,
+    SearchModel: SqlMsHistorySearchModel,
 });

@@ -6,7 +6,7 @@ Run via Odoo shell from inside the container:
 
     docker exec -i cloud-web-1 odoo shell \
         -c /etc/odoo/odoo.conf --db_host db --db_user odoo --db_password odoo \
-        -d dbcloud --no-http < scripts/dump_service_dashboards.py
+        -d dbprod --no-http < scripts/dump_service_dashboards.py
 
 The repo is bind-mounted at /mnt/extra-addons inside the container; the
 script writes directly to:

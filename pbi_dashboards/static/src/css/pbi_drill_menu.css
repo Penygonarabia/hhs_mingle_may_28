@@ -1,0 +1,430 @@
+/*
+ * The drill menu (pbi_drill_menu.js): right-click a chart mark, or long-press
+ * it on a phone, and pick which level to open that row at.
+ *
+ * It lives on <body> rather than inside the card -- every chart on these
+ * boards sits in a `.chart-scroll` with `overflow-x: auto`, and a menu inside
+ * one would be clipped at the card's edge. That puts it outside
+ * `.pbi-sales-dashboard`, where the boards' custom properties are declared, so
+ * the palette is restated here on its own root. The values are that palette's,
+ * to the digit: this is the same object as the cards it opens over, and it
+ * should not read as a control borrowed from somewhere else.
+ */
+.pbi-drill-layer {
+  --dm-surface: #fcfcfb;
+  --dm-text:    #0b0b0b;
+  --dm-text-2:  #52514e;
+  --dm-muted:   #898781;
+  --dm-grid:    #e1e0d9;
+  --dm-border:  rgba(11, 11, 11, 0.10);
+  --dm-accent:  #2a78d6;
+
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.pbi-drill-layer * { box-sizing: border-box; }
+
+/* Transparent on a desktop -- it is there to catch the click that dismisses,
+   not to dim a board the reader is still comparing the menu against. The sheet
+   below overrides it, because a sheet covering the bottom third of a phone has
+   already taken the screen. */
+.pbi-drill-backdrop { position: absolute; inset: 0; }
+
+.pbi-drill-menu {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  min-width: 232px;
+  max-width: 320px;
+  /* Ten levels always fit on a laptop; this is for the short window, where the
+     body scrolls and the head stays. */
+  max-height: min(72vh, 520px);
+  padding: 0;
+  border: 1px solid var(--dm-border);
+  border-radius: 12px;
+  background: var(--dm-surface);
+  box-shadow: 0 12px 34px rgba(11, 11, 11, .20);
+  overflow: hidden;
+  animation: pbi-drill-in .11s ease-out;
+}
+@keyframes pbi-drill-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Which row the menu would apply to: its colour, its name, its level and its
+   figure. On a chart of fifteen bars this is the only thing that answers
+   "which one did I just press". */
+.pbi-drill-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: none;
+  padding: 10px 8px 10px 12px;
+  border-bottom: 1px solid var(--dm-border);
+  background: var(--dm-surface);
+}
+[dir="rtl"] .pbi-drill-head { padding: 10px 12px 10px 8px; }
+.pbi-drill-head .dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  margin-top: 4px;
+  border-radius: 3px;
+  background: var(--dm-accent);
+}
+.pbi-drill-head .txt { min-width: 0; flex: 1; }
+.pbi-drill-head .name {
+  color: var(--dm-text);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  /* Customer names run long; two lines, then cut. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.pbi-drill-head .meta {
+  margin-top: 2px;
+  color: var(--dm-muted);
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+.pbi-drill-close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--dm-muted);
+  font-family: inherit;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+.pbi-drill-close:hover { background: var(--dm-grid); color: var(--dm-text); }
+
+/* Active Drilled Levels Section */
+.pbi-drill-active {
+  padding: 8px 10px 8px 12px;
+  background: rgba(42, 120, 214, 0.04);
+  border-bottom: 1px solid var(--dm-border);
+}
+[dir="rtl"] .pbi-drill-active {
+  padding: 8px 12px 8px 10px;
+}
+.pbi-drill-active-title {
+  color: var(--dm-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.pbi-drill-active-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.pbi-drill-active-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  background: var(--dm-surface);
+  border: 1px solid var(--dm-border);
+  border-radius: 6px;
+  padding: 3px 6px 3px 8px;
+  transition: border-color .15s, background .15s;
+}
+[dir="rtl"] .pbi-drill-active-chip {
+  padding: 3px 8px 3px 6px;
+}
+.pbi-drill-active-chip:hover {
+  border-color: rgba(42, 120, 214, 0.4);
+  background: #f4f8fd;
+}
+.pbi-drill-chip-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--dm-text);
+  font-family: inherit;
+  font-size: 11.5px;
+  text-align: start;
+  cursor: pointer;
+}
+.pbi-drill-chip-btn .num {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
+  background: rgba(42, 120, 214, 0.12);
+  color: var(--dm-accent);
+  font-size: 9.5px;
+  font-weight: 700;
+}
+.pbi-drill-chip-btn .k {
+  color: var(--dm-text-2);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pbi-drill-chip-btn .v {
+  color: var(--dm-text);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pbi-drill-chip-x {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--dm-muted);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.pbi-drill-chip-x:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.pbi-drill-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.pbi-drill-group {
+  padding: 7px 8px 4px;
+  color: var(--dm-muted);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+/* A second heading only ever follows a list, so it needs the rule the first
+   one would not want under the header above it. */
+.pbi-drill-group + .pbi-drill-item { margin-top: 0; }
+.pbi-drill-item + .pbi-drill-group {
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--dm-border);
+}
+
+.pbi-drill-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--dm-text);
+  font-family: inherit;
+  font-size: 13px;
+  text-align: start;
+  cursor: pointer;
+}
+.pbi-drill-item:hover,
+.pbi-drill-item:focus-visible {
+  background: var(--dm-grid);
+  color: var(--dm-accent);
+  outline: none;
+}
+/* Its position in the ten-step chain. The chain is what is being navigated and
+   a bare list of names does not show how far a jump is; one character does. */
+.pbi-drill-item .num {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--dm-grid);
+  color: var(--dm-text-2);
+  font-size: 10.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.pbi-drill-item:hover .num,
+.pbi-drill-item:focus-visible .num {
+  background: var(--dm-accent);
+  color: #fff;
+}
+.pbi-drill-item .lbl {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The level a plain left-click already reaches. The menu teaches the shortcut
+   rather than replacing it. */
+.pbi-drill-item .badge {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(42, 120, 214, .12);
+  color: var(--dm-accent);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+/* Going back UP the chain is a different question from drilling -- "this
+   salesman, by region" -- and reads a shade quieter so the list below the
+   fold is not mistaken for more of the same. */
+.pbi-drill-item.up { color: var(--dm-text-2); }
+
+.pbi-drill-cancel { display: none; }
+
+/* ---------------------------------------------------------------------------
+ * Phone: a bottom sheet, not a popup at the fingertip.
+ *
+ * A menu anchored to where the finger landed is a menu under the finger, on a
+ * screen where the finger covers a third of it, positioned by a gesture whose
+ * whole point was that it did not move. The sheet comes up from the bottom
+ * edge instead: always in the same place, always within thumb reach, and with
+ * rows big enough to hit without aiming.
+ * --------------------------------------------------------------------------- */
+.pbi-drill-layer.as-sheet .pbi-drill-backdrop {
+  background: rgba(17, 24, 39, .45);
+}
+.pbi-drill-layer.as-sheet .pbi-drill-menu {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: auto;
+  min-width: 0;
+  max-width: none;
+  max-height: 82vh;
+  border-width: 1px 0 0;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -10px 34px rgba(11, 11, 11, .26);
+  /* Home-indicator room on an iPhone; 0 everywhere else. */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  animation: pbi-drill-sheet-in .16s ease-out;
+}
+@keyframes pbi-drill-sheet-in {
+  from { transform: translateY(16px); opacity: .6; }
+  to   { transform: none; opacity: 1; }
+}
+.pbi-drill-layer.as-sheet .pbi-drill-head { padding: 14px 12px 12px 16px; }
+[dir="rtl"] .pbi-drill-layer.as-sheet .pbi-drill-head { padding: 14px 16px 12px 12px; }
+.pbi-drill-layer.as-sheet .pbi-drill-head .name { font-size: 15px; }
+.pbi-drill-layer.as-sheet .pbi-drill-head .meta { font-size: 12.5px; }
+.pbi-drill-layer.as-sheet .pbi-drill-close { width: 30px; height: 30px; font-size: 21px; }
+.pbi-drill-layer.as-sheet .pbi-drill-body { padding: 6px 10px; }
+/* 44px is the smallest target Apple and Google both consider hittable. */
+.pbi-drill-layer.as-sheet .pbi-drill-item {
+  min-height: 46px;
+  padding: 11px 10px;
+  font-size: 14.5px;
+}
+.pbi-drill-layer.as-sheet .pbi-drill-item .num { width: 24px; height: 24px; font-size: 11.5px; }
+.pbi-drill-layer.as-sheet .pbi-drill-group { font-size: 11px; padding: 9px 10px 5px; }
+.pbi-drill-layer.as-sheet .pbi-drill-cancel {
+  display: block;
+  flex: none;
+  width: calc(100% - 20px);
+  margin: 4px 10px 12px;
+  padding: 12px;
+  border: 1px solid var(--dm-border);
+  border-radius: 10px;
+  background: var(--dm-surface);
+  color: var(--dm-text-2);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* A mark the menu is bound to. The long-press must not also select the caption
+   text under a bar or raise iOS's copy/share callout over the sheet. */
+.pbi-drillable {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* And the same for the whole drawing, not only its bars.
+   A chart is mostly text that is not prose -- axis ticks, value labels,
+   captions -- and a bar is a few points wide on a phone. A long press that
+   missed one landed on "0M" and got iOS's Copy / Find Selection / Look Up
+   sheet over the chart: a menu for an act nobody performs on an axis, in
+   place of the one the gesture was for. Verified on an iPhone 15 Pro Max.
+
+   Scoped to the SVG, not to the surface: the VQ board's table is bound to the
+   same menu, and its figures ARE worth selecting and copying. */
+.pbi-drill-surface svg {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* The one line on the board that says the gesture exists. A menu nobody knows
+   to open is a menu nobody opens, and neither right-click nor long-press
+   announces itself. */
+.pbi-drill-hint {
+  /* Block-level but only as wide as its sentence: a dashed pill stretched to
+     the full width of the board would read as a warning banner. */
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 5px 10px;
+  border: 1px dashed var(--border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+.pbi-drill-hint .pbi-drill-hint-icon {
+  flex: none;
+  color: var(--series-1);
+  font-size: 12px;
+}
+/* On a phone the sentence is the touch one alone -- there is no right-click
+   there, and a hint naming a gesture the device does not have reads as an
+   instruction the reader has failed to follow. */
+.pbi-drill-hint .on-touch { display: none; }
+@media (hover: none), (max-width: 600px) {
+  .pbi-drill-hint .on-pointer { display: none; }
+  .pbi-drill-hint .on-touch { display: inline; }
+}
+/* The pill is a flex row; the sentence must be free to wrap inside it rather
+   than push the dashed border off a phone's screen. */
+.pbi-drill-hint .on-pointer,
+.pbi-drill-hint .on-touch { min-width: 0; }

@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+  <!--
+      "Sales Data Study" — the matrix board, shared by BOTH studies: the
+      six-level bidata one and the ten-level salesman one, which differ only in
+      the getters their components override (route, subtitle, and which of the
+      board-specific filters below are shown). Chrome (header/toolbar/filter
+      selects) is deliberately the same shape as the sibling sales boards, so
+      the root carries .pbi-sales-kpi-dashboard too and every toolbar rule in
+      sales_kpi_dashboard.css applies here unchanged; only what the matrix
+      itself needs is styled in sales_study_dashboard.css.
+
+      The matrix TABLE is not drawn by OWL — both its thead and its tbody are
+      empty t-ref'd elements filled from sales_study_dashboard.js. See the note
+      at the top of that file for why both halves, not just the body.
+      Everything around it — filters, slicers, legend — is ordinary reactive
+      OWL.
+  -->
+  <t t-name="pbi_sales_dashboards.sales_study_dashboard">
+    <div class="pbi-sales-dashboard pbi-sales-kpi-dashboard pbi-sales-study-dashboard"
+         t-att-dir="isArabicUI() ? 'rtl' : 'ltr'">
+      <div class="wrap">
+        <header>
+          <h1><t t-esc="t('Sales Data Study')"/></h1>
+          <p t-if="isDebugMode">
+            <t t-esc="t('Source')"/>: <code t-esc="sourceName"/> ·
+            <t t-esc="state.periodLabel"/> · <t t-esc="scopeLabel()"/>
+          </p>
+          <p t-else="">
+            <t t-esc="subtitleText"/> ·
+            <t t-esc="state.periodLabel"/> · <t t-esc="scopeLabel()"/>
+          </p>
+        </header>
+
+        <div class="pbi-toolbar">
+          <div class="toolbar-section" t-att-class="state.filtersCollapsed ? 'collapsed' : ''">
+            <button type="button" class="toolbar-toggle-btn" t-on-click="toggleFilters"
+                    t-att-aria-expanded="state.filtersCollapsed ? 'false' : 'true'">
+              <span class="toolbar-toggle-icon">▾</span>
+              <t t-esc="t('Filters')"/>
+            </button>
+
+            <div class="toolbar-body" t-if="!state.filtersCollapsed">
+              <div class="filters">
+                <div class="filter-row filter-row-inline">
+                  <!--
+                      PART NO. A free-text box rather than a select: the
+                      snapshot holds tens of thousands of parts and a dropdown
+                      of them is not a control. It commits on Enter or blur, not
+                      per keystroke, because each commit rebuilds the request's
+                      temp table — unlike the "Search rows" box by the matrix,
+                      which only re-draws what is already in the browser.
+                  -->
+                  <div class="filter-group" t-if="showPartFilter">
+                    <span class="filter-label"><t t-esc="t('Part No')"/></span>
+                    <input type="search" class="filter-select part-input"
+                           t-att-class="hasPart ? 'active' : ''"
+                           t-att-placeholder="t('Type a part number and press Enter')"
+                           t-att-value="state.partInput"
+                           t-on-input="(ev) => this.onPartInput(ev.target.value)"
+                           t-on-keydown="(ev) => this.onPartKey(ev)"
+                           t-on-change="() => this.applyPart()"/>
+                  </div>
+                  <div class="filter-group" t-if="showFranchise">
+                    <span class="filter-label"><t t-esc="t('Franchise')"/></span>
+                    <select class="filter-select" t-on-change="(ev) => this.selectFranchise(ev.target.value)">
+                      <t t-foreach="franchiseOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.franchise ? true : undefined">
+                          <t t-esc="t(opt.l)"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <div class="filter-group">
+                    <span class="filter-label"><t t-esc="t('Year')"/></span>
+                    <select class="filter-select" t-on-change="(ev) => this.selectYear(ev.target.value)">
+                      <t t-foreach="state.yearOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.year ? true : undefined">
+                          <t t-esc="opt.l"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <div class="filter-group">
+                    <span class="filter-label"><t t-esc="t('Period')"/></span>
+                    <select class="filter-select" t-on-change="(ev) => this.selectScope(ev.target.value)">
+                      <t t-foreach="scopeOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.periodScope ? true : undefined">
+                          <t t-esc="t(opt.l)"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <div class="filter-group">
+                    <span class="filter-label"><t t-esc="t('Sort rows by')"/></span>
+                    <select class="filter-select" t-on-change="(ev) => this.selectSort(ev.target.value)">
+                      <t t-foreach="sortOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.sort ? true : undefined">
+                          <t t-esc="t(opt.l)"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <div class="filter-group" t-if="showGroupBy">
+                    <span class="filter-label"><t t-esc="t('Group by')"/></span>
+                    <select class="filter-select" t-on-change="(ev) => this.selectGroupBy(ev.target.value)">
+                      <t t-foreach="groupByOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.groupBy ? true : undefined">
+                          <t t-esc="t(opt.l)"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <!-- Developer mode only; the two scopes are not comparable. -->
+                  <div class="filter-group" t-if="showProductScope">
+                    <span class="filter-label"><t t-esc="t('Product Scope')"/></span>
+                    <!-- Inert while a part is selected: the part filter takes
+                         the scope's place in the query, so leaving this live
+                         would offer a control that changes nothing. -->
+                    <select class="filter-select" t-att-disabled="hasPart ? true : undefined"
+                            t-on-change="(ev) => this.selectProductScope(ev.target.value)">
+                      <t t-foreach="productScopeOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.productScope ? true : undefined">
+                          <t t-esc="t(opt.l)"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <div class="filter-group" t-if="showMonth">
+                    <span class="filter-label"><t t-esc="t('Month')"/></span>
+                    <select class="filter-select" t-on-change="(ev) => this.selectMonth(ev.target.value)">
+                      <t t-foreach="monthOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.month ? true : undefined">
+                          <t t-esc="t(opt.l)"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                  <div class="filter-group" t-if="showCustomerGroup">
+                    <span class="filter-label"><t t-esc="t('Customer Group')"/></span>
+                    <select class="filter-select" t-on-change="(ev) => this.selectCustomerGroup(ev.target.value)">
+                      <t t-foreach="state.customerGroupOptions" t-as="opt" t-key="opt.v">
+                        <option t-att-value="opt.v" t-att-selected="opt.v === state.customerGroup ? true : undefined">
+                          <t t-esc="opt.v === 'all' ? t('All') : opt.l"/>
+                        </option>
+                      </t>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="toolbar-section" t-att-class="state.levelsCollapsed ? 'collapsed' : ''" t-if="state.levels &amp;&amp; state.levels.length">
+            <button type="button" class="toolbar-toggle-btn" t-on-click="toggleLevels"
+                    t-att-aria-expanded="state.levelsCollapsed ? 'false' : 'true'">
+              <span class="toolbar-toggle-icon">▾</span>
+              <t t-esc="t('Levels')"/>
+            </button>
+
+            <div class="toolbar-body" t-if="!state.levelsCollapsed">
+              <div class="filters">
+                <!--
+                    One slicer per drill level. These narrow EVERY row in the
+                    matrix, including the levels above the one picked — unlike
+                    expanding a row, which only reaches downwards. Each list is
+                    narrowed by the levels above it, so picking a Customer Type
+                    reshapes the Region list below it (see
+                    _level_filter_options in the controller).
+                -->
+                <div class="filter-row filter-row-inline level-slicers">
+                  <t t-foreach="state.levels" t-as="lvl" t-key="lvl.v">
+                    <div class="filter-group">
+                      <span class="filter-label">
+                        <span class="legend-dot" t-att-style="'background:' + levelColor(lvl_index)"/>
+                        <t t-esc="t(lvl.l)"/>
+                      </span>
+                      <select class="filter-select"
+                              t-att-class="levelFilterValue(lvl.v) !== 'all' ? 'active' : ''"
+                              t-on-change="(ev) => this.selectLevelFilter(lvl.v, ev.target.value)">
+                        <option value="all" t-att-selected="levelFilterValue(lvl.v) === 'all' ? true : undefined">
+                          <t t-esc="t('All')"/>
+                        </option>
+                        <t t-foreach="levelFilterOptionsFor(lvl.v)" t-as="opt" t-key="opt.v">
+                          <option t-att-value="opt.v" t-att-selected="opt.v === levelFilterValue(lvl.v) ? true : undefined">
+                            <t t-esc="opt.l"/>
+                          </option>
+                        </t>
+                      </select>
+                    </div>
+                  </t>
+                  <button type="button" class="clear-slicers" t-if="hasLevelFilters"
+                          t-on-click="clearLevelFilters">×</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="error-banner" t-if="state.error">
+          <t t-esc="state.error"/>
+        </div>
+
+        <div class="dashboard" t-att-class="state.loading ? 'loading' : ''">
+          <div class="matrix-actions">
+            <div class="pill-filter">
+              <button type="button" t-on-click="expandNextLevel"><t t-esc="t('Expand next level')"/></button>
+              <button type="button" t-on-click="collapseAll"><t t-esc="t('Collapse all')"/></button>
+              <button type="button" t-on-click="exportCsv"><t t-esc="t('Export CSV')"/></button>
+            </div>
+            <div class="pill-filter measure-pills">
+              <span class="pill-label"><t t-esc="t('Show')"/></span>
+              <t t-foreach="measureOptions" t-as="opt" t-key="opt.v">
+                <button type="button" t-att-class="state.measure === opt.v ? 'active' : ''"
+                        t-on-click="() => this.selectMeasure(opt.v)">
+                  <t t-esc="t(opt.l)"/>
+                </button>
+              </t>
+            </div>
+            <!-- Sales / Budget / both. Only on a board whose source carries a
+                 target (showBudget) — the bidata six-level chain has none, and
+                 offering a control that can only ever draw blanks is worse
+                 than not offering it. -->
+            <div class="pill-filter dataset-pills" t-if="showBudget">
+              <span class="pill-label"><t t-esc="t('Data')"/></span>
+              <t t-foreach="datasetOptions" t-as="opt" t-key="opt.v">
+                <button type="button" t-att-class="state.dataset === opt.v ? 'active' : ''"
+                        t-on-click="() => this.selectDataset(opt.v)">
+                  <t t-esc="t(opt.l)"/>
+                </button>
+              </t>
+            </div>
+            <input type="search" class="matrix-search" t-att-placeholder="t('Search rows')"
+                   t-att-value="state.search"
+                   t-on-input="(ev) => this.onSearch(ev.target.value)"/>
+            <span class="matrix-count"><t t-esc="state.rowCount"/> <t t-esc="t('rows shown')"/></span>
+          </div>
+
+          <!--
+            WHERE THE PART SITS. One chip per level. A level the slice resolves
+            to a single value shows that value — which for the four product-side
+            levels is always the case, and is the "which product group is this
+            part in" answer. A sale-side level shows how many values instead,
+            because one part sells to many customers in many cities and naming
+            one of them would be a lie rather than a summary.
+        -->
+        <div class="part-resolution" t-if="hasPart &amp;&amp; state.part &amp;&amp; state.part.found">
+          <span class="part-resolution-head">
+            <t t-esc="t('Part')"/>: <strong t-esc="state.part.partNo"/>
+            <t t-if="state.part.partLabel"> — <t t-esc="state.part.partLabel"/></t>
+          </span>
+          <!-- The part filter replaces the product scope rather than stacking
+               with it, so a part the scope would have dropped is shown. This
+               badge is how the board admits which of the two slices is on
+               screen; the notice line says what it means. -->
+          <span class="part-scope-badge" t-if="partOutOfScope">
+            <t t-esc="t('Outside product scope')"/>
+          </span>
+          <t t-foreach="partChain" t-as="lvl" t-key="lvl.level">
+            <span class="part-chip" t-att-class="lvl.n > 1 ? 'many' : ''">
+              <span class="legend-dot" t-att-style="'background:' + levelColor(lvl_index)"/>
+              <span class="part-chip-level"><t t-esc="t(lvl.label)"/></span>
+              <span class="part-chip-value">
+                <t t-if="lvl.n > 1"><t t-esc="lvl.n"/> <t t-esc="t('values')"/></t>
+                <t t-else=""><t t-esc="lvl.value"/></t>
+              </span>
+            </span>
+          </t>
+          <button type="button" class="clear-slicers" t-on-click="clearPart">×</button>
+        </div>
+
+        <div class="matrix-notice" t-if="state.notice"><t t-esc="state.notice"/></div>
+
+          <div class="matrix-scroll">
+            <table class="matrix-table">
+              <thead t-ref="matrixHead"/>
+              <tbody t-ref="matrixBody"/>
+            </table>
+          </div>
+        </div>
+
+        <footer>
+          <t t-esc="t('PBI Dashboards')"/> &gt; <t t-esc="menuPath"/> &gt;
+          <t t-esc="t('Sales Data Study')"/> — <t t-esc="t('live from') + ' ' + sourceName"/>
+        </footer>
+      </div>
+    </div>
+  </t>
+</templates>

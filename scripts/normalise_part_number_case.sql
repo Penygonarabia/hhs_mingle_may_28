@@ -1,0 +1,1 @@
+../pbi_dashboard_configurations/sql/normalise_part_number_case.sql

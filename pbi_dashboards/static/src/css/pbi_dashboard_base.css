@@ -76,10 +76,20 @@
 .pbi-sales-dashboard .drill-breadcrumb .crumb-sep { color: var(--text-muted); margin: 0 6px; }
 
 .pbi-legend { display: flex; gap: 14px; margin-bottom: 10px; flex-wrap: wrap; min-height: 16px; }
-.pbi-legend .item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
-.pbi-legend .swatch { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.pbi-legend .item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); cursor: pointer; user-select: none; transition: opacity 0.2s; }
+.pbi-legend .item:hover { opacity: 0.8; }
+.pbi-legend .item.legend-active { opacity: 1; font-weight: 600; color: var(--text-primary, #212529); }
+.pbi-legend .item.legend-hidden { opacity: 0.35; text-decoration: line-through; }
+.pbi-legend .item.legend-hidden .swatch { opacity: 0.3; }
+.pbi-legend .swatch { width: 10px; height: 10px; border-radius: 2px; flex: none; transition: opacity 0.2s; }
 
 .pbi-sales-dashboard svg { display: block; overflow: visible; font-family: inherit; }
+.pbi-sales-dashboard svg rect,
+.pbi-sales-dashboard svg circle,
+.pbi-sales-dashboard svg text,
+.pbi-sales-dashboard svg line {
+  transition: opacity 0.2s ease;
+}
 .pbi-sales-dashboard .axis-label { fill: var(--text-muted); font-size: 10px; }
 .pbi-sales-dashboard .cat-label-clickable { cursor: pointer; }
 .pbi-sales-dashboard .cat-label-clickable:hover { fill: var(--series-1); text-decoration: underline; }
@@ -184,4 +194,23 @@
   .pbi-sales-dashboard .filters, .pbi-sales-dashboard .pbi-tooltip { display: none !important; }
   .pbi-card { break-inside: avoid; page-break-inside: avoid; border: 1px solid #ccc; }
   .chart-row { grid-template-columns: 1fr 300px; }
+}
+
+/* Missing-package notice under an export row (see optional_deps.py). Shown
+   only when a control had to be disabled, so it should read as an
+   explanation rather than an error: no red, no icon, just the sentence
+   naming the package and the command that installs it. */
+.pbi-dep-row .pbi-dep-note {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #6b6f76;
+  background: #f6f7f9;
+  border: 1px solid #e3e6ea;
+  border-radius: 6px;
+  padding: 6px 10px;
+  max-width: 640px;
+}
+.export-actions button[disabled] {
+  opacity: .5;
+  cursor: not-allowed;
 }

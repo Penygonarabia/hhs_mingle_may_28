@@ -1,6 +1,6 @@
 {
     'name': 'PBI Service Dashboards',
-    'version': '17.0.2.0.0',
+    'version': '17.0.2.2.0',
     'category': 'Services/Dashboard',
     'summary': 'PBI Service Dashboards - 15 regional & role-scoped service analysis boards',
     'author': 'Cielo Digital',

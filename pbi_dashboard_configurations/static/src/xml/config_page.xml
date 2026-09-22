@@ -1,0 +1,873 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+  <!--
+      THE FOUR THINGS A NEW SERVER NEEDS, IN THE ORDER IT NEEDS THEM.
+
+      This page used to carry everything anyone had ever had to do to a
+      dashboard server: snapshot freshness, upgrade blockers, an asset purge, a
+      from-scratch bring-up, a dated pile of maintenance scripts. Standing up
+      staging-hhsv3 showed what that costs — the four steps that actually
+      matter were scattered between seven sections and three of them looked
+      equally urgent, so they were run in the wrong order, and each wrong order
+      produced a different failure that looked like a dashboard bug.
+
+      So the page is now those four steps and nothing else, numbered, in
+      dependency order:
+
+        Server capabilities   what this box is missing, Python and Odoo both
+        Step 1                the bidata table and v_bidata_live — the SHAPE
+        Step 2                the rows that go in it
+        Step 3                the masters that give those rows their labels
+
+      Each step is useless before the one above it: the transfer refuses to run
+      without the table, and the master sync has nothing to key on without the
+      rows. Anything removed from here still exists on the server side; it was
+      taken off the page, not deleted.
+
+      The progress box is one template called per action rather than copied per
+      card. It was copied nine times, and nine places to fix a spinner is how
+      three of them came to disagree.
+  -->
+  <t t-name="pbi_dashboard_configurations.progress_box">
+    <div class="pbi-config-progress-box" t-if="getProgress(pkey)">
+      <div class="pbi-config-progress-top">
+        <span class="pbi-config-progress-status-msg">
+          <span class="pbi-config-mini-spinner" t-if="getProgress(pkey).status === 'running'"/>
+          <span class="pbi-config-icon-done" t-if="getProgress(pkey).status === 'done'">✓</span>
+          <span class="pbi-config-icon-fail" t-if="getProgress(pkey).status === 'error' or getProgress(pkey).status === 'cancelled'">✕</span>
+          <t t-esc="getProgress(pkey).label"/>
+        </span>
+        <div class="pbi-config-progress-right">
+          <button type="button" class="pbi-config-btn-cancel" t-if="getProgress(pkey).status === 'running'"
+                  t-on-click="() => this.cancelAction(pkey)">
+            <t t-esc="t('Cancel')"/>
+          </button>
+          <span t-att-class="'pbi-config-pct-badge ' + getProgress(pkey).status">
+            <t t-esc="getProgress(pkey).pct + '%'"/>
+          </span>
+        </div>
+      </div>
+      <div class="pbi-config-progress-track">
+        <div t-att-class="'pbi-config-progress-fill ' + getProgress(pkey).status"
+             t-attf-style="width: {{ getProgress(pkey).pct }}%"/>
+      </div>
+    </div>
+  </t>
+
+  <t t-name="pbi_dashboard_configurations.script_result_box">
+    <div class="pbi-config-output" t-if="getResult(skey)">
+      <div class="pbi-config-output-head">
+        <h4><t t-esc="getResult(skey).name"/></h4>
+        <button type="button" class="pbi-config-btn ghost sm"
+                t-on-click="() => this.clearResult(skey)">
+          <t t-esc="t('Dismiss')"/>
+        </button>
+      </div>
+
+      <div class="pbi-config-failed" t-if="getResult(skey).failed">
+        <strong><t t-esc="t('Failed')"/>:</strong>
+        <t t-esc="getResult(skey).failed.message"/>
+      </div>
+
+      <pre class="pbi-config-narration" t-if="getResult(skey).narration and getResult(skey).narration.length"><t t-esc="getResult(skey).narration.join('\n')"/></pre>
+
+      <t t-foreach="getResult(skey).blocks or []" t-as="block" t-key="block.index">
+        <div class="pbi-config-block">
+          <code class="pbi-config-stmt"><t t-esc="block.sql"/></code>
+
+          <t t-foreach="block.notices" t-as="notice" t-key="notice_index">
+            <div class="pbi-config-notice"><t t-esc="notice"/></div>
+          </t>
+
+          <div class="pbi-config-tablewrap" t-if="block.columns.length">
+            <table class="pbi-config-table">
+              <thead>
+                <tr><t t-foreach="block.columns" t-as="col" t-key="col_index"><th><t t-esc="col"/></th></t></tr>
+              </thead>
+              <tbody>
+                <tr t-foreach="block.rows" t-as="row" t-key="row_index">
+                  <t t-foreach="row" t-as="cell" t-key="cell_index"><td><t t-esc="cell"/></td></t>
+                </tr>
+              </tbody>
+            </table>
+            <p class="pbi-config-rowcount" t-if="!block.rows.length"><t t-esc="t('no rows')"/></p>
+            <p class="pbi-config-rowcount" t-if="block.truncated">Showing the first 200 rows.</p>
+          </div>
+        </div>
+      </t>
+    </div>
+  </t>
+
+  <t t-name="pbi_dashboard_configurations.config_page">
+    <div class="pbi-config-page">
+
+      <header class="pbi-config-header">
+        <h1><t t-esc="t('Dashboard Configurations &amp; Administration')"/></h1>
+        <p class="pbi-config-lede">
+          Central administration panel for managing transactional data feeds, master taxonomies, background dependencies, and analytical views. Follow the 3-step sequence below to initialize schemas, transfer datasets, align master dimensions, and rebuild dashboard views.
+        </p>
+      </header>
+
+      <div class="pbi-config-error" t-if="state.error"><t t-esc="state.error"/></div>
+
+      <div class="pbi-config-loading" t-if="state.loading">Loading…</div>
+
+      <!-- ================================================================
+           SERVER CAPABILITIES — Environment & Dependency Management
+           ================================================================ -->
+      <section class="pbi-config-section" t-if="!state.loading">
+        <div class="pbi-config-section-header">
+          <div>
+            <h2><t t-esc="t('Server Capabilities &amp; Dependencies')"/></h2>
+            <p class="pbi-config-note pbi-config-section-note">
+              Inspects required backend dependencies, optional Python packages for advanced exports, and application container restart tools to ensure all dashboard features function reliably.
+            </p>
+          </div>
+          <div class="pbi-config-group-controls">
+            <button type="button" class="pbi-config-btn ghost sm" t-on-click="() => this.expandCapabilities()">
+              <t t-esc="t('Expand all')"/>
+            </button>
+            <button type="button" class="pbi-config-btn ghost sm" t-on-click="() => this.collapseCapabilities()">
+              <t t-esc="t('Collapse all')"/>
+            </button>
+          </div>
+        </div>
+
+        <div class="pbi-config-groups">
+
+          <!-- 1a. Companion Odoo modules -->
+          <div t-att-class="'pbi-config-group ' + (isWorkflowGroupCollapsed('requirements') ? 'collapsed' : 'expanded')">
+            <div class="pbi-config-group-header" t-on-click="() => this.toggleWorkflowGroup('requirements')">
+              <div class="pbi-config-group-info">
+                <span class="pbi-config-date-badge workflow highlight">★ Odoo Apps</span>
+                <div class="pbi-config-group-titles">
+                  <h3><t t-esc="t('Required Odoo Modules &amp; Master Schema')"/></h3>
+                  <p class="pbi-config-note">
+                    <t t-esc="t('Verifies presence of core master-data models (Sales Type Groups, Categories, Sales Budget, Territory &amp; Classifications).')"/>
+                  </p>
+                </div>
+              </div>
+              <div class="pbi-config-group-meta">
+                <span class="pbi-config-chip warn" t-if="missingRequirements()">
+                  <t t-esc="missingRequirements()"/> <t t-esc="t('missing')"/>
+                </span>
+                <span class="pbi-config-chip ok" t-if="!missingRequirements() and state.requirements.length">
+                  <t t-esc="t('All present')"/>
+                </span>
+                <span class="pbi-config-count-chip">
+                  <t t-esc="state.requirements.length"/> <t t-esc="t('apps')"/>
+                </span>
+                <button type="button" class="pbi-config-group-toggle" t-att-aria-expanded="isWorkflowGroupCollapsed('requirements') ? 'false' : 'true'">
+                  <span class="pbi-config-chevron"><t t-esc="isWorkflowGroupCollapsed('requirements') ? '▼' : '▲'"/></span>
+                  <span class="pbi-config-toggle-text"><t t-esc="isWorkflowGroupCollapsed('requirements') ? t('Expand') : t('Collapse')"/></span>
+                </button>
+              </div>
+            </div>
+
+            <div class="pbi-config-group-content" t-if="!isWorkflowGroupCollapsed('requirements')">
+              <p class="pbi-config-note pbi-config-hint">
+                <strong>Nothing here installs an Odoo module, deliberately.</strong>
+                Installing one runs its own hooks, data files and migrations
+                against this database; Apps knows how to do that and a
+                maintenance page only knows how to start it. Install from
+                <strong>Apps</strong>, then press Check again below.
+              </p>
+
+              <div class="pbi-config-cards">
+                <t t-foreach="state.requirements" t-as="req" t-key="req.key">
+                  <div t-attf-class="pbi-config-card {{ req.state === 'missing' and req.critical ? 'pbi-config-card-critical' : '' }}">
+                    <div class="pbi-config-card-head">
+                      <span class="pbi-config-step-badge" t-if="req.critical" style="background: #b91c1c; color: #fff;">Required</span>
+                      <h3><t t-esc="req.name"/></h3>
+                      <span t-att-class="'pbi-config-chip ' + (req.state === 'missing' ? 'warn' : (req.state === 'partial' ? 'muted' : 'ok'))">
+                        <t t-esc="req.state === 'missing' ? t('Not on this server')
+                                  : (req.state === 'partial' ? t('Older version') : t('Present'))"/>
+                      </span>
+                    </div>
+
+                    <p class="pbi-config-note"><t t-esc="req.provides"/></p>
+
+                    <p class="pbi-config-note pbi-config-impact" t-if="req.state === 'missing'">
+                      <strong><t t-esc="t('What this costs:')"/></strong> <t t-esc="req.impact"/>
+                    </p>
+                    <p class="pbi-config-note pbi-config-impact" t-if="req.state === 'partial' and req.degrades">
+                      <strong><t t-esc="t('What this costs:')"/></strong> <t t-esc="req.degrades"/>
+                    </p>
+
+                    <p class="pbi-config-note" t-if="req.missing_required.length">
+                      <t t-esc="t('Absent from this database:')"/>
+                      <t t-foreach="req.missing_required" t-as="m" t-key="m_index">
+                        <code class="pbi-config-miss"><t t-esc="m"/></code>
+                      </t>
+                    </p>
+                    <p class="pbi-config-note" t-if="req.missing_optional.length">
+                      <t t-esc="t('Also absent, and it only costs a caption:')"/>
+                      <t t-foreach="req.missing_optional" t-as="m" t-key="m_index">
+                        <code class="pbi-config-miss"><t t-esc="m"/></code>
+                      </t>
+                    </p>
+
+                    <p class="pbi-config-note" t-if="req.modules.length">
+                      <t t-esc="req.modules.length > 1 ? t('Install ANY ONE of these from Apps:') : t('Module:')"/>
+                      <t t-foreach="req.modules" t-as="m" t-key="m.name">
+                        <span t-attf-class="pbi-config-modchip {{ m.state === 'installed' ? 'ok' : (m.state === 'absent' ? 'warn' : 'muted') }}">
+                          <code><t t-esc="m.name"/></code>
+                          <t t-esc="m.state === 'installed' ? t('installed')
+                                    : (m.state === 'absent' ? t('not on disk') : m.state)"/>
+                          <t t-if="m.state === 'installed' and m.version"> · <t t-esc="m.version"/></t>
+                        </span>
+                      </t>
+                    </p>
+                    <p class="pbi-config-note" t-if="req.state !== 'ok' and req.installed_any">
+                      <strong><t t-esc="t('Installed, but older than the boards expect.')"/></strong>
+                      <t t-esc="t('Upgrade the module rather than installing it again — the table or column named above was added after this version.')"/>
+                    </p>
+                    <p class="pbi-config-note pbi-config-hint" t-if="req.fix_here">
+                      <strong><t t-esc="t('No module owns this any more.')"/></strong>
+                      <t t-esc="t('Do not look for it in Apps — Step 3 below creates the table, restores the column and rebuilds the view.')"/>
+                    </p>
+                  </div>
+                </t>
+              </div>
+
+              <div class="pbi-config-actions">
+                <button type="button" class="pbi-config-btn"
+                        t-att-disabled="state.reqBusy ? 'disabled' : false"
+                        t-on-click="() => this.loadRequirements(true)">
+                  <t t-esc="state.reqBusy ? t('Checking…') : t('Check again')"/>
+                </button>
+              </div>
+              <t t-call="pbi_dashboard_configurations.progress_box">
+                <t t-set="pkey" t-value="'reqs_check'"/>
+              </t>
+            </div>
+          </div>
+
+          <!-- 1b. Python packages. These this page CAN install: the request
+               carries a key looked up in optional_deps, never a package name. -->
+          <div t-att-class="'pbi-config-group ' + (isCapabilitiesCollapsed() ? 'collapsed' : 'expanded')">
+            <div class="pbi-config-group-header" t-on-click="() => this.toggleCapabilities()">
+              <div class="pbi-config-group-info">
+                <span class="pbi-config-date-badge workflow"><t t-esc="t('Packages')"/></span>
+                <div class="pbi-config-group-titles">
+                  <h3><t t-esc="t('Optional Python Packages &amp; Export Libraries')"/></h3>
+                  <p class="pbi-config-note"><t t-esc="t('Inspects and installs optional Python libraries for Excel and PowerPoint dashboard exports.')"/></p>
+                </div>
+              </div>
+              <div class="pbi-config-group-meta">
+                <span class="pbi-config-count-chip">
+                  <t t-esc="state.capabilities.length"/> <t t-esc="t('packages')"/>
+                </span>
+                <button type="button" class="pbi-config-group-toggle" t-att-aria-expanded="isCapabilitiesCollapsed() ? 'false' : 'true'">
+                  <span class="pbi-config-chevron"><t t-esc="isCapabilitiesCollapsed() ? '▼' : '▲'"/></span>
+                  <span class="pbi-config-toggle-text"><t t-esc="isCapabilitiesCollapsed() ? t('Expand') : t('Collapse')"/></span>
+                </button>
+              </div>
+            </div>
+
+            <div class="pbi-config-group-content" t-if="!isCapabilitiesCollapsed()">
+              <div class="pbi-config-cards">
+                <t t-foreach="state.capabilities" t-as="cap" t-key="cap.key">
+                  <div class="pbi-config-card">
+                    <div class="pbi-config-card-head">
+                      <h3><t t-esc="cap.feature"/></h3>
+                      <span t-att-class="'pbi-config-chip ' + (cap.state === 'missing' ? 'warn' : (cap.state === 'restart' ? 'muted' : 'ok'))">
+                        <t t-esc="cap.state === 'missing' ? t('Not installed')
+                                  : (cap.state === 'restart' ? t('Restart needed')
+                                  : (cap.state === 'builtin' ? t('Built in') : t('Available')))"/>
+                      </span>
+                    </div>
+                    <p class="pbi-config-note"><t t-esc="cap.note"/></p>
+                    <p class="pbi-config-note" t-if="cap.affects and cap.state !== 'ok' and cap.state !== 'builtin'">
+                      <t t-esc="cap.affects"/>
+                    </p>
+                    <t t-if="cap.install and cap.state === 'missing'">
+                      <p class="pbi-config-note pbi-config-cmd-label">
+                        <t t-esc="t('Install via one-click button below or run this command on the server host:')"/>
+                      </p>
+                      <div class="pbi-config-cmd">
+                        <code t-att-id="'cmd-' + cap.key"><t t-esc="cap.install"/></code>
+                        <button type="button" class="pbi-config-btn ghost"
+                                t-on-click="() => this.copyCommand(cap.key)">
+                          <t t-esc="state.copied === cap.key ? t('Copied') : t('Copy')"/>
+                        </button>
+                      </div>
+                      <div class="pbi-config-actions">
+                        <button type="button" class="pbi-config-btn danger"
+                                t-att-disabled="state.installing ? 'disabled' : false"
+                                t-on-click="() => this.installCapability(cap.key)">
+                          <t t-esc="state.installing === cap.key ? t('Installing…') : t('Install now')"/>
+                        </button>
+                        <button type="button" class="pbi-config-btn ghost sm danger"
+                                t-if="state.installing === cap.key"
+                                t-on-click="() => this.cancelAction('cap_' + cap.key)">
+                          <t t-esc="t('Cancel')"/>
+                        </button>
+                        <span class="pbi-config-note" t-if="state.installMessage[cap.key]">
+                          <t t-esc="state.installMessage[cap.key]"/>
+                        </span>
+                      </div>
+                      <pre class="pbi-config-narration" t-if="state.installOutput[cap.key]"><t t-esc="state.installOutput[cap.key]"/></pre>
+                    </t>
+                    <t t-call="pbi_dashboard_configurations.progress_box">
+                      <t t-set="pkey" t-value="'cap_' + cap.key"/>
+                    </t>
+                  </div>
+                </t>
+              </div>
+
+              <div class="pbi-config-actions">
+                <button type="button" class="pbi-config-btn"
+                        t-att-disabled="state.capsBusy ? 'disabled' : false"
+                        t-on-click="() => this.loadCapabilities(true)">
+                  <t t-esc="state.capsBusy ? t('Checking…') : t('Check again')"/>
+                </button>
+                <button type="button" class="pbi-config-btn ghost sm danger"
+                        t-if="state.capsBusy"
+                        t-on-click="() => this.cancelAction('caps_check')">
+                  <t t-esc="t('Cancel')"/>
+                </button>
+              </div>
+              <t t-call="pbi_dashboard_configurations.progress_box">
+                <t t-set="pkey" t-value="'caps_check'"/>
+              </t>
+            </div>
+          </div>
+
+          <!-- 1c. Cache & Service Restart -->
+          <div t-att-class="'pbi-config-group ' + (isWorkflowGroupCollapsed('restart') ? 'collapsed' : 'expanded')">
+            <div class="pbi-config-group-header" t-on-click="() => this.toggleWorkflowGroup('restart')">
+              <div class="pbi-config-group-info">
+                <span class="pbi-config-date-badge workflow"><t t-esc="t('Maintenance')"/></span>
+                <div class="pbi-config-group-titles">
+                  <h3><t t-esc="t('Cache Maintenance &amp; Container Restart')"/></h3>
+                  <p class="pbi-config-note"><t t-esc="t('Purges compiled web assets and restarts the application container to apply new libraries and frontend code.')"/></p>
+                </div>
+              </div>
+              <div class="pbi-config-group-meta">
+                <span class="pbi-config-count-chip">1 <t t-esc="t('tool')"/></span>
+                <button type="button" class="pbi-config-group-toggle" t-att-aria-expanded="isWorkflowGroupCollapsed('restart') ? 'false' : 'true'">
+                  <span class="pbi-config-chevron"><t t-esc="isWorkflowGroupCollapsed('restart') ? '▼' : '▲'"/></span>
+                  <span class="pbi-config-toggle-text"><t t-esc="isWorkflowGroupCollapsed('restart') ? t('Expand') : t('Collapse')"/></span>
+                </button>
+              </div>
+            </div>
+
+            <div class="pbi-config-group-content" t-if="!isWorkflowGroupCollapsed('restart')">
+              <div class="pbi-config-cards">
+                <div class="pbi-config-card">
+                  <div class="pbi-config-card-head">
+                    <h3><t t-esc="t('Purge Web Assets Cache &amp; Restart Odoo')"/></h3>
+                    <span class="pbi-config-chip warn"><t t-esc="t('Brief interruption')"/></span>
+                  </div>
+                  <p class="pbi-config-note">
+                    Deletes compiled <code>web.assets_*</code> bundles and restarts the Odoo web container. Ensures newly installed Python packages are activated and any JS, XML, or CSS changes are served fresh. Active browser sessions will automatically reconnect once the service resumes.
+                  </p>
+                  <div class="pbi-config-cmd">
+                    <code id="cmd-restart-odoo">docker restart cloud-web-1</code>
+                    <button type="button" class="pbi-config-btn ghost"
+                            t-on-click="() => this.copyCommand('restart-odoo')">
+                      <t t-esc="state.copied === 'restart-odoo' ? t('Copied') : t('Copy')"/>
+                    </button>
+                  </div>
+                  <div class="pbi-config-actions">
+                    <button type="button" class="pbi-config-btn danger"
+                            t-att-disabled="state.purgingAndRestarting ? 'disabled' : false"
+                            t-on-click="() => this.purgeAndRestart()">
+                      <t t-esc="state.purgingAndRestarting ? t('Restarting…') : t('Purge cache &amp; restart Odoo')"/>
+                    </button>
+                    <button type="button" class="pbi-config-btn ghost"
+                            t-att-disabled="state.purgingAssets ? 'disabled' : false"
+                            t-on-click="() => this.purgeWebAssets()">
+                      <t t-esc="state.purgingAssets ? t('Purging…') : t('Purge assets only')"/>
+                    </button>
+                    <span class="pbi-config-note" t-if="state.purgeAssetsMessage"><t t-esc="state.purgeAssetsMessage"/></span>
+                  </div>
+                  <t t-call="pbi_dashboard_configurations.progress_box">
+                    <t t-set="pkey" t-value="'purge_and_restart'"/>
+                  </t>
+                  <t t-call="pbi_dashboard_configurations.progress_box">
+                    <t t-set="pkey" t-value="'purge_assets'"/>
+                  </t>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================================================================
+           STEP 1 — Data Staging Schema & Live Views
+           ================================================================ -->
+      <section class="pbi-config-section" t-if="!state.loading">
+        <div class="pbi-config-section-header">
+          <div>
+            <h2><t t-esc="t('Step 1 · Data Staging Schema &amp; Live Views')"/></h2>
+            <p class="pbi-config-note pbi-config-section-note">
+              Initializes or updates the central transactional staging table (<code>bidata</code>) and its real-time analytical calculation view (<code>v_bidata_live</code>).
+            </p>
+          </div>
+          <div class="pbi-config-group-controls">
+            <button type="button" class="pbi-config-btn ghost sm" t-on-click="() => this.toggleWorkflowGroup('bidataschema')">
+              <t t-esc="isWorkflowGroupCollapsed('bidataschema') ? t('Expand section') : t('Collapse section')"/>
+            </button>
+          </div>
+        </div>
+
+        <div class="pbi-config-groups">
+          <div t-att-class="'pbi-config-group ' + (isWorkflowGroupCollapsed('bidataschema') ? 'collapsed' : 'expanded')">
+            <div class="pbi-config-group-header" t-on-click="() => this.toggleWorkflowGroup('bidataschema')">
+              <div class="pbi-config-group-info">
+                <span class="pbi-config-date-badge workflow highlight">★ Step 1</span>
+                <div class="pbi-config-group-titles">
+                  <h3><t t-esc="t('Initialize Staging Table &amp; Live Calculations')"/></h3>
+                  <p class="pbi-config-note"><t t-esc="t('Creates the staging table with full column indexing and configures real-time calculations. Safe to run multiple times.')"/></p>
+                </div>
+              </div>
+              <div class="pbi-config-group-meta">
+                <span class="pbi-config-count-chip">2 <t t-esc="t('tools')"/></span>
+                <button type="button" class="pbi-config-group-toggle" t-att-aria-expanded="isWorkflowGroupCollapsed('bidataschema') ? 'false' : 'true'">
+                  <span class="pbi-config-chevron"><t t-esc="isWorkflowGroupCollapsed('bidataschema') ? '▼' : '▲'"/></span>
+                  <span class="pbi-config-toggle-text"><t t-esc="isWorkflowGroupCollapsed('bidataschema') ? t('Expand') : t('Collapse')"/></span>
+                </button>
+              </div>
+            </div>
+
+            <div class="pbi-config-group-content" t-if="!isWorkflowGroupCollapsed('bidataschema')">
+              <div class="pbi-config-cards">
+
+                <div class="pbi-config-card" style="border-left: 4px solid #0369a1;">
+                  <div class="pbi-config-card-head">
+                    <span class="pbi-config-step-badge" style="background: #0369a1; color: #fff;">1a</span>
+                    <h3><t t-esc="t('Create / Upgrade Bidata Table &amp; Live View')"/></h3>
+                    <span class="pbi-config-chip warn"><t t-esc="t('Schema update')"/></span>
+                  </div>
+                  <p class="pbi-config-note">
+                    Creates or upgrades the schema for the central staging table (<code>bidata</code>) with full column indexing, and compiles the live calculation view (<code>v_bidata_live</code>). Ensures all required transactional columns and query optimizations exist.
+                  </p>
+                  <p class="pbi-config-note pbi-config-hint">
+                    <strong>Initializes the table structure and indexes.</strong> Run during initial system setup or whenever new staging feed columns are added. Staging data rows are populated in Step 2.
+                  </p>
+                  <p class="pbi-config-file">create_bidata_table_and_live_view.sql</p>
+                  <div class="pbi-config-actions">
+                    <button type="button" class="pbi-config-btn danger"
+                            t-att-disabled="state.running ? 'disabled' : false"
+                            t-on-click="() => this.runScript({key: 'create_bidata_table_and_live_view', name: 'Create the bidata table and v_bidata_live', file: 'create_bidata_table_and_live_view.sql', writes: true})">
+                      <t t-esc="state.running === 'create_bidata_table_and_live_view' ? t('Running…') : t('Create / Upgrade Table &amp; View')"/>
+                    </button>
+                    <button type="button" class="pbi-config-btn ghost sm danger"
+                            t-if="state.running === 'create_bidata_table_and_live_view'"
+                            t-on-click="() => this.cancelAction('create_bidata_table_and_live_view')">
+                      <t t-esc="t('Cancel')"/>
+                    </button>
+                  </div>
+                  <t t-call="pbi_dashboard_configurations.progress_box">
+                    <t t-set="pkey" t-value="'create_bidata_table_and_live_view'"/>
+                  </t>
+                  <t t-call="pbi_dashboard_configurations.script_result_box">
+                    <t t-set="skey" t-value="'create_bidata_table_and_live_view'"/>
+                  </t>
+                </div>
+
+                <div class="pbi-config-card" style="border-left: 4px solid #0369a1;">
+                  <div class="pbi-config-card-head">
+                    <span class="pbi-config-step-badge" style="background: #0369a1; color: #fff;">1b</span>
+                    <h3><t t-esc="t('Apply Case-Insensitive Product &amp; Unit Matching')"/></h3>
+                    <span class="pbi-config-chip warn"><t t-esc="t('Calculation fix')"/></span>
+                  </div>
+                  <p class="pbi-config-note">
+                    Ensures product part codes and machine unit gating tags (<code>'02'</code>) match case-insensitively across transactional records and master catalogs. Resolves instances where part numbers entered in mixed casing could lead to zero-quantity units.
+                  </p>
+                  <p class="pbi-config-file">v_bidata_live_case_insensitive_unit_gate.sql</p>
+                  <div class="pbi-config-actions">
+                    <button type="button" class="pbi-config-btn danger"
+                            t-att-disabled="state.running ? 'disabled' : false"
+                            t-on-click="() => this.runScript({key: 'v_bidata_live_case_insensitive_unit_gate', name: 'Case-insensitive unit gate for v_bidata_live', file: 'v_bidata_live_case_insensitive_unit_gate.sql', writes: true})">
+                      <t t-esc="state.running === 'v_bidata_live_case_insensitive_unit_gate' ? t('Running…') : t('Apply Unit-Gate Fix')"/>
+                    </button>
+                    <button type="button" class="pbi-config-btn ghost sm danger"
+                            t-if="state.running === 'v_bidata_live_case_insensitive_unit_gate'"
+                            t-on-click="() => this.cancelAction('v_bidata_live_case_insensitive_unit_gate')">
+                      <t t-esc="t('Cancel')"/>
+                    </button>
+                  </div>
+                  <t t-call="pbi_dashboard_configurations.progress_box">
+                    <t t-set="pkey" t-value="'v_bidata_live_case_insensitive_unit_gate'"/>
+                  </t>
+                  <t t-call="pbi_dashboard_configurations.script_result_box">
+                    <t t-set="skey" t-value="'v_bidata_live_case_insensitive_unit_gate'"/>
+                  </t>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           STEP 2 — Transaction Data Migration & Diagnostics
+           ================================================================ -->
+      <section class="pbi-config-section" t-if="!state.loading">
+        <div class="pbi-config-section-header">
+          <div>
+            <h2><t t-esc="t('Step 2 · Transaction Data Migration &amp; Diagnostics')"/></h2>
+            <p class="pbi-config-note pbi-config-section-note">
+              Export and import multi-year sales transaction datasets across environments and audit feed completeness against ERP source records.
+            </p>
+          </div>
+          <div class="pbi-config-group-controls">
+            <button type="button" class="pbi-config-btn ghost sm" t-on-click="() => this.toggleWorkflowGroup('bidataimport')">
+              <t t-esc="isWorkflowGroupCollapsed('bidataimport') ? t('Expand section') : t('Collapse section')"/>
+            </button>
+          </div>
+        </div>
+
+        <div class="pbi-config-groups">
+          <div t-att-class="'pbi-config-group ' + (isWorkflowGroupCollapsed('bidataimport') ? 'collapsed' : 'expanded')">
+            <div class="pbi-config-group-header" t-on-click="() => this.toggleWorkflowGroup('bidataimport')">
+              <div class="pbi-config-group-info">
+                <span class="pbi-config-date-badge workflow highlight">★ Step 2</span>
+                <div class="pbi-config-group-titles">
+                  <h3><t t-esc="t('Data Export, Import &amp; Completeness Audit')"/></h3>
+                  <p class="pbi-config-note"><t t-esc="t('Export multi-year sales data to CSV, import into target databases, and verify extraction completeness.')"/></p>
+                </div>
+              </div>
+              <div class="pbi-config-group-meta">
+                <span class="pbi-config-count-chip">2 <t t-esc="t('tools')"/></span>
+                <button type="button" class="pbi-config-group-toggle" t-att-aria-expanded="isWorkflowGroupCollapsed('bidataimport') ? 'false' : 'true'">
+                  <span class="pbi-config-chevron"><t t-esc="isWorkflowGroupCollapsed('bidataimport') ? '▼' : '▲'"/></span>
+                  <span class="pbi-config-toggle-text"><t t-esc="isWorkflowGroupCollapsed('bidataimport') ? t('Expand') : t('Collapse')"/></span>
+                </button>
+              </div>
+            </div>
+
+            <div class="pbi-config-group-content" t-if="!isWorkflowGroupCollapsed('bidataimport')">
+              <div class="pbi-config-cards">
+
+                <div class="pbi-config-card" style="border-left: 4px solid #0369a1;">
+                  <div class="pbi-config-card-head">
+                    <span class="pbi-config-step-badge" style="background: #0369a1; color: #fff;">2a</span>
+                    <h3><t t-esc="t('Export / Import Transactional Feed Data')"/></h3>
+                    <span class="pbi-config-chip warn"><t t-esc="t('Data transfer')"/></span>
+                  </div>
+                  <p class="pbi-config-note">
+                    Allows exporting multi-year transactional datasets to CSV and importing them into target environments with automated pre-validation and row-level conflict resolution. Inserts new rows and updates existing records safely without deleting data.
+                  </p>
+                  <p class="pbi-config-note pbi-config-hint" t-if="!state.bidataYears.length">
+                    <strong><t t-esc="t('No existing years found to export on this server.')"/></strong>
+                    <t t-esc="t('Run Step 1 to create the table structure first, or upload a dataset exported from another environment.')"/>
+                  </p>
+                  <div class="pbi-config-actions pbi-config-bidata">
+                    <t t-foreach="state.bidataYears" t-as="y" t-key="y.year">
+                      <label class="pbi-config-year">
+                        <input type="checkbox" t-att-checked="state.bidataPick[y.year] ? 'checked' : false"
+                                t-on-change="(ev) => this.pickYear(y.year, ev.target.checked)"/>
+                        <t t-esc="y.year"/> <span class="pbi-config-note">(<t t-esc="y.rows"/>)</span>
+                      </label>
+                    </t>
+                    <button type="button" class="pbi-config-btn" t-on-click="() => this.exportBidata()">
+                      <t t-esc="t('Export selected')"/>
+                    </button>
+                    <input type="file" accept=".csv" id="bidata-file" class="pbi-config-file-input"/>
+                    <button type="button" class="pbi-config-btn"
+                            t-att-disabled="state.bidataBusy ? 'disabled' : false"
+                            t-on-click="() => this.importBidata(false)">
+                      <t t-esc="state.bidataBusy ? t('Reading…') : t('Check file')"/>
+                    </button>
+                    <button type="button" class="pbi-config-btn danger"
+                            t-if="state.bidataDiagnosis"
+                            t-att-disabled="state.bidataBusy ? 'disabled' : false"
+                            t-on-click="() => this.importBidata(true)">
+                      <t t-esc="t('Apply import')"/>
+                    </button>
+                    <button type="button" class="pbi-config-btn ghost sm danger"
+                            t-if="state.bidataBusy"
+                            t-on-click="() => this.cancelAction('bidata_import')">
+                      <t t-esc="t('Cancel')"/>
+                    </button>
+                  </div>
+                  <p class="pbi-config-note" t-if="state.bidataMessage"><t t-esc="state.bidataMessage"/></p>
+                  <t t-call="pbi_dashboard_configurations.progress_box">
+                    <t t-set="pkey" t-value="'bidata_import'"/>
+                  </t>
+                </div>
+
+                <div class="pbi-config-card">
+                  <div class="pbi-config-card-head">
+                    <span class="pbi-config-step-badge">2b</span>
+                    <h3><t t-esc="t('Diagnose Transaction Feed Completeness')"/></h3>
+                    <span class="pbi-config-chip ok"><t t-esc="t('Read only')"/></span>
+                  </div>
+                  <p class="pbi-config-note">
+                    Compares posted ERP source invoices against staged feed records month-by-month to identify un-extracted documents, unposted statuses, or volume discrepancies.
+                  </p>
+                  <p class="pbi-config-file">check_bidata_feed_gaps.sql</p>
+                  <div class="pbi-config-actions">
+                    <button type="button" class="pbi-config-btn"
+                            t-att-disabled="state.running ? 'disabled' : false"
+                            t-on-click="() => this.runScript({key: 'check_bidata_feed_gaps', name: 'Check bidata feed gaps', file: 'check_bidata_feed_gaps.sql', writes: false})">
+                      <t t-esc="state.running === 'check_bidata_feed_gaps' ? t('Checking…') : t('Check feed gaps')"/>
+                    </button>
+                    <button type="button" class="pbi-config-btn ghost sm danger"
+                            t-if="state.running === 'check_bidata_feed_gaps'"
+                            t-on-click="() => this.cancelAction('check_bidata_feed_gaps')">
+                      <t t-esc="t('Cancel')"/>
+                    </button>
+                  </div>
+                  <t t-call="pbi_dashboard_configurations.progress_box">
+                    <t t-set="pkey" t-value="'check_bidata_feed_gaps'"/>
+                  </t>
+                  <t t-call="pbi_dashboard_configurations.script_result_box">
+                    <t t-set="skey" t-value="'check_bidata_feed_gaps'"/>
+                  </t>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           STEP 3 — Master Taxonomy, Views Rebuild & Verification
+           ================================================================ -->
+      <section class="pbi-config-section" t-if="!state.loading">
+        <div class="pbi-config-section-header">
+          <div>
+            <h2><t t-esc="t('Step 3 · Master Taxonomy, Views Rebuild &amp; Verification')"/></h2>
+            <p class="pbi-config-note pbi-config-section-note">
+              Aligns all 10 analytical dimensions, links multi-year budget targets, compiles high-performance materialized views, and validates end-to-end data integrity.
+            </p>
+          </div>
+          <div class="pbi-config-group-controls">
+            <button type="button" class="pbi-config-btn ghost sm" t-on-click="() => this.toggleWorkflowGroup('masters')">
+              <t t-esc="isWorkflowGroupCollapsed('masters') ? t('Expand section') : t('Collapse section')"/>
+            </button>
+          </div>
+        </div>
+
+        <div class="pbi-config-groups">
+          <div t-att-class="'pbi-config-group ' + (isWorkflowGroupCollapsed('masters') ? 'collapsed' : 'expanded')">
+            <div class="pbi-config-group-header" t-on-click="() => this.toggleWorkflowGroup('masters')">
+              <div class="pbi-config-group-info">
+                <span class="pbi-config-date-badge workflow highlight">★ Step 3</span>
+                <div class="pbi-config-group-titles">
+                  <h3><t t-esc="t('Master Alignment, Analytical Views Rebuild &amp; Audit Pipeline')"/></h3>
+                  <p class="pbi-config-note"><t t-esc="t('Align master taxonomies, link budget targets, rebuild fact views, and audit data links across all 10 dimensions.')"/></p>
+                </div>
+              </div>
+              <div class="pbi-config-group-meta">
+                <span class="pbi-config-count-chip">5 <t t-esc="t('tools')"/></span>
+                <button type="button" class="pbi-config-group-toggle" t-att-aria-expanded="isWorkflowGroupCollapsed('masters') ? 'false' : 'true'">
+                  <span class="pbi-config-chevron"><t t-esc="isWorkflowGroupCollapsed('masters') ? '▼' : '▲'"/></span>
+                  <span class="pbi-config-toggle-text"><t t-esc="isWorkflowGroupCollapsed('masters') ? t('Expand') : t('Collapse')"/></span>
+                </button>
+              </div>
+            </div>
+
+            <div class="pbi-config-group-content" t-if="!isWorkflowGroupCollapsed('masters')">
+              <div class="pbi-config-cards">
+
+                <!-- 3a. The whole pipeline, in one transaction. -->
+                <div class="pbi-config-card" style="border-left: 4px solid var(--series-1, #2f5d8c);">
+                  <div class="pbi-config-card-head">
+                    <span class="pbi-config-step-badge" style="background: #2563eb; color: #fff;">3a</span>
+                    <h3><t t-esc="t('★ Complete Master Sync &amp; Gap Repair')"/></h3>
+                    <span class="pbi-config-chip warn"><t t-esc="t('Full pipeline')"/></span>
+                  </div>
+                  <p class="pbi-config-note">
+                    Executes end-to-end master data synchronization in a single atomic transaction:
+                    <strong>(1)</strong> Normalizes part numbers in transactional details,
+                    <strong>(2)</strong> Backfills uncatalogued selling parts &amp; missing customers from master records,
+                    <strong>(3)</strong> Synchronizes machine unit-gating (<code>'02'</code>) and AC scope (<code>'10'</code>) product tags,
+                    <strong>(4)</strong> Repairs taxonomy categories &amp; regional links,
+                    <strong>(5)</strong> Attributes multi-year salesman budget targets without target inflation,
+                    <strong>(6)</strong> Optimizes join indexes on master tables,
+                    <strong>(7)</strong> Rebuilds fact snapshot (<code>v_pbi_sales_sman_fact</code>) and budget helpers, and
+                    <strong>(8)</strong> Generates an automated post-sync verification audit across Target, This Year &amp; Last Year sales.
+                  </p>
+                  <p class="pbi-config-file">sync_and_repair_all_masters.sql</p>
+                  <div class="pbi-config-actions">
+                    <button type="button" class="pbi-config-btn danger"
+                            t-att-disabled="state.running ? 'disabled' : false"
+                            t-on-click="() => this.runScript({key: 'sync_and_repair_all_masters', name: '★ Complete Master Sync &amp; Gap Repair', file: 'sync_and_repair_all_masters.sql', writes: true})">
+                      <t t-esc="state.running === 'sync_and_repair_all_masters' ? t('Running Sync…') : t('Run Complete Master Sync')"/>
+                    </button>
+                    <button type="button" class="pbi-config-btn ghost sm danger"
+                            t-if="state.running === 'sync_and_repair_all_masters'"
+                            t-on-click="() => this.cancelAction('sync_and_repair_all_masters')">
+                      <t t-esc="t('Cancel')"/>
+                    </button>
+                  </div>
+                  <t t-call="pbi_dashboard_configurations.progress_box">
+                    <t t-set="pkey" t-value="'sync_and_repair_all_masters'"/>
+                  </t>
+                  <t t-call="pbi_dashboard_configurations.script_result_box">
+                    <t t-set="skey" t-value="'sync_and_repair_all_masters'"/>
+                  </t>
+                </div>
+
+                <!-- 3b. Product sub-group link repair -->
+                <div class="pbi-config-card" style="border-left: 4px solid var(--series-3, #b45309);">
+                  <div class="pbi-config-card-head">
+                    <span class="pbi-config-step-badge" style="background: #b45309; color: #fff;">3b</span>
+                    <h3><t t-esc="t('Restore Product Sub-Group Taxonomy (product_family)')"/></h3>
+                    <span class="pbi-config-chip warn"><t t-esc="t('Taxonomy repair')"/></span>
+                  </div>
+                  <p class="pbi-config-note">
+                    Restores and links product category families across categories and budget lines to ensure consistent reporting at the product sub-group dimension. Reconnects category family relations, validates uniqueness constraints, and refreshes analytical view bindings.
+                  </p>
+                  <p class="pbi-config-file">restore_product_category_family_link.sql</p>
+                  <div class="pbi-config-actions">
+                    <button type="button" class="pbi-config-btn danger"
+                            t-att-disabled="state.running ? 'disabled' : false"
+                            t-on-click="() => this.runScript({key: 'restore_product_category_family_link', name: t('Restore Product Sub-Group link (product_family)'), file: 'restore_product_category_family_link.sql', writes: true})">
+                      <t t-esc="state.running === 'restore_product_category_family_link' ? t('Running…') : t('Restore Sub-Group Taxonomy')"/>
+                    </button>
+                    <button type="button" class="pbi-config-btn ghost sm danger"
+                            t-if="state.running === 'restore_product_category_family_link'"
+                            t-on-click="() => this.cancelAction('restore_product_category_family_link')">
+                      <t t-esc="t('Cancel')"/>
+                    </button>
+                  </div>
+                  <t t-call="pbi_dashboard_configurations.progress_box">
+                    <t t-set="pkey" t-value="'restore_product_category_family_link'"/>
+                  </t>
+                  <t t-call="pbi_dashboard_configurations.script_result_box">
+                    <t t-set="skey" t-value="'restore_product_category_family_link'"/>
+                  </t>
+                </div>
+
+                <!-- 3c. De-duplicate Partner Classification -->
+                <div class="pbi-config-card" style="border-left: 4px solid #b91c1c;">
+                  <div class="pbi-config-card-head">
+                    <span class="pbi-config-step-badge" style="background: #b91c1c; color: #fff;">3c</span>
+                    <h3><t t-esc="t('De-duplicate Partner Classification Master')"/></h3>
+                    <span class="pbi-config-chip warn"><t t-esc="t('Master cleanup')"/></span>
+                  </div>
+                  <p class="pbi-config-note">
+                    Identifies and merges duplicate partner classification master records sharing the same classification code. Repoints referencing foreign keys and enforces unique code constraints to prevent duplicate sales and target aggregation across dashboards.
+                  </p>
+                  <p class="pbi-config-file">merge_duplicate_partner_classifications.sql</p>
+                  <div class="pbi-config-actions">
+                    <button type="button" class="pbi-config-btn danger"
+                            t-att-disabled="state.running ? 'disabled' : false"
+                            t-on-click="() => this.runScript({key: 'merge_duplicate_partner_classifications', name: 'De-duplicate Partner Classification', file: 'merge_duplicate_partner_classifications.sql', writes: true})">
+                      <t t-esc="state.running === 'merge_duplicate_partner_classifications' ? t('Running…') : t('Merge Duplicate Records')"/>
+                    </button>
+                    <button type="button" class="pbi-config-btn ghost sm danger"
+                            t-if="state.running === 'merge_duplicate_partner_classifications'"
+                            t-on-click="() => this.cancelAction('merge_duplicate_partner_classifications')">
+                      <t t-esc="t('Cancel')"/>
+                    </button>
+                  </div>
+                  <t t-call="pbi_dashboard_configurations.progress_box">
+                    <t t-set="pkey" t-value="'merge_duplicate_partner_classifications'"/>
+                  </t>
+                  <t t-call="pbi_dashboard_configurations.script_result_box">
+                    <t t-set="skey" t-value="'merge_duplicate_partner_classifications'"/>
+                  </t>
+                </div>
+
+                <!-- 3d. View compilation & bring-up -->
+                <div class="pbi-config-card" style="border-left: 4px solid #7c3aed;">
+                  <div class="pbi-config-card-head">
+                    <span class="pbi-config-step-badge" style="background: #7c3aed; color: #fff;">3d</span>
+                    <h3><t t-esc="t('Rebuild Fact and Budget Analytical Views')"/></h3>
+                    <span class="pbi-config-chip warn"><t t-esc="t('Recompile &amp; populate')"/></span>
+                  </div>
+                  <p class="pbi-config-note">
+                    Executes the full 5-step analytical view compilation pipeline:
+                    <strong>(1) Validates schema prerequisites</strong>: Checks ERP feed tables, product categories, machine unit tags (<code>'02'</code>), and budget tables.
+                    <strong>(2) Restores master taxonomy &amp; product tags</strong>: Reconnects category family relations and product gating tags.
+                    <strong>(3) Attributes salesman targets</strong>: Populates salesman and territory assignments on multi-year <code>sales_budget_line</code> without target inflation.
+                    <strong>(4) Recompiles and populates materialized views</strong>: Drops, recompiles, and fully repopulates the unified 11-level fact table (<code>v_pbi_sales_sman_fact</code>) and budget helpers via <code>init()</code>.
+                    <strong>(5) Diagnostic verification</strong>: Audits module dependencies and schema health.
+                  </p>
+                  <div class="pbi-config-actions">
+                    <button type="button" class="pbi-config-btn"
+                            t-att-disabled="state.bringUpRunning ? 'disabled' : false"
+                            t-on-click="() => this.runBringUp(true)">
+                      <t t-esc="state.bringUpRunning === 'dry' ? t('Running…') : t('Probe only (changes nothing)')"/>
+                    </button>
+                    <button type="button" class="pbi-config-btn danger"
+                            t-att-disabled="state.bringUpRunning ? 'disabled' : false"
+                            t-on-click="() => this.runBringUp(false)">
+                      <t t-esc="state.bringUpRunning === 'run' ? t('Running…') : t('Rebuild the views')"/>
+                    </button>
+                  </div>
+                  <t t-call="pbi_dashboard_configurations.progress_box">
+                    <t t-set="pkey" t-value="'bring_up'"/>
+                  </t>
+
+                  <div class="pbi-config-output" t-if="state.bringUpSteps" style="margin-top: 12px;">
+                    <div class="pbi-config-output-head">
+                      <h4><t t-esc="t('View Rebuild Pipeline Results')"/></h4>
+                      <button type="button" class="pbi-config-btn ghost sm"
+                              t-on-click="() => this.state.bringUpSteps = null">
+                        <t t-esc="t('Dismiss')"/>
+                      </button>
+                    </div>
+                    <t t-foreach="state.bringUpSteps" t-as="bs" t-key="bs.key">
+                      <div class="pbi-config-note"
+                           t-attf-style="border-left: 3px solid {{ bs.state === 'error' ? '#dc2626' : (bs.state === 'warn' ? '#b45309' : '#0f766e') }}; padding: 6px 10px; margin-bottom: 8px;">
+                        <strong><t t-esc="bs.name"/></strong>
+                        <span t-attf-class="pbi-config-chip {{ bs.state === 'error' ? 'warn' : 'ok' }}" style="margin-left: 8px;">
+                          <t t-esc="bs.state"/>
+                        </span>
+                        <div style="margin-top: 4px; white-space: pre-wrap;"><t t-esc="bs.detail"/></div>
+                      </div>
+                    </t>
+                  </div>
+                </div>
+
+                <!-- 3e. Verification -->
+                <div class="pbi-config-card">
+                  <div class="pbi-config-card-head">
+                    <span class="pbi-config-step-badge">3e</span>
+                    <h3><t t-esc="t('Verify Links, Gaps and Data Alignments')"/></h3>
+                    <span class="pbi-config-chip ok"><t t-esc="t('Audit &amp; validation')"/></span>
+                  </div>
+                  <p class="pbi-config-note">
+                    Comprehensive read-only validation suite in three parts:
+                    <strong>(A) Master links &amp; gaps audit</strong> — audits all 10 dimensions
+                    (Sales Type Group, Partner Classification, Region, City, Salesman, Customer,
+                    Main Category, Sub-Category, Product Group, Product Sub-Group) across
+                    <strong>This Year</strong>, <strong>Last Year</strong>, and <strong>Target</strong>.
+                    <strong>(B) Target vs actuals alignment</strong> — validates that every category and region with sales has a corresponding budget target.
+                    <strong>(C) Snapshot coverage &amp; totals</strong> — reports in-scope sales volumes, quantities, and record counts.
+                  </p>
+                  <p class="pbi-config-file">verify_links_gaps_and_alignment.sql</p>
+                  <div class="pbi-config-actions">
+                    <button type="button" class="pbi-config-btn"
+                            t-att-disabled="state.running ? 'disabled' : false"
+                            t-on-click="() => this.runScript({key: 'verify_links_gaps_and_alignment', name: 'Verify Links, Gaps and Data Alignments', file: 'verify_links_gaps_and_alignment.sql', writes: false})">
+                      <t t-esc="state.running === 'verify_links_gaps_and_alignment' ? t('Verifying…') : t('Run Verification')"/>
+                    </button>
+                    <button type="button" class="pbi-config-btn ghost sm danger"
+                            t-if="state.running === 'verify_links_gaps_and_alignment'"
+                            t-on-click="() => this.cancelAction('verify_links_gaps_and_alignment')">
+                      <t t-esc="t('Cancel')"/>
+                    </button>
+                  </div>
+                  <t t-call="pbi_dashboard_configurations.progress_box">
+                    <t t-set="pkey" t-value="'verify_links_gaps_and_alignment'"/>
+                  </t>
+                  <t t-call="pbi_dashboard_configurations.script_result_box">
+                    <t t-set="skey" t-value="'verify_links_gaps_and_alignment'"/>
+                  </t>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </t>
+
+</templates>

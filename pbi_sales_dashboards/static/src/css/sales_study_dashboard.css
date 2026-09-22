@@ -1,0 +1,301 @@
+/*
+ * "Sales Data Study" — the matrix board.
+ *
+ * The root carries .pbi-sales-dashboard AND .pbi-sales-kpi-dashboard, so the
+ * palette, header, toolbar-collapse, filter selects and error banner all come
+ * from pbi_dashboard_base.css and sales_kpi_dashboard.css unchanged. Only the
+ * matrix itself is styled here.
+ *
+ * Everything sizes off the ROW, not the viewport: twelve months x two measures
+ * is 24 numeric columns before the totals, so rows are tight, numbers are
+ * tabular-nums and right-aligned, the name column is pinned while the months
+ * scroll under the header, and the only colour is the per-level dot and the
+ * bar on the total.
+ */
+
+/* Charts want a comfortable reading width; a matrix wants every month on
+   screen at once. */
+.pbi-sales-study-dashboard .wrap { max-width: 1800px; }
+
+/* ------------------------------------------------------------- toolbar */
+.pbi-sales-study-dashboard .toolbar-section { margin-bottom: 8px; }
+.pbi-sales-study-dashboard .toolbar-section.collapsed .toolbar-toggle-icon { transform: rotate(-90deg); }
+.pbi-sales-study-dashboard .toolbar-section .toolbar-toggle-btn { margin-bottom: 6px; }
+.pbi-sales-study-dashboard .toolbar-section .filters { margin-bottom: 0; }
+
+.pbi-sales-study-dashboard .filter-row-inline {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px 16px;
+}
+.pbi-sales-study-dashboard .filter-row-inline .filter-group {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+}
+.pbi-sales-study-dashboard .filter-row-inline .filter-label {
+  width: auto;
+}
+.pbi-sales-study-dashboard .filter-row-inline .filter-select {
+  min-width: 0;
+  width: 100%;
+}
+
+/* ------------------------------------------------------------- slicers */
+/* Slicers on their own row under the main filters. The dot in each
+   label is the colour that level's rows carry in the matrix, so the filter bar
+   doubles as the hierarchy legend. */
+.pbi-sales-study-dashboard .level-slicers { row-gap: 10px; }
+.pbi-sales-study-dashboard .level-slicers .filter-label {
+  display: inline-flex; align-items: center; gap: 6px; width: auto;
+}
+.pbi-sales-study-dashboard .legend-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex: none; display: inline-block;
+}
+/* A slicer holding a selection is outlined, so a narrowed matrix never looks
+   like a data problem. */
+.pbi-sales-study-dashboard .filter-select.active {
+  border-color: var(--series-1); color: var(--series-1); font-weight: 600;
+}
+.pbi-sales-study-dashboard .clear-slicers {
+  font-family: inherit; font-size: 14px; line-height: 1; cursor: pointer;
+  color: var(--text-secondary); background: var(--surface-1);
+  border: 1px solid var(--border); border-radius: 50%; width: 28px; height: 28px;
+  align-self: flex-end; justify-self: start; margin-bottom: 4px;
+}
+.pbi-sales-study-dashboard .clear-slicers:hover { border-color: var(--series-6); color: var(--series-6); }
+
+/* --------------------------------------------------------- part number */
+/* The Part No box is an <input> sitting in a row of <select>s, so it borrows
+   .filter-select for its frame and only overrides what an input needs. No
+   width of its own: the row is a grid of minmax(190px, 1fr) cells and
+   .filter-select already fills one. `appearance: none` strips WebKit's own
+   search-field shape, which would otherwise round this control differently
+   from every select beside it. */
+.pbi-sales-study-dashboard .part-input { appearance: none; -webkit-appearance: none; }
+.pbi-sales-study-dashboard .part-input::placeholder {
+  color: var(--text-muted); font-weight: 400;
+}
+
+/* Where the part sits, one chip per level. A level that resolves to a single
+   value reads as an answer; one that holds many reads as a count, in the muted
+   treatment, so the two can never be mistaken for each other at a glance. */
+.pbi-sales-study-dashboard .part-resolution {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 10px; padding: 8px 10px;
+  background: var(--grid); border-radius: 8px;
+}
+.pbi-sales-study-dashboard .part-resolution-head {
+  font-size: 12.5px; color: var(--text-secondary); margin-inline-end: 4px;
+}
+/* Warn-coloured, because it changes what the figures beside it mean. */
+.pbi-sales-study-dashboard .part-scope-badge {
+  font-size: 11px; line-height: 1.2; padding: 4px 8px; border-radius: 999px;
+  color: var(--series-6); border: 1px solid var(--series-6);
+  background: var(--surface-1); font-weight: 600;
+}
+.pbi-sales-study-dashboard .part-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11.5px; line-height: 1.2; padding: 4px 8px;
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 999px;
+}
+.pbi-sales-study-dashboard .part-chip-level { color: var(--text-muted); }
+.pbi-sales-study-dashboard .part-chip-value { color: var(--text-primary); font-weight: 600; }
+.pbi-sales-study-dashboard .part-chip.many .part-chip-value {
+  color: var(--text-muted); font-weight: 400; font-style: italic;
+}
+.pbi-sales-study-dashboard .part-resolution .clear-slicers {
+  align-self: center; margin-bottom: 0; margin-inline-start: auto;
+}
+
+/* ------------------------------------------------------------- actions */
+.pbi-sales-study-dashboard .matrix-actions {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.pbi-sales-study-dashboard .measure-pills,
+.pbi-sales-study-dashboard .dataset-pills { align-items: center; }
+.pbi-sales-study-dashboard .measure-pills .pill-label,
+.pbi-sales-study-dashboard .dataset-pills .pill-label {
+  font-size: 12px; color: var(--text-muted); padding: 0 8px 0 6px;
+}
+.pbi-sales-study-dashboard .matrix-search {
+  font-family: inherit; font-size: 12.5px; color: var(--text-primary);
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 10px; min-width: 200px;
+}
+.pbi-sales-study-dashboard .matrix-search:focus { outline: none; border-color: var(--series-1); }
+.pbi-sales-study-dashboard .matrix-count { font-size: 12px; color: var(--text-muted); margin-inline-start: auto; }
+.pbi-sales-study-dashboard .matrix-notice {
+  font-size: 12px; color: var(--text-secondary); background: var(--grid);
+  border-radius: 8px; padding: 7px 10px; margin-bottom: 10px;
+}
+
+/* -------------------------------------------------------------- matrix */
+/* The table scrolls inside its own box in BOTH directions: the header sticks
+   to the top while a deep branch scrolls past, and the name column sticks to
+   the inline start while the months scroll sideways. */
+.pbi-sales-study-dashboard .matrix-scroll {
+  max-height: 68vh; overflow: auto;
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+}
+.pbi-sales-study-dashboard .matrix-table {
+  width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12.5px;
+}
+/* Sticky on the thead itself, not on each row: three header rows of differing
+   heights would otherwise each need a hand-computed `top`, and one wrong
+   pixel overlaps them. */
+.pbi-sales-study-dashboard .matrix-table thead { position: sticky; top: 0; z-index: 3; }
+.pbi-sales-study-dashboard .matrix-table th {
+  background: var(--surface-1); text-align: start;
+  font-weight: 700; font-size: 11px; color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: 0.03em;
+  padding: 6px 8px; white-space: nowrap;
+}
+.pbi-sales-study-dashboard .matrix-table th.month-group {
+  text-align: center; border-inline-start: 1px solid var(--grid);
+  border-bottom: 1px solid var(--grid);
+}
+.pbi-sales-study-dashboard .matrix-table th.total-group {
+  text-align: center; border-inline-start: 2px solid var(--axis);
+  border-bottom: 1px solid var(--grid); color: var(--text-primary);
+}
+.pbi-sales-study-dashboard .matrix-table th.sub {
+  font-size: 10px; font-weight: 600; color: var(--text-muted);
+  border-bottom: 1px solid var(--grid); padding: 3px 8px;
+}
+.pbi-sales-study-dashboard .matrix-table th.num,
+.pbi-sales-study-dashboard .matrix-table td.num {
+  text-align: end; font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.pbi-sales-study-dashboard .matrix-table th.month-group.num,
+.pbi-sales-study-dashboard .matrix-table th.total-group.num { text-align: center; }
+
+.pbi-sales-study-dashboard .matrix-table thead tr.grand-total-row th {
+  font-size: 12.5px; text-transform: none; letter-spacing: 0;
+  color: var(--text-primary); background: var(--grid);
+  border-bottom: 2px solid var(--axis); padding: 7px 8px;
+}
+
+.pbi-sales-study-dashboard .matrix-table td {
+  padding: 4px 8px; border-bottom: 1px solid var(--grid); vertical-align: middle;
+}
+.pbi-sales-study-dashboard .matrix-row:hover td { background: var(--grid); }
+.pbi-sales-study-dashboard .matrix-row.clickable { cursor: pointer; }
+.pbi-sales-study-dashboard .matrix-row.depth-0 td { font-weight: 600; }
+.pbi-sales-study-dashboard .matrix-row.open td { background: rgba(42, 120, 214, 0.045); }
+.pbi-sales-study-dashboard .matrix-row.hit td { background: rgba(237, 161, 0, 0.16); }
+.pbi-sales-study-dashboard .matrix-row.others-row td { color: var(--text-muted); font-style: italic; }
+.pbi-sales-study-dashboard .empty-row td {
+  padding: 26px 10px; text-align: center; color: var(--text-muted);
+}
+
+/* Name column, pinned. Its background has to be opaque or the month cells
+   scroll visibly underneath it, which means every row state that changes the
+   row background has to restate it here. */
+.pbi-sales-study-dashboard .matrix-table th.name-col,
+.pbi-sales-study-dashboard .matrix-table td.name-cell {
+  position: sticky; inset-inline-start: 0; z-index: 2;
+  background: var(--surface-1);
+  width: 300px; min-width: 300px; max-width: 300px;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  border-inline-end: 1px solid var(--grid);
+}
+.pbi-sales-study-dashboard .matrix-table th.name-col { z-index: 4; }
+.pbi-sales-study-dashboard .matrix-table thead tr.grand-total-row th.name-col { background: var(--grid); }
+.pbi-sales-study-dashboard .matrix-row:hover td.name-cell { background: var(--grid); }
+.pbi-sales-study-dashboard .matrix-row.open td.name-cell { background: #eef4fc; }
+.pbi-sales-study-dashboard .matrix-row.hit td.name-cell { background: #fbeccd; }
+
+/* The +/- box. Boxed rather than a bare glyph so the hit target is obvious at
+   every indent level, and sized off the row height rather than the font so the
+   deepest rows stay clickable. */
+.pbi-sales-study-dashboard .twisty {
+  display: inline-block; width: 16px; height: 16px; line-height: 14px;
+  font-size: 13px; font-weight: 700; text-align: center; user-select: none;
+  color: var(--text-secondary); background: var(--surface-1);
+  border: 1px solid var(--axis); border-radius: 3px;
+  margin-inline-end: 5px; vertical-align: middle;
+}
+/* A leaf keeps the box's footprint so its caption lines up with its expandable
+   siblings, but shows nothing. */
+.pbi-sales-study-dashboard .twisty.spacer {
+  color: transparent; background: none; border-color: transparent;
+}
+.pbi-sales-study-dashboard .twisty.pending {
+  background: none; border-color: transparent; font-weight: 400;
+  animation: pbi-study-spin 0.9s linear infinite;
+}
+@keyframes pbi-study-spin { to { transform: rotate(360deg); } }
+.pbi-sales-study-dashboard .matrix-row.clickable:hover .twisty {
+  color: var(--series-1); border-color: var(--series-1);
+}
+.pbi-sales-study-dashboard .level-dot {
+  display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  margin-inline-end: 7px; vertical-align: middle; flex: none;
+}
+.pbi-sales-study-dashboard .row-label { vertical-align: middle; }
+
+/* Month cells carry compact numbers (12.4M, 3.4K) — 24 columns of full
+   thousands-separated figures do not fit any screen, and the exact value is on
+   each cell's title. The totals at the end are shown in full. */
+.pbi-sales-study-dashboard .matrix-table td.month-cell {
+  min-width: 62px; color: var(--text-secondary);
+}
+.pbi-sales-study-dashboard .matrix-table td.total-cell {
+  font-weight: 600; color: var(--text-primary);
+}
+.pbi-sales-study-dashboard .matrix-table td.total-cell.total-first,
+.pbi-sales-study-dashboard .matrix-table th.total-group {
+  border-inline-start: 2px solid var(--axis);
+}
+/* NOT .lead. Bootstrap ships a .lead utility (font-size: 1.25rem) and Odoo's
+   backend bundle carries Bootstrap, so a cell classed `lead` renders at 17.5px
+   while every other cell in the row is 12.5px. */
+.pbi-sales-study-dashboard .matrix-table td.total-cell.total-first { position: relative; }
+.pbi-sales-study-dashboard .cell-bar {
+  position: absolute; inset-block: 3px; inset-inline-end: 6px;
+  border-radius: 3px; opacity: 0.16; pointer-events: none;
+}
+.pbi-sales-study-dashboard .cell-text { position: relative; }
+.pbi-sales-study-dashboard .matrix-table td.muted { color: var(--text-muted); }
+
+/* ------------------------------------------------------- target columns */
+/* The target reads as a second series against the actuals, not as more of the
+   same: a tint behind every budget column is what lets the eye pair "Jan Value"
+   with "Jan Bud Value" across 48 columns without counting. Kept to a tint
+   rather than a rule between the pairs, because a rule every two columns turns
+   the matrix into a grid of boxes. */
+.pbi-sales-study-dashboard .matrix-table th.budget-col,
+.pbi-sales-study-dashboard .matrix-table td.budget-col {
+  background: color-mix(in srgb, var(--axis) 7%, transparent);
+}
+.pbi-sales-study-dashboard .matrix-table th.budget-col { font-style: italic; }
+/* A level the budget was never captured at draws an en dash, not a zero, and
+   says why on hover. Dimmed so a column of them reads as "nothing here"
+   at a glance rather than as data. */
+.pbi-sales-study-dashboard .matrix-table td.no-budget {
+  color: var(--text-muted); opacity: 0.5; cursor: help;
+}
+
+@media (max-width: 900px) {
+  .pbi-sales-study-dashboard .matrix-table th.name-col,
+  .pbi-sales-study-dashboard .matrix-table td.name-cell {
+    width: 200px; min-width: 200px; max-width: 200px;
+  }
+  .pbi-sales-study-dashboard .matrix-count { margin-inline-start: 0; }
+}
+
+/* Printing a matrix means printing the rows that are open, all of them — the
+   scroll box and its height cap would otherwise clip everything below the
+   fold, and a sticky header repeats itself over the page breaks. */
+@media print {
+  .pbi-sales-study-dashboard .matrix-actions,
+  .pbi-sales-study-dashboard .pbi-toolbar { display: none !important; }
+  .pbi-sales-study-dashboard .matrix-scroll {
+    max-height: none !important; overflow: visible !important; border: none;
+  }
+  .pbi-sales-study-dashboard .matrix-table thead { position: static; }
+  .pbi-sales-study-dashboard .matrix-table th.name-col,
+  .pbi-sales-study-dashboard .matrix-table td.name-cell { position: static; }
+}

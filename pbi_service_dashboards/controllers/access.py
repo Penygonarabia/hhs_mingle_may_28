@@ -30,7 +30,6 @@ def menu_allowed(menu_xmlid):
             "pbi_promoter_dashboards",
             "pbi_loyalty_dashboards",
             "pbi_sales_dashboards",
-            "pbi_quarterly_sales_dashboards",
             "pbi_dashboards",
         ):
             if alt_module != module:

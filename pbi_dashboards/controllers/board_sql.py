@@ -11,8 +11,11 @@ board/chart-item config in the per-module config files is executed through
 the generic runners at the bottom of this file — there is no per-board SQL.
 """
 import itertools
+import logging
 
-from .board_config import ChartItemConfig, BoardConfig, GroupByConfig
+from .board_config import ChartItemConfig, BoardConfig, GroupByConfig, MONTHLY_WORKING_HOURS
+
+_logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------
 # param binder — every WHERE fragment below gets its own uniquely-named
@@ -246,6 +249,18 @@ _TIMELINE_DERIVED_COLUMNS = f"""
             tl.scheduled_by_uid AS scheduled_by_uid,
             tl.closed_by_uid AS closed_by_uid,
             tl.parts_handler_uid AS parts_handler_uid,
+            COALESCE(tl.reached_ts, pt.technician_reached_date) AS reached_ts_eff,
+            COALESCE(tl.ready_to_invoice_ts, pt.closed_datetime) AS ready_to_invoice_ts_eff,
+            -- The remaining "_eff" pairs. Each repeats, verbatim, the
+            -- COALESCE an hour column below is built from, so a Formula &
+            -- Details table can show the exact endpoints that produced the
+            -- number rather than the bare tracking-log column (NULL on any
+            -- card whose transition predates job_state tracking, which
+            -- would make the table fail to reconcile with its own bar).
+            COALESCE(tl.travel_started_ts, pt.technician_started_date) AS travel_started_ts_eff,
+            COALESCE(tl.closed_ts, pt.job_card_completed_time) AS closed_ts_eff,
+            COALESCE(tl.onhold_ts, pt.job_hold_date) AS onhold_ts_eff,
+            COALESCE(tl.cst_need_quote_ts, pt.cstneedquote_date) AS cst_need_quote_ts_eff,
             {_hours_between(
                 "COALESCE(tl.reached_ts, pt.technician_reached_date)",
                 "COALESCE(tl.ready_to_invoice_ts, pt.closed_datetime)",
@@ -327,15 +342,72 @@ _JOBCARDS_CTE_SQL = f"""
             WHERE imd.module = 'machine_repair_management'
               AND imd.name = 'group_parts_user'
         ),
+        -- THE TECHNICIAN'S OWN REGION, for job cards that carry none.
+        --
+        -- 6,863 of the 15,979 active job cards on dbprod have no
+        -- work_center_group_id, so every region chart on the Service boards
+        -- drew 43 pct of its jobs in one "No Region" bar. Those cards have no
+        -- work_center_id either, so there is no city to climb from -- the
+        -- technician is the only thing on them that knows where the work was.
+        --
+        -- LEARNED FROM THE JOB CARDS THEMSELVES, not from the technician's
+        -- assigned locations, and the difference is measurable. Against the
+        -- 7,084 cards that carry BOTH a region and a technician:
+        --
+        --     res_users_work_center_location_rel   92.0 pct agreement
+        --     the technician's own dominant region 98.4 pct
+        --
+        -- The assignment table stays as a backup for a technician who has
+        -- never closed a regioned card, which is what takes coverage up to the
+        -- full 1,376 -- every regionless card that has a technician at all.
+        --
+        -- THE OTHER 5,487 STAY UNASSIGNED, and no join can rescue them: they
+        -- carry no technician, no city, no scheduler, no closer and no
+        -- company. The partner is the only other field on them, and the
+        -- partner's own work centre agrees with the job card's region on just
+        -- 53 of 177 -- worse than a coin toss, so it is deliberately not used.
+        --
+        -- Deliberately NOT date-scoped: the history is what makes the estimate
+        -- good, and re-deriving it from a narrow window would make a one-month
+        -- view guess worse than a one-year view for the very same job card.
+        tech_region_hist AS (
+            SELECT technician_id AS uid, work_center_group_id AS grp
+            FROM (
+                SELECT technician_id, work_center_group_id,
+                       ROW_NUMBER() OVER (PARTITION BY technician_id
+                                          ORDER BY count(*) DESC, work_center_group_id) AS rn
+                FROM project_task
+                WHERE active AND technician_id IS NOT NULL
+                  AND work_center_group_id IS NOT NULL
+                GROUP BY 1, 2
+            ) ranked WHERE rn = 1
+        ),
+        tech_region_assigned AS (
+            SELECT r.res_users_id AS uid, MIN(l.work_center_group_id) AS grp
+            FROM res_users_work_center_location_rel r
+            JOIN work_center_location l ON l.id = r.work_center_location_id
+            WHERE l.work_center_group_id IS NOT NULL
+            GROUP BY 1
+        ),
 {_TASK_TIMELINE_CTE_SQL}
         SELECT
             pt.id AS task_id,
+            pt.name AS name,
             ru.id AS user_id,
             TRIM(BOTH ', ' FROM CONCAT_WS(', ', ug_tech.user_role, ug_ru.user_role, ug_create.user_role)) AS user_role,
             um.work_center_location_id AS default_work_location,
             pt.company_id AS company_id,
             pt.service_warranty_id AS service_warranty_id,
-            pt.work_center_group_id AS work_center_group_id,
+            -- The FRANCHISE the job card belongs to: machine_repair_management
+            -- keeps the brand on project_task.product_category_id, a top-level
+            -- product.category (Midea / Beko / Candy / ...) -- the same column
+            -- promoter_showroom_sales exposes as franchise_id, named the same
+            -- way here so one filter reads identically on every board.
+            pt.product_category_id AS franchise_id,
+            -- The card's own region first; the technician's only where it has
+            -- none. See tech_region_hist above for why, and for what is still
+            -- beyond reach.
+            COALESCE(pt.work_center_group_id, trh.grp, tra.grp) AS work_center_group_id,
             pt.work_center_id AS work_center_id,
             pt.technician_id AS technician_id,
             pt.scheduled_uid AS scheduled_uid,
@@ -388,6 +460,10 @@ _JOBCARDS_CTE_SQL = f"""
         LEFT JOIN user_role_map ug_ru ON ug_ru.uid = ru.id
         LEFT JOIN user_role_map ug_create ON ug_create.uid = pt.create_uid
 
+        -- One row per technician in each, so neither can fan a job card out.
+        LEFT JOIN tech_region_hist trh ON trh.uid = pt.technician_id
+        LEFT JOIN tech_region_assigned tra ON tra.uid = pt.technician_id
+
         WHERE pt.active = true
           AND pt.service_created_datetime BETWEEN %(date_from)s AND %(date_to)s
     )
@@ -398,12 +474,16 @@ _JOBCARDS_CTE_SQL = f"""
 # custom WHERE fragment (mirroring dbmodel_jobcards_analysis.py's
 # _search_is_user_work_location/_search_is_my_user_group).
 JOBCARDS_FIELD_MAP = {
-    "task_id": "task_id", "user_id": "user_id", "default_work_location": "default_work_location",
+    "task_id": "task_id", "name": "name", "user_id": "user_id", "default_work_location": "default_work_location",
     "service_warranty_id": "service_warranty_id", "work_center_group_id": "work_center_group_id",
     "work_center_id": "work_center_id", "technician_id": "technician_id", "scheduled_uid": "scheduled_uid",
     "closed_jobcard_user_id": "closed_jobcard_user_id", "job_card_status": "job_card_status",
     "action_status": "action_status", "service_created_datetime": "service_created_datetime",
     "total_worked_hours": "total_worked_hours",
+    # machine_repair_management's own working-hours-aware RTAT compute.
+    # Used as a measure by several boards; named here too so it can also
+    # be read per record by the Formula & Details engine.
+    "rtat_hours": "rtat_hours",
     # timeline-derived (see _TASK_TIMELINE_CTE_SQL) — status timestamps,
     # the intervals between them, and who performed each transition.
     "scheduled_ts": "scheduled_ts", "travel_started_ts": "travel_started_ts",
@@ -418,7 +498,12 @@ JOBCARDS_FIELD_MAP = {
     "quote_to_parts_added_hours": "quote_to_parts_added_hours",
     "scheduled_by_uid": "scheduled_by_uid", "closed_by_uid": "closed_by_uid",
     "parts_handler_uid": "parts_handler_uid",
+    "reached_ts_eff": "reached_ts_eff", "ready_to_invoice_ts_eff": "ready_to_invoice_ts_eff",
+    "travel_started_ts_eff": "travel_started_ts_eff", "closed_ts_eff": "closed_ts_eff",
+    "onhold_ts_eff": "onhold_ts_eff", "cst_need_quote_ts_eff": "cst_need_quote_ts_eff",
     "is_spare_part_request": "is_spare_part_request",
+    # brand/franchise the card was raised against (project_task.product_category_id)
+    "franchise_id": "franchise_id",
 }
 
 # The subset of JOBCARDS_FIELD_MAP above that exists only on the CTE (it
@@ -430,6 +515,8 @@ _TIMELINE_FIELDS = frozenset([
     "labor_hours", "travel_time_hours", "scheduling_hours", "job_closing_hours",
     "onhold_to_ready_hours", "ready_to_handover_hours", "quote_to_parts_added_hours",
     "scheduled_by_uid", "closed_by_uid", "parts_handler_uid", "is_spare_part_request",
+    "reached_ts_eff", "ready_to_invoice_ts_eff", "travel_started_ts_eff", "closed_ts_eff",
+    "onhold_ts_eff", "cst_need_quote_ts_eff",
 ])
 
 
@@ -452,8 +539,14 @@ _USERGROUP_CTE_SQL = """
             mrs.work_center_group_id AS work_center_group_id,
             mst.work_center_id AS work_center_id,
             mrs.service_request_state AS service_request_state,
-            mrs.request_date AS request_date
+            mrs.request_date AS request_date,
+            -- The franchise of the job card the request hangs off, so the
+            -- board-level franchise filter reaches this source too (the CTE
+            -- is already restricted to requests that carry a task_id, and a
+            -- task is unique, so the join cannot fan a request out).
+            pt.product_category_id AS franchise_id
         FROM machine_repair_support mrs
+        LEFT JOIN project_task pt ON pt.id = mrs.task_id
         LEFT JOIN machine_support_team mst ON mst.id = mrs.team_id
         LEFT JOIN res_users u ON u.id = mrs.create_uid
         LEFT JOIN (
@@ -481,11 +574,45 @@ _USERGROUP_CTE_SQL = """
 """
 
 USERGROUP_FIELD_MAP = {
-    "user_id": "user_id", "user_group": "user_group", "task_id": "task_id",
+    "user_id": "user_id", "task_id": "task_id",
     "team_id": "team_id", "service_type_id": "service_type_id",
     "work_center_group_id": "work_center_group_id", "work_center_id": "work_center_id",
     "service_request_state": "service_request_state", "request_date": "request_date",
+    "franchise_id": "franchise_id",
 }
+
+
+def _user_group_clause(op, value, binder, uid, env):
+    """Field-map callable for the usergroup source's "user_group" — a
+    MEMBERSHIP test against the CTE's comma-separated group list, not
+    string equality.
+
+    ``user_group`` is a STRING_AGG over every machine_repair_management
+    group the request's creator belongs to, so an operator who is in the
+    Call Center group AND any other one carries
+    "call-center, co-ordinator, mobile, parts", not "call-center". The
+    board configs (and the ks_dashboard_ninja items they were ported
+    from) all say ``("user_group", "=", "call-center")``, which under
+    plain equality matches only the operators who hold exactly one group
+    — every request raised by a multi-group Call Center operator was
+    silently dropped from "Service Analysis (CC)", under-counting the
+    board against the underlying request list.
+
+    Same problem, same shape, and the same fix as the jobcards source's
+    ``is_my_user_group`` (see _is_my_user_group_clause): match the token
+    inside the aggregate rather than the aggregate as a whole. Delimiter-
+    padded on both sides so "parts" cannot match "spare-parts" and
+    "co-ordinator" cannot match a longer name containing it."""
+    values = list(value) if isinstance(value, (list, tuple)) else [value]
+    ors = " OR ".join(
+        f"(', ' || user_group || ', ') LIKE {binder.bind('%, ' + str(v) + ', %')}"
+        for v in values
+    )
+    negate = op in ("!=", "not in")
+    return f"NOT ({ors})" if negate else f"({ors})"
+
+
+USERGROUP_FIELD_MAP["user_group"] = _user_group_clause
 
 
 # ---------------------------------------------------------------------
@@ -589,6 +716,9 @@ _MESSAGE_LOG_CTE_SQL = """
             -- message_log items now do too, instead of on whichever
             -- region the acting user happened to be assigned to.
             pt.work_center_group_id AS region,
+            -- The TASK's franchise, for the same reason its region is read
+            -- off the task rather than off the transition's author.
+            pt.product_category_id AS franchise_id,
             um.work_center_location_id AS city,
             src.ptml_res_id AS task_id,
             src.ptml_old_value AS ptml_initial_taskstatus,
@@ -618,6 +748,7 @@ MESSAGE_LOG_FIELD_MAP = {
     # mix a message_log-source item in with jobcards-source items (CRD,
     # Parts), instead of erroring "unknown domain field".
     "work_center_group_id": "region",
+    "franchise_id": "franchise_id",
 }
 
 
@@ -744,8 +875,30 @@ _CONTRACTS_CTE_SQL = """
             sc.id AS contract_id,
             sc.name AS name,
             sc.partner_id AS partner_id,
-            sc.work_center_group_id AS work_center_group_id,
-            sc.work_center_id AS work_center_id,
+            -- REGION AND CITY FALL BACK TO THE CUSTOMER'S OWN WORK CENTRE.
+            --
+            -- 124 of the 146 contracts on dbprod carry neither, so "Contract
+            -- Analysis" drew 68.7 pct of its amount and 84.9 pct of its count
+            -- in a single "No Region" bar. The partner names a work centre,
+            -- and a work centre names its group -- the same taxonomy the
+            -- contract's own column uses, not a mapping invented here -- which
+            -- fills 107 of the 124.
+            --
+            -- The contract still wins wherever it has a value, so this can only
+            -- fill a gap. That ordering is doing more work than usual here:
+            -- exactly ONE contract carries both, so there is no sample to
+            -- measure the fallback's agreement against the way the salesman
+            -- board's city fallback was measured (13,810 of 13,872). It is the
+            -- customer's own service region, which is the right answer for a
+            -- service contract far more often than "No Region" is, but it is
+            -- inference rather than record -- if contracts start being created
+            -- with their region filled in, this quietly stops firing.
+            --
+            -- Both levels move together on purpose: chart 1 drills Region ->
+            -- City, so a contract given a region and no city would drill into
+            -- nothing.
+            COALESCE(sc.work_center_group_id, pwc.work_center_group_id) AS work_center_group_id,
+            COALESCE(sc.work_center_id, p.work_center_id) AS work_center_id,
             sc.sales_person_user_id AS sales_person_user_id,
             sc.contract_type AS contract_type,
             sc.state AS state,
@@ -760,6 +913,9 @@ _CONTRACTS_CTE_SQL = """
             COALESCE(sc.actual_correct_count, 0) AS corrective_actual,
             COALESCE(sc.balance_correct, 0) AS corrective_balance
         FROM subscription_contracts sc
+        -- Both are primary-key lookups, so neither can fan a contract out.
+        LEFT JOIN res_partner p ON p.id = sc.partner_id
+        LEFT JOIN work_center_location pwc ON pwc.id = p.work_center_id
         WHERE sc.date_start BETWEEN %(date_from)s AND %(date_to)s
     )
 """
@@ -803,12 +959,12 @@ _BUDGET_COMPARE_CTE_SQL = """
             COALESCE(b.budget_line_id, 0)      AS budget_line_id,
             b.year                             AS year,
             (b.year || '-' || b.month)         AS period,
-            b.region_id                        AS region_id,
+            brreg.id                           AS region_id,
             b.city_id                          AS city_id,
-            b.partner_classification_id        AS partner_classification_id,
-            b.salestype_group_id               AS salestype_group_id,
-            b.main_category_id                 AS main_category_id,
-            b.sub_category_id                  AS sub_category_id,
+            bpcl.id                            AS partner_classification_id,
+            bsg.id                             AS salestype_group_id,
+            bmc.id                             AS main_category_id,
+            bsc.id                             AS sub_category_id,
             b.product_group_id                 AS group_id,
             b.product_subgroup_id              AS subgroup_id,
             b.franchise_code                   AS franchise_code,
@@ -819,6 +975,19 @@ _BUDGET_COMPARE_CTE_SQL = """
             0::double precision                AS bidata_qty,
             0::double precision                AS bidata_amount
         FROM v_sales_budget_month_edit b
+        -- Resolved from the budget's CODES, not from ids it stores, so the
+        -- budget module can drop those links entirely. The ids are identical --
+        -- the codes were computed from them and every master's code is unique
+        -- and non-blank, so each join matches one row or none -- which keeps
+        -- this CTE's value space, and therefore every filter, drill and label
+        -- on the board above it, exactly as it was. BIDATA's side of the UNION
+        -- keeps its own ids: that view resolves them itself, and lives in this
+        -- layer now.
+        LEFT JOIN partner_classification bpcl ON bpcl.pc_code    = b.partner_classification_code
+        LEFT JOIN res_region             brreg ON brreg.code     = b.region_code
+        LEFT JOIN salestypes_group       bsg  ON bsg.salgrp_ref  = b.salestype_group_code
+        LEFT JOIN main_category          bmc  ON bmc.maincat_ref = b.main_category_code
+        LEFT JOIN sub_category           bsc  ON bsc.subcat_ref  = b.sub_category_code
         WHERE (b.year || '-' || b.month) BETWEEN
             to_char(%(date_from)s::date, 'YYYY-MM') AND to_char(%(date_to)s::date, 'YYYY-MM')
         UNION ALL
@@ -960,8 +1129,42 @@ def region_id_by_name(env, name):
     key = ("region_id_by_name", name)
     if key in cache:
         return cache[key]
-    rec = env["work.center.group"].sudo().search([("name", "=", name)], limit=1)
-    result = rec.id if rec else None
+    # Raw lookup rather than search([("name", "=", name)]): the ORM reads a
+    # field the way the MODEL declares it — for a translate=True Char it
+    # emits "name"->>'lang' — so an ORM search here fails on any database
+    # whose column and declaration disagree, which is exactly the state a
+    # half-deployed module leaves behind. Reading the column directly, and
+    # through the same shape-agnostic expression the labels use, keeps this
+    # working whichever way another module declares its own field. The board
+    # configs name a region in English, so en_US is the key to match.
+    expr = _translated_text_expr("name", "en_US")
+    env.cr.execute(
+        f"SELECT id FROM work_center_group WHERE {expr} = %s LIMIT 1", (name,))
+    row = env.cr.fetchone()
+    result = row[0] if row else None
+    cache[key] = result
+    return result
+
+
+def franchise_id_by_name(env, name):
+    """product.category id for a franchise NAME (Midea / Beko / Candy / ...).
+
+    Same shape and the same reasoning as region_id_by_name above: the
+    filter travels as a name rather than an id because ids differ between
+    the databases these boards run on. product_category.name is a plain
+    Char in core, but it is read through the same shape-agnostic
+    expression anyway so a module that makes it translatable on some
+    server does not break the lookup here.
+    """
+    cache = _request_cache(env)
+    key = ("franchise_id_by_name", name)
+    if key in cache:
+        return cache[key]
+    expr = _translated_text_expr("name", "en_US")
+    env.cr.execute(
+        f"SELECT id FROM product_category WHERE {expr} = %s ORDER BY id LIMIT 1", (name,))
+    row = env.cr.fetchone()
+    result = row[0] if row else None
     cache[key] = result
     return result
 
@@ -1001,23 +1204,58 @@ JOBCARDS_FIELD_MAP["is_my_user_group"] = _is_my_user_group_clause
 _PROMOTER_SOURCES = ("promoter_showrooms", "promoter_sales", "sales_comparison")
 
 
+def _user(env, uid):
+    """The res.users record these guards are about — resolved from the uid
+    they were passed, not from env.user.
+
+    In an HTTP request the two are the same user, so this changes no
+    behaviour there. But every other function here is keyed on uid, and
+    reading env.user instead meant the promoter guards silently answered
+    for whoever owned the environment: under an admin/superuser env they
+    reported "not restricted" for a uid that is restricted, which is a
+    guard that cannot be tested and would quietly follow the wrong user if
+    these were ever called with an env that is not the viewer's."""
+    return env["res.users"].browse(uid).sudo()
+
+
+def promoter_list_view_blocked(env, uid, source):
+    """Whether this user may not drill a promoter chart through to a native
+    list view.
+
+    "Promoter Sales Donot Show ListView"
+    (promoter.group_promoter_sales_donotshow) is a LIST-VIEW restriction:
+    the promoter module implements it by overriding search_fetch on
+    promoter.showroom / promoter.showroom.sales / sales.target to return
+    an empty recordset, so members see no rows in any list of those
+    models. It is not a restriction on the aggregate figures — the whole
+    point of giving someone the dashboard is that they see the totals.
+
+    So the guard belongs on the drill-through, not on the numbers: the
+    charts and KPIs are computed for these users like anyone else, and
+    clicking past the last drill level is refused with a message instead
+    of opening a list that search_fetch would render empty anyway (which
+    read as "the dashboard is broken", not "you may not see this")."""
+    return source in _PROMOTER_SOURCES and \
+        _user(env, uid).has_group("promoter.group_promoter_sales_donotshow")
+
+
 def _promoter_guard_clause(env, uid, binder, source):
-    """Reproduces the promoter module's own search_fetch scoping (see
-    promoter/models/promoter_showroom.py, promoter_showroom_sales.py,
-    sales_target.py) — raw SQL bypasses those ORM-level overrides
-    entirely, so equivalent scoping must be reapplied here for every
-    promoter-family source, regardless of which board is being viewed:
-      - group_promoter_sales_donotshow: hides every row (matches
-        search_fetch's unconditional ``return self.browse([])``).
+    """Reproduces the promoter module's own ROW-SCOPING for the raw-SQL
+    path (see promoter/models/promoter_showroom_sales.py's search_fetch) —
+    raw SQL bypasses that ORM-level override entirely, so equivalent
+    scoping must be reapplied here for every promoter-family source,
+    regardless of which board is being viewed:
       - group_promoter_user (the mobile field promoter): sees only their
         own dealer_id/showroom (matches search_fetch's domain addition).
     Back-office/admin users get no extra restriction here, matching the
-    ORM's own default (no matching group -> unrestricted search_fetch)."""
+    ORM's own default (no matching group -> unrestricted search_fetch).
+
+    group_promoter_sales_donotshow is deliberately NOT handled here — it
+    restricts the list view, not the aggregates; see
+    promoter_list_view_blocked()."""
     if source not in _PROMOTER_SOURCES:
         return None
-    user = env.user
-    if user.has_group("promoter.group_promoter_sales_donotshow"):
-        return "1=0"
+    user = _user(env, uid)
     if user.has_group("promoter.group_promoter_user"):
         dealer_id = user.dealer_id.id if user.dealer_id else 0
         showroom_id = user.showroom_id.id if user.showroom_id else 0
@@ -1042,11 +1280,16 @@ def _substitute_symbol(value, uid, env):
                              boards hardcode work_center_group_id in
                              [7]/[6]/[5] for Central/East/West, which are
                              specific to the DB they were authored against).
+      - "@franchise:<name>" -> product.category id resolved by NAME, for the
+                             franchise filter the boards' filter bar sends
+                             (same by-name-not-by-id reasoning as @region).
     """
     if value == "%UID":
         return uid
     if isinstance(value, str) and value.startswith("@region:"):
         return region_id_by_name(env, value[len("@region:"):])
+    if isinstance(value, str) and value.startswith("@franchise:"):
+        return franchise_id_by_name(env, value[len("@franchise:"):])
     return value
 
 
@@ -1117,6 +1360,13 @@ def _technician_guard_clause(env, uid, binder, source="jobcards"):
 # fields get the special res_users_partner_name marker instead of a plain
 # (table, name_col) pair.
 _LABEL_LOOKUP = {
+    # Plain 2-tuple, and staying that way: work_center_group.name is a
+    # plain varchar. It was made translate=True on 2026-08-28 purely so
+    # these boards could show an Arabic Region caption, which retyped the
+    # column, cascade-dropped three views and broke every Region chart on
+    # the server that had this code without that upgrade. A dashboard does
+    # not get to change another module's schema — see the note on
+    # work.center.group.name in machine_repair_management.
     "work_center_group_id": ("work_center_group", "name"),
     "work_center_id": ("work_center_location", "name"),
     "service_warranty_id": ("service_warranty", "name"),
@@ -1128,17 +1378,24 @@ _LABEL_LOOKUP = {
     "scheduled_by_uid": "res_users_partner_name",
     "closed_by_uid": "res_users_partner_name",
     "parts_handler_uid": "res_users_partner_name",
+    # work_center_group.name again (jobcards' region alias) — plain
+    # varchar, see work_center_group_id above.
     "region": ("work_center_group", "name"),
     "city": ("work_center_location", "name"),
+    # franchise/brand — a top-level product.category, on all three service
+    # sources (jobcards / usergroup / message_log)
+    "franchise_id": ("product_category", "name"),
     # promoter_showrooms / promoter_sales — region_id/city_id are
     # promoter.showroom's own res.region/res.city columns (distinct from
     # jobcards' "region"/"city" aliases above, which point at
     # work_center_group/work_center_location instead).
-    "region_id": ("res_region", "name"),
-    # res_city.name is translate=True (stored as jsonb {"en_US": ..., "ar_001": ...}),
-    # unlike every other lookup table here (plain varchar) — the 3rd tuple
-    # element marks it so _groupby_sql reads name->>'<lang>' instead of a
-    # bare column (COALESCE can't mix jsonb and text).
+    # The optional 3rd element is documentation, not a switch: it records
+    # that this column is translate=True SOMEWHERE (res_region.name became
+    # jsonb the first time base_territory was upgraded; res_city.name is
+    # jsonb in core). _groupby_sql reads every lookup the same way, so a
+    # column that is jsonb here and varchar on another server works either
+    # way and neither needs a marker to be added or removed.
+    "region_id": ("res_region", "name", "jsonb"),
     "city_id": ("res_city", "name", "jsonb"),
     "showroom_pk": ("promoter_showroom", "name"),
     "showroom_id": ("promoter_showroom", "name"),
@@ -1148,13 +1405,21 @@ _LABEL_LOOKUP = {
     # column computed in the CTE itself, not a plain id needing a join;
     # see _groupby_sql's "period_month_label" branch below.
     "period": "period_month_label",
-    # sales.target.city is a related Char to showroom_id.city.name (itself
-    # translate=True) — Odoo mirrors the source field's jsonb storage onto
+    # sales.target.city and .region are related Chars to
+    # showroom_id.city.name / showroom_id.region_id.name, both
+    # translate=True — Odoo mirrors the source field's jsonb storage onto
     # the related column too, even though the Python side declares plain
-    # Char. sales.target.region has no such issue (related to
-    # showroom_id.region_id.name, which is plain varchar) so "sc_region"
-    # is deliberately NOT in this dict — it needs no lookup at all.
+    # Char. Verified against information_schema: sales_target.city AND
+    # sales_target.region are both jsonb.
+    #
+    # region used to be exempt (res_region.name was plain varchar when this
+    # dict was written) and the exemption outlived the reason: once
+    # res_region.name was made translatable, "Sales (Actual vs Target) -
+    # Region wise" started handing psycopg2 a dict as the drill code and
+    # raised "can't adapt type 'dict'" the moment a bar was clicked. Only a
+    # drill hit it, which is why every level-0 board sweep stayed green.
     "sc_city": "jsonb_inline",
+    "sc_region": "jsonb_inline",
     # contracts — salesman (res.users, delegated to res.partner.name: res_users
     # itself has no physical "name" column, see _RES_USERS_NAME_EXPR) and
     # customer (res.partner.name, plain varchar, not translate=True).
@@ -1192,12 +1457,85 @@ _RES_USERS_NAME_EXPR = (
 )
 
 
+# Display label for a bucket whose groupby value is NULL, by
+# DBM-vocabulary field name. Only the LABEL is substituted: the bucket's
+# CODE stays NULL, so clicking one still takes _drill_filter_clause's
+# "IS NULL" branch and filters exactly the rows that have no value —
+# baking the text into the code instead would compare a column against
+# the literal 'No Region' and match nothing.
+#
+# Applied only where the column is genuinely absent, never where a lookup
+# merely failed: COALESCE tries the display name first, then the raw id,
+# and only then this. Fields with no entry here keep rendering their NULL
+# bucket as "None", which is what every board showed before.
+_NULL_LABEL = {
+    # the work.center.group region, under each name the sources give it
+    # (jobcards/usergroup's work_center_group_id, message_log's "region")
+    "work_center_group_id": "No Region",
+    "region": "No Region",
+    # promoter's own res.region — a different table, same words
+    "region_id": "No Region",
+    # sales.target.region: plain text, no id lookup (see _LABEL_LOOKUP)
+    "sc_region": "No Region",
+    "franchise_id": "No Franchise",
+}
+
+
+# These labels are the engine's own words, not database values, so unlike
+# every other bucket label they are ours to translate — and they have to be
+# translated HERE. pbi_i18n.js is documented as touching static chrome only
+# ("never call t() on a value that came out of a database row"), and by the
+# time a bucket label reaches the client it is indistinguishable from the
+# real region names sitting beside it in the same array.
+_NULL_LABEL_AR = {
+    "No Region": "بدون منطقة",
+    "No Franchise": "بدون وكالة",
+}
+
+
 def _lang_for(env):
     """Current session's language code (e.g. 'en_US', 'ar_001'), for
     reading translate=True jsonb columns (res_city.name) in the viewer's
     own language rather than a hardcoded one — same field the ORM itself
     would use (record.name resolves via env.context['lang'])."""
     return env.context.get("lang") or env.user.lang or "en_US"
+
+
+def _translated_text_expr(col, lang):
+    """Read a translate=True Char column as plain text, whether the live
+    column is jsonb or varchar.
+
+    The storage type is not ours to assume. Several modules declare the
+    same models these labels come from (three declare res.region alone),
+    and the column's type is decided by whichever of them was upgraded
+    LAST — so the two servers this code runs on have drifted apart on
+    exactly that before: a still-varchar res_region.name met a literal
+    name->>'en_US' and every board grouped by region died with "operator
+    does not exist: character varying ->> unknown".
+
+    to_jsonb() normalises both shapes. A jsonb translation dict passes
+    through untouched; a varchar becomes a jsonb *string*, whose ->>'key'
+    is NULL rather than an error. The CASE tail therefore supplies the raw
+    text for exactly the varchar case, and still leaves a genuine
+    translation dict that carries neither key NULL, as before.
+    """
+    return (f"COALESCE(to_jsonb({col})->>'{lang}', to_jsonb({col})->>'en_US', "
+            f"CASE WHEN jsonb_typeof(to_jsonb({col})) = 'string' "
+            f"THEN {col}::text END)")
+
+
+def _null_label_for(field, env):
+    """The display text for `field`'s NULL bucket, in the viewer's own
+    language — same session language the jsonb label lookups above read.
+    None for a field that has no NULL label, which keeps its previous
+    rendering."""
+    label = _NULL_LABEL.get(field)
+    if not label:
+        return None
+    lang = _lang_for(env) if env is not None else "en_US"
+    if lang.lower().startswith("ar"):
+        return _NULL_LABEL_AR.get(label, label)
+    return label
 
 
 def _groupby_sql(field_map, groupby, env=None):
@@ -1221,7 +1559,16 @@ def _groupby_sql(field_map, groupby, env=None):
             # the SAME resolved-text expression as the label, or comparing
             # jsonb to a text code later raises "operator does not exist".
             lang = _lang_for(env) if env is not None else "en_US"
-            text_expr = f"COALESCE({col}->>'{lang}', {col}->>'en_US')"
+            text_expr = _translated_text_expr(col, lang)
+            null_label = _null_label_for(field, env)
+            if null_label:
+                # Safe to fold into the code as well as the label here, and
+                # only here: this branch's code and label are the SAME
+                # expression, so _drill_filter_clause rebuilds it verbatim
+                # and "= 'No Region'" matches exactly the rows whose jsonb
+                # is absent. (In the id-lookup branches the code is the raw
+                # id, where a text literal would match nothing.)
+                text_expr = f"COALESCE({text_expr}, {_sql_str(null_label)})"
             return text_expr, text_expr
         if spec == "res_users_partner_name":
             label_expr = _RES_USERS_NAME_EXPR.format(col=col)
@@ -1230,30 +1577,63 @@ def _groupby_sql(field_map, groupby, env=None):
             # as "Mon YYYY" for display while code stays the sortable
             # YYYY-MM string.
             label_expr = f"to_char(to_date({col}, 'YYYY-MM'), 'Mon YYYY')"
-        elif len(spec) == 3:
-            # translate=True column stored as jsonb — read the current
-            # session's language key, falling back to en_US if that
-            # translation is missing (e.g. Arabic name never entered).
-            table, name_col, _marker = spec
+        else:
+            # One expression for every id lookup, 2-tuple and 3-tuple alike.
+            # The third element now only DOCUMENTS that a column is known to
+            # be translated somewhere; it no longer selects a different
+            # reader, because none of these columns belongs to us. Whether
+            # any of them is jsonb or varchar is the declaring module's
+            # decision (and, for the ones several modules declare, a
+            # decision that changes with upgrade order), so reading them
+            # through _translated_text_expr is what keeps a dashboard from
+            # breaking — or from needing another module changed on its
+            # behalf. A translation is shown when the column carries one.
+            table, name_col = spec[0], spec[1]
             lang = _lang_for(env) if env is not None else "en_US"
             label_expr = (
-                f"(SELECT COALESCE({name_col}->>'{lang}', {name_col}->>'en_US') "
+                f"(SELECT {_translated_text_expr(name_col, lang)} "
                 f"FROM {table} WHERE id = {col})"
             )
-        else:
-            table, name_col = spec
-            label_expr = f"(SELECT {name_col} FROM {table} WHERE id = {col})"
+        null_label = _null_label_for(field, env)
+        if null_label:
+            return col, f"COALESCE({label_expr}, {col}::text, {_sql_str(null_label)})"
         return col, f"COALESCE({label_expr}, {col}::text)"
+    null_label = _null_label_for(field, env)
+    if null_label:
+        # A plain (non-lookup) column — its own value is the label, so the
+        # fallback is the only thing wrapped around it.
+        return col, f"COALESCE({col}::text, {_sql_str(null_label)})"
     return col, col
 
 
-def _measure_sql(measure, period_months=1):
+# What "count" means on a source whose rows are NOT the records the board
+# is talking about. message_log holds one row per status TRANSITION on a
+# project.task, so count(*) there answers "how many status changes", while
+# every item reading it is named for the job cards / tasks themselves
+# ("Job Cards - Users wise", "Tasks - Month wise", "Closed Tasks") — a
+# coordinator who scheduled, put on hold and closed the same card was
+# counted three times. The drill-through that bar opens is a DISTINCT
+# task_id lookup (see run_terminal_domain), so the list always came back
+# shorter than the number that opened it — reported on "Service Analysis
+# (CRD)" as the per-coordinator bars disagreeing with their own list view.
+#
+# Counting distinct task_ids makes the bar and the list it opens the same
+# number by construction, and makes every message_log item count the thing
+# its own name promises. Sources whose rows already ARE the records (one
+# row per task/request/contract) keep plain count(*) and are unaffected.
+_SOURCE_COUNT_EXPR = {
+    "message_log": "count(DISTINCT task_id)",
+}
+
+
+def _measure_sql(measure, period_months=1, source=None):
     """The SELECT-list aggregate for a chart item's measure. period_months
     is only consulted by 'expr' measures that reference it (currently
     technician utilization, whose 176-hour denominator scales with the
-    period the viewer selected)."""
+    period the viewer selected). source picks the row-identity-aware count
+    expression for a measure-less item (see _SOURCE_COUNT_EXPR)."""
     if measure is None:
-        return "count(*)"
+        return _SOURCE_COUNT_EXPR.get(source, "count(*)")
     if measure.agg == "expr":
         return measure.expr.format(period_months=float(period_months or 1))
     agg = {"sum": "sum", "avg": "avg", "count": "count"}[measure.agg]
@@ -1285,13 +1665,107 @@ def _run_query(env, sql, params):
 # generic runners — dispatch on item.source, drive every board/chart item
 # from its ChartItemConfig instead of per-board Python.
 # ---------------------------------------------------------------------
+def ensure_database_indexes(env):
+    """Ensures critical indexes exist on tables backing PBI dashboards."""
+    cache = _request_cache(env)
+    if cache.get("db_indexes_checked"):
+        return
+    cr = env.cr
+    try:
+        cr.execute("SELECT to_regclass('project_task')")
+        if cr.fetchone()[0]:
+            cr.execute("CREATE INDEX IF NOT EXISTS idx_project_task_service_dt ON project_task (active, service_created_datetime)")
+        cr.execute("SELECT to_regclass('mail_message')")
+        if cr.fetchone()[0]:
+            cr.execute("CREATE INDEX IF NOT EXISTS idx_mail_message_model_res ON mail_message (model, res_id)")
+        cr.execute("SELECT to_regclass('mail_tracking_value')")
+        if cr.fetchone()[0]:
+            cr.execute("CREATE INDEX IF NOT EXISTS idx_mail_tracking_msg_field ON mail_tracking_value (mail_message_id, field_id)")
+        cr.execute("SELECT to_regclass('product_lines')")
+        if cr.fetchone()[0]:
+            cr.execute("CREATE INDEX IF NOT EXISTS idx_product_lines_task_id ON product_lines (project_task_id)")
+    except Exception:
+        pass
+    cache["db_indexes_checked"] = True
+
+
+# Columns worth an index on a materialized source table — the ones every
+# board over that source filters or groups by. Sources absent from here are
+# small enough to scan.
+_SOURCE_TABLE_INDEXES = {
+    "jobcards": (
+        "work_center_group_id",
+        "work_center_id",
+        "technician_id",
+        "job_card_status",
+        "action_status",
+        "service_created_datetime",
+        "franchise_id",
+    ),
+}
+
+
+def _ensure_source_table(env, source, date_from, date_to):
+    """Materializes a source CTE once per request transaction into a temp table.
+
+    A dashboard page runs 10-18 queries for the same (source, date_from, date_to).
+    Re-evaluating a heavy multi-table CTE (such as jobcards, which scans tracking
+    logs and aggregates lines) on every single query causes massive cumulative
+    latency (15 x 3s = 45s).
+
+    Materializing the date-scoped slice once into an indexed TEMP TABLE on the
+    request's transaction turns every subsequent query into an indexed sub-millisecond
+    lookup, cutting page load time by 90-95%.
+    """
+    ensure_database_indexes(env)
+    cache = _request_cache(env)
+    key = ("source_table", source, str(date_from), str(date_to))
+    if key in cache:
+        return cache[key]
+
+    cte_sql, field_map, cte_name = _SOURCE_CTE[source]
+    temp_tbl = f"pbi_tmp_{source}"
+    binder = ParamBinder()
+    binder.params["date_from"] = date_from
+    binder.params["date_to"] = date_to
+    # A SAVEPOINT, not a bare try: a statement that fails here poisons the
+    # whole request transaction, so every later query dies with "current
+    # transaction is aborted" and the fallback below can never actually run.
+    # Rolling back to a savepoint taken here leaves the SET LOCAL planner
+    # hints set before it in place.
+    try:
+        with env.cr.savepoint(flush=False):
+            env.cr.execute(f"DROP TABLE IF EXISTS {temp_tbl}")
+            env.cr.execute(
+                f"CREATE TEMP TABLE {temp_tbl} ON COMMIT DROP AS "
+                f"WITH {cte_sql} SELECT * FROM {cte_name}",
+                binder.params
+            )
+            for col in _SOURCE_TABLE_INDEXES.get(source, ()):
+                # No IF NOT EXISTS, and no index name: Postgres rejects the
+                # two together (an unnamed index cannot be looked up), and
+                # neither is needed — the DROP above takes the previous
+                # table's indexes with it, and a TEMP table's indexes live in
+                # this session's own schema, so the generated name is private
+                # to it and cannot collide with a concurrent request.
+                env.cr.execute(f"CREATE INDEX ON {temp_tbl} ({col})")
+            env.cr.execute(f"ANALYZE {temp_tbl}")
+        res = (temp_tbl, field_map, temp_tbl, True)
+    except Exception:
+        _logger.warning("board_sql: temp table for source %s failed, falling back to the inline CTE", source, exc_info=True)
+        res = (cte_sql, field_map, cte_name, False)
+
+    cache[key] = res
+    return res
+
+
 def _source_ctx(item: ChartItemConfig):
     cte_sql, field_map, cte_name = _SOURCE_CTE[item.source]
     return cte_sql, field_map, cte_name
 
 
 def run_kpi(env, uid, board: BoardConfig, item: ChartItemConfig, date_from, date_to, period_months=1):
-    cte_sql, field_map, cte_name = _source_ctx(item)
+    cte_sql, field_map, table_name, is_temp = _ensure_source_table(env, item.source, date_from, date_to)
 
     def _count_or_measure(domain, measure):
         binder = ParamBinder()
@@ -1307,7 +1781,9 @@ def run_kpi(env, uid, board: BoardConfig, item: ChartItemConfig, date_from, date
         if promoter_guard:
             clauses.append(promoter_guard)
         where = (" AND " + " AND ".join(clauses)) if clauses else ""
-        sql = f"WITH {cte_sql} SELECT {_measure_sql(measure, period_months)} AS v FROM {cte_name} WHERE 1=1{where}"
+        with_prefix = f"WITH {cte_sql} " if not is_temp else ""
+        sql = (f"{with_prefix}SELECT {_measure_sql(measure, period_months, item.source)} AS v "
+               f"FROM {table_name} WHERE 1=1{where}")
         rows = _run_query(env, sql, binder.params)
         return rows[0]["v"] if rows else None
 
@@ -1401,7 +1877,7 @@ def run_breakdown(env, uid, board: BoardConfig, item: ChartItemConfig, date_from
     _fields_shown(item) in order. Returns the breakdown for the NEXT level,
     or None once past the item's configured drill chain (caller should
     treat that as terminal — see run_terminal_domain)."""
-    cte_sql, field_map, cte_name = _source_ctx(item)
+    cte_sql, field_map, table_name, is_temp = _ensure_source_table(env, item.source, date_from, date_to)
     fields_shown = _fields_shown(item)
     idx = len(drill_path or [])
     if idx >= len(fields_shown):
@@ -1416,13 +1892,13 @@ def run_breakdown(env, uid, board: BoardConfig, item: ChartItemConfig, date_from
     where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
 
     level_cfg = _level_groupby_config(fields_shown[idx], item, idx)
-    measure_sql = _measure_sql(item.measure, period_months)
+    measure_sql = _measure_sql(item.measure, period_months, item.source)
     # measure_2 is an optional second series on plain bar items (e.g.
     # "Employee Performance Analysis - Estimated vs Actual Hours" —
     # expected_completion_hours vs total_worked_hours per region) — the
     # drill/click behaviour is unchanged, it just renders a 2nd bar per
     # category (see service_dashboard.js renderChart).
-    measure2_sql = f", {_measure_sql(item.measure_2, period_months)} AS value2" if item.measure_2 else ""
+    measure2_sql = f", {_measure_sql(item.measure_2, period_months, item.source)} AS value2" if item.measure_2 else ""
 
     if level_cfg.interval == "week":
         raw_col = field_map[fields_shown[idx]]
@@ -1432,12 +1908,12 @@ def run_breakdown(env, uid, board: BoardConfig, item: ChartItemConfig, date_from
         # successors. The join is on the real week start, so the numbering
         # is positional — Week-1 is always the week containing date_from.
         value2_select = ", COALESCE(_agg.value2, 0) AS value2" if item.measure_2 else ""
+        with_cte = f"{cte_sql}, " if not is_temp else ""
         sql = f"""
-            WITH {cte_sql},
-            _weeks AS ({_WEEK_SERIES_SQL}),
+            WITH {with_cte}_weeks AS ({_WEEK_SERIES_SQL}),
             _agg AS (
                 SELECT date_trunc('week', {raw_col}) AS week_start, {measure_sql} AS value{measure2_sql}
-                FROM {cte_name}{where}
+                FROM {table_name}{where}
                 GROUP BY 1
             )
             SELECT 'Week-' || ROW_NUMBER() OVER (ORDER BY _weeks.week_start) AS code,
@@ -1458,15 +1934,16 @@ def run_breakdown(env, uid, board: BoardConfig, item: ChartItemConfig, date_from
         else:
             order_field, order_dir = "value", "DESC"
         order_expr = "value" if order_field == "value" else code_col
+        with_prefix = f"WITH {cte_sql} " if not is_temp else ""
         sql = (
-            f"WITH {cte_sql} SELECT {code_col} AS code, {label_col} AS label, {measure_sql} AS value{measure2_sql} "
+            f"{with_prefix}SELECT {code_col} AS code, {label_col} AS label, {measure_sql} AS value{measure2_sql} "
             # NULLS LAST: Postgres sorts NULLs FIRST on a DESC order, so a
             # measure that can aggregate to NULL — every timeline-derived
             # interval, which is deliberately NULL rather than 0 for cards
             # that never reached the end state — would fill the top of the
             # chart with empty categories and push the real values past
             # the item's LIMIT, off the visible axis entirely.
-            f"FROM {cte_name}{where} GROUP BY 1, 2 "
+            f"FROM {table_name}{where} GROUP BY 1, 2 "
             f"ORDER BY {order_expr} {order_dir} NULLS LAST LIMIT {item.limit}"
         )
     rows = _run_query(env, sql, binder.params)
@@ -1484,7 +1961,7 @@ def run_table(env, uid, board: BoardConfig, item: ChartItemConfig, date_from, da
     column (region/city/salesman/customer) renders its display name while
     a plain numeric/text column passes through unchanged — no separate
     "table" label-resolution path to keep in sync with _LABEL_LOOKUP."""
-    cte_sql, field_map, cte_name = _source_ctx(item)
+    cte_sql, field_map, table_name, is_temp = _ensure_source_table(env, item.source, date_from, date_to)
     binder = ParamBinder()
     binder.params["date_from"] = date_from
     binder.params["date_to"] = date_to
@@ -1503,9 +1980,10 @@ def run_table(env, uid, board: BoardConfig, item: ChartItemConfig, date_from, da
     else:
         order_expr, order_dir = id_col, "DESC"
 
+    with_prefix = f"WITH {cte_sql} " if not is_temp else ""
     sql = (
-        f"WITH {cte_sql} SELECT {', '.join(select_parts)} "
-        f"FROM {cte_name}{where} ORDER BY {order_expr} {order_dir} LIMIT {item.limit}"
+        f"{with_prefix}SELECT {', '.join(select_parts)} "
+        f"FROM {table_name}{where} ORDER BY {order_expr} {order_dir} LIMIT {item.limit}"
     )
     rows = _run_query(env, sql, binder.params)
     result = []
@@ -1521,7 +1999,8 @@ def run_table(env, uid, board: BoardConfig, item: ChartItemConfig, date_from, da
 # The two rewrites _translate_jobcards_domain performs when turning a
 # DBM-vocabulary domain into a real project.task one: a straight rename, and
 # a search-only field expanded into the real column it stands for.
-_JOBCARDS_DOMAIN_RENAMES = {"job_card_status": "job_card_state"}
+_JOBCARDS_DOMAIN_RENAMES = {"job_card_status": "job_card_state",
+                            "franchise_id": "product_category_id"}
 _JOBCARDS_DOMAIN_EXPANDED = frozenset(["is_user_work_location"])
 
 
@@ -1647,7 +2126,7 @@ def run_terminal_domain(env, uid, board: BoardConfig, item: ChartItemConfig, dri
     # request_id for usergroup) and hand back an ("id", "in", [...])
     # domain — exactly as faithful as the field-translation path, just
     # computed via one extra query instead of a rename table.
-    cte_sql, field_map, cte_name = _source_ctx(item)
+    cte_sql, field_map, table_name, is_temp = _ensure_source_table(env, item.source, date_from, date_to)
     binder = ParamBinder()
     binder.params["date_from"] = date_from
     binder.params["date_to"] = date_to
@@ -1656,7 +2135,282 @@ def run_terminal_domain(env, uid, board: BoardConfig, item: ChartItemConfig, dri
         clauses.append(_drill_filter_clause(env, field_map, item, i, entry["code"], binder))
     where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
     id_col = _TERMINAL_ID_COL.get(item.source, "task_id")
-    sql = f"WITH {cte_sql} SELECT DISTINCT {id_col} FROM {cte_name}{where}"
+    with_prefix = f"WITH {cte_sql} " if not is_temp else ""
+    sql = f"{with_prefix}SELECT DISTINCT {id_col} FROM {table_name}{where}"
     rows = _run_query(env, sql, binder.params)
     ids = [r[id_col] for r in rows if r[id_col]]
     return item.record_model, [("id", "in", ids or [0])]
+
+
+
+
+# ---------------------------------------------------------------------
+# "Formula & Details" — the record-level audit behind a chart's bars.
+#
+# A bar says "this technician logged 96 hours"; this returns the job cards
+# that made up the 96, each with the timestamps the formula read and the
+# value it produced, so the figure can be recomputed by hand. Which
+# columns and which formula text comes entirely from the item's
+# DetailConfig (board_config.py) — there is no per-chart SQL here.
+#
+# Only 'jobcards'-sourced items are supported: it is the one source with
+# one row per record (message_log has one row per transition, so a record
+# would appear many times and its hours would multiply).
+# ---------------------------------------------------------------------
+_DETAIL_SUPPORTED_SOURCES = ("jobcards",)
+
+
+def _fmt_detail_hours(hours):
+    """Float hours -> "H:MM". Matches the client-side formatter."""
+    if hours is None:
+        return "-"
+    neg = hours < 0
+    hours = abs(hours)
+    h_int = int(hours)
+    m_int = int(round((hours - h_int) * 60))
+    if m_int >= 60:
+        h_int += 1
+        m_int = 0
+    return "%s%d:%02d" % ("-" if neg else "", h_int, m_int)
+
+
+def _detail_cell(value, kind):
+    """One row value, rendered for display. Returns (raw, formatted)."""
+    if value is None:
+        return None, "-"
+    if kind == "datetime":
+        return value.strftime("%Y-%m-%d %H:%M:%S"), value.strftime("%Y-%m-%d %H:%M:%S")
+    if kind == "hours":
+        return round(float(value), 2), _fmt_detail_hours(float(value))
+    if kind == "number":
+        return round(float(value), 2), f"{float(value):,.2f}"
+    # A whole-number column — a 1/0 denominator contribution, a count —
+    # where "number"'s two decimals would read as noise ("1.00").
+    if kind == "integer":
+        return int(value), f"{int(value):,}"
+    return value, str(value)
+
+
+def _entity_id_list(entity_id):
+    """The modal's entity picker is multi-select, so what arrives here is
+    "all"/None (no restriction), a single id, a list of ids, or the
+    comma-separated string the export URL carries. Normalised to a list of
+    ints; anything unparseable is dropped rather than raising, so a stale
+    bookmark degrades to "no restriction" instead of a 500."""
+    if entity_id in (None, "", "all", []):
+        return []
+    if isinstance(entity_id, str):
+        parts = [p for p in entity_id.split(",") if p.strip() and p.strip() != "all"]
+    elif isinstance(entity_id, (list, tuple, set)):
+        parts = list(entity_id)
+    else:
+        parts = [entity_id]
+    out = []
+    for p in parts:
+        try:
+            out.append(int(p))
+        except (ValueError, TypeError):
+            continue
+    return out
+
+
+def run_chart_detail(env, uid, board: BoardConfig, item: ChartItemConfig, date_from, date_to,
+                     entity_id=None, period_months=1.0):
+    """Records, formula metadata and summary figures behind one chart item.
+
+    ``entity_id`` narrows to one or more technicians/coordinators (the
+    modal's multi-select pushes its selection down here rather than
+    filtering in the browser, so the export and the on-screen table
+    agree). Accepts a single id, a list of ids, or a comma-separated
+    string; "all"/None means every entity.
+    """
+    detail = getattr(item, "detail", None)
+    if not detail:
+        raise ValueError(f"Chart {item.key!r} has no Formula & Details configuration.")
+    if item.source not in _DETAIL_SUPPORTED_SOURCES:
+        raise ValueError(f"Formula & Details is not available for {item.source!r} charts.")
+
+    cte_sql, field_map, table_name, is_temp = _ensure_source_table(env, item.source, date_from, date_to)
+
+    def col(name):
+        """Config-declared column -> its real CTE column, or a clear error.
+
+        Every name here comes from board_config, never from the request,
+        but resolving through field_map keeps a config typo a startup-time
+        error message instead of a raw SQL syntax failure.
+        """
+        real = field_map.get(name)
+        if not isinstance(real, str):
+            raise ValueError(f"Unknown detail column {name!r} for source {item.source!r}.")
+        return real
+
+    binder = ParamBinder()
+    binder.params["date_from"] = date_from
+    binder.params["date_to"] = date_to
+
+    entity_col = col(detail.entity_col)
+    clauses = _base_where(env, uid, board, item, field_map, binder)
+    entity_ids = _entity_id_list(entity_id)
+    if entity_ids:
+        clauses.append(f"{entity_col} = ANY({binder.bind(entity_ids)})")
+
+    where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
+    with_prefix = f"WITH {cte_sql}, " if not is_temp else "WITH "
+
+    def detail_select(c):
+        # A derived column (DetailColumn.expr) carries its own SQL over the
+        # jc alias — the row's contribution to a denominator, say — and so
+        # never goes through col()/field_map, which only knows real columns.
+        if getattr(c, "expr", None):
+            return f"({c.expr}) AS {c.key}"
+        return f"jc.{col(c.col)} AS {c.key}"
+
+    extra_selects = ", ".join(detail_select(c) for c in detail.columns)
+    extra_selects = (extra_selects + ",\n            ") if extra_selects else ""
+
+    if detail.value_expr:
+        value_sql = detail.value_expr
+    elif detail.value_col:
+        value_sql = f"jc.{col(detail.value_col)}"
+    else:
+        value_sql = "NULL::float"
+
+    sql = f"""
+        {with_prefix}_filtered_detail AS (
+            SELECT * FROM {table_name}{where}
+        )
+        SELECT
+            jc.task_id AS task_id,
+            COALESCE(jc.name, 'JC-' || jc.task_id) AS name,
+            jc.{entity_col} AS entity_id,
+            COALESCE(ent_partner.name, 'Unassigned') AS entity_name,
+            COALESCE(wcl.name, '-') AS work_center_name,
+            COALESCE(wcg.name, '-') AS region_name,
+            COALESCE(jc.job_card_status, '-') AS status,
+            {extra_selects}({value_sql}) AS value
+        FROM _filtered_detail jc
+        LEFT JOIN res_users ent_user ON ent_user.id = jc.{entity_col}
+        LEFT JOIN res_partner ent_partner ON ent_partner.id = ent_user.partner_id
+        LEFT JOIN work_center_location wcl ON wcl.id = jc.work_center_id
+        LEFT JOIN work_center_group wcg ON wcg.id = jc.work_center_group_id
+        ORDER BY ent_partner.name ASC, ({value_sql}) DESC NULLS LAST, jc.name ASC
+    """
+
+    rows = _run_query(env, sql, binder.params)
+
+    is_count = detail.agg == "count"
+    records = []
+    entity_map = {}
+    total_value = 0.0
+    counted = 0
+
+    for r in rows:
+        raw_value = r.get("value")
+        has_value = raw_value is not None
+        value = float(raw_value) if has_value else None
+        if has_value:
+            total_value += value
+            counted += 1
+
+        e_id = r.get("entity_id")
+        e_name = r.get("entity_name")
+        if e_id:
+            bucket = entity_map.setdefault(e_id, {"id": e_id, "name": e_name, "count": 0, "value": 0.0})
+            bucket["count"] += 1
+            if has_value:
+                bucket["value"] += value
+
+        record = {
+            "task_id": r.get("task_id"),
+            "name": r.get("name"),
+            "entity_id": e_id,
+            "entity_name": e_name,
+            "work_center": r.get("work_center_name"),
+            "region": r.get("region_name"),
+            "status": r.get("status"),
+            # A row whose interval never completed contributes nothing to
+            # an average — showing it greyed rather than hiding it is the
+            # whole point of an audit table.
+            "counted": bool(is_count or has_value),
+            "value": None if value is None else round(value, 2),
+            "value_formatted": (_fmt_detail_hours(value) if detail.value_kind == "hours"
+                                else ("-" if value is None else f"{value:,.2f}")) if not is_count else "",
+        }
+        for c in detail.columns:
+            raw, formatted = _detail_cell(r.get(c.key), c.kind)
+            record[c.key] = formatted
+            record[c.key + "_raw"] = raw
+        records.append(record)
+
+    total_records = len(records)
+    avg_value = (total_value / counted) if counted else 0.0
+
+    def as_pair(v):
+        if detail.value_kind == "hours":
+            return round(v, 2), _fmt_detail_hours(v)
+        return round(v, 2), f"{v:,.2f}"
+
+    total_num, total_fmt = as_pair(total_value)
+    avg_num, avg_fmt = as_pair(avg_value)
+
+    entities = sorted(entity_map.values(), key=lambda x: str(x["name"]).lower())
+    for e in entities:
+        e_num, e_fmt = as_pair(e["value"])
+        e["value"] = e_num
+        e["value_formatted"] = e_fmt if not is_count else str(e["count"])
+
+    summary = {
+        "agg": detail.agg,
+        "entity_label": detail.entity_label,
+        "record_label": detail.record_label,
+        "value_label": detail.value_label,
+        "value_kind": detail.value_kind,
+        "total_records": total_records,
+        "counted_records": total_records if is_count else counted,
+        "total_value": total_num,
+        "total_value_formatted": total_fmt,
+        "avg_value": avg_num,
+        "avg_value_formatted": avg_fmt,
+        "entities": entities,
+    }
+
+    if detail.agg == "utilization":
+        # The divisor the chart itself uses — MONTHLY_WORKING_HOURS scaled
+        # by the months the viewer's date filter spans, so "This Year"
+        # divides by 176 * 12 rather than reporting ~1200%.
+        months = float(period_months or 1.0) if detail.period_scaled else 1.0
+        divisor = months * MONTHLY_WORKING_HOURS
+        summary["divisor"] = round(divisor, 2)
+        summary["divisor_label"] = (
+            f"{months:g} month(s) x {MONTHLY_WORKING_HOURS:g} working hours = {divisor:,.2f}"
+        )
+        summary["utilization_pct"] = round((total_value / divisor * 100.0) if divisor else 0.0, 2)
+        for e in entities:
+            e["utilization_pct"] = round((e["value"] / divisor * 100.0) if divisor else 0.0, 2)
+
+    formula = {
+        "title": f"{item.name} — Calculation Formula",
+        "expression": detail.expression,
+        "terms": [{"label": label, "definition": definition} for label, definition in detail.terms],
+        "scope": detail.scope,
+        "unit": ("Hours (shown as H:MM)" if detail.value_kind == "hours"
+                 else ("Job Card count" if is_count else "Value")),
+    }
+
+    return {
+        "formula": formula,
+        "summary": summary,
+        "columns": [{"key": c.key, "label": c.label, "kind": c.kind,
+                     "total": bool(getattr(c, "total", False))}
+                    for c in detail.columns],
+        "valueColumn": {"label": detail.value_label, "kind": detail.value_kind, "shown": not is_count},
+        "records": records,
+    }
+
+
+def run_labor_hours_detail(env, uid, board: BoardConfig, item: ChartItemConfig, date_from, date_to,
+                           technician_id=None, period_months=1.0):
+    """Back-compat alias for the pre-generalisation entry point (callers in
+    older pbi_service_dashboards builds, and cached .pyc imports)."""
+    return run_chart_detail(env, uid, board, item, date_from, date_to,
+                            entity_id=technician_id, period_months=period_months)

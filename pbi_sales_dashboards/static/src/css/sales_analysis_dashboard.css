@@ -1,0 +1,20 @@
+/*
+ * Sales Analysis dashboard — deliberately reuses .pbi-sales-dashboard's
+ * CSS variables/card/legend/chart/tooltip/data-table rules (see
+ * sales_dashboard.css) by carrying that class on its root alongside
+ * .pbi-sales-analysis-dashboard, so all three dashboards read as one
+ * visual family. Only the resolved date range readout and the custom
+ * date-range inputs (no equivalent in sales_dashboard.css) are styled here
+ * — same as loyalty_dashboard.css.
+ */
+.pbi-sales-analysis-dashboard .resolved-range {
+  font-size: 12.5px; font-weight: 600; color: var(--text-primary);
+}
+.pbi-sales-analysis-dashboard .date-range-inputs {
+  display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-secondary);
+}
+.pbi-sales-analysis-dashboard .date-range-inputs input[type="date"] {
+  font-family: inherit; font-size: 12.5px; color: var(--text-primary);
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;
+  padding: 6px 10px;
+}

@@ -49,14 +49,65 @@
         </field>
     </record>
 
+    <!-- Search / filters / group-by for the History list. Both History tabs
+         share this one view: the Saved vs. On-the-fly split is applied by
+         SqlMsHistorySearchModel on top of whatever is picked here, and each
+         tab keeps its own facets, so filtering one never disturbs the
+         other. -->
+    <record id="view_sql_ms_query_search" model="ir.ui.view">
+        <field name="name">database.studio.query.search</field>
+        <field name="model">database.studio.query</field>
+        <field name="arch" type="xml">
+            <search string="Queries">
+                <field name="name" string="Name or SQL"
+                       filter_domain="['|', ('name', 'ilike', self), ('query', 'ilike', self)]"/>
+                <field name="query" string="SQL text"/>
+                <field name="user_id" string="User"/>
+                <filter name="filter_mine" string="My Queries"
+                        domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="filter_today" string="Run Today"
+                        domain="[('last_run', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0, 0, 0)))]"/>
+                <filter name="filter_week" string="Run In The Last 7 Days"
+                        domain="[('last_run', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_month" string="Run In The Last 30 Days"
+                        domain="[('last_run', '&gt;=', (context_today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="filter_run_once" string="Run Only Once"
+                        domain="[('run_count', '&lt;=', 1)]"/>
+                <filter name="filter_run_repeatedly" string="Run More Than Once"
+                        domain="[('run_count', '&gt;', 1)]"/>
+                <separator/>
+                <filter name="filter_multi_statement" string="Multi-statement"
+                        domain="[('query', 'like', ';')]"/>
+                <filter name="filter_last_run" string="Last Run" date="last_run"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_user" string="User"
+                            context="{'group_by': 'user_id'}"/>
+                    <filter name="group_run_day" string="Last Run: Day"
+                            context="{'group_by': 'last_run:day'}"/>
+                    <filter name="group_run_week" string="Last Run: Week"
+                            context="{'group_by': 'last_run:week'}"/>
+                    <filter name="group_run_month" string="Last Run: Month"
+                            context="{'group_by': 'last_run:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
     <record id="action_sql_ms_query" model="ir.actions.act_window">
         <field name="name">Query History</field>
         <field name="res_model">database.studio.query</field>
         <field name="view_mode">tree,form</field>
-        <!-- Opens on the "Saved" tab (see SqlMsHistoryController's Saved /
-             On-the-fly toggle); the toggle buttons switch this client-side
-             without touching the action's own domain. -->
-        <field name="domain">[('is_favorite', '=', True)]</field>
+        <field name="search_view_id" ref="view_sql_ms_query_search"/>
+        <!-- Deliberately empty, and deliberately still written: opening on
+             the "Saved" tab is now the job of SqlMsHistorySearchModel, which
+             ANDs the active tab's domain on top of the search facets. An
+             action-level [('is_favorite','=',True)] would be ANDed with that
+             and leave the On-the-fly tab permanently empty; and simply
+             dropping the field from this record would not clear the one an
+             earlier version already wrote to the database. -->
+        <field name="domain">[]</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">No queries yet</p>
             <p>Queries you execute in the Analyser are stored here.</p>

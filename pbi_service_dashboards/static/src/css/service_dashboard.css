@@ -99,3 +99,767 @@
   .pbi-service-dashboard .pbi-kpi-row-dynamic { grid-template-columns: repeat(2, 1fr); }
   .pbi-service-dashboard .pbi-card-grid-dynamic { grid-template-columns: 1fr; }
 }
+
+/* Card title header with action button */
+.pbi-service-dashboard .pbi-card h2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  position: relative;
+}
+.pbi-service-dashboard .pbi-card-title-text {
+  flex: 1;
+  min-width: 0;
+}
+.pbi-service-dashboard .pbi-chart-formula-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1f4e79;
+  background: #f0f4f9;
+  border: 1px solid #c9d8e7;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.pbi-service-dashboard .pbi-chart-formula-btn:hover {
+  background: #1f4e79;
+  color: #fff;
+  border-color: #1f4e79;
+  box-shadow: 0 2px 6px rgba(31, 78, 121, 0.25);
+}
+
+/* Modal Backdrop & Dialog */
+.pbi-service-dashboard .pbi-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: pbiFadeIn 0.2s ease-out;
+}
+
+.pbi-service-dashboard .pbi-labor-hours-modal {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 1240px;
+  /* 92vh left the fifth row 9px short on a ~620px-tall window; the extra
+     3vh is the difference between five rows and four there, and changes
+     nothing on a normal screen, where the table is capped by content. */
+  max-height: 95vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: pbiSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes pbiFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pbiSlideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Modal Header */
+.pbi-service-dashboard .pbi-modal-header {
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #1f4e79 0%, #153655 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.pbi-service-dashboard .pbi-modal-title-wrap h3 {
+  margin: 4px 0 6px;
+  font-size: 19px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+}
+.pbi-service-dashboard .pbi-modal-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  color: #e2ecf7;
+}
+.pbi-service-dashboard .pbi-modal-sub-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pbi-service-dashboard .pbi-meta-pill {
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  padding: 2px 9px;
+  border-radius: 12px;
+  color: #d1e2f3;
+}
+.pbi-service-dashboard .pbi-modal-close {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+.pbi-service-dashboard .pbi-modal-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+/* Modal Body */
+.pbi-service-dashboard .pbi-modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+  /* A flex item will not shrink past its content unless told to. Without
+     this the body grew to fit the whole table and scrolled itself, which
+     pushed the rows below the fold on a short window while the table sat
+     there at its full height, scrollbar unused. */
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #f8fafc;
+}
+
+/* Formula Explanatory Banner */
+.pbi-service-dashboard .pbi-formula-banner {
+  background: #ffffff;
+  border: 1px solid #dbe5ee;
+  border-radius: 10px;
+  padding: 16px 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+.pbi-service-dashboard .pbi-formula-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+/* Only ruled off when something is unfolded beneath it. */
+.pbi-service-dashboard .pbi-formula-header:not(:last-child) {
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #e2e8f0;
+  margin-bottom: 12px;
+}
+.pbi-service-dashboard .pbi-formula-tag {
+  background: #1f4e79;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.pbi-service-dashboard .pbi-formula-equation {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.pbi-service-dashboard .pbi-eq-target {
+  color: #1f4e79;
+  font-weight: 700;
+  background: #eef4f9;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.pbi-service-dashboard .pbi-eq-op {
+  font-weight: 800;
+  color: #64748b;
+}
+.pbi-service-dashboard .pbi-eq-term {
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.pbi-service-dashboard .pbi-eq-end {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+.pbi-service-dashboard .pbi-eq-start {
+  background: #eff6ff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+/* The formula itself, printed as one line. It comes from the server
+   (service_config.py's DetailConfig.expression) rather than being split
+   into typed spans, so it is one styled block, not a per-term layout. */
+.pbi-service-dashboard .pbi-eq-expression {
+  background: #eef4f9;
+  color: #1f4e79;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid #cfe0ee;
+  line-height: 1.5;
+}
+.pbi-service-dashboard .pbi-formula-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+.pbi-service-dashboard .pbi-formula-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #edf2f7;
+}
+.pbi-service-dashboard .pbi-item-icon {
+  font-size: 16px;
+  margin-top: 1px;
+}
+.pbi-service-dashboard .pbi-item-icon.start { color: #2563eb; }
+.pbi-service-dashboard .pbi-item-icon.end { color: #059669; }
+.pbi-service-dashboard .pbi-item-icon.calc { color: #d97706; }
+.pbi-service-dashboard .pbi-item-content strong {
+  display: block;
+  font-size: 12px;
+  color: #334155;
+  margin-bottom: 2px;
+}
+.pbi-service-dashboard .pbi-item-content p {
+  margin: 0;
+  font-size: 11.5px;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+/* Summary KPI Badges */
+.pbi-service-dashboard .pbi-modal-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.pbi-service-dashboard .pbi-kpi-chip {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+}
+.pbi-service-dashboard .pbi-kpi-chip.primary {
+  background: linear-gradient(135deg, #f0f7ff 0%, #e0effe 100%);
+  border-color: #bcdbfc;
+}
+.pbi-service-dashboard .pbi-chip-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+.pbi-service-dashboard .pbi-chip-val {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+.pbi-service-dashboard .pbi-kpi-chip.primary .pbi-chip-val {
+  color: #1f4e79;
+}
+.pbi-service-dashboard .pbi-chip-unit {
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  margin-left: 4px;
+}
+
+/* The summary chips when they sit in the header strip: same markup, dark
+   ground, smaller type. A row of four short numbers reads fine at this size
+   and costs the table nothing. */
+.pbi-service-dashboard .pbi-modal-kpi-row.in-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 24px 10px;
+  background: linear-gradient(135deg, #1f4e79 0%, #153655 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.pbi-service-dashboard .pbi-modal-kpi-row.in-header .pbi-kpi-chip {
+  flex: 0 1 auto;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+}
+.pbi-service-dashboard .pbi-modal-kpi-row.in-header .pbi-kpi-chip.primary {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 0.92);
+}
+.pbi-service-dashboard .pbi-modal-kpi-row.in-header .pbi-chip-label {
+  font-size: 9.5px;
+  margin-bottom: 0;
+  color: rgba(255, 255, 255, 0.75);
+}
+.pbi-service-dashboard .pbi-modal-kpi-row.in-header .pbi-chip-val {
+  font-size: 13px;
+  color: #ffffff;
+}
+.pbi-service-dashboard .pbi-modal-kpi-row.in-header .pbi-kpi-chip.primary .pbi-chip-label {
+  color: #47637d;
+}
+.pbi-service-dashboard .pbi-modal-kpi-row.in-header .pbi-kpi-chip.primary .pbi-chip-val {
+  color: #1f4e79;
+}
+
+/* Fold control for the term definitions and scope */
+.pbi-service-dashboard .pbi-formula-toggle {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1f4e79;
+  background: #f0f4f9;
+  border: 1px solid #c9d8e7;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pbi-service-dashboard .pbi-formula-toggle:hover {
+  background: #1f4e79;
+  color: #ffffff;
+  border-color: #1f4e79;
+}
+
+/* Modal Toolbar */
+.pbi-service-dashboard .pbi-modal-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.pbi-service-dashboard .pbi-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+.pbi-service-dashboard .pbi-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 280px;
+  flex: 1;
+}
+.pbi-service-dashboard .pbi-search-icon {
+  position: absolute;
+  left: 10px;
+  color: #94a3b8;
+  font-size: 12px;
+  pointer-events: none;
+}
+.pbi-service-dashboard .pbi-search-input {
+  width: 100%;
+  padding: 7px 28px 7px 30px;
+  font-size: 12.5px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.pbi-service-dashboard .pbi-search-input:focus {
+  border-color: #1f4e79;
+  box-shadow: 0 0 0 2px rgba(31, 78, 121, 0.15);
+}
+.pbi-service-dashboard .pbi-search-clear {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+}
+.pbi-service-dashboard .pbi-tech-select {
+  padding: 7px 12px;
+  font-size: 12.5px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #334155;
+  outline: none;
+  max-width: 260px;
+}
+.pbi-service-dashboard .pbi-download-excel-btn {
+  background: #1f4e79;
+  border-color: #1f4e79;
+  font-weight: 600;
+  font-size: 12.5px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(31, 78, 121, 0.2);
+  transition: all 0.15s ease;
+}
+.pbi-service-dashboard .pbi-download-excel-btn:hover {
+  background: #153655;
+  border-color: #153655;
+}
+/* Modal Table */
+.pbi-service-dashboard .pbi-modal-table-wrap {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: auto;
+  /* Five rows, measured rather than guessed. The scroll box carries 92px of
+     chrome before any data shows -- 36px sticky header, 39px sticky total
+     row, 17px horizontal scrollbar -- and rows are one line each now (see
+     the nowrap on td), so 92 + 5*34 = 262. The dialog only has max-height,
+     not height, so it sizes to content: this floor is what actually decides
+     how much table the reader gets, and it still fits a 620px-tall window
+     once the header strip, folded formula and toolbar have taken theirs. */
+  min-height: 262px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+/* The table is the one part that should absorb whatever height is going: it
+   takes the space the formula fold and the header strip gave back, and
+   scrolls its own rows rather than making the whole modal scroll. The
+   min-height above is the floor it will not go under -- past that the body
+   scrolls, which only happens on a very short window. */
+.pbi-service-dashboard .pbi-modal-body > .pbi-modal-table-wrap {
+  flex: 1 1 auto;
+}
+.pbi-service-dashboard .pbi-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.pbi-service-dashboard .pbi-detail-table thead th {
+  position: sticky;
+  top: 0;
+  background: #1f4e79;
+  color: #ffffff;
+  padding: 9px 12px;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 2;
+}
+.pbi-service-dashboard .pbi-detail-table thead th:last-child {
+  border-right: none;
+}
+.pbi-service-dashboard .pbi-detail-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.1s ease;
+}
+.pbi-service-dashboard .pbi-detail-table tbody tr:nth-child(even) {
+  background: #fbfcfe;
+}
+.pbi-service-dashboard .pbi-detail-table tbody tr:hover {
+  background: #f0f7ff;
+}
+.pbi-service-dashboard .pbi-detail-table td {
+  padding: 7px 12px;
+  color: #334155;
+  vertical-align: middle;
+  /* One line per cell. A wrapping status badge or region name was turning a
+     34px row into 68px, which halved how many rows fit on screen -- the
+     table scrolls sideways already, so there is nothing to gain from
+     wrapping and a lot to lose. */
+  white-space: nowrap;
+}
+/* The two columns that carry free text are the ones allowed to be long;
+   they ellipsize rather than wrap, with the full value on hover. */
+.pbi-service-dashboard .pbi-detail-table td.col-tech,
+.pbi-service-dashboard .pbi-detail-table td.col-wc,
+.pbi-service-dashboard .pbi-detail-table td.col-reg {
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pbi-service-dashboard .pbi-jc-link {
+  color: #1f4e79;
+  font-weight: 700;
+  text-decoration: none;
+}
+.pbi-service-dashboard .pbi-jc-link:hover {
+  text-decoration: underline;
+  color: #0d9488;
+}
+.pbi-service-dashboard .pbi-status-badge {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 2px 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  border-radius: 4px;
+}
+.pbi-service-dashboard .pbi-status-badge.closed {
+  background: #dcfce7;
+  color: #15803d;
+}
+.pbi-service-dashboard .pbi-status-badge.ready {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+.pbi-service-dashboard .ts-valid { color: #334155; }
+.pbi-service-dashboard .ts-missing { color: #94a3b8; font-style: italic; }
+.pbi-service-dashboard .pbi-hrs-val {
+  font-weight: 700;
+  color: #1f4e79;
+}
+.pbi-service-dashboard .pbi-hrs-num {
+  color: #64748b;
+}
+.pbi-service-dashboard .pbi-table-total-row {
+  position: sticky;
+  bottom: 0;
+  background: #e9eef4;
+  border-top: 2px solid #cbd5e1;
+  font-weight: 700;
+  z-index: 1;
+}
+.pbi-service-dashboard .pbi-table-total-row td {
+  padding: 10px 12px;
+  color: #0f172a;
+}
+
+/* Modal Footer */
+.pbi-service-dashboard .pbi-modal-footer {
+  padding: 12px 24px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pbi-service-dashboard .pbi-footer-summary {
+  font-size: 12px;
+  color: #64748b;
+}
+.pbi-service-dashboard .pbi-footer-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pbi-service-dashboard .pbi-modal-loading,
+.pbi-service-dashboard .pbi-modal-error,
+.pbi-service-dashboard .pbi-modal-empty {
+  padding: 40px 20px;
+  text-align: center;
+  font-size: 13px;
+  color: #64748b;
+}
+.pbi-service-dashboard .pbi-modal-error { color: #b91c1c; }
+
+/* A record whose interval never completed: shown, but greyed, because it
+   is exactly what explains the gap between the row count and an average's
+   denominator. */
+.pbi-service-dashboard .pbi-detail-table tbody tr.pbi-row-uncounted td {
+  color: #9ca3af;
+  font-style: italic;
+}
+.pbi-service-dashboard .pbi-detail-table tbody tr.pbi-row-uncounted .pbi-jc-link {
+  color: #9ca3af;
+}
+
+/* RTL (Arabic UI) */
+.pbi-service-dashboard[dir="rtl"] .pbi-modal-header {
+  flex-direction: row-reverse;
+}
+.pbi-service-dashboard[dir="rtl"] .pbi-modal-close {
+  margin-left: 0;
+  margin-right: auto;
+}
+.pbi-service-dashboard[dir="rtl"] .pbi-search-icon {
+  left: auto;
+  right: 10px;
+}
+.pbi-service-dashboard[dir="rtl"] .pbi-search-input {
+  padding: 7px 30px 7px 28px;
+}
+.pbi-service-dashboard[dir="rtl"] .pbi-search-clear {
+  right: auto;
+  left: 8px;
+}
+.pbi-service-dashboard[dir="rtl"] .pbi-detail-table thead th {
+  text-align: right;
+  border-right: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+
+/* ------------------------------------------------------------------
+   Searchable / multi-select pickers
+   ------------------------------------------------------------------
+   Two places need "type to narrow a long list": the filter bar's
+   Franchise picker (single choice) and the Formula & Details modal's
+   entity picker (many choices). A native <select> can do neither, so
+   both are a toggle button plus an absolutely-positioned panel, sharing
+   one .pbi-ms block. The toggle keeps whichever class its neighbours use
+   (.filter-select in the bar, .pbi-tech-select in the modal) so it lines
+   up with them; only the bits a <button> does not inherit are set here.
+   ------------------------------------------------------------------ */
+.pbi-service-dashboard .pbi-ms {
+  position: relative;
+  display: inline-block;
+}
+.pbi-service-dashboard .pbi-ms-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  cursor: pointer;
+  max-width: 280px;
+}
+.pbi-service-dashboard .pbi-ms-toggle.pbi-ms-active {
+  border-color: #1f4e79;
+  box-shadow: 0 0 0 2px rgba(31, 78, 121, 0.12);
+}
+.pbi-service-dashboard .pbi-ms-toggle-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pbi-service-dashboard .pbi-ms-caret {
+  font-size: 11px;
+  color: #94a3b8;
+  flex: none;
+}
+.pbi-service-dashboard .pbi-ms-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 260px;
+  max-width: 360px;
+  /* Above the charts below it in the bar, and above the modal's sticky
+     table header when it is the entity picker. */
+  z-index: 1080;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+}
+[dir="rtl"] .pbi-service-dashboard .pbi-ms-panel { left: auto; right: 0; }
+
+.pbi-service-dashboard .pbi-ms-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+.pbi-service-dashboard .pbi-ms-search .fa { color: #94a3b8; font-size: 12px; }
+.pbi-service-dashboard .pbi-ms-search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 12.5px;
+  color: #334155;
+}
+
+.pbi-service-dashboard .pbi-ms-actions {
+  display: flex;
+  gap: 6px;
+  padding: 6px 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.pbi-service-dashboard .pbi-ms-actions button {
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #1f4e79;
+  background: #eef4f9;
+  border: 1px solid #d3e0ea;
+  border-radius: 5px;
+  padding: 3px 9px;
+  cursor: pointer;
+}
+.pbi-service-dashboard .pbi-ms-actions button:hover { background: #1f4e79; color: #ffffff; }
+
+.pbi-service-dashboard .pbi-ms-list {
+  /* Roughly eight rows before it scrolls — enough to scan, short enough
+     that the panel never runs off a laptop screen. */
+  max-height: 260px;
+  overflow-y: auto;
+}
+.pbi-service-dashboard .pbi-ms-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  font-size: 12.5px;
+  color: #334155;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+}
+.pbi-service-dashboard .pbi-ms-option:last-child { border-bottom: none; }
+.pbi-service-dashboard .pbi-ms-option:hover { background: #f1f5f9; }
+.pbi-service-dashboard .pbi-ms-option.selected { background: #eef4f9; font-weight: 600; color: #1f4e79; }
+/* A drawn tick rather than a real <input type="checkbox">: OWL patches
+   the checked ATTRIBUTE, which the DOM stops reflecting once a checkbox
+   has been clicked, so "Select all" / "Clear" would leave stale ticks
+   behind. An icon driven straight off state cannot drift. */
+.pbi-service-dashboard .pbi-ms-check { user-select: none; }
+.pbi-service-dashboard .pbi-ms-box { flex: none; width: 13px; color: #94a3b8; font-size: 13px; }
+.pbi-service-dashboard .pbi-ms-box.on { color: #1f4e79; }
+.pbi-service-dashboard .pbi-ms-opt-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pbi-service-dashboard .pbi-ms-opt-meta { flex: none; font-size: 11px; color: #94a3b8; font-weight: 400; }
+.pbi-service-dashboard .pbi-ms-empty {
+  padding: 12px 10px;
+  font-size: 12px;
+  font-style: italic;
+  color: #94a3b8;
+  text-align: center;
+}

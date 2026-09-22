@@ -1,0 +1,1 @@
+../pbi_dashboard_configurations/sql/assign_keyaccounts_budget_salestype.sql

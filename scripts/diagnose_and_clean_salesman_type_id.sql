@@ -1,0 +1,1 @@
+../pbi_dashboard_configurations/sql/diagnose_and_clean_salesman_type_id.sql

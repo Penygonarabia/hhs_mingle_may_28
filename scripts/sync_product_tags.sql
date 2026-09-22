@@ -1,0 +1,1 @@
+../pbi_dashboard_configurations/sql/sync_product_tags.sql

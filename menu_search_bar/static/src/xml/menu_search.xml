@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+    <!-- Standalone MenuSearchControl Component -->
+    <t t-name="menu_search_bar.MenuSearchControl" owl="1">
+        <div class="menu-search-control-container" t-ref="root" t-on-keydown="onKeyDown">
+            <!-- Search Input Box -->
+            <div class="menu-search-input-group">
+                <i class="fa fa-search search-icon" title="Search Menus &amp; Submenus"/>
+                <input
+                    type="text"
+                    t-ref="searchInput"
+                    class="menu-search-input"
+                    placeholder="Search menu or submenu..."
+                    t-att-value="state.query"
+                    t-on-input="onInput"
+                    t-on-focus="onFocus"
+                    autocomplete="off"
+                    spellcheck="false"
+                />
+                <button
+                    t-if="state.query and state.query.length > 0"
+                    type="button"
+                    class="btn-clear-search"
+                    t-on-click="clearSearch"
+                    title="Clear search"
+                    aria-label="Clear search">
+                    <i class="fa fa-times"/>
+                </button>
+            </div>
+
+            <!-- Search Results Dropdown/Popup -->
+            <div t-if="state.isOpen and state.query and state.query.length > 0" class="menu-search-results-popup shadow-lg">
+                <div class="results-header d-flex justify-content-between align-items-center">
+                    <span class="results-count">
+                        <t t-if="state.results.length > 0">
+                            <i class="fa fa-list-ul me-1"/> <t t-esc="state.results.length"/> match<t t-if="state.results.length > 1">es</t> found
+                        </t>
+                        <t t-else="">
+                            <i class="fa fa-exclamation-circle me-1"/> No matches
+                        </t>
+                    </span>
+                    <span class="results-hint">
+                        <kbd>↑</kbd><kbd>↓</kbd> navigate <kbd>↵</kbd> open <kbd>esc</kbd> close
+                    </span>
+                </div>
+
+                <div class="results-list-wrapper" t-ref="resultsList">
+                    <t t-if="state.results.length > 0">
+                        <ul class="results-list">
+                            <t t-foreach="state.results" t-as="item" t-key="item.id">
+                                <li
+                                    t-attf-class="result-item #{item_index == state.selectedIndex ? 'selected' : ''}"
+                                    t-on-click="() => this.selectMenuItem(item)"
+                                    t-on-mouseenter="() => this.onItemHover(item_index)"
+                                >
+                                    <div class="result-icon">
+                                        <i t-attf-class="fa #{item.hasAction ? 'fa-file-text-o' : 'fa-folder-open-o'}"/>
+                                    </div>
+                                    <div class="result-content">
+                                        <div class="result-name">
+                                            <t t-esc="item.name"/>
+                                        </div>
+                                        <div class="result-breadcrumb text-truncate" t-if="item.breadcrumbs.length > 0">
+                                            <t t-foreach="item.breadcrumbs" t-as="crumb" t-key="crumb_index">
+                                                <span class="crumb"><t t-esc="crumb"/></span>
+                                                <span class="crumb-sep"> › </span>
+                                            </t>
+                                        </div>
+                                    </div>
+                                    <div class="result-action-hint">
+                                        <i class="fa fa-angle-right"/>
+                                    </div>
+                                </li>
+                            </t>
+                        </ul>
+                    </t>
+                    <t t-else="">
+                        <div class="no-results p-3 text-center">
+                            <i class="fa fa-search fa-2x mb-2 text-muted"/>
+                            <p class="mb-0 text-muted">No menu or submenu matches "<strong class="text-white"><t t-esc="state.query"/></strong>"</p>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- Inherit web.WebClient to inject MenuSearchControl at the top of the sidebar,
+         just under the company logo and above the apps menu list. Keeping it away from
+         the bottom user block leaves the user menu dropdown (My Profile / Log out) unobstructed. -->
+    <t t-inherit="web.WebClient" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('o_company_logo')]" position="after">
+            <div class="menu-search-section">
+                <MenuSearchControl/>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

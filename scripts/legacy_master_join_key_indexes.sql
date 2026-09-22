@@ -1,0 +1,1 @@
+../pbi_dashboard_configurations/sql/legacy_master_join_key_indexes.sql

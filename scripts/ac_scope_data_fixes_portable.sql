@@ -1,0 +1,1 @@
+../pbi_dashboard_configurations/sql/ac_scope_data_fixes_portable.sql

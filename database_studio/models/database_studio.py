@@ -1,5 +1,8 @@
 import datetime
+import logging
 import re
+import threading
+import uuid
 from decimal import Decimal
 
 from odoo import api, fields, models, _
@@ -9,6 +12,84 @@ from odoo.exceptions import AccessError, UserError
 # public schema). Used to guard the table/view name we interpolate into
 # COUNT(*)/SELECT * statements against SQL injection.
 _IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_$]*$")
+# What may be written without quotes: PostgreSQL folds unquoted names to
+# lower case, so anything with a capital in it has to stay quoted.
+_PLAIN_IDENT_RE = re.compile(r"^[a-z_][a-z0-9_$]*$")
+
+_logger = logging.getLogger(__name__)
+
+# -- statement classification --------------------------------------------
+# Comments, string literals, quoted identifiers and dollar-quoted bodies are
+# blanked out before a statement is classified, so an `update` inside a
+# string or a comment never counts.
+_NON_CODE_RE = re.compile(
+    r"--[^\n]*|/\*.*?\*/|'(?:[^']|'')*'|\"(?:[^\"]|\"\")*\"|\$(\w*)\$.*?\$\1\$",
+    re.S,
+)
+_FIRST_WORD_RE = re.compile(r"\s*\(*\s*([a-z_]+)")
+# Inside WITH: a data-modifying CTE body opens with "(", the main statement
+# follows the last CTE's ")".
+_WITH_DML_RE = re.compile(r"[()]\s*(update|delete|insert|merge)\b")
+_EXPLAIN_ANALYZE_RE = re.compile(r"^\s*explain\b.*?\banaly[sz]e\b.*?\b(update|delete|insert|merge)\b", re.S)
+_TXN_CONTROL = frozenset({
+    "begin", "start", "commit", "end", "rollback", "abort",
+    "savepoint", "release", "prepare",
+})
+# Statements run inside an explicit transaction the user commits or rolls
+# back once the run is over.
+_TXN_VERBS = frozenset({"update", "delete", "insert", "merge"})
+# Statements that must never be re-executed behind the user's back (paging a
+# RETURNING result, exporting it): running them again changes data again.
+_WRITE_VERBS = frozenset({"update", "delete", "insert", "merge"})
+
+# -- open transactions ---------------------------------------------------
+# A run holding INSERT/UPDATE/DELETE/MERGE keeps its own connection open, un-committed,
+# until the user answers the Commit / Rollback prompt. Kept in this process's
+# memory, which is sound because the server runs threaded (one process); an
+# answer that reaches a process not holding the transaction finds nothing and
+# is told so -- and a lost connection is rolled back by PostgreSQL itself.
+# Nobody answering is rolled back after _TXN_TTL seconds, so row locks never
+# outlive the prompt by long.
+_TXN_TTL = 120
+_OPEN_TXNS = {}
+_TXN_LOCK = threading.Lock()
+
+
+def _close_txn(txn_id, commit):
+    """Commit or roll back an open transaction and release its connection.
+    Returns (found, error)."""
+    with _TXN_LOCK:
+        entry = _OPEN_TXNS.pop(txn_id, None)
+    if not entry:
+        return False, None
+    entry["timer"].cancel()
+    cr = entry["cr"]
+    error = None
+    try:
+        if commit:
+            cr.commit()
+        else:
+            cr.rollback()
+    except Exception as e:  # a failed COMMIT has already rolled back
+        error = str(e)
+        try:
+            cr.rollback()
+        except Exception:
+            pass
+    finally:
+        try:
+            cr.close()
+        except Exception:
+            pass
+    return True, error
+
+
+def _expire_txn(txn_id):
+    found, error = _close_txn(txn_id, commit=False)
+    if found:
+        _logger.info("Database Studio: transaction %s rolled back after %ss without an answer%s",
+                     txn_id, _TXN_TTL, (": %s" % error) if error else "")
+
 
 # Foreign-key relationships from the pg_constraint catalog. Much faster than
 # information_schema.constraint_column_usage on a database with many tables.
@@ -68,6 +149,45 @@ class SqlMsAnalyser(models.AbstractModel):
         )
         if not self.env.cr.fetchone():
             raise UserError(_("Unknown table or view: %s") % name)
+
+    # Keywords PostgreSQL needs quoted when used as a name; read once from
+    # the server itself (see _ident).
+    _quote_words = None
+
+    @api.model
+    def _ident(self, name):
+        """`name` as generated SQL should spell it: bare, the way it is typed
+        by hand, unless PostgreSQL would misread it that way -- a name that
+        is not plain lower-case, or a keyword that is not unreserved
+        (`order`, `user`, `default`, ...). The same rule as quote_ident()."""
+        cls = type(self)
+        if cls._quote_words is None:
+            self.env.cr.execute(
+                "SELECT word FROM pg_get_keywords() WHERE catcode <> 'U'"
+            )
+            cls._quote_words = frozenset(r[0] for r in self.env.cr.fetchall())
+        if _PLAIN_IDENT_RE.match(name) and name not in cls._quote_words:
+            return name
+        return '"%s"' % name.replace('"', '""')
+
+    @staticmethod
+    def _statement_verbs(query):
+        """The data-changing verbs (update/delete/insert/merge) a statement
+        runs, plus its first word under the key "first". Only real SQL is
+        looked at: not comments, strings or quoted names."""
+        text = _NON_CODE_RE.sub(" ", query or "").lower()
+        m = _FIRST_WORD_RE.match(text)
+        first = m.group(1) if m else ""
+        verbs = set()
+        if first in _WRITE_VERBS:
+            verbs.add(first)
+        elif first == "with":
+            verbs.update(_WITH_DML_RE.findall(text))
+        elif first == "explain":
+            m = _EXPLAIN_ANALYZE_RE.match(text)
+            if m:
+                verbs.add(m.group(1))
+        return first, verbs
 
     @staticmethod
     def _fmt(value):
@@ -182,7 +302,72 @@ class SqlMsAnalyser(models.AbstractModel):
         tables, views = [], []
         for name, ttype in self.env.cr.fetchall():
             (views if ttype == "VIEW" else tables).append(name)
-        return {"tables": tables, "views": views, "favorites": self.get_favorites()}
+        return {"tables": tables, "views": views, "triggers": self._list_triggers(),
+                "favorites": self.get_favorites()}
+
+    def _list_triggers(self):
+        """The public schema's own triggers. The name alone is not a key --
+        one trigger can sit on many tables under the same name -- so each
+        comes with its table. PostgreSQL's internal triggers (the thousands
+        that enforce foreign keys) are left out."""
+        self.env.cr.execute(
+            """
+            SELECT t.tgname, c.relname, p.proname, t.tgenabled <> 'D'
+            FROM pg_trigger t
+            JOIN pg_class c ON c.oid = t.tgrelid
+            JOIN pg_namespace ns ON ns.oid = c.relnamespace
+            JOIN pg_proc p ON p.oid = t.tgfoid
+            WHERE ns.nspname = 'public' AND NOT t.tgisinternal
+            ORDER BY t.tgname, c.relname
+            """
+        )
+        return [
+            {"name": name, "table": table, "function": func, "enabled": enabled}
+            for name, table, func, enabled in self.env.cr.fetchall()
+        ]
+
+    @api.model
+    def get_trigger_script(self, table, name):
+        """A trigger as a script that would recreate it: the function it runs
+        first (the trigger depends on it), then the trigger. Both come
+        straight from the catalog, and both are written CREATE OR REPLACE so
+        the script can be run again as it is."""
+        self._check_access()
+        if not (_IDENT_RE.match(table or "") and _IDENT_RE.match(name or "")):
+            raise UserError(_("Invalid trigger: %s on %s") % (name, table))
+        self.env.cr.execute(
+            """
+            SELECT pg_get_triggerdef(t.oid, true), pg_get_functiondef(t.tgfoid),
+                   p.proname, t.tgenabled <> 'D'
+            FROM pg_trigger t
+            JOIN pg_class c ON c.oid = t.tgrelid
+            JOIN pg_namespace ns ON ns.oid = c.relnamespace
+            JOIN pg_proc p ON p.oid = t.tgfoid
+            WHERE ns.nspname = 'public' AND NOT t.tgisinternal
+              AND c.relname = %s AND t.tgname = %s
+            """,
+            (table, name),
+        )
+        row = self.env.cr.fetchone()
+        if not row:
+            return {"name": name, "table": table, "missing": True}
+        trigger_def, function_def, function, enabled = row
+        # pg_get_triggerdef writes a plain CREATE TRIGGER, which fails against
+        # the trigger that is already there; OR REPLACE (PostgreSQL 14+) makes
+        # the script re-runnable, the way a view's script is.
+        trigger_def = re.sub(r"^CREATE TRIGGER\b", "CREATE OR REPLACE TRIGGER", trigger_def.strip())
+        header = "-- Trigger %s on %s%s" % (name, table, "" if enabled else " (DISABLED)")
+        script = "\n".join([
+            header,
+            "",
+            "-- The function it runs: %s" % function,
+            function_def.strip() + ";",
+            "",
+            "-- The trigger",
+            trigger_def + ";",
+            "",
+        ])
+        return {"name": name, "table": table, "script": script}
 
     @api.model
     def get_schema_for_autocomplete(self):
@@ -219,12 +404,33 @@ class SqlMsAnalyser(models.AbstractModel):
 
     @api.model
     def get_favorites(self):
-        """The current user's favourite tables/views."""
+        """The current user's favourite tables/views -- those that still
+        exist. A dropped object's favourite is hidden, not deleted, so it
+        comes back starred if the object is created again."""
         self._check_access()
         favs = self.env["database.studio.favorite"].search(
             [("user_id", "=", self.env.uid)]
         )
-        return [{"name": f.name, "type": f.obj_type or "table"} for f in favs]
+        existing = self._existing_objects(favs.mapped("name"))
+        return [{"name": f.name, "type": f.obj_type or "table"}
+                for f in favs if f.name in existing]
+
+    def _existing_objects(self, names):
+        """Which of `names` are tables, views or materialized views of the
+        public schema right now."""
+        names = [n for n in (names or []) if n]
+        if not names:
+            return set()
+        self.env.cr.execute(
+            """
+            SELECT c.relname FROM pg_class c
+            JOIN pg_namespace ns ON ns.oid = c.relnamespace
+            WHERE ns.nspname = 'public' AND c.relkind IN ('r', 'v', 'm', 'p', 'f')
+              AND c.relname = ANY(%s)
+            """,
+            (names,),
+        )
+        return {r[0] for r in self.env.cr.fetchall()}
 
     @api.model
     def toggle_favorite(self, name, obj_type="table"):
@@ -280,9 +486,14 @@ class SqlMsAnalyser(models.AbstractModel):
     def get_fields_multi(self, tables):
         """Column metadata for several tables, grouped by table name."""
         self._check_access()
+        # A name that no longer exists (dropped since the page listed it, or
+        # still being typed) is left out rather than failing the whole call:
+        # the client notices the gap and drops it from its lists.
+        tables = [t for t in (tables or []) if _IDENT_RE.match(t or "")]
+        existing = self._existing_objects(tables)
         groups = []
-        for table in (tables or []):
-            if not _IDENT_RE.match(table):
+        for table in tables:
+            if table not in existing:
                 continue
             groups.append({"table": table, "fields": self.get_fields(table)})
         return groups
@@ -315,15 +526,17 @@ class SqlMsAnalyser(models.AbstractModel):
         )
         row = self.env.cr.fetchone()
         if not row:
-            raise UserError(_("%s is not a view.") % name)
+            # Dropped since the page listed it: said as data, not as an error
+            # dialog, so the client can simply take it off its lists.
+            return {"name": name, "missing": True}
         kind, definition = row
         body = (definition or "").strip().rstrip(";").strip()
-        header = ('CREATE MATERIALIZED VIEW "%s" AS' if kind == "m"
-                  else 'CREATE OR REPLACE VIEW "%s" AS')
+        header = ('CREATE MATERIALIZED VIEW %s AS' if kind == "m"
+                  else 'CREATE OR REPLACE VIEW %s AS')
         return {
             "name": name,
             "kind": "materialized view" if kind == "m" else "view",
-            "script": (header % name) + "\n" + body + ";\n",
+            "script": (header % self._ident(name)) + "\n" + body + ";\n",
         }
 
     @api.model
@@ -415,8 +628,9 @@ class SqlMsAnalyser(models.AbstractModel):
         key columns so the user can wire one up."""
         self._check_access()
         tables = [t for t in (tables or []) if _IDENT_RE.match(t)]
-        for t in tables:
-            self._validate_object(t)
+        # Same as get_fields_multi: a vanished table is skipped, not an error.
+        existing = self._existing_objects(tables)
+        tables = [t for t in tables if t in existing]
         if not tables:
             return {"rows": [], "unrelated": [], "candidates": {}}
 
@@ -443,21 +657,129 @@ class SqlMsAnalyser(models.AbstractModel):
             execution_id = args[0]
         if not execution_id and kwargs.get("execution_id"):
             execution_id = kwargs.get("execution_id")
-        empty = {"columns": [], "column_types": [], "rows": [], "total": 0,
-                 "page": 1, "pages": 1, "limit": limit, "message": "",
-                 "aggregates": []}
+        if self._statement_verbs(query)[1]:
+            # Paging re-executes the statement; for one that changes data
+            # that would change it again -- and commit, with no prompt.
+            return dict(
+                self._empty_result(limit),
+                error=_("Paging would run this data-changing statement again. "
+                        "Select the rows you want to browse with a SELECT instead."),
+            )
+        return self._run_statement(query, page, limit, execution_id)
+
+    @api.model
+    def run_queries(self, queries, limit=100, execution_id=None):
+        """Execute several statements in order and return one result each.
+
+        Running a whole script through :meth:`run_query` left only the last
+        statement's rows on the cursor, so everything before it was executed
+        blind. Each statement is run on its own here and reported on its own,
+        which is what the client needs to give every one of them its own
+        (collapsible) result panel.
+
+        The first failure stops the run, and so does a cancellation: Postgres
+        aborts the transaction on error, so whatever the earlier statements
+        wrote is rolled back anyway and going on would report results that no
+        longer hold. The statements that never ran come back flagged
+        `skipped` rather than as errors of their own.
+        """
+        self._check_access()
+        queries = list(queries or [])
+        kinds = [self._statement_verbs(q) for q in queries]
+        # A run that holds INSERT/UPDATE/DELETE/MERGE is wrapped in a transaction of its
+        # own and left open for the user to commit or roll back -- unless the
+        # script manages transactions itself (its own BEGIN/COMMIT/...).
+        txn_mode = (any(verbs & _TXN_VERBS for _first, verbs in kinds)
+                    and not any(first in _TXN_CONTROL for first, _verbs in kinds))
+        cr = self.env.registry.cursor() if txn_mode else None
+        results = []
+        stopped = False
+        try:
+            for query in queries:
+                if stopped:
+                    results.append(dict(
+                        self._empty_result(limit),
+                        skipped=True,
+                        message=_("Not executed \u2014 the run stopped before this statement."),
+                    ))
+                    continue
+                result = self._run_statement(query, 1, limit, execution_id, cr=cr)
+                results.append(result)
+                if result.get("error") or result.get("cancelled"):
+                    stopped = True
+        except BaseException:
+            if cr is not None:
+                cr.rollback()
+                cr.close()
+            raise
+        if not txn_mode:
+            return {"results": results, "txn": None}
+        if stopped:
+            # The failed/cancelled statement already rolled the transaction
+            # back; nothing is left to decide.
+            cr.rollback()
+            cr.close()
+            return {"results": results, "txn": {"state": "rolled_back"}}
+        txn_id = uuid.uuid4().hex
+        timer = threading.Timer(_TXN_TTL, _expire_txn, args=(txn_id,))
+        timer.daemon = True
+        with _TXN_LOCK:
+            _OPEN_TXNS[txn_id] = {"cr": cr, "uid": self.env.uid, "timer": timer}
+        timer.start()
+        return {
+            "results": results,
+            "txn": {
+                "state": "open",
+                "id": txn_id,
+                "ttl": _TXN_TTL,
+                # Which statements changed data, for the prompt to list.
+                "writes": [i for i, (_f, verbs) in enumerate(kinds) if verbs],
+            },
+        }
+
+    @api.model
+    def end_transaction(self, txn_id, commit=False):
+        """Commit (or roll back) the transaction a run left open."""
+        self._check_access()
+        with _TXN_LOCK:
+            entry = _OPEN_TXNS.get(txn_id)
+        if entry and entry["uid"] != self.env.uid:
+            raise AccessError(_("This transaction belongs to another user."))
+        found, error = _close_txn(txn_id, commit=bool(commit))
+        if not found:
+            return {
+                "success": False,
+                "state": "gone",
+                "message": _("The transaction is no longer open: it was rolled back "
+                             "(no answer within %s seconds, or the server restarted).") % _TXN_TTL,
+            }
+        if error:
+            return {"success": False, "state": "rolled_back",
+                    "message": _("Commit failed, so the changes were rolled back: %s") % error}
+        return {"success": True, "state": "committed" if commit else "rolled_back"}
+
+    def _empty_result(self, limit):
+        return {"columns": [], "column_types": [], "rows": [], "total": 0,
+                "page": 1, "pages": 1, "limit": limit, "message": "",
+                "aggregates": []}
+
+    def _run_statement(self, query, page=1, limit=100, execution_id=None, cr=None):
+        """Run one statement on `cr` -- the request's own cursor unless a
+        held transaction's is given."""
+        cr = cr if cr is not None else self.env.cr
+        empty = self._empty_result(limit)
         if not query or not query.strip():
             return empty
 
         backend_pid = None
         if execution_id:
             try:
-                if hasattr(self.env.cr, "_cnx") and hasattr(self.env.cr._cnx, "get_backend_pid"):
-                    backend_pid = self.env.cr._cnx.get_backend_pid()
-                elif hasattr(self.env.cr, "connection") and hasattr(self.env.cr.connection, "get_backend_pid"):
-                    backend_pid = self.env.cr.connection.get_backend_pid()
-                elif hasattr(self.env.cr, "raw_connection"):
-                    raw_cnx = self.env.cr.raw_connection
+                if hasattr(cr, "_cnx") and hasattr(cr._cnx, "get_backend_pid"):
+                    backend_pid = cr._cnx.get_backend_pid()
+                elif hasattr(cr, "connection") and hasattr(cr.connection, "get_backend_pid"):
+                    backend_pid = cr.connection.get_backend_pid()
+                elif hasattr(cr, "raw_connection"):
+                    raw_cnx = cr.raw_connection
                     if hasattr(raw_cnx, "get_backend_pid"):
                         backend_pid = raw_cnx.get_backend_pid()
 
@@ -480,9 +802,9 @@ class SqlMsAnalyser(models.AbstractModel):
                 pass
 
         try:
-            self.env.cr.execute(query)
+            cr.execute(query)
         except Exception as e:
-            self.env.cr.rollback()
+            cr.rollback()
             err_str = str(e)
             if "canceling statement due to user request" in err_str.lower() or "57014" in err_str:
                 return {
@@ -518,12 +840,12 @@ class SqlMsAnalyser(models.AbstractModel):
                 except Exception:
                     pass
 
-        rowcount = self.env.cr.rowcount
-        description = self.env.cr.description
+        rowcount = cr.rowcount
+        description = cr.description
         result = dict(empty)
         if description:
             columns = [d[0] for d in description]
-            all_rows = self.env.cr.fetchall()
+            all_rows = cr.fetchall()
             # Read the types off the same cursor description, so the Fields tab
             # can list a query's own output columns -- results built from CTEs
             # or JSON belong to no table and have nothing else to describe them.
@@ -610,8 +932,9 @@ class SqlMsAnalyser(models.AbstractModel):
     def _from_clause(self, tables):
         """FROM/JOIN lines linking `tables`, using foreign keys, user-defined
         relations or matching column names, and CROSS JOIN as a last resort."""
+        q = self._ident
         if len(tables) == 1:
-            return ['FROM "%s"' % tables[0]]
+            return ['FROM %s' % q(tables[0])]
 
         cols = self._columns_by_table(tables)
         # adjacency: table -> list of (other_table, this_col, other_col)
@@ -623,7 +946,7 @@ class SqlMsAnalyser(models.AbstractModel):
                 adj[b].append((a, bc, ac))
 
         included = {tables[0]}
-        lines = ['FROM "%s"' % tables[0]]
+        lines = ['FROM %s' % q(tables[0])]
         remaining = tables[1:]
         progress = True
         while remaining and progress:
@@ -633,16 +956,16 @@ class SqlMsAnalyser(models.AbstractModel):
                 if edge:
                     other, r_col, o_col = edge
                     lines.append(
-                        'LEFT JOIN "%s" ON "%s"."%s" = "%s"."%s"'
-                        % (r, r, r_col, other, o_col)
+                        'LEFT JOIN %s ON %s.%s = %s.%s'
+                        % (q(r), q(r), q(r_col), q(other), q(o_col))
                     )
                     included.add(r)
                     remaining.remove(r)
                     progress = True
         for r in remaining:
             lines.append(
-                'CROSS JOIN "%s" /* no relation found - add one in '
-                'Database Studio > Relations */' % r
+                'CROSS JOIN %s /* no relation found - add one in '
+                'Database Studio > Relations */' % q(r)
             )
         return lines
 
@@ -696,7 +1019,7 @@ class SqlMsAnalyser(models.AbstractModel):
             name_count[f["name"]] = name_count.get(f["name"], 0) + 1
 
         def qualified(f):
-            return '"%s"."%s"' % (f["table"], f["name"])
+            return '%s.%s' % (self._ident(f["table"]), self._ident(f["name"]))
 
         def alias_for(f, suffix=""):
             base = f["name"] if name_count[f["name"]] == 1 else "%s_%s" % (f["table"], f["name"])
@@ -1276,18 +1599,29 @@ class SqlMsQuery(models.Model):
         return {"id": rec.id, "name": rec.name}
 
     @api.model
-    def log_query_run(self, query):
+    def log_query_run(self, query, name=None):
         """Log an Execute click to History without marking it a favorite, so
         it shows up under the 'On the fly' tab. Bumps run stats on an
-        existing record (favorite or not) rather than duplicating it."""
+        existing record (favorite or not) rather than duplicating it.
+
+        `query` is the whole editor tab, not merely the statement that ran:
+        an entry re-opened from History has to give back the tab as it was,
+        every statement in it included. `name` is the tab's own name when it
+        has one, so the log reads like the tabs it came from instead of a
+        wall of SQL snippets."""
         query = (query or "").strip()
         if not query:
             return False
         rec = self._find_own(query)
         if rec:
-            rec.write({"run_count": rec.run_count + 1, "last_run": fields.Datetime.now()})
+            vals = {"run_count": rec.run_count + 1, "last_run": fields.Datetime.now()}
+            # An auto-named row picks up a name the tab has since been given;
+            # a name the user typed is never overwritten by a later run.
+            if name and not rec.is_favorite:
+                vals["name"] = name
+            rec.write(vals)
         else:
-            rec = self.create({"query": query, "name": self._snippet(query)})
+            rec = self.create({"query": query, "name": name or self._snippet(query)})
         return {"id": rec.id, "name": rec.name, "is_favorite": rec.is_favorite}
 
     def action_unlink(self):

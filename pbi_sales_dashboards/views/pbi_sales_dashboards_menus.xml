@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- "Sales Dashboards" container menu under PBI Dashboards root -->
+        <menuitem id="menu_pbi_sales_dashboards"
+                  name="Sales Dashboards"
+                  parent="pbi_dashboards.pbi_dashboards_app_root"
+                  sequence="10"/>
+
+        <!--
+            "Sales Dashboard With Salesman" — same chrome and interaction model
+            as "Sales Dashboard - New" but on a different source and a longer
+            drill chain: actuals from transaction_header/transaction_details
+            directly (not bidata), targets from v_sales_budget_month (the Budget
+            screen in sales_budget), and TEN drill levels — Sales Type Group,
+            Partner Classification, Report Region, City, Salesman, Customer,
+            Main Category, Sub Category, Product Group, Product Sub-Group — plus
+            a Regular/Manager switch selecting which product_category field
+            feeds levels 7 and 8. Own JSON route and own menu grant, per this
+            module's one-grant-per-leaf convention.
+            See docs/sales_dashboard_with_salesman_plan.md.
+        -->
+        <record id="action_pbi_sales_kpi_dashboard_sman" model="ir.actions.client">
+            <field name="name">Sales Dashboard With Salesman</field>
+            <field name="tag">pbi_sales_dashboards.sales_sman_dashboard</field>
+        </record>
+
+        <menuitem id="menu_pbi_sales_kpi_analysis_sman"
+                  name="Sales Dashboard With Salesman"
+                  parent="pbi_sales_dashboards.menu_pbi_sales_dashboards"
+                  sequence="18"
+                  action="pbi_sales_dashboards.action_pbi_sales_kpi_dashboard_sman"/>
+
+        <!--
+            "Sales Dashboard - VQ" — Value and Quantity, the board above with
+            its two donuts replaced by the quantity chart of the value chart
+            beside them. Same snapshot, same ten levels, same Regular/Manager
+            switch, same KPI tiles: the OWL component IS that board's class with
+            one method overridden (static/src/js/sales_vq_dashboard.js), so the
+            two cannot drift apart in anything but layout.
+
+            Each period is one row — value bars on the left, quantity bars on
+            the right, the nth bar the same category on both — and the
+            contribution % the donut used to draw is now printed under every
+            caption on BOTH charts, each in its own measure. A category can be a
+            fifth of the money and a third of the boxes; that is the comparison
+            this board exists to make and the one the donut could not.
+
+            Each card's chart can be drawn as bars, a pie, a line or an area,
+            chosen from a list under the chart button in the card header rather
+            than from four buttons sitting there permanently — the header
+            already carries the table switch, the CSV and the full-page control
+            on a card a quarter of the board wide. Per card, like the
+            chart/table switch beside it. Bars, line and area draw all three
+            series; the pie draws This Year alone, cut up by category against
+            the same total the card's subtitle names.
+
+            Own JSON route (/pbi_dashboards/sales_vq/data, tag
+            pbi_sales_dashboards.sales_vq_dashboard) and own menu grant, per
+            this module's one-grant-per-leaf convention — the route reuses the
+            salesman board's query engine but is gated on THIS menu, so the two
+            boards can be granted independently. See
+            controllers/sales_vq_main.py.
+        -->
+        <record id="action_pbi_sales_vq_dashboard" model="ir.actions.client">
+            <field name="name">Sales Dashboard - VQ</field>
+            <field name="tag">pbi_sales_dashboards.sales_vq_dashboard</field>
+        </record>
+
+        <menuitem id="menu_pbi_sales_vq"
+                  name="Sales Dashboard - VQ"
+                  parent="pbi_sales_dashboards.menu_pbi_sales_dashboards"
+                  sequence="19"
+                  action="pbi_sales_dashboards.action_pbi_sales_vq_dashboard"/>
+
+        <!--
+            "Sales Analysis with Salesman" — the 17-page stacked report layout
+            of "Sales Analysis - New" drawn on the data source of "Sales
+            Dashboard With Salesman" above: actuals from transaction_header/
+            transaction_details (credit notes netted, Midea AC product groups,
+            'V' customers excluded), targets from v_sales_budget_month,
+            aggregated independently and merged on the category rather than
+            joined. Salesman is a global filter here, alongside Year, Month and
+            the Regular/Manager sub-category switch — not a chart dimension.
+
+            bidata's channel/region/main-group taxonomy does not exist on the
+            legacy tables, so each page moves to the nearest real level of the
+            salesman drill chain: Sale Type becomes Sales Type Group, Main
+            Group becomes Main Category, Product Sub-Group becomes Sub
+            Category. The customer-side grouping is the Sales Type Group on
+            every page that is about one grouping (4, 5, 10, 11, 15, 16, 17) —
+            it has no Unassigned bucket in scope and is the level the budget is
+            captured at; pages 2, 13 and 14 are about the Partner
+            Classification itself and stay there. Pages 4 and 5 toggle by
+            QUARTER, with the categories on the bars. The pages the bidata
+            report hardcodes to a bidata-only value (LCAC, Dealers, Split,
+            Projects) resolve their filter from the data instead — the largest
+            Sales Type Group and the largest Main Category by YTD sales — so
+            they stay meaningful on any database.
+
+            Notes are written HERE, not in the deck: Edit Notes opens a
+            requirement box and the note itself on every narrative panel and
+            saves both to pbi.dashboard.note (keys prefixed
+            ``sales_mail_sman_``, the requirement under a ``req::`` infix),
+            with the filters locked while it is on. Export PowerPoint carries
+            those notes out into the deck's speaker notes; there is no way
+            back in, and no Export PDF button either — the browser's own print
+            dialog drives the print stylesheet. Own JSON route
+            (/pbi_dashboards/sales_mail_sman/data) and own menu grant, per this
+            module's one-grant-per-leaf convention. See
+            controllers/sales_mail_sman_main.py.
+        -->
+        <record id="action_pbi_sales_mail_dashboard_sman" model="ir.actions.client">
+            <field name="name">Sales Analysis with Salesman</field>
+            <field name="tag">pbi_sales_dashboards.sales_mail_sman_dashboard</field>
+        </record>
+
+        <menuitem id="menu_pbi_sales_mail_dashboard_sman"
+                  name="Sales Analysis with Salesman"
+                  parent="pbi_sales_dashboards.menu_pbi_sales_dashboards"
+                  sequence="20"
+                  action="pbi_sales_dashboards.action_pbi_sales_mail_dashboard_sman"/>
+
+        <!--
+            "Sales Data Study" — SAME menu name as the board in "Sales
+            Dashboards - Temp" (pbi_sales_temp_dashboards), on purpose. The two
+            are the same report on the two fact sources: that one over bidata's
+            six levels, this one over the ten-level salesman snapshot
+            (v_pbi_sales_sman_fact), the same source "Sales Dashboard With
+            Salesman" reads. They share one OWL component — this module's
+            static/src/js/sales_study_dashboard.js, which the temp module's
+            board renders too; only the route, the subtitle and two
+            board-specific filters differ. The container names them apart, and
+            each board's subtitle states its level count.
+
+            Own JSON route (/pbi_dashboards/sales_study_sman/data) and own menu
+            grant, per this module's one-grant-per-leaf convention. See
+            controllers/sales_study_sman_main.py.
+        -->
+        <record id="action_pbi_sales_data_study_sman" model="ir.actions.client">
+            <field name="name">Sales Data Study</field>
+            <field name="tag">pbi_sales_dashboards.sales_study_sman_dashboard</field>
+        </record>
+
+        <menuitem id="menu_pbi_sales_data_study_sman"
+                  name="Sales Data Study"
+                  parent="pbi_sales_dashboards.menu_pbi_sales_dashboards"
+                  sequence="24"
+                  action="pbi_sales_dashboards.action_pbi_sales_data_study_sman"/>
+
+    </data>
+</odoo>

@@ -1,6 +1,6 @@
 {
     'name': 'PBI Dashboards (Base Core)',
-    'version': '17.0.2.0.0',
+    'version': '17.0.2.7.0',
     'category': 'Sales/Dashboard',
     'summary': 'Base core module providing the PBI Dashboards root menu and shared utilities',
     'description': """
@@ -22,8 +22,10 @@ dashboard modules.
     'assets': {
         'web.assets_backend': [
             'pbi_dashboards/static/src/css/pbi_dashboard_base.css',
+            'pbi_dashboards/static/src/css/pbi_drill_menu.css',
             'pbi_dashboards/static/src/js/pbi_i18n.js',
             'pbi_dashboards/static/src/js/pbi_chart_lib.js',
+            'pbi_dashboards/static/src/js/pbi_drill_menu.js',
         ],
     },
     'post_init_hook': 'post_init_hook',

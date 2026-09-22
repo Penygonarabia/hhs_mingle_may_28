@@ -109,8 +109,107 @@ export function truncateChars(text, maxChars) {
 const CAT_LABEL_FONT = 10;
 const CAT_LABEL_PAD = 10;
 
+// ---------------------------------------------------------------------
+// label measurement
+//
+// A value label is centred on its bar (or hung off its donut slice) and is as
+// wide as its TEXT, so the LABEL, not the bar, decides how much horizontal
+// room a chart needs. Estimating that by character count is what every chart
+// here used to do, and it is not good enough: at 8px semibold a real
+// ".bar-value" reading "388.6M" measures 31.8px where `length * 5.6` claims
+// 22.4, so charts were laid out to a slot a fifth narrower than the thing
+// that had to fit in it.
+//
+// Measured on a canvas rather than with getComputedTextLength, because a
+// board draws its hidden toggle panels too and SVG text inside display:none
+// measures 0 — which would hand exactly those panels the cramped layout.
+// ---------------------------------------------------------------------
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const _labelFonts = {};
+let _measureCtx = null;
+
+// The real font of a chart label class, read from the stylesheet rather than
+// repeated here, so a measurement cannot drift from the CSS that draws it.
+export function labelFont(el, cls, fallback) {
+  if (_labelFonts[cls]) return _labelFonts[cls];
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  const probe = document.createElementNS(SVG_NS, 'text');
+  probe.setAttribute('class', cls);
+  svg.appendChild(probe);
+  el.appendChild(svg);
+  const cs = getComputedStyle(probe);
+  const size = cs.fontSize, family = cs.fontFamily;
+  el.removeChild(svg);
+  // Never cache a miss: asked before the stylesheet applies, this reads as the
+  // browser default, and caching that would freeze the wrong width in for the
+  // rest of the session.
+  if (!size || size === '0px' || !family) return fallback;
+  _labelFonts[cls] = `${cs.fontWeight} ${size} ${family}`;
+  return _labelFonts[cls];
+}
+
+export function textWidth(text, font) {
+  if (!_measureCtx) _measureCtx = document.createElement('canvas').getContext('2d');
+  _measureCtx.font = font;
+  return _measureCtx.measureText(text).width;
+}
+
+export function widestValueLabel(el, data, seriesKeys, valueFmt) {
+  const font = labelFont(el, 'bar-value', '600 8px sans-serif');
+  let widest = 0;
+  for (const d of data) {
+    for (const k of seriesKeys) {
+      widest = Math.max(widest, textWidth(valueFmt(d[k] || 0), font));
+    }
+  }
+  return widest;
+}
+
+// Clear space demanded between two value labels, on top of the text itself.
+export const VALUE_LABEL_GAP = 6;
+
+// Spread donut percentage labels that would sit on top of each other.
+//
+// Slices arrive in cumulative order, so their angles are MONOTONIC and the
+// sweeps are a running max forwards and a running min backwards. That matters:
+// the previous version measured the gap to the next label and normalised a
+// negative one with `gap += 2*PI`, which is only sound while the labels are
+// still in order. The moment a push moved one label past the next, an overlap
+// read as ~6.2 radians of clearance and the pass declared them fine — two
+// hairline slices ended up printed on top of each other.
+//
+// The circle still has to close, and that is the second half of the fix. A
+// forward sweep alone drives a run of hairline slices clockwise past the
+// wrap, where they land on the FIRST label — measured on "Sales & Cost
+// Analysis", whose eleven-slice donut had "0.3%" and "0.0%" sitting on top of
+// "7.2%". So the last label is clamped to leave the first one room the long
+// way round, and the backward sweep then propagates that back down the chain.
+//
+// Nothing can be done when the labels genuinely do not fit in 2*PI; the clamp
+// still limits how far the crowding spreads.
+export function spreadDonutLabels(slices, pad = 0.025) {
+  const n = slices.length;
+  if (n < 2) return slices;
+  const needed = (a, b) => slices[a].halfAngle + slices[b].halfAngle + pad;
+  for (let i = 0; i < n - 1; i++) {
+    slices[i + 1].labelAngle = Math.max(
+      slices[i + 1].labelAngle, slices[i].labelAngle + needed(i, i + 1));
+  }
+  const wrapLimit = slices[0].labelAngle + 2 * Math.PI - needed(n - 1, 0);
+  slices[n - 1].labelAngle = Math.min(slices[n - 1].labelAngle, wrapLimit);
+  for (let i = n - 1; i > 0; i--) {
+    slices[i - 1].labelAngle = Math.min(
+      slices[i - 1].labelAngle, slices[i].labelAngle - needed(i, i - 1));
+  }
+  return slices;
+}
+
+// Escape a value for use inside a double-quoted HTML/SVG attribute. The single
+// definition for the whole file: both the category-caption tooltips and the KPI
+// info icons go through it. String(x ?? '') rather than (x || ''), so a label
+// that is legitimately 0 stays "0" instead of collapsing to empty.
 function escapeAttr(text) {
-  return String(text ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  return String(text ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 // Shrink any category caption still wider than its slot, one character at a
@@ -167,13 +266,17 @@ export function markAllCaptionsForTooltip(el) {
 }
 
 // A truncated category caption shows its full text on hover, in the same
-// styled tooltip the bars use. The <title> element is still emitted alongside
-// — that is the browser's own tooltip and needs no JS — but it waits about a
-// second before appearing, which is too slow to be the answer to "what does
-// that cut-off label say". Only truncated captions carry the attribute, so a
-// caption that already reads in full gets no tooltip and no listeners.
+// styled tooltip the bars use. The <title> the caption was drawn with is
+// removed here rather than left alongside: the browser builds its own grey
+// tooltip out of it about a second later, and the reader ends up with two
+// boxes stacked on the same caption saying the same thing. The styled one is
+// the one that stays — it is immediate and it matches the rest of the board.
+// A caption with no data-cap-tip keeps its <title>, since there the browser's
+// box is the only tooltip it has.
 export function attachCaptionTooltips(el) {
   el.querySelectorAll('[data-cap-tip]').forEach(node => {
+    const titleEl = node.querySelector('title');
+    if (titleEl) titleEl.remove();
     node.addEventListener('mousemove', evt => showTip(evt, `<b>${node.getAttribute('data-cap-tip')}</b>`));
     node.addEventListener('mouseleave', hideTip);
   });
@@ -206,7 +309,7 @@ export function attachValueTooltips(el, selector) {
 export function legendHtml(labels, colors) {
   if (labels.length <= 1) return '';
   const items = labels.map((l, i) =>
-    `<div class="item"><span class="swatch" style="background:${colors[i]}"></span>${l}</div>`).join('');
+    `<div class="item" data-legend-idx="${i}"><span class="swatch" style="background:${colors[i]}"></span>${l}</div>`).join('');
   return `<div class="pbi-legend-wrap"><div class="pbi-legend">${items}</div><button type="button" class="legend-more" title="Show more">&#9654;</button></div>`;
 }
 export function attachLegendScroll(container) {
@@ -228,6 +331,93 @@ export function attachLegendScroll(container) {
     setTimeout(sync, 300);
   });
   requestAnimationFrame(() => requestAnimationFrame(sync));
+}
+
+// Click-to-filter: clicking a legend item HIGHLIGHTS that series and
+// DIMS all other series (reduces opacity to 0.15). Clicking the already-active
+// item resets the chart back to its default all-visible state.
+//
+// chartType: 'bar' | 'donut' | 'pie'
+//   'bar'          — dims every series mark for every series EXCEPT the
+//                    selected one: a bar's <rect> and its .bar-value, and on
+//                    the boards whose cards can switch shape, a line's path,
+//                    area fill, dots and point labels. All are matched on
+//                    data-series-idx, so one branch serves bar, line and the
+//                    bar+line combo (whose line series' indices continue past
+//                    the bars, in the order its legend lists them).
+//   'donut' | 'pie' — dims every slice mark (a donut's <circle>, a pie's
+//                    <path>) and its label for every slice EXCEPT the
+//                    selected one. Marks are matched on data-slice-idx and
+//                    their labels/leaders on data-slice-label-idx, so one
+//                    branch serves both the ring and the wedge shape.
+// `container` is whatever element holds BOTH the legend and the marks — the
+// chart element itself on the boards that render their legend inline, the card
+// on the ones whose template gives the legend its own node.
+export function attachLegendFilter(container, chartType) {
+  const wrap = container.querySelector('.pbi-legend-wrap') || container.querySelector('.pbi-legend');
+  if (!wrap) return;
+  const items = wrap.querySelectorAll('.item[data-legend-idx]');
+  if (!items.length) return;
+
+  // Track which legend index is currently active (null = show all)
+  let activeIdx = null;
+
+  const resetAll = () => {
+    // Remove all active/hidden classes from legend items
+    items.forEach(it => {
+      it.classList.remove('legend-active', 'legend-hidden');
+    });
+    if (chartType === 'bar') {
+      container.querySelectorAll('[data-series-idx]').forEach(el => { el.style.opacity = ''; });
+    } else if (chartType === 'donut' || chartType === 'pie') {
+      container.querySelectorAll('[data-slice-idx]').forEach(el => { el.style.opacity = ''; });
+      container.querySelectorAll('[data-slice-label-idx]').forEach(el => { el.style.opacity = ''; });
+    }
+    activeIdx = null;
+  };
+
+  const selectIdx = (idx) => {
+    // Mark the clicked item as active, dim all others
+    items.forEach(it => {
+      const itIdx = it.getAttribute('data-legend-idx');
+      if (itIdx === idx) {
+        it.classList.add('legend-active');
+        it.classList.remove('legend-hidden');
+      } else {
+        it.classList.add('legend-hidden');
+        it.classList.remove('legend-active');
+      }
+    });
+
+    if (chartType === 'bar') {
+      // Selected series at full opacity, others dimmed
+      container.querySelectorAll('[data-series-idx]').forEach(el => {
+        el.style.opacity = el.getAttribute('data-series-idx') === idx ? '' : '0.15';
+      });
+    } else if (chartType === 'donut' || chartType === 'pie') {
+      // Selected slice at full opacity, others dimmed
+      container.querySelectorAll('[data-slice-idx]').forEach(el => {
+        el.style.opacity = el.getAttribute('data-slice-idx') === idx ? '' : '0.15';
+      });
+      container.querySelectorAll('[data-slice-label-idx]').forEach(el => {
+        el.style.opacity = el.getAttribute('data-slice-label-idx') === idx ? '' : '0.15';
+      });
+    }
+    activeIdx = idx;
+  };
+
+  items.forEach(item => {
+    item.addEventListener('click', () => {
+      const idx = item.getAttribute('data-legend-idx');
+      if (activeIdx === idx) {
+        // Clicking the already-active item resets everything
+        resetAll();
+      } else {
+        // Select this item, dim all others
+        selectIdx(idx);
+      }
+    });
+  });
 }
 
 // Wide categorical palette used for donut slices / bar groups — colors are
@@ -277,8 +467,11 @@ export function axisTickLabel(val, valueFmt) {
 // The defaults below ARE the house chart design — every PBI board is meant to
 // look the same, so the tuned values live here rather than being passed in by
 // one board. opts stays for the rare chart that genuinely needs to differ:
-//   perGroup       min horizontal room per category. Widen it to stop the
-//                  value labels above adjacent bars colliding.
+//   perGroup       min horizontal room per category. A FLOOR ONLY, and no
+//                  longer the knob for label collisions: the chart now works
+//                  out for itself how much room its value labels need and
+//                  raises the floor to match, so this is just "never narrower
+//                  than".
 //   barGap         gap between the bars WITHIN one category. Narrow it to
 //                  read a Budget/BIDATA pair as one unit rather than two.
 //   groupFill      share of a category's slot the bars may occupy (default
@@ -298,21 +491,32 @@ export function axisTickLabel(val, valueFmt) {
 //                  slot. The full caption stays in the <title> either way.
 export function groupedBarChart(el, data, seriesKeys, seriesColors, seriesLabels, onCategoryClick, valueFmt = fmt, opts = {}) {
   seriesLabels = seriesLabels.map(t);
-  const perGroup = opts.perGroup ?? 100;
-  // perGroup is a floor (scroll rather than crush); maxGroupW is a ceiling
-  // (stop stretching rather than fill). The floor wins if the two conflict.
-  const natural = Math.max(el.clientWidth || 480, data.length * perGroup);
-  const W = opts.maxGroupW
-    ? Math.max(Math.min(natural, data.length * opts.maxGroupW), data.length * perGroup)
-    : natural;
   const H = 230;
   const marginL = 54, marginR = 10, marginT = 10, marginB = 46;
+  const gap = opts.barGap ?? 9;
+  const nSeries = Math.max(seriesKeys.length, 1);
+  // What the VALUE LABELS need. Two of them clear each other once their
+  // centres — which are the bar centres — are `labelPitch` apart, so a group
+  // has to hold nSeries of those plus a gap's worth of slack for the
+  // outermost label to overhang its bar and still clear the next group's.
+  const labelPitch = widestValueLabel(el, data, seriesKeys, valueFmt) + VALUE_LABEL_GAP;
+  const perGroup = Math.max(opts.perGroup ?? 100, Math.ceil(nSeries * labelPitch + gap));
+  // perGroup is a floor (scroll rather than crush); maxGroupW is a ceiling
+  // (stop stretching rather than fill). The floor wins if the two conflict.
+  //
+  // The margins are OUTSIDE the plot, so they are added on top of the groups
+  // rather than eaten out of them. Leaving them in used to make the real room
+  // per category smaller than the floor claimed — 78.7px on a floor of 100.
+  const floorW = data.length * perGroup + marginL + marginR;
+  const natural = Math.max(el.clientWidth || 480, floorW);
+  const W = opts.maxGroupW
+    ? Math.max(Math.min(natural, data.length * opts.maxGroupW + marginL + marginR), floorW)
+    : natural;
   const plotW = W - marginL - marginR, plotH = H - marginT - marginB;
   const maxRaw = Math.max(1, ...data.flatMap(d => seriesKeys.map(k => d[k] || 0)));
   const tickVals = niceAxisTicks(maxRaw, valueFmt);
   const maxVal = tickVals[tickVals.length - 1];
   const groupW = plotW / data.length;
-  const gap = opts.barGap ?? 9;
   // maxBarW caps how wide a single bar may grow. It matters whenever the chart
   // fills a container wider than its categories need: with a low cap the spare
   // width all becomes gap and the sets drift apart, whereas letting the bars
@@ -324,8 +528,18 @@ export function groupedBarChart(el, data, seriesKeys, seriesColors, seriesLabels
   // so little over that the space between two SETS collapses to the space
   // between the two bars inside one, and the grouping stops reading at all.
   const groupFill = opts.groupFill ?? 0.73;
-  const barW = Math.min(opts.maxBarW ?? 120,
-                        (groupW - gap * (seriesKeys.length - 1)) / seriesKeys.length * groupFill);
+  // groupFill is the PREFERRED look, not a cap: when the labels ask for a
+  // wider pitch the bar grows into it before the chart has to get wider,
+  // which is what keeps most charts inside their card.
+  const slotW = (groupW - gap * (nSeries - 1)) / nSeries;
+  const barW = Math.min(opts.maxBarW ?? 120, slotW,
+                        Math.max(slotW * groupFill, labelPitch - gap));
+  // How far apart the bar CENTRES sit, which is what the labels actually care
+  // about. Kept separate from barW so that maxBarW — which caps the bar but
+  // says nothing about the label above it — cannot pull two labels back into
+  // each other; a capped bar just leaves more gap around itself.
+  const barPitch = Math.max(barW + gap, labelPitch);
+  const blockW = (nSeries - 1) * barPitch + barW;
   const clickable = !!onCategoryClick;
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" width="${W}px" height="${H}">`;
@@ -337,14 +551,14 @@ export function groupedBarChart(el, data, seriesKeys, seriesColors, seriesLabels
   svg += `<line class="baseline" x1="${marginL}" x2="${W - marginR}" y1="${marginT + plotH}" y2="${marginT + plotH}"/>`;
 
   data.forEach((d, gi) => {
-    const groupX = marginL + gi * groupW + groupW / 2 - (barW * seriesKeys.length + gap * (seriesKeys.length - 1)) / 2;
+    const groupX = marginL + gi * groupW + groupW / 2 - blockW / 2;
     seriesKeys.forEach((k, si) => {
       const val = d[k] || 0;
       const barH = plotH * (val / maxVal);
-      const x = groupX + si * (barW + gap);
+      const x = groupX + si * barPitch;
       const y = marginT + plotH - barH;
-      svg += `<rect data-code="${d.code}" data-tip="${d.label}||${seriesLabels[si]}||${val}" rx="2" ry="2" x="${x}" y="${y}" width="${barW}" height="${Math.max(barH, 1)}" fill="${seriesColors[si]}" style="${clickable ? 'cursor:pointer' : ''}"/>`;
-      svg += `<text class="bar-value" x="${x + barW / 2}" y="${y - 3}" text-anchor="middle">${valueFmt(val)}</text>`;
+      svg += `<rect data-code="${d.code}" data-series-idx="${si}" data-tip="${d.label}||${seriesLabels[si]}||${val}" rx="2" ry="2" x="${x}" y="${y}" width="${barW}" height="${Math.max(barH, 1)}" fill="${seriesColors[si]}" style="${clickable ? 'cursor:pointer' : ''}"/>`;
+      svg += `<text class="bar-value" data-series-idx="${si}" x="${x + barW / 2}" y="${y - 3}" text-anchor="middle">${valueFmt(val)}</text>`;
     });
     // The caption's boundary is its own category slot. maxLabelChars alone
     // could not enforce that: it is a flat character count, so at a narrow
@@ -369,6 +583,7 @@ export function groupedBarChart(el, data, seriesKeys, seriesColors, seriesLabels
   attachBarTooltips(el);
   attachCaptionTooltips(el);
   attachLegendScroll(el);
+  attachLegendFilter(el, 'bar');
   if (onCategoryClick) {
     el.querySelectorAll('[data-code]').forEach(elm => {
       elm.addEventListener('click', () => {
@@ -406,6 +621,7 @@ export function donutChart(el, data, colors, onCategoryClick, valueFmt = fmt) {
     return;
   }
 
+  const donutFont = labelFont(el, 'donut-label', '600 9.5px sans-serif');
   const slices = [];
   let cumulative = 0;
   data.forEach((d, i) => {
@@ -413,25 +629,12 @@ export function donutChart(el, data, colors, onCategoryClick, valueFmt = fmt) {
     if (share <= 0) return;
     const trueAngle = (cumulative + share / 2) * 2 * Math.PI - Math.PI / 2;
     const text = (share * 100).toFixed(1) + '%';
-    const halfAngle = (text.length * 5.6 / 2 + 4) / labelR;
+    const halfAngle = (textWidth(text, donutFont) / 2 + 4) / labelR;
     slices.push({ code: d.code, label: d.label, share, trueAngle, labelAngle: trueAngle, halfAngle, cumStart: cumulative, colorIdx: i });
     cumulative += share;
   });
 
-  const n = slices.length;
-  for (let pass = 0; pass < 2; pass++) {
-    for (let k = 0; k < n; k++) {
-      const i = pass === 0 ? k : n - 1 - k;
-      const j = pass === 0 ? (i + 1) % n : (i - 1 + n) % n;
-      let gap = pass === 0 ? slices[j].labelAngle - slices[i].labelAngle : slices[i].labelAngle - slices[j].labelAngle;
-      if (gap < 0) gap += 2 * Math.PI;
-      const needed = slices[i].halfAngle + slices[j].halfAngle + 0.025;
-      if (gap < needed) {
-        const deficit = needed - gap;
-        slices[j].labelAngle += pass === 0 ? deficit : -deficit;
-      }
-    }
-  }
+  spreadDonutLabels(slices);
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}">`;
   const rings = [];
@@ -439,7 +642,7 @@ export function donutChart(el, data, colors, onCategoryClick, valueFmt = fmt) {
   slices.forEach(s => {
     const segLen = s.share * circumference;
     const offset = -s.cumStart * circumference;
-    rings.push(`<circle data-code="${s.code}" data-tip="${s.label}||${t('Share')}||${(s.share * 100).toFixed(1)}" cx="${cx}" cy="${cy}" r="${r}" fill="none"
+    rings.push(`<circle data-code="${s.code}" data-slice-idx="${s.colorIdx}" data-slice-value="${data[s.colorIdx].value || 0}" data-tip="${s.label}||${t('Share')}||${(s.share * 100).toFixed(1)}" cx="${cx}" cy="${cy}" r="${r}" fill="none"
               stroke="${colors[s.colorIdx % colors.length]}" stroke-width="${thickness}"
               stroke-dasharray="${segLen} ${circumference - segLen}" stroke-dashoffset="${offset}"
               style="${clickable ? 'cursor:pointer' : ''}"
@@ -449,9 +652,9 @@ export function donutChart(el, data, colors, onCategoryClick, valueFmt = fmt) {
     const cosL = Math.cos(s.labelAngle), sinL = Math.sin(s.labelAngle);
     const x1 = cx + cosA * (ringOuterR + 2), y1 = cy + sinA * (ringOuterR + 2);
     const x2 = cx + cosL * (labelR - 9), y2 = cy + sinL * (labelR - 9);
-    labels.push(`<line class="donut-leader" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`);
+    labels.push(`<line class="donut-leader" data-slice-label-idx="${s.colorIdx}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`);
     const lx = cx + cosL * labelR, ly = cy + sinL * labelR;
-    labels.push(`<text class="donut-label" x="${lx}" y="${ly}" text-anchor="middle">${(s.share * 100).toFixed(1)}%</text>`);
+    labels.push(`<text class="donut-label" data-slice-label-idx="${s.colorIdx}" x="${lx}" y="${ly}" text-anchor="middle">${(s.share * 100).toFixed(1)}%</text>`);
   });
   svg += rings.join('') + labels.join('');
   svg += `<circle class="donut-total-hit" data-tip="${t('Total')}||${t('Actual')}||${fmt(total)}" cx="${cx}" cy="${cy}" r="${r - thickness / 2}" fill="transparent"/>`;
@@ -459,7 +662,9 @@ export function donutChart(el, data, colors, onCategoryClick, valueFmt = fmt) {
   svg += `<text class="donut-total-label" x="${cx}" y="${cy + 16}" text-anchor="middle">${t('Total')}</text>`;
   svg += `</svg>`;
   el.innerHTML = legendHtml(data.map(d => d.label), data.map((d, i) => colors[i % colors.length])) + svg;
+  el._donutValueFmt = valueFmt;  // store for legend-filter total recalculation
   attachLegendScroll(el);
+  attachLegendFilter(el, 'donut');
   attachValueTooltips(el, '.donut-total-hit[data-tip]');
   el.querySelectorAll('circle[data-tip]:not(.donut-total-hit)').forEach(c => {
     c.addEventListener('mousemove', evt => {
@@ -483,10 +688,6 @@ export function donutChart(el, data, colors, onCategoryClick, valueFmt = fmt) {
 // with bar/pie/multiseries charts, so tiles are built one at a time
 // rather than as one fixed-shape row).
 // ---------------------------------------------------------------------
-function escapeAttr(s) {
-  return (s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
 export function kpiTileHtml(item, tileColorIdx, valueFmt = fmt) {
   const name = t(item.name);
   const isDebug = Boolean(window.odoo && window.odoo.debug);

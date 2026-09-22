@@ -35,6 +35,9 @@ addLabels({
   "Sales (Actual vs Target) - Month wise": "المبيعات (الفعلي مقابل المستهدف) - حسب الشهر",
   // series labels (dual-measure bar) — "Actual" already in the shared dict
   "Target": "المستهدف",
+  // drill-through refusal for "Promoter Sales Donot Show ListView" holders
+  "You do not have access to the list view of these records.":
+    "ليس لديك صلاحية لعرض قائمة هذه السجلات.",
 });
 
 // Same 7-option vocabulary/order/date-math as service_main.py's (and, by
@@ -93,6 +96,7 @@ export class PbiPromoterDashboard extends Component {
   setup() {
     this.rpc = useService("rpc");
     this.actionService = useService("action");
+    this.notification = useService("notification");
     this.boardKey = this.constructor.boardKey;
     this.t = t;
     this.isArabicUI = isArabicUI;
@@ -262,6 +266,16 @@ export class PbiPromoterDashboard extends Component {
       });
       if (res.error) { this.state.error = res.error; return; }
       if (res.terminal) {
+        // "Promoter Sales Donot Show ListView" — the server computed the
+        // figures for this user but refuses the drill-through to the
+        // records behind them. Tell them that, and leave the chart where
+        // it is (no action, no error banner: this is a permission, not a
+        // failure).
+        if (res.blocked) {
+          this.notification.add(t(res.message || 'You do not have access to the list view of these records.'),
+            { type: 'warning' });
+          return;
+        }
         await this.actionService.doAction({
           type: 'ir.actions.act_window',
           res_model: res.model,

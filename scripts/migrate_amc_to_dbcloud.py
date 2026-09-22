@@ -50,7 +50,7 @@ except ImportError:
 
 # ── connection params ─────────────────────────────────────────────────────────
 DSN_SOURCE = "host=localhost port=5434 dbname=dbcloud_new user=odoo password=odoo"
-DSN_TARGET = "host=localhost port=5434 dbname=dbcloud      user=odoo password=odoo"
+DSN_TARGET = "host=localhost port=5434 dbname=dbprod      user=odoo password=odoo"
 ID_OFFSET  = 10_000   # added to every imported id to avoid collisions
 
 # ── helpers ───────────────────────────────────────────────────────────────────

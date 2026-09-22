@@ -1,0 +1,1 @@
+../pbi_dashboard_configurations/sql/diagnose_module_load_order.sql

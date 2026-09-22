@@ -76,6 +76,14 @@ class PbiPromoterDashboardController(PbiDashboardBoardEngineMixin, http.Controll
             drill_path = drillPath if isinstance(drillPath, list) else []
             breakdown = board_sql.run_breakdown(request.env, uid, effective_board, item_cfg, date_from, date_to, drill_path)
             if breakdown is None:
+                # "Promoter Sales Donot Show ListView" holders see the
+                # figures but may not open the records behind them — say so
+                # instead of opening a list the promoter module's own
+                # search_fetch would render empty (see
+                # board_sql.promoter_list_view_blocked).
+                if board_sql.promoter_list_view_blocked(request.env, uid, item_cfg.source):
+                    return {'terminal': True, 'blocked': True,
+                            'message': 'You do not have access to the list view of these records.'}
                 model, domain = board_sql.run_terminal_domain(request.env, uid, effective_board, item_cfg, drill_path, date_from, date_to)
                 return {'terminal': True, 'model': model, 'domain': domain, 'name': item_cfg.name}
             return {'terminal': False, 'breakdown': breakdown, 'level': len(drill_path)}

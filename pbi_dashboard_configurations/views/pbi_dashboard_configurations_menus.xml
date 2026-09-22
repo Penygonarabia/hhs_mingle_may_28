@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- "Configurations" container under the PBI Dashboards root. Placed
+             last: it is maintenance, and it should not sit above the boards
+             people actually open. -->
+        <menuitem id="menu_pbi_dashboard_configurations"
+                  name="Configurations"
+                  parent="pbi_dashboards.pbi_dashboards_app_root"
+                  sequence="90"/>
+
+        <record id="action_pbi_dashboard_config_page" model="ir.actions.client">
+            <field name="name">Dashboard Configurations</field>
+            <field name="tag">pbi_dashboard_configurations.config_page</field>
+        </record>
+
+        <!-- The controller gates on THIS xmlid, so renaming it means changing
+             MENU_CONFIG in controllers/main.py to match. -->
+        <menuitem id="menu_pbi_dashboard_config_page"
+                  name="Dashboard Configurations"
+                  parent="pbi_dashboard_configurations.menu_pbi_dashboard_configurations"
+                  sequence="10"
+                  action="pbi_dashboard_configurations.action_pbi_dashboard_config_page"/>
+    </data>
+</odoo>

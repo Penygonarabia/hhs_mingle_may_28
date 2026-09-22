@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ERP Master Data Defects</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+  :root {
+    --paper:      #F5F7F9;
+    --surface:    #FFFFFF;
+    --rule:       #DCE2E8;
+    --rule-soft:  #E8EDF1;
+    --ink:        #161A20;
+    --slate:      #5A6472;
+    --steel:      #2F5D8C;
+    --ochre:      #9C6511;
+    --ochre-bg:   #FBF2E2;
+    --teal:       #2C6A58;
+    --teal-bg:    #E5F0EC;
+    --mark-bg:    #F6DFC2;
+    --mark-ink:   #7A4A08;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:     #131720;
+      --surface:   #1A1F2A;
+      --rule:      #2C3442;
+      --rule-soft: #232A36;
+      --ink:       #E4E8ED;
+      --slate:     #98A3B2;
+      --steel:     #7FADD8;
+      --ochre:     #D9A24E;
+      --ochre-bg:  #2E2415;
+      --teal:      #6FBFA5;
+      --teal-bg:   #16302A;
+      --mark-bg:   #4A3413;
+      --mark-ink:  #F0C888;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:     #131720;
+    --surface:   #1A1F2A;
+    --rule:      #2C3442;
+    --rule-soft: #232A36;
+    --ink:       #E4E8ED;
+    --slate:     #98A3B2;
+    --steel:     #7FADD8;
+    --ochre:     #D9A24E;
+    --ochre-bg:  #2E2415;
+    --teal:      #6FBFA5;
+    --teal-bg:   #16302A;
+    --mark-bg:   #4A3413;
+    --mark-ink:  #F0C888;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  img { max-width: 100%; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, serif;
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 3.5rem 1.5rem 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.75rem;
+  }
+
+  code, .mono, th, .num {
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  }
+
+  /* ---- masthead ---- */
+  .masthead { display: flex; flex-direction: column; gap: 1rem; }
+  .eyebrow {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-size: .72rem; font-weight: 600;
+    letter-spacing: .13em; text-transform: uppercase;
+    color: var(--steel);
+  }
+  h1 {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-size: clamp(1.9rem, 5vw, 2.6rem);
+    font-weight: 700; line-height: 1.1;
+    letter-spacing: -.02em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .standfirst { color: var(--slate); font-size: 1.06rem; margin: 0; }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: .4rem 1.5rem;
+    padding-top: 1rem; border-top: 1px solid var(--rule);
+    font-family: "JetBrains Mono", monospace;
+    font-size: .76rem; color: var(--slate);
+  }
+  .meta b { color: var(--ink); font-weight: 700; }
+
+  /* ---- defect sections ---- */
+  section { display: flex; flex-direction: column; gap: 1rem; }
+  .sec-head { display: flex; align-items: baseline; gap: .8rem; flex-wrap: wrap; }
+  .idx {
+    font-family: "JetBrains Mono", monospace;
+    font-size: .78rem; font-weight: 700;
+    color: var(--paper); background: var(--steel);
+    padding: .18rem .5rem; border-radius: 3px;
+  }
+  h2 {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-size: 1.42rem; font-weight: 600; letter-spacing: -.01em;
+    margin: 0; text-wrap: balance; flex: 1 1 14rem;
+  }
+  h3 {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-size: .8rem; font-weight: 600;
+    letter-spacing: .09em; text-transform: uppercase;
+    color: var(--slate); margin: .6rem 0 -.4rem;
+  }
+  p { margin: 0; }
+  .chip {
+    font-family: "Archivo", system-ui, sans-serif;
+    font-size: .68rem; font-weight: 600;
+    letter-spacing: .07em; text-transform: uppercase;
+    padding: .22rem .55rem; border-radius: 2px; white-space: nowrap;
+  }
+  .chip-open  { background: var(--ochre-bg); color: var(--ochre); }
+  .chip-local { background: var(--teal-bg);  color: var(--teal);  }
+
+  /* ---- tables ---- */
+  .scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 4px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: .82rem; }
+  th {
+    text-align: left; font-size: .68rem; font-weight: 700;
+    letter-spacing: .07em; text-transform: uppercase;
+    color: var(--slate); padding: .7rem .85rem;
+    border-bottom: 1px solid var(--rule); white-space: nowrap;
+  }
+  td {
+    padding: .62rem .85rem;
+    border-bottom: 1px solid var(--rule-soft);
+    font-family: "JetBrains Mono", monospace;
+    font-size: .8rem; white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  tfoot td {
+    border-top: 1px solid var(--rule); border-bottom: 0;
+    font-weight: 700; background: var(--rule-soft);
+  }
+
+  /* the defect, made visible */
+  mark {
+    background: var(--mark-bg); color: var(--mark-ink);
+    font-weight: 700; padding: 0 .12em; border-radius: 2px;
+  }
+
+  .callout {
+    border-left: 2px solid var(--ochre);
+    padding: .1rem 0 .1rem 1.1rem;
+    color: var(--slate);
+  }
+  .callout b { color: var(--ink); }
+
+  ul { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: .5rem; }
+  li::marker { color: var(--steel); }
+
+  .ask {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 1.5rem 1.6rem;
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+  .ask h2 { font-size: 1.15rem; }
+
+  footer {
+    border-top: 1px solid var(--rule); padding-top: 1.2rem;
+    font-family: "JetBrains Mono", monospace;
+    font-size: .72rem; color: var(--slate); line-height: 1.7;
+  }
+  a { color: var(--steel); }
+  a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--steel); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Data integrity report</div>
+    <h1 id="headline">ERP master data defects</h1>
+    <p class="standfirst" id="standfirst"></p>
+    <div class="meta">
+      <span>Built <b id="m-built"></b></span>
+      <span>Database <b id="m-db"></b></span>
+      <span>Scope <b>MDA / AC groups</b></span>
+      <span>Checks run <b id="m-checks"></b></span>
+    </div>
+  </header>
+
+  <div id="sections"></div>
+
+  <div class="ask" id="ask" hidden>
+    <h2>What we are asking for</h2>
+    <ul id="ask-list"></ul>
+    <p>Each item above is a correction in the ERP or in the extract that feeds
+    reporting. No change is required on the reporting side — every figure here was
+    measured on this database by re-running the same detection the original report
+    used.</p>
+  </div>
+
+  <footer id="footer"></footer>
+
+</div>
+
+<script>
+const META = "__DEFECTS_META__";
+</script>
+<script>
+(function () {
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined && text !== null) n.textContent = text;
+    return n;
+  }
+
+  var host = document.getElementById('sections');
+
+  (META.defects || []).forEach(function (d) {
+    var sec = el('section');
+    var head = el('div', 'sec-head');
+    head.append(el('span', 'idx', d.idx), el('h2', null, d.title));
+    // A clean check is reported as loudly as a dirty one: a reader has to be
+    // able to tell a clean server from an unfinished report.
+    head.append(el('span', 'chip ' + (d.found ? 'chip-open' : 'chip-local'),
+                   d.found ? 'Open — ERP fix needed' : 'Not present here'));
+    sec.append(head);
+    sec.append(el('p', null, d.summary));
+
+    (d.tables || []).forEach(function (t) {
+      sec.append(el('h3', null, t.caption));
+      var scroll = el('div', 'scroll');
+      var table = el('table');
+      var thead = el('thead'), htr = el('tr');
+      t.columns.forEach(function (c) {
+        var th = el('th', null, c.replace(/_/g, ' '));
+        if (t.numeric.indexOf(c) !== -1) th.className = 'num';
+        htr.append(th);
+      });
+      thead.append(htr);
+      var tbody = el('tbody');
+      t.rows.forEach(function (r) {
+        var tr = el('tr');
+        r.forEach(function (v, i) {
+          var td = el('td', t.numeric.indexOf(t.columns[i]) !== -1 ? 'num' : null,
+                      typeof v === 'number' ? v.toLocaleString('en-US') : v);
+          tr.append(td);
+        });
+        tbody.append(tr);
+      });
+      table.append(thead, tbody);
+      scroll.append(table);
+      sec.append(scroll);
+      // Say when a table is a sample, so a count above it that exceeds the rows
+      // below is not read as an inconsistency.
+      if (d.count > t.rows.length && t.rows.length) {
+        sec.append(el('p', 'callout',
+          'Showing the first ' + t.rows.length + ' of ' + d.count.toLocaleString('en-US') +
+          '. The count is the full figure; the table is a sample.'));
+      }
+    });
+
+    if (d.found) {
+      var c = el('div', 'callout');
+      c.append(el('b', null, 'Requested: '));
+      c.append(document.createTextNode(d.requested));
+      sec.append(c);
+    }
+    host.append(sec);
+  });
+
+  (META.unavailable || []).forEach(function (u) {
+    var sec = el('section');
+    var head = el('div', 'sec-head');
+    head.append(el('span', 'idx', u.idx), el('h2', null, u.title),
+                el('span', 'chip chip-local', 'Not checked'));
+    sec.append(head);
+    sec.append(el('p', null, u.error
+      ? 'This check could not run: ' + u.error
+      : 'This check needs ' + (u.missing || []).join(', ') +
+        ', which this database does not carry. It is not evidence of a clean result — the check did not run.'));
+    host.append(sec);
+  });
+
+  var found = META.found || 0, checked = META.checked || 0;
+  document.getElementById('headline').textContent = found
+    ? found + (found === 1 ? ' defect affecting AC sales reporting' : ' defects affecting AC sales reporting')
+    : 'No master data defects found';
+  document.getElementById('standfirst').textContent = found
+    ? ('Each of these originates in the ERP or in the extract that feeds reporting, and each costs ' +
+       'units, value, or the correct product group in the monthly AC sales figures for the Midea ' +
+       '(MDA) franchise. Every one is evidenced below with the documents involved, measured on this ' +
+       'database.')
+    : ('All ' + checked + ' checks were run against this database and none found anything. The ' +
+       'checks themselves are listed below so it is clear what was looked for.');
+  document.getElementById('m-built').textContent = new Date().toISOString().slice(0, 10);
+  document.getElementById('m-db').textContent = META.database || '—';
+  document.getElementById('m-checks').textContent = found + ' of ' + checked + ' found something';
+
+  var open = (META.defects || []).filter(function (d) { return d.found; });
+  if (open.length) {
+    document.getElementById('ask').hidden = false;
+    var list = document.getElementById('ask-list');
+    open.forEach(function (d) { list.append(el('li', null, d.requested)); });
+  }
+
+  document.getElementById('footer').textContent =
+    'Traced against ' + (META.database || 'this database') + ' on ' +
+    new Date().toISOString().slice(0, 10) + ', across the MDA franchise and the AC product groups. ' +
+    checked + ' checks run, ' + found + ' finding something. ' +
+    'Regenerate this report after any correction to confirm it landed.';
+})();
+</script>
+</body>
+</html>

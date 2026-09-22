@@ -1,0 +1,1 @@
+../pbi_dashboard_configurations/sql/fix_atom_outdoor_product_group.sql

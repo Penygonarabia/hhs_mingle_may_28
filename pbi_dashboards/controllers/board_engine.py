@@ -122,19 +122,54 @@ class PbiDashboardBoardEngineMixin:
         months = (date_to.year - date_from.year) * 12 + (date_to.month - date_from.month) + 1
         return max(months, 1)
 
-    def _effective_board(self, board_cfg, region):
+    def _effective_board(self, board_cfg, region, franchise=None):
         """Boards with region_filterable=True get an extra region clause
         ANDed onto a per-request copy of board.scope — never mutates the
         module-level BOARDS registry. region=None/'' /'all' means no
-        restriction (every region, the default)."""
-        if not board_cfg.region_filterable or not region or region == "all":
+        restriction (every region, the default).
+
+        The franchise (brand) filter is not gated on a per-board flag the
+        way region is: every service source carries franchise_id, so the
+        filter bar offers it on every board. Callers whose sources have no
+        such column simply never pass one. Both clauses are appended as
+        NAMES resolved at query time (see board_sql._substitute_symbol),
+        so nothing here depends on this database's ids.
+        """
+        extra = []
+        if board_cfg.region_filterable and region and region != "all":
+            extra.append(("work_center_group_id", "=", f"@region:{region}"))
+        for name in self._franchise_list(franchise):
+            extra.append(("franchise_id", "=", f"@franchise:{name}"))
+        if not extra:
             return board_cfg
-        extra = ("work_center_group_id", "=", f"@region:{region}")
-        return dataclasses.replace(board_cfg, scope=list(board_cfg.scope) + [extra])
+        return dataclasses.replace(board_cfg, scope=list(board_cfg.scope) + extra)
+
+    @staticmethod
+    def _franchise_list(franchise):
+        """The franchise filter as a list of names. Accepts the single name
+        the dropdown sends, a list, or 'all'/None for no restriction. More
+        than one name is deliberately NOT supported as an OR here — the
+        scope compiler ANDs its clauses — so a caller passing several would
+        get an empty board rather than a union; the picker sends one."""
+        if not franchise or franchise == "all":
+            return []
+        if isinstance(franchise, (list, tuple)):
+            names = [f for f in franchise if f and f != "all"]
+            return names[:1]
+        return [franchise]
 
     def _region_options(self, env):
         groups = env["work.center.group"].sudo().search_read([], ["name"], order="name")
         return [g["name"] for g in groups]
+
+    def _franchise_options(self, env):
+        """The franchises a job card can carry — the same set
+        machine_repair_management's own project.task.product_category_id
+        offers (top-level product categories, minus the "All" root), so the
+        dropdown can never list a value no job card could have."""
+        cats = env["product.category"].sudo().search_read(
+            [("parent_id", "=", False), ("name", "!=", "All")], ["name"], order="name")
+        return [c["name"] for c in cats]
 
     def _value_format(self, item_cfg):
         """Matches ks_dashboard_ninja's own convention — any *_hours measure
@@ -180,7 +215,10 @@ class PbiDashboardBoardEngineMixin:
             breakdown = board_sql.run_breakdown(request.env, uid, board_cfg, item_cfg, date_from, date_to, [],
                                                 period_months)
             payload = {"key": item_cfg.key, "name": item_cfg.name, "type": item_cfg.type,
-                       "info": info, "breakdown": breakdown or [], "level": 0, "valueFormat": value_format}
+                       "info": info, "breakdown": breakdown or [], "level": 0, "valueFormat": value_format,
+                       # drives the chart's "Formula & Details" button — see
+                       # board_config.py's DetailConfig
+                       "hasDetail": bool(getattr(item_cfg, "detail", None))}
             if item_cfg.measure_2:
                 payload["seriesLabels"] = list(item_cfg.series_labels or ["Series 1", "Series 2"])
             return payload
