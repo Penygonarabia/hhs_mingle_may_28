@@ -541,6 +541,8 @@ workshop machine repair
              'machine_repair_management/static/src/xml/maintenance_type_radio.xml',
              
              
+              "machine_repair_management/static/src/css/job_card_header_filter.css",
+             
               "machine_repair_management/static/src/js/job_card_header_filter.js",
                "machine_repair_management/static/src/xml/job_card_header_filter.xml",
              

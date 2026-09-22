@@ -2409,6 +2409,7 @@
                 <attribute name="duplicate">0</attribute>
                 <attribute name="js_class">phone_popup_list_view</attribute>
                  <attribute name="default_order">create_date desc</attribute>
+                 <attribute name="sample">0</attribute>
             </xpath>
 
             <!--  <xpath expr="//tree" position = "attributes">
@@ -2797,6 +2798,9 @@
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_project_task_tree"/>
         <field name="context">{'create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder"></p>
+        </field>
     </record>
 
     <!-- <record id="action_job_card_kanban" model="ir.actions.act_window">

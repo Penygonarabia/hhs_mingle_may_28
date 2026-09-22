@@ -2,14 +2,37 @@
 
 import { PhonePopupListController } from "@machine_repair_management/js/phone_popup_list_controller";
 import { SearchModel } from "@web/search/search_model";
+import { WebClient } from "@web/webclient/webclient";
 import { patch } from "@web/core/utils/patch";
 import { useService } from "@web/core/utils/hooks";
+import { session } from "@web/session";
 import { useState, onWillStart } from "@odoo/owl";
 
 const STORAGE_KEY_WC = "job_card_selected_wc_id";
 const STORAGE_KEY_TECH = "job_card_selected_tech_id";
-const STORAGE_KEY_ACCESS = "job_card_user_has_filter_access";
 const STORAGE_KEY_POPULATED = "job_card_is_populated";
+const getAccessKey = () => `job_card_user_has_filter_access_${session?.uid || 0}`;
+
+// Pre-cache user supervisor vs mobile status as soon as web client loads
+patch(WebClient.prototype, {
+    setup() {
+        super.setup(...arguments);
+        try {
+            const user = useService("user");
+            Promise.all([
+                user.hasGroup("machine_repair_management.group_technical_allocation_user"),
+                user.hasGroup("machine_repair_management.group_parts_supervisor_both"),
+                user.hasGroup("machine_repair_management.group_parts_user"),
+                user.hasGroup("machine_repair_management.group_job_card_back_office_user"),
+                user.hasGroup("machine_repair_management.group_job_card_mobile_user"),
+            ]).then(([isSupervisor, isPartsSupervisor, isParts, isBackOffice, isMobile]) => {
+                const isSupervisorRole = isSupervisor || isPartsSupervisor || isParts || isBackOffice;
+                const hasAccess = isSupervisorRole && !isMobile;
+                sessionStorage.setItem(getAccessKey(), hasAccess ? "true" : "false");
+            }).catch(() => {});
+        } catch (e) {}
+    },
+});
 
 // Safely capture original domain getter from SearchModel prototype
 const originalDomainGetter = Object.getOwnPropertyDescriptor(SearchModel.prototype, "domain")?.get;
@@ -28,38 +51,49 @@ patch(SearchModel.prototype, {
             return domain;
         }
 
-        // Check cached filter access status from sessionStorage
-        const accessCache = sessionStorage.getItem(STORAGE_KEY_ACCESS);
+        // Only apply populate filter to List (tree) view.
+        // NEVER filter Kanban (mobile view), Form, Pivot, Graph, Calendar, etc.
+        const viewType = this.config?.viewType || this.env.config?.viewType || "";
+        if (viewType && viewType !== "list") {
+            return domain;
+        }
 
-        // If user is explicitly confirmed NOT to have filter access (e.g. mobile user), return normal domain as usual
+        // If user is explicitly confirmed NOT to have filter access (e.g. mobile user or non-supervisor), return normal domain
+        const accessCache = sessionStorage.getItem(getAccessKey());
         if (accessCache === "false" || (this.headerFilterState && this.headerFilterState.isInitialized && this.headerFilterState.hasFilterAccess === false)) {
             return domain;
         }
 
-        // If accessCache is null (first load before group check finishes), default to standard domain until group check completes
-        if (accessCache === null && (!this.headerFilterState || !this.headerFilterState.isInitialized)) {
-            return domain;
+        // Check if returning from a form view via breadcrumbs vs opening menu fresh
+        const breadcrumbs = this.env.config?.breadcrumbs || [];
+        const isBreadcrumbReturn = breadcrumbs.length > 0;
+
+        if (!isBreadcrumbReturn) {
+            // Opening fresh from menu: clear previous session filters so page always starts empty
+            sessionStorage.removeItem(STORAGE_KEY_WC);
+            sessionStorage.removeItem(STORAGE_KEY_TECH);
+            sessionStorage.removeItem(STORAGE_KEY_POPULATED);
         }
 
         const isPopulated =
             this.headerFilterState?.isPopulated ||
-            sessionStorage.getItem(STORAGE_KEY_POPULATED) === "true";
+            (isBreadcrumbReturn && sessionStorage.getItem(STORAGE_KEY_POPULATED) === "true");
 
         if (!isPopulated) {
-            // Display empty list view until user clicks the 'Populate' button
+            // Display empty list view until supervisor clicks the 'Populate' button
             domain.push(["id", "=", 0]);
             return domain;
         }
 
         const wcIdStr =
             this.headerFilterState?.selectedWorkCenterId ||
-            sessionStorage.getItem(STORAGE_KEY_WC) ||
+            (isBreadcrumbReturn && sessionStorage.getItem(STORAGE_KEY_WC)) ||
             "";
         const wcId = parseInt(wcIdStr) || 0;
 
         const techIdStr =
             this.headerFilterState?.selectedTechnicianId ||
-            sessionStorage.getItem(STORAGE_KEY_TECH) ||
+            (isBreadcrumbReturn && sessionStorage.getItem(STORAGE_KEY_TECH)) ||
             "";
         const techId = parseInt(techIdStr) || 0;
 
@@ -96,10 +130,10 @@ patch(PhonePopupListController.prototype, {
             sessionStorage.removeItem(STORAGE_KEY_POPULATED);
         }
 
-        const savedWcId = sessionStorage.getItem(STORAGE_KEY_WC) || "";
-        const savedTechId = sessionStorage.getItem(STORAGE_KEY_TECH) || "";
-        const initialAccess = sessionStorage.getItem(STORAGE_KEY_ACCESS);
-        const initialPopulated = sessionStorage.getItem(STORAGE_KEY_POPULATED) === "true";
+        const savedWcId = isBreadcrumbReturn ? (sessionStorage.getItem(STORAGE_KEY_WC) || "") : "";
+        const savedTechId = isBreadcrumbReturn ? (sessionStorage.getItem(STORAGE_KEY_TECH) || "") : "";
+        const initialAccess = sessionStorage.getItem(getAccessKey());
+        const initialPopulated = isBreadcrumbReturn && sessionStorage.getItem(STORAGE_KEY_POPULATED) === "true";
 
         this.filterState = useState({
             workCenters: [],
@@ -126,19 +160,61 @@ patch(PhonePopupListController.prototype, {
         if (!wcId) {
             return [];
         }
-        const domain = [["work_center_id", "=", parseInt(wcId)]];
-        if (this.filterState.userProjectIds && this.filterState.userProjectIds.length > 0) {
-            domain.push(["project_ids", "in", this.filterState.userProjectIds]);
-        }
+        const userProjectIds = this.filterState.userProjectIds || [];
+
         try {
-            return await this.orm.searchRead(
+            // Fetch all support teams assigned to the selected work center
+            const teams = await this.orm.searchRead(
                 "machine.support.team",
-                domain,
-                ["id", "name", "leader_id"]
+                [["work_center_id", "=", parseInt(wcId)]],
+                ["id", "name", "leader_id", "project_ids"]
             );
+
+            if (userProjectIds.length === 0) {
+                return teams;
+            }
+
+            // Filter technicians/teams matching both the work center and sharing project IDs with the logged-in user
+            const validTeams = [];
+            for (const team of teams) {
+                let hasMatchingProject = false;
+
+                // Check direct team project_ids if available
+                if (team.project_ids && team.project_ids.some(pid => userProjectIds.includes(pid))) {
+                    hasMatchingProject = true;
+                }
+
+                // Check leader_id (user) project_ids if available
+                if (!hasMatchingProject && team.leader_id && team.leader_id[0]) {
+                    const leaderData = await this.orm.read(
+                        "res.users",
+                        [team.leader_id[0]],
+                        ["project_ids"]
+                    );
+                    const leaderProjects = leaderData[0]?.project_ids || [];
+                    if (leaderProjects.some(pid => userProjectIds.includes(pid))) {
+                        hasMatchingProject = true;
+                    }
+                }
+
+                if (hasMatchingProject) {
+                    validTeams.push(team);
+                }
+            }
+
+            // Fallback to all work center teams if strict project mapping yields empty results
+            return validTeams.length > 0 ? validTeams : teams;
         } catch (e) {
             console.error("Error fetching technicians for selected work center:", e);
-            return [];
+            try {
+                return await this.orm.searchRead(
+                    "machine.support.team",
+                    [["work_center_id", "=", parseInt(wcId)]],
+                    ["id", "name", "leader_id"]
+                );
+            } catch (err) {
+                return [];
+            }
         }
     },
 
@@ -197,19 +273,22 @@ patch(PhonePopupListController.prototype, {
 
     async _initWorkCenterFilter() {
         try {
-            const [isTechAlloc, isParts, isBackOffice, isMobile] = await Promise.all([
+            const [isTechAlloc, isPartsSupervisor, isParts, isBackOffice, isMobile] = await Promise.all([
                 this.user.hasGroup("machine_repair_management.group_technical_allocation_user"),
+                this.user.hasGroup("machine_repair_management.group_parts_supervisor_both"),
                 this.user.hasGroup("machine_repair_management.group_parts_user"),
                 this.user.hasGroup("machine_repair_management.group_job_card_back_office_user"),
                 this.user.hasGroup("machine_repair_management.group_job_card_mobile_user"),
             ]);
 
-            const hasAccess = (isTechAlloc || isParts || isBackOffice) && !isMobile;
+            // Populate button and filter only apply to Supervisors/Back Office, NEVER to Mobile Users
+            const isSupervisorRole = isTechAlloc || isPartsSupervisor || isParts || isBackOffice;
+            const hasAccess = isSupervisorRole && !isMobile;
             const accessChanged = this.filterState.hasFilterAccess !== hasAccess;
 
             this.filterState.hasFilterAccess = hasAccess;
             this.filterState.isInitialized = true;
-            sessionStorage.setItem(STORAGE_KEY_ACCESS, hasAccess ? "true" : "false");
+            sessionStorage.setItem(getAccessKey(), hasAccess ? "true" : "false");
 
             if (!hasAccess) {
                 if (accessChanged) {

@@ -1,0 +1,80 @@
+/* Job Card Header Filter Populate Button & Select Custom Styles */
+
+/* Ensure the Populate button is ALWAYS highlighted (in ordinary state, clicked state, disabled, hover, active) */
+body.o_web_client .wrapper-container-bits .content-wrapper-bits .btn-populate-highlight,
+body.o_web_client .wrapper-container-bits .content-wrapper-bits .btn.btn-primary.btn-populate-highlight,
+body.o_web_client .wrapper-container-bits .content-wrapper-bits button.btn-populate-highlight,
+body.o_web_client .wrapper-container-bits .content-wrapper-bits button.btn-populate-highlight:disabled,
+body.o_web_client .wrapper-container-bits .content-wrapper-bits button.btn-populate-highlight[disabled],
+body.o_web_client .wrapper-container-bits .content-wrapper-bits .btn-populate-highlight:hover,
+body.o_web_client .wrapper-container-bits .content-wrapper-bits .btn-populate-highlight:focus,
+body.o_web_client .wrapper-container-bits .content-wrapper-bits .btn-populate-highlight:active,
+.o_action_manager .btn-populate-highlight,
+.o_action_manager .btn-populate-highlight:disabled,
+.o_action_manager .btn-populate-highlight[disabled],
+.o_action_manager .btn.btn-primary.btn-populate-highlight,
+.o_action_manager .btn.btn-primary.btn-populate-highlight:disabled,
+.o_list_view .btn-populate-highlight,
+.o_list_view .btn-populate-highlight:disabled,
+button.btn-populate-highlight,
+button.btn-populate-highlight:disabled,
+button.btn-populate-highlight[disabled],
+.btn-populate-highlight,
+.btn-populate-highlight:disabled {
+    background-color: #3f9ea2 !important;
+    background: #3f9ea2 !important;
+    color: #ffffff !important;
+    border: 2px solid #282828 !important;
+    border-color: #282828 !important;
+    border-radius: 6px !important;
+    padding: 0.35rem 1.2rem !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25) !important;
+    opacity: 1 !important;
+    outline: none !important;
+    filter: none !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+
+body.o_web_client .wrapper-container-bits .content-wrapper-bits .btn-populate-highlight:hover,
+button.btn-populate-highlight:hover {
+    background-color: #328488 !important;
+    background: #328488 !important;
+    color: #ffffff !important;
+    border-color: #282828 !important;
+}
+
+/* Ensure the header filter toolbar and elements have full opacity and pointer events in all states */
+.job-card-filter-toolbar,
+.o_list_view .job-card-filter-toolbar,
+.o_view_sample_data .job-card-filter-toolbar {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure the list view is not faded out by sample data */
+.o_list_view.o_view_sample_data {
+    opacity: 1 !important;
+}
+
+/* Hide the 'Create new task' smiling face overlay when list is empty on Job Cards */
+.o_list_view .o_view_nocontent {
+    display: none !important;
+}
+
+.job-card-select-custom {
+    width: auto !important;
+    min-width: 180px !important;
+    background-color: #ffffff !important;
+    color: #111111 !important;
+    border: 2px solid #282828 !important;
+    border-radius: 6px !important;
+    padding: 0.35rem 0.65rem !important;
+    font-weight: 600 !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25) !important;
+    opacity: 1 !important;
+}
