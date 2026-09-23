@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+  <t t-name="pbi_dashboards.loyalty_sales_analysis_dashboard">
+    <div class="pbi-sales-dashboard pbi-loyalty-dashboard pbi-loyalty-sales-analysis-dashboard" t-ref="root" t-att-dir="isArabicUI() ? 'rtl' : 'ltr'">
+      <div class="wrap">
+        <header>
+          <h1><t t-esc="t('Loyalty Customers Sales Analysis')"/></h1>
+          <p t-if="isDebugMode"><t t-esc="t('Source')"/>: <code>transaction_header</code> / <code>transaction_details</code> · <t t-esc="t('Region -> City -> Main Category -> Sub-Category -> Product Group -> Product Sub Group -> Customer -> Transactions')"/></p>
+          <p t-else=""><t t-esc="t('Region -> City -> Main Category -> Sub-Category -> Product Group -> Product Sub Group -> Customer -> Transactions')"/></p>
+        </header>
+
+        <div class="filters">
+          <div class="filter-row filter-row-inline">
+            <div class="filter-group">
+              <span class="filter-label"><t t-esc="t('Period')"/></span>
+              <select class="filter-select" t-on-change="(ev) => this.selectPeriod(ev.target.value)">
+                <t t-foreach="periodOptions" t-as="opt" t-key="opt.v">
+                  <option t-att-value="opt.v" t-att-selected="opt.v === state.period ? true : undefined">
+                    <t t-esc="t(opt.l)"/>
+                  </option>
+                </t>
+              </select>
+            </div>
+            <div class="filter-group">
+              <span class="filter-label"><t t-esc="t('Franchise')"/></span>
+              <select class="filter-select" t-on-change="(ev) => this.selectFranchise(ev.target.value)">
+                <t t-foreach="franchiseOptions" t-as="opt" t-key="opt.v">
+                  <option t-att-value="opt.v" t-att-selected="opt.v === state.franchise ? true : undefined">
+                    <t t-esc="t(opt.l)"/>
+                  </option>
+                </t>
+              </select>
+            </div>
+          </div>
+          <div class="filter-row" t-if="state.period === 'custom'">
+            <span class="filter-label"><t t-esc="t('Date Range')"/></span>
+            <div class="date-range-inputs">
+              <input type="date" t-att-value="state.dateFrom" t-on-change="(ev) => this.setDateFrom(ev.target.value)"/>
+              <span><t t-esc="t('to')"/></span>
+              <input type="date" t-att-value="state.dateTo" t-on-change="(ev) => this.setDateTo(ev.target.value)"/>
+            </div>
+          </div>
+          <div class="filter-row" t-else="">
+            <span class="filter-label"><t t-esc="t('Range')"/></span>
+            <span class="resolved-range">
+              <t t-esc="state.resolvedFrom"/> – <t t-esc="state.resolvedTo"/>
+            </span>
+          </div>
+          <div class="filter-row export-actions">
+            <span class="filter-label"><t t-esc="t('Export')"/></span>
+            <div class="pill-filter">
+              <button t-on-click="exportPdf"><t t-esc="t('Export PDF')"/></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="error-banner" t-if="state.error">
+          <t t-esc="state.error"/>
+        </div>
+
+        <div class="dashboard" t-att-class="state.loading ? 'loading' : ''">
+
+          <div class="pbi-card">
+            <p class="subtitle" t-ref="subtitle"><t t-esc="t('Total Amount')"/></p>
+            <div class="drill-breadcrumb" t-ref="breadcrumb"/>
+            <div class="chart-scroll" t-ref="bodyTransactions" t-if="state.level === 'transactions'"/>
+            <div class="vq-pair" t-else="">
+              <div class="vq-col">
+                <h3 class="vq-col-title"><t t-esc="t('Amount')"/></h3>
+                <div class="chart-scroll" t-ref="bodyAmount"/>
+              </div>
+              <div class="vq-col">
+                <h3 class="vq-col-title"><t t-esc="t('Qty')"/></h3>
+                <div class="chart-scroll" t-ref="bodyQty"/>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <footer><t t-esc="t('PBI Dashboards')"/> &gt; <t t-esc="t('Loyalty Dashboards')"/> &gt; <t t-esc="t('Loyalty Customers Sales Analysis')"/> — <t t-esc="t('live from')"/> transaction_header / transaction_details</footer>
+      </div>
+      <div class="pbi-tooltip" t-ref="tooltip"/>
+    </div>
+  </t>
+</templates>

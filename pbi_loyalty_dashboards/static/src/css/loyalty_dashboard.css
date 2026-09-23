@@ -23,3 +23,20 @@
    groupedBarChart in loyalty_dashboard.js); scroll it rather than let it spill
    or shrink the text, which is what every other PBI board does. */
 .pbi-loyalty-dashboard .chart-scroll { overflow-x: auto; padding-bottom: 4px; }
+
+/* Loyalty Customers Sales Analysis — Sales Dashboard - VQ's layout: Amount
+   left, Qty right, same category order (and one shared drill state) on both,
+   so the nth bar lines up across the two columns and drilling either side
+   drills both at once. Stacks to one column under the pbi-card's own
+   min-width before a narrow viewport would crush both bar charts. */
+.pbi-loyalty-sales-analysis-dashboard .vq-pair {
+  display: flex; gap: 24px; align-items: flex-start;
+}
+.pbi-loyalty-sales-analysis-dashboard .vq-col { flex: 1 1 0; min-width: 0; }
+.pbi-loyalty-sales-analysis-dashboard .vq-col-title {
+  font-size: 12.5px; font-weight: 700; color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: .03em; margin: 0 0 8px;
+}
+@media (max-width: 760px) {
+  .pbi-loyalty-sales-analysis-dashboard .vq-pair { flex-direction: column; }
+}
