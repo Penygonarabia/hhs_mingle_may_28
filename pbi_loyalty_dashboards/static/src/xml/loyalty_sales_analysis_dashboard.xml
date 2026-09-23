@@ -43,7 +43,7 @@
           <div class="filter-row" t-else="">
             <span class="filter-label"><t t-esc="t('Range')"/></span>
             <span class="resolved-range">
-              <t t-esc="state.resolvedFrom"/> – <t t-esc="state.resolvedTo"/>
+              <t t-esc="formatDate(state.resolvedFrom)"/> – <t t-esc="formatDate(state.resolvedTo)"/>
             </span>
           </div>
           <div class="filter-row export-actions">

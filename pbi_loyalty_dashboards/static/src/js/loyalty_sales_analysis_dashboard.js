@@ -4,7 +4,7 @@ import { Component, useState, useRef, onMounted, onWillUnmount } from "@odoo/owl
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { t, addLabels, isArabicUI } from "@pbi_dashboards/js/pbi_i18n";
-import { fmt, PALETTE, setTooltipEl, clearTooltipEl, moveTip, attachBarTooltips } from "@pbi_dashboards/js/pbi_chart_lib";
+import { fmt, PALETTE, setTooltipEl, clearTooltipEl, moveTip, attachBarTooltips, labelFont, textWidth } from "@pbi_dashboards/js/pbi_chart_lib";
 
 // "Loyalty Customers Sales Analysis" — the Sales Dashboard - VQ layout
 // (Amount on the left, Qty on the right, same category order on both —
@@ -60,23 +60,70 @@ addLabels({
   "Ruud": "رود",
 });
 
+function formatDate(d) {
+  if (!d) return '';
+  if (d instanceof Date) {
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+  const parts = String(d).split('-');
+  if (parts.length === 3 && parts[0].length === 4) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return String(d);
+}
+
+function getLabelWidth(el, data) {
+  const font = labelFont(el, 'bar-label', '11px sans-serif');
+  let maxW = 0;
+  for (const d of data) {
+    if (d.label) {
+      maxW = Math.max(maxW, textWidth(String(d.label), font));
+    }
+  }
+  return maxW;
+}
+
+function getValueLabelWidth(el, data, valueKey) {
+  const font = labelFont(el, 'axis-label', '10px sans-serif');
+  let maxW = 0;
+  for (const d of data) {
+    const val = d[valueKey] || 0;
+    maxW = Math.max(maxW, textWidth(fmt(val), font));
+  }
+  return maxW;
+}
+
 // Single-series horizontal bar chart, one row per category, in whatever
 // order `data` is already in — the two calls in renderReport() pass the
 // SAME data array (sorted by amount server side), so the nth bar lines up
 // across the Amount and Qty columns.
-function hBarChart(el, data, valueKey, color, valueLabel, onClick) {
-  const W = el.clientWidth || 420;
-  const rowH = 28, marginL = 150, marginR = 60, marginT = 4;
+function hBarChart(el, data, valueKey, color, valueLabel, onClick, customMarginL) {
+  const naturalW = el.clientWidth || 420;
+  const labelW = customMarginL != null ? customMarginL : (getLabelWidth(el, data) * 1.15 + 24);
+  const marginL = Math.max(140, Math.ceil(labelW));
+  const valW = getValueLabelWidth(el, data, valueKey);
+  const marginR = Math.max(70, Math.ceil(valW + 20));
+  const minPlotW = 180;
+  const requiredW = marginL + minPlotW + marginR;
+  const W = Math.max(naturalW, requiredW);
+  const widthAttr = W > naturalW ? `${W}px` : '100%';
+  const rowH = 28, marginT = 4;
   const H = data.length * rowH + marginT * 2;
   const plotW = W - marginL - marginR;
   const maxVal = Math.max(1, ...data.map(d => d[valueKey] || 0)) * 1.05;
+  const isRTL = isArabicUI();
+  const labelX = isRTL ? (marginL - 8) : 4;
+  const labelAnchor = isRTL ? 'end' : 'start';
 
-  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}">`;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" width="${widthAttr}" height="${H}">`;
   data.forEach((d, i) => {
     const y = marginT + i * rowH;
     const val = d[valueKey] || 0;
     const barW = plotW * (val / maxVal);
-    svg += `<text class="bar-label cat-label-clickable" data-code="${d.code}" x="${marginL - 8}" y="${y + rowH * 0.62}" text-anchor="end">${d.label}</text>`;
+    svg += `<text class="bar-label cat-label-clickable" data-code="${d.code}" x="${labelX}" y="${y + rowH * 0.62}" text-anchor="${labelAnchor}">${d.label}</text>`;
     svg += `<rect data-code="${d.code}" data-tip="${d.label}||${valueLabel}||${val}" rx="3" ry="3" x="${marginL}" y="${y + rowH * 0.18}" width="${Math.max(barW, 2)}" height="${rowH * 0.55}" fill="${color}" style="cursor:pointer"/>`;
     svg += `<text class="axis-label" x="${marginL + barW + 6}" y="${y + rowH * 0.62}">${fmt(val)}</text>`;
   });
@@ -107,7 +154,7 @@ function renderTransactionTable(el, rows) {
       <tbody>
         ${rows.map(r => `<tr>
           <td>${r.transactionNo || '–'}</td>
-          <td>${r.date || '–'}</td>
+          <td>${formatDate(r.date) || '–'}</td>
           <td>${r.warehouse || '–'}</td>
           <td>${r.part || '–'}</td>
           <td class="num">${fmt(r.qty)}</td>
@@ -162,6 +209,7 @@ export class PbiLoyaltySalesAnalysisDashboard extends Component {
     this.rpc = useService("rpc");
     this.t = t;
     this.isArabicUI = isArabicUI;
+    this.formatDate = formatDate;
     this.periodOptions = PERIOD_OPTIONS;
     this.franchiseOptions = FRANCHISE_OPTIONS;
     this.levelLabels = LEVEL_LABELS;
@@ -326,8 +374,12 @@ export class PbiLoyaltySalesAnalysisDashboard extends Component {
       // drilling from either side automatically drills the other: both
       // charts click back into the one onRowClick(), which is the only
       // thing that ever changes this.state.level/selected.
-      hBarChart(this.refs.bodyAmount.el, data, 'amount', colorAmount, t('Amount'), onClick);
-      hBarChart(this.refs.bodyQty.el, data, 'qty', colorQty, t('Qty'), onClick);
+      const rootEl = this.rootRef.el || document.body;
+      const maxLabelW = getLabelWidth(rootEl, data);
+      const sharedMarginL = Math.max(140, Math.ceil(maxLabelW * 1.15 + 24));
+
+      hBarChart(this.refs.bodyAmount.el, data, 'amount', colorAmount, t('Amount'), onClick, sharedMarginL);
+      hBarChart(this.refs.bodyQty.el, data, 'qty', colorQty, t('Qty'), onClick, sharedMarginL);
     }
   }
 }

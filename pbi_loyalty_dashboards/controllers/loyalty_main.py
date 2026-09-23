@@ -70,6 +70,7 @@ class PbiLoyaltyDashboardController(http.Controller):
     # low-level helpers
     # ------------------------------------------------------------------
     def _query(self, sql, params=()):
+        request.env.cr.execute("SET LOCAL enable_nestloop = off; SET LOCAL jit = off;")
         request.env.cr.execute(sql, params)
         cols = [d[0] for d in request.env.cr.description]
         return [dict(zip(cols, row)) for row in request.env.cr.fetchall()]
@@ -208,10 +209,10 @@ class PbiLoyaltyDashboardController(http.Controller):
         rows = self._query(f"""
             SELECT {dim_col} AS label, {dim_id} AS id,
                    sum({value_expr} * {sign_expr}) AS value
-            FROM transaction_header th
+            FROM res_partner p
+            JOIN transaction_header th ON th.trnh_cstno = p.ref
             JOIN transaction_details td
                 ON td.trnd_no = th.trnh_no AND td.trnd_whouse = th.trnh_whouse
-            JOIN res_partner p ON p.ref = th.trnh_cstno
             {REGION_CITY_JOIN}
             WHERE {where}
             GROUP BY 1, 2
@@ -266,30 +267,34 @@ class PbiLoyaltyDashboardController(http.Controller):
     def _total_loyalty_customers(self, region_name=None):
         clauses = ["p.activate_loyalty_feature = true"]
         params = []
+        region_join = ""
         if region_name and region_name != "all":
             clauses.append(f"{REGION_DIM[0]} = %s")
             params.append(region_name)
+            region_join = REGION_CITY_JOIN
         where = " AND ".join(clauses)
         rows = self._query(f"""
             SELECT count(*) AS cnt
             FROM res_partner p
-            {REGION_CITY_JOIN}
+            {region_join}
             WHERE {where}
         """, params)
         return int(rows[0]["cnt"] or 0)
 
-    def _promotion_participation_rows(self, date_from, date_to, region_name=None, by_salesman=False):
+    def _promotion_participation_rows(self, date_from, date_to, region_name=None, by_salesman=False, total_customers=None):
         clauses = [
+            "p.activate_loyalty_feature = true",
             "th.trnh_type IN ('01', '02')",
             "td.trnd_promoref IS NOT NULL",
             "td.trnd_promoref <> ''",
-            "p.activate_loyalty_feature = true",
             "th.trnh_date BETWEEN %s AND %s",
         ]
         params = [date_from.strftime("%Y%m%d"), date_to.strftime("%Y%m%d")]
+        region_join = ""
         if region_name and region_name != "all":
             clauses.append(f"{REGION_DIM[0]} = %s")
             params.append(region_name)
+            region_join = REGION_CITY_JOIN
         where = " AND ".join(clauses)
         salesman_select = ", coalesce(nullif(th.trnh_salesmanname, ''), 'Unassigned') AS salesman" if by_salesman else ""
         group_by = "1, 2" if by_salesman else "1"
@@ -297,11 +302,11 @@ class PbiLoyaltyDashboardController(http.Controller):
             SELECT td.trnd_promoref AS promo_ref{salesman_select},
                    count(DISTINCT p.id) AS used_customers,
                    min(to_date(th.trnh_date, 'YYYYMMDD')) AS first_date
-            FROM transaction_header th
+            FROM res_partner p
+            JOIN transaction_header th ON th.trnh_cstno = p.ref
             JOIN transaction_details td
                 ON td.trnd_no = th.trnh_no AND td.trnd_whouse = th.trnh_whouse
-            JOIN res_partner p ON p.ref = th.trnh_cstno
-            {REGION_CITY_JOIN}
+            {region_join}
             WHERE {where}
             GROUP BY {group_by}
             ORDER BY {group_by}
@@ -317,7 +322,7 @@ class PbiLoyaltyDashboardController(http.Controller):
             """, (tuple(refs),))
             promos = {p["promotion_reference"]: p for p in promo_rows}
 
-        total = self._total_loyalty_customers(region_name)
+        total = total_customers if total_customers is not None else self._total_loyalty_customers(region_name)
         result = []
         for r in rows:
             promo = promos.get(r["promo_ref"])
@@ -339,14 +344,15 @@ class PbiLoyaltyDashboardController(http.Controller):
     # ------------------------------------------------------------------
     def _fetch_bundle(self, date_from, date_to, region_name=None):
         tier_rows, tiers = self._tier_rows("region", date_from, date_to, region_name=region_name)
+        total_customers = self._total_loyalty_customers(region_name)
         return {
             "tier": {"tiers": tiers, "data": tier_rows},
             "pointsIssued": self._points_rows(("01", "02"), "region", date_from, date_to, region_name=region_name),
             "pointsRedeemed": self._points_rows(("98",), "region", date_from, date_to, region_name=region_name),
             "newUsers": self._newusers_rows("region", date_from, date_to, region_name=region_name),
-            "promoParticipation": self._promotion_participation_rows(date_from, date_to, region_name=region_name),
+            "promoParticipation": self._promotion_participation_rows(date_from, date_to, region_name=region_name, total_customers=total_customers),
             "promoParticipationSalesman": self._promotion_participation_rows(
-                date_from, date_to, region_name=region_name, by_salesman=True),
+                date_from, date_to, region_name=region_name, by_salesman=True, total_customers=total_customers),
         }
 
     @http.route('/pbi_dashboards/loyalty/data', type='json', auth='user')

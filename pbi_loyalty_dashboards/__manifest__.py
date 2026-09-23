@@ -14,7 +14,6 @@
     # not from pbi_sales_dashboards, so nothing else here needed it either.
     'depends': [
         'pbi_dashboards',
-        'loyalty_dashboard',
     ],
     'data': [
         'views/pbi_loyalty_dashboards_menus.xml',

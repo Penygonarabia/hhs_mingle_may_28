@@ -5,7 +5,7 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { t, addLabels, isArabicUI } from "@pbi_dashboards/js/pbi_i18n";
 import { attachLegendFilter, widestValueLabel,
-         VALUE_LABEL_GAP } from "@pbi_dashboards/js/pbi_chart_lib";
+         VALUE_LABEL_GAP, labelFont, textWidth } from "@pbi_dashboards/js/pbi_chart_lib";
 
 // EN -> AR for every static chrome string this dashboard renders itself
 // (card titles/subtitles built via direct DOM textContent writes, table
@@ -72,6 +72,20 @@ addLabels({
 // ---------------------------------------------------------------------
 const fmt = n => n == null ? "–" : new Intl.NumberFormat('en-US').format(Math.round(n));
 const fmtCompact = n => n == null ? "–" : new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 0 }).format(n);
+function formatDate(d) {
+  if (!d) return '';
+  if (d instanceof Date) {
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+  const parts = String(d).split('-');
+  if (parts.length === 3 && parts[0].length === 4) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return String(d);
+}
 function legendHtml(labels, colors) {
   if (labels.length < 2) return '';
   return labels.map((l, i) => `<div class="item" data-legend-idx="${i}"><span class="swatch" style="background:${colors[i % colors.length]}"></span>${l}</div>`).join('');
@@ -198,17 +212,36 @@ function groupedBarChart(el, data, seriesKeys, seriesColors, seriesLabels, opts 
 }
 
 function hBarChart(el, data, color, valueLabel) {
-  const W = el.clientWidth || 520;
-  const rowH = 26, marginL = 130, marginR = 60, marginT = 4;
+  const naturalW = el.clientWidth || 520;
+  const font = labelFont(el, 'bar-label', '11px sans-serif');
+  let maxLabelW = 0;
+  for (const d of data) {
+    if (d.label) maxLabelW = Math.max(maxLabelW, textWidth(String(d.label), font));
+  }
+  const marginL = Math.max(140, Math.ceil(maxLabelW * 1.15 + 24));
+  const valFont = labelFont(el, 'axis-label', '10px sans-serif');
+  let maxValW = 0;
+  for (const d of data) {
+    maxValW = Math.max(maxValW, textWidth(fmtCompact(d.value), valFont));
+  }
+  const marginR = Math.max(70, Math.ceil(maxValW + 20));
+  const minPlotW = 180;
+  const requiredW = marginL + minPlotW + marginR;
+  const W = Math.max(naturalW, requiredW);
+  const widthAttr = W > naturalW ? `${W}px` : '100%';
+  const rowH = 26, marginT = 4;
   const H = data.length * rowH + marginT * 2;
   const plotW = W - marginL - marginR;
   const maxVal = Math.max(1, ...data.map(d => d.value || 0)) * 1.05;
+  const isRTL = isArabicUI();
+  const labelX = isRTL ? (marginL - 8) : 4;
+  const labelAnchor = isRTL ? 'end' : 'start';
 
-  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}">`;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" width="${widthAttr}" height="${H}">`;
   data.forEach((d, i) => {
     const y = marginT + i * rowH;
     const barW = plotW * ((d.value || 0) / maxVal);
-    svg += `<text class="bar-label" x="${marginL - 8}" y="${y + rowH * 0.62}" text-anchor="end">${d.label}</text>`;
+    svg += `<text class="bar-label" x="${labelX}" y="${y + rowH * 0.62}" text-anchor="${labelAnchor}">${d.label}</text>`;
     svg += `<rect data-tip="${d.label}||${valueLabel}||${d.value || 0}" rx="3" ry="3" x="${marginL}" y="${y + rowH * 0.18}" width="${Math.max(barW, 2)}" height="${rowH * 0.55}" fill="${color}" style="cursor:pointer"/>`;
     svg += `<text class="axis-label" x="${marginL + barW + 6}" y="${y + rowH * 0.62}">${fmtCompact(d.value)}</text>`;
   });
@@ -244,7 +277,7 @@ function renderPromoParticipationTable(el, rows, opts = {}) {
             ${withSalesman ? `<td>${r.salesman}</td>` : ''}
             <td>${r.promoRef}</td>
             <td>${r.promoName}</td>
-            <td>${r.date || '–'}</td>
+            <td>${formatDate(r.date) || '–'}</td>
             <td class="num">${fmt(r.loyaltyCustomers)}</td>
             <td class="num">${fmt(r.usedCustomers)}</td>
             <td><div class="bar-cell"><div class="mini-bar"><span style="width:${pct.toFixed(1)}%;background:var(--series-1)"></span></div>${pct.toFixed(1)}%</div></td>
@@ -301,6 +334,7 @@ export class PbiLoyaltyDashboard extends Component {
     this.action = useService("action");
     this.t = t;
     this.isArabicUI = isArabicUI;
+    this.formatDate = formatDate;
     this.periodOptions = PERIOD_OPTIONS;
     this.regionOptions = REGION_OPTIONS;
     this.chartConfigs = CHART_CONFIGS;
