@@ -58,6 +58,22 @@ patch(SearchModel.prototype, {
             return domain;
         }
 
+        // Never filter in dialogs / popups (e.g. Task Matches popup, modal dialogs, target="new")
+        const isInDialog = Boolean(
+            this.env?.inDialog ||
+            this.env?.dialogData ||
+            this.config?.target === "new" ||
+            this.env.config?.target === "new" ||
+            this.context?.show_update_button ||
+            this.context?.target === "new" ||
+            this.env.config?.actionName === "Task Matches" ||
+            this.env.config?.action?.name === "Task Matches" ||
+            (this.headerFilterState && this.headerFilterState.isInDialog)
+        );
+        if (isInDialog) {
+            return domain;
+        }
+
         // If user is explicitly confirmed NOT to have filter access (e.g. mobile user or non-supervisor), return normal domain
         const accessCache = sessionStorage.getItem(getAccessKey());
         if (accessCache === "false" || (this.headerFilterState && this.headerFilterState.isInitialized && this.headerFilterState.hasFilterAccess === false)) {
@@ -118,6 +134,30 @@ patch(PhonePopupListController.prototype, {
         super.setup();
         this.orm = useService("orm");
         this.user = useService("user");
+
+        // Never enable workcenter / technician toolbar inside popup / dialog (e.g. Task Matches popup)
+        const isInDialog = Boolean(
+            this.env.inDialog ||
+            this.env.dialogData ||
+            this.props?.context?.show_update_button ||
+            this.props?.target === "new" ||
+            this.env.config?.target === "new" ||
+            this.env.config?.actionName === "Task Matches" ||
+            this.env.config?.action?.name === "Task Matches" ||
+            this.props?.title === "Task Matches" ||
+            (this.env.searchModel?.context?.show_update_button)
+        );
+
+        if (isInDialog) {
+            this.filterState = useState({
+                hasFilterAccess: false,
+                isInDialog: true,
+            });
+            if (this.env.searchModel) {
+                this.env.searchModel.headerFilterState = this.filterState;
+            }
+            return;
+        }
 
         // Check if returning from a form view via breadcrumbs vs opening menu fresh
         const breadcrumbs = this.env.config?.breadcrumbs || [];

@@ -44,6 +44,10 @@ const STORAGE_KEY_USER = "job_card_sch_selected_user_id";
 const STORAGE_KEY_POPULATED = "job_card_sch_is_populated";
 
 export class DomGanttCommonRenderer extends CalendarCommonRenderer {
+  get isSecondScreenScheduling() {
+    return Boolean(this.env.searchModel?.context?.hide_jobcard_list);
+  }
+
   setup() {
     this.fc = useDomGantt("fullCalendar", this.gantt_options);
     this.click = useClickHandler(this.onClick, this.onDblClick);
@@ -86,7 +90,12 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
       );
 
       this.projectState.projects = projects;
-      if (projects.length) {
+      const contextProjId =
+        this.env.searchModel?.context?.default_project_id ||
+        this.env.searchModel?.context?.project_id;
+      if (contextProjId && projects.some((p) => p.id === contextProjId)) {
+        this.projectState.project_id = contextProjId;
+      } else if (projects.length) {
         this.projectState.project_id = projects[0].id;
       }
       this.projectState.showProjectSelector = projects.length > 1;
@@ -161,6 +170,9 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
   }
 
   onProjectChange(ev) {
+    if (this.isSecondScreenScheduling && this.isHhsProject) {
+      return;
+    }
     this.projectState.project_id = parseInt(ev.target.value) || false;
     this.env.bus.trigger("project-filter-updated", {
       project_id: this.projectState.project_id,
@@ -271,7 +283,9 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
 
   async fetchAllUsersAndTasks() {
     try {
-      const isPopulated = sessionStorage.getItem(STORAGE_KEY_POPULATED) === "true";
+      const isPopulated =
+        this.isSecondScreenScheduling ||
+        sessionStorage.getItem(STORAGE_KEY_POPULATED) === "true";
 
       // If Populate has not been clicked, only show Unassigned
       if (!isPopulated) {
@@ -323,21 +337,22 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
         (u.groups_id || []).includes(jobCardGroupId),
       );
 
-      // Filter by populated Work Center
-      const selectedWcId = sessionStorage.getItem(STORAGE_KEY_WC);
-      if (selectedWcId) {
-        const wcNum = parseInt(selectedWcId, 10);
-        filteredUsers = filteredUsers.filter((u) => {
-          const userWcs = (u.default_work_center_id || []).map((w) => (Array.isArray(w) ? w[0] : w));
-          return userWcs.includes(wcNum);
-        });
-      }
-
-      // Filter by populated Technician
-      const selectedUserId = sessionStorage.getItem(STORAGE_KEY_USER);
-      if (selectedUserId) {
-        const userNum = parseInt(selectedUserId, 10);
-        filteredUsers = filteredUsers.filter((u) => u.id === userNum);
+      // Only filter by sidebar Work Center & Technician on first screen (sidebar view)
+      if (!this.isSecondScreenScheduling) {
+        const selectedUserId = sessionStorage.getItem(STORAGE_KEY_USER);
+        if (selectedUserId) {
+          const userNum = parseInt(selectedUserId, 10);
+          filteredUsers = filteredUsers.filter((u) => u.id === userNum);
+        } else {
+          const selectedWcId = sessionStorage.getItem(STORAGE_KEY_WC);
+          if (selectedWcId) {
+            const wcNum = parseInt(selectedWcId, 10);
+            filteredUsers = filteredUsers.filter((u) => {
+              const userWcs = (u.default_work_center_id || []).map((w) => (Array.isArray(w) ? w[0] : w));
+              return userWcs.includes(wcNum);
+            });
+          }
+        }
       }
 
       this.userIdToName = {};
@@ -445,6 +460,7 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
       displayEventEnd: !this.props.model.meta.isTimeEndHidden,
       weekends: true,
       weekNumbers: false,
+      filterResourcesWithEvents: false,
       resourceAreaHeaderContent: "",
       resourceAreaColumns: this._getResourceAreaColumns(),
       resources: (_, successRS) => {
@@ -458,6 +474,7 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
       eventsSet: this.onEventSet,
       editable: true,
       selectable: true,
+      select: this.onSelect.bind(this),
       eventDrop: this.onEventDrop.bind(this),
       eventDragStart: this.onEventDragStart.bind(this),
       eventDragStop: this.onEventDragStop.bind(this),
@@ -465,7 +482,9 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
       eventDidMount: this.onEventRender.bind(this),
 
       events: async (info, successCallback) => {
-        const isPopulated = sessionStorage.getItem(STORAGE_KEY_POPULATED) === "true";
+        const isPopulated =
+          this.isSecondScreenScheduling ||
+          sessionStorage.getItem(STORAGE_KEY_POPULATED) === "true";
         if (!isPopulated) {
           successCallback([]);
           return;
@@ -528,6 +547,33 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
       : nowDate.toISOString();
     Object.assign(options, options_extra);
     return options;
+  }
+
+  fcEventToRecord(event) {
+    const res = super.fcEventToRecord(event);
+    const resId = event.resource?.id || event.resourceId;
+    if (resId) {
+      res.resourceId = resId;
+    }
+    return res;
+  }
+
+  async onSelect(info) {
+    if (info.jsEvent) {
+      info.jsEvent.preventDefault();
+    }
+    if (this.popover) {
+      this.popover.close();
+    }
+    const record = this.fcEventToRecord(info);
+    const resId = info.resource?.id || info.resourceId;
+    if (resId) {
+      record.resourceId = resId;
+    }
+    await this.props.createRecord(record);
+    if (this.fc?.api) {
+      this.fc.api.unselect();
+    }
   }
 
   async onEventDrop(info) {

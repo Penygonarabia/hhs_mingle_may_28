@@ -944,6 +944,66 @@ class ProjectTask(models.Model):
     def action_discard(self):
         self.write({"active": False})
 
+      #### Working Code commented on SEP 23 2026    
+    # def action_open_js_popup(self):
+    #     self.ensure_one()
+    #
+    #     if self.service_sale_id:
+    #         if self.service_sale_id.state == "done":
+    #             balance_paid_amount = self.balance_paid
+    #             balance_amount_received_bool = self.balance_amount_received_bool
+    #             mode_of_payment_balance_amount = self.mode_of_payment_balance_amount
+    #             if balance_paid_amount > 0.0 and not mode_of_payment_balance_amount:
+    #                 raise ValidationError(_("Please Select any one Method Of Payment"))
+    #
+    #             if balance_paid_amount > 0.0 and not balance_amount_received_bool:
+    #                 raise ValidationError(
+    #                     _(
+    #                         "Ensure Amount is received from the customer while clicking the Balance Amount Confirmed."
+    #                     )
+    #                 )
+    #
+    #     target_project = self.amc_project_id if self.project_related_amc_bool and self.amc_project_id else self.project_id
+    #     target_project_id = target_project.id if target_project else False            
+    #
+    #     action = self.env.ref(
+    #         "project_team_assignment.action_project_task_gantt_hide_sidebar"
+    #     ).read()[0]
+    #     # action["target"] = "new"
+    #     action["target"] = "current"
+    #     action["context"] = dict(
+    #         self.env.context,
+    #         job_card_number=self.name,
+    #         customer_name=self.customer_name or "",
+    #         service_requested_datetime=self.service_requested_datetime or "",
+    #         # planned_date_begin=self.planned_date_begin or '',
+    #         # planned_date_end=self.planned_date_end or '',
+    #         job_card_state_code=self.job_card_state_code,
+    #         job_card_state=self.job_card_state,
+    #         job_state=self.job_state,
+    #         hide_jobcard_list=True,  # 👈 add this flag
+    #         # default_date=self.planned_date_begin or fields.Date.today(),
+    #         # 👇 force only date part (YYYY-MM-DD)
+    #
+    #         default_project_id=target_project_id,
+    #         project_id=target_project_id,
+    #         project_related_amc_bool=self.project_related_amc_bool,
+    #
+    #         default_date=(self.planned_date_begin or fields.Date.today()).strftime(
+    #             "%Y-%m-%d"
+    #         ),
+    #         unit_pull_out_status_check=self.unit_pull_out_status_check,
+    #         balance_amount_received_bool=self.balance_amount_received_bool,  # 24/01/2026
+    #         service_warranty_id=self.service_warranty_id.id or False,  # 24/01/2026
+    #         last_rescheduled_status_code=self.last_rescheduled_status_code,
+    #         dealer_id=self.dealer_id.name,#25/06/2026
+    #         # dialog_size="large",  # optional, still used internally
+    #         # dialog_class="modal-dialog modal-xl modal-dialog-centered",
+    #     )
+    #
+    #
+    #     return action
+
     def action_open_js_popup(self):
         self.ensure_one()
 
@@ -962,6 +1022,9 @@ class ProjectTask(models.Model):
                         )
                     )
 
+        target_project = self.amc_project_id if self.project_related_amc_bool and self.amc_project_id else self.project_id
+        target_project_id = target_project.id if target_project else False
+
         action = self.env.ref(
             "project_team_assignment.action_project_task_gantt_hide_sidebar"
         ).read()[0]
@@ -978,6 +1041,9 @@ class ProjectTask(models.Model):
             job_card_state=self.job_card_state,
             job_state=self.job_state,
             hide_jobcard_list=True,  # 👈 add this flag
+            default_project_id=target_project_id,
+            project_id=target_project_id,
+            project_related_amc_bool=self.project_related_amc_bool,
             # default_date=self.planned_date_begin or fields.Date.today(),
             # 👇 force only date part (YYYY-MM-DD)
             default_date=(self.planned_date_begin or fields.Date.today()).strftime(
@@ -994,7 +1060,6 @@ class ProjectTask(models.Model):
 
 
         return action
-
     @api.onchange("team_id")
     def _onchange_team_id_warehouse(self):
         for rec in self:

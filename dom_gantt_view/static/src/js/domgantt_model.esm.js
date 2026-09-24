@@ -87,8 +87,12 @@ export class DomGanttModel extends CalendarModel {
     });
 
     // Just assign [resourceId] as an array of integers
-    if ("resourceId" in partialRecord) {
-      const resourceId = parseInt(partialRecord.resourceId);
+    const rawResourceId =
+      partialRecord.resourceId ||
+      partialRecord.resource_id ||
+      partialRecord.resource?.id;
+    if (rawResourceId) {
+      const resourceId = parseInt(rawResourceId, 10);
       if (!isNaN(resourceId)) {
         data.user_ids = [resourceId]; // Only an array, not (6, 0, [...])
       }

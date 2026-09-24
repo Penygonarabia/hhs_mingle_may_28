@@ -43,6 +43,7 @@ export class MyComponent extends Component {
       balanceAmountreceivedBool: context.balance_amount_received_bool || "", // added 24/01/2026
       serviceWarrantyId: context.service_warranty_id || "", // added 24/01/2026
       warehouseId: null,
+      warehouseLineId: [],
       quatecraetedBy: context.quote_created_by || "",
       last_rescheduled_status_code: context.last_rescheduled_status_code || "",
       dealer_id: context.dealer_id || "",
@@ -130,9 +131,9 @@ export class MyComponent extends Component {
           ["name", "property_warehouse_id", "warehouse_category_user_line_ids"],
         ]);
         this.state.technicianName = users?.[0]?.name || null;
-        this.state.warehouseId = users?.[0]?.property_warehouse_id[0] || null;
+        this.state.warehouseId = users?.[0]?.property_warehouse_id?.[0] || null;
         this.state.warehouseLineId =
-          users?.[0]?.warehouse_category_user_line_ids || null;
+          users?.[0]?.warehouse_category_user_line_ids || [];
         console.log(" this.state.warehouseId", this.state.warehouseId);
       } catch {
         this.state.technicianName = null;
@@ -264,7 +265,7 @@ export class MyComponent extends Component {
     const workCenterId = task.work_center_id?.[0] || null;
 
     let warehouse = null;
-    let lineIds = this.state.warehouseLineId;
+    let lineIds = this.state.warehouseLineId || [];
     let technicianRequired = false;
 
     /* 2️⃣ CHECK WORK CENTER LOCATION CONDITION */
@@ -294,7 +295,15 @@ export class MyComponent extends Component {
       }
     }
     if (technicianRequired === true) {
-      if (lineIds.length) {
+      if (!this.state.teamId) {
+        this.dialog.add(ConfirmationDialog, {
+          title: _t("Validation Error"),
+          body: markup(_t("Please select a technician's row to schedule this job card.")),
+        });
+        return;
+      }
+
+      if (lineIds && lineIds.length) {
         /* 3️⃣ Try from res.users.line */
         const lines = await this.orm.searchRead(
           "res.users.line",
@@ -384,15 +393,14 @@ export class MyComponent extends Component {
         message = markup(
           _t(
             "Technician warehouse is not available for the technician <b>%s</b> to the Product category <b>%s</b>.",
-            this.state.technicianName,
+            this.state.technicianName || _t("Unassigned"),
             categoryName,
           ),
         );
       } else {
         message = markup(
           _t(
-            "Main warehouse is not available for the technician <b>%s</b> to the Product category <b>%s</b>.",
-            this.state.technicianName,
+            "Main warehouse is not available to the Product category <b>%s</b>.",
             categoryName,
           ),
         );
@@ -452,7 +460,7 @@ export class MyComponent extends Component {
     const workCenterId = task.work_center_id?.[0] || null;
 
     let warehouse = null;
-    let lineIds = this.state.warehouseLineId;
+    let lineIds = this.state.warehouseLineId || [];
 
     //     const lines = await this.orm.searchRead(
     //     "res.users.line",
@@ -477,7 +485,7 @@ export class MyComponent extends Component {
     //   console.log("warehouse", warehouse);
     // }
     /* 1️⃣ Try from res.users.line */
-    if (lineIds.length) {
+    if (lineIds && lineIds.length) {
       const lines = await this.orm.searchRead(
         "res.users.line",
         [

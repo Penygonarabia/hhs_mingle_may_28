@@ -78,3 +78,10 @@ button.btn-populate-highlight:hover {
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25) !important;
     opacity: 1 !important;
 }
+
+/* Never show the Job Card filter toolbar in popups or dialogs */
+.o_dialog .job-card-filter-toolbar,
+.modal .job-card-filter-toolbar,
+.modal-dialog .job-card-filter-toolbar {
+    display: none !important;
+}

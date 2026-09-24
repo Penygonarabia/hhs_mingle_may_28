@@ -4,8 +4,8 @@
         <div class="o_my_component">
 
             <div class="row pt-3">
-                <div class="col-2"></div>
-                <div class="d-flex gap-2 col-10">
+                <div class="col-2" style="min-width: 200px; max-width: 200px; width: 200px;"></div>
+                <div class="d-flex gap-2 col-10" style="padding-left: 25px;">
                     <input type="text" class="form-control" style="width: 200px; height: 30px;border:2px solid green;border-radius:5px;" placeholder="Job Card#" t-model="state.jobCardNumber" t-att-readonly="true"/>
                     <input type="text" class="form-control" style="width: 200px; height: 30px;border:2px solid green;border-radius:5px;" placeholder="Customer name" t-model="state.customerName" t-att-readonly="true" />
                     <input type="text" class="form-control" style="width: 200px; height: 30px;border:2px solid green;border-radius:5px;" placeholder="Service Requested Appt Date-Time" t-model="state.service_requested_datetime_formatted" t-att-readonly="true" />

@@ -37,7 +37,7 @@ export function useDomGantt(refName, params) {
       scrollTime: "00:00",
       headerToolbar: false,
       initialView: "resourceTimelineMonth",
-      filterResourcesWithEvents: true,
+      filterResourcesWithEvents: false,
       views: {
         // resourceTimelineDay: {
         //     buttonText: _t("Day"),

@@ -307,6 +307,14 @@ export class JobcardList extends Component {
       sessionStorage.removeItem(STORAGE_KEY_TECH);
       sessionStorage.removeItem(STORAGE_KEY_USER);
     }
+
+    if (this.state.isPopulated && this.env?.bus) {
+      this.env.bus.trigger("jobcard-filter-populated", {
+        isPopulated: true,
+        workCenterId: this.state.selectedWorkcenterId,
+        technicianUserId: techId ? parseInt(techId, 10) : null,
+      });
+    }
   }
 
   async onPopulateClick() {
@@ -726,7 +734,11 @@ export class JobcardList extends Component {
       this.state.planned_date_begin = data.planned_date_begin || null;
       this.state.planned_date_end = data.planned_date_end || null;
       this.state.user_ids = data.user_ids || [];
-      this.state.teamId = this.state.user_ids.length ? parseInt(this.state.user_ids[0], 10) : null;
+      const slotUserId = this.state.user_ids.length ? parseInt(this.state.user_ids[0], 10) : null;
+      this.state.teamId = slotUserId || (this.state.selectedTechnicianId ? parseInt(this.state.selectedTechnicianId, 10) : null);
+      if (!this.state.user_ids.length && this.state.teamId) {
+        this.state.user_ids = [this.state.teamId];
+      }
     } else {
       this.state.jobcardId = data.id;
       this.state.jobCardNumber = data.name || "";
@@ -756,10 +768,35 @@ export class JobcardList extends Component {
       }
     }
 
-    const user = this.userMap[this.state.teamId];
-    this.state.technicianName = user ? user.name : null;
-    this.state.warehouseId = user ? user.property_warehouse_id : null;
-    this.state.warehouseLineId = user ? user.warehouse_category_user_line_ids : null;
+    if (this.state.teamId) {
+      let user = this.userMap[this.state.teamId];
+      if (!user || !user.warehouse_category_user_line_ids) {
+        try {
+          const userRecords = await this.orm.read(
+            "res.users",
+            [this.state.teamId],
+            ["name", "property_warehouse_id", "warehouse_category_user_line_ids"],
+          );
+          if (userRecords.length) {
+            user = {
+              name: userRecords[0].name,
+              property_warehouse_id: userRecords[0].property_warehouse_id,
+              warehouse_category_user_line_ids: userRecords[0].warehouse_category_user_line_ids,
+            };
+            this.userMap[this.state.teamId] = user;
+          }
+        } catch (e) {
+          console.error("Failed to read technician user details:", e);
+        }
+      }
+      this.state.technicianName = user ? user.name : null;
+      this.state.warehouseId = user ? user.property_warehouse_id : null;
+      this.state.warehouseLineId = user ? user.warehouse_category_user_line_ids : null;
+    } else {
+      this.state.technicianName = null;
+      this.state.warehouseId = null;
+      this.state.warehouseLineId = null;
+    }
 
     const warehouse = await this.workCenterlocationMatch();
     if (!warehouse) {
@@ -811,6 +848,14 @@ export class JobcardList extends Component {
     }
 
     if (technicianRequired === true) {
+      if (!this.state.teamId) {
+        this.dialog.add(ConfirmationDialog, {
+          title: _t("Validation Error"),
+          body: markup(_t("Please select a technician or click on a technician's row to schedule this job card.")),
+        });
+        return;
+      }
+
       if (lineIds && lineIds.length) {
         const lines = await this.orm.searchRead(
           "res.users.line",
@@ -854,8 +899,8 @@ export class JobcardList extends Component {
 
     if (!warehouse) {
       let message = technicianRequired
-        ? markup(_t("Technician warehouse is not available for technician <b>%s</b> for category <b>%s</b>.", this.state.technicianName, categoryName))
-        : markup(_t("Main warehouse is not available for technician <b>%s</b> for category <b>%s</b>.", this.state.technicianName, categoryName));
+        ? markup(_t("Technician warehouse is not available for technician <b>%s</b> for category <b>%s</b>.", this.state.technicianName || _t("Unassigned"), categoryName))
+        : markup(_t("Main warehouse is not available for category <b>%s</b>.", categoryName));
 
       this.dialog.add(ConfirmationDialog, {
         title: _t("Validation Error"),
