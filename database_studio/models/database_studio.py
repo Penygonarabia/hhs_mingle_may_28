@@ -738,7 +738,7 @@ class SqlMsAnalyser(models.AbstractModel):
         }
 
     @api.model
-    def end_transaction(self, txn_id, commit=False):
+    def end_transaction(self, txn_id, commit=False, statements=None):
         """Commit (or roll back) the transaction a run left open."""
         self._check_access()
         with _TXN_LOCK:
@@ -746,6 +746,13 @@ class SqlMsAnalyser(models.AbstractModel):
         if entry and entry["uid"] != self.env.uid:
             raise AccessError(_("This transaction belongs to another user."))
         found, error = _close_txn(txn_id, commit=bool(commit))
+        if not found and commit and statements:
+            # The held transaction lives in the memory of the worker that ran
+            # the statements. Under a multi-process server (workers > 0) the
+            # answer usually reaches a different worker, which holds nothing.
+            # The user did answer Commit, so apply the same statements again
+            # in one fresh transaction: all of them, or none.
+            return self._replay_and_commit(statements)
         if not found:
             return {
                 "success": False,
@@ -757,6 +764,21 @@ class SqlMsAnalyser(models.AbstractModel):
             return {"success": False, "state": "rolled_back",
                     "message": _("Commit failed, so the changes were rolled back: %s") % error}
         return {"success": True, "state": "committed" if commit else "rolled_back"}
+
+    def _replay_and_commit(self, statements):
+        cr = self.env.registry.cursor()
+        try:
+            for sql in statements:
+                if sql and sql.strip():
+                    cr.execute(sql)
+            cr.commit()
+        except Exception as e:
+            cr.rollback()
+            return {"success": False, "state": "rolled_back",
+                    "message": _("Commit failed, so the changes were rolled back: %s") % e}
+        finally:
+            cr.close()
+        return {"success": True, "state": "committed"}
 
     def _empty_result(self, limit):
         return {"columns": [], "column_types": [], "rows": [], "total": 0,

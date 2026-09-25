@@ -3967,7 +3967,8 @@ export class SqlMsAnalyser extends Component {
         let res;
         try {
             res = await this.orm.call(
-                "database.studio.analyser", "end_transaction", [txnId, commit]
+                "database.studio.analyser", "end_transaction",
+                [txnId, commit, sets.map((rs) => rs.sql).filter(Boolean)]
             );
         } catch (err) {
             res = { success: false, state: "unknown",
