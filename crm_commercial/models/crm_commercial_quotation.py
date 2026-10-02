@@ -144,7 +144,9 @@ class CrmCommercialQuotation(models.Model):
     developer = fields.Char(string="Developer")
     possibility_percent = fields.Float(string="Possibility (%)", default=50.0)
     project_status_id = fields.Many2one(
-        "crm.commercial.project.status", string="Project Status"
+        "crm.commercial.project.status",
+        string="Project Status",
+        required=True,
     )
 
     @api.onchange("project_status_id")
@@ -831,6 +833,12 @@ class CrmCommercialQuotation(models.Model):
         if not self.env.context.get("skip_validation"):
             if not vals.get("project_status_id"):
                 raise ValidationError(_("Project Status is required."))
+
+            if not vals.get("project_detail_status_id"):
+                raise ValidationError(_("Project Detail Status is required."))
+
+            if not vals.get("consultant_id"):
+                raise ValidationError(_("Consultant is required."))
 
         return super().create(vals)
 
