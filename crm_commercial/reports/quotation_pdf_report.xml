@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Paperformat for Commercial Quotation PDF -->
+    <record id="paperformat_crm_commercial_quotation_pdf" model="report.paperformat">
+        <field name="name">Commercial Quotation PDF Paperformat</field>
+        <field name="default" eval="True"/>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">5</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">8</field>
+        <field name="margin_right">8</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <!-- Standard Report Action -->
+    <record id="action_report_crm_commercial_quotation_pdf" model="ir.actions.report">
+        <field name="name">Commercial Quotation PDF</field>
+        <field name="model">crm.commercial.quotation</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">crm_commercial.report_quotation_pdf_template</field>
+        <field name="report_file">crm_commercial.report_quotation_pdf_template</field>
+        <field name="paperformat_id" ref="crm_commercial.paperformat_crm_commercial_quotation_pdf"/>
+        <field name="binding_model_id" ref="model_crm_commercial_quotation"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Separate PDF Option: Midea Commercial Proposal PDF -->
+    <record id="action_report_midea_proposal_pdf" model="ir.actions.report">
+        <field name="name">Midea Commercial Proposal PDF</field>
+        <field name="model">crm.commercial.quotation</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">crm_commercial.report_quotation_pdf_template</field>
+        <field name="report_file">crm_commercial.report_quotation_pdf_template</field>
+        <field name="paperformat_id" ref="crm_commercial.paperformat_crm_commercial_quotation_pdf"/>
+        <field name="binding_model_id" ref="model_crm_commercial_quotation"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- QWeb PDF Report Template -->
+    <template id="report_quotation_pdf_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <div class="article web.minimal_layout" t-att-data-oe-model="doc._name" t-att-data-oe-id="doc.id" style="font-family: Arial, Helvetica, sans-serif;">
+                    
+                    <t t-set="cat_details" t-value="doc._get_pdf_category_details()"/>
+                    <t t-set="feature_cats" t-value="[c for c in cat_details if c.get('salient_features')]"/>
+                    <t t-set="total_pages" t-value="3 + len(feature_cats)"/>
+
+                    <!-- PAGE 1: COVER PAGE / FIRST PAGE -->
+                    <div class="page" style="page-break-after: always; position: relative; height: 1060px; min-height: 1060px; padding: 0; margin: 0; overflow: hidden;">
+                        
+                        <!-- Background Cover Template Image -->
+                        <img src="/crm_commercial/static/src/img/midea_cover_page.jpg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 1;"/>
+
+                        <!-- Overlaid Dynamic Metadata Fields -->
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; font-family: Arial, sans-serif; color: #00a7b5; font-weight: normal; font-size: 14px;">
+                            
+                            <!-- PROJECT -->
+                            <div style="position: absolute; top: 33.4%; left: 22.0%; white-space: nowrap;">
+                                <t t-esc="doc.project_name"/>
+                            </div>
+
+                            <!-- CLIENT -->
+                            <div style="position: absolute; top: 40.4%; left: 19.5%; white-space: nowrap;">
+                                <t t-esc="doc.to_name if doc.to_name else (doc.partner_id.name or '')"/>
+                            </div>
+
+                            <!-- QUOTATION NO -->
+                            <div style="position: absolute; top: 46.3%; left: 29.5%; white-space: nowrap;">
+                                <t t-esc="doc.name"/>
+                            </div>
+
+                            <!-- DATE -->
+                            <div style="position: absolute; top: 50.9%; left: 18.5%; white-space: nowrap;">
+                                <t t-esc="doc.date and doc.date.strftime('%d.%m.%Y') or ''"/>
+                            </div>
+
+                            <!-- PREPARED BY -->
+                            <div style="position: absolute; top: 54.9%; left: 29.0%; white-space: nowrap;">
+                                <t t-esc="doc.assigned_id.name or ''"/>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PAGE 2: QUOTATION SUMMARY TABLE (DATA FROM SCREEN) -->
+                    <div class="page" style="page-break-after: always; position: relative; height: 1060px; min-height: 1060px; padding: 0; margin: 0;">
+                        
+                        <!-- Extracted Header Image Banner (Positioned UP at top edge) -->
+                        <div style="margin-top: 0; padding-top: 0; margin-bottom: 4px;">
+                            <img src="/crm_commercial/static/src/img/shaker_pdf_header.jpeg" style="width: 100%; height: auto; display: block;"/>
+                        </div>
+
+                        <h3 style="text-align: center; font-weight: bold; color: #000; margin-top: 4px; margin-bottom: 12px;">Quotation</h3>
+
+                        <!-- 2-Column Header Metadata Table -->
+                        <table style="width: 100%; border: 1px solid #000; border-collapse: collapse; font-size: 11px; margin-bottom: 12px;">
+                            <tr style="border-bottom: 1px solid #000;">
+                                <td style="width: 15%; font-weight: bold; padding: 4px 6px; background-color: #e9ecef; border-right: 1px solid #000;">To</td>
+                                <td style="width: 35%; padding: 4px 6px; border-right: 1px solid #000;"><span t-field="doc.to_name" t-if="doc.to_name"/><span t-field="doc.partner_id.name" t-else=""/></td>
+                                <td style="width: 15%; font-weight: bold; padding: 4px 6px; background-color: #e9ecef; border-right: 1px solid #000;">HH-S Reference</td>
+                                <td style="width: 35%; padding: 4px 6px;"><span t-field="doc.name"/></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #000;">
+                                <td style="font-weight: bold; padding: 4px 6px; background-color: #e9ecef; border-right: 1px solid #000;">Your Vat No.</td>
+                                <td style="padding: 4px 6px; border-right: 1px solid #000;"><span t-field="doc.partner_id.vat"/></td>
+                                <td style="font-weight: bold; padding: 4px 6px; background-color: #e9ecef; border-right: 1px solid #000;">Date</td>
+                                <td style="padding: 4px 6px;"><t t-esc="doc.date and doc.date.strftime('%d.%m.%Y')"/></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #000;">
+                                <td style="font-weight: bold; padding: 4px 6px; background-color: #e9ecef; border-right: 1px solid #000;">Attn</td>
+                                <td style="padding: 4px 6px; border-right: 1px solid #000;"><span t-field="doc.to_name" t-if="doc.to_name"/><span t-field="doc.partner_id.name" t-else=""/></td>
+                                <td style="font-weight: bold; padding: 4px 6px; background-color: #e9ecef; border-right: 1px solid #000;">Contact Person</td>
+                                <td style="padding: 4px 6px;"><span t-field="doc.assigned_id.name"/></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #000;">
+                                <td style="font-weight: bold; padding: 4px 6px; background-color: #e9ecef; border-right: 1px solid #000;">Mobile</td>
+                                <td style="padding: 4px 6px; border-right: 1px solid #000;"><span t-field="doc.phone" t-if="doc.phone"/><span t-field="doc.partner_id.phone" t-else=""/></td>
+                                <td style="font-weight: bold; padding: 4px 6px; background-color: #e9ecef; border-right: 1px solid #000;">Mobile</td>
+                                <td style="padding: 4px 6px;"><span t-field="doc.assigned_id.phone"/></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #000;">
+                                <td style="font-weight: bold; padding: 4px 6px; background-color: #e9ecef; border-right: 1px solid #000;">Email</td>
+                                <td style="padding: 4px 6px; border-right: 1px solid #000;"><span t-field="doc.email" t-if="doc.email"/><span t-field="doc.partner_id.email" t-else=""/></td>
+                                <td style="font-weight: bold; padding: 4px 6px; background-color: #e9ecef; border-right: 1px solid #000;">Email</td>
+                                <td style="padding: 4px 6px;"><span t-field="doc.assigned_id.email"/></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #000;">
+                                <td style="font-weight: bold; padding: 4px 6px; background-color: #e9ecef; border-right: 1px solid #000;">Project</td>
+                                <td style="padding: 4px 6px; border-right: 1px solid #000;"><span t-field="doc.project_name"/></td>
+                                <td style="font-weight: bold; padding: 4px 6px; background-color: #e9ecef; border-right: 1px solid #000;">HH-Shaker VAT No</td>
+                                <td style="padding: 4px 6px;">3011426757000003</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; padding: 4px 6px; background-color: #e9ecef; border-right: 1px solid #000;">Location</td>
+                                <td style="padding: 4px 6px; border-right: 1px solid #000;"><span t-field="doc.partner_id.city"/></td>
+                                <td style="padding: 4px 6px; border-right: 1px solid #000;"></td>
+                                <td style="padding: 4px 6px;"></td>
+                            </tr>
+                        </table>
+
+                        <div style="font-size: 11px; margin-bottom: 10px; line-height: 1.4;">
+                            Dear Customer,<br/>
+                            Regarding above subject and according to your kind enquiry, we have the pleasure to submit to you our offer for the supply of <strong>Midea Air-conditioner</strong> units as below:
+                        </div>
+
+                        <!-- Material List Table (From Screen) -->
+                        <table style="width: 100%; border: 1px solid #000; border-collapse: collapse; font-size: 10px; margin-bottom: 15px;">
+                            <thead>
+                                <tr style="background-color: #5C9CE6; color: #fff; font-weight: bold; text-align: center;">
+                                    <th style="border: 1px solid #000; padding: 6px; width: 6%;">TAG</th>
+                                    <th style="border: 1px solid #000; padding: 6px; width: 28%; text-align: left;">Item</th>
+                                    <th style="border: 1px solid #000; padding: 6px; width: 10%;">Discount %</th>
+                                    <th style="border: 1px solid #000; padding: 6px; width: 15%;">Capacity kW [MBH/Ton]</th>
+                                    <th style="border: 1px solid #000; padding: 6px; width: 17%;">Model Number</th>
+                                    <th style="border: 1px solid #000; padding: 6px; width: 6%;">QTY</th>
+                                    <th style="border: 1px solid #000; padding: 6px; width: 9%; text-align: right;">Unit Price</th>
+                                    <th style="border: 1px solid #000; padding: 6px; width: 9%; text-align: right;">Total Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="line_no" t-value="1"/>
+                                <t t-foreach="doc.line_ids" t-as="line">
+                                    <t t-if="line.display_type == 'line_section'">
+                                        <tr style="background-color: #e9ecef; font-weight: bold;">
+                                            <td colspan="8" style="border: 1px solid #000; padding: 6px; text-align: left; font-size: 11px;">
+                                                <span t-field="line.name"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-elif="line.display_type == 'line_note'">
+                                        <tr style="font-style: italic; background-color: #f8f9fa;">
+                                            <td colspan="8" style="border: 1px solid #000; padding: 6px; text-align: left; font-size: 10px;">
+                                                <span t-field="line.name"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-else="">
+                                        <tr>
+                                            <td style="border: 1px solid #000; padding: 5px; text-align: center;"><t t-esc="line_no"/></td>
+                                            <td style="border: 1px solid #000; padding: 5px;"><span t-field="line.product_id.name"/></td>
+                                            <td style="border: 1px solid #000; padding: 5px; text-align: center;"><t t-esc="'%.2f' % line.discount_percent"/>%</td>
+                                            <td style="border: 1px solid #000; padding: 5px; text-align: center;"></td>
+                                            <td style="border: 1px solid #000; padding: 5px; text-align: center;"><span t-field="line.product_id.default_code"/></td>
+                                            <td style="border: 1px solid #000; padding: 5px; text-align: center;"><span t-field="line.qty"/></td>
+                                            <td style="border: 1px solid #000; padding: 5px; text-align: right;"><span t-field="line.sale_price" t-options='{"widget": "monetary", "display_currency": doc.env.company.currency_id}'/></td>
+                                            <td style="border: 1px solid #000; padding: 5px; text-align: right;"><span t-field="line.amount" t-options='{"widget": "monetary", "display_currency": doc.env.company.currency_id}'/></td>
+                                            <t t-set="line_no" t-value="line_no + 1"/>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <t t-set="gross_val" t-value="sum(l.qty * l.sale_price for l in doc.line_ids.filtered(lambda l: not l.display_type))"/>
+
+                                <t t-set="disc_val" t-value="gross_val - doc.total_selling_price"/>
+                                <tr style="background-color: #5C9CE6; color: #000; font-weight: bold;">
+                                    <td style="border: 1px solid #000; padding: 5px; text-align: center;">A</td>
+                                    <td colspan="6" style="border: 1px solid #000; padding: 5px; font-weight: bold;">Total Amount</td>
+                                    <td style="border: 1px solid #000; padding: 5px; text-align: right;"><t t-esc="gross_val" t-options='{"widget": "monetary", "display_currency": doc.env.company.currency_id}'/></td>
+                                </tr>
+                                <tr style="background-color: #5C9CE6; color: #000; font-weight: bold;">
+                                    <td style="border: 1px solid #000; padding: 5px; text-align: center;">B</td>
+                                    <td colspan="6" style="border: 1px solid #000; padding: 5px; font-weight: bold;">Discount</td>
+                                    <td style="border: 1px solid #000; padding: 5px; text-align: right;"><t t-esc="disc_val" t-options='{"widget": "monetary", "display_currency": doc.env.company.currency_id}'/></td>
+                                </tr>
+                                <tr style="background-color: #5C9CE6; color: #000; font-weight: bold;">
+                                    <td style="border: 1px solid #000; padding: 5px; text-align: center;">C</td>
+                                    <td colspan="6" style="border: 1px solid #000; padding: 5px; font-weight: bold;">Total Amount After Discount</td>
+                                    <td style="border: 1px solid #000; padding: 5px; text-align: right;"><span t-field="doc.total_selling_price" t-options='{"widget": "monetary", "display_currency": doc.env.company.currency_id}'/></td>
+                                </tr>
+                                <tr style="background-color: #5C9CE6; color: #000; font-weight: bold;">
+                                    <td style="border: 1px solid #000; padding: 5px; text-align: center;">D</td>
+                                    <td colspan="6" style="border: 1px solid #000; padding: 5px; font-weight: bold;">15% VAT</td>
+                                    <td style="border: 1px solid #000; padding: 5px; text-align: right;"><span t-field="doc.total_vat" t-options='{"widget": "monetary", "display_currency": doc.env.company.currency_id}'/></td>
+                                </tr>
+                                <tr style="background-color: #5C9CE6; color: #000; font-weight: bold;">
+                                    <td style="border: 1px solid #000; padding: 5px; text-align: center;">E</td>
+                                    <td colspan="6" style="border: 1px solid #000; padding: 5px; font-weight: bold;">Total Amount Including VAT</td>
+                                    <td style="border: 1px solid #000; padding: 5px; text-align: right;"><span t-field="doc.total_amount" t-options='{"widget": "monetary", "display_currency": doc.env.company.currency_id}'/></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <!-- Extracted Footer Image Banner (Pinned to VERY BOTTOM) -->
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0;">
+                            <div style="position: relative;">
+                                <img src="/crm_commercial/static/src/img/shaker_pdf_footer.jpeg" style="width: 100%; height: auto; display: block;"/>
+                                <div style="position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 10px; color: #333; font-weight: bold;">
+                                    Page 2 of <t t-esc="total_pages"/>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <!-- PAGE 3: TERMS AND CONDITIONS (SETTINGS + PAYMENT TERMS + WARRANTY TERMS TABS) -->
+                    <div class="page" style="page-break-after: always; position: relative; height: 1060px; min-height: 1060px; padding: 0; margin: 0; font-size: 11px; line-height: 1.5;">
+                        
+                        <!-- Extracted Header Image Banner (Positioned UP at top edge) -->
+                        <div style="margin-top: 0; padding-top: 0; margin-bottom: 8px;">
+                            <img src="/crm_commercial/static/src/img/shaker_pdf_header.jpeg" style="width: 100%; height: auto; display: block;"/>
+                        </div>
+
+                        <h4 style="font-weight: bold; text-decoration: underline; margin-top: 6px; margin-bottom: 15px;">TERMS AND CONDITIONS:</h4>
+
+                        <!-- 1. Settings Tab Content (General Terms & Conditions notes) -->
+                        <div t-if="doc.settings_tab" class="mb-3">
+                            <t t-raw="doc.settings_tab"/>
+                        </div>
+
+                        <!-- 2. Payment Terms Tab Content (Dynamic based on product categories in grid) -->
+                        <div t-if="doc.payment_terms_tab" class="mb-3">
+                            <t t-raw="doc.payment_terms_tab"/>
+                        </div>
+
+                        <!-- 3. Warranty Terms Tab Content (Dynamic based on product categories in grid) -->
+                        <div t-if="doc.warranty_terms_tab" class="mb-3">
+                            <t t-raw="doc.warranty_terms_tab"/>
+                        </div>
+
+                        <!-- Closing Statement -->
+                        <div style="margin-top: 25px;">
+                            <p><strong>Note:</strong> Due to the changes that may occur from the factory, the models mentioned above might be changed by another model with the same specs and prices.</p>
+                            <p>We hope our proposal meets your satisfaction, should you require any further support, please do not hesitate to contact us.</p>
+                            <br/>
+                            <p>Best Regards,<br/>
+                            <strong t-field="doc.assigned_id.name"/><br/>
+                            <span t-field="doc.assigned_id.email"/></p>
+                        </div>
+
+                        <!-- Extracted Footer Image Banner (Pinned to VERY BOTTOM) -->
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0;">
+                            <div style="position: relative;">
+                                <img src="/crm_commercial/static/src/img/shaker_pdf_footer.jpeg" style="width: 100%; height: auto; display: block;"/>
+                                <div style="position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 10px; color: #333; font-weight: bold;">
+                                    Page 3 of <t t-esc="total_pages"/>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <!-- PAGES 4+: SALIENT FEATURES TAB (FEATURES & HIGHLIGHTS BASED ON CATEGORIES IN GRID) -->
+                    <t t-set="curr_p" t-value="4"/>
+                    <t t-foreach="cat_details" t-as="cdetail">
+                        <t t-if="cdetail['salient_features']">
+                            <div class="page" style="page-break-after: always; position: relative; height: 1060px; min-height: 1060px; padding: 0; margin: 0;">
+                                
+                                <!-- Extracted Header Image Banner (Positioned UP at top edge) -->
+                                <div style="margin-top: 0; padding-top: 0; margin-bottom: 8px;">
+                                    <img src="/crm_commercial/static/src/img/shaker_pdf_header.jpeg" style="width: 100%; height: auto; display: block;"/>
+                                </div>
+
+                                <h3 style="color: #0b3c5d; font-weight: bold; margin-top: 6px; margin-bottom: 5px;">
+                                    <span t-esc="cdetail['name']"/> – Features &amp; Highlights
+                                </h3>
+                                <hr style="border-top: 2px solid #0b3c5d; margin-bottom: 15px;"/>
+
+                                <p style="font-size: 11px; color: #333; margin-bottom: 15px;">
+                                    We are pleased to submit our proposal of the <strong><t t-esc="cdetail['name']"/></strong> system, designed to meet the highest performance, durability, and integration standards for demanding building environments.
+                                </p>
+
+                                <div style="font-size: 11px; line-height: 1.6;">
+                                    <t t-raw="cdetail['salient_features']"/>
+                                </div>
+
+                                <!-- Extracted Footer Image Banner (Pinned to VERY BOTTOM) -->
+                                <div style="position: absolute; bottom: 0; left: 0; right: 0;">
+                                    <div style="position: relative;">
+                                        <img src="/crm_commercial/static/src/img/shaker_pdf_footer.jpeg" style="width: 100%; height: auto; display: block;"/>
+                                        <div style="position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 10px; color: #333; font-weight: bold;">
+                                            Page <t t-esc="curr_p"/> of <t t-esc="total_pages"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <t t-set="curr_p" t-value="curr_p + 1"/>
+                        </t>
+                    </t>
+
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

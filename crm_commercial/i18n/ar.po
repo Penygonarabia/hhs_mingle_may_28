@@ -1,0 +1,623 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* crm_commercial
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-04 12:00+0000\n"
+"PO-Revision-Date: 2026-09-04 12:00+0000\n"
+"Last-Translator: CIELO ERP\n"
+"Language-Team: Arabic\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+
+#. module: crm_commercial
+#: model:ir.module.module,shortdesc:crm_commercial.module_crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_root
+msgid "CRM Commercial"
+msgstr "إدارة علاقات العملاء التجارية"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_transactions
+msgid "Transactions"
+msgstr "المعاملات"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_reports
+msgid "Reports"
+msgstr "التقارير"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_config
+msgid "Configuration"
+msgstr "التهيئة"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_masters
+msgid "CRM Commercial Masters"
+msgstr "البيانات الرئيسية لإدارة علاقات العملاء"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_customer_type
+#: model:ir.model,name:crm_commercial.model_crm_commercial_customer_type
+msgid "Customer Types"
+msgstr "أنواع العملاء"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_project_category
+#: model:ir.model,name:crm_commercial.model_crm_commercial_project_category
+msgid "Project Categories"
+msgstr "فئات المشاريع"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_quotation_type
+#: model:ir.model,name:crm_commercial.model_crm_commercial_quotation_type
+msgid "Quotation Types"
+msgstr "أنواع عروض الأسعار"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_sale_type
+#: model:ir.model,name:crm_commercial.model_crm_commercial_sale_type
+msgid "Sale Types"
+msgstr "أنواع المبيعات"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_project_status
+#: model:ir.model,name:crm_commercial.model_crm_commercial_project_status
+msgid "Project Statuses"
+msgstr "حالات المشاريع"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_project_detail_status
+#: model:ir.model,name:crm_commercial.model_crm_commercial_project_detail_status
+msgid "Project Detail Statuses"
+msgstr "الحالات التفصيلية للمشاريع"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_consultant
+#: model:ir.model,name:crm_commercial.model_crm_commercial_consultant
+msgid "Consultants"
+msgstr "الاستشاريون"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_linked_product
+#: model:ir.model,name:crm_commercial.model_crm_commercial_linked_product
+msgid "Linked Products"
+msgstr "المنتجات المرتبطة"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_item_approval
+msgid "Item Approvals"
+msgstr "اعتمادات الأصناف"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_locked_users
+#: model:ir.actions.act_window,name:crm_commercial.action_crm_commercial_locked_users
+msgid "Locked Salesmen"
+msgstr "المندوبون المقفلون"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_settings
+msgid "Settings"
+msgstr "الإعدادات"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_lead
+#: model:ir.actions.act_window,name:crm_commercial.action_crm_commercial_lead
+msgid "Leads"
+msgstr "الفرص البيعية"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_quotation
+#: model:ir.actions.act_window,name:crm_commercial.action_crm_commercial_quotation
+msgid "Quotations"
+msgstr "عروض الأسعار"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_sale_order
+#: model:ir.actions.act_window,name:crm_commercial.action_crm_commercial_sale_order
+#: model:ir.model,name:crm_commercial.model_crm_commercial_sale_order
+msgid "Sale Orders"
+msgstr "أوامر البيع"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_sales_analysis
+#: model:ir.actions.act_window,name:crm_commercial.action_crm_commercial_sales_analysis
+msgid "Sales Order Analysis"
+msgstr "تحليل أوامر البيع"
+
+#. module: crm_commercial
+#: model:ir.ui.menu,name:crm_commercial.menu_crm_commercial_balance_report
+#: model:ir.actions.act_window,name:crm_commercial.action_crm_commercial_balance_report
+msgid "Balance Report (Pivot)"
+msgstr "تقرير الرصيد (المحوري)"
+
+#. module: crm_commercial
+#: model:ir.model,name:crm_commercial.model_crm_commercial_lead
+msgid "Commercial Lead"
+msgstr "فرصة تجارية"
+
+#. module: crm_commercial
+#: model:ir.model,name:crm_commercial.model_crm_commercial_quotation
+msgid "Commercial Quotation"
+msgstr "عرض سعر تجاري"
+
+#. module: crm_commercial
+#: model:ir.model,name:crm_commercial.model_crm_commercial_quotation_line
+msgid "Commercial Quotation Line"
+msgstr "بند عرض السعر التجاري"
+
+#. module: crm_commercial
+#: model:ir.model,name:crm_commercial.model_crm_commercial_delivery_schedule
+msgid "Commercial Delivery Schedule"
+msgstr "جدول التسليم التجاري"
+
+#. module: crm_commercial
+#: model:ir.model,name:crm_commercial.model_crm_commercial_expiry_extension_wizard
+msgid "Quotation Expiry Extension"
+msgstr "تمديد تاريخ انتهاء عرض السعر"
+
+#. module: crm_commercial
+#: model:ir.model,name:crm_commercial.model_crm_commercial_cron
+msgid "CRM Commercial Cron Automation"
+msgstr "المهام المجدولة لإدارة علاقات العملاء"
+
+#. module: crm_commercial
+msgid "Commercial Sale Orders"
+msgstr "أوامر البيع التجارية"
+
+#. module: crm_commercial
+msgid "Commercial Sale Order"
+msgstr "أمر بيع تجاري"
+
+#. module: crm_commercial
+msgid "Commercial Quotation"
+msgstr "عرض سعر تجاري"
+
+#. module: crm_commercial
+msgid "Commercial Lead"
+msgstr "فرصة تجارية"
+
+#. module: crm_commercial
+msgid "Order Items"
+msgstr "بنود الطلب"
+
+#. module: crm_commercial
+msgid "Delivery Schedule"
+msgstr "جدول التسليم"
+
+#. module: crm_commercial
+msgid "Audit Log"
+msgstr "سجل التدقيق"
+
+#. module: crm_commercial
+msgid "Costing & Totals Summary"
+msgstr "ملخص التكلفة والإجماليات"
+
+#. module: crm_commercial
+msgid "Customer Address"
+msgstr "عنوان العميل"
+
+#. module: crm_commercial
+msgid "Order Header"
+msgstr "ترويسة الطلب"
+
+#. module: crm_commercial
+msgid "Basic Configuration"
+msgstr "التهيئة الأساسية"
+
+#. module: crm_commercial
+msgid "Permissions & Access Controls"
+msgstr "الصلاحيات والتحكم بالوصول"
+
+#. module: crm_commercial
+msgid "System & Approvals"
+msgstr "النظام والاعتمادات"
+
+#. module: crm_commercial
+msgid "Quotation Editing Rights"
+msgstr "صلاحيات تعديل عروض الأسعار"
+
+#. module: crm_commercial
+msgid "Header Information"
+msgstr "معلومات الترويسة"
+
+#. module: crm_commercial
+msgid "Salient Features"
+msgstr "الميزات البارزة"
+
+#. module: crm_commercial
+msgid "Payment Terms"
+msgstr "شروط الدفع"
+
+#. module: crm_commercial
+msgid "Warranty Terms"
+msgstr "شروط الضمان"
+
+#. module: crm_commercial
+msgid "Unlock User Account"
+msgstr "إلغاء قفل حساب المستخدم"
+
+#. module: crm_commercial
+msgid "Extend Expiry Date"
+msgstr "تمديد تاريخ الانتهاء"
+
+#. module: crm_commercial
+msgid "Confirm Order"
+msgstr "تأكيد الطلب"
+
+#. module: crm_commercial
+msgid "Copy Quotation"
+msgstr "نسخ عرض السعر"
+
+#. module: crm_commercial
+msgid "Create Revision"
+msgstr "إنشاء مراجعة"
+
+#. module: crm_commercial
+msgid "Recalculate Prices"
+msgstr "إعادة احتساب الأسعار"
+
+#. module: crm_commercial
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_delivery_schedule__status__yet_to_deliver
+msgid "Yet To Deliver"
+msgstr "قيد التوصيل"
+
+#. module: crm_commercial
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_delivery_schedule__status__delivered
+msgid "Delivered"
+msgstr "تم التوصيل"
+
+#. module: crm_commercial
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_sale_order__state__confirmed
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_quotation__state__confirmed
+msgid "Confirmed"
+msgstr "مؤكد"
+
+#. module: crm_commercial
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_sale_order__state__partially_delivered
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_quotation__state__partially_delivered
+msgid "Partially Delivered"
+msgstr "تم التوصيل جزئياً"
+
+#. module: crm_commercial
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_sale_order__state__delivered
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_quotation__state__delivered
+msgid "Delivered"
+msgstr "تم التوصيل"
+
+#. module: crm_commercial
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_sale_order__state__draft
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_quotation__state__draft
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_lead__state__draft
+msgid "Draft"
+msgstr "مسودة"
+
+#. module: crm_commercial
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_sale_order__state__cancelled
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_quotation__state__cancelled
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_lead__state__cancelled
+msgid "Cancelled"
+msgstr "ملغي"
+
+#. module: crm_commercial
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_quotation__state__approved
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_lead__state__approved
+msgid "Approved"
+msgstr "معتمد"
+
+#. module: crm_commercial
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_quotation__state__waiting_approval
+msgid "Waiting Approval"
+msgstr "في انتظار الاعتماد"
+
+#. module: crm_commercial
+#: model:ir.model.fields.selection,name:crm_commercial.selection__crm_commercial_quotation__state__rejected
+msgid "Rejected"
+msgstr "مرفوض"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_delivery_schedule__order_line_id
+msgid "Order Item"
+msgstr "بند الطلب"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_delivery_schedule__product_id
+msgid "Product"
+msgstr "المنتج"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_delivery_schedule__scheduled_date
+msgid "Scheduled Date"
+msgstr "تاريخ التسليم المجدول"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_delivery_schedule__qty_to_deliver
+msgid "Qty to Deliver"
+msgstr "الكمية المطلوب تسليمها"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_delivery_schedule__delivered_qty
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order_line__delivered_qty
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation_line__delivered_qty
+msgid "Delivered Qty"
+msgstr "الكمية المسلمة"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_delivery_schedule__pending_qty
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order_line__pending_qty
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation_line__pending_qty
+msgid "Pending Qty"
+msgstr "الكمية المتبقية"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_delivery_schedule__status
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__state
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation__state
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_lead__state
+msgid "Status"
+msgstr "الحالة"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__name
+msgid "Order Number"
+msgstr "رقم أمر البيع"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__quotation_id
+msgid "Quotation Reference"
+msgstr "مرجع عرض السعر"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__quotation_no
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation__name
+msgid "Quotation No"
+msgstr "رقم عرض السعر"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__partner_id
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation__partner_id
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_lead__partner_id
+msgid "Customer"
+msgstr "العميل"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__project_name
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation__project_name
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_lead__name
+msgid "Project Name"
+msgstr "اسم المشروع"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__assigned_id
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation__assigned_id
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_lead__assigned_id
+msgid "Salesman"
+msgstr "مندوب المبيعات"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__date_order
+msgid "Order Date"
+msgstr "تاريخ الطلب"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__expiry_date
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation__expiry_date
+msgid "Expiry Date"
+msgstr "تاريخ الانتهاء"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__expected_gross_margin
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation__expected_gross_margin
+msgid "Expected Gross Margin"
+msgstr "هامش الربح الإجمالي المتوقع"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__actual_gross_margin
+msgid "Actual Gross Margin"
+msgstr "هامش الربح الإجمالي الفعلي"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__total_selling_price
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation__total_selling_price
+msgid "Total Selling Price"
+msgstr "إجمالي سعر البيع"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__total_cost
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation__total_cost
+msgid "Total Cost"
+msgstr "إجمالي التكلفة"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__total_supplier_support
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation__total_supplier_support
+msgid "Total Supplier Support"
+msgstr "إجمالي دعم المورد"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__total_dsi
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation__total_dsi
+msgid "Total DSI"
+msgstr "إجمالي DSI"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__total_smc
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation__total_smc
+msgid "Total SMC"
+msgstr "إجمالي SMC"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__total_promo
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation__total_promo
+msgid "Total Promo"
+msgstr "إجمالي العرض الترويجي"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__net_price
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation__net_price
+msgid "Net Price"
+msgstr "السعر الصافي"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__total_vat
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation__total_vat
+msgid "Total VAT"
+msgstr "إجمالي ضريبة القيمة المضافة"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_sale_order__total_amount
+#: model:ir.model.fields,field_description:crm_commercial.field_crm_commercial_quotation__total_amount
+msgid "Total Amount"
+msgstr "المبلغ الإجمالي"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_users__is_crm_commercial_user
+msgid "CRM Commercial User"
+msgstr "مستخدم إدارة علاقات العملاء التجارية"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_users__reporting_manager_id
+msgid "Reporting Manager"
+msgstr "المدير المباشر"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_users__is_locked_by_cron
+msgid "Locked Due to Inactivity"
+msgstr "مقفل بسبب عدم النشاط"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_users__locked_date
+msgid "Lockout Date"
+msgstr "تاريخ القفل"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_users__lock_reason
+msgid "Lockout Reason"
+msgstr "سبب القفل"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_users__allow_cost_rights
+msgid "Allow Cost Rights"
+msgstr "صلاحية رؤية التكلفة"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_users__lead_auto_approval
+msgid "Lead Auto Approval"
+msgstr "اعتماد الفرص آلياً"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_users__quotation_auto_approval
+msgid "Quotation Auto Approval"
+msgstr "اعتماد عروض الأسعار آلياً"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_users__allow_export_quotation
+msgid "Allow Export Quotation"
+msgstr "صلاحية تصدير عرض السعر"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_users__allow_edit_quotation
+msgid "Allow Edit Quotation"
+msgstr "صلاحية تعديل عرض السعر"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_users__allow_edit_quotation_desc
+msgid "Allow Edit Description"
+msgstr "صلاحية تعديل الوصف"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_users__allow_edit_terms_features
+msgid "Allow Edit Terms & Features"
+msgstr "صلاحية تعديل الشروط والميزات"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_users__allow_edit_default_discount
+msgid "Allow Edit Default Discount"
+msgstr "صلاحية تعديل الخصم الافتراضي"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_users__allow_edit_sale_price
+msgid "Allow Edit Sale Price"
+msgstr "صلاحية تعديل سعر البيع"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_users__discount_limit_percent
+msgid "Discount Limit (%)"
+msgstr "حد الخصم المسموح (%)"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_config_settings__crm_commercial_inactivity_reminder_weeks
+msgid "Lead Inactivity Reminder (Weeks)"
+msgstr "تذكير ركود الفرص البيعية (بالأسابيع)"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_config_settings__crm_commercial_inactivity_lock_weeks
+msgid "User Inactivity Lockout (Weeks)"
+msgstr "قفل المستخدم لعدم النشاط (بالأسابيع)"
+
+#. module: crm_commercial
+#: model:ir.model.fields,field_description:crm_commercial.field_res_config_settings__crm_commercial_order_expiry_alert_weeks
+msgid "Order Expiry Alert Horizon (Weeks)"
+msgstr "مهلة التنبيه بانتهاء أوامر البيع (بالأسابيع)"
+
+#. module: crm_commercial
+msgid "No salesmen are currently locked due to inactivity."
+msgstr "لا يوجد مندوبو مبيعات مقفلون حالياً بسبب عدم النشاط."
+
+#. module: crm_commercial
+msgid "No pipeline status update recorded for %s weeks."
+msgstr "لم يتم تسجيل أي تحديث لحالة الفرص البيعية منذ %s أسابيع."
+
+#. module: crm_commercial
+msgid "Commercial CRM Weekly Action Digest / الملخص الأسبوعي للفرص وانتهاء الطلبات"
+msgstr "الملخص الأسبوعي للفرص وانتهاء الطلبات - إدارة علاقات العملاء التجارية"
+
+#. module: crm_commercial
+msgid "Timestamp"
+msgstr "الوقت والتاريخ"
+
+#. module: crm_commercial
+msgid "Notes"
+msgstr "ملاحظات"
+
+#. module: crm_commercial
+msgid "Title"
+msgstr "العنوان"
+
+#. module: crm_commercial
+msgid "Ordered Qty"
+msgstr "الكمية المطلوبة"
+
+#. module: crm_commercial
+msgid "Unit Cost"
+msgstr "تكلفة الوحدة"
+
+#. module: crm_commercial
+msgid "Sale Price"
+msgstr "سعر البيع"
+
+#. module: crm_commercial
+msgid "Discount %"
+msgstr "نسبة الخصم %"
+
+#. module: crm_commercial
+msgid "Part No / Product"
+msgstr "رقم الصنف / المنتج"
+
+#. module: crm_commercial
+msgid "Description"
+msgstr "الوصف"
+
+#. module: crm_commercial
+msgid "Group"
+msgstr "المجموعة"
+
+#. module: crm_commercial
+msgid "Category"
+msgstr "الفئة"

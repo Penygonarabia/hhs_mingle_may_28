@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="view_crm_commercial_expiry_extension_wizard_form" model="ir.ui.view">
+            <field name="name">crm.commercial.expiry.extension.wizard.form</field>
+            <field name="model">crm.commercial.expiry.extension.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Extend Order Expiry Date">
+                    <group>
+                        <field name="order_id" readonly="1"/>
+                        <field name="current_expiry_date"/>
+                        <field name="new_expiry_date"/>
+                    </group>
+                    <group string="Reason">
+                        <field name="reason" placeholder="Enter reason for extending order expiry date..."/>
+                    </group>
+                    <footer>
+                        <button name="action_apply_extension" string="Confirm Extension" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_crm_commercial_expiry_extension_wizard" model="ir.actions.act_window">
+            <field name="name">Extend Order Expiry Date</field>
+            <field name="res_model">crm.commercial.expiry.extension.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+</odoo>

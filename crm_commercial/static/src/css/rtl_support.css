@@ -1,0 +1,209 @@
+/* ==========================================================================
+   RTL Stylesheet for Arabic Support in Odoo Web Client
+   ========================================================================== */
+
+html[dir="rtl"],
+html[dir="rtl"] body,
+body.o_rtl,
+body[dir="rtl"] {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+/* --- Top Main Navbar (Menu) Right-to-Left --- */
+body.o_rtl .o_main_navbar,
+html[dir="rtl"] .o_main_navbar {
+    direction: rtl !important;
+    flex-direction: row !important;
+}
+
+body.o_rtl .o_main_navbar .o_navbar_apps_menu,
+html[dir="rtl"] .o_main_navbar .o_navbar_apps_menu {
+    order: 0 !important;
+    padding-right: 0.75rem !important;
+    padding-left: 0.25rem !important;
+}
+
+body.o_rtl .o_main_navbar .o_menu_brand,
+html[dir="rtl"] .o_main_navbar .o_menu_brand {
+    order: 1 !important;
+    padding-right: 0.5rem !important;
+    padding-left: 1.5rem !important;
+    margin-right: 0 !important;
+    margin-left: 1rem !important;
+}
+
+body.o_rtl .o_main_navbar .o_menu_sections,
+html[dir="rtl"] .o_main_navbar .o_menu_sections {
+    order: 2 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+}
+
+body.o_rtl .o_main_navbar .o_menu_systray,
+html[dir="rtl"] .o_main_navbar .o_menu_systray {
+    order: 99 !important;
+    margin-right: auto !important;
+    margin-left: 0 !important;
+    padding-left: 0.75rem !important;
+    display: flex !important;
+    flex-direction: row !important;
+}
+
+body.o_rtl .o_main_navbar .dropdown-menu,
+html[dir="rtl"] .o_main_navbar .dropdown-menu {
+    text-align: right !important;
+    right: 0 !important;
+    left: auto !important;
+}
+
+/* --- Control Panel (Breadcrumbs, Buttons, Search) --- */
+body.o_rtl .o_control_panel,
+html[dir="rtl"] .o_control_panel {
+    direction: rtl !important;
+}
+
+body.o_rtl .o_control_panel .o_cp_top_left,
+body.o_rtl .o_control_panel .o_cp_bottom_left,
+html[dir="rtl"] .o_control_panel .o_cp_top_left,
+html[dir="rtl"] .o_control_panel .o_cp_bottom_left {
+    margin-left: auto !important;
+    margin-right: 0 !important;
+}
+
+body.o_rtl .o_control_panel .o_cp_top_right,
+body.o_rtl .o_control_panel .o_cp_bottom_right,
+html[dir="rtl"] .o_control_panel .o_cp_top_right,
+html[dir="rtl"] .o_control_panel .o_cp_bottom_right {
+    margin-right: auto !important;
+    margin-left: 0 !important;
+}
+
+body.o_rtl .o_breadcrumb .breadcrumb-item + .breadcrumb-item::before,
+html[dir="rtl"] .o_breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+    float: right !important;
+    padding-left: var(--breadcrumb-item-padding-x, 0.5rem) !important;
+    padding-right: 0 !important;
+    content: "\\" !important;
+}
+
+/* --- Form View Layout --- */
+body.o_rtl .o_form_view,
+html[dir="rtl"] .o_form_view {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+body.o_rtl .o_form_view .o_form_statusbar,
+html[dir="rtl"] .o_form_view .o_form_statusbar {
+    direction: rtl !important;
+}
+
+body.o_rtl .o_form_view .o_statusbar_buttons,
+html[dir="rtl"] .o_form_view .o_statusbar_buttons {
+    margin-left: auto !important;
+    margin-right: 0 !important;
+}
+
+body.o_rtl .o_form_view .o_statusbar_status,
+html[dir="rtl"] .o_form_view .o_statusbar_status {
+    margin-right: auto !important;
+    margin-left: 0 !important;
+    flex-direction: row-reverse !important;
+}
+
+body.o_rtl .o_form_view .oe_button_box,
+html[dir="rtl"] .o_form_view .oe_button_box {
+    margin-right: auto !important;
+    margin-left: 0 !important;
+    text-align: left !important;
+}
+
+body.o_rtl .o_form_view .oe_title,
+html[dir="rtl"] .o_form_view .oe_title {
+    text-align: right !important;
+}
+
+body.o_rtl .o_form_view .o_group .o_td_label,
+html[dir="rtl"] .o_form_view .o_group .o_td_label {
+    text-align: right !important;
+    border-right: none !important;
+}
+
+body.o_rtl .o_form_view .o_inner_group,
+html[dir="rtl"] .o_form_view .o_inner_group {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+body.o_rtl .o_horizontal_separator,
+html[dir="rtl"] .o_horizontal_separator {
+    text-align: right !important;
+}
+
+/* --- Notebook Tabs --- */
+body.o_rtl .nav-tabs,
+html[dir="rtl"] .nav-tabs {
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+}
+
+body.o_rtl .nav-tabs .nav-link,
+html[dir="rtl"] .nav-tabs .nav-link {
+    margin-left: 0.25rem !important;
+    margin-right: 0 !important;
+}
+
+/* --- List / Tree View Table --- */
+body.o_rtl .o_list_renderer table,
+html[dir="rtl"] .o_list_renderer table {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+body.o_rtl .o_list_renderer th, 
+body.o_rtl .o_list_renderer td,
+html[dir="rtl"] .o_list_renderer th,
+html[dir="rtl"] .o_list_renderer td {
+    text-align: right !important;
+}
+
+body.o_rtl .o_list_renderer th.o_list_number_th,
+body.o_rtl .o_list_renderer td.o_list_number,
+body.o_rtl .o_field_monetary,
+html[dir="rtl"] .o_list_renderer th.o_list_number_th,
+html[dir="rtl"] .o_list_renderer td.o_list_number,
+html[dir="rtl"] .o_field_monetary {
+    text-align: left !important;
+    direction: ltr !important;
+}
+
+/* --- Dropdowns & Modals --- */
+body.o_rtl .dropdown-menu,
+html[dir="rtl"] .dropdown-menu {
+    text-align: right !important;
+}
+
+body.o_rtl .dropdown-item,
+html[dir="rtl"] .dropdown-item {
+    text-align: right !important;
+}
+
+body.o_rtl .modal-header .btn-close,
+html[dir="rtl"] .modal-header .btn-close {
+    margin: -0.5rem auto -0.5rem -0.5rem !important;
+}
+
+body.o_rtl .modal-footer,
+html[dir="rtl"] .modal-footer {
+    justify-content: flex-start !important;
+}
+
+/* --- Chatter --- */
+body.o_rtl .oe_chatter,
+html[dir="rtl"] .oe_chatter {
+    direction: rtl !important;
+    text-align: right !important;
+}

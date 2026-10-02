@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="res_users_view_form_crm_commercial" model="ir.ui.view">
+            <field name="name">res.users.view.form.crm.commercial</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="base.view_users_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='security']" position="after">
+                    <page string="CRM Commercial" name="crm_commercial_page">
+                        <div class="alert alert-danger mb-3 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-2" role="alert" invisible="not is_locked_by_cron">
+                            <div>
+                                <i class="fa fa-exclamation-triangle fa-lg mr-2" title="Warning"/>
+                                <strong>Account Locked Due to Inactivity / تم قفل الحساب لعدم النشاط:</strong> <field name="lock_reason" class="d-inline"/>
+                            </div>
+                            <button name="action_unlock_user" string="Unlock User Account" type="object" class="btn btn-success font-weight-bold w-100 w-md-auto"/>
+                        </div>
+                        <group string="Basic Configuration">
+                            <group>
+                                <field name="is_crm_commercial_user"/>
+                                <field name="crm_commercial_region_id"/>
+                                <field name="crm_commercial_city_id"/>
+                            </group>
+                            <group>
+                                <field name="crm_commercial_default_warehouse_id"/>
+                                <field name="reporting_manager_id"/>
+                                <field name="discount_limit_percent"/>
+                                <field name="is_locked_by_cron" invisible="not is_locked_by_cron"/>
+                                <field name="locked_date" invisible="not is_locked_by_cron"/>
+                            </group>
+                        </group>
+                        <group string="Permissions &amp; Access Controls">
+                            <group string="System &amp; Approvals">
+                                <field name="allow_cost_rights"/>
+                                <field name="lead_auto_approval"/>
+                                <field name="quotation_auto_approval"/>
+                                <field name="allow_export_quotation"/>
+                            </group>
+                            <group string="Quotation Editing Rights">
+                                <field name="allow_edit_quotation"/>
+                                <field name="allow_edit_quotation_desc"/>
+                                <field name="allow_edit_terms_features"/>
+                                <field name="allow_edit_default_discount"/>
+                                <field name="allow_edit_sale_price"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="action_crm_commercial_locked_users" model="ir.actions.act_window">
+            <field name="name">Locked Salesmen</field>
+            <field name="res_model">res.users</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('is_locked_by_cron', '=', True), ('active', 'in', [True, False])]</field>
+            <field name="context">{'active_test': False}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No salesmen are currently locked due to inactivity.</p>
+            </field>
+        </record>
+</odoo>

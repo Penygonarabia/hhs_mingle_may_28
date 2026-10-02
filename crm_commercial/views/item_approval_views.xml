@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="view_crm_commercial_item_approval_tree" model="ir.ui.view">
+            <field name="name">crm.commercial.item.approval.tree</field>
+            <field name="model">product.product</field>
+            <field name="arch" type="xml">
+                <tree string="Non-Stock Item Approvals" create="false" delete="false">
+                    <field name="default_code"/>
+                    <field name="name"/>
+                    <field name="categ_id"/>
+                    <field name="standard_price" string="Cost"/>
+                    <field name="lst_price" string="Sales Price"/>
+                    <field name="non_stock_item"/>
+                    <field name="approval_state" widget="badge" decoration-warning="approval_state == 'draft'" decoration-success="approval_state == 'approved'" decoration-danger="approval_state == 'rejected'"/>
+                    <button name="action_approve_item" string="Approve" type="object" icon="fa-check" class="btn-success" invisible="approval_state != 'draft'"/>
+                    <button name="action_reject_item" string="Reject" type="object" icon="fa-times" class="btn-danger" invisible="approval_state != 'draft'"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_crm_commercial_item_approval" model="ir.actions.act_window">
+            <field name="name">Non-Stock Item Approvals</field>
+            <field name="res_model">product.product</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('non_stock_item', '=', True)]</field>
+            <field name="view_id" ref="view_crm_commercial_item_approval_tree"/>
+        </record>
+</odoo>

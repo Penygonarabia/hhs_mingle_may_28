@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_crm_commercial" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.crm.commercial</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="25"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="CRM Commercial Settings" string="CRM Commercial Settings" name="crm_commercial" logo="/crm_commercial/static/description/icon.png" groups="crm_commercial.group_crm_commercial_manager">
+                    <h2>Terms &amp; Conditions Settings</h2>
+                    <div class="text-muted">Configure header and footer notes for Terms &amp; Conditions across the system.</div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <label for="crm_commercial_terms_header_notes" string="Terms &amp; Conditions Header Notes"/>
+                            <field name="crm_commercial_terms_header_notes" widget="html" class="w-100" style="min-height: 250px; border: 1px solid #ccc;"/>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <label for="crm_commercial_quotation_intro_paragraph" string="Quotation Intro Paragraph (PDF)"/>
+                            <field name="crm_commercial_quotation_intro_paragraph" widget="html" class="w-100" style="min-height: 250px; border: 1px solid #ccc;"/>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <label for="crm_commercial_terms_footer_notes" string="Terms &amp; Conditions Footer Notes"/>
+                            <field name="crm_commercial_terms_footer_notes" widget="html" class="w-100" style="min-height: 250px; border: 1px solid #ccc;"/>
+                        </div>
+                    </div>
+
+                    <h2 class="mt-5">Product Category</h2>
+                    <div class="text-muted">
+                          Configure Product Category visibility for CRM Commercial documents.
+                    </div>
+
+                    <setting string="Show Product Category">
+                        <field name="show_crm_commerical_product_category"/>
+                    </setting>
+
+
+                    <setting string="Product Categories" invisible="not show_crm_commerical_product_category">
+                        <field name="crm_product_category_id" options="{'no_create': True}"/>
+                    </setting>
+
+                    <h2 class="mt-5">Pipeline &amp; Expiry Automated Alerts</h2>
+                    <div class="text-muted">Configure inactivity thresholds for salesman pipeline reminders, user lockouts, and order expiry notifications.</div>
+
+                    <div class="row mt-3">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="crm_commercial_inactivity_reminder_weeks" string="Lead Inactivity Reminder Threshold (Weeks)"/>
+                                <div class="text-muted">Send weekly reminder if a salesman has leads without status update for this many weeks.</div>
+                                <field name="crm_commercial_inactivity_reminder_weeks" style="width: 100px;"/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="crm_commercial_inactivity_lock_weeks" string="Salesman Inactivity Lockout Threshold N (Weeks)"/>
+                                <div class="text-muted">Lock salesman user account if there are no pipeline status updates for this many weeks.</div>
+                                <field name="crm_commercial_inactivity_lock_weeks" style="width: 100px;"/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box mt-3">
+                            <div class="o_setting_right_pane">
+                                <label for="crm_commercial_order_expiry_alert_weeks" string="Customer Order Expiry Horizon X (Weeks)"/>
+                                <div class="text-muted">Alert salesman of customer orders expiring within this many weeks.</div>
+                                <field name="crm_commercial_order_expiry_alert_weeks" style="width: 100px;"/>
+                            </div>
+                        </div>
+                    </div>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_crm_commercial_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_id" ref="base.res_config_settings_view_form"/>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'crm_commercial', 'bin_size': False}</field>
+    </record>
+</odoo>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="category_crm_commercial" model="ir.module.category">
+        <field name="name">CRM Commercial</field>
+        <field name="description">User access level management for CRM Commercial features.</field>
+        <field name="sequence">15</field>
+    </record>
+
+    <record id="group_crm_commercial_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="category_crm_commercial"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">CRM Commercial standard access permissions.</field>
+    </record>
+
+    <record id="group_crm_commercial_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="category_id" ref="category_crm_commercial"/>
+        <field name="implied_ids" eval="[(4, ref('group_crm_commercial_user'))]"/>
+        <field name="comment">CRM Commercial full management &amp; configuration access.</field>
+    </record>
+
+    <!-- Record Rules - these reference models so they go into a separate file loaded after models -->
+</odoo>

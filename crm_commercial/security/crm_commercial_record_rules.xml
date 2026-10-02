@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Record Rules: loaded after models are created -->
+    <record id="rule_crm_commercial_lead_user" model="ir.rule">
+        <field name="name">CRM Commercial Lead: Personal and Subordinate Leads</field>
+        <field name="model_id" ref="model_crm_commercial_lead"/>
+        <field name="domain_force">['|', ('assigned_id', '=', user.id), ('assigned_id.reporting_manager_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('crm_commercial.group_crm_commercial_user'))]"/>
+    </record>
+
+    <record id="rule_crm_commercial_lead_manager" model="ir.rule">
+        <field name="name">CRM Commercial Lead: Manager All Leads</field>
+        <field name="model_id" ref="model_crm_commercial_lead"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('crm_commercial.group_crm_commercial_manager'))]"/>
+    </record>
+
+    <record id="rule_crm_commercial_quotation_user" model="ir.rule">
+        <field name="name">CRM Commercial Quotation: Personal and Subordinate Quotations</field>
+        <field name="model_id" ref="model_crm_commercial_quotation"/>
+        <field name="domain_force">['|', ('assigned_id', '=', user.id), ('assigned_id.reporting_manager_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('crm_commercial.group_crm_commercial_user'))]"/>
+    </record>
+
+    <record id="rule_crm_commercial_quotation_manager" model="ir.rule">
+        <field name="name">CRM Commercial Quotation: Manager All Quotations</field>
+        <field name="model_id" ref="model_crm_commercial_quotation"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('crm_commercial.group_crm_commercial_manager'))]"/>
+    </record>
+
+    <record id="rule_crm_commercial_sale_order_user" model="ir.rule">
+        <field name="name">CRM Commercial Sale Order: Personal and Subordinate Orders</field>
+        <field name="model_id" ref="model_crm_commercial_sale_order"/>
+        <field name="domain_force">['|', ('assigned_id', '=', user.id), ('assigned_id.reporting_manager_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('crm_commercial.group_crm_commercial_user'))]"/>
+    </record>
+
+    <record id="rule_crm_commercial_sale_order_manager" model="ir.rule">
+        <field name="name">CRM Commercial Sale Order: Manager All Orders</field>
+        <field name="model_id" ref="model_crm_commercial_sale_order"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('crm_commercial.group_crm_commercial_manager'))]"/>
+    </record>
+</odoo>

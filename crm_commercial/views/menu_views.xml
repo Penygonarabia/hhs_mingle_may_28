@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <!-- Top Level Menu -->
+        <menuitem id="menu_crm_commercial_root"
+                  name="CRM Commercial"
+                  web_icon="crm,static/description/icon.png"
+                  groups="crm_commercial.group_crm_commercial_user"
+                  sequence="10"/>
+
+        <!-- Menu Categories -->
+        <menuitem id="menu_crm_commercial_transactions"
+                  name="Transactions"
+                  parent="menu_crm_commercial_root"
+                  sequence="10"/>
+
+        <menuitem id="menu_crm_commercial_reports"
+                  name="Reports"
+                  parent="menu_crm_commercial_root"
+                  sequence="20"/>
+
+        <menuitem id="menu_crm_commercial_config"
+                  name="Configuration"
+                  parent="menu_crm_commercial_root"
+                  groups="crm_commercial.group_crm_commercial_manager"
+                  sequence="30"/>
+
+        <!-- Configuration Masters Submenu -->
+        <menuitem id="menu_crm_commercial_masters"
+                  name="CRM Commercial Masters"
+                  parent="menu_crm_commercial_config"
+                  sequence="10"/>
+
+        <!-- Actions -->
+        <menuitem id="menu_crm_commercial_customer_type"
+                  name="Customer Types"
+                  parent="menu_crm_commercial_masters"
+                  action="action_crm_commercial_customer_type"
+                  sequence="10"/>
+
+        <menuitem id="menu_crm_commercial_project_category"
+                  name="Project Categories"
+                  parent="menu_crm_commercial_masters"
+                  action="action_crm_commercial_project_category"
+                  sequence="20"/>
+
+        <menuitem id="menu_crm_commercial_quotation_type"
+                  name="Quotation Types"
+                  parent="menu_crm_commercial_masters"
+                  action="action_crm_commercial_quotation_type"
+                  sequence="30"/>
+
+        <menuitem id="menu_crm_commercial_sale_type"
+                  name="Sale Types"
+                  parent="menu_crm_commercial_masters"
+                  action="action_crm_commercial_sale_type"
+                  sequence="40"/>
+
+        <menuitem id="menu_crm_commercial_project_status"
+                  name="Project Statuses"
+                  parent="menu_crm_commercial_masters"
+                  action="action_crm_commercial_project_status"
+                  sequence="50"/>
+
+        <menuitem id="menu_crm_commercial_project_detail_status"
+                  name="Project Detail Statuses"
+                  parent="menu_crm_commercial_masters"
+                  action="action_crm_commercial_project_detail_status"
+                  sequence="60"/>
+
+        <menuitem id="menu_crm_commercial_consultant"
+                  name="Consultants"
+                  parent="menu_crm_commercial_masters"
+                  action="action_crm_commercial_consultant"
+                  sequence="70"/>
+
+        <menuitem id="menu_crm_commercial_linked_product"
+                  name="Linked Products"
+                  parent="menu_crm_commercial_masters"
+                  action="action_crm_commercial_linked_product"
+                  sequence="80"/>
+
+        <menuitem id="menu_crm_commercial_item_approval"
+                  name="Item Approvals"
+                  parent="menu_crm_commercial_config"
+                  action="action_crm_commercial_item_approval"
+                  sequence="80"/>
+
+
+        <menuitem id="menu_crm_commercial_locked_users"
+                  name="Locked Salesmen"
+                  parent="menu_crm_commercial_config"
+                  action="action_crm_commercial_locked_users"
+                  sequence="85"/>
+
+        <menuitem id="menu_crm_commercial_settings"
+                  name="Settings"
+                  parent="menu_crm_commercial_config"
+                  action="action_crm_commercial_settings"
+                  sequence="90"/>
+
+        <!-- Transactions Submenu -->
+        <menuitem id="menu_crm_commercial_lead"
+                  name="Leads"
+                  parent="menu_crm_commercial_transactions"
+                  action="action_crm_commercial_lead"
+                  sequence="10"/>
+
+        <menuitem id="menu_crm_commercial_quotation"
+                  name="Quotations"
+                  parent="menu_crm_commercial_transactions"
+                  action="action_crm_commercial_quotation"
+                  sequence="20"/>
+
+        <menuitem id="menu_crm_commercial_sale_order"
+                  name="Sale Orders"
+                  parent="menu_crm_commercial_transactions"
+                  action="action_crm_commercial_sale_order"
+                  sequence="30"/>
+
+        <!-- Reports Submenu -->
+        <menuitem id="menu_crm_commercial_sales_analysis"
+                  name="Sales Order Analysis"
+                  parent="menu_crm_commercial_reports"
+                  action="action_crm_commercial_sales_analysis"
+                  sequence="10"/>
+
+        <menuitem id="menu_crm_commercial_balance_report"
+                  name="Balance Report (Pivot)"
+                  parent="menu_crm_commercial_reports"
+                  action="action_crm_commercial_balance_report"
+                  sequence="20"/>
+</odoo>

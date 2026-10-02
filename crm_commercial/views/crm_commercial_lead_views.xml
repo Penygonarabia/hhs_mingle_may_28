@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_crm_commercial_lead_tree" model="ir.ui.view">
+        <field name="name">crm.commercial.lead.tree</field>
+        <field name="model">crm.commercial.lead</field>
+        <field name="arch" type="xml">
+            <tree string="Commercial Leads">
+                <field name="lead_no"/>
+                <field name="warehouse_id"/>
+                <field name="name"/>
+                <field name="email"/>
+                <field name="phone"/>
+                <field name="lead_value" sum="Total Lead Value"/>
+                <field name="tag_ids" widget="many2many_tags"/>
+                <field name="assigned_id"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state in ('approved', 'converted')" decoration-danger="state == 'rejected'"/>
+                <field name="source_id"/>
+                <field name="creation_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_crm_commercial_lead_form" model="ir.ui.view">
+        <field name="name">crm.commercial.lead.form</field>
+        <field name="model">crm.commercial.lead</field>
+        <field name="arch" type="xml">
+            <form string="Commercial Lead">
+                <header>
+                    <button name="action_convert_to_quotation" string="Convert to Quotation" type="object" class="btn-primary" invisible="state not in ('draft', 'approved')"/>
+                    <button name="action_approve" string="Approve" type="object" class="btn-success" invisible="state != 'draft'"/>
+                    <button name="action_reject" string="Reject" type="object" class="btn-danger" invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,approved,converted"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="lead_no" readonly="1"/>
+                        </h1>
+                        <h2>
+                            <field name="name" placeholder="Project Name..." required='1'/>
+                        </h2>
+                    </div>
+                    <group string="Basic Information">
+                        <group>
+                            <field name="warehouse_id"/>
+                            <field name="project_category_id"/>
+                            <field name="crm_product_category_ids" widget="many2many_tags" invisible="1"/>
+                            <!-- # added by vengatesh sep 21  crm_product_category_ids-->
+                            <field name="show_product_group" invisible="1"/>
+                            <field name="product_group_id" string="Product Category" context="{'show_code_only': True}" invisible="not show_product_group"/>
+                            <field name="product_category_id" string="Product Group" domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id), ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]"/>
+                            <field name="capacity"/>
+                            <field name="lead_value"/>
+                            <field name="description" nolabel="0" colspan="2" placeholder="Enter detailed lead notes and scope of work..."/>
+                            <field name="customer_type_id" options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                            <field name="is_customer_type" invisible="1"/>
+                            <field name="partner_id" invisible="not is_customer_type"/>
+                            <field name="custom_partner" invisible="is_customer_type"/>
+                            <field name="position"/>
+                            <field name="phone"/>
+                            <field name="email"/>
+                            <field name="existing_partner_id" invisible="not existing_partner_id"/>
+                            <label for="street" string="Address"/>
+                            <div class="o_address_format">
+                                <field name="street" placeholder="Street..." class="o_address_street"/>
+                                <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+                                <field name="city_id" placeholder="City" class="o_address_city" domain="[('country_id', '=', country_id)]" options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                                <field name="city" invisible="1"/>
+                                <field name="state_id" class="o_address_state" placeholder="State" options="{&quot;no_open&quot;: True}" domain="[('country_id', '=', country_id)]"/>
+                                <field name="district" placeholder="District..." options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                                <field name="region_id" placeholder="Region..." options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                                <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                                <field name="country_id" placeholder="Country" class="o_address_country" options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+                            </div>
+                        </group>
+                        <group>
+                            <field name="creation_date" readonly="1"/>
+                            <field name="probability"/>
+                            <field name="expected_confirmation_date"/>
+                            <field name="website"/>
+                            <field name="tag_ids" widget="many2many_tags"/>
+                            <field name="source_id"/>
+                            <field name="assigned_id"/>
+                        </group>
+                    </group>
+                    <!-- <group string="Contact Details">
+                        <group>
+                            <field name="position"/>
+                        </group>
+                        <group>
+                            <field name="position"/>
+                        </group>
+                    </group> -->
+                    <!-- <group string="Address"> -->
+                    <!-- <group>
+                            <label for="street" string="Address"/>
+                            <div class="o_address_format">
+                                <field name="street" placeholder="Street..." class="o_address_street"/>
+                                <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+                                <field name="city_id" placeholder="City" class="o_address_city" domain="[('country_id', '=', country_id)]"/>
+                                <field name="city" invisible="1"/>
+                                <field name="state_id" class="o_address_state" placeholder="State" options="{&quot;no_open&quot;: True}" domain="[('country_id', '=', country_id)]"/>
+                                <field name="district" placeholder="District..."/>
+                                <field name="region_id" placeholder="Region..."/>
+                                <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                                <field name="country_id" placeholder="Country" class="o_address_country" options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+                            </div>
+                        </group> -->
+                    <!-- <group>
+                            <field name="street" placeholder="Street 1..."/>
+                            <field name="street2" placeholder="Street 2..."/>
+                            <field name="city_id" placeholder="City..." domain="[('country_id', '=', country_id)]"/>
+                            <field name="city" invisible="1"/>
+                            <field name="state_id" placeholder="State..." domain="[('country_id', '=', country_id)]"/>
+                            <field name="country_id" placeholder="Country..."/>
+                        </group> -->
+                    <!-- <group> -->
+                    <!-- <field name="district" placeholder="District..."/>
+                            <field name="region_id" placeholder="Region..."/>
+                            <field name="zip" placeholder="Zip..."/> -->
+                    <!-- </group> -->
+                    <!-- </group> -->
+                    <!-- <group string="Description">
+                        <field name="description" nolabel="1" colspan="2" placeholder="Enter detailed lead notes and scope of work..."/>
+                    </group> -->
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_crm_commercial_lead" model="ir.actions.act_window">
+        <field name="name">Commercial Leads</field>
+        <field name="res_model">crm.commercial.lead</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

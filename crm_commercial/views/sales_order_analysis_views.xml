@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <!-- Pivot View for Sales Order Analysis -->
+        <record id="view_crm_commercial_sales_analysis_pivot" model="ir.ui.view">
+            <field name="name">crm.commercial.sales.analysis.pivot</field>
+            <field name="model">crm.commercial.delivery.schedule</field>
+            <field name="arch" type="xml">
+                <pivot string="Sales Order Delivery Analysis" sample="1">
+                    <field name="scheduled_date" interval="month" type="col"/>
+                    <field name="product_id" type="row"/>
+                    <field name="order_id" type="row"/>
+                    <field name="qty_to_deliver" type="measure"/>
+                    <field name="delivered_qty" type="measure"/>
+                    <field name="pending_qty" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="view_crm_commercial_sales_analysis_graph" model="ir.ui.view">
+            <field name="name">crm.commercial.sales.analysis.graph</field>
+            <field name="model">crm.commercial.delivery.schedule</field>
+            <field name="arch" type="xml">
+                <graph string="Sales Order Delivery Analysis" type="bar">
+                    <field name="scheduled_date" interval="month"/>
+                    <field name="qty_to_deliver" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <!-- Search View for Sales Order Delivery Analysis -->
+        <record id="view_crm_commercial_sales_analysis_search" model="ir.ui.view">
+            <field name="name">crm.commercial.sales.analysis.search</field>
+            <field name="model">crm.commercial.delivery.schedule</field>
+            <field name="arch" type="xml">
+                <search string="Sales Order Delivery Analysis Search">
+                    <field name="order_id" string="Order"/>
+                    <field name="partner_id" string="Customer Name"/>
+                    <field name="customer_no" string="Customer No"/>
+                    <field name="product_id" string="Product"/>
+                    <field name="assigned_id" string="Salesman"/>
+                    <field name="warehouse_id" string="Warehouse"/>
+                    <field name="region_id" string="Region"/>
+                    <field name="city_id" string="City"/>
+                    <field name="quotation_type_id" string="Quotation Type"/>
+                    <field name="product_group_id" string="Group"/>
+                    <field name="product_category_id" string="Category"/>
+
+                    <filter string="Yet to Deliver" name="yet_to_deliver" domain="[('status', '=', 'yet_to_deliver')]"/>
+                    <filter string="Delivered" name="delivered" domain="[('status', '=', 'delivered')]"/>
+                    <separator/>
+                    <filter string="Scheduled Date" name="filter_scheduled_date" date="scheduled_date"/>
+
+                    <group expand="1" string="Group By">
+                        <filter string="Customer Name" name="group_by_customer" context="{'group_by': 'partner_id'}"/>
+                        <filter string="Customer No" name="group_by_customer_no" context="{'group_by': 'customer_no'}"/>
+                        <filter string="Quotation Type" name="group_by_quotation_type" context="{'group_by': 'quotation_type_id'}"/>
+                        <filter string="Salesman" name="group_by_salesman" context="{'group_by': 'assigned_id'}"/>
+                        <filter string="Warehouse" name="group_by_warehouse" context="{'group_by': 'warehouse_id'}"/>
+                        <filter string="Region" name="group_by_region" context="{'group_by': 'region_id'}"/>
+                        <filter string="City" name="group_by_city" context="{'group_by': 'city_id'}"/>
+                        <filter string="Group" name="group_by_group" context="{'group_by': 'product_group_id'}"/>
+                        <filter string="Category" name="group_by_category" context="{'group_by': 'product_category_id'}"/>
+                        <filter string="Quotation Status" name="group_by_quotation_state" context="{'group_by': 'quotation_state'}"/>
+                        <filter string="Sales Order Status" name="group_by_so_state" context="{'group_by': 'sale_order_state'}"/>
+                        <filter string="Delivery Schedule Status" name="group_by_status" context="{'group_by': 'status'}"/>
+                        <separator/>
+                        <filter string="Order" name="group_by_order" context="{'group_by': 'order_id'}"/>
+                        <filter string="Product" name="group_by_product" context="{'group_by': 'product_id'}"/>
+                        <filter string="Scheduled Date" name="group_by_scheduled_date" context="{'group_by': 'scheduled_date:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_crm_commercial_sales_analysis" model="ir.actions.act_window">
+            <field name="name">Sales Order Analysis</field>
+            <field name="res_model">crm.commercial.delivery.schedule</field>
+            <field name="view_mode">pivot,graph</field>
+            <field name="search_view_id" ref="view_crm_commercial_sales_analysis_search"/>
+            <field name="context">{}</field>
+        </record>
+
+        <!-- Balance Report Pivot -->
+        <record id="view_crm_commercial_balance_report_pivot" model="ir.ui.view">
+            <field name="name">crm.commercial.balance.report.pivot</field>
+            <field name="model">crm.commercial.sale.order.line</field>
+            <field name="arch" type="xml">
+                <pivot string="Sale Order Balance Report" sample="1">
+                    <field name="order_id" type="row"/>
+                    <field name="product_id" type="row"/>
+                    <field name="qty" type="measure"/>
+                    <field name="delivered_qty" type="measure"/>
+                    <field name="pending_qty" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="action_crm_commercial_balance_report" model="ir.actions.act_window">
+            <field name="name">Sale Order Balance Report</field>
+            <field name="res_model">crm.commercial.sale.order.line</field>
+            <field name="view_mode">pivot</field>
+        </record>
+</odoo>

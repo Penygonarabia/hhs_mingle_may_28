@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="view_crm_commercial_import_material_list_wizard_form" model="ir.ui.view">
+            <field name="name">crm.commercial.import.material.list.wizard.form</field>
+            <field name="model">crm.commercial.import.material.list.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Import Material List">
+                    <group>
+                        <field name="quotation_id" readonly="1"/>
+                        <field name="excel_file" filename="filename"/>
+                        <field name="filename" invisible="1"/>
+                    </group>
+                    <footer>
+                        <button name="action_import_material_list" string="Upload &amp; Import" type="object" class="btn-primary"/>
+                        <button name="action_download_template" string="Download Template" type="object" class="btn-secondary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_crm_commercial_import_material_list_wizard" model="ir.actions.act_window">
+            <field name="name">Import Material List</field>
+            <field name="res_model">crm.commercial.import.material.list.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+</odoo>

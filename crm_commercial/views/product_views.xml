@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_form_view_inherit_crm_commercial" model="ir.ui.view">
+        <field name="name">product.template.form.view.inherit.crm.commercial</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('oe_button_box')]" position="before">
+                <div class="mb-2">
+                    <button name="action_open_import_non_stock" string="Import Non-Stock" type="object" class="btn-primary" groups="crm_commercial.group_crm_commercial_user"/>
+                    <button name="action_approve_item" string="Approve Item" type="object" class="btn-success" invisible="approval_state != 'draft'" groups="crm_commercial.group_crm_commercial_manager"/>
+                    <button name="action_reject_item" string="Reject Item" type="object" class="btn-danger" invisible="approval_state != 'draft'" groups="crm_commercial.group_crm_commercial_manager"/>
+                </div>
+            </xpath>
+            <xpath expr="//field[@name='name']" position="before">
+                <field name="approval_state" widget="statusbar" statusbar_visible="draft,approved,rejected"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="CRM Commercial" name="crm_commercial_product_page">
+                    <group>
+                        <group string="Status and Tracking">
+                            <field name="category_discontinued"/>
+                            <field name="discontinued_date"/>
+                            <field name="sync_price_from_erp"/>
+                            <field name="non_stock_item"/>
+                        </group>
+                        <group string="Project Information">
+                            <field name="project_name"/>
+                        </group>
+                    </group>
+                    <group string="Long Description">
+                        <field name="long_description" placeholder="Full technical and commercial description..."/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_product_tree_view_inherit_crm_commercial_hide_cols" model="ir.ui.view">
+        <field name="name">product.product.tree.view.inherit.crm.commercial.hide.cols</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_product_tree_view"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='cst_loyalty_points']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='product_main_grp_id']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='uom_id']" position="attributes">
+                <attribute name="column_invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
