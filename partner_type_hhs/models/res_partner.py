@@ -2,10 +2,9 @@ from odoo import api, fields, models, _
 
 
 class ResPartner(models.Model):
-    
-    _inherit = 'res.partner'
-    
-    
+
+    _inherit = "res.partner"
+
     # partner_type_hhs = fields.Selection([
     #     ('customer', 'Customer'),
     #     ('vendor', 'Vendor'),
@@ -20,22 +19,28 @@ class ResPartner(models.Model):
     #     ],string = "Sub Partner Type",store = True,
     #
     # )
-    
-    partner_type_hhs = fields.Selection([
-    ('customer', 'Customer'),
-    ('vendor', 'Vendor'),
-    ('both', 'Both'),
-    ('u', 'User'),
-    ], string='Partner Type', store=True, 
-       default=lambda self: self._context.get('default_partner_type_hhs') or False)
-    
-    sub_partner_type = fields.Selection([
-        ('retail','Retail Customer'),
-        ('dealer','Dealer'),
-    ], string="Partner Sub-type", store=True,
-       default=lambda self: self._context.get('default_sub_partner_type') or False)
-    
-    
-    
-    
-    
+
+    partner_type_hhs = fields.Selection(
+        [
+            ("customer", "Customer"),
+            ("vendor", "Vendor"),
+            ("both", "Both"),
+            ("u", "User"),
+        ],
+        string="Partner Type",
+        store=True,
+        default=lambda self: self._context.get("default_partner_type_hhs") or False,
+    )
+
+    sub_partner_type = fields.Selection(
+        [
+            ("retail", "Retail Customer"),
+            ("dealer", "Dealer"),
+            ("project", "Project"),
+            ("service_pro", "Service Pro"),
+            ("crm_lead", "CRM Lead"),
+        ],
+        string="Partner Sub-type",
+        store=True,
+        default=lambda self: self._context.get("default_sub_partner_type") or False,
+    )
