@@ -393,6 +393,15 @@ class CrmCommercialQuotation(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        if not self.env.context.get("skip_validation"):
+            if not vals_list.get("project_status_id"):
+                raise ValidationError(_("Project Status is required."))
+
+            if not vals_list.get("project_detail_status_id"):
+                raise ValidationError(_("Project Detail Status is required."))
+
+            if not vals_list.get("consultant_id"):
+                raise ValidationError(_("Consultant is required."))
         ICP = self.env["ir.config_parameter"].sudo()
         header = ICP.get_param("crm_commercial.terms_header_notes", default="")
         paragraph = ICP.get_param(
@@ -828,19 +837,19 @@ class CrmCommercialQuotation(models.Model):
         if len(self) == 1 and last_so:
             return self.action_view_sale_order()
 
-    @api.model
-    def create(self, vals):
-        if not self.env.context.get("skip_validation"):
-            if not vals.get("project_status_id"):
-                raise ValidationError(_("Project Status is required."))
+    # @api.model
+    # def create(self, vals):
+    #     if not self.env.context.get("skip_validation"):
+    #         if not vals.get("project_status_id"):
+    #             raise ValidationError(_("Project Status is required."))
 
-            if not vals.get("project_detail_status_id"):
-                raise ValidationError(_("Project Detail Status is required."))
+    #         if not vals.get("project_detail_status_id"):
+    #             raise ValidationError(_("Project Detail Status is required."))
 
-            if not vals.get("consultant_id"):
-                raise ValidationError(_("Consultant is required."))
+    #         if not vals.get("consultant_id"):
+    #             raise ValidationError(_("Consultant is required."))
 
-        return super().create(vals)
+    #     return super().create(vals)
 
 
 class CrmCommercialQuotationLine(models.Model):
