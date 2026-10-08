@@ -296,7 +296,7 @@ class CrmCommercialQuotation(models.Model):
     project_status_id = fields.Many2one(
         "crm.commercial.project.status",
         string="Project Status",
-        required=True,
+        # required=True,
     )
 
     @api.onchange("project_status_id")
@@ -307,10 +307,12 @@ class CrmCommercialQuotation(models.Model):
     project_detail_status_id = fields.Many2one(
         "crm.commercial.project.detail.status",
         string="Project Detail Status",
-        required=True,
+        # required=True,
     )
     consultant_id = fields.Many2one(
-        "crm.commercial.consultant", string="Consultant", required=True
+        "crm.commercial.consultant",
+        string="Consultant",
+        # required=True
     )
     tag_ids = fields.Many2many("crm.tag", string="Tags")
     ignore_for_reporting = fields.Boolean(
@@ -890,6 +892,23 @@ class CrmCommercialQuotation(models.Model):
                 raise ValidationError(
                     _("Customer No is mandatory to confirm quotation.")
                 )
+            # Check required fields at confirm time only
+            missing_fields = []
+            if not rec.project_status_id:
+                missing_fields.append(_("Project Status"))
+            if not rec.project_detail_status_id:
+                missing_fields.append(_("Project Detail Status"))
+            if not rec.consultant_id:
+                missing_fields.append(_("Consultant"))
+
+            if missing_fields:
+                raise ValidationError(
+                    _(
+                        "The following fields are mandatory to confirm the quotation:\n- %s"
+                    )
+                    % "\n- ".join(missing_fields)
+                )
+
             rec.expected_gross_margin = rec.gross_margin_percent
             rec.state = "confirmed"
 
