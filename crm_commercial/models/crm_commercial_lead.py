@@ -30,10 +30,22 @@ class CrmCommercialLead(models.Model):
     warehouse_id = fields.Many2one(
         "stock.warehouse",
         string="Warehouse",
-        domain="[('active', '=', True)]",
         required=True,
         index=True,
     )
+    # date oct 7 2026
+    warehouse_ids = fields.Many2many(
+        "stock.warehouse",
+        compute="_compute_warehouse_id",
+        string="Warehouses",
+        default=lambda self: self.env.user.available_warehouse_ids,
+    )
+
+    def _compute_warehouse_id(self):
+        # self.warehouse_ids = False
+        user_warehouses = self.env.user.available_warehouse_ids
+        self.warehouse_ids = [(6, 0, user_warehouses.ids)]
+
     customer_type_id = fields.Many2one(
         "crm.commercial.customer.type",
         string="Customer Type",

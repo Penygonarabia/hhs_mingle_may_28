@@ -30,10 +30,160 @@ class CrmCommercialQuotation(models.Model):
     warehouse_id = fields.Many2one(
         "stock.warehouse",
         string="Warehouse",
-        domain="[('active', '=', True)]",
         required=True,
         index=True,
     )
+    # date oct 7 2026
+    warehouse_ids = fields.Many2many(
+        "stock.warehouse",
+        compute="_compute_warehouse_id",
+        string="Warehouses",
+        default=lambda self: self.env.user.available_warehouse_ids,
+    )
+
+    def _compute_warehouse_id(self):
+        self.warehouse_ids = False
+        user_warehouses = self.env.user.available_warehouse_ids
+        self.warehouse_ids = [(6, 0, user_warehouses.ids)]
+
+    # -------------------------------------------------------------------------
+    # Partner auto-create helper
+    # -------------------------------------------------------------------------
+    def _get_or_create_partner(self, vals=None):
+        """
+        Search for an existing res.partner by phone / email from the
+        quotation form data.  If found, return that partner.  If no
+        match exists and the quotation has a customer name (to_name),
+        create a new res.partner and return it.
+        Returns a res.partner recordset (possibly empty).
+        """
+        vals = vals or {}
+        phone = (vals.get("phone") or getattr(self, "phone", "") or "").strip()
+        email = (vals.get("email") or getattr(self, "email", "") or "").strip()
+        to_name = (vals.get("to_name") or getattr(self, "to_name", "") or "").strip()
+
+        if not phone and not email:
+            return self.env["res.partner"]
+
+        # Build search domain: match on phone OR mobile OR email
+        if phone:
+            domain = [("mobile", "=", phone)]
+        else:
+            domain = [("email", "=", email)]
+
+        partner = self.env["res.partner"].search(domain, limit=1)
+        if partner:
+            return partner
+
+        # No existing partner found – create one if we have a name
+        if not to_name:
+            return self.env["res.partner"]
+
+        city_id = vals.get("city_id") or (
+            self.city_id.id if getattr(self, "city_id", False) else False
+        )
+        state_id = vals.get("state_id") or (
+            self.state_id.id if getattr(self, "state_id", False) else False
+        )
+        country_id = vals.get("country_id") or (
+            self.country_id.id if getattr(self, "country_id", False) else False
+        )
+        district_id = vals.get("district") or (
+            self.district.id if getattr(self, "district", False) else False
+        )
+        region_id = vals.get("region_id") or (
+            self.region_id.id if getattr(self, "region_id", False) else False
+        )
+
+        partner_vals = {
+            "name": to_name,
+            "email": email or False,
+            "mobile": phone or False,
+            "street": vals.get("street") or getattr(self, "street", False) or False,
+            "street2": vals.get("street2") or getattr(self, "street2", False) or False,
+            "zip": vals.get("zip") or getattr(self, "zip", False) or False,
+            "state_id": state_id or False,
+            "country_id": country_id or False,
+            "partner_type_hhs": "customer",
+            "sub_partner_type": "project",
+        }
+        # Conditionally set custom address fields if they exist on res.partner
+        if city_id:
+            partner_vals["customer_city_id"] = city_id
+        if district_id:
+            partner_vals["district_id"] = district_id
+        if region_id:
+            partner_vals["region_id"] = region_id
+
+        new_partner = self.env["res.partner"].create(partner_vals)
+        return new_partner
+
+    @api.onchange("phone", "email")
+    def _onchange_phone_email(self):
+        if not self.phone and not self.email:
+            return
+
+        domain = []
+
+        if self.phone:
+            phone = self.phone.strip()
+            domain = ["|", ("phone", "=", phone), ("mobile", "=", phone)]
+        elif self.email:
+            email = self.email.strip()
+            domain = [("email", "=", email)]
+
+        partner = self.env["res.partner"].search(domain, limit=1)
+
+        if partner:
+            self.partner_id = partner
+            self.to_name = partner.name
+
+            # Contact details
+            self.email = partner.email or ""
+            self.phone = partner.phone or partner.mobile or ""
+
+            # Address
+            self.street = partner.street or ""
+            self.street2 = partner.street2 or ""
+            self.zip = partner.zip or ""
+
+            # Location
+            self.city_id = partner.customer_city_id or False
+            self.city = (
+                partner.customer_city_id.name if partner.customer_city_id else ""
+            )
+            self.district = partner.district_id or False
+            self.region_id = partner.region_id or False
+            self.state_id = partner.state_id or False
+            self.country_id = partner.country_id or False
+            return {
+                "warning": {
+                    "title": _("Existing Customer Found"),
+                    "message": _(
+                        "Matching customer record found: %s "
+                        "(Phone: %s, Email: %s). "
+                        "Record linked to existing customer."
+                    )
+                    % (
+                        partner.name,
+                        partner.phone or partner.mobile or "",
+                        partner.email or "",
+                    ),
+                }
+            }
+        else:
+            # New phone/email → partner will be created on save
+            return {
+                "warning": {
+                    "title": _("New Customer"),
+                    "message": _(
+                        "No existing customer found for the given Phone/Email. "
+                        "A new customer record will be created automatically "
+                        "when you save."
+                    ),
+                }
+            }
+
     quotation_type_id = fields.Many2one(
         "crm.commercial.quotation.type", string="Quotation Type", index=True
     )
@@ -393,15 +543,6 @@ class CrmCommercialQuotation(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        if not self.env.context.get("skip_validation"):
-            if not vals_list.get("project_status_id"):
-                raise ValidationError(_("Project Status is required."))
-
-            if not vals_list.get("project_detail_status_id"):
-                raise ValidationError(_("Project Detail Status is required."))
-
-            if not vals_list.get("consultant_id"):
-                raise ValidationError(_("Consultant is required."))
         ICP = self.env["ir.config_parameter"].sudo()
         header = ICP.get_param("crm_commercial.terms_header_notes", default="")
         paragraph = ICP.get_param(
@@ -418,6 +559,45 @@ class CrmCommercialQuotation(models.Model):
 
             if not vals.get("settings_tab") and combined_settings.strip():
                 vals["settings_tab"] = combined_settings
+
+            # Auto-create / link res.partner when phone or email is provided
+            # but no partner_id is explicitly set on the record.
+            if not vals.get("partner_id") and (vals.get("phone") or vals.get("email")):
+                phone = (vals.get("phone") or "").strip()
+                email = (vals.get("email") or "").strip()
+                to_name = (vals.get("to_name") or "").strip()
+
+                if phone:
+                    domain = [("mobile", "=", phone)]
+                else:
+                    domain = [("email", "=", email)]
+
+                existing_partner = self.env["res.partner"].search(domain, limit=1)
+
+                if existing_partner:
+                    vals["partner_id"] = existing_partner.id
+                elif to_name:
+                    partner_vals = {
+                        "name": to_name,
+                        "email": email or False,
+                        "mobile": phone or False,
+                        "street": vals.get("street") or False,
+                        "street2": vals.get("street2") or False,
+                        "zip": vals.get("zip") or False,
+                        "state_id": vals.get("state_id") or False,
+                        "country_id": vals.get("country_id") or False,
+                        "partner_type_hhs": "customer",
+                        "sub_partner_type": "project",
+                    }
+                    if vals.get("city_id"):
+                        partner_vals["customer_city_id"] = vals["city_id"]
+                    if vals.get("district"):
+                        partner_vals["district_id"] = vals["district"]
+                    if vals.get("region_id"):
+                        partner_vals["region_id"] = vals["region_id"]
+
+                    new_partner = self.env["res.partner"].create(partner_vals)
+                    vals["partner_id"] = new_partner.id
 
         records = super(CrmCommercialQuotation, self).create(vals_list)
         for rec in records:
@@ -836,20 +1016,6 @@ class CrmCommercialQuotation(models.Model):
 
         if len(self) == 1 and last_so:
             return self.action_view_sale_order()
-
-    # @api.model
-    # def create(self, vals):
-    #     if not self.env.context.get("skip_validation"):
-    #         if not vals.get("project_status_id"):
-    #             raise ValidationError(_("Project Status is required."))
-
-    #         if not vals.get("project_detail_status_id"):
-    #             raise ValidationError(_("Project Detail Status is required."))
-
-    #         if not vals.get("consultant_id"):
-    #             raise ValidationError(_("Consultant is required."))
-
-    #     return super().create(vals)
 
 
 class CrmCommercialQuotationLine(models.Model):

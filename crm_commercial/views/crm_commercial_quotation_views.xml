@@ -50,7 +50,8 @@
                     </div>
                     <group string="Header Information">
                         <group>
-                            <field name="warehouse_id"/>
+                            <field name="warehouse_id" domain="[('id','in',warehouse_ids)]" options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+                            <field name="warehouse_ids" widget="many2many_tags" invisible="1" />
                             <field name="quotation_type_id"/>
                             <field name="lead_no"/>
                             <field name="partner_id"/>
@@ -60,6 +61,17 @@
                             <field name="assigned_id"/>
                             <field name="project_category_id"/>
                             <field name ="product_category_id"/>
+                            <label for="street" string="Address"/>
+                            <div class="o_address_format">
+                                <field name="street" placeholder="Street..." class="o_address_street"/>
+                                <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+                                <field name="city_id" placeholder="City" class="o_address_city" domain="[('country_id', '=', country_id)]" options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                                <field name="state_id" class="o_address_state" placeholder="State" options="{&quot;no_open&quot;: True}" domain="[('country_id', '=', country_id)]"/>
+                                <field name="district" placeholder="District..." options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                                <field name="region_id" placeholder="Region..." options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                                <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                                <field name="country_id" placeholder="Country" class="o_address_country" options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+                            </div>
                         </group>
                         <group>
                             <field name="date"/>
@@ -77,7 +89,7 @@
                         </group>
                     </group>
 
-                    <group string="Customer Address">
+                    <!-- <group string="Customer Address">
                         <group>
                             <label for="street" string="Address"/>
                             <div class="o_address_format">
@@ -94,7 +106,7 @@
                         <group>
 
                         </group>
-                    </group>
+                    </group> -->
 
                     <!-- <group string="Customer Address">
                             <group>

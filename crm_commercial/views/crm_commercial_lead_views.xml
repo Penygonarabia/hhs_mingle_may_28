@@ -42,7 +42,8 @@
                     </div>
                     <group string="Basic Information">
                         <group>
-                            <field name="warehouse_id"/>
+                            <field name="warehouse_id" domain="[('id','in',warehouse_ids)]" options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+                            <field name="warehouse_ids" widget="many2many_tags" invisible="1" />
                             <field name="project_category_id"/>
                             <field name="crm_product_category_ids" widget="many2many_tags" invisible="1"/>
                             <!-- # added by vengatesh sep 21  crm_product_category_ids-->
