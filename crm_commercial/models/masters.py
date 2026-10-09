@@ -10,6 +10,10 @@ class CustomerType(models.Model):
     name = fields.Char(string='Description', required=True, index=True)
     active = fields.Boolean(string='Active', default=True)
 
+    _sql_constraints = [
+        ('code_unique', 'unique(code)', 'The Code must be unique!')
+    ]
+
 
 class ProjectCategory(models.Model):
     _name = 'crm.commercial.project.category'
@@ -19,6 +23,10 @@ class ProjectCategory(models.Model):
     code = fields.Char(string='Code', required=True, index=True)
     name = fields.Char(string='Description', required=True, index=True)
     active = fields.Boolean(string='Active', default=True)
+
+    _sql_constraints = [
+        ('code_unique', 'unique(code)', 'The Code must be unique!')
+    ]
 
 
 class QuotationType(models.Model):
@@ -30,6 +38,10 @@ class QuotationType(models.Model):
     name = fields.Char(string='Description', required=True, index=True)
     active = fields.Boolean(string='Active', default=True)
 
+    _sql_constraints = [
+        ('code_unique', 'unique(code)', 'The Code must be unique!')
+    ]
+
 
 class SaleType(models.Model):
     _name = 'crm.commercial.sale.type'
@@ -39,6 +51,10 @@ class SaleType(models.Model):
     code = fields.Char(string='Code', required=True, index=True)
     name = fields.Char(string='Description', required=True, index=True)
     active = fields.Boolean(string='Active', default=True)
+
+    _sql_constraints = [
+        ('code_unique', 'unique(code)', 'The Code must be unique!')
+    ]
 
 
 class ProjectStatus(models.Model):
@@ -50,6 +66,10 @@ class ProjectStatus(models.Model):
     name = fields.Char(string='Name', required=True, index=True)
     probability = fields.Float(string='Probability %', default=0.0)
     active = fields.Boolean(string='Active', default=True)
+
+    _sql_constraints = [
+        ('code_unique', 'unique(code)', 'The Code must be unique!')
+    ]
 
     @api.constrains('probability')
     def _check_probability(self):
@@ -69,6 +89,10 @@ class ProjectDetailStatus(models.Model):
     name = fields.Char(string='Name', required=True, index=True)
     active = fields.Boolean(string='Active', default=True)
 
+    _sql_constraints = [
+        ('code_unique', 'unique(code)', 'The Code must be unique!')
+    ]
+
 
 class Consultant(models.Model):
     _name = 'crm.commercial.consultant'
@@ -78,6 +102,10 @@ class Consultant(models.Model):
     code = fields.Char(string='Code', required=True, index=True)
     name = fields.Char(string='Name', required=True, index=True)
     active = fields.Boolean(string='Active', default=True)
+
+    _sql_constraints = [
+        ('code_unique', 'unique(code)', 'The Code must be unique!')
+    ]
 
 
 class LinkedProduct(models.Model):

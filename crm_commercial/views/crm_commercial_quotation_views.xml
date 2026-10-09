@@ -52,6 +52,7 @@
                         <group>
                             <field name="warehouse_id" domain="[('id','in',warehouse_ids)]" options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
                             <field name="warehouse_ids" widget="many2many_tags" invisible="1" />
+                            <field name="quotation_type_id" />
                             <field name="quotation_type_code" invisible="True"/>
                             <field name="lead_no" invisible="1"/>
                             <field name="lead_id" invisible="quotation_type_code == '02'"/>

@@ -61,3 +61,6 @@ class ProductProduct(models.Model):
 
     def action_reject_item(self):
         self.product_tmpl_id.action_reject_item()
+
+    def action_open_import_non_stock(self):
+        return self.product_tmpl_id.action_open_import_non_stock()

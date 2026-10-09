@@ -9,6 +9,7 @@ class CrmCommercialLead(models.Model):
     _description = "CRM Commercial Lead"
     _inherit = ["mail.thread", "mail.activity.mixin"]
     _order = "id desc"
+    _rec_name = "lead_no"
 
     lead_no = fields.Char(
         string="Lead No",
