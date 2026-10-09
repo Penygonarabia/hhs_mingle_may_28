@@ -88,6 +88,7 @@
                             <field name="tag_ids" widget="many2many_tags"/>
                             <field name="ignore_for_reporting"/>
                             <field name="show_vat_row_wise"/>
+                            <field name="show_product_category" invisible="1"/>
                         </group>
                     </group>
 
