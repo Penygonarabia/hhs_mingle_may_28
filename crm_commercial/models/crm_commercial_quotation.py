@@ -410,6 +410,12 @@ class CrmCommercialQuotation(models.Model):
         # required=True,
     )
 
+    @api.onchange("expiry_date")
+    def _onchange_expiry_date(self):
+        for record in self:
+            if record.expiry_date and record.expiry_date < fields.Date.today():
+                raise ValidationError(_("Expiry Date must be today or a future date."))
+
     @api.onchange("project_status_id")
     def _onchange_project_status_id(self):
         if self.project_status_id:
