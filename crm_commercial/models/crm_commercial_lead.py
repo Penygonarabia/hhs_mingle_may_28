@@ -557,20 +557,66 @@ class CrmCommercialLead(models.Model):
     def action_convert_to_quotation(self):
         self.ensure_one()
         partner = self.existing_partner_id
+        # if not partner:
+        #     partner = self.env["res.partner"].create(
+        #         {
+        #             "name": self.name,
+        #             "email": self.email,
+        #             "phone": self.phone,
+        #             "street": self.street,
+        #             "street2": self.street2,
+        #             "city": self.city,
+        #             "state_id": self.state_id.id if self.state_id else False,
+        #             "zip": self.zip,
+        #             "country_id": self.country_id.id if self.country_id else False,
+        #         }
+        #     )
+        #     self.existing_partner_id = partner.id
+        # oct 09 2026
         if not partner:
-            partner = self.env["res.partner"].create(
-                {
-                    "name": self.name,
-                    "email": self.email,
-                    "phone": self.phone,
-                    "street": self.street,
-                    "street2": self.street2,
-                    "city": self.city,
-                    "state_id": self.state_id.id if self.state_id else False,
-                    "zip": self.zip,
-                    "country_id": self.country_id.id if self.country_id else False,
-                }
-            )
+            Partner = self.env["res.partner"]
+
+            domain = []
+            if self.email:
+                domain.append(("email", "=", self.email))
+            if self.phone:
+                domain.append(("mobile", "=", self.phone))
+
+            existing_partner = False
+
+            if self.email and self.phone:
+                existing_partner = Partner.search(
+                    [
+                        "|",
+                        ("email", "=", self.email),
+                        ("mobile", "=", self.phone),
+                    ],
+                    limit=1,
+                )
+            elif self.email:
+                existing_partner = Partner.search([("email", "=", self.email)], limit=1)
+            elif self.phone:
+                existing_partner = Partner.search(
+                    [("mobile", "=", self.phone)], limit=1
+                )
+
+            if existing_partner:
+                partner = existing_partner
+            else:
+                partner = Partner.create(
+                    {
+                        "name": self.partner_id or self.custom_partner,
+                        "email": self.email,
+                        "mobile": self.phone,
+                        "street": self.street,
+                        "street2": self.street2,
+                        "city": self.city,
+                        "state_id": self.state_id.id if self.state_id else False,
+                        "zip": self.zip,
+                        "country_id": self.country_id.id if self.country_id else False,
+                    }
+                )
+
             self.existing_partner_id = partner.id
 
         quotation = (

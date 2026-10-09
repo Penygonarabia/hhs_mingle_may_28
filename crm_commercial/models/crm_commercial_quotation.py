@@ -22,11 +22,18 @@ class CrmCommercialQuotation(models.Model):
     parent_quotation_id = fields.Many2one(
         "crm.commercial.quotation", string="Parent Quotation", readonly=True
     )
-
+    # date oct 9 2026
     lead_id = fields.Many2one(
-        "crm.commercial.lead", string="Source Lead", readonly=True
+        "crm.commercial.lead",
+        string="Source Lead",
+        # readonly=True
     )
-    lead_no = fields.Char(string="Lead No", readonly=True, index=True)
+    lead_no = fields.Char(
+        string="Lead No",
+        related="lead_id.lead_no",
+        # readonly=True,
+        index=True,
+    )
     warehouse_id = fields.Many2one(
         "stock.warehouse",
         string="Warehouse",
@@ -187,6 +194,110 @@ class CrmCommercialQuotation(models.Model):
     quotation_type_id = fields.Many2one(
         "crm.commercial.quotation.type", string="Quotation Type", index=True
     )
+    # date oct 9 2026
+    quotation_type_code = fields.Char(
+        related="quotation_type_id.code",
+        string="Quotation Type Code",
+    )
+
+    @api.onchange("lead_id")
+    def _onchange_lead_id(self):
+        if self.lead_id:
+            lead = self.lead_id
+            self.lead_no = lead.lead_no
+            self.partner_id = lead.partner_id
+            self.to_name = lead.partner_id.name
+            self.email = lead.email
+            self.phone = lead.phone
+            self.street = lead.street
+            self.street2 = lead.street2
+            self.city_id = lead.city_id
+            self.city = lead.city
+            self.state_id = lead.state_id
+            self.district = lead.district
+            self.region_id = lead.region_id
+            self.country_id = lead.country_id
+            self.zip = lead.zip
+            self.warehouse_id = lead.warehouse_id
+            self.assigned_id = lead.assigned_id
+            self.project_category_id = lead.project_category_id
+            self.project_name = lead.name
+            self.tag_ids = lead.tag_ids
+
+        else:
+            self.lead_no = False
+            self.partner_id = False
+            self.to_name = False
+            self.email = False
+            self.phone = False
+            self.street = False
+            self.street2 = False
+            self.city_id = False
+            self.city = False
+            self.state_id = False
+            self.district = False
+            self.region_id = False
+            self.country_id = False
+            self.zip = False
+            self.warehouse_id = False
+            self.assigned_id = False
+            self.project_category_id = False
+            self.project_name = False
+            self.tag_ids = [(5, 0, 0)]
+
+    @api.onchange("partner_id")
+    def _onchange_partner_id(self):
+        if self.partner_id:
+            partner = self.partner_id
+
+            self.to_name = partner.name
+            self.email = partner.email
+            self.phone = partner.phone or partner.mobile
+            self.street = partner.street
+            self.street2 = partner.street2
+            self.city = partner.city
+            self.state_id = partner.state_id
+            self.zip = partner.zip
+            self.country_id = partner.country_id
+
+        else:
+            self.to_name = False
+            self.email = False
+            self.phone = False
+            self.street = False
+            self.street2 = False
+            self.city = False
+            self.state_id = False
+            self.zip = False
+            self.country_id = False
+
+    @api.onchange("quotation_type_id")
+    def _onchange_quotation_type_id(self):
+        self.lead_id = False
+        self.lead_no = False
+        self.partner_id = False
+        # self.existing_partner_id = False
+
+        self.to_name = False
+        self.email = False
+        self.phone = False
+
+        self.street = False
+        self.street2 = False
+        self.city_id = False
+        self.city = False
+        self.state_id = False
+        self.district = False
+        self.region_id = False
+        self.country_id = False
+        self.zip = False
+
+        self.warehouse_id = False
+        self.assigned_id = False
+        self.project_category_id = False
+        self.project_name = False
+        self.tag_ids = [(5, 0, 0)]
+
     partner_id = fields.Many2one("res.partner", string="Customer No", index=True)
     to_name = fields.Char(string="To", required=True)
     email = fields.Char(string="Email", required=True)
@@ -1036,6 +1147,67 @@ class CrmCommercialQuotation(models.Model):
         if len(self) == 1 and last_so:
             return self.action_view_sale_order()
 
+    # oct 09 2026
+    show_product_category = fields.Boolean(
+        string="Show Product Category",
+        compute="_compute_show_product_category",
+    )
+
+    def _compute_show_product_category(self):
+        ICP = self.env["ir.config_parameter"].sudo()
+        show_category = ICP.get_param(
+            "crm_commercial.show_crm_commerical_product_category",
+            default="False",
+        )
+
+        for rec in self:
+            rec.show_product_category = show_category == "True"
+
+    @api.depends("creation_date", "product_category_id")
+    def _compute_crm_product_category_ids(self):
+        ICP = self.env["ir.config_parameter"].sudo()
+
+        show_product_category = ICP.get_param(
+            "crm_commercial.show_crm_commerical_product_category",
+            default="False",
+        )
+
+        configured_category_id = ICP.get_param(
+            "crm_commercial.crm_product_category_id",
+            default="",
+        )
+
+        for rec in self:
+            rec.crm_product_category_ids = False
+
+            if show_product_category == "True" and configured_category_id:
+                try:
+                    configured_category_id = int(configured_category_id)
+                except (ValueError, TypeError):
+                    configured_category_id = False
+
+                configured_category = (
+                    self.env["product.category"].browse(configured_category_id).exists()
+                    if configured_category_id
+                    else self.env["product.category"]
+                )
+
+                root_categories = self.env["product.category"].search(
+                    [
+                        ("parent_id", "=", False),
+                    ]
+                )
+
+                categories = configured_category | root_categories
+                rec.crm_product_category_ids = [(6, 0, categories.ids)]
+
+            else:
+                mda_category = self.env["product.category"].search(
+                    [("code", "=", "MDA")],
+                    limit=1,
+                )
+                rec.crm_product_category_ids = [(6, 0, mda_category.ids)]
+
 
 class CrmCommercialQuotationLine(models.Model):
     _name = "crm.commercial.quotation.line"
@@ -1087,6 +1259,11 @@ class CrmCommercialQuotationLine(models.Model):
     vat_percent = fields.Float(string="VAT %", default=15.0)
     vat_amount = fields.Float(string="VAT", compute="_compute_pricing", store=True)
     amount = fields.Float(string="Amount", compute="_compute_pricing", store=True)
+
+    show_product_category = fields.Boolean(
+        related="quotation_id.show_product_category",
+        store=False,
+    )
 
     @api.onchange("product_group_id")
     def _onchange_product_group_id(self):

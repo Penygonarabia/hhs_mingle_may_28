@@ -52,9 +52,10 @@
                         <group>
                             <field name="warehouse_id" domain="[('id','in',warehouse_ids)]" options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
                             <field name="warehouse_ids" widget="many2many_tags" invisible="1" />
-                            <field name="quotation_type_id"/>
-                            <field name="lead_no"/>
-                            <field name="partner_id"/>
+                            <field name="quotation_type_code" invisible="True"/>
+                            <field name="lead_no" invisible="1"/>
+                            <field name="lead_id" invisible="quotation_type_code == '02'"/>
+                            <field name="partner_id" invisible="0"/>
                             <field name="to_name"/>
                             <field name="email"/>
                             <field name="phone"/>
@@ -150,7 +151,9 @@
                                     <field name="sequence" widget="handle"/>
                                     <field name="display_type" column_invisible="1"/>
                                     <field name="sale_type_id" string="Sale Type"/>
-                                    <field name="product_group_id" string="Product Category" domain="[('use_for_crm_commercial', '=', True), ('parent_id', '=', False)]" context="{'show_code_only': True}"/>
+                                    <field name="show_product_category" column_invisible="True"/>
+                                    <field name="product_group_id" string="Product Category" context="{'show_code_only': True}" column_invisible="parent.show_product_category"/>
+                                    <!-- <field name="product_group_id" string="Product Category" domain="[('use_for_crm_commercial', '=', True), ('parent_id', '=', False)]" context="{'show_code_only': True}"/> -->
                                     <field name="product_category_id" string="Product Group" domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id), ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]"/>
                                     <field name="product_id" string="Part No / Product" domain="[('categ_id', 'child_of', product_category_id)] if product_category_id else []"/>
                                     <field name="name" widget="section_and_note_text" string="Description / Section" optional="show"/>

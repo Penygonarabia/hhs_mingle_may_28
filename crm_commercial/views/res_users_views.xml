@@ -1,34 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-        <record id="res_users_view_form_crm_commercial" model="ir.ui.view">
-            <field name="name">res.users.view.form.crm.commercial</field>
-            <field name="model">res.users</field>
-            <field name="inherit_id" ref="base.view_users_form"/>
-            <field name="arch" type="xml">
-                <xpath expr="//page[@name='security']" position="after">
-                    <page string="CRM Commercial" name="crm_commercial_page">
-                        <div class="alert alert-danger mb-3 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-2" role="alert" invisible="not is_locked_by_cron">
-                            <div>
-                                <i class="fa fa-exclamation-triangle fa-lg mr-2" title="Warning"/>
-                                <strong>Account Locked Due to Inactivity / تم قفل الحساب لعدم النشاط:</strong> <field name="lock_reason" class="d-inline"/>
-                            </div>
-                            <button name="action_unlock_user" string="Unlock User Account" type="object" class="btn btn-success font-weight-bold w-100 w-md-auto"/>
+    <record id="res_users_view_form_crm_commercial" model="ir.ui.view">
+        <field name="name">res.users.view.form.crm.commercial</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='security']" position="after">
+                <page string="CRM Commercial" name="crm_commercial_page">
+                    <div class="alert alert-danger mb-3 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-2" role="alert" invisible="not is_locked_by_cron">
+                        <div>
+                            <i class="fa fa-exclamation-triangle fa-lg mr-2" title="Warning"/>
+                            <strong>Account Locked Due to Inactivity / تم قفل الحساب لعدم النشاط:</strong>
+                            <field name="lock_reason" class="d-inline"/>
                         </div>
-                        <group string="Basic Configuration">
-                            <group>
-                                <field name="is_crm_commercial_user"/>
-                                <field name="crm_commercial_region_id"/>
-                                <field name="crm_commercial_city_id"/>
-                            </group>
-                            <group>
-                                <field name="crm_commercial_default_warehouse_id"/>
-                                <field name="reporting_manager_id"/>
-                                <field name="discount_limit_percent"/>
-                                <field name="is_locked_by_cron" invisible="not is_locked_by_cron"/>
-                                <field name="locked_date" invisible="not is_locked_by_cron"/>
-                            </group>
+                        <button name="action_unlock_user" string="Unlock User Account" type="object" class="btn btn-success font-weight-bold w-100 w-md-auto"/>
+                    </div>
+                    <group string="Basic Configuration">
+                        <group>
+                            <field name="is_crm_commercial_user"/>
+                            <field name="crm_commercial_region_id"/>
+                            <field name="crm_commercial_city_id"/>
                         </group>
-                        <group string="Permissions &amp; Access Controls">
+                        <group>
+                            <field name="crm_commercial_default_warehouse_id"/>
+                            <field name="reporting_manager_id"/>
+                            <field name="discount_limit_percent"/>
+                            <field name="is_locked_by_cron" invisible="not is_locked_by_cron"/>
+                            <field name="locked_date" invisible="not is_locked_by_cron"/>
+                        </group>
+                    </group>
+                    <!-- <group string="Permissions &amp; Access Controls">
                             <group string="System &amp; Approvals">
                                 <field name="allow_cost_rights"/>
                                 <field name="lead_auto_approval"/>
@@ -42,20 +43,80 @@
                                 <field name="allow_edit_default_discount"/>
                                 <field name="allow_edit_sale_price"/>
                             </group>
+                        </group> -->
+                    <group string="Permissions & Access Controls">
+                        <group string="System & Approvals">
+                            <div class="d-flex align-items-center mb-2" colspan="2">
+                                <div class="o_cell o_wrap_label o_td_label me-3">
+                                    <label for="allow_cost_rights" class="o_form_label" style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
+                                </div>
+                                <field name="allow_cost_rights" nolabel="1"/>
+                            </div>
+                            <div class="d-flex align-items-center mb-2" colspan="2">
+                                <div class="o_cell o_wrap_label o_td_label me-3">
+                                    <label for="lead_auto_approval" class="o_form_label" style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
+                                </div>
+                                <field name="lead_auto_approval" nolabel="1"/>
+                            </div>
+                            <div class="d-flex align-items-center mb-2" colspan="2">
+                                <div class="o_cell o_wrap_label o_td_label me-3">
+                                    <label for="quotation_auto_approval" class="o_form_label" style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
+                                </div>
+                                <field name="quotation_auto_approval" nolabel="1"/>
+                            </div>
+                            <div class="d-flex align-items-center mb-2" colspan="2">
+                                <div class="o_cell o_wrap_label o_td_label me-3">
+                                    <label for="allow_export_quotation" class="o_form_label" style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
+                                </div>
+                                <field name="allow_export_quotation" nolabel="1"/>
+                            </div>
                         </group>
-                    </page>
-                </xpath>
-            </field>
-        </record>
+                        <group string="Quotation Editing Rights">
+                            <div class="d-flex align-items-center mb-2" colspan="2">
+                                <div class="o_cell o_wrap_label o_td_label me-3">
+                                    <label for="allow_edit_quotation" class="o_form_label" style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
+                                </div>
+                                <field name="allow_edit_quotation" nolabel="1"/>
+                            </div>
+                            <div class="d-flex align-items-center mb-2" colspan="2">
+                                <div class="o_cell o_wrap_label o_td_label me-3">
+                                    <label for="allow_edit_quotation_desc" class="o_form_label" style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
+                                </div>
+                                <field name="allow_edit_quotation_desc" nolabel="1"/>
+                            </div>
+                            <div class="d-flex align-items-center mb-2" colspan="2">
+                                <div class="o_cell o_wrap_label o_td_label me-3">
+                                    <label for="allow_edit_terms_features" class="o_form_label" style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
+                                </div>
+                                <field name="allow_edit_terms_features" nolabel="1"/>
+                            </div>
+                            <div class="d-flex align-items-center mb-2" colspan="2">
+                                <div class="o_cell o_wrap_label o_td_label me-3">
+                                    <label for="allow_edit_default_discount" class="o_form_label" style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
+                                </div>
+                                <field name="allow_edit_default_discount" nolabel="1"/>
+                            </div>
+                            <div class="d-flex align-items-center mb-2" colspan="2">
+                                <div class="o_cell o_wrap_label o_td_label me-3">
+                                    <label for="allow_edit_sale_price" class="o_form_label" style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
+                                </div>
+                                <field name="allow_edit_sale_price" nolabel="1"/>
+                            </div>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
 
-        <record id="action_crm_commercial_locked_users" model="ir.actions.act_window">
-            <field name="name">Locked Salesmen</field>
-            <field name="res_model">res.users</field>
-            <field name="view_mode">tree,form</field>
-            <field name="domain">[('is_locked_by_cron', '=', True), ('active', 'in', [True, False])]</field>
-            <field name="context">{'active_test': False}</field>
-            <field name="help" type="html">
-                <p class="o_view_nocontent_smiling_face">No salesmen are currently locked due to inactivity.</p>
-            </field>
-        </record>
+    <record id="action_crm_commercial_locked_users" model="ir.actions.act_window">
+        <field name="name">Locked Salesmen</field>
+        <field name="res_model">res.users</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_locked_by_cron', '=', True), ('active', 'in', [True, False])]</field>
+        <field name="context">{'active_test': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No salesmen are currently locked due to inactivity.</p>
+        </field>
+    </record>
 </odoo>

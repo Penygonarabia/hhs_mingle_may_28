@@ -19,6 +19,9 @@
         <field name="implied_ids" eval="[(4, ref('group_crm_commercial_user'))]"/>
         <field name="comment">CRM Commercial full management &amp; configuration access.</field>
     </record>
-
     <!-- Record Rules - these reference models so they go into a separate file loaded after models -->
+    <record id="group_allow_export_quotation" model="res.groups">
+        <field name="name">Allow Export Quotation</field>
+        <field name="category_id" ref="category_crm_commercial"/>
+    </record>
 </odoo>

@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-        <record id="product_category_list_view_inherit_crm_commercial" model="ir.ui.view">
-            <field name="name">product.category.list.view.inherit.crm.commercial</field>
-            <field name="model">product.category</field>
-            <field name="inherit_id" ref="product.product_category_list_view"/>
-            <field name="arch" type="xml">
-                <xpath expr="//tree" position="inside">
-                    <field name="use_for_crm_commercial"/>
-                    <field name="exclude_category" string="Excluded Category"/>
-                    <field name="default_discount_percent" string="Default Discount %"/>
-                </xpath>
-            </field>
-        </record>
+    <record id="product_category_list_view_inherit_crm_commercial" model="ir.ui.view">
+        <field name="name">product.category.list.view.inherit.crm.commercial</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_list_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                <field name="use_for_crm_commercial"/>
+                <field name="exclude_category" string="Excluded Category"/>
+                <field name="default_discount_percent" string="Default Discount %"/>
+            </xpath>
+        </field>
+    </record>
 
-        <record id="product_category_form_view_inherit_crm_commercial" model="ir.ui.view">
-            <field name="name">product.category.form.view.inherit.crm.commercial</field>
-            <field name="model">product.category</field>
-            <field name="inherit_id" ref="product.product_category_form_view"/>
-            <field name="arch" type="xml">
-                <xpath expr="//sheet" position="inside">
-                    <group string="CRM Commercial Configuration">
-                        <field name="use_for_crm_commercial"/>
-                        <field name="exclude_category" invisible="not use_for_crm_commercial"/>
-                    </group>
-                    <notebook invisible="not use_for_crm_commercial">
-                        <page string="Basic Information" name="basic_info_page">
-                            <group>
-                                <field name="default_discount_percent"/>
-                            </group>
-                        </page>
-                        <page string="Payment Terms" name="payment_terms_page">
+    <record id="product_category_form_view_inherit_crm_commercial" model="ir.ui.view">
+        <field name="name">product.category.form.view.inherit.crm.commercial</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="CRM Commercial Configuration">
+                    <field name="use_for_crm_commercial"/>
+                    <field name="exclude_category" invisible="not use_for_crm_commercial"/>
+                </group>
+                <notebook invisible="not use_for_crm_commercial">
+                    <page string="Basic Information" name="basic_info_page">
+                        <group>
+                            <field name="default_discount_percent"/>
+                        </group>
+                    </page>
+                    <!-- <page string="Payment Terms" name="payment_terms_page">
                             <group>
                                 <field name="enable_payment_terms_pdf"/>
                             </group>
@@ -46,9 +46,36 @@
                                 <field name="enable_salient_features_pdf"/>
                             </group>
                             <field name="salient_features_content" placeholder="Format Salient Features text..."/>
-                        </page>
-                    </notebook>
-                </xpath>
-            </field>
-        </record>
+                        </page> -->
+                    <page string="Payment Terms" name="payment_terms_page">
+                        <div class="d-flex align-items-center mb-2" colspan="2">
+                            <div class="o_cell o_wrap_label o_td_label me-3">
+                                <label for="enable_payment_terms_pdf" class="o_form_label" style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
+                            </div>
+                            <field name="enable_payment_terms_pdf" nolabel="1"/>
+                        </div>
+                        <field name="payment_terms_content" placeholder="Format Payment Terms text..."/>
+                    </page>
+                    <page string="Warranty Terms &amp; Conditions" name="warranty_terms_page">
+                        <div class="d-flex align-items-center mb-2" colspan="2">
+                            <div class="o_cell o_wrap_label o_td_label me-3">
+                                <label for="enable_warranty_terms_pdf" class="o_form_label" style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
+                            </div>
+                            <field name="enable_warranty_terms_pdf" nolabel="1"/>
+                        </div>
+                        <field name="warranty_terms_content" placeholder="Format Warranty Terms text..."/>
+                    </page>
+                    <page string="Salient Features" name="salient_features_page">
+                        <div class="d-flex align-items-center mb-2" colspan="2">
+                            <div class="o_cell o_wrap_label o_td_label me-3">
+                                <label for="enable_salient_features_pdf" class="o_form_label" style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
+                            </div>
+                            <field name="enable_salient_features_pdf" nolabel="1"/>
+                        </div>
+                        <field name="salient_features_content" placeholder="Format Salient Features text..."/>
+                    </page>
+                </notebook>
+            </xpath>
+        </field>
+    </record>
 </odoo>
