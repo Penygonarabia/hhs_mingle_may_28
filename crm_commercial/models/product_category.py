@@ -48,6 +48,8 @@ class ProductCategory(models.Model):
     salient_features_content = fields.Html(
         string='Salient Features Content'
     )
+    crm_commerical_category_id=fields.Many2one('crm.commercial.project.category',string='CRM Commercial Category')
+
 
     def _compute_display_name(self):
         super()._compute_display_name()

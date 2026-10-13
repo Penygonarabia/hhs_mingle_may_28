@@ -50,29 +50,42 @@
                     </div>
                     <group string="Header Information">
                         <group>
-                            <field name="warehouse_id" domain="[('id','in',warehouse_ids)]" options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
-                            <field name="warehouse_ids" widget="many2many_tags" invisible="1" />
-                            <field name="quotation_type_id" />
+                            <field name="warehouse_id" domain="[('id','in',warehouse_ids)]"
+                                   options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+                            <field name="warehouse_ids" widget="many2many_tags" invisible="1"/>
+                            <field name="quotation_type_id" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <field name="quotation_type_code" invisible="True"/>
                             <field name="lead_no" invisible="1"/>
-                            <field name="lead_id" invisible="quotation_type_code == '02'"/>
-                            <field name="partner_id" invisible="0"/>
+                            <field name="lead_id" invisible="quotation_type_code == '02'"
+                                   options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                            <field name="partner_id" invisible="0"
+                                   options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <field name="to_name"/>
                             <field name="email"/>
                             <field name="phone"/>
-                            <field name="assigned_id"/>
-                            <field name="project_category_id"/>
-                            <field name ="product_category_id"/>
+                            <field name="assigned_id" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                            <field name="project_category_id"
+                                   options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                            <field name="product_category_id"
+                                   domain="[('crm_commerical_category_id','=',project_category_id)]"
+                                   options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <label for="street" string="Address"/>
                             <div class="o_address_format">
                                 <field name="street" placeholder="Street..." class="o_address_street"/>
                                 <field name="street2" placeholder="Street 2..." class="o_address_street"/>
-                                <field name="city_id" placeholder="City" class="o_address_city" domain="[('country_id', '=', country_id)]" options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
-                                <field name="state_id" class="o_address_state" placeholder="State" options="{&quot;no_open&quot;: True}" domain="[('country_id', '=', country_id)]"/>
-                                <field name="district" placeholder="District..." options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
-                                <field name="region_id" placeholder="Region..." options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                                <field name="city_id" placeholder="City" class="o_address_city"
+                                       domain="[('country_id', '=', country_id)]"
+                                       options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                                <field name="state_id" class="o_address_state" placeholder="State"
+                                       options="{&quot;no_open&quot;: True}"
+                                       domain="[('country_id', '=', country_id)]"/>
+                                <field name="district" placeholder="District..."
+                                       options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                                <field name="region_id" placeholder="Region..."
+                                       options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
                                 <field name="zip" placeholder="ZIP" class="o_address_zip"/>
-                                <field name="country_id" placeholder="Country" class="o_address_country" options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+                                <field name="country_id" placeholder="Country" class="o_address_country"
+                                       options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
                             </div>
                         </group>
                         <group>
@@ -82,9 +95,10 @@
                             <field name="project_expected_closure_date"/>
                             <field name="developer"/>
                             <field name="possibility_percent"/>
-                            <field name="project_status_id"/>
-                            <field name="project_detail_status_id"/>
-                            <field name="consultant_id"/>
+                            <field name="project_status_id" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                            <field name="project_detail_status_id"
+                                   options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                            <field name="consultant_id" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <field name="tag_ids" widget="many2many_tags"/>
                             <field name="ignore_for_reporting"/>
                             <field name="show_vat_row_wise"/>

@@ -26,7 +26,7 @@ class CrmCommercialLead(models.Model):
         readonly=True,
     )
     project_category_id = fields.Many2one(
-        "crm.commercial.project.category", string="Project Category", index=True
+        "crm.commercial.project.category", string="Project Category", index=True,required=True,
     )
     warehouse_id = fields.Many2one(
         "stock.warehouse",
@@ -62,6 +62,7 @@ class CrmCommercialLead(models.Model):
     partner_id = fields.Many2one(
         "res.partner",
         string="Customer/Lead",
+        required=True,
     )
 
     custom_partner = fields.Char(string="Customer/Lead")
@@ -227,6 +228,7 @@ class CrmCommercialLead(models.Model):
         string="Product Category",
         domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id), ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]",
         index=True,
+        required=True,
     )
     show_product_group = fields.Boolean(
         compute="_compute_show_product_group",
@@ -653,6 +655,8 @@ class CrmCommercialLead(models.Model):
                 }
             )
         )
+        quotation_type_id = self.env['crm.commercial.quotation.type'].search([('code', '=', '01')], limit=1)
+        quotation.update({"quotation_type_id": quotation_type_id, })
         self.state = "converted"
         return {
             "type": "ir.actions.act_window",
