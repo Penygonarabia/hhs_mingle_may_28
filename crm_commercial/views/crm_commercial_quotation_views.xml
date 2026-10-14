@@ -75,8 +75,11 @@
                             <field name="assigned_id" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <field name="project_category_id"
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                            <field name="category_id" invisible="not show_product_category" domain="[('id','in',crm_product_category_ids)]"/>
+                            <field name="crm_product_category_ids" invisible="1" widget="many2many_tags"/>
                             <field name="product_category_id"
-                                   domain="[('crm_commerical_category_id','=',project_category_id)]"
+                                   domain="[('id','child_of',crm_product_category_ids),('use_for_crm_commercial', '=', True), ('exclude_category', '=', False)
+                                   ,('id', '!=', crm_product_category_ids)]"
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <label for="street" string="Address"/>
                             <div class="o_address_format">
@@ -185,7 +188,7 @@
                                     <!--                                           column_invisible="0"/>-->
 
                                     <field name="product_group_id"
-                                           column_invisible="parent.show_product_category"/>
+                                           column_invisible="not parent.show_product_category"/>
                                     <!--                                    <field name="show_product_category" column_invisible="True"/>-->
                                     <!--                                    <field name="product_group_id" string="Product Category" context="{'show_code_only': True}" column_invisible="parent.show_product_category"/>-->
                                     <!-- <field name="product_group_id" string="Product Category" domain="[('use_for_crm_commercial', '=', True), ('parent_id', '=', False)]" context="{'show_code_only': True}"/> -->

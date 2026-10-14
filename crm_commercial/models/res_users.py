@@ -13,7 +13,7 @@ class ResUsers(models.Model):
         help="Enables CRM Commercial menus and access for this user.",
     )
     crm_commercial_region_id = fields.Many2one(
-        "res.region", string="Region", help="Default region assigned to user."
+        "res.country.state", string="Region", help="Default region assigned to user."
     )
     crm_commercial_city_id = fields.Char(
         string="City", help="Default city assigned to user."
@@ -37,6 +37,9 @@ class ResUsers(models.Model):
         string="Allow Cost Rights",
         help="Allows viewing original cost price from products and costing summaries.",
     )
+
+
+
     lead_auto_approval = fields.Boolean(
         string="Lead - Auto Approval", help="Automatically approves created leads."
     )

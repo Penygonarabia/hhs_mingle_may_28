@@ -40,6 +40,105 @@ class CrmCommercialQuotation(models.Model):
         required=True,
         index=True,
     )
+    crm_product_category_ids = fields.Many2many(
+        # added by vengatesh sep 21
+        "product.category",
+        "crm_commercial_quotation_product_category_rel",
+        "quotation_id",
+        "category_id",
+        string="CRM Product Category",
+        compute="_compute_crm_product_category_ids",
+    )
+
+    @api.model
+    def _default_category_id(self):
+        ICP = self.env["ir.config_parameter"].sudo()
+
+        show_product_category = ICP.get_param(
+            "crm_commercial.show_crm_commerical_product_category",
+            default="False",
+        )
+
+        configured_category_id = ICP.get_param(
+            "crm_commercial.crm_product_category_id",
+            default="",
+        )
+
+        ProductCategory = self.env["product.category"]
+
+        if show_product_category.strip().lower() == "true" and configured_category_id:
+            try:
+                category = ProductCategory.browse(
+                    int(configured_category_id)
+                ).exists()
+
+                if category:
+                    return category.id
+            except (ValueError, TypeError):
+                pass
+
+        category = ProductCategory.search(
+            [("code", "=", "MDA")],
+            limit=1,
+        )
+        return category.id or False
+
+    category_id = fields.Many2one(
+        "product.category",
+        string="Category",
+        default=_default_category_id,  # No quotes here
+    )
+
+    # @api.depends("product_category_id")
+    def _compute_crm_product_category_ids(self):
+        ICP = self.env["ir.config_parameter"].sudo()
+
+        show_product_category = ICP.get_param(
+            "crm_commercial.show_crm_commerical_product_category",
+            default="",
+        )
+
+        configured_category_id = ICP.get_param(
+            "crm_commercial.crm_product_category_id",
+            default="",
+        )
+
+        for rec in self:
+            rec.crm_product_category_ids = False
+
+            if show_product_category == "True" and configured_category_id:
+
+                try:
+                    configured_category_id = int(configured_category_id)
+                except (ValueError, TypeError):
+                    configured_category_id = False
+
+                configured_category = (
+                    self.env["product.category"].browse(configured_category_id).exists()
+                    if configured_category_id
+                    else self.env["product.category"]
+                )
+
+                # Get all root categories
+                product_categories = self.env["product.category"].search(
+                    [
+                        ("parent_id", "=", False),
+                    ]
+                )
+
+                # Configured category + all other root categories
+                product_categories = configured_category | product_categories
+
+                rec.crm_product_category_ids = [(6, 0, product_categories.ids)]
+
+            else:
+                mda_category = self.env["product.category"].search(
+                    [("code", "=", "MDA")],
+                    limit=1,
+                )
+
+                rec.crm_product_category_ids = [(6, 0, mda_category.ids)]
+
     # date oct 7 2026
     warehouse_ids = fields.Many2many(
         "stock.warehouse",
@@ -58,11 +157,9 @@ class CrmCommercialQuotation(models.Model):
     def _compute_allow_cost_rights(self):
         allowed = self.env.user.allow_cost_rights
         for line in self:
-            line.allow_cost_rights=False
+            line.allow_cost_rights = False
             if allowed:
-              line.allow_cost_rights = True
-
-
+                line.allow_cost_rights = True
 
     # show_crm_commerical_product_category = fields.Boolean(
     #     compute="_compute_show_product_category",
@@ -1199,65 +1296,72 @@ class CrmCommercialQuotation(models.Model):
             return self.action_view_sale_order()
 
     # oct 09 2026
+
     show_product_category = fields.Boolean(
         string="Show Product Category",
-        compute="_compute_show_product_category",
+        default=lambda self: (
+                self.env["ir.config_parameter"].sudo().get_param(
+                    "crm_commercial.show_crm_commerical_product_category",
+                    default="no",
+                ) == "yes"
+        ),
     )
 
-    def _compute_show_product_category(self):
-        ICP = self.env["ir.config_parameter"].sudo()
-        show_category = ICP.get_param(
-            "crm_commercial.show_crm_commerical_product_category"
-        )
+    # @api.depends()
+    # def _compute_show_product_category(self):
+    #     ICP = self.env["ir.config_parameter"].sudo()
+    #     show_category = ICP.get_param(
+    #         "crm_commercial.show_crm_commerical_product_category",
+    #         default="no",
+    #     )
+    #     value = show_category == "yes"
+    #
+    #     for record in self:
+    #         record.show_product_category = value
 
-        for rec in self:
-            rec.show_product_category = False
-            if show_category == 'yes':
-                rec.show_product_category = True
-
-    @api.depends("creation_date", "product_category_id")
-    def _compute_crm_product_category_ids(self):
-        ICP = self.env["ir.config_parameter"].sudo()
-
-        show_product_category = ICP.get_param(
-            "crm_commercial.show_crm_commerical_product_category",
-        )
-
-        configured_category_id = ICP.get_param(
-            "crm_commercial.crm_product_category_id",
-            default="",
-        )
-
-        for rec in self:
-            rec.crm_product_category_ids = False
-
-            if show_product_category == "yes" and configured_category_id:
-                try:
-                    configured_category_id = int(configured_category_id)
-                except (ValueError, TypeError):
-                    configured_category_id = False
-
-                configured_category = (
-                    self.env["product.category"].browse(configured_category_id).exists()
-                    if configured_category_id
-                    else self.env["product.category"]
-                )
-
-                root_categories = self.env["product.category"].search(
-                    [
-                        ("parent_id", "=", False),
-                    ]
-                )
-
-                categories = configured_category | root_categories
-                rec.crm_product_category_ids = [(6, 0, categories.ids)]
-
-            else:
-                mda_category = self.env["product.category"].search(
-                    [("code", "=", "MDA")],
-                    limit=1,
-                )
-                rec.crm_product_category_ids = [(6, 0, mda_category.ids)]
+    # @api.depends("creation_date", "product_category_id")
+    # def _compute_crm_product_category_ids(self):
+    #     ICP = self.env["ir.config_parameter"].sudo()
+    #
+    #     show_product_category = ICP.get_param(
+    #         "crm_commercial.show_crm_commerical_product_category",
+    #     )
+    #
+    #     configured_category_id = ICP.get_param(
+    #         "crm_commercial.crm_product_category_id",
+    #         default="",
+    #     )
+    #
+    #     for rec in self:
+    #         rec.crm_product_category_ids = False
+    #
+    #         if show_product_category == "yes" and configured_category_id:
+    #             try:
+    #                 configured_category_id = int(configured_category_id)
+    #             except (ValueError, TypeError):
+    #                 configured_category_id = False
+    #
+    #             configured_category = (
+    #                 self.env["product.category"].browse(configured_category_id).exists()
+    #                 if configured_category_id
+    #                 else self.env["product.category"]
+    #             )
+    #
+    #             root_categories = self.env["product.category"].search(
+    #                 [
+    #                     ("parent_id", "=", False),
+    #                 ]
+    #             )
+    #
+    #             categories = configured_category | root_categories
+    #             rec.crm_product_category_ids = [(6, 0, categories.ids)]
+    #
+    #         else:
+    #             mda_category = self.env["product.category"].search(
+    #                 [("code", "=", "MDA")],
+    #                 limit=1,
+    #             )
+    #             rec.crm_product_category_ids = [(6, 0, mda_category.ids)]
 
 
 class CrmCommercialQuotationLine(models.Model):
@@ -1292,8 +1396,6 @@ class CrmCommercialQuotationLine(models.Model):
         domain="[('categ_id', 'child_of', product_category_id)] if product_category_id else []",
     )
 
-
-
     stock_qty = fields.Float(
         string="Stock", compute="_compute_stock_qty", readonly=True
     )
@@ -1308,8 +1410,6 @@ class CrmCommercialQuotationLine(models.Model):
     smc = fields.Float(
         string="SMC", related="quotation_id.salesman_commission_percent", readonly=True
     )
-
-
 
     vat_percent = fields.Float(string="VAT %", default=15.0)
     vat_amount = fields.Float(string="VAT", compute="_compute_pricing", store=True)
@@ -1379,7 +1479,7 @@ class CrmCommercialQuotationLine(models.Model):
     @api.onchange("product_id")
     def _onchange_product_id(self):
         if self.product_id:
-            self.name=self.product_id.name
+            self.name = self.product_id.name
             self.unit_cost = self.product_id.standard_price
             self.sale_price = self.product_id.lst_price
 
