@@ -33,20 +33,20 @@ class ResConfigSettings(models.TransientModel):
         default=2,
         help="Number of weeks before order expiry date to alert the salesman.",
     )
-    # show_crm_commerical_product_category = fields.Selection(
-    #     [
-    #         ("yes", "Yes"),
-    #         ("no", "No"),
-    #     ],
-    #     string="Show Product Category",
-    #     default="no",
-    #     config_parameter="crm_commercial.show_crm_commerical_product_category",
-    # )
-    show_crm_commerical_product_category = fields.Boolean(
+    show_crm_commerical_product_category = fields.Selection(
+        [
+            ("yes", "Yes"),
+            ("no", "No"),
+        ],
         string="Show Product Category",
-        # default=False,
+        default="no",
         config_parameter="crm_commercial.show_crm_commerical_product_category",
     )
+    # show_crm_commerical_product_category = fields.Boolean(
+    #     string="Show Product Category",
+    #     # default=False,
+    #     config_parameter="crm_commercial.show_crm_commerical_product_category",
+    # )
 
     crm_product_category_id = fields.Many2one(
         "product.category",

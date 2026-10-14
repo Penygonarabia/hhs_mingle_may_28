@@ -47,6 +47,10 @@ class CrmCommercialQuotation(models.Model):
         string="Warehouses",
         default=lambda self: self.env.user.available_warehouse_ids,
     )
+    # show_crm_commerical_product_category = fields.Boolean(
+    #     compute="_compute_show_product_category",
+    # )
+
 
     def _compute_warehouse_id(self):
         self.warehouse_ids = False
@@ -388,7 +392,7 @@ class CrmCommercialQuotation(models.Model):
     )
     product_category_id = fields.Many2one(
         "product.category",
-        string="Product Category",
+        string="Product Group",
         domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False)]",
         index=True,
         help="Select product category to auto-populate Payment Terms, Warranty Terms and Salient Features tabs.",
@@ -1162,12 +1166,13 @@ class CrmCommercialQuotation(models.Model):
     def _compute_show_product_category(self):
         ICP = self.env["ir.config_parameter"].sudo()
         show_category = ICP.get_param(
-            "crm_commercial.show_crm_commerical_product_category",
-            default="False",
+            "crm_commercial.show_crm_commerical_product_category"
         )
 
         for rec in self:
-            rec.show_product_category = show_category == "True"
+            rec.show_product_category = False
+            if show_category== 'yes':
+              rec.show_product_category = True
 
     @api.depends("creation_date", "product_category_id")
     def _compute_crm_product_category_ids(self):
@@ -1175,7 +1180,6 @@ class CrmCommercialQuotation(models.Model):
 
         show_product_category = ICP.get_param(
             "crm_commercial.show_crm_commerical_product_category",
-            default="False",
         )
 
         configured_category_id = ICP.get_param(
@@ -1186,7 +1190,7 @@ class CrmCommercialQuotation(models.Model):
         for rec in self:
             rec.crm_product_category_ids = False
 
-            if show_product_category == "True" and configured_category_id:
+            if show_product_category == "yes" and configured_category_id:
                 try:
                     configured_category_id = int(configured_category_id)
                 except (ValueError, TypeError):
@@ -1231,13 +1235,13 @@ class CrmCommercialQuotationLine(models.Model):
 
     product_group_id = fields.Many2one(
         "product.category",
-        string="Product Group",
+        string="Product Category",
         domain="[('use_for_crm_commercial', '=', True), ('parent_id', '=', False)]",
     )
     product_category_id = fields.Many2one(
         "product.category",
-        string="Product Category",
-        domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id), ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]",
+        string="Product Group",
+        domain="[('use_for_crm_commercial', '=', True), ('parent_id', '=', product_category) , ('parent_id', 'child_of', product_group_id), ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]",
     )
     sale_type_id = fields.Many2one("crm.commercial.sale.type", string="Sale Type")
     product_id = fields.Many2one(
@@ -1266,10 +1270,25 @@ class CrmCommercialQuotationLine(models.Model):
     vat_amount = fields.Float(string="VAT", compute="_compute_pricing", store=True)
     amount = fields.Float(string="Amount", compute="_compute_pricing", store=True)
 
-    show_product_category = fields.Boolean(
-        related="quotation_id.show_product_category",
-        store=False,
-    )
+    # show_product_category = fields.Boolean(
+    #     related="quotation_id.show_product_category",
+    #     store=False,
+    # )
+    # show_crm_commerical_product_category = fields.Boolean(
+    #     compute="_compute_show_product_category",
+    # )
+    #
+    # @api.depends()
+    # def _compute_show_product_category(self):
+    #     value = self.env["ir.config_parameter"].sudo().get_param(
+    #         "crm_commercial.show_crm_commerical_product_category",
+    #         default="False",
+    #     )
+    #
+    #     show_category = value.lower() in ("true", "1")
+    #
+    #     for record in self:
+    #         record.show_crm_commerical_product_category = show_category
 
     @api.onchange("product_group_id")
     def _onchange_product_group_id(self):

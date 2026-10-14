@@ -14,7 +14,10 @@
                 <field name="assigned_id"/>
                 <field name="net_price" sum="Total Net Price"/>
                 <field name="total_amount" sum="Total Amount"/>
-                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-warning="state in ('approved', 'partially_delivered')" decoration-success="state in ('confirmed', 'delivered')" decoration-danger="state in ('rejected', 'cancelled', 'expired')"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'"
+                       decoration-warning="state in ('approved', 'partially_delivered')"
+                       decoration-success="state in ('confirmed', 'delivered')"
+                       decoration-danger="state in ('rejected', 'cancelled', 'expired')"/>
             </tree>
         </field>
     </record>
@@ -25,15 +28,18 @@
         <field name="arch" type="xml">
             <form string="Commercial Quotation">
                 <header>
-                    <button name="action_confirm" string="Confirm Order" type="object" class="btn-primary" invisible="state not in ('draft', 'approved')"/>
+                    <button name="action_confirm" string="Confirm Order" type="object" class="btn-primary"
+                            invisible="state not in ('draft', 'approved')"/>
                     <button name="action_copy_quotation" string="Copy Quotation" type="object" class="btn-secondary"/>
-                    <button name="action_revision" string="Create Revision" type="object" class="btn-warning" invisible="state in ('cancelled', 'expired')"/>
+                    <button name="action_revision" string="Create Revision" type="object" class="btn-warning"
+                            invisible="state in ('cancelled', 'expired')"/>
                     <button name="action_recalculate" string="Recalculate Prices" type="object" class="btn-secondary"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,approved,confirmed,delivered"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_view_sale_order" type="object" class="oe_stat_button" icon="fa-usd" invisible="sale_order_count == 0">
+                        <button name="action_view_sale_order" type="object" class="oe_stat_button" icon="fa-usd"
+                                invisible="sale_order_count == 0">
                             <field name="sale_order_count" widget="statinfo" string="Sale Orders"/>
                         </button>
                     </div>
@@ -41,8 +47,10 @@
 
                         <h1>
                             <field name="name" readonly="1"/>
-                            <span invisible="revision_number == 0"> (Rev #<field name="revision_number" readonly="1"/>
-)</span>
+                            <span invisible="revision_number == 0">(Rev #
+                                <field name="revision_number" readonly="1"/>
+                                )
+                            </span>
                         </h1>
                         <h2>
                             <field name="project_name" placeholder="Project Name..."/>
@@ -143,36 +151,49 @@
 
                     <notebook>
                         <page string="General (Material List)" name="general_tab">
-                            <style> [name="line_ids"], [name="line_ids"] .o_list_renderer, [name="line_ids"] .table-responsive, [name="line_ids"] .o_list_table {
-                                        height: auto !important;
-                                        min-height: unset !important;
-                                        flex: 0 0 auto !important;
-                                    } [name="line_ids"] .o_list_renderer, [name="line_ids"] .table-responsive {
-                                        overflow-y: hidden !important;
-                                        overflow-x: auto !important;
-                                    }
+                            <style>[name="line_ids"], [name="line_ids"] .o_list_renderer, [name="line_ids"]
+                                .table-responsive, [name="line_ids"] .o_list_table {
+                                height: auto !important;
+                                min-height: unset !important;
+                                flex: 0 0 auto !important;
+                                } [name="line_ids"] .o_list_renderer, [name="line_ids"] .table-responsive {
+                                overflow-y: hidden !important;
+                                overflow-x: auto !important;
+                                }
                             </style>
 
                             <div class="mb-2">
-                                <button name="action_refresh_cost" string="Refresh Cost" type="object" class="btn-info mr-2"/>
-                                <button name="action_open_import_material_list" string="Import Material List" type="object" class="btn-secondary"/>
+                                <button name="action_refresh_cost" string="Refresh Cost" type="object"
+                                        class="btn-info mr-2"/>
+                                <button name="action_open_import_material_list" string="Import Material List"
+                                        type="object" class="btn-secondary"/>
                             </div>
                             <field name="line_ids" widget="section_and_note_one2many">
                                 <tree editable="bottom">
                                     <control>
                                         <create name="add_product_control" string="Add a product"/>
-                                        <create name="add_section_control" string="Add a section" context="{'default_display_type': 'line_section'}"/>
-                                        <create name="add_note_control" string="Add a note" context="{'default_display_type': 'line_note'}"/>
+                                        <create name="add_section_control" string="Add a section"
+                                                context="{'default_display_type': 'line_section'}"/>
+                                        <create name="add_note_control" string="Add a note"
+                                                context="{'default_display_type': 'line_note'}"/>
                                     </control>
                                     <field name="sequence" widget="handle"/>
                                     <field name="display_type" column_invisible="1"/>
                                     <field name="sale_type_id" string="Sale Type"/>
-                                    <field name="show_product_category" column_invisible="True"/>
-                                    <field name="product_group_id" string="Product Category" context="{'show_code_only': True}" column_invisible="parent.show_product_category"/>
+<!--                                    <field name="show_product_category"-->
+<!--                                           column_invisible="0"/>-->
+
+                                    <field name="product_group_id"
+                                           column_invisible="parent.show_product_category"/>
+                                    <!--                                    <field name="show_product_category" column_invisible="True"/>-->
+                                    <!--                                    <field name="product_group_id" string="Product Category" context="{'show_code_only': True}" column_invisible="parent.show_product_category"/>-->
                                     <!-- <field name="product_group_id" string="Product Category" domain="[('use_for_crm_commercial', '=', True), ('parent_id', '=', False)]" context="{'show_code_only': True}"/> -->
-                                    <field name="product_category_id" string="Product Group" domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id), ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]"/>
-                                    <field name="product_id" string="Part No / Product" domain="[('categ_id', 'child_of', product_category_id)] if product_category_id else []"/>
-                                    <field name="name" widget="section_and_note_text" string="Description / Section" optional="show"/>
+                                    <field name="product_category_id" string="Product Group"
+                                           domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id), ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]"/>
+                                    <field name="product_id" string="Part No / Product"
+                                           domain="[('categ_id', 'child_of', product_category_id)] if product_category_id else []"/>
+                                    <field name="name" widget="section_and_note_text" string="Description / Section"
+                                           optional="show"/>
                                     <field name="stock_qty" string="Stock" readonly="1"/>
                                     <field name="qty" string="Qty"/>
                                     <field name="unit_cost" string="Unit Cost"/>
