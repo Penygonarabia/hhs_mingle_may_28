@@ -47,10 +47,10 @@ class CrmCommercialQuotation(models.Model):
         string="Warehouses",
         default=lambda self: self.env.user.available_warehouse_ids,
     )
+
     # show_crm_commerical_product_category = fields.Boolean(
     #     compute="_compute_show_product_category",
     # )
-
 
     def _compute_warehouse_id(self):
         self.warehouse_ids = False
@@ -175,11 +175,11 @@ class CrmCommercialQuotation(models.Model):
                         "(Phone: %s, Email: %s). "
                         "Record linked to existing customer."
                     )
-                    % (
-                        partner.name,
-                        partner.phone or partner.mobile or "",
-                        partner.email or "",
-                    ),
+                               % (
+                                   partner.name,
+                                   partner.phone or partner.mobile or "",
+                                   partner.email or "",
+                               ),
                 }
             }
         else:
@@ -354,9 +354,9 @@ class CrmCommercialQuotation(models.Model):
     @api.onchange("country_id")
     def _onchange_country_id_reset_city(self):
         if (
-            self.country_id
-            and self.city_id
-            and self.city_id.country_id != self.country_id
+                self.country_id
+                and self.city_id
+                and self.city_id.country_id != self.country_id
         ):
             self.city_id = False
             self.city = False
@@ -413,6 +413,31 @@ class CrmCommercialQuotation(models.Model):
         string="Project Status",
         # required=True,
     )
+
+    @api.constrains(
+        'expiry_date',
+        'expected_confirmation_date',
+        'project_expected_closure_date'
+    )
+    def _check_date_sequence(self):
+        for record in self:
+            if (
+                    record.expiry_date
+                    and record.expected_confirmation_date
+                    and record.expiry_date >= record.expected_confirmation_date
+            ):
+                raise ValidationError(
+                    _("Expiry Date must be greater than Expected Confirmation Date.")
+                )
+
+            if (
+                    record.expected_confirmation_date
+                    and record.project_expected_closure_date
+                    and record.expected_confirmation_date >= record.project_expected_closure_date
+            ):
+                raise ValidationError(
+                    _("Expected Confirmation Date must be greater than Project Expected Closure Date.")
+                )
 
     @api.onchange("expiry_date")
     def _onchange_expiry_date(self):
@@ -766,7 +791,7 @@ class CrmCommercialQuotation(models.Model):
             below_cost_items = []
             for line in rec.line_ids.filtered(lambda l: not l.display_type):
                 effective_price = line.sale_price * (
-                    1.0 - (line.discount_percent / 100.0)
+                        1.0 - (line.discount_percent / 100.0)
                 )
                 if line.unit_cost > 0 and effective_price < line.unit_cost:
                     below_cost_items.append(
@@ -847,9 +872,9 @@ class CrmCommercialQuotation(models.Model):
             )
             while cat:
                 if cat.id not in cat_map and (
-                    cat.payment_terms_content
-                    or cat.warranty_terms_content
-                    or cat.salient_features_content
+                        cat.payment_terms_content
+                        or cat.warranty_terms_content
+                        or cat.salient_features_content
                 ):
                     cat_map[cat.id] = {
                         "id": cat.id,
@@ -1107,7 +1132,7 @@ class CrmCommercialQuotation(models.Model):
 
             # Create Order Items and Delivery Schedule for each product line
             for line in rec.line_ids.filtered(
-                lambda l: not l.display_type and l.product_id
+                    lambda l: not l.display_type and l.product_id
             ):
                 so_line = self.env["crm.commercial.sale.order.line"].create(
                     {
@@ -1145,7 +1170,7 @@ class CrmCommercialQuotation(models.Model):
             so._log_audit(
                 title="Sale Order Created from Quotation",
                 notes=f"Sale Order {so.name} generated from confirmed Quotation {rec.name}. "
-                f"Imported {len(so.line_ids)} item(s) and {len(so.delivery_schedule_ids)} delivery schedule line(s).",
+                      f"Imported {len(so.line_ids)} item(s) and {len(so.delivery_schedule_ids)} delivery schedule line(s).",
             )
 
             rec._log_audit(
@@ -1171,8 +1196,8 @@ class CrmCommercialQuotation(models.Model):
 
         for rec in self:
             rec.show_product_category = False
-            if show_category== 'yes':
-              rec.show_product_category = True
+            if show_category == 'yes':
+                rec.show_product_category = True
 
     @api.depends("creation_date", "product_category_id")
     def _compute_crm_product_category_ids(self):
@@ -1250,6 +1275,11 @@ class CrmCommercialQuotationLine(models.Model):
         index=True,
         domain="[('categ_id', 'child_of', product_category_id)] if product_category_id else []",
     )
+
+    @api.onchange('product_id')
+    def _onchange_product_id(self):
+        self.name = self.product_id.default_code
+        print("++++++++++++++++++++++++++++",self.name)
 
     stock_qty = fields.Float(
         string="Stock", compute="_compute_stock_qty", readonly=True
@@ -1334,13 +1364,14 @@ class CrmCommercialQuotationLine(models.Model):
     @api.onchange("product_id")
     def _onchange_product_id(self):
         if self.product_id:
+            self.name=self.product_id.name
             self.unit_cost = self.product_id.standard_price
             self.sale_price = self.product_id.lst_price
 
             prod_cat = (
-                getattr(self.product_id, "product_group_id", False)
-                or getattr(self.product_id, "product_category_id", False)
-                or self.product_id.categ_id
+                    getattr(self.product_id, "product_group_id", False)
+                    or getattr(self.product_id, "product_category_id", False)
+                    or self.product_id.categ_id
             )
 
             category_rec = False
@@ -1376,20 +1407,20 @@ class CrmCommercialQuotationLine(models.Model):
             while cat:
                 if self.quotation_id:
                     if (
-                        cat.payment_terms_content
-                        and not self.quotation_id.payment_terms_tab
+                            cat.payment_terms_content
+                            and not self.quotation_id.payment_terms_tab
                     ):
                         self.quotation_id.payment_terms_tab = cat.payment_terms_content
                     if (
-                        cat.warranty_terms_content
-                        and not self.quotation_id.warranty_terms_tab
+                            cat.warranty_terms_content
+                            and not self.quotation_id.warranty_terms_tab
                     ):
                         self.quotation_id.warranty_terms_tab = (
                             cat.warranty_terms_content
                         )
                     if (
-                        cat.salient_features_content
-                        and not self.quotation_id.salient_features_tab
+                            cat.salient_features_content
+                            and not self.quotation_id.salient_features_tab
                     ):
                         self.quotation_id.salient_features_tab = (
                             cat.salient_features_content
@@ -1398,7 +1429,7 @@ class CrmCommercialQuotationLine(models.Model):
 
             # Auto-add linked product if active
             if self.quotation_id and not self.env.context.get(
-                "skip_linked_product_addition"
+                    "skip_linked_product_addition"
             ):
                 linked_prod = self._get_linked_product_for(self.product_id)
                 if linked_prod:
@@ -1407,9 +1438,9 @@ class CrmCommercialQuotationLine(models.Model):
                     )
                     if not already_exists:
                         l_prod_cat = (
-                            getattr(linked_prod, "product_group_id", False)
-                            or getattr(linked_prod, "product_category_id", False)
-                            or linked_prod.categ_id
+                                getattr(linked_prod, "product_group_id", False)
+                                or getattr(linked_prod, "product_category_id", False)
+                                or linked_prod.categ_id
                         )
                         l_cat_rec = False
                         l_grp_rec = False
@@ -1423,9 +1454,9 @@ class CrmCommercialQuotationLine(models.Model):
                                         l_grp_rec = c
                                 c = c.parent_id
                         if (
-                            not l_cat_rec
-                            and l_prod_cat
-                            and l_prod_cat.use_for_crm_commercial
+                                not l_cat_rec
+                                and l_prod_cat
+                                and l_prod_cat.use_for_crm_commercial
                         ):
                             l_cat_rec = l_prod_cat
                         if not l_grp_rec and l_cat_rec and l_cat_rec.parent_id:
@@ -1441,7 +1472,7 @@ class CrmCommercialQuotationLine(models.Model):
 
                         line_vals = {
                             "quotation_id": self.quotation_id._origin.id
-                            or self.quotation_id.id,
+                                            or self.quotation_id.id,
                             "product_group_id": l_grp_rec.id if l_grp_rec else False,
                             "product_category_id": l_cat_rec.id if l_cat_rec else False,
                             "product_id": linked_prod.id,
@@ -1492,7 +1523,7 @@ class CrmCommercialQuotationLine(models.Model):
                         "message": _(
                             "Your maximum discount limit is %s%%. You entered %s%%."
                         )
-                        % (user_limit, entered_disc),
+                                   % (user_limit, entered_disc),
                     }
                 }
             if categ_limit > 0 and entered_disc > categ_limit:
@@ -1503,7 +1534,7 @@ class CrmCommercialQuotationLine(models.Model):
                         "message": _(
                             "Product Category (%s) discount limit is %s%%. You entered %s%%."
                         )
-                        % (self.product_category_id.name, categ_limit, entered_disc),
+                                   % (self.product_category_id.name, categ_limit, entered_disc),
                     }
                 }
 
@@ -1555,7 +1586,7 @@ class CrmCommercialQuotationLine(models.Model):
                 line.amount = 0.0
                 continue
             discounted_unit_price = line.sale_price * (
-                1.0 - (line.discount_percent / 100.0)
+                    1.0 - (line.discount_percent / 100.0)
             )
             subtotal = line.qty * discounted_unit_price
             vat = subtotal * (line.vat_percent / 100.0)
@@ -1575,9 +1606,9 @@ class CrmCommercialQuotationLine(models.Model):
                 )
                 if not already_exists:
                     prod_cat = (
-                        getattr(linked_prod, "product_group_id", False)
-                        or getattr(linked_prod, "product_category_id", False)
-                        or linked_prod.categ_id
+                            getattr(linked_prod, "product_group_id", False)
+                            or getattr(linked_prod, "product_category_id", False)
+                            or linked_prod.categ_id
                     )
                     category_rec = False
                     group_rec = False
@@ -1591,9 +1622,9 @@ class CrmCommercialQuotationLine(models.Model):
                                     group_rec = cat
                             cat = cat.parent_id
                     if (
-                        not category_rec
-                        and prod_cat
-                        and prod_cat.use_for_crm_commercial
+                            not category_rec
+                            and prod_cat
+                            and prod_cat.use_for_crm_commercial
                     ):
                         category_rec = prod_cat
                     if not group_rec and category_rec and category_rec.parent_id:
