@@ -48,6 +48,22 @@ class CrmCommercialQuotation(models.Model):
         default=lambda self: self.env.user.available_warehouse_ids,
     )
 
+    allow_cost_rights = fields.Boolean(
+        string="Allow Cost Rights",
+        help="Allows viewing original cost price from products and costing summaries.",
+        compute="_compute_allow_cost_rights"
+    )
+
+    @api.depends_context("uid")
+    def _compute_allow_cost_rights(self):
+        allowed = self.env.user.allow_cost_rights
+        for line in self:
+            line.allow_cost_rights=False
+            if allowed:
+              line.allow_cost_rights = True
+
+
+
     # show_crm_commerical_product_category = fields.Boolean(
     #     compute="_compute_show_product_category",
     # )
@@ -1276,10 +1292,7 @@ class CrmCommercialQuotationLine(models.Model):
         domain="[('categ_id', 'child_of', product_category_id)] if product_category_id else []",
     )
 
-    @api.onchange('product_id')
-    def _onchange_product_id(self):
-        self.name = self.product_id.default_code
-        print("++++++++++++++++++++++++++++",self.name)
+
 
     stock_qty = fields.Float(
         string="Stock", compute="_compute_stock_qty", readonly=True
@@ -1295,6 +1308,8 @@ class CrmCommercialQuotationLine(models.Model):
     smc = fields.Float(
         string="SMC", related="quotation_id.salesman_commission_percent", readonly=True
     )
+
+
 
     vat_percent = fields.Float(string="VAT %", default=15.0)
     vat_amount = fields.Float(string="VAT", compute="_compute_pricing", store=True)
