@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="service_sale_order_form_cp2" model="ir.ui.view">
+        <field name="name">service.sale.order.form.contract.phase2</field>
+        <field name="model">service.sale.order</field>
+        <field name="inherit_id" ref="machine_repair_management.service_sale_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Populate + payment buttons in the header -->
+            <xpath expr="//button[@id='action_confirm']" position="before">
+                <button name="action_cp2_populate" type="object"
+                        string="Populate from Job Cards"
+                        class="btn-primary" icon="fa-download"
+                        invisible="not contract_phase2_lead_id or state not in ('draft','sent')"/>
+                <button name="action_cp2_confirm_quotation" type="object"
+                        string="Confirm Quotation"
+                        class="btn-primary" icon="fa-check"
+                        invisible="not contract_phase2_lead_id or state not in ('draft','sent')"/>
+                <button name="action_cp2_send_job_payment_link" type="object"
+                        string="Send Job Payment Link" icon="fa-whatsapp"
+                        invisible="not contract_phase2_lead_id or state not in ('sale','done') or cp2_job_payment_received"/>
+                <button name="action_cp2_confirm_job_payment" type="object"
+                        string="Confirm Job Payment" class="btn-primary"
+                        invisible="not contract_phase2_lead_id or state not in ('sale','done') or cp2_job_payment_received"/>
+                <button name="action_cp2_send_balance_link" type="object"
+                        string="Send Balance Link" icon="fa-whatsapp"
+                        invisible="not contract_phase2_lead_id or not cp2_job_payment_received or cp2_balance_received"/>
+                <button name="action_cp2_confirm_balance_payment" type="object"
+                        string="Confirm Balance Payment" class="btn-primary"
+                        invisible="not contract_phase2_lead_id or not cp2_job_payment_received or cp2_balance_received"/>
+                <button name="action_cp2_create_invoice" type="object"
+                        string="Create Invoice" class="btn-primary" icon="fa-file-text-o"
+                        invisible="not contract_phase2_lead_id or state not in ('sale','done') or cp2_invoice_id"/>
+                <button name="action_cp2_view_invoice" type="object"
+                        string="View Invoice" class="btn-secondary" icon="fa-file-text-o"
+                        invisible="not cp2_invoice_id"/>
+            </xpath>
+
+            <!-- Smart button to open the generated invoice. The base form has no
+                 button_box (name="button_box") in the top-right stat area, so
+                 inject the invoice stat button there rather than making a second
+                 box (which would render inline under the title). -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_cp2_view_invoice" type="object"
+                        class="oe_stat_button" icon="fa-file-text-o"
+                        invisible="not cp2_invoice_id">
+                    <field name="cp2_invoice_count" widget="statinfo" string="Invoice"/>
+                </button>
+            </xpath>
+
+            <!-- Lead reference + payment status next to the customer name.
+                 The form arch has customer_name twice, in DIFFERENT parents: the
+                 mobile accordion ('mobvw'/FAQ) and the desktop group ('deskvw').
+                 Positional predicates don't disambiguate (each is the only one
+                 under its own parent), so we scope by the deskvw group - the
+                 block coordinators actually see on desktop. -->
+            <xpath expr="//group[hasclass('deskvw')]//field[@name='customer_name']" position="after">
+                <field name="cp2_invoice_id" invisible="1"/>
+                <field name="contract_phase2_lead_id"
+                       options="{'no_create': True}"
+                       readonly="state in ('sale','done','cancel')"/>
+                <field name="cp2_job_payment_amount"
+                       invisible="not contract_phase2_lead_id"/>
+                <field name="cp2_job_payment_received"
+                       invisible="not contract_phase2_lead_id" readonly="1"/>
+                <field name="cp2_balance_amount"
+                       invisible="not cp2_job_payment_received"/>
+                <field name="cp2_balance_received"
+                       invisible="not cp2_job_payment_received" readonly="1"/>
+            </xpath>
+
+            <!-- Same fields in the mobile block (occurrence [1], the mobvw/FAQ
+                 accordion) so the feature is usable on mobile too. -->
+            <xpath expr="//field[@name='customer_name'][1]" position="after">
+                <field name="contract_phase2_lead_id"
+                       options="{'no_create': True}"
+                       readonly="state in ('sale','done','cancel')"/>
+                <field name="cp2_job_payment_amount"
+                       invisible="not contract_phase2_lead_id"/>
+                <field name="cp2_job_payment_received"
+                       invisible="not contract_phase2_lead_id" readonly="1"/>
+                <field name="cp2_balance_amount"
+                       invisible="not cp2_job_payment_received"/>
+                <field name="cp2_balance_received"
+                       invisible="not cp2_job_payment_received" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_project_task_form_cp2" model="ir.ui.view">
+        <field name="name">project.task.form.contract.phase2</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="machine_repair_management.view_project_task_form"/>
+        <field name="arch" type="xml">
+            <!-- Coordinator control: Service & Repair cards skip the on-site
+                 technician workflow, so give them a button to advance to
+                 "Customer Need Quote" (the state the consolidated quotation
+                 populate reads). Placed by the quoting button; hidden once
+                 already sent / quoted. -->
+            <xpath expr="//button[@name='create_quotation']" position="before">
+                <button name="action_cp2_mark_customer_need_quote" type="object"
+                        string="Send for Quotation" class="oe_highlight"
+                        invisible="job_card_type != 'service_repair' or customer_need_quote_status_check"/>
+                <field name="job_card_type" invisible = "1"/>  
+            </xpath>
+
+            <field name="service_nature_id" position="after">
+                <field name="job_card_type"/>
+                <field name="customer_need_quote_status_check" invisible="1"/>
+                <field name="cp2_amc_contract_ref"
+                       invisible="job_card_type != 'amc'"
+                       readonly="job_card_type != 'amc'"/>
+                <field name="contract_phase2_lead_id"
+                       invisible="job_card_type != 'service_repair'"
+                       readonly="1" force_save="1"/>
+                <field name="cp2_planned_technician_id"
+                       invisible="job_card_type != 'service_repair'" readonly="1"/>
+                <field name="cp2_inspection_received"
+                       invisible="job_card_type != 'service_repair'"/>
+                <field name="cp2_payment_received"
+                       invisible="job_card_type != 'service_repair'" readonly="1"/>
+                <field name="cp2_balance_payment_received"
+                       invisible="job_card_type != 'service_repair'" readonly="1"/>
+            </field>
+
+            <!-- Service & Repair cards are quoted together on one consolidated
+                 lead quotation, so hide the per-card "Create Quotation" button. -->
+            <xpath expr="//button[@name='create_quotation']" position="attributes">
+                <attribute name="invisible">job_card_state_code in ('124','126','125','204') or (quotation_count != 0 and  not sale_order_state_check) or (parts_user_bool == True) or (create_quotation_show_bool == False) or job_card_type == 'service_repair'</attribute>
+            </xpath>
+
+            <!-- Service & Repair cards are billed on ONE consolidated invoice from
+                 the lead quotation, so hide the per-card "Send Proforma Invoice". -->
+            <xpath expr="//button[@name='send_whatsapp_service_charges_receipt']" position="attributes">
+                <attribute name="invisible">not product_line_ids_check or job_card_state_code in ('125','126','204') or parts_user_bool == True or job_card_type == 'service_repair'</attribute>
+            </xpath>
+
+            <!-- District is view-required for the on-site technician workflow;
+                 Service & Repair cards follow the lightweight quoting flow, so
+                 don't force it on them. -->
+            <xpath expr="//field[@name='country_district_id'][@required='1']" position="attributes">
+                <attribute name="required">job_card_type != 'service_repair'</attribute>
+            </xpath>
+
+            <!-- "Any company currently performing preventive maintenance?" is a
+                 site-survey question for the on-site workflow. Service & Repair
+                 cards skip that survey, so don't force it on them. -->
+            <xpath expr="//field[@name='company_preventive_maintenance'][@required='1']" position="attributes">
+                <attribute name="required">job_card_type != 'service_repair'</attribute>
+            </xpath>
+
+            <!-- The "Technician" (team) selector is scoped to the card's service
+                 nature + work-center group. Service & Repair cards have neither,
+                 so no team shows. Per spec the coordinator assigns any technician,
+                 so drop that scoping for Service & Repair cards. -->
+            <xpath expr="//field[@name='team_id'][@invisible='project_related_amc_bool']" position="attributes">
+                <attribute name="domain">[('service_type_id','=',service_nature_id),('work_center_id.work_center_group_id','=',work_center_group_id)] if job_card_type != 'service_repair' else []</attribute>
+            </xpath>
+            <xpath expr="//field[@name='team_id'][@invisible='not project_related_amc_bool']" position="attributes">
+                <attribute name="domain">[('service_type_id','=',service_nature_id),('work_center_id.work_center_group_id','=',work_center_group_id)] if job_card_type != 'service_repair' else []</attribute>
+            </xpath>
+
+            <!-- "Product Consume Part/Service" grid: same sticky-header /
+                 content-fitted-column styling as the lead's technician grid,
+                 but ONLY for Service & Repair cards. This grid is a SHARED
+                 base view (regular/AMC cards use it too), so the o_cp2_grid
+                 class can't be hardcoded in XML - cp2_scoped_list is a thin
+                 widget (static/src/js/cp2_scoped_x2many_field.js) that adds
+                 it only when job_card_type == 'service_repair'; every other
+                 job card type renders with the unchanged base widget. -->
+            <xpath expr="//field[@name='product_line_ids'][@groups='machine_repair_management.group_job_card_back_office_user']"
+                   position="attributes">
+                <attribute name="widget">cp2_scoped_list</attribute>
+            </xpath>
+            <xpath expr="//field[@name='product_line_ids'][@groups='machine_repair_management.group_job_card_mobile_user']"
+                   position="attributes">
+                <attribute name="widget">cp2_scoped_list</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add Job Card Type to the job-card search view so the standard
+         Services > Service > Job Card list can be filtered/grouped by type
+         (Service & Repair cards otherwise sink into the 10k+ AMC records). -->
+    <record id="search_project_task_cp2" model="ir.ui.view">
+        <field name="name">project.task.search.contract.phase2</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="machine_repair_management.inherit_search_project_task_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='job_card_state']" position="after">
+                <field name="job_card_type" string="Job Card Type"/>
+            </xpath>
+            <xpath expr="//filter[@name='job_state_new']" position="before">
+                <separator/>
+                <filter name="type_service_repair" string="Service &amp; Repair"
+                        domain="[('job_card_type','=','service_repair')]"/>
+                <filter name="type_regular" string="Regular Service"
+                        domain="[('job_card_type','=','regular')]"/>
+                <filter name="type_amc" string="AMC Contract"
+                        domain="[('job_card_type','=','amc')]"/>
+                <separator/>
+                <filter name="groupby_job_card_type" string="Job Card Type"
+                        context="{'group_by':'job_card_type'}"/>
+                <separator/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Dedicated Service & Repair job-card list.
+
+         mode="primary" makes this a STANDALONE view derived from the base
+         job-card tree, used ONLY by the Contract Phase 2 lead's "Job Cards"
+         action (see crm_lead.action_cp2_view_job_cards). That keeps both the
+         extra "Technician (Lead)" column and the o_cp2_list presentation
+         tweaks (sticky headings + content-fitted columns, see
+         static/src/css/cp2_lists.css) off every other job-card list. -->
+    <record id="view_project_task_tree_cp2" model="ir.ui.view">
+        <field name="name">project.task.tree.contract.phase2</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="machine_repair_management.view_project_task_tree"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <tree position="attributes">
+                <attribute name="class">o_cp2_list</attribute>
+            </tree>
+            <xpath expr="//field[@name='team_id']" position="after">
+                <field name="cp2_planned_technician_id" string="Technician (Lead)"
+                       optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

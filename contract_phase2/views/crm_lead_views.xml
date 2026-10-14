@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="crm_lead_form_view_cp2" model="ir.ui.view">
+        <field name="name">crm.lead.form.contract.phase2</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Smart button: job cards generated from this lead -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_cp2_view_job_cards" type="object"
+                        class="oe_stat_button" icon="fa-wrench"
+                        invisible="not is_service_repair">
+                    <field name="cp2_job_card_count" widget="statinfo" string="Job Cards"/>
+                </button>
+            </xpath>
+
+            <!-- Service &amp; Repair page -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Service &amp; Repair" name="cp2_service_repair">
+                    <group>
+                        <field name="is_service_repair"/>
+                        <field name="partner_id" string="Customer"
+                               invisible="not is_service_repair"
+                               required="is_service_repair"/>
+                    </group>
+
+                    <group invisible="not is_service_repair">
+                        <group string="Inspection Payment">
+                            <field name="cp2_inspection_amount"/>
+                            <field name="cp2_total_qty"/>
+                            <field name="cp2_inspection_link_sent" readonly="1"/>
+                            <field name="cp2_inspection_received"/>
+                            <button name="action_cp2_send_inspection_link"
+                                    type="object" string="Send Hyperpay Link (WhatsApp)"
+                                    icon="fa-whatsapp" class="oe_highlight o_cp2_wide_btn"
+                                    colspan="2"/>
+                        </group>
+                    </group>
+
+                    <separator string="Technician Grid" invisible="not is_service_repair"/>
+                    <!-- o_cp2_grid: sticky headings + content-fitted columns,
+                         scoped to this Contract Phase 2 grid only (see
+                         static/src/css/cp2_lists.css). -->
+                    <field name="cp2_technician_line_ids" invisible="not is_service_repair"
+                           class="o_cp2_grid"
+                           context="{'default_qty': cp2_total_qty}">
+                        <tree editable="bottom">
+                            <field name="technician_id"/>
+                            <field name="visit_date"/>
+                            <field name="start_time" widget="float_time"/>
+                            <field name="qty"/>
+                            <field name="job_cards_created" readonly="1"/>
+                        </tree>
+                    </field>
+
+                    <group invisible="not is_service_repair">
+                        <button name="action_cp2_create_job_cards"
+                                type="object" string="Create Job Cards"
+                                class="oe_highlight o_cp2_wide_btn" icon="fa-wrench"
+                                colspan="2"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

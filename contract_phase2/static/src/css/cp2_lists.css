@@ -1,0 +1,94 @@
+/*
+ * Contract Phase 2 - list/grid presentation tweaks.
+ *
+ * SCOPED on purpose: every rule is prefixed with `.o_cp2_list` (the Service &
+ * Repair job-card list) or `.o_cp2_grid` (the lead's technician grid). Those
+ * classes are only ever placed on Contract Phase 2 views, so nothing else in
+ * the backend - other lists, other grids, or the general theme - is affected.
+ *
+ *  1. Column headings stay visible while the rows scroll (sticky <thead>).
+ *  2. Columns shrink to fit their own content; the "description" column keeps
+ *     a flexible (dynamic) width so long text still has room.
+ *
+ * `!important` is used deliberately: Odoo's ListRenderer applies `table-layout:
+ * fixed`, per-column inline widths and `position: relative` on the header
+ * cells, so these overrides must win over that framework styling. They are
+ * still confined to the two scoped classes above.
+ */
+
+/* ------------------------------------------------------------------ *
+ * 1. Always-visible column headings (sticky header row)
+ * ------------------------------------------------------------------ */
+.o_cp2_list .o_list_table thead th,
+.o_cp2_grid .o_list_table thead th {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 3;
+    /* Opaque background so scrolled rows don't show through the heading. */
+    background-color: var(--o-cp2-header-bg, #eef1f5);
+}
+
+/* ------------------------------------------------------------------ *
+ * 2. Trim columns to their content; keep description dynamic
+ * ------------------------------------------------------------------ */
+.o_cp2_list .o_list_table,
+.o_cp2_grid .o_list_table {
+    table-layout: auto !important;
+    width: auto !important;
+    min-width: 100%;
+}
+
+/* Drop Odoo's fixed per-column inline sizing (it sets BOTH width AND
+   max-width) so each column fits its content. */
+.o_cp2_list .o_list_table thead th,
+.o_cp2_list .o_list_table tbody td,
+.o_cp2_grid .o_list_table thead th,
+.o_cp2_grid .o_list_table tbody td {
+    width: auto !important;
+    max-width: none !important;
+    white-space: nowrap;
+}
+
+/* Odoo's header label is a `.text-truncate .min-w-0` span that shrinks to 0
+   and ellipsis-clips, so the column never grows to fit the heading. Let it
+   take its natural width so the column fits the wider of heading / values and
+   the heading text stays fully readable. */
+.o_cp2_list .o_list_table thead th span.text-truncate,
+.o_cp2_grid .o_list_table thead th span.text-truncate {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    min-width: -webkit-max-content !important;
+    min-width: max-content !important;
+    flex: 0 0 auto !important;
+}
+
+/* The description column absorbs the remaining space and may wrap. */
+.o_cp2_list .o_list_table thead th[data-name="description"],
+.o_cp2_list .o_list_table tbody td[name="description"],
+.o_cp2_grid .o_list_table thead th[data-name="description"],
+.o_cp2_grid .o_list_table tbody td[name="description"] {
+    width: auto !important;
+    min-width: 14rem;
+    white-space: normal;
+}
+.o_cp2_list .o_list_table thead th[data-name="description"] span.text-truncate,
+.o_cp2_grid .o_list_table thead th[data-name="description"] span.text-truncate {
+    /* description heading may wrap rather than force a very wide column */
+    white-space: normal !important;
+    min-width: 0 !important;
+}
+
+/* ------------------------------------------------------------------ *
+ * 3. Wide, single-line action buttons on the Service & Repair page
+ *    ("Send Hyperpay Link (WhatsApp)", "Create Job Cards"). Odoo's form
+ *    <group> otherwise wraps their caption across 2-3 lines because the
+ *    button sits in a narrow label/value column.
+ * ------------------------------------------------------------------ */
+.o_cp2_wide_btn {
+    white-space: nowrap !important;
+    width: auto !important;
+    min-width: fit-content;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+}
