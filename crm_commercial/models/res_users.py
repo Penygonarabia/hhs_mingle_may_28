@@ -13,7 +13,7 @@ class ResUsers(models.Model):
         help="Enables CRM Commercial menus and access for this user.",
     )
     crm_commercial_region_id = fields.Many2one(
-        "res.country.state", string="Region", help="Default region assigned to user."
+        "res.region", string="Region", help="Default region assigned to user."
     )
     crm_commercial_city_id = fields.Char(
         string="City", help="Default city assigned to user."
