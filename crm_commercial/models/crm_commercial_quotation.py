@@ -50,44 +50,20 @@ class CrmCommercialQuotation(models.Model):
         compute="_compute_crm_product_category_ids",
     )
 
+    category_id = fields.Many2one(
+        "product.category",
+        string="Category",
+        default=lambda self: self._default_category_id(),
+    )
+
     @api.model
     def _default_category_id(self):
         ICP = self.env["ir.config_parameter"].sudo()
 
-        show_product_category = ICP.get_param(
-            "crm_commercial.show_crm_commerical_product_category",
-            default="False",
-        )
-
-        configured_category_id = ICP.get_param(
+        category_id = ICP.get_param(
             "crm_commercial.crm_product_category_id",
-            default="",
+            default=False,
         )
-
-        ProductCategory = self.env["product.category"]
-
-        if show_product_category.strip().lower() == "true" and configured_category_id:
-            try:
-                category = ProductCategory.browse(
-                    int(configured_category_id)
-                ).exists()
-
-                if category:
-                    return category.id
-            except (ValueError, TypeError):
-                pass
-
-        category = ProductCategory.search(
-            [("code", "=", "MDA")],
-            limit=1,
-        )
-        return category.id or False
-
-    category_id = fields.Many2one(
-        "product.category",
-        string="Category",
-        default=_default_category_id,  # No quotes here
-    )
 
     # @api.depends("product_category_id")
     def _compute_crm_product_category_ids(self):
