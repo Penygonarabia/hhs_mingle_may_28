@@ -57,30 +57,30 @@
                         <img src="/crm_commercial/static/src/img/midea_cover_page.jpg" style="position: absolute; top: -2mm; left: -2mm; width: 214mm; height: 301mm; z-index: 1;"/>
 
                         <!-- Overlaid Dynamic Metadata Fields -->
-                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; font-family: Arial, sans-serif; color: #00a7b5; font-weight: normal; font-size: 14px;">
+                        <div style="position: absolute; top: -2mm; left: -2mm; width: 214mm; height: 301mm; z-index: 2; font-family: Arial, sans-serif; color: #00a7b5; font-weight: normal; font-size: 14px; line-height: 1;">
                             
                             <!-- PROJECT -->
-                            <div style="position: absolute; top: 33.4%; left: 22.0%; white-space: nowrap;">
+                            <div style="position: absolute; top: 33.4%; left: 23.0%; white-space: nowrap;">
                                 <t t-esc="doc.project_name"/>
                             </div>
 
                             <!-- CLIENT -->
-                            <div style="position: absolute; top: 40.4%; left: 19.5%; white-space: nowrap;">
+                            <div style="position: absolute; top: 40.3%; left: 21.0%; white-space: nowrap;">
                                 <t t-esc="doc.to_name if doc.to_name else (doc.partner_id.name or '')"/>
                             </div>
 
                             <!-- QUOTATION NO -->
-                            <div style="position: absolute; top: 46.3%; left: 29.5%; white-space: nowrap;">
+                            <div style="position: absolute; top: 46.4%; left: 31.2%; white-space: nowrap;">
                                 <t t-esc="doc.name"/>
                             </div>
 
                             <!-- DATE -->
-                            <div style="position: absolute; top: 50.9%; left: 18.5%; white-space: nowrap;">
+                            <div style="position: absolute; top: 50.5%; left: 19.8%; white-space: nowrap;">
                                 <t t-esc="doc.date and doc.date.strftime('%d.%m.%Y') or ''"/>
                             </div>
 
                             <!-- PREPARED BY -->
-                            <div style="position: absolute; top: 54.9%; left: 29.0%; white-space: nowrap;">
+                            <div style="position: absolute; top: 54.6%; left: 29.0%; white-space: nowrap;">
                                 <t t-esc="doc.assigned_id.name or ''"/>
                             </div>
 
@@ -188,7 +188,7 @@
                                             <td style="border: 1px solid #000; padding: 5px;"><span t-field="line.product_id.default_code"/></td>
                                             <td style="border: 1px solid #000; padding: 5px;"><span t-field="line.product_id.name"/></td>
                                             <td style="border: 1px solid #000; padding: 5px; text-align: center;"></td>
-                                            <td style="border: 1px solid #000; padding: 5px; text-align: center;"><span t-field="line.qty"/></td>
+                                            <td style="border: 1px solid #000; padding: 5px; text-align: center;"><span t-esc="int(line.qty or 0)"/></td>
                                             <td style="border: 1px solid #000; padding: 5px; text-align: right;"><span t-field="line.sale_price" t-options='{"widget": "float", "precision": 2}'/></td>
                                             
                                             <t t-set="l_gross" t-value="line.qty * line.sale_price"/>
@@ -215,7 +215,7 @@
                                     <td style="border: 1px solid #000; padding: 5px; text-align: left;">Total</td>
                                     <td style="border: 1px solid #000; padding: 5px; text-align: center;"></td>
                                     <td style="border: 1px solid #000; padding: 5px; text-align: center;"></td>
-                                    <td style="border: 1px solid #000; padding: 5px; text-align: center;"><t t-esc="total_qty"/></td>
+                                    <td style="border: 1px solid #000; padding: 5px; text-align: center;"><t t-esc="int(total_qty or 0)"/></td>
                                     <td style="border: 1px solid #000; padding: 5px; text-align: center;"></td>
                                     <td style="border: 1px solid #000; padding: 5px; text-align: right;"><t t-esc="disc_val" t-options='{"widget": "float", "precision": 2}'/></td>
                                     <td style="border: 1px solid #000; padding: 5px; text-align: right;"><t t-esc="ext_val" t-options='{"widget": "float", "precision": 2}'/></td>
@@ -252,13 +252,15 @@
                         </div>
 
                         <!-- 2. Payment Terms Tab Content (Dynamic based on product categories in grid) -->
-                        <div t-if="doc.payment_terms_tab" class="mb-3">
-                            <t t-raw="doc.payment_terms_tab"/>
+                        <t t-set="pdf_payment_terms" t-value="doc._get_pdf_payment_terms()"/>
+                        <div t-if="pdf_payment_terms" class="mb-3">
+                            <t t-raw="pdf_payment_terms"/>
                         </div>
 
                         <!-- 3. Warranty Terms Tab Content (Dynamic based on product categories in grid) -->
-                        <div t-if="doc.warranty_terms_tab" class="mb-3">
-                            <t t-raw="doc.warranty_terms_tab"/>
+                        <t t-set="pdf_warranty_terms" t-value="doc._get_pdf_warranty_terms()"/>
+                        <div t-if="pdf_warranty_terms" class="mb-3">
+                            <t t-raw="pdf_warranty_terms"/>
                         </div>
 
                         <!-- Closing Statement -->
@@ -288,7 +290,7 @@
                     <!-- PAGES 4+: SALIENT FEATURES TAB (FEATURES & HIGHLIGHTS BASED ON CATEGORIES IN GRID) -->
                     <t t-set="curr_p" t-value="4"/>
                     <t t-foreach="cat_details" t-as="cdetail">
-                        <t t-if="cdetail['salient_features']">
+                        <t t-if="cdetail.get('salient_features')">
                             <div class="page" style="page-break-after: always; position: relative; height: 297mm; min-height: 297mm; padding: 0 8mm; margin: 0;">
                                 
                                 <!-- Extracted Header Image Banner (Positioned UP at top edge) -->
