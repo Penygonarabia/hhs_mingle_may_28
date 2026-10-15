@@ -46,9 +46,9 @@
                             readonly="state == 'converted'"/>
                             <field name="warehouse_ids" widget="many2many_tags" invisible="1" readonly="state == 'converted'" />
                             <field name="project_category_id" readonly="state == 'converted'"/>
-                            <field name="crm_product_category_ids" widget="many2many_tags" invisible="0" readonly="state == 'converted'"/>
+                            <field name="crm_product_category_ids" widget="many2many_tags" invisible="1" readonly="state == 'converted'"/>
                             <!-- # added by vengatesh sep 21  crm_product_category_ids-->
-                            <field name="show_product_group" invisible="0" readonly="state == 'converted'"/>
+                            <field name="show_product_group" invisible="1" readonly="state == 'converted'"/>
                             <field name="product_group_id" string="Product Category" context="{'show_code_only': True}" invisible="not show_product_group" readonly="state == 'converted'"/>
                             <field name="product_category_id" string="Product Group" domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id), ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]"
                             readonly="state == 'converted'"/>

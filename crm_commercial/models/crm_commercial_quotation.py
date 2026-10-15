@@ -506,7 +506,6 @@ class CrmCommercialQuotation(models.Model):
     product_category_id = fields.Many2one(
         "product.category",
         string="Product Group",
-        domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False)]",
         index=True,
         help="Select product category to auto-populate Payment Terms, Warranty Terms and Salient Features tabs.",
     )
@@ -1295,8 +1294,7 @@ class CrmCommercialQuotation(models.Model):
         if len(self) == 1 and last_so:
             return self.action_view_sale_order()
 
-    # oct 09 2026
-
+    # oct 14 2026
     show_product_category = fields.Boolean(
         string="Show Product Category",
         default=lambda self: (
@@ -1306,6 +1304,26 @@ class CrmCommercialQuotation(models.Model):
                 ) == "yes"
         ),
     )
+    # show_product_category = fields.Boolean(
+    #     string="Show Product Category",
+    #     compute="_compute_show_product_category",
+    # )
+
+    # @api.depends_context("uid")
+    # def _compute_show_product_category(self):
+    #     value = (
+    #             self.env["ir.config_parameter"]
+    #             .sudo()
+    #             .get_param(
+    #                 "crm_commerical.show_crm_commerical_product_category",
+    #                 default="no",
+    #             )
+    #             .strip()
+    #             .lower() == "yes"
+    #     )
+    #
+    #     for record in self:
+    #         record.show_product_category = value
 
     # @api.depends()
     # def _compute_show_product_category(self):

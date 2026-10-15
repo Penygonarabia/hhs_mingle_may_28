@@ -78,8 +78,8 @@
                             <field name="category_id" invisible="not show_product_category" domain="[('id','in',crm_product_category_ids)]"/>
                             <field name="crm_product_category_ids" invisible="1" widget="many2many_tags"/>
                             <field name="product_category_id"
-                                   domain="[('id','child_of',crm_product_category_ids),('use_for_crm_commercial', '=', True), ('exclude_category', '=', False)
-                                   ,('id', '!=', crm_product_category_ids)]"
+                                   domain="[('id','child_of',category_id),('use_for_crm_commercial', '=', True), ('exclude_category', '=', False)
+                                   ,('id', '!=', category_id)]"
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <label for="street" string="Address"/>
                             <div class="o_address_format">
