@@ -40,6 +40,105 @@ class CrmCommercialQuotation(models.Model):
         required=True,
         index=True,
     )
+    crm_product_category_ids = fields.Many2many(
+        # added by vengatesh sep 21
+        "product.category",
+        "crm_commercial_quotation_product_category_rel",
+        "quotation_id",
+        "category_id",
+        string="CRM Product Category",
+        compute="_compute_crm_product_category_ids",
+    )
+
+    @api.model
+    def _default_category_id(self):
+        ICP = self.env["ir.config_parameter"].sudo()
+
+        show_product_category = ICP.get_param(
+            "crm_commercial.show_crm_commerical_product_category",
+            default="False",
+        )
+
+        configured_category_id = ICP.get_param(
+            "crm_commercial.crm_product_category_id",
+            default="",
+        )
+
+        ProductCategory = self.env["product.category"]
+
+        if show_product_category.strip().lower() == "true" and configured_category_id:
+            try:
+                category = ProductCategory.browse(
+                    int(configured_category_id)
+                ).exists()
+
+                if category:
+                    return category.id
+            except (ValueError, TypeError):
+                pass
+
+        category = ProductCategory.search(
+            [("code", "=", "MDA")],
+            limit=1,
+        )
+        return category.id or False
+
+    category_id = fields.Many2one(
+        "product.category",
+        string="Category",
+        default=_default_category_id,  # No quotes here
+    )
+
+    # @api.depends("product_category_id")
+    def _compute_crm_product_category_ids(self):
+        ICP = self.env["ir.config_parameter"].sudo()
+
+        show_product_category = ICP.get_param(
+            "crm_commercial.show_crm_commerical_product_category",
+            default="",
+        )
+
+        configured_category_id = ICP.get_param(
+            "crm_commercial.crm_product_category_id",
+            default="",
+        )
+
+        for rec in self:
+            rec.crm_product_category_ids = False
+
+            if show_product_category == "True" and configured_category_id:
+
+                try:
+                    configured_category_id = int(configured_category_id)
+                except (ValueError, TypeError):
+                    configured_category_id = False
+
+                configured_category = (
+                    self.env["product.category"].browse(configured_category_id).exists()
+                    if configured_category_id
+                    else self.env["product.category"]
+                )
+
+                # Get all root categories
+                product_categories = self.env["product.category"].search(
+                    [
+                        ("parent_id", "=", False),
+                    ]
+                )
+
+                # Configured category + all other root categories
+                product_categories = configured_category | product_categories
+
+                rec.crm_product_category_ids = [(6, 0, product_categories.ids)]
+
+            else:
+                mda_category = self.env["product.category"].search(
+                    [("code", "=", "MDA")],
+                    limit=1,
+                )
+
+                rec.crm_product_category_ids = [(6, 0, mda_category.ids)]
+
     # date oct 7 2026
     warehouse_ids = fields.Many2many(
         "stock.warehouse",
@@ -47,10 +146,24 @@ class CrmCommercialQuotation(models.Model):
         string="Warehouses",
         default=lambda self: self.env.user.available_warehouse_ids,
     )
+
+    allow_cost_rights = fields.Boolean(
+        string="Allow Cost Rights",
+        help="Allows viewing original cost price from products and costing summaries.",
+        compute="_compute_allow_cost_rights"
+    )
+
+    @api.depends_context("uid")
+    def _compute_allow_cost_rights(self):
+        allowed = self.env.user.allow_cost_rights
+        for line in self:
+            line.allow_cost_rights = False
+            if allowed:
+                line.allow_cost_rights = True
+
     # show_crm_commerical_product_category = fields.Boolean(
     #     compute="_compute_show_product_category",
     # )
-
 
     def _compute_warehouse_id(self):
         self.warehouse_ids = False
@@ -175,11 +288,11 @@ class CrmCommercialQuotation(models.Model):
                         "(Phone: %s, Email: %s). "
                         "Record linked to existing customer."
                     )
-                    % (
-                        partner.name,
-                        partner.phone or partner.mobile or "",
-                        partner.email or "",
-                    ),
+                               % (
+                                   partner.name,
+                                   partner.phone or partner.mobile or "",
+                                   partner.email or "",
+                               ),
                 }
             }
         else:
@@ -354,9 +467,9 @@ class CrmCommercialQuotation(models.Model):
     @api.onchange("country_id")
     def _onchange_country_id_reset_city(self):
         if (
-            self.country_id
-            and self.city_id
-            and self.city_id.country_id != self.country_id
+                self.country_id
+                and self.city_id
+                and self.city_id.country_id != self.country_id
         ):
             self.city_id = False
             self.city = False
@@ -393,7 +506,6 @@ class CrmCommercialQuotation(models.Model):
     product_category_id = fields.Many2one(
         "product.category",
         string="Product Group",
-        domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False)]",
         index=True,
         help="Select product category to auto-populate Payment Terms, Warranty Terms and Salient Features tabs.",
     )
@@ -413,6 +525,31 @@ class CrmCommercialQuotation(models.Model):
         string="Project Status",
         # required=True,
     )
+
+    @api.constrains(
+        'expiry_date',
+        'expected_confirmation_date',
+        'project_expected_closure_date'
+    )
+    def _check_date_sequence(self):
+        for record in self:
+            if (
+                    record.expiry_date
+                    and record.expected_confirmation_date
+                    and record.expiry_date >= record.expected_confirmation_date
+            ):
+                raise ValidationError(
+                    _("Expiry Date must be greater than Expected Confirmation Date.")
+                )
+
+            if (
+                    record.expected_confirmation_date
+                    and record.project_expected_closure_date
+                    and record.expected_confirmation_date >= record.project_expected_closure_date
+            ):
+                raise ValidationError(
+                    _("Expected Confirmation Date must be greater than Project Expected Closure Date.")
+                )
 
     @api.onchange("expiry_date")
     def _onchange_expiry_date(self):
@@ -766,7 +903,7 @@ class CrmCommercialQuotation(models.Model):
             below_cost_items = []
             for line in rec.line_ids.filtered(lambda l: not l.display_type):
                 effective_price = line.sale_price * (
-                    1.0 - (line.discount_percent / 100.0)
+                        1.0 - (line.discount_percent / 100.0)
                 )
                 if line.unit_cost > 0 and effective_price < line.unit_cost:
                     below_cost_items.append(
@@ -846,6 +983,7 @@ class CrmCommercialQuotation(models.Model):
                 line.product_id.categ_id if line.product_id else False
             )
             while cat:
+<<<<<<< HEAD
                 if cat.id not in cat_map:
                     p_terms = (
                         cat.payment_terms_content
@@ -871,6 +1009,21 @@ class CrmCommercialQuotation(models.Model):
                             "warranty_terms": w_terms,
                             "salient_features": s_features,
                         }
+=======
+                if cat.id not in cat_map and (
+                        cat.payment_terms_content
+                        or cat.warranty_terms_content
+                        or cat.salient_features_content
+                ):
+                    cat_map[cat.id] = {
+                        "id": cat.id,
+                        "category": cat,
+                        "name": cat.name,
+                        "payment_terms": cat.payment_terms_content,
+                        "warranty_terms": cat.warranty_terms_content,
+                        "salient_features": cat.salient_features_content,
+                    }
+>>>>>>> origin/main
                 cat = cat.parent_id
         return list(cat_map.values())
 
@@ -1192,7 +1345,7 @@ class CrmCommercialQuotation(models.Model):
 
             # Create Order Items and Delivery Schedule for each product line
             for line in rec.line_ids.filtered(
-                lambda l: not l.display_type and l.product_id
+                    lambda l: not l.display_type and l.product_id
             ):
                 so_line = self.env["crm.commercial.sale.order.line"].create(
                     {
@@ -1230,7 +1383,7 @@ class CrmCommercialQuotation(models.Model):
             so._log_audit(
                 title="Sale Order Created from Quotation",
                 notes=f"Sale Order {so.name} generated from confirmed Quotation {rec.name}. "
-                f"Imported {len(so.line_ids)} item(s) and {len(so.delivery_schedule_ids)} delivery schedule line(s).",
+                      f"Imported {len(so.line_ids)} item(s) and {len(so.delivery_schedule_ids)} delivery schedule line(s).",
             )
 
             rec._log_audit(
@@ -1242,66 +1395,92 @@ class CrmCommercialQuotation(models.Model):
         if len(self) == 1 and last_so:
             return self.action_view_sale_order()
 
-    # oct 09 2026
+    # oct 14 2026
     show_product_category = fields.Boolean(
         string="Show Product Category",
-        compute="_compute_show_product_category",
+        default=lambda self: (
+                self.env["ir.config_parameter"].sudo().get_param(
+                    "crm_commercial.show_crm_commerical_product_category",
+                    default="no",
+                ) == "yes"
+        ),
     )
+    # show_product_category = fields.Boolean(
+    #     string="Show Product Category",
+    #     compute="_compute_show_product_category",
+    # )
 
-    def _compute_show_product_category(self):
-        ICP = self.env["ir.config_parameter"].sudo()
-        show_category = ICP.get_param(
-            "crm_commercial.show_crm_commerical_product_category"
-        )
+    # @api.depends_context("uid")
+    # def _compute_show_product_category(self):
+    #     value = (
+    #             self.env["ir.config_parameter"]
+    #             .sudo()
+    #             .get_param(
+    #                 "crm_commerical.show_crm_commerical_product_category",
+    #                 default="no",
+    #             )
+    #             .strip()
+    #             .lower() == "yes"
+    #     )
+    #
+    #     for record in self:
+    #         record.show_product_category = value
 
-        for rec in self:
-            rec.show_product_category = False
-            if show_category== 'yes':
-              rec.show_product_category = True
+    # @api.depends()
+    # def _compute_show_product_category(self):
+    #     ICP = self.env["ir.config_parameter"].sudo()
+    #     show_category = ICP.get_param(
+    #         "crm_commercial.show_crm_commerical_product_category",
+    #         default="no",
+    #     )
+    #     value = show_category == "yes"
+    #
+    #     for record in self:
+    #         record.show_product_category = value
 
-    @api.depends("creation_date", "product_category_id")
-    def _compute_crm_product_category_ids(self):
-        ICP = self.env["ir.config_parameter"].sudo()
-
-        show_product_category = ICP.get_param(
-            "crm_commercial.show_crm_commerical_product_category",
-        )
-
-        configured_category_id = ICP.get_param(
-            "crm_commercial.crm_product_category_id",
-            default="",
-        )
-
-        for rec in self:
-            rec.crm_product_category_ids = False
-
-            if show_product_category == "yes" and configured_category_id:
-                try:
-                    configured_category_id = int(configured_category_id)
-                except (ValueError, TypeError):
-                    configured_category_id = False
-
-                configured_category = (
-                    self.env["product.category"].browse(configured_category_id).exists()
-                    if configured_category_id
-                    else self.env["product.category"]
-                )
-
-                root_categories = self.env["product.category"].search(
-                    [
-                        ("parent_id", "=", False),
-                    ]
-                )
-
-                categories = configured_category | root_categories
-                rec.crm_product_category_ids = [(6, 0, categories.ids)]
-
-            else:
-                mda_category = self.env["product.category"].search(
-                    [("code", "=", "MDA")],
-                    limit=1,
-                )
-                rec.crm_product_category_ids = [(6, 0, mda_category.ids)]
+    # @api.depends("creation_date", "product_category_id")
+    # def _compute_crm_product_category_ids(self):
+    #     ICP = self.env["ir.config_parameter"].sudo()
+    #
+    #     show_product_category = ICP.get_param(
+    #         "crm_commercial.show_crm_commerical_product_category",
+    #     )
+    #
+    #     configured_category_id = ICP.get_param(
+    #         "crm_commercial.crm_product_category_id",
+    #         default="",
+    #     )
+    #
+    #     for rec in self:
+    #         rec.crm_product_category_ids = False
+    #
+    #         if show_product_category == "yes" and configured_category_id:
+    #             try:
+    #                 configured_category_id = int(configured_category_id)
+    #             except (ValueError, TypeError):
+    #                 configured_category_id = False
+    #
+    #             configured_category = (
+    #                 self.env["product.category"].browse(configured_category_id).exists()
+    #                 if configured_category_id
+    #                 else self.env["product.category"]
+    #             )
+    #
+    #             root_categories = self.env["product.category"].search(
+    #                 [
+    #                     ("parent_id", "=", False),
+    #                 ]
+    #             )
+    #
+    #             categories = configured_category | root_categories
+    #             rec.crm_product_category_ids = [(6, 0, categories.ids)]
+    #
+    #         else:
+    #             mda_category = self.env["product.category"].search(
+    #                 [("code", "=", "MDA")],
+    #                 limit=1,
+    #             )
+    #             rec.crm_product_category_ids = [(6, 0, mda_category.ids)]
 
 
 class CrmCommercialQuotationLine(models.Model):
@@ -1419,13 +1598,14 @@ class CrmCommercialQuotationLine(models.Model):
     @api.onchange("product_id")
     def _onchange_product_id(self):
         if self.product_id:
+            self.name = self.product_id.name
             self.unit_cost = self.product_id.standard_price
             self.sale_price = self.product_id.lst_price
 
             prod_cat = (
-                getattr(self.product_id, "product_group_id", False)
-                or getattr(self.product_id, "product_category_id", False)
-                or self.product_id.categ_id
+                    getattr(self.product_id, "product_group_id", False)
+                    or getattr(self.product_id, "product_category_id", False)
+                    or self.product_id.categ_id
             )
 
             category_rec = False
@@ -1461,6 +1641,7 @@ class CrmCommercialQuotationLine(models.Model):
             while cat:
                 if self.quotation_id:
                     if (
+<<<<<<< HEAD
                         cat.enable_payment_terms_pdf
                         and cat.payment_terms_content
                         and not self.quotation_id.payment_terms_tab
@@ -1470,14 +1651,28 @@ class CrmCommercialQuotationLine(models.Model):
                         cat.enable_warranty_terms_pdf
                         and cat.warranty_terms_content
                         and not self.quotation_id.warranty_terms_tab
+=======
+                            cat.payment_terms_content
+                            and not self.quotation_id.payment_terms_tab
+                    ):
+                        self.quotation_id.payment_terms_tab = cat.payment_terms_content
+                    if (
+                            cat.warranty_terms_content
+                            and not self.quotation_id.warranty_terms_tab
+>>>>>>> origin/main
                     ):
                         self.quotation_id.warranty_terms_tab = (
                             cat.warranty_terms_content
                         )
                     if (
+<<<<<<< HEAD
                         cat.enable_salient_features_pdf
                         and cat.salient_features_content
                         and not self.quotation_id.salient_features_tab
+=======
+                            cat.salient_features_content
+                            and not self.quotation_id.salient_features_tab
+>>>>>>> origin/main
                     ):
                         self.quotation_id.salient_features_tab = (
                             cat.salient_features_content
@@ -1486,7 +1681,7 @@ class CrmCommercialQuotationLine(models.Model):
 
             # Auto-add linked product if active
             if self.quotation_id and not self.env.context.get(
-                "skip_linked_product_addition"
+                    "skip_linked_product_addition"
             ):
                 linked_prod = self._get_linked_product_for(self.product_id)
                 if linked_prod:
@@ -1495,9 +1690,9 @@ class CrmCommercialQuotationLine(models.Model):
                     )
                     if not already_exists:
                         l_prod_cat = (
-                            getattr(linked_prod, "product_group_id", False)
-                            or getattr(linked_prod, "product_category_id", False)
-                            or linked_prod.categ_id
+                                getattr(linked_prod, "product_group_id", False)
+                                or getattr(linked_prod, "product_category_id", False)
+                                or linked_prod.categ_id
                         )
                         l_cat_rec = False
                         l_grp_rec = False
@@ -1511,9 +1706,9 @@ class CrmCommercialQuotationLine(models.Model):
                                         l_grp_rec = c
                                 c = c.parent_id
                         if (
-                            not l_cat_rec
-                            and l_prod_cat
-                            and l_prod_cat.use_for_crm_commercial
+                                not l_cat_rec
+                                and l_prod_cat
+                                and l_prod_cat.use_for_crm_commercial
                         ):
                             l_cat_rec = l_prod_cat
                         if not l_grp_rec and l_cat_rec and l_cat_rec.parent_id:
@@ -1529,7 +1724,7 @@ class CrmCommercialQuotationLine(models.Model):
 
                         line_vals = {
                             "quotation_id": self.quotation_id._origin.id
-                            or self.quotation_id.id,
+                                            or self.quotation_id.id,
                             "product_group_id": l_grp_rec.id if l_grp_rec else False,
                             "product_category_id": l_cat_rec.id if l_cat_rec else False,
                             "product_id": linked_prod.id,
@@ -1580,7 +1775,7 @@ class CrmCommercialQuotationLine(models.Model):
                         "message": _(
                             "Your maximum discount limit is %s%%. You entered %s%%."
                         )
-                        % (user_limit, entered_disc),
+                                   % (user_limit, entered_disc),
                     }
                 }
             if categ_limit > 0 and entered_disc > categ_limit:
@@ -1591,7 +1786,7 @@ class CrmCommercialQuotationLine(models.Model):
                         "message": _(
                             "Product Category (%s) discount limit is %s%%. You entered %s%%."
                         )
-                        % (self.product_category_id.name, categ_limit, entered_disc),
+                                   % (self.product_category_id.name, categ_limit, entered_disc),
                     }
                 }
 
@@ -1643,7 +1838,7 @@ class CrmCommercialQuotationLine(models.Model):
                 line.amount = 0.0
                 continue
             discounted_unit_price = line.sale_price * (
-                1.0 - (line.discount_percent / 100.0)
+                    1.0 - (line.discount_percent / 100.0)
             )
             subtotal = line.qty * discounted_unit_price
             vat = subtotal * (line.vat_percent / 100.0)
@@ -1663,9 +1858,9 @@ class CrmCommercialQuotationLine(models.Model):
                 )
                 if not already_exists:
                     prod_cat = (
-                        getattr(linked_prod, "product_group_id", False)
-                        or getattr(linked_prod, "product_category_id", False)
-                        or linked_prod.categ_id
+                            getattr(linked_prod, "product_group_id", False)
+                            or getattr(linked_prod, "product_category_id", False)
+                            or linked_prod.categ_id
                     )
                     category_rec = False
                     group_rec = False
@@ -1679,9 +1874,9 @@ class CrmCommercialQuotationLine(models.Model):
                                     group_rec = cat
                             cat = cat.parent_id
                     if (
-                        not category_rec
-                        and prod_cat
-                        and prod_cat.use_for_crm_commercial
+                            not category_rec
+                            and prod_cat
+                            and prod_cat.use_for_crm_commercial
                     ):
                         category_rec = prod_cat
                     if not group_rec and category_rec and category_rec.parent_id:

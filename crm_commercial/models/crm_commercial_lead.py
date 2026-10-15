@@ -26,7 +26,7 @@ class CrmCommercialLead(models.Model):
         readonly=True,
     )
     project_category_id = fields.Many2one(
-        "crm.commercial.project.category", string="Project Category", index=True,required=True,
+        "crm.commercial.project.category", string="Project Category", index=True, required=True,
     )
     warehouse_id = fields.Many2one(
         "stock.warehouse",
@@ -65,12 +65,48 @@ class CrmCommercialLead(models.Model):
         required=True,
     )
 
-    custom_partner = fields.Char(string="Customer/Lead")
+    custom_partner = fields.Char(string="Customer/Lead",required=True)
 
     is_customer_type = fields.Boolean(
         compute="_compute_is_customer_type",
         store=False,
     )
+
+    # 20261010 Gokul
+    # def read(self, fields=None, load='_classic_read'):
+    #     if self.env.user.company_id.dynamic_approval:
+    #         data = self.search([]).filtered(lambda l: l.is_approval_reject_button)
+    #         data._compute_is_approval_reject_button()
+    #     return super(CrmCommercialLead, self).read(fields=fields, load=load)
+    #
+    # @api.model
+    # def default_get(self, fields):
+    #     res = super(CrmCommercialLead, self).default_get(fields)
+    #     if self.env.user.company_id.dynamic_approval:
+    #         model_approval_id = self.env['model.approval'].sudo().search([
+    #             ('model_id', '=', 'crm.commercial.lead'),
+    #             ('active', '=', True)
+    #         ])
+    #         if model_approval_id and model_approval_id.mapped('approval_ids') and not res.get('suggested_ids'):
+    #             res['suggested_ids'] = model_approval_id.mapped('approval_ids')
+    #     return res
+    #
+    # def _prepare_approved_line(self, line):
+    #     """Copy approval line template into a service.sale.order.approved row,
+    #     preserving the admin-defined user sequence order.
+    #     """
+    #     if not line:
+    #         return {}
+    #     user_sequence_vals = [
+    #         (0, 0, {'user_id': s.user_id.id, 'sequence': s.sequence})
+    #         for s in line.user_sequence_ids.sorted('sequence')
+    #     ]
+    #     return {
+    #         'approval_level': line.level,
+    #         'user_ids': line.user_ids.ids if line.user_ids else [],
+    #         'group_ids': line.group_ids.ids if line.group_ids else [],
+    #         'user_sequence_ids': user_sequence_vals,
+    #     }
 
     @api.depends("customer_type_id")
     def _compute_is_customer_type(self):
@@ -380,9 +416,9 @@ class CrmCommercialLead(models.Model):
     def _check_expected_confirmation_date(self):
         for record in self:
             if (
-                record.expected_confirmation_date
-                and record.create_date
-                and record.expected_confirmation_date <= record.create_date.date()
+                    record.expected_confirmation_date
+                    and record.create_date
+                    and record.expected_confirmation_date <= record.create_date.date()
             ):
                 raise ValidationError(
                     "Expected Confirmation Date must be greater than Creation Date."
@@ -437,9 +473,9 @@ class CrmCommercialLead(models.Model):
     @api.onchange("country_id")
     def _onchange_country_id_reset_city(self):
         if (
-            self.country_id
-            and self.city_id
-            and self.city_id.country_id != self.country_id
+                self.country_id
+                and self.city_id
+                and self.city_id.country_id != self.country_id
         ):
             self.city_id = False
             self.city = False
@@ -460,6 +496,8 @@ class CrmCommercialLead(models.Model):
     existing_partner_id = fields.Many2one(
         "res.partner", string="Matching Existing Customer", readonly=True
     )
+    # existing_quotation_type_id=fields.Many2one("crm.commercial.quotation.type",string="Existing Quotation")
+    # quotation_type_id=fields.Many2one("crm.commercial.quotation.type",string="Existing Quotation")
 
     state = fields.Selection(
         [
@@ -547,7 +585,7 @@ class CrmCommercialLead(models.Model):
                         "message": _(
                             "Matching customer record found: %s (Phone: %s, Email: %s). Record linked to existing customer."
                         )
-                        % (partner.name, partner.phone or "", partner.email or ""),
+                                   % (partner.name, partner.phone or "", partner.email or ""),
                     }
                 }
 
@@ -621,12 +659,16 @@ class CrmCommercialLead(models.Model):
                 )
 
             self.existing_partner_id = partner.id
-
+        # vals = {
+        #     'quotation_type_id': self.lead_no,
+        #     'lead_id': self.id,
+        # }
         quotation = (
             self.env["crm.commercial.quotation"]
             .with_context(skip_validation=True)
             .create(
                 {
+                    # "quotation_type_id":self.lead_no,
                     "lead_id": self.id,
                     "lead_no": self.lead_no,
                     "partner_id": partner.id,
@@ -655,8 +697,8 @@ class CrmCommercialLead(models.Model):
                 }
             )
         )
-        quotation_type_id = self.env['crm.commercial.quotation.type'].search([('code', '=', '01')], limit=1)
-        quotation.update({"quotation_type_id": quotation_type_id, })
+        quotation_type_id=self.env['crm.commercial.quotation.type'].search([('code','=','01')],limit=1)
+        quotation.update({"quotation_type_id": quotation_type_id,})
         self.state = "converted"
         return {
             "type": "ir.actions.act_window",

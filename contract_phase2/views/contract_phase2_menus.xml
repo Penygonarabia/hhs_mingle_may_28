@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Quick access to all Service &amp; Repair job cards -->
+    <record id="action_cp2_job_cards" model="ir.actions.act_window">
+        <field name="name">Service &amp; Repair Job Cards</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('job_card_type', '=', 'service_repair')]</field>
+        <field name="context">{'default_job_card_type': 'service_repair'}</field>
+    </record>
+
+    <!-- Service &amp; Repair leads -->
+    <record id="action_cp2_leads" model="ir.actions.act_window">
+        <field name="name">Service &amp; Repair Leads</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('is_service_repair', '=', True)]</field>
+        <field name="context">{'default_is_service_repair': True, 'default_type': 'lead'}</field>
+    </record>
+
+    <!-- Consolidated Service &amp; Repair quotations (one per lead) -->
+    <record id="action_cp2_quotations" model="ir.actions.act_window">
+        <field name="name">Service &amp; Repair Quotations</field>
+        <field name="res_model">service.sale.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('contract_phase2_lead_id', '!=', False)]</field>
+    </record>
+
+    <!-- Service &amp; Repair customer invoices (raised from those quotations) -->
+    <record id="action_cp2_invoices" model="ir.actions.act_window">
+        <field name="name">Service &amp; Repair Invoices</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('move_type', '=', 'out_invoice'), ('cp2_quotation_id', '!=', False)]</field>
+        <field name="context">{'default_move_type': 'out_invoice'}</field>
+    </record>
+
+    <menuitem id="menu_cp2_root" name="Service &amp; Repair"
+              web_icon="machine_repair_management,static/description/icon.png"
+              sequence="90"/>
+    <menuitem id="menu_cp2_leads" name="Leads"
+              parent="menu_cp2_root" action="action_cp2_leads" sequence="10"/>
+    <menuitem id="menu_cp2_job_cards" name="Job Cards"
+              parent="menu_cp2_root" action="action_cp2_job_cards" sequence="20"/>
+    <menuitem id="menu_cp2_quotations" name="Quotations"
+              parent="menu_cp2_root" action="action_cp2_quotations" sequence="30"/>
+    <menuitem id="menu_cp2_invoices" name="Invoices"
+              parent="menu_cp2_root" action="action_cp2_invoices" sequence="40"/>
+
+</odoo>

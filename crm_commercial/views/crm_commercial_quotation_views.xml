@@ -28,6 +28,7 @@
         <field name="arch" type="xml">
             <form string="Commercial Quotation">
                 <header>
+                    <field name="allow_cost_rights" invisible="0"/>
                     <button name="action_confirm" string="Confirm Order" type="object" class="btn-primary"
                             invisible="state not in ('draft', 'approved')"/>
                     <button name="action_copy_quotation" string="Copy Quotation" type="object" class="btn-secondary"/>
@@ -74,8 +75,11 @@
                             <field name="assigned_id" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <field name="project_category_id"
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                            <field name="category_id" invisible="not show_product_category" domain="[('id','in',crm_product_category_ids)]"/>
+                            <field name="crm_product_category_ids" invisible="1" widget="many2many_tags"/>
                             <field name="product_category_id"
-                                   domain="[('crm_commerical_category_id','=',project_category_id)]"
+                                   domain="[('id','child_of',category_id),('use_for_crm_commercial', '=', True), ('exclude_category', '=', False)
+                                   ,('id', '!=', category_id)]"
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <label for="street" string="Address"/>
                             <div class="o_address_format">
@@ -180,11 +184,11 @@
                                     <field name="sequence" widget="handle"/>
                                     <field name="display_type" column_invisible="1"/>
                                     <field name="sale_type_id" string="Sale Type"/>
-<!--                                    <field name="show_product_category"-->
-<!--                                           column_invisible="0"/>-->
+                                    <!--                                    <field name="show_product_category"-->
+                                    <!--                                           column_invisible="0"/>-->
 
                                     <field name="product_group_id"
-                                           column_invisible="parent.show_product_category"/>
+                                           column_invisible="not parent.show_product_category"/>
                                     <!--                                    <field name="show_product_category" column_invisible="True"/>-->
                                     <!--                                    <field name="product_group_id" string="Product Category" context="{'show_code_only': True}" column_invisible="parent.show_product_category"/>-->
                                     <!-- <field name="product_group_id" string="Product Category" domain="[('use_for_crm_commercial', '=', True), ('parent_id', '=', False)]" context="{'show_code_only': True}"/> -->
@@ -194,13 +198,16 @@
                                            domain="[('categ_id', 'child_of', product_category_id)] if product_category_id else []"/>
                                     <field name="name" widget="section_and_note_text" string="Description / Section"
                                            optional="show"/>
+
                                     <field name="stock_qty" string="Stock" readonly="1"/>
                                     <field name="qty" string="Qty"/>
                                     <field name="unit_cost" string="Unit Cost"/>
                                     <field name="sale_price" string="Sale Price"/>
                                     <field name="discount_percent" string="Discount %"/>
-                                    <field name="dsi" string="DSI" readonly="1"/>
-                                    <field name="smc" string="SMC" readonly="1"/>
+                                    <field name="dsi" string="DSI" readonly="1"
+                                           column_invisible="not parent.allow_cost_rights"/>
+                                    <field name="smc" string="SMC" readonly="1"
+                                           column_invisible="not parent.allow_cost_rights"/>
                                     <field name="special_support" string="Spl Spt"/>
                                     <field name="vat_amount" string="VAT" readonly="1"/>
                                     <field name="amount" string="Total" readonly="1"/>

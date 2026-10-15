@@ -21,7 +21,7 @@
             <xpath expr="//sheet" position="inside">
                 <group string="CRM Commercial Configuration">
                     <field name="use_for_crm_commercial"/>
-                    <field name="crm_commerical_category_id"/>
+<!--                    <field name="crm_commerical_category_id"/>-->
                     <field name="exclude_category" invisible="not use_for_crm_commercial"/>
                 </group>
                 <notebook invisible="not use_for_crm_commercial">
@@ -51,8 +51,7 @@
                     <page string="Payment Terms" name="payment_terms_page">
                         <div class="d-flex align-items-center mb-2" colspan="2">
                             <div class="o_cell o_wrap_label o_td_label me-3">
-                                <label for="enable_payment_terms_pdf" class="o_form_label"
-                                       style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
+                                <label for="enable_payment_terms_pdf" class="o_form_label" style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
                             </div>
                             <field name="enable_payment_terms_pdf" nolabel="1"/>
                         </div>
@@ -61,8 +60,7 @@
                     <page string="Warranty Terms &amp; Conditions" name="warranty_terms_page">
                         <div class="d-flex align-items-center mb-2" colspan="2">
                             <div class="o_cell o_wrap_label o_td_label me-3">
-                                <label for="enable_warranty_terms_pdf" class="o_form_label"
-                                       style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
+                                <label for="enable_warranty_terms_pdf" class="o_form_label" style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
                             </div>
                             <field name="enable_warranty_terms_pdf" nolabel="1"/>
                         </div>
@@ -71,8 +69,7 @@
                     <page string="Salient Features" name="salient_features_page">
                         <div class="d-flex align-items-center mb-2" colspan="2">
                             <div class="o_cell o_wrap_label o_td_label me-3">
-                                <label for="enable_salient_features_pdf" class="o_form_label"
-                                       style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
+                                <label for="enable_salient_features_pdf" class="o_form_label" style="white-space: nowrap; margin-bottom: 0; font-weight: bold;"/>
                             </div>
                             <field name="enable_salient_features_pdf" nolabel="1"/>
                         </div>

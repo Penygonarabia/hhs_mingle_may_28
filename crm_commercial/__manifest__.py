@@ -64,6 +64,7 @@
         # PDF Reports
         "reports/quotation_pdf_report.xml",
         "reports/excel_exports.xml",
+        
     ],
     "assets": {
         "web.assets_backend": [

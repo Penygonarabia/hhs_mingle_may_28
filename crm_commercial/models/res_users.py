@@ -37,6 +37,9 @@ class ResUsers(models.Model):
         string="Allow Cost Rights",
         help="Allows viewing original cost price from products and costing summaries.",
     )
+
+
+
     lead_auto_approval = fields.Boolean(
         string="Lead - Auto Approval", help="Automatically approves created leads."
     )
