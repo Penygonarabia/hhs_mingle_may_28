@@ -64,6 +64,7 @@ class CrmCommercialQuotation(models.Model):
             "crm_commercial.crm_product_category_id",
             default=False,
         )
+        return int(category_id) if category_id else False
 
     # @api.depends("product_category_id")
     def _compute_crm_product_category_ids(self):
@@ -73,17 +74,13 @@ class CrmCommercialQuotation(models.Model):
             "crm_commercial.show_crm_commerical_product_category",
             default="",
         )
-
         configured_category_id = ICP.get_param(
             "crm_commercial.crm_product_category_id",
             default="",
         )
-
         for rec in self:
             rec.crm_product_category_ids = False
-
             if show_product_category == "True" and configured_category_id:
-
                 try:
                     configured_category_id = int(configured_category_id)
                 except (ValueError, TypeError):
@@ -723,11 +720,11 @@ class CrmCommercialQuotation(models.Model):
                     line.product_id.categ_id if line.product_id else False
                 )
                 while cat:
-                    if cat.enable_payment_terms_pdf and cat.payment_terms_content and not payment_terms:
+                    if cat.payment_terms_content and not payment_terms:
                         payment_terms = cat.payment_terms_content
-                    if cat.enable_warranty_terms_pdf and cat.warranty_terms_content and not warranty_terms:
+                    if cat.warranty_terms_content and not warranty_terms:
                         warranty_terms = cat.warranty_terms_content
-                    if cat.enable_salient_features_pdf and cat.salient_features_content and not salient_features:
+                    if cat.salient_features_content and not salient_features:
                         salient_features = cat.salient_features_content
                     if payment_terms and warranty_terms and salient_features:
                         break
@@ -760,11 +757,11 @@ class CrmCommercialQuotation(models.Model):
                 line.product_id.categ_id if line.product_id else False
             )
             while cat:
-                if cat.enable_payment_terms_pdf and cat.payment_terms_content and not payment_terms:
+                if cat.payment_terms_content and not payment_terms:
                     payment_terms = cat.payment_terms_content
-                if cat.enable_warranty_terms_pdf and cat.warranty_terms_content and not warranty_terms:
+                if cat.warranty_terms_content and not warranty_terms:
                     warranty_terms = cat.warranty_terms_content
-                if cat.enable_salient_features_pdf and cat.salient_features_content and not salient_features:
+                if cat.salient_features_content and not salient_features:
                     salient_features = cat.salient_features_content
                 if payment_terms and warranty_terms and salient_features:
                     break
@@ -959,33 +956,6 @@ class CrmCommercialQuotation(models.Model):
                 line.product_id.categ_id if line.product_id else False
             )
             while cat:
-<<<<<<< HEAD
-                if cat.id not in cat_map:
-                    p_terms = (
-                        cat.payment_terms_content
-                        if cat.enable_payment_terms_pdf
-                        else False
-                    )
-                    w_terms = (
-                        cat.warranty_terms_content
-                        if cat.enable_warranty_terms_pdf
-                        else False
-                    )
-                    s_features = (
-                        cat.salient_features_content
-                        if cat.enable_salient_features_pdf
-                        else False
-                    )
-                    if p_terms or w_terms or s_features:
-                        cat_map[cat.id] = {
-                            "id": cat.id,
-                            "category": cat,
-                            "name": cat.name,
-                            "payment_terms": p_terms,
-                            "warranty_terms": w_terms,
-                            "salient_features": s_features,
-                        }
-=======
                 if cat.id not in cat_map and (
                         cat.payment_terms_content
                         or cat.warranty_terms_content
@@ -999,82 +969,8 @@ class CrmCommercialQuotation(models.Model):
                         "warranty_terms": cat.warranty_terms_content,
                         "salient_features": cat.salient_features_content,
                     }
->>>>>>> origin/main
                 cat = cat.parent_id
         return list(cat_map.values())
-
-    def _is_payment_terms_pdf_enabled(self):
-        """Check if any category in the quotation lines has payment terms enabled for PDF."""
-        self.ensure_one()
-        for line in self.line_ids:
-            cat = line.product_category_id or (
-                line.product_id.categ_id if line.product_id else False
-            )
-            while cat:
-                if cat.enable_payment_terms_pdf:
-                    return True
-                cat = cat.parent_id
-        return False
-
-    def _is_warranty_terms_pdf_enabled(self):
-        """Check if any category in the quotation lines has warranty terms enabled for PDF."""
-        self.ensure_one()
-        for line in self.line_ids:
-            cat = line.product_category_id or (
-                line.product_id.categ_id if line.product_id else False
-            )
-            while cat:
-                if cat.enable_warranty_terms_pdf:
-                    return True
-                cat = cat.parent_id
-        return False
-
-    def _is_salient_features_pdf_enabled(self):
-        """Check if any category in the quotation lines has salient features enabled for PDF."""
-        self.ensure_one()
-        for line in self.line_ids:
-            cat = line.product_category_id or (
-                line.product_id.categ_id if line.product_id else False
-            )
-            while cat:
-                if cat.enable_salient_features_pdf:
-                    return True
-                cat = cat.parent_id
-        return False
-
-    def _get_pdf_payment_terms(self):
-        """Returns payment terms HTML for PDF report: from quotation tab if set, or dynamically from enabled line categories."""
-        self.ensure_one()
-        if not self._is_payment_terms_pdf_enabled():
-            return False
-        if self.payment_terms_tab and self.payment_terms_tab.strip():
-            return self.payment_terms_tab
-        for line in self.line_ids:
-            cat = line.product_category_id or (
-                line.product_id.categ_id if line.product_id else False
-            )
-            while cat:
-                if cat.enable_payment_terms_pdf and cat.payment_terms_content:
-                    return cat.payment_terms_content
-                cat = cat.parent_id
-        return False
-
-    def _get_pdf_warranty_terms(self):
-        """Returns warranty terms HTML for PDF report: from quotation tab if set, or dynamically from enabled line categories."""
-        self.ensure_one()
-        if not self._is_warranty_terms_pdf_enabled():
-            return False
-        if self.warranty_terms_tab and self.warranty_terms_tab.strip():
-            return self.warranty_terms_tab
-        for line in self.line_ids:
-            cat = line.product_category_id or (
-                line.product_id.categ_id if line.product_id else False
-            )
-            while cat:
-                if cat.enable_warranty_terms_pdf and cat.warranty_terms_content:
-                    return cat.warranty_terms_content
-                cat = cat.parent_id
-        return False
 
     def action_open_import_material_list(self):
         return {
@@ -1476,12 +1372,12 @@ class CrmCommercialQuotationLine(models.Model):
     product_group_id = fields.Many2one(
         "product.category",
         string="Product Category",
-        domain="[('use_for_crm_commercial', '=', True), ('parent_id', '=', False)]",
+        related="quotation_id.category_id",
+        store=True,
     )
     product_category_id = fields.Many2one(
         "product.category",
         string="Product Group",
-        domain="[('use_for_crm_commercial', '=', True), ('parent_id', '=', product_category) , ('parent_id', 'child_of', product_group_id), ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]",
     )
     sale_type_id = fields.Many2one("crm.commercial.sale.type", string="Sale Type")
     product_id = fields.Many2one(
@@ -1617,17 +1513,6 @@ class CrmCommercialQuotationLine(models.Model):
             while cat:
                 if self.quotation_id:
                     if (
-<<<<<<< HEAD
-                        cat.enable_payment_terms_pdf
-                        and cat.payment_terms_content
-                        and not self.quotation_id.payment_terms_tab
-                    ):
-                        self.quotation_id.payment_terms_tab = cat.payment_terms_content
-                    if (
-                        cat.enable_warranty_terms_pdf
-                        and cat.warranty_terms_content
-                        and not self.quotation_id.warranty_terms_tab
-=======
                             cat.payment_terms_content
                             and not self.quotation_id.payment_terms_tab
                     ):
@@ -1635,20 +1520,13 @@ class CrmCommercialQuotationLine(models.Model):
                     if (
                             cat.warranty_terms_content
                             and not self.quotation_id.warranty_terms_tab
->>>>>>> origin/main
                     ):
                         self.quotation_id.warranty_terms_tab = (
                             cat.warranty_terms_content
                         )
                     if (
-<<<<<<< HEAD
-                        cat.enable_salient_features_pdf
-                        and cat.salient_features_content
-                        and not self.quotation_id.salient_features_tab
-=======
                             cat.salient_features_content
                             and not self.quotation_id.salient_features_tab
->>>>>>> origin/main
                     ):
                         self.quotation_id.salient_features_tab = (
                             cat.salient_features_content
@@ -1725,13 +1603,13 @@ class CrmCommercialQuotationLine(models.Model):
                 self.discount_percent = cat.default_discount_percent
             while cat:
                 if self.quotation_id:
-                    if cat.enable_payment_terms_pdf and cat.payment_terms_content:
+                    if cat.payment_terms_content:
                         self.quotation_id.payment_terms_tab = cat.payment_terms_content
-                    if cat.enable_warranty_terms_pdf and cat.warranty_terms_content:
+                    if cat.warranty_terms_content:
                         self.quotation_id.warranty_terms_tab = (
                             cat.warranty_terms_content
                         )
-                    if cat.enable_salient_features_pdf and cat.salient_features_content:
+                    if cat.salient_features_content:
                         self.quotation_id.salient_features_tab = (
                             cat.salient_features_content
                         )

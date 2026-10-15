@@ -28,6 +28,7 @@
         <field name="arch" type="xml">
             <form string="Commercial Quotation">
                 <header>
+                    <field name="allow_cost_rights" invisible="0"/>
                     <button name="action_confirm" string="Confirm Order" type="object" class="btn-primary"
                             invisible="state not in ('draft', 'approved')"/>
                     <button name="action_copy_quotation" string="Copy Quotation" type="object" class="btn-secondary"/>
@@ -37,8 +38,6 @@
                     <field name="state" widget="statusbar" statusbar_visible="draft,approved,confirmed,delivered"/>
                 </header>
                 <sheet>
-                    <!-- allow_cost_rights must be in sheet (not header) for computed fields in Odoo 17 -->
-                    <field name="allow_cost_rights" invisible="1"/>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_sale_order" type="object" class="oe_stat_button" icon="fa-usd"
                                 invisible="sale_order_count == 0">
@@ -76,7 +75,7 @@
                             <field name="assigned_id" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <field name="project_category_id"
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
-                            <field name="category_id" invisible="not show_product_category" domain="[('id','in',crm_product_category_ids)]"/>
+                            <field name="category_id" invisible="0"/>
                             <field name="crm_product_category_ids" invisible="1" widget="many2many_tags"/>
                             <field name="product_category_id"
                                    domain="[('id','child_of',category_id),('use_for_crm_commercial', '=', True), ('exclude_category', '=', False)
@@ -194,7 +193,8 @@
                                     <!--                                    <field name="product_group_id" string="Product Category" context="{'show_code_only': True}" column_invisible="parent.show_product_category"/>-->
                                     <!-- <field name="product_group_id" string="Product Category" domain="[('use_for_crm_commercial', '=', True), ('parent_id', '=', False)]" context="{'show_code_only': True}"/> -->
                                     <field name="product_category_id" string="Product Group"
-                                           domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id), ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]"/>
+                                           domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id),
+                                           ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]"/>
                                     <field name="product_id" string="Part No / Product"
                                            domain="[('categ_id', 'child_of', product_category_id)] if product_category_id else []"/>
                                     <field name="name" widget="section_and_note_text" string="Description / Section"
