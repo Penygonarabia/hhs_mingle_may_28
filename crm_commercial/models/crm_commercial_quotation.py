@@ -56,6 +56,18 @@ class CrmCommercialQuotation(models.Model):
         default=lambda self: self.env.user.crm_commercial_default_warehouse_id,
         # default=lambda self: self._default_warehouse_id(),
     )
+    capacity = fields.Char(string="Capacity")
+    allow_cost_rights = fields.Boolean(
+        string="Allow Cost Rights",
+        compute="_compute_allow_cost_rights",
+    )
+
+    @api.depends("state")
+    @api.depends_context("uid")
+    def _compute_allow_cost_rights(self):
+        allowed = self.env.user.allow_cost_rights
+        for rec in self:
+            rec.allow_cost_rights = allowed
 
     # @api.model
     # def _default_warehouse_id(self):

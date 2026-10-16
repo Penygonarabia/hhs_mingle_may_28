@@ -692,12 +692,12 @@ class CrmCommercialLead(models.Model):
                     "zip": self.zip,
                     "warehouse_id": self.warehouse_id.id,
                     "assigned_id": self.assigned_id.id,
-                    # "project_category_id":self.product_category_id,
-                    "project_category_id": (
-                        self.project_category_id.id
-                        if self.project_category_id
-                        else False
-                    ),
+                    "product_category_id": self.product_category_id.id if self.product_category_id else False,
+                    "project_category_id": self.project_category_id.id if self.project_category_id else False,                    # "project_category_id": (
+                    #     self.project_category_id.id
+                    #     if self.project_category_id
+                    #     else False
+                    # ),
                     "project_name": self.name,
                     "tag_ids": [(6, 0, self.tag_ids.ids)],
                 }

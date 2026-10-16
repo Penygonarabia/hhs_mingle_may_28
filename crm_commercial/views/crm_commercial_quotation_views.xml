@@ -229,13 +229,13 @@
                                     <field name="qty" string="Qty"/>
                                     <field name="unit_cost" string="Unit Cost"
                                            column_invisible="not parent.allow_cost_rights"/>
+                                    <field name="special_support" string="Spl Spt"/>
                                     <field name="sale_price" string="Sale Price"/>
                                     <field name="discount_percent" string="Discount %"/>
                                     <field name="dsi" string="DSI" readonly="1"
                                            column_invisible="not parent.allow_cost_rights"/>
                                     <field name="smc" string="SMC" readonly="1"
                                            column_invisible="not parent.allow_cost_rights"/>
-                                    <field name="special_support" string="Spl Spt"/>
                                     <field name="vat_amount" string="VAT" readonly="1"/>
                                     <field name="amount" string="Total" readonly="1"/>
                                 </tree>
