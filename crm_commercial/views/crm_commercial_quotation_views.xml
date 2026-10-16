@@ -78,6 +78,7 @@
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <field name="partner_id" invisible="0" readonly="is_warehouse_readonly"
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                            <field name="capacity" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <field name="to_name" readonly="is_warehouse_readonly"/>
                             <field name="email" readonly="is_warehouse_readonly"/>
                             <field name="phone" readonly="is_warehouse_readonly"/>
@@ -197,7 +198,6 @@
                             <field name="line_ids" widget="section_and_note_one2many"
                                    readonly="is_warehouse_readonly">
                                 <tree editable="bottom">
-                                    <!--                                    <field name="allow_cost_rights" column_invisible="1"/>-->
                                     <!--                                    <field name="is_warehouse_readonly" invisible="1"/>-->
                                     <control>
                                         <create name="add_product_control" string="Add a product"/>

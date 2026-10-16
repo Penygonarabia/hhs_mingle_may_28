@@ -2,6 +2,8 @@
 from odoo import fields, models, api, _
 from odoo.exceptions import ValidationError
 import re
+import logging
+
 
 
 class CrmCommercialQuotation(models.Model):
@@ -56,7 +58,11 @@ class CrmCommercialQuotation(models.Model):
         default=lambda self: self.env.user.crm_commercial_default_warehouse_id,
         # default=lambda self: self._default_warehouse_id(),
     )
-    capacity = fields.Char(string="Capacity")
+
+    # @api.model
+    # def _default_warehouse_id(self):
+    #     return self.env.user.crm_commercial_default_warehouse_id.id or False
+    capacity=fields.Char(string="Capacity")
     allow_cost_rights = fields.Boolean(
         string="Allow Cost Rights",
         compute="_compute_allow_cost_rights",
@@ -68,22 +74,6 @@ class CrmCommercialQuotation(models.Model):
         allowed = self.env.user.allow_cost_rights
         for rec in self:
             rec.allow_cost_rights = allowed
-
-    # @api.model
-    # def _default_warehouse_id(self):
-    #     return self.env.user.crm_commercial_default_warehouse_id.id or False
-
-    allow_cost_rights = fields.Boolean(
-        string="Allow Cost Rights",
-        help="Allows viewing original cost price from products and costing summaries.",
-        compute="_compute_allow_cost_rights"
-    )
-
-    @api.depends_context("uid")
-    def _compute_allow_cost_rights(self):
-        allowed = self.env.user.allow_cost_rights
-        for line in self:
-            line.allow_cost_rights = allowed
 
     crm_product_category_ids = fields.Many2many(
         # added by vengatesh sep 21

@@ -39,6 +39,7 @@ class CrmCommercialLead(models.Model):
     @api.model
     def _default_warehouse_id(self):
         return self.env.user.crm_commercial_default_warehouse_id.id or False
+
     # date oct 7 2026
     warehouse_ids = fields.Many2many(
         "stock.warehouse",
@@ -70,7 +71,7 @@ class CrmCommercialLead(models.Model):
         required=True,
     )
 
-    custom_partner = fields.Char(string="Customer/Lead",required=True)
+    custom_partner = fields.Char(string="Customer/Lead", required=True)
 
     is_customer_type = fields.Boolean(
         compute="_compute_is_customer_type",
@@ -692,8 +693,10 @@ class CrmCommercialLead(models.Model):
                     "zip": self.zip,
                     "warehouse_id": self.warehouse_id.id,
                     "assigned_id": self.assigned_id.id,
+                    "capacity": self.capacity if self.capacity else False,
                     "product_category_id": self.product_category_id.id if self.product_category_id else False,
-                    "project_category_id": self.project_category_id.id if self.project_category_id else False,                    # "project_category_id": (
+                    "project_category_id": self.project_category_id.id if self.project_category_id else False,
+                    # "project_category_id": (
                     #     self.project_category_id.id
                     #     if self.project_category_id
                     #     else False
@@ -710,8 +713,8 @@ class CrmCommercialLead(models.Model):
         # project_category_id.update({"product_category_id":project_category_id})
         # print("==============================", self.product_category_id)
         # print("==============================", self.project_category_id)
-        quotation_type_id=self.env['crm.commercial.quotation.type'].search([('code','=','01')],limit=1)
-        quotation.update({"quotation_type_id": quotation_type_id,})
+        quotation_type_id = self.env['crm.commercial.quotation.type'].search([('code', '=', '01')], limit=1)
+        quotation.update({"quotation_type_id": quotation_type_id, })
         self.state = "converted"
         return {
             "type": "ir.actions.act_window",
