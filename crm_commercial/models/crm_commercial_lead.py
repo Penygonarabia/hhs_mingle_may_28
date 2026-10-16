@@ -33,7 +33,12 @@ class CrmCommercialLead(models.Model):
         string="Warehouse",
         required=True,
         index=True,
+        default=lambda self: self._default_warehouse_id(),
     )
+
+    @api.model
+    def _default_warehouse_id(self):
+        return self.env.user.crm_commercial_default_warehouse_id.id or False
     # date oct 7 2026
     warehouse_ids = fields.Many2many(
         "stock.warehouse",
@@ -687,6 +692,7 @@ class CrmCommercialLead(models.Model):
                     "zip": self.zip,
                     "warehouse_id": self.warehouse_id.id,
                     "assigned_id": self.assigned_id.id,
+                    # "project_category_id":self.product_category_id,
                     "project_category_id": (
                         self.project_category_id.id
                         if self.project_category_id
@@ -697,6 +703,13 @@ class CrmCommercialLead(models.Model):
                 }
             )
         )
+        # project_category_id = self.env["crm.commercial.lead"].search(
+        #     [("product_category_id", "=", self.project_category_id.id)],
+        #     limit=1,
+        # )
+        # project_category_id.update({"product_category_id":project_category_id})
+        # print("==============================", self.product_category_id)
+        # print("==============================", self.project_category_id)
         quotation_type_id=self.env['crm.commercial.quotation.type'].search([('code','=','01')],limit=1)
         quotation.update({"quotation_type_id": quotation_type_id,})
         self.state = "converted"

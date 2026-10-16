@@ -34,12 +34,45 @@ class CrmCommercialQuotation(models.Model):
         # readonly=True,
         index=True,
     )
+    is_warehouse_readonly = fields.Boolean(
+        compute="_compute_is_warehouse_readonly",
+    )
+
+    @api.depends("state")
+    @api.depends_context("uid")
+    def _compute_is_warehouse_readonly(self):
+        allow_edit = self.env.user.allow_edit_quotation
+
+        for record in self:
+            record.is_warehouse_readonly = (
+                    record.state in ("approved", "confirmed") and not allow_edit
+            )
+
     warehouse_id = fields.Many2one(
         "stock.warehouse",
         string="Warehouse",
         required=True,
         index=True,
+        default=lambda self: self.env.user.crm_commercial_default_warehouse_id,
+        # default=lambda self: self._default_warehouse_id(),
     )
+
+    # @api.model
+    # def _default_warehouse_id(self):
+    #     return self.env.user.crm_commercial_default_warehouse_id.id or False
+
+    allow_cost_rights = fields.Boolean(
+        string="Allow Cost Rights",
+        help="Allows viewing original cost price from products and costing summaries.",
+        compute="_compute_allow_cost_rights"
+    )
+
+    @api.depends_context("uid")
+    def _compute_allow_cost_rights(self):
+        allowed = self.env.user.allow_cost_rights
+        for line in self:
+            line.allow_cost_rights = allowed
+
     crm_product_category_ids = fields.Many2many(
         # added by vengatesh sep 21
         "product.category",
@@ -119,20 +152,6 @@ class CrmCommercialQuotation(models.Model):
         string="Warehouses",
         default=lambda self: self.env.user.available_warehouse_ids,
     )
-
-    allow_cost_rights = fields.Boolean(
-        string="Allow Cost Rights",
-        help="Allows viewing original cost price from products and costing summaries.",
-        compute="_compute_allow_cost_rights"
-    )
-
-    @api.depends_context("uid")
-    def _compute_allow_cost_rights(self):
-        allowed = self.env.user.allow_cost_rights
-        for line in self:
-            line.allow_cost_rights = False
-            if allowed:
-                line.allow_cost_rights = True
 
     # show_crm_commerical_product_category = fields.Boolean(
     #     compute="_compute_show_product_category",
@@ -512,7 +531,7 @@ class CrmCommercialQuotation(models.Model):
                     and record.expiry_date >= record.expected_confirmation_date
             ):
                 raise ValidationError(
-                    _("Expiry Date must be greater than Expected Confirmation Date.")
+                    _("Expected Confirmation Date must be greather Expiry Date.")
                 )
 
             if (
@@ -521,7 +540,7 @@ class CrmCommercialQuotation(models.Model):
                     and record.expected_confirmation_date >= record.project_expected_closure_date
             ):
                 raise ValidationError(
-                    _("Expected Confirmation Date must be greater than Project Expected Closure Date.")
+                    _("Project Expected Closure Date  must be greater than Expected Confirmation Date.")
                 )
 
     @api.onchange("expiry_date")
@@ -1386,6 +1405,14 @@ class CrmCommercialQuotationLine(models.Model):
         index=True,
         domain="[('categ_id', 'child_of', product_category_id)] if product_category_id else []",
     )
+    is_warehouse_readonly = fields.Boolean(
+        compute="_compute_is_warehouse_readonly",
+    )
+
+    @api.depends("quotation_id")
+    def _compute_is_warehouse_readonly(self):
+        for line in self:
+            line.is_warehouse_readonly = False  # Replace with your actual condition
 
     stock_qty = fields.Float(
         string="Stock", compute="_compute_stock_qty", readonly=True

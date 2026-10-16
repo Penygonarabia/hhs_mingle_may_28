@@ -28,7 +28,6 @@
         <field name="arch" type="xml">
             <form string="Commercial Quotation">
                 <header>
-                    <field name="allow_cost_rights" invisible="0"/>
                     <button name="action_confirm" string="Confirm Order" type="object" class="btn-primary"
                             invisible="state not in ('draft', 'approved')"/>
                     <button name="action_copy_quotation" string="Copy Quotation" type="object" class="btn-secondary"/>
@@ -59,62 +58,86 @@
                     </div>
                     <group string="Header Information">
                         <group>
-                            <field name="warehouse_id" domain="[('id','in',warehouse_ids)]"
-                                   options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
-                            <field name="warehouse_ids" widget="many2many_tags" invisible="1"/>
-                            <field name="quotation_type_id" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
-                            <field name="quotation_type_code" invisible="True"/>
-                            <field name="lead_no" invisible="1"/>
+                            <!--                            <field name="warehouse_id" domain="[('id','in',warehouse_ids)]"-->
+                            <!--                                   options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>-->
+
+                            <field name="is_warehouse_readonly" invisible="1"/>
+
+                            <field name="warehouse_id"
+                                   domain="[('id', 'in', warehouse_ids)]"
+                                   readonly="is_warehouse_readonly"
+                                   options="{'no_open': True, 'no_create': True}"/>
+                            <field name="warehouse_ids" widget="many2many_tags" invisible="1"
+                                   readonly="is_warehouse_readonly"/>
+                            <field name="quotation_type_id" options="{'no_create':True,'no_edit':True,'no_open':True}"
+                                   readonly="is_warehouse_readonly"/>
+                            <field name="quotation_type_code" invisible="True" readonly="is_warehouse_readonly"/>
+                            <field name="lead_no" invisible="1" readonly="is_warehouse_readonly"/>
                             <field name="lead_id" invisible="quotation_type_code == '02'"
+                                   readonly="is_warehouse_readonly"
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
-                            <field name="partner_id" invisible="0"
+                            <field name="partner_id" invisible="0" readonly="is_warehouse_readonly"
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
-                            <field name="to_name"/>
-                            <field name="email"/>
-                            <field name="phone"/>
-                            <field name="assigned_id" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                            <field name="to_name" readonly="is_warehouse_readonly"/>
+                            <field name="email" readonly="is_warehouse_readonly"/>
+                            <field name="phone" readonly="is_warehouse_readonly"/>
+                            <field name="assigned_id" options="{'no_create':True,'no_edit':True,'no_open':True}"
+                                   readonly="is_warehouse_readonly"/>
                             <field name="project_category_id"
-                                   options="{'no_create':True,'no_edit':True,'no_open':True}"/>
-                            <field name="category_id" invisible="0"/>
-                            <field name="crm_product_category_ids" invisible="1" widget="many2many_tags"/>
+                                   options="{'no_create':True,'no_edit':True,'no_open':True}"
+                                   readonly="is_warehouse_readonly"/>
+                            <field name="category_id" invisible="not show_product_category"
+                                   domain="[('parent_id', '=', False)]"
+                                   readonly="is_warehouse_readonly"/>
+                            <field name="crm_product_category_ids" invisible="1" widget="many2many_tags"
+                                   readonly="is_warehouse_readonly"/>
                             <field name="product_category_id"
                                    domain="[('id','child_of',category_id),('use_for_crm_commercial', '=', True), ('exclude_category', '=', False)
-                                   ,('id', '!=', category_id)]"
+                                   ,('id', '!=', category_id)]" readonly="is_warehouse_readonly"
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <label for="street" string="Address"/>
                             <div class="o_address_format">
-                                <field name="street" placeholder="Street..." class="o_address_street"/>
-                                <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+                                <field name="street" placeholder="Street..." class="o_address_street"
+                                       readonly="is_warehouse_readonly"/>
+                                <field name="street2" placeholder="Street 2..." class="o_address_street"
+                                       readonly="is_warehouse_readonly"/>
                                 <field name="city_id" placeholder="City" class="o_address_city"
-                                       domain="[('country_id', '=', country_id)]"
+                                       domain="[('country_id', '=', country_id)]" readonly="is_warehouse_readonly"
                                        options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
                                 <field name="state_id" class="o_address_state" placeholder="State"
+                                       readonly="is_warehouse_readonly"
                                        options="{&quot;no_open&quot;: True}"
                                        domain="[('country_id', '=', country_id)]"/>
                                 <field name="district" placeholder="District..."
-                                       options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
+                                       options="{'no_create': True, 'no_edit': True, 'no_open': True}"
+                                       readonly="is_warehouse_readonly"/>
                                 <field name="region_id" placeholder="Region..."
-                                       options="{'no_create': True, 'no_edit': True, 'no_open': True}"/>
-                                <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                                       options="{'no_create': True, 'no_edit': True, 'no_open': True}"
+                                       readonly="is_warehouse_readonly"/>
+                                <field name="zip" placeholder="ZIP" class="o_address_zip"
+                                       readonly="is_warehouse_readonly"/>
                                 <field name="country_id" placeholder="Country" class="o_address_country"
-                                       options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+                                       options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"
+                                       readonly="is_warehouse_readonly"/>
                             </div>
                         </group>
                         <group>
-                            <field name="date"/>
-                            <field name="expiry_date"/>
-                            <field name="expected_confirmation_date"/>
-                            <field name="project_expected_closure_date"/>
-                            <field name="developer"/>
-                            <field name="possibility_percent"/>
+                            <field name="date" readonly="is_warehouse_readonly"/>
+                            <field name="expiry_date" readonly="is_warehouse_readonly"/>
+                            <field name="expected_confirmation_date" readonly="is_warehouse_readonly"/>
+                            <field name="project_expected_closure_date" readonly="is_warehouse_readonly"/>
+                            <field name="developer" readonly="is_warehouse_readonly"/>
+                            <field name="possibility_percent" readonly="is_warehouse_readonly"/>
                             <field name="project_status_id" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
-                            <field name="project_detail_status_id"
+                            <field name="project_detail_status_id" readonly="is_warehouse_readonly"
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
-                            <field name="consultant_id" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
-                            <field name="tag_ids" widget="many2many_tags"/>
-                            <field name="ignore_for_reporting"/>
+                            <field name="consultant_id" options="{'no_create':True,'no_edit':True,'no_open':True}"
+                                   readonly="is_warehouse_readonly"/>
+                            <field name="tag_ids" widget="many2many_tags" readonly="is_warehouse_readonly"/>
+                            <field name="ignore_for_reporting" readonly="is_warehouse_readonly"/>
                             <field name="show_vat_row_wise"/>
                             <field name="show_product_category" invisible="1"/>
+                            <field name="allow_cost_rights" invisible="1"/>
                         </group>
                     </group>
 
@@ -165,15 +188,17 @@
                                 overflow-x: auto !important;
                                 }
                             </style>
-
                             <div class="mb-2">
                                 <button name="action_refresh_cost" string="Refresh Cost" type="object"
                                         class="btn-info mr-2"/>
                                 <button name="action_open_import_material_list" string="Import Material List"
                                         type="object" class="btn-secondary"/>
                             </div>
-                            <field name="line_ids" widget="section_and_note_one2many">
+                            <field name="line_ids" widget="section_and_note_one2many"
+                                   readonly="is_warehouse_readonly">
                                 <tree editable="bottom">
+                                    <!--                                    <field name="allow_cost_rights" column_invisible="1"/>-->
+                                    <!--                                    <field name="is_warehouse_readonly" invisible="1"/>-->
                                     <control>
                                         <create name="add_product_control" string="Add a product"/>
                                         <create name="add_section_control" string="Add a section"
@@ -187,7 +212,7 @@
                                     <!--                                    <field name="show_product_category"-->
                                     <!--                                           column_invisible="0"/>-->
 
-                                    <field name="product_group_id"
+                                    <field name="product_group_id" readonly="False" domain="[('parent_id', '=', False)]"
                                            column_invisible="not parent.show_product_category"/>
                                     <!--                                    <field name="show_product_category" column_invisible="True"/>-->
                                     <!--                                    <field name="product_group_id" string="Product Category" context="{'show_code_only': True}" column_invisible="parent.show_product_category"/>-->
@@ -202,7 +227,8 @@
 
                                     <field name="stock_qty" string="Stock" readonly="1"/>
                                     <field name="qty" string="Qty"/>
-                                    <field name="unit_cost" string="Unit Cost"/>
+                                    <field name="unit_cost" string="Unit Cost"
+                                           column_invisible="not parent.allow_cost_rights"/>
                                     <field name="sale_price" string="Sale Price"/>
                                     <field name="discount_percent" string="Discount %"/>
                                     <field name="dsi" string="DSI" readonly="1"
