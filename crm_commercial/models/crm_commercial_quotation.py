@@ -978,6 +978,52 @@ class CrmCommercialQuotation(models.Model):
                     line.sale_price = line.product_id.lst_price
             rec.action_recalculate()
 
+    # -------------------------------------------------------------------------
+    # PDF Report Helper Methods added by Ramesh 16-10-2026
+    # -------------------------------------------------------------------------
+    def _get_pdf_payment_terms(self):
+        """Return payment terms from the quotation tab or enabled product categories."""
+        self.ensure_one()
+
+        # Prefer payment terms entered directly on the quotation.
+        if self.payment_terms_tab and self.payment_terms_tab.strip():
+            return self.payment_terms_tab
+
+        # Otherwise, find payment terms from the product category hierarchy.
+        for line in self.line_ids:
+            cat = line.product_category_id or (
+                line.product_id.categ_id if line.product_id else False
+            )
+
+            while cat:
+                if cat.enable_payment_terms_pdf and cat.payment_terms_content:
+                    return cat.payment_terms_content
+                cat = cat.parent_id
+
+        return False
+
+
+    def _get_pdf_warranty_terms(self):
+        """Return warranty terms from the quotation tab or enabled product categories."""
+        self.ensure_one()
+
+        # Prefer warranty terms entered directly on the quotation.
+        if self.warranty_terms_tab and self.warranty_terms_tab.strip():
+            return self.warranty_terms_tab
+
+        # Otherwise, find warranty terms from the product category hierarchy.
+        for line in self.line_ids:
+            cat = line.product_category_id or (
+                line.product_id.categ_id if line.product_id else False
+            )
+
+            while cat:
+                if cat.enable_warranty_terms_pdf and cat.warranty_terms_content:
+                    return cat.warranty_terms_content
+                cat = cat.parent_id
+
+        return False
+
     def _get_pdf_category_details(self):
         """Returns structured details of categories used on lines for PDF rendering."""
         self.ensure_one()
