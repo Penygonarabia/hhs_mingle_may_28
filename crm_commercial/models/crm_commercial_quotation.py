@@ -1516,6 +1516,9 @@ class CrmCommercialQuotationLine(models.Model):
             )
 
     qty = fields.Float(string="Qty", default=1.0)
+    stock_qty = fields.Float(
+        string="Stock", compute="_compute_stock_qty", readonly=True
+    )
 
     unit_cost = fields.Float(string="Unit Cost")
     sale_price = fields.Float(string="Sale Price")
