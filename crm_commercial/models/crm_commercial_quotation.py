@@ -5,7 +5,6 @@ import re
 import logging
 
 
-
 class CrmCommercialQuotation(models.Model):
     _name = "crm.commercial.quotation"
     _description = "CRM Commercial Quotation"
@@ -37,17 +36,33 @@ class CrmCommercialQuotation(models.Model):
         index=True,
     )
     is_warehouse_readonly = fields.Boolean(
-        compute="_compute_is_warehouse_readonly",
+        compute="_compute_is_warehouse_readonly"
     )
 
-    @api.depends("state")
-    @api.depends_context("uid")
-    def _compute_is_warehouse_readonly(self):
-        allow_edit = self.env.user.allow_edit_quotation
+    is_description_readonly = fields.Boolean(
+        compute="_compute_is_description_readonly"
+    )
 
-        for record in self:
-            record.is_warehouse_readonly = (
-                    record.state in ("approved", "confirmed") and not allow_edit
+    is_terms_readonly = fields.Boolean(
+        string="Terms Readonly",
+        compute="_compute_is_terms_readonly",
+    )
+
+    @api.depends("state", "name")
+    @api.depends_context("uid")
+    def _compute_is_terms_readonly(self):
+        user = self.env.user
+        allow_edit = user.allow_edit_quotation
+        allow_edit_terms = user.allow_edit_terms_features
+
+        for rec in self:
+            is_existing = (
+                    rec.state in ("approved", "confirmed")
+                    or rec.name != "New"
+            )
+
+            rec.is_terms_readonly = (
+                    is_existing and not (allow_edit or allow_edit_terms)
             )
 
     warehouse_id = fields.Many2one(
@@ -62,7 +77,7 @@ class CrmCommercialQuotation(models.Model):
     # @api.model
     # def _default_warehouse_id(self):
     #     return self.env.user.crm_commercial_default_warehouse_id.id or False
-    capacity=fields.Char(string="Capacity")
+    capacity = fields.Char(string="Capacity")
     allow_cost_rights = fields.Boolean(
         string="Allow Cost Rights",
         compute="_compute_allow_cost_rights",
@@ -992,7 +1007,6 @@ class CrmCommercialQuotation(models.Model):
 
         return False
 
-
     def _get_pdf_warranty_terms(self):
         """Return warranty terms from the quotation tab or enabled product categories."""
         self.ensure_one()
@@ -1454,17 +1468,53 @@ class CrmCommercialQuotationLine(models.Model):
         domain="[('categ_id', 'child_of', product_category_id)] if product_category_id else []",
     )
     is_warehouse_readonly = fields.Boolean(
-        compute="_compute_is_warehouse_readonly",
+        compute="_compute_readonly_fields",
+    )
+    is_description_readonly = fields.Boolean(
+        compute="_compute_readonly_fields",
+    )
+    is_terms_readonly = fields.Boolean(
+        compute="_compute_readonly_fields",
+    )
+    is_default_discount_readonly = fields.Boolean(
+        compute="_compute_readonly_fields",
+    )
+    is_sales_price_readonly = fields.Boolean(
+        compute="_compute_readonly_fields",
     )
 
-    @api.depends("quotation_id")
-    def _compute_is_warehouse_readonly(self):
+    @api.depends("quotation_id.state", "quotation_id.name")
+    @api.depends_context("uid")
+    def _compute_readonly_fields(self):
+        user = self.env.user
+
+        allow_edit = user.allow_edit_quotation
+        allow_edit_desc = user.allow_edit_quotation_desc
+        allow_edit_terms = user.allow_edit_terms_features
+        allow_edit_discount = user.allow_edit_default_discount
+        allow_edit_sales_price = user.allow_edit_sale_price
+
         for line in self:
-            line.is_warehouse_readonly = False  # Replace with your actual condition
+            quotation = line.quotation_id
+            is_existing = (
+                    quotation.state in ("approved", "confirmed")
+                    or quotation.name != "New"
+            )
 
-    stock_qty = fields.Float(
-        string="Stock", compute="_compute_stock_qty", readonly=True
-    )
+            line.is_warehouse_readonly = is_existing and not allow_edit
+            line.is_description_readonly = (
+                    is_existing and not (allow_edit or allow_edit_desc)
+            )
+            line.is_terms_readonly = (
+                    is_existing and not (allow_edit or allow_edit_terms)
+            )
+            line.is_default_discount_readonly = (
+                    is_existing and not (allow_edit or allow_edit_discount)
+            )
+            line.is_sales_price_readonly = (
+                    is_existing and not (allow_edit or allow_edit_sales_price)
+            )
+
     qty = fields.Float(string="Qty", default=1.0)
 
     unit_cost = fields.Float(string="Unit Cost")

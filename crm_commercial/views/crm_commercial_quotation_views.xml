@@ -62,6 +62,8 @@
                             <!--                                   options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>-->
 
                             <field name="is_warehouse_readonly" invisible="1"/>
+                            <field name="is_description_readonly" invisible="1"/>
+                            <field name="is_terms_readonly" invisible="1"/>
 
                             <field name="warehouse_id"
                                    domain="[('id', 'in', warehouse_ids)]"
@@ -195,20 +197,27 @@
                                 <button name="action_open_import_material_list" string="Import Material List"
                                         type="object" class="btn-secondary"/>
                             </div>
-                            <field name="line_ids" widget="section_and_note_one2many"
-                                   readonly="is_warehouse_readonly">
+                            <field name="line_ids" widget="section_and_note_one2many">
                                 <tree editable="bottom">
+                                    <field name="is_warehouse_readonly" column_invisible="1"/>
+                                    <field name="is_description_readonly" column_invisible="1"/>
+                                    <field name="is_terms_readonly" column_invisible="1"/>
+                                    <field name="is_default_discount_readonly" column_invisible="1"/>
+                                    <field name="is_sales_price_readonly" column_invisible="1"/>
                                     <!--                                    <field name="is_warehouse_readonly" invisible="1"/>-->
                                     <control>
-                                        <create name="add_product_control" string="Add a product"/>
+                                        <create name="add_product_control" string="Add a product"
+                                                readonly="is_warehouse_readonly"/>
                                         <create name="add_section_control" string="Add a section"
-                                                context="{'default_display_type': 'line_section'}"/>
+                                                context="{'default_display_type': 'line_section'}"
+                                                readonly="is_warehouse_readonly"/>
                                         <create name="add_note_control" string="Add a note"
-                                                context="{'default_display_type': 'line_note'}"/>
+                                                context="{'default_display_type': 'line_note'}"
+                                                readonly="is_warehouse_readonly"/>
                                     </control>
-                                    <field name="sequence" widget="handle"/>
-                                    <field name="display_type" column_invisible="1"/>
-                                    <field name="sale_type_id" string="Sale Type"/>
+                                    <field name="sequence" widget="handle" readonly="is_warehouse_readonly"/>
+                                    <field name="display_type" column_invisible="1" readonly="is_warehouse_readonly"/>
+                                    <field name="sale_type_id" string="Sale Type" readonly="is_warehouse_readonly"/>
                                     <!--                                    <field name="show_product_category"-->
                                     <!--                                           column_invisible="0"/>-->
 
@@ -218,20 +227,23 @@
                                     <!--                                    <field name="product_group_id" string="Product Category" context="{'show_code_only': True}" column_invisible="parent.show_product_category"/>-->
                                     <!-- <field name="product_group_id" string="Product Category" domain="[('use_for_crm_commercial', '=', True), ('parent_id', '=', False)]" context="{'show_code_only': True}"/> -->
                                     <field name="product_category_id" string="Product Group"
+                                           readonly="is_warehouse_readonly"
                                            domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id),
                                            ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]"/>
-                                    <field name="product_id" string="Part No / Product"
+                                    <field name="product_id" string="Part No / Product" readonly="is_warehouse_readonly"
                                            domain="[('categ_id', 'child_of', product_category_id)] if product_category_id else []"/>
                                     <field name="name" widget="section_and_note_text" string="Description / Section"
-                                           optional="show"/>
+                                           optional="show" readonly="is_description_readonly"/>
 
                                     <field name="stock_qty" string="Stock" readonly="1"/>
-                                    <field name="qty" string="Qty"/>
+                                    <field name="qty" string="Qty" readonly="is_warehouse_readonly"/>
                                     <field name="unit_cost" string="Unit Cost"
-                                           column_invisible="not parent.allow_cost_rights"/>
-                                    <field name="special_support" string="Spl Spt"/>
-                                    <field name="sale_price" string="Sale Price"/>
-                                    <field name="discount_percent" string="Discount %"/>
+                                           column_invisible="not parent.allow_cost_rights"
+                                           readonly="is_warehouse_readonly"/>
+                                    <field name="special_support" string="Spl Spt" readonly="is_warehouse_readonly"/>
+                                    <field name="sale_price" string="Sale Price" readonly="is_sales_price_readonly"/>
+                                    <field name="discount_percent" string="Discount %"
+                                           readonly="is_default_discount_readonly"/>
                                     <field name="dsi" string="DSI" readonly="1"
                                            column_invisible="not parent.allow_cost_rights"/>
                                     <field name="smc" string="SMC" readonly="1"
@@ -282,13 +294,16 @@
                         </page>
 
                         <page string="Payment Terms" name="payment_terms_tab">
-                            <field name="payment_terms_tab" placeholder="Payment terms details..."/>
+                            <field name="payment_terms_tab" placeholder="Payment terms details..."
+                                   readonly="is_terms_readonly"/>
                         </page>
                         <page string="Warranty Terms" name="warranty_terms_tab">
-                            <field name="warranty_terms_tab" placeholder="Warranty terms details..."/>
+                            <field name="warranty_terms_tab" placeholder="Warranty terms details..."
+                                   readonly="is_terms_readonly"/>
                         </page>
                         <page string="Salient Features" name="salient_features_tab">
-                            <field name="salient_features_tab" placeholder="Salient features details..."/>
+                            <field name="salient_features_tab" placeholder="Salient features details..."
+                                   readonly="is_terms_readonly"/>
                         </page>
                         <page string="Settings" name="settings_tab">
                             <field name="settings_tab" placeholder="System settings details..."/>
