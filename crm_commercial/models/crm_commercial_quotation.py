@@ -65,6 +65,31 @@ class CrmCommercialQuotation(models.Model):
                     is_existing and not (allow_edit or allow_edit_terms)
             )
 
+    @api.depends("state", "name")
+    @api.depends_context("uid")
+    def _compute_is_warehouse_readonly(self):
+        user = self.env.user
+        allow_edit = user.allow_edit_quotation
+
+        for rec in self:
+            is_existing = (
+                    rec.state in ("approved", "confirmed")
+                    or rec.name != "New"
+            )
+            rec.is_warehouse_readonly = is_existing and not allow_edit
+
+    @api.depends("state", "name")
+    @api.depends_context("uid")
+    def _compute_is_description_readonly(self):
+        allow_edit = self.env.user.allow_edit_quotation
+        allow_edit_desc = self.env.user.allow_edit_quotation_desc
+
+        for record in self:
+            record.is_description_readonly = (
+                    (record.state in ("approved", "confirmed") or record.name != "New")
+                    and not (allow_edit or allow_edit_desc)
+            )
+
     warehouse_id = fields.Many2one(
         "stock.warehouse",
         string="Warehouse",
