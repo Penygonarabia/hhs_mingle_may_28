@@ -62,7 +62,7 @@
                             <field name="position" readonly="state == 'converted'"/>
                             <field name="phone" readonly="state == 'converted'"/>
                             <field name="email" readonly="state == 'converted'"/>
-                            <field name="existing_partner_id" invisible="not existing_partner_id"/>
+                            <field name="existing_partner_id" invisible="1"/>
                             <label for="street" string="Address"/>
                             <div class="o_address_format">
                                 <field name="street" placeholder="Street..." class="o_address_street" readonly="state == 'converted'"/>

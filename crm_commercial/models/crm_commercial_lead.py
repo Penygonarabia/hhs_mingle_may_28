@@ -243,6 +243,8 @@ class CrmCommercialLead(models.Model):
             self.region_id = partner.region_id
             self.country_id = partner.country_id
             self.zip = partner.zip
+            self.district=partner.district_id
+
 
     name = fields.Char(string="Lead / Project Name", required=True, index=True)
     probability = fields.Float(string="Probability (%)", default=10.0)
