@@ -80,7 +80,7 @@
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <field name="partner_id" invisible="0" readonly="is_warehouse_readonly"
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
-                            <field name="capacity" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                            <!--                            <field name="capacity" options="{'no_create':True,'no_edit':True,'no_open':True}"/>-->
                             <field name="to_name" readonly="is_warehouse_readonly"/>
                             <field name="email" readonly="is_warehouse_readonly"/>
                             <field name="phone" readonly="is_warehouse_readonly"/>
@@ -236,6 +236,7 @@
                                            optional="show" readonly="is_description_readonly"/>
 
                                     <field name="stock_qty" string="Stock" readonly="1"/>
+                                    <field name="capacity" string="Capacity" readonly="is_description_readonly"/>
                                     <field name="qty" string="Qty" readonly="is_warehouse_readonly"/>
                                     <field name="unit_cost" string="Unit Cost"
                                            column_invisible="not parent.allow_cost_rights"

@@ -1485,8 +1485,8 @@ class CrmCommercialQuotationLine(models.Model):
         "product.category",
         string="Product Group",
     )
-    capacity = fields.Char(string="Capacity", related="quotation_id.capacity",
-                           store=True)
+    capacity = fields.Char(string="Capacity", related="quotation_id.capacity")
+
     sale_type_id = fields.Many2one("crm.commercial.sale.type", string="Sale Type")
     product_id = fields.Many2one(
         "product.product",

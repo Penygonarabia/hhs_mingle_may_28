@@ -73,6 +73,27 @@ class CrmCommercialLead(models.Model):
 
     custom_partner = fields.Char(string="Customer/Lead", required=True)
 
+    customer_partner_name = fields.Char(
+        string="Customer / Lead Name",
+        compute="_compute_customer_partner_name",
+        store=True,
+        index=True,
+    )
+
+    @api.depends(
+        "customer_type_id",
+        "customer_type_id.name",
+        "partner_id",
+        "partner_id.name",
+        "custom_partner",
+    )
+    def _compute_customer_partner_name(self):
+        for rec in self:
+            if rec.customer_type_id.name == "Customer":
+                rec.customer_partner_name = rec.partner_id.name or ""
+            else:
+                rec.customer_partner_name = rec.custom_partner or ""
+
     is_customer_type = fields.Boolean(
         compute="_compute_is_customer_type",
         store=False,
@@ -243,8 +264,7 @@ class CrmCommercialLead(models.Model):
             self.region_id = partner.region_id
             self.country_id = partner.country_id
             self.zip = partner.zip
-            self.district=partner.district_id
-
+            self.district = partner.district_id
 
     name = fields.Char(string="Lead / Project Name", required=True, index=True)
     probability = fields.Float(string="Probability (%)", default=10.0)

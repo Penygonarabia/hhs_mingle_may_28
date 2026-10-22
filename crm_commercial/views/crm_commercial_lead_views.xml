@@ -5,17 +5,27 @@
         <field name="model">crm.commercial.lead</field>
         <field name="arch" type="xml">
             <tree string="Commercial Leads">
-                <field name="lead_no"/>
-                <field name="warehouse_id"/>
-                <field name="name"/>
-                <field name="email"/>
-                <field name="phone"/>
-                <field name="lead_value" sum="Total Lead Value"/>
-                <field name="tag_ids" widget="many2many_tags"/>
+                <field name="region_id"/>
+                <field name="city_id"/>
                 <field name="assigned_id"/>
-                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state in ('approved', 'converted')" decoration-danger="state == 'rejected'"/>
-                <field name="source_id"/>
+                <field name="lead_no"/>
                 <field name="creation_date"/>
+                <field name="project_category_id"/>
+                <field name="customer_partner_name" string="Customer / Lead Name"/>
+                <field name="name"/>
+                <field name="probability"/>
+                <field name="product_category_id"/>
+                <field name="capacity"/>
+                <field name="lead_value"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'"
+                       decoration-success="state in ('approved', 'converted')" decoration-danger="state == 'rejected'"/>
+
+
+                <field name="warehouse_id" optional="hide"/>
+                <field name="email" optional="hide"/>
+                <field name="phone" optional="hide"/>
+                <field name="tag_ids" widget="many2many_tags" optional="hide"/>
+                <field name="source_id" optional="hide"/>
             </tree>
         </field>
     </record>
