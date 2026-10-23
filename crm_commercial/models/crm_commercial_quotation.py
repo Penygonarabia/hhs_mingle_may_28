@@ -23,6 +23,7 @@ class CrmCommercialQuotation(models.Model):
     parent_quotation_id = fields.Many2one(
         "crm.commercial.quotation", string="Parent Quotation", readonly=True
     )
+
     # date oct 9 2026
     lead_id = fields.Many2one(
         "crm.commercial.lead",
@@ -65,18 +66,13 @@ class CrmCommercialQuotation(models.Model):
                     is_existing and not (allow_edit or allow_edit_terms)
             )
 
-    @api.depends("state", "name")
-    @api.depends_context("uid")
+    @api.depends('state', 'name')
     def _compute_is_warehouse_readonly(self):
-        user = self.env.user
-        allow_edit = user.allow_edit_quotation
-
-        for rec in self:
-            is_existing = (
-                    rec.state in ("approved", "confirmed")
-                    or rec.name != "New"
+        for record in self:
+            record.is_warehouse_readonly = (
+                    record.state in ('approved', 'confirmed')
+                    or record.name != 'New'
             )
-            rec.is_warehouse_readonly = is_existing and not allow_edit
 
     @api.depends("state", "name")
     @api.depends_context("uid")
@@ -199,10 +195,16 @@ class CrmCommercialQuotation(models.Model):
     #     compute="_compute_show_product_category",
     # )
 
+    @api.depends_context("uid")
     def _compute_warehouse_id(self):
-        self.warehouse_ids = False
         user_warehouses = self.env.user.available_warehouse_ids
-        self.warehouse_ids = [(6, 0, user_warehouses.ids)]
+        for record in self:
+            record.warehouse_ids = user_warehouses
+
+    # def _compute_warehouse_id(self):
+    #     self.warehouse_ids = False
+    #     user_warehouses = self.env.user.available_warehouse_ids
+    #     self.warehouse_ids = [(6, 0, user_warehouses.ids)]
 
     # -------------------------------------------------------------------------
     # Partner auto-create helper
@@ -422,12 +424,38 @@ class CrmCommercialQuotation(models.Model):
             self.zip = False
             self.country_id = False
 
+    # @api.onchange("quotation_type_id")
+    # def _onchange_quotation_type_id(self):
+    #     self.lead_id = False
+    #     self.lead_no = False
+    #     self.partner_id = False
+    #     # self.existing_partner_id = False
+    #
+    #     self.to_name = False
+    #     self.email = False
+    #     self.phone = False
+    #
+    #     self.street = False
+    #     self.street2 = False
+    #     self.city_id = False
+    #     self.city = False
+    #     self.state_id = False
+    #     self.district = False
+    #     self.region_id = False
+    #     self.country_id = False
+    #     self.zip = False
+    #
+    #     self.warehouse_id = False
+    #     self.assigned_id = False
+    #     self.project_category_id = False
+    #     self.project_name = False
+    #     self.tag_ids = [(5, 0, 0)]
+
     @api.onchange("quotation_type_id")
     def _onchange_quotation_type_id(self):
         self.lead_id = False
         self.lead_no = False
         self.partner_id = False
-        # self.existing_partner_id = False
 
         self.to_name = False
         self.email = False
@@ -441,9 +469,9 @@ class CrmCommercialQuotation(models.Model):
         self.district = False
         self.region_id = False
         self.country_id = False
-        self.zip = False
 
-        self.warehouse_id = False
+        # Do NOT clear warehouse_id; keep what the user selected.
+        # Reset assigned salesman to default instead of empty:
         self.assigned_id = False
         self.project_category_id = False
         self.project_name = False
@@ -711,6 +739,13 @@ class CrmCommercialQuotation(models.Model):
         readonly=False,
         precompute=True,
     )
+    reason_for_loss_project_tab = fields.Html(
+        string="Reason For Loss Project",
+        #compute="_compute_category_terms",
+        #store=True,
+        readonly=False,
+        #precompute=True,
+    )
 
     def _default_settings_tab(self):
         ICP = self.env["ir.config_parameter"].sudo()
@@ -775,6 +810,7 @@ class CrmCommercialQuotation(models.Model):
             payment_terms = False
             warranty_terms = False
             salient_features = False
+            # reason_for_project=False
 
             for line in rec.line_ids:
                 cat = line.product_category_id or (
@@ -805,6 +841,11 @@ class CrmCommercialQuotation(models.Model):
                 rec.salient_features_tab = salient_features
             elif not rec.salient_features_tab:
                 rec.salient_features_tab = False
+
+            # if reason_for_project:
+            #     rec.reason_for_loss_project_tab = reason_for_project
+            # elif not rec.reason_for_loss_project_tab:
+            #     rec.reason_for_loss_project_tab = False
 
     @api.onchange("line_ids")
     def _onchange_line_ids_product_category(self):
@@ -1485,8 +1526,7 @@ class CrmCommercialQuotationLine(models.Model):
         "product.category",
         string="Product Group",
     )
-    capacity = fields.Char(string="Capacity", related="quotation_id.capacity")
-
+    capacity = fields.Char(string="Capacity", related="quotation_id.capacity",store=True)
     sale_type_id = fields.Many2one("crm.commercial.sale.type", string="Sale Type")
     product_id = fields.Many2one(
         "product.product",
@@ -1523,12 +1563,16 @@ class CrmCommercialQuotationLine(models.Model):
 
         for line in self:
             quotation = line.quotation_id
+
             is_existing = (
                     quotation.state in ("approved", "confirmed")
                     or quotation.name != "New"
             )
 
-            line.is_warehouse_readonly = is_existing and not allow_edit
+            # Warehouse is always readonly for existing quotations.
+            line.is_warehouse_readonly = is_existing
+
+            # Other fields retain their individual permissions.
             line.is_description_readonly = (
                     is_existing and not (allow_edit or allow_edit_desc)
             )

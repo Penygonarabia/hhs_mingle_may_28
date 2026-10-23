@@ -26,6 +26,8 @@
                 <field name="phone" optional="hide"/>
                 <field name="tag_ids" widget="many2many_tags" optional="hide"/>
                 <field name="source_id" optional="hide"/>
+
+
             </tree>
         </field>
     </record>
@@ -36,9 +38,12 @@
         <field name="arch" type="xml">
             <form string="Commercial Lead">
                 <header>
-                    <button name="action_convert_to_quotation" string="Convert to Quotation" type="object" class="btn-primary" invisible="state not in ('approved')"/>
-                    <button name="action_approve" string="Approve" type="object" class="btn-success" invisible="state != 'draft'"/>
-                    <button name="action_reject" string="Reject" type="object" class="btn-danger" invisible="state != 'draft'"/>
+                    <button name="action_convert_to_quotation" string="Convert to Quotation" type="object"
+                            class="btn-primary" invisible="state not in ('approved')"/>
+                    <button name="action_approve" string="Approve" type="object" class="btn-success"
+                            invisible="state != 'draft'"/>
+                    <button name="action_reject" string="Reject" type="object" class="btn-danger"
+                            invisible="state != 'draft'"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,approved,converted"/>
                 </header>
                 <sheet>
@@ -52,44 +57,68 @@
                     </div>
                     <group string="Basic Information">
                         <group>
-                            <field name="warehouse_id" domain="[('id','in',warehouse_ids)]" options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"
-                            readonly="state in ['converted', 'approved']"/>
-                            <field name="warehouse_ids" widget="many2many_tags" invisible="1" readonly="state in ['converted', 'approved']" />
+                            <field name="warehouse_id" domain="[('id','in',warehouse_ids)]"
+                                   options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"
+                                   readonly="state in ['converted', 'approved']"/>
+                            <field name="warehouse_ids" widget="many2many_tags" invisible="1"
+                                   readonly="state in ['converted', 'approved']"/>
                             <field name="project_category_id" readonly="state in ['converted', 'approved']"/>
-                            <field name="crm_product_category_ids" widget="many2many_tags" invisible="1" readonly="state in ['converted', 'approved']"/>
+                            <field name="crm_product_category_ids" widget="many2many_tags" invisible="1"
+                                   readonly="state in ['converted', 'approved']"/>
                             <!-- # added by vengatesh sep 21  crm_product_category_ids-->
-                            <field name="show_product_group" invisible="1" readonly="state in ['converted', 'approved']"/>
-                            <field name="product_group_id" string="Product Category" context="{'show_code_only': True}" invisible="not show_product_group" readonly="state in ['converted', 'approved']"/>
-                            <field name="product_category_id" string="Product Group" domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id), ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]"
-                            readonly="state in ['converted', 'approved']"/>
-                            <field name="capacity" readonly="state in ['converted', 'approved']" />
+                            <field name="show_product_group" invisible="1"
+                                   readonly="state in ['converted', 'approved']"/>
+                            <field name="product_group_id" string="Product Category" context="{'show_code_only': True}"
+                                   invisible="not show_product_group" readonly="state in ['converted', 'approved']"/>
+                            <field name="product_category_id" string="Product Group"
+                                   domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id), ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]"
+                                   readonly="state in ['converted', 'approved']"/>
+                            <field name="capacity" readonly="state in ['converted', 'approved']"/>
                             <field name="lead_value" readonly="state in ['converted', 'approved']"/>
-                            <field name="description" nolabel="0" colspan="2" placeholder="Enter detailed lead notes and scope of work..." readonly="state in ['converted', 'approved']"/>
-                            <field name="customer_type_id" options="{'no_create': True, 'no_edit': True, 'no_open': True}" readonly="state in ['converted', 'approved']"/>
+                            <field name="description" nolabel="0" colspan="2"
+                                   placeholder="Enter detailed lead notes and scope of work..."
+                                   readonly="state in ['converted', 'approved']"/>
+                            <field name="customer_type_id"
+                                   options="{'no_create': True, 'no_edit': True, 'no_open': True}"
+                                   readonly="state in ['converted', 'approved']"/>
                             <field name="is_customer_type" invisible="1" readonly="state in ['converted', 'approved']"/>
-                            <field name="partner_id" invisible="not is_customer_type" readonly="state in ['converted', 'approved']"/>
-                            <field name="custom_partner" invisible="is_customer_type" readonly="state in ['converted', 'approved']"/>
+                            <field name="partner_id" invisible="not is_customer_type"
+                                   readonly="state in ['converted', 'approved']"/>
+                            <field name="custom_partner" invisible="is_customer_type"
+                                   readonly="state in ['converted', 'approved']"/>
                             <field name="position" readonly="state in ['converted', 'approved']"/>
                             <field name="phone" readonly="state in ['converted', 'approved']"/>
                             <field name="email" readonly="state in ['converted', 'approved']"/>
                             <field name="existing_partner_id" invisible="1"/>
                             <label for="street" string="Address"/>
                             <div class="o_address_format">
-                                <field name="street" placeholder="Street..." class="o_address_street" readonly="state in ['converted', 'approved']"/>
-                                <field name="street2" placeholder="Street 2..." class="o_address_street" readonly="state in ['converted', 'approved']"/>
-                                <field name="city_id" placeholder="City" class="o_address_city" domain="[('country_id', '=', country_id)]" options="{'no_create': True, 'no_edit': True, 'no_open': True}"
-                                readonly="state in ['converted', 'approved']"/>
+                                <field name="street" placeholder="Street..." class="o_address_street"
+                                       readonly="state in ['converted', 'approved']"/>
+                                <field name="street2" placeholder="Street 2..." class="o_address_street"
+                                       readonly="state in ['converted', 'approved']"/>
+                                <field name="city_id" placeholder="City" class="o_address_city"
+                                       domain="[('country_id', '=', country_id)]"
+                                       options="{'no_create': True, 'no_edit': True, 'no_open': True}"
+                                       readonly="state in ['converted', 'approved']"/>
                                 <field name="city" invisible="1" readonly="state in ['converted', 'approved']"/>
-                                <field name="state_id" class="o_address_state" placeholder="State" options="{&quot;no_open&quot;: True}" domain="[('country_id', '=', country_id)]"
-                                readonly="state in ['converted', 'approved']"/>
-                                <field name="district" placeholder="District..." options="{'no_create': True, 'no_edit': True, 'no_open': True}" readonly="state in ['converted', 'approved']"/>
-                                <field name="region_id" placeholder="Region..." options="{'no_create': True, 'no_edit': True, 'no_open': True}" readonly="state in ['converted', 'approved']"/>
-                                <field name="zip" placeholder="ZIP" class="o_address_zip" readonly="state in ['converted', 'approved']"/>
-                                <field name="country_id" placeholder="Country" class="o_address_country" options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}" readonly="state in ['converted', 'approved']"/>
+                                <field name="state_id" class="o_address_state" placeholder="State"
+                                       options="{&quot;no_open&quot;: True}" domain="[('country_id', '=', country_id)]"
+                                       readonly="state in ['converted', 'approved']"/>
+                                <field name="district" placeholder="District..."
+                                       options="{'no_create': True, 'no_edit': True, 'no_open': True}"
+                                       readonly="state in ['converted', 'approved']"/>
+                                <field name="region_id" placeholder="Region..."
+                                       options="{'no_create': True, 'no_edit': True, 'no_open': True}"
+                                       readonly="state in ['converted', 'approved']"/>
+                                <field name="zip" placeholder="ZIP" class="o_address_zip"
+                                       readonly="state in ['converted', 'approved']"/>
+                                <field name="country_id" placeholder="Country" class="o_address_country"
+                                       options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"
+                                       readonly="state in ['converted', 'approved']"/>
                             </div>
                         </group>
                         <group>
-                            <field name="creation_date" readonly="1" />
+                            <field name="creation_date" readonly="1"/>
                             <field name="probability" readonly="state in ['converted', 'approved']"/>
                             <field name="expected_confirmation_date" readonly="state in ['converted', 'approved']"/>
                             <field name="website" readonly="state in ['converted', 'approved']"/>
