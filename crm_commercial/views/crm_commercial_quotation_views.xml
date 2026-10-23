@@ -6,19 +6,20 @@
         <field name="arch" type="xml">
             <tree string="Commercial Quotations">
                 <field name="region_id"/>
+                <field name="city_id"/>
                 <field name="assigned_id"/>
                 <field name="project_name"/>
+                <field name="name"/>
+                <field name="date"/>
+                <field name="revision_number"/>
+                <field name="partner_id"/>
                 <field name="total_amount" sum="Total Amount"/>
                 <field name="delivered_value"/>
                 <field name="state" widget="badge" decoration-info="state == 'draft'"
                        decoration-warning="state in ('approved', 'partially_delivered')"
                        decoration-success="state in ('confirmed', 'delivered')"
                        decoration-danger="state in ('rejected', 'cancelled', 'expired')"/>
-                <field name="name" optional="hide"/>
-                <field name="revision_number"/>
-                <field name="date" optional="hide"/>
                 <field name="warehouse_id" optional="hide"/>
-                <field name="partner_id" optional="hide"/>
                 <field name="net_price" sum="Total Net Price" optional="hide"/>
 
             </tree>
@@ -313,7 +314,8 @@
                             <field name="settings_tab" placeholder="System settings details..."/>
                         </page>
                         <page string="Reason for the loss of a project" name="reason_for_loss_project_tab">
-                            <field name="reason_for_loss_project_tab" placeholder="Reason for the loss of a project details..."
+                            <field name="reason_for_loss_project_tab"
+                                   placeholder="Reason for the loss of a project details..."
                                    readonly="is_terms_readonly"/>
                         </page>
                         <page string="Audit Log" name="audit_tab">
