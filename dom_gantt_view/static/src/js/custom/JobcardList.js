@@ -1,6 +1,6 @@
 /** @odoo-module **/
 
-import { Component, useState, useRef, onMounted, onPatched, onWillStart } from "@odoo/owl";
+import { Component, useState, useRef, onMounted, onPatched } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService, useBus } from "@web/core/utils/hooks";
 import { session } from "@web/session";
@@ -15,14 +15,7 @@ const STORAGE_KEY_USER = "job_card_sch_selected_user_id";
 const STORAGE_KEY_POPULATED = "job_card_sch_is_populated";
 
 const ALLOWED_JOB_CARD_STATES = [
-  "101", // New
-  "107", // Rescheduled
-  "117", // Unit Pull Out
-  "132", // Unit Ready For Delivery
-  "122", // Parts Ready & Rescheduled
-  "152",
-  "156",
-  "207",
+  "101", "107", "117", "132", "122", "152", "156", "207",
 ];
 
 export class JobcardList extends Component {
@@ -50,16 +43,18 @@ export class JobcardList extends Component {
 
     // Reset session filters when opening fresh from menu
     const breadcrumbs = this.env.config?.breadcrumbs || [];
-    if (breadcrumbs.length === 0) {
+    const isBreadcrumbReturn = breadcrumbs.length > 0;
+
+    if (!isBreadcrumbReturn) {
       sessionStorage.removeItem(STORAGE_KEY_WC);
       sessionStorage.removeItem(STORAGE_KEY_TECH);
       sessionStorage.removeItem(STORAGE_KEY_USER);
       sessionStorage.removeItem(STORAGE_KEY_POPULATED);
     }
 
-    const savedWcId = sessionStorage.getItem(STORAGE_KEY_WC) || "";
-    const savedTechId = sessionStorage.getItem(STORAGE_KEY_TECH) || "";
-    const initialPopulated = sessionStorage.getItem(STORAGE_KEY_POPULATED) === "true";
+    const savedWcId = isBreadcrumbReturn ? (sessionStorage.getItem(STORAGE_KEY_WC) || "") : "";
+    const savedTechId = isBreadcrumbReturn ? (sessionStorage.getItem(STORAGE_KEY_TECH) || "") : "";
+    const initialPopulated = isBreadcrumbReturn && sessionStorage.getItem(STORAGE_KEY_POPULATED) === "true";
 
     this.state = useState({
       language: session.user_context.lang || "en_US",
@@ -108,12 +103,27 @@ export class JobcardList extends Component {
       await this.loadUsers();
       await this._initWorkCenterFilter();
 
+      // If populated (restored from breadcrumb OR auto-selected for single work center)
       if (this.state.isPopulated && this.state.selectedWorkcenterId) {
-        this.state.technicians = await this._fetchTechnicians(this.state.selectedWorkcenterId);
         await this.loadJobCards();
         await this.loadCities();
         await this.loadedJobcardStates();
         await this.loadContracts();
+
+        if (this.env?.bus) {
+          this.env.bus.trigger("jobcard-filter-populated", {
+            isPopulated: true,
+            workCenterId: this.state.selectedWorkcenterId,
+            technicianUserId: this.state.selectedTechnicianId ? parseInt(this.state.selectedTechnicianId, 10) : null,
+          });
+        }
+      } else {
+        // Multi-work center initial state: ensure Gantt chart stays unpopulated
+        if (this.env?.bus) {
+          this.env.bus.trigger("jobcard-filter-populated", {
+            isPopulated: false,
+          });
+        }
       }
       this.attachHighlightHandler();
     });
@@ -141,7 +151,6 @@ export class JobcardList extends Component {
         await new Promise((resolve) => setTimeout(resolve, 2000));
       });
 
-      // Synchronize with the active project in top dropdown
       useBus(this.env.bus, "project-filter-updated", async (payload) => {
         const projectId = payload?.detail?.project_id || false;
         this.state.project_id = projectId ? parseInt(projectId, 10) : null;
@@ -190,7 +199,19 @@ export class JobcardList extends Component {
         [this.user.userId],
         ["default_work_center_id", "project_ids"]
       );
-      const assignedWcIds = userData[0]?.default_work_center_id || [];
+
+      let rawWc = userData[0]?.default_work_center_id || [];
+      let assignedWcIds = [];
+      if (Array.isArray(rawWc)) {
+        if (rawWc.length > 0 && typeof rawWc[0] === "number" && typeof rawWc[1] === "string") {
+          assignedWcIds = [rawWc[0]]; // Many2one
+        } else {
+          assignedWcIds = rawWc; // Many2many
+        }
+      } else if (typeof rawWc === "number") {
+        assignedWcIds = [rawWc];
+      }
+
       this.state.userProjectIds = userData[0]?.project_ids || [];
 
       if (assignedWcIds.length > 0) {
@@ -207,8 +228,35 @@ export class JobcardList extends Component {
         );
       }
 
-      if (this.state.selectedWorkcenterId) {
-        this.state.technicians = await this._fetchTechnicians(this.state.selectedWorkcenterId);
+      // SCENARIO 1: EXACTLY 1 WORK CENTER -> Auto-populate and auto-select
+      if (this.state.workCenterList.length === 1) {
+        const singleWc = this.state.workCenterList[0];
+        const singleWcId = String(singleWc.id);
+
+        this.state.selectedWorkcenterId = singleWcId;
+        this.state.isPopulated = true;
+
+        sessionStorage.setItem(STORAGE_KEY_WC, singleWcId);
+        sessionStorage.setItem(STORAGE_KEY_POPULATED, "true");
+        this.state.technicians = await this._fetchTechnicians(singleWcId);
+      } 
+      // SCENARIO 2: MORE THAN 1 WORK CENTER -> Blank default, Populate button required
+      else {
+        // If returning from a breadcrumb where it was already populated, preserve it
+        if (this.state.selectedWorkcenterId && this.state.isPopulated) {
+          this.state.technicians = await this._fetchTechnicians(this.state.selectedWorkcenterId);
+        } else {
+          this.state.selectedWorkcenterId = "";
+          this.state.selectedTechnicianId = "";
+          this.state.technicians = [];
+          this.state.isPopulated = false;
+          this.state.jobCards = [];
+
+          sessionStorage.removeItem(STORAGE_KEY_WC);
+          sessionStorage.removeItem(STORAGE_KEY_TECH);
+          sessionStorage.removeItem(STORAGE_KEY_USER);
+          sessionStorage.removeItem(STORAGE_KEY_POPULATED);
+        }
       }
     } catch (err) {
       console.error("Error initializing Work Center filter:", err);
@@ -256,7 +304,6 @@ export class JobcardList extends Component {
         userDomain.push(["groups_id", "in", [jobCardGroupId]]);
       }
 
-      // Filter technicians by selected project or user's project_ids
       const activeProjectId = this.state.project_id;
       if (activeProjectId) {
         userDomain.push(["project_ids", "in", [parseInt(activeProjectId, 10)]]);
@@ -294,7 +341,9 @@ export class JobcardList extends Component {
       sessionStorage.removeItem(STORAGE_KEY_WC);
     }
 
-    this.env.bus.trigger("jobcard-filter-populated", { isPopulated: false });
+    if (this.env?.bus) {
+      this.env.bus.trigger("jobcard-filter-populated", { isPopulated: false });
+    }
   }
 
   async onTechnicianChange(ev) {
@@ -338,18 +387,18 @@ export class JobcardList extends Component {
     this.state.isPopulated = true;
     sessionStorage.setItem(STORAGE_KEY_POPULATED, "true");
 
-    // 1. Load left-side Job Cards based ONLY on Work Center & Project (Technician selection does not affect this)
     await this.loadJobCards();
     await this.loadCities();
     await this.loadedJobcardStates();
     await this.loadContracts();
 
-    // 2. Filter right-side Assignees on the Gantt chart by the selected technician (or all if none selected)
-    this.env.bus.trigger("jobcard-filter-populated", {
-      isPopulated: true,
-      workCenterId: wcId,
-      technicianUserId: techUserId || null,
-    });
+    if (this.env?.bus) {
+      this.env.bus.trigger("jobcard-filter-populated", {
+        isPopulated: true,
+        workCenterId: wcId,
+        technicianUserId: techUserId ? parseInt(techUserId, 10) : null,
+      });
+    }
 
     this.notification.add("Job cards and assignees populated successfully.", { type: "success" });
   }
@@ -584,8 +633,6 @@ export class JobcardList extends Component {
         return;
       }
 
-      // Base query: ONLY filtered by selected Work Center and valid workflow states
-      // (Do NOT include technician_id or user_ids here)
       const domain = [
         ["work_center_id", "=", wcId],
         "|",
@@ -627,7 +674,6 @@ export class JobcardList extends Component {
         "partner_name",
       ]);
 
-      // Filter tasks by active project selection (or user assigned projects)
       const pid = this.state.project_id;
       let finalJobCards = jobCards;
 

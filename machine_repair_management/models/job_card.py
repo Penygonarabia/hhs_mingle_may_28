@@ -4512,7 +4512,35 @@ class ProjectTask(models.Model):
             raise ValidationError(_("Please first Create Quotation and then Change the Status"))
         if self.service_sale_id.state == 'cancel':
             raise ValidationError(_("Please Create Quotation first because already Created Quotation %s is in cancel state" % self.service_sale_id.name))
+    
+    
+    def _validate_team_and_technician(self, vals):
+        """Validate that team_id and technician_id are set before any state
+        change, except when moving to 'New' (101) or 'Scheduled' (102).
+        These are the only two states where a team/technician is not yet required.
+        """
+        # Resolve team_id: prefer incoming vals, fall back to existing record value
+        team_id = vals.get("team_id") or self.team_id.id
+        # Resolve technician_id similarly
+        technician_id = vals.get("technician_id") or self.technician_id.id
 
+       
+        if self.job_card_state_code not in ('101','107'):
+            if not team_id:
+                raise ValidationError(
+                    _(
+                        "Team is required before changing the status of Job Card %s.\n"
+                        "Please assign a Support Team first."
+                    ) % self.name
+                )
+            if not technician_id:
+                raise ValidationError(
+                    _(
+                        "Technician is required before changing the status of Job Card %s.\n"
+                        "Please assign a Technician first."
+                    ) % self.name
+                )
+    
     def _validate_technician_assignment(self, vals):
         team_id = vals.get("team_id") or self.team_id.id
         if not team_id:
@@ -4730,6 +4758,10 @@ class ProjectTask(models.Model):
                 rec._validate_vat_on_products()
             if to_111:
                 rec.warranty_verfication_status_check = True
+                
+            if is_state_changing and target_state_code:
+                rec._validate_team_and_technician(vals)
+    
 
         res = super().write(vals)
 

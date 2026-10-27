@@ -18,7 +18,7 @@ import { browser } from "@web/core/browser/browser";
 import { templates } from "@web/core/assets";
 import { useDebounced } from "@web/core/utils/timing";
 import { useDomGantt } from "../hooks.esm";
-import { useService, useBus } from "@web/core/utils/hooks"; // Added useBus
+import { useService, useBus } from "@web/core/utils/hooks";
 import { MyComponent } from "../custom/component";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { WarningDialog } from "@web/core/errors/error_dialogs";
@@ -58,6 +58,7 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
     this.currentWorkCenterGroupId = null;
     this.usersNotInTasks = [];
     this.userColorMap = {};
+    this.stateColorMap = {};
     this.workCenterIdToName = {};
     this.userIdToWorkCenterId = {};
     this.resources = [];
@@ -139,9 +140,9 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
       }
     });
 
-    // Listen for Populate click from JobcardList
+    // Listen for Populate or Reset from JobcardList
     if (this.env?.bus) {
-      useBus(this.env.bus, "jobcard-filter-populated", async () => {
+      useBus(this.env.bus, "jobcard-filter-populated", async (ev) => {
         await this.fetchAllUsersAndTasks();
         if (this.fc?.api) {
           this.fc.api.refetchResources();
@@ -271,13 +272,22 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
     const taskTypeRecords = await this.env.services.orm.searchRead(
       "project.task.type",
       [["code", "!=", false]],
-      ["code", "name"],
+      ["code", "name", "kanban_color"],
     );
 
     this.jobCardStateCodes = taskTypeRecords.map((rec) => ({
       code: rec.code,
       name: rec.name,
+      color: rec.kanban_color || "#ADD8E6",
     }));
+
+    this.stateColorMap = {};
+    taskTypeRecords.forEach((rec) => {
+      if (rec.code) {
+        this.stateColorMap[rec.code] = rec.kanban_color || "#ADD8E6";
+      }
+    });
+
     return this.jobCardStateCodes;
   }
 
@@ -287,7 +297,7 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
         this.isSecondScreenScheduling ||
         sessionStorage.getItem(STORAGE_KEY_POPULATED) === "true";
 
-      // If Populate has not been clicked, only show Unassigned
+      // If Populate has not been clicked / not populated, ONLY show Unassigned lane
       if (!isPopulated) {
         this.resources = [
           {
@@ -996,10 +1006,9 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
 
     let taskColor = "#ADD8E6";
     if (record) {
-      const userIds = record.rawRecord.user_ids || [];
-      if (userIds.length > 0) {
-        const firstUserId = userIds[0];
-        taskColor = this.userColorMap[firstUserId] || taskColor;
+      const stateCode = record.rawRecord.job_card_state_code;
+      if (stateCode && this.stateColorMap && this.stateColorMap[stateCode]) {
+        taskColor = this.stateColorMap[stateCode];
       }
       if (record.isHatched) el.classList.add("o_event_hatched");
       if (record.isStriked) el.classList.add("o_event_striked");
@@ -1055,6 +1064,21 @@ export class DomGanttCommonRenderer extends CalendarCommonRenderer {
         `Status: ${_t(jobCardstatus)}`,
       );
     }
+  }
+
+  onClick(info) {
+    if (this.popover) {
+      this.popover.close();
+    }
+    this.highlightEvent(info.event, "o_cw_custom_highlight");
+  }
+
+  onDblClick(info) {
+    // Disabled opening the job card on double click
+  }
+
+  openPopover(target, record) {
+    // Disabled popover popup when clicking a jobcard in Gantt view
   }
 }
 
