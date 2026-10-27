@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_confirmed_orders_wizard_form" model="ir.ui.view">
+        <field name="name">crm.commercial.confirmed.orders.wizard.form</field>
+        <field name="model">crm.commercial.confirmed.orders.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Report Wizard">
+                <group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                        <field name="region_id" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="project_category_id" options="{'no_create': True}"/>
+                        <field name="partner_id" options="{'no_create': True}"/>
+                        <field name="state"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_export_excel" string="Export to Excel" type="object" class="btn-primary"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_confirmed_orders_wizard" model="ir.actions.act_window">
+        <field name="name">Confirmed Booked Projects</field>
+        <field name="res_model">crm.commercial.confirmed.orders.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Put under your existing Reporting menu: replace parent with your menu xml id -->
+    <menuitem id="menu_confirmed_orders_report"
+              name="Confirmed Booked Projects"
+              parent="menu_crm_commercial_reports"
+              action="action_confirmed_orders_wizard"
+              sequence="10"/>
+
+    <!-- Link delivery note to the commercial order -->
+    <record id="view_picking_form_commercial_order" model="ir.ui.view">
+        <field name="name">stock.picking.form.commercial.order</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <field name="origin" position="after">
+                <field name="commercial_order_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>
+
+
