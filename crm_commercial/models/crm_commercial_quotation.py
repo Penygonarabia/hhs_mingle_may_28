@@ -1924,6 +1924,33 @@ class CrmCommercialQuotation(models.Model):
                 line.product_id.categ_id if line.product_id else False
             )
             while cat:
+
+                if cat.id not in cat_map:
+                    p_terms = (
+                        cat.payment_terms_content
+                        if cat.enable_payment_terms_pdf
+                        else False
+                    )
+                    w_terms = (
+                        cat.warranty_terms_content
+                        if cat.enable_warranty_terms_pdf
+                        else False
+                    )
+                    s_features = (
+                        cat.salient_features_content
+                        if cat.enable_salient_features_pdf
+                        else False
+                    )
+                    if p_terms or w_terms or s_features:
+                        cat_map[cat.id] = {
+                            "id": cat.id,
+                            "category": cat,
+                            "name": cat.name,
+                            "payment_terms": p_terms,
+                            "warranty_terms": w_terms,
+                            "salient_features": s_features,
+                        }
+
                 if cat.id not in cat_map and (
                         cat.payment_terms_content
                         or cat.warranty_terms_content
@@ -2551,11 +2578,53 @@ class CrmCommercialQuotationLine(models.Model):
         if prod_cat:
             cat = prod_cat
             while cat:
+
                 if cat.use_for_crm_commercial:
                     if cat.parent_id and not category_rec:
                         category_rec = cat
                     if not cat.parent_id and not group_rec:
                         group_rec = cat
+                if self.quotation_id:
+                    if (
+
+                            cat.payment_terms_content
+                            and not self.quotation_id.payment_terms_tab and
+
+                        cat.enable_payment_terms_pdf
+                        and cat.payment_terms_content
+                        and not self.quotation_id.payment_terms_tab
+                    ):
+                        self.quotation_id.payment_terms_tab = cat.payment_terms_content
+                    if (
+                        cat.enable_warranty_terms_pdf
+                        and cat.warranty_terms_content
+                        and not self.quotation_id.warranty_terms_tab and cat.payment_terms_content
+                        and not self.quotation_id.payment_terms_tab
+                    ):
+                        self.quotation_id.payment_terms_tab = cat.payment_terms_content
+                    if (
+                            cat.warranty_terms_content
+                            and not self.quotation_id.warranty_terms_tab
+                    ):
+                        self.quotation_id.warranty_terms_tab = (
+                            cat.warranty_terms_content
+                        )
+                    if (
+
+                            cat.salient_features_content
+                            and not self.quotation_id.salient_features_tab and
+
+                        cat.enable_salient_features_pdf
+                        and cat.salient_features_content
+                        and not self.quotation_id.salient_features_tab and
+                            cat.salient_features_content
+                            and not self.quotation_id.salient_features_tab
+
+                    ):
+                        self.quotation_id.salient_features_tab = (
+                            cat.salient_features_content
+                        )
+
                 cat = cat.parent_id
 
         if (
@@ -2937,3 +3006,4 @@ class CrmCommercialQuotationAudit(models.Model):
     title = fields.Char(string="Title", readonly=True)
     notes = fields.Text(string="Notes / Reason", readonly=True)
     state = fields.Char(string="Status", readonly=True)
+
