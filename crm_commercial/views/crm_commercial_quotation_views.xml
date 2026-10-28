@@ -34,10 +34,17 @@
                 <header>
                     <button name="action_confirm" string="Confirm Order" type="object" class="btn-primary"
                             invisible="state not in ('draft', 'approved')"/>
-                    <button name="action_copy_quotation" string="Copy Quotation" type="object" class="btn-secondary"/>
+                    <button name="action_copy_quotation" string="Copy Quotation" invisible="1" type="object"
+                            class="btn-secondary"/>
                     <button name="action_revision" string="Create Revision" type="object" class="btn-warning"
                             invisible="state in ('cancelled', 'expired')"/>
                     <button name="action_recalculate" string="Recalculate Prices" type="object" class="btn-secondary"/>
+                    <button name="action_close_quotation"
+                            string="Close"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'confirmed'"
+                            confirm="Are you sure you want to close this quotation?"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,approved,confirmed,delivered"/>
                 </header>
                 <sheet>
@@ -84,6 +91,8 @@
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <field name="partner_id" invisible="0" readonly="is_warehouse_readonly"
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                            <field name="company_name" readonly="is_warehouse_readonly" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                            <field name="phone_number" readonly="is_warehouse_readonly" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <!--                            <field name="capacity" options="{'no_create':True,'no_edit':True,'no_open':True}"/>-->
                             <field name="to_name" readonly="is_warehouse_readonly"/>
                             <field name="email" readonly="is_warehouse_readonly"/>
@@ -98,10 +107,12 @@
                                    readonly="is_warehouse_readonly"/>
                             <field name="crm_product_category_ids" invisible="1" widget="many2many_tags"
                                    readonly="is_warehouse_readonly"/>
-                            <field name="product_category_id"
+                            <field name="product_category_ids"
                                    domain="[('id','child_of',category_id),('use_for_crm_commercial', '=', True), ('exclude_category', '=', False)
-                                   ,('id', '!=', category_id)]" readonly="is_warehouse_readonly"
+                                   ,('id', '!=', category_id)]" readonly="is_warehouse_readonly" widget="many2many_tags"
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                            <!--                            <field name="products_category_ids" domain="[('id','child_of',category_id),('use_for_crm_commercial', '=', True), ('exclude_category', '=', False)-->
+                            <!--                                   ,('id', '!=', category_id)]" widget="many2many_tags"/>-->
                             <label for="street" string="Address"/>
                             <div class="o_address_format">
                                 <field name="street" placeholder="Street..." class="o_address_street"
@@ -201,8 +212,8 @@
                                 <button name="action_open_import_material_list" string="Import Material List"
                                         type="object" class="btn-secondary"/>
                             </div>
-                            <field name="line_ids" widget="section_and_note_one2many">
-                                <tree editable="bottom">
+                            <field name="line_ids" widget="section_and_note_one2many" readonly="state != 'draft'">
+                                <tree editable="bottom" delete="state == 'draft'">
                                     <field name="is_warehouse_readonly" column_invisible="1"/>
                                     <field name="is_description_readonly" column_invisible="1"/>
                                     <field name="is_terms_readonly" column_invisible="1"/>
@@ -211,13 +222,16 @@
                                     <!--                                    <field name="is_warehouse_readonly" invisible="1"/>-->
                                     <control>
                                         <create name="add_product_control" string="Add a product"
-                                                readonly="is_warehouse_readonly"/>
+                                                readonly="is_warehouse_readonly"
+                                                invisible="parent.state != 'draft'"/>
                                         <create name="add_section_control" string="Add a section"
                                                 context="{'default_display_type': 'line_section'}"
-                                                readonly="is_warehouse_readonly"/>
+                                                readonly="is_warehouse_readonly"
+                                                invisible="parent.state != 'draft'"/>
                                         <create name="add_note_control" string="Add a note"
                                                 context="{'default_display_type': 'line_note'}"
-                                                readonly="is_warehouse_readonly"/>
+                                                readonly="is_warehouse_readonly"
+                                                invisible="parent.state != 'draft'"/>
                                     </control>
                                     <field name="sequence" widget="handle" readonly="is_warehouse_readonly"/>
                                     <field name="display_type" column_invisible="1" readonly="is_warehouse_readonly"/>
@@ -230,10 +244,18 @@
                                     <!--                                    <field name="show_product_category" column_invisible="True"/>-->
                                     <!--                                    <field name="product_group_id" string="Product Category" context="{'show_code_only': True}" column_invisible="parent.show_product_category"/>-->
                                     <!-- <field name="product_group_id" string="Product Category" domain="[('use_for_crm_commercial', '=', True), ('parent_id', '=', False)]" context="{'show_code_only': True}"/> -->
-                                    <field name="product_category_id" string="Product Group"
+                                    <field name="header_products_category_ids" column_invisible="1"/>
+
+                                    <field name="product_category_id"
+                                           string="Product Group"
                                            readonly="is_warehouse_readonly"
-                                           domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id),
-                                           ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]"/>
+                                           domain="[('id', 'in', header_products_category_ids),
+                ('use_for_crm_commercial', '=', True),
+                ('exclude_category', '=', False)]"/>
+                                    <!--                                    <field name="product_category_id" string="Product Group"-->
+                                    <!--                                           readonly="is_warehouse_readonly"-->
+                                    <!--                                           domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id),-->
+                                    <!--                                           ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]"/>-->
                                     <field name="product_id" string="Part No / Product" readonly="is_warehouse_readonly"
                                            domain="[('categ_id', 'child_of', product_category_id)] if product_category_id else []"/>
                                     <field name="name" widget="section_and_note_text" string="Description / Section"
@@ -268,64 +290,68 @@
                         <page string="Additional Info &amp; Costing Summary" name="costing_tab">
                             <group string="Supplier &amp; Incentive Inputs">
                                 <group>
-                                    <field name="supplier_support_recording"/>
-                                    <field name="dsi_type"/>
-                                    <field name="dsi_percent"/>
+                                    <field name="supplier_support_recording" readonly="state == 'closed'"/>
+                                    <field name="dsi_type" readonly="state == 'closed'"/>
+                                    <field name="dsi_percent" readonly="state == 'closed'"/>
                                 </group>
                                 <group>
-                                    <field name="salesman_commission_percent"/>
-                                    <field name="additional_discount_percent"/>
-                                    <field name="promotion_percent"/>
+                                    <field name="salesman_commission_percent" readonly="state == 'closed'"/>
+                                    <field name="additional_discount_percent" readonly="state == 'closed'"/>
+                                    <field name="promotion_percent" readonly="state == 'closed'"/>
                                 </group>
                             </group>
                             <group string="Project Financial Summary">
                                 <group>
                                     <field name="total_project_value" readonly="1"/>
-                                    <field name="delivered_value"/>
+                                    <field name="delivered_value" readonly="state == 'closed'"/>
                                     <field name="balance_value" readonly="1"/>
                                 </group>
                                 <group string="Costing &amp; Margin Analysis">
-                                    <field name="total_selling_price" string="Total Selling Price (A)"/>
-                                    <field name="total_cost" string="Total Cost (B)"/>
-                                    <field name="total_supplier_support" string="Total Supplier Support (S)"/>
-                                    <field name="total_dsi" string="Total DSI (C)"/>
-                                    <field name="total_smc" string="Total SMC (D)"/>
-                                    <field name="total_promo" string="Total Promo (E)"/>
-                                    <field name="net_price" string="Net Price (X)"/>
-                                    <field name="gross_margin" string="Gross Margin"/>
-                                    <field name="gross_margin_percent" string="Gross Margin (%)"/>
+                                    <field name="total_selling_price" string="Total Selling Price (A)"
+                                           readonly="state == 'closed'"/>
+                                    <field name="total_cost" string="Total Cost (B)" readonly="state == 'closed'"/>
+                                    <field name="total_supplier_support" string="Total Supplier Support (S)"
+                                           readonly="state == 'closed'"/>
+                                    <field name="total_dsi" string="Total DSI (C)" readonly="state == 'closed'"/>
+                                    <field name="total_smc" string="Total SMC (D)" readonly="state == 'closed'"/>
+                                    <field name="total_promo" string="Total Promo (E)" readonly="state == 'closed'"/>
+                                    <field name="net_price" string="Net Price (X)" readonly="state == 'closed'"/>
+                                    <field name="gross_margin" string="Gross Margin" readonly="state == 'closed'"/>
+                                    <field name="gross_margin_percent" string="Gross Margin (%)"
+                                           readonly="state == 'closed'"/>
                                 </group>
                             </group>
                         </page>
 
                         <page string="Payment Terms" name="payment_terms_tab">
                             <field name="payment_terms_tab" placeholder="Payment terms details..."
-                                   readonly="is_terms_readonly"/>
+                                   readonly="state == 'closed' or is_terms_readonly"/>
                         </page>
                         <page string="Warranty Terms" name="warranty_terms_tab">
                             <field name="warranty_terms_tab" placeholder="Warranty terms details..."
-                                   readonly="is_terms_readonly"/>
+                                   readonly="state == 'closed' or is_terms_readonly"/>
                         </page>
                         <page string="Salient Features" name="salient_features_tab">
                             <field name="salient_features_tab" placeholder="Salient features details..."
-                                   readonly="is_terms_readonly"/>
+                                   readonly="state == 'closed' or is_terms_readonly"/>
                         </page>
                         <page string="Settings" name="settings_tab">
-                            <field name="settings_tab" placeholder="System settings details..."/>
+                            <field name="settings_tab" readonly="state == 'closed'"
+                                   placeholder="System settings details..."/>
                         </page>
                         <page string="Reason for the loss of a project" name="reason_for_loss_project_tab">
                             <field name="reason_for_loss_project_tab"
                                    placeholder="Reason for the loss of a project details..."
-                                   readonly="is_terms_readonly"/>
+                                   readonly="state == 'closed' or is_terms_readonly"/>
                         </page>
                         <page string="Audit Log" name="audit_tab">
                             <field name="audit_ids">
                                 <tree create="false" delete="false">
-                                    <field name="create_date" string="Timestamp"/>
-                                    <field name="user_id"/>
-                                    <field name="title"/>
-                                    <field name="state"/>
-                                    <field name="notes"/>
+                                    <field name="create_date" string="Timestamp" readonly="state == 'closed'"/>
+                                    <field name="user_id" readonly="state == 'closed'"/>
+                                    <field name="title" readonly="state == 'closed'"/>
+                                    <field name="state" readonly="state == 'closed'"/>
+                                    <field name="notes" readonly="state == 'closed'"/>
                                 </tree>
                             </field>
                         </page>

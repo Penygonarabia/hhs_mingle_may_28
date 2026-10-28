@@ -82,9 +82,24 @@ class CrmCommercialQuotation(models.Model):
 
         for record in self:
             record.is_description_readonly = (
-                    (record.state in ("approved", "confirmed") or record.name != "New")
-                    and not (allow_edit or allow_edit_desc)
+                    record.state == "closed"
+                    or (
+                            record.state in ("approved", "confirmed")
+                            or record.name != "New"
+                    ) and not (allow_edit or allow_edit_desc)
             )
+
+    # @api.depends("state", "name")
+    # @api.depends_context("uid")
+    # def _compute_is_description_readonly(self):
+    #     allow_edit = self.env.user.allow_edit_quotation
+    #     allow_edit_desc = self.env.user.allow_edit_quotation_desc
+    #
+    #     for record in self:
+    #         record.is_description_readonly = (
+    #                 (record.state in ("approved", "confirmed") or record.name != "New")
+    #                 and not (allow_edit or allow_edit_desc)
+    #         )
 
     warehouse_id = fields.Many2one(
         "stock.warehouse",
@@ -146,7 +161,7 @@ class CrmCommercialQuotation(models.Model):
             default="",
         )
         configured_category_id = ICP.get_param(
-            "crm_commercial.crm_product_category_id",
+            "crm_commercial.crm_product_category_ids",
             default="",
         )
         for rec in self:
@@ -480,7 +495,9 @@ class CrmCommercialQuotation(models.Model):
     partner_id = fields.Many2one("res.partner", string="Customer No", index=True)
     to_name = fields.Char(string="To", required=True)
     email = fields.Char(string="Email", required=True)
-    phone = fields.Char(string="Phone", required=True)
+    phone = fields.Char(string="Mobile number", required=True)
+    company_name=fields.Char(string="Company Name")
+    phone_number = fields.Char(string="Phone Number")
 
     def _default_country_id(self):
         return self.env.ref("base.sa", raise_if_not_found=False) or self.env[
@@ -565,12 +582,25 @@ class CrmCommercialQuotation(models.Model):
     project_category_id = fields.Many2one(
         "crm.commercial.project.category", string="Project Category", index=True
     )
-    product_category_id = fields.Many2one(
+    product_category_ids = fields.Many2many(
         "product.category",
+        "crm_commercial_quotation_products_category_rel",
+        "quotation_id",
+        "category_id",
         string="Product Group",
         index=True,
         help="Select product category to auto-populate Payment Terms, Warranty Terms and Salient Features tabs.",
     )
+    # products_category_ids = fields.Many2many(
+    #     "product.category",
+    #     "crm_commercial_quotation_products_category_rel",
+    #     "quotation_id",
+    #     "category_id",
+    #     string="Products Groups",
+    #     index=True,
+    #     # help="Select product category to auto-populate Payment Terms, Warranty Terms and Salient Features tabs.",
+    # )
+
     project_name = fields.Char(string="Project Name", index=True)
 
     expected_gross_margin = fields.Float(
@@ -646,7 +676,7 @@ class CrmCommercialQuotation(models.Model):
 
     # Additional Info Section
     supplier_support_recording = fields.Float(
-        string="Supplier Support Recording", default=0.0
+        string="Special Price Support", default=0.0
     )
     dsi_type = fields.Selection(
         [
@@ -682,7 +712,7 @@ class CrmCommercialQuotation(models.Model):
         string="Total Cost (B)", compute="_compute_costing_summary", store=True
     )
     total_supplier_support = fields.Float(
-        string="Total Supplier Support (S)",
+        string="Special Price Support (S)",
         compute="_compute_costing_summary",
         store=True,
     )
@@ -741,10 +771,10 @@ class CrmCommercialQuotation(models.Model):
     )
     reason_for_loss_project_tab = fields.Html(
         string="Reason For Loss Project",
-        #compute="_compute_category_terms",
-        #store=True,
+        # compute="_compute_category_terms",
+        # store=True,
         readonly=False,
-        #precompute=True,
+        # precompute=True,
     )
 
     def _default_settings_tab(self):
@@ -804,77 +834,165 @@ class CrmCommercialQuotation(models.Model):
             action = {"type": "ir.actions.act_window_close"}
         return action
 
-    @api.depends("line_ids.product_category_id", "line_ids.product_id")
+    def _get_combined_category_terms(self):
+        """Collect unique terms from all quotation line categories and parents."""
+        self.ensure_one()
+
+        categories = self.env["product.category"]
+        seen_category_ids = set()
+
+        for line in self.line_ids:
+            product = line.product_id
+
+            category = (
+                    line.product_category_id
+                    or (
+                        getattr(product, "product_group_id", False)
+                        if product else False
+                    )
+                    or (
+                        getattr(product, "product_category_id", False)
+                        if product else False
+                    )
+                    or (product.categ_id if product else False)
+            )
+
+            # Include the selected category and all its parent categories.
+            while category:
+                if category.id not in seen_category_ids:
+                    categories |= category
+                    seen_category_ids.add(category.id)
+
+                category = category.parent_id
+
+        payment_terms = []
+        warranty_terms = []
+        salient_features = []
+
+        for category in categories:
+            if (
+                    category.payment_terms_content
+                    and category.payment_terms_content not in payment_terms
+            ):
+                payment_terms.append(category.payment_terms_content)
+
+            if (
+                    category.warranty_terms_content
+                    and category.warranty_terms_content not in warranty_terms
+            ):
+                warranty_terms.append(category.warranty_terms_content)
+
+            if (
+                    category.salient_features_content
+                    and category.salient_features_content not in salient_features
+            ):
+                salient_features.append(category.salient_features_content)
+
+        # These fields are Html fields, so use HTML line breaks.
+        return {
+            "payment_terms_tab": "<br/>".join(payment_terms) or False,
+            "warranty_terms_tab": "<br/>".join(warranty_terms) or False,
+            "salient_features_tab": "<br/>".join(salient_features) or False,
+        }
+
+    @api.depends(
+        "line_ids",
+        "line_ids.product_id",
+        "line_ids.product_category_id",
+        "line_ids.product_category_id.payment_terms_content",
+        "line_ids.product_category_id.warranty_terms_content",
+        "line_ids.product_category_id.salient_features_content",
+        "line_ids.product_id.categ_id",
+    )
     def _compute_category_terms(self):
         for rec in self:
-            payment_terms = False
-            warranty_terms = False
-            salient_features = False
-            # reason_for_project=False
+            values = rec._get_combined_category_terms()
 
-            for line in rec.line_ids:
-                cat = line.product_category_id or (
-                    line.product_id.categ_id if line.product_id else False
-                )
-                while cat:
-                    if cat.payment_terms_content and not payment_terms:
-                        payment_terms = cat.payment_terms_content
-                    if cat.warranty_terms_content and not warranty_terms:
-                        warranty_terms = cat.warranty_terms_content
-                    if cat.salient_features_content and not salient_features:
-                        salient_features = cat.salient_features_content
-                    if payment_terms and warranty_terms and salient_features:
-                        break
-                    cat = cat.parent_id
-
-            if payment_terms:
-                rec.payment_terms_tab = payment_terms
-            elif not rec.payment_terms_tab:
-                rec.payment_terms_tab = False
-
-            if warranty_terms:
-                rec.warranty_terms_tab = warranty_terms
-            elif not rec.warranty_terms_tab:
-                rec.warranty_terms_tab = False
-
-            if salient_features:
-                rec.salient_features_tab = salient_features
-            elif not rec.salient_features_tab:
-                rec.salient_features_tab = False
-
-            # if reason_for_project:
-            #     rec.reason_for_loss_project_tab = reason_for_project
-            # elif not rec.reason_for_loss_project_tab:
-            #     rec.reason_for_loss_project_tab = False
+            rec.payment_terms_tab = values["payment_terms_tab"]
+            rec.warranty_terms_tab = values["warranty_terms_tab"]
+            rec.salient_features_tab = values["salient_features_tab"]
 
     @api.onchange("line_ids")
     def _onchange_line_ids_product_category(self):
-        """Populate payment terms, warranty terms, and salient features strictly when product category or product is selected in grid lines."""
-        payment_terms = False
-        warranty_terms = False
-        salient_features = False
+        """Refresh all terms when quotation lines change in the form."""
+        for rec in self:
+            values = rec._get_combined_category_terms()
 
-        for line in self.line_ids:
-            cat = line.product_category_id or (
-                line.product_id.categ_id if line.product_id else False
-            )
-            while cat:
-                if cat.payment_terms_content and not payment_terms:
-                    payment_terms = cat.payment_terms_content
-                if cat.warranty_terms_content and not warranty_terms:
-                    warranty_terms = cat.warranty_terms_content
-                if cat.salient_features_content and not salient_features:
-                    salient_features = cat.salient_features_content
-                if payment_terms and warranty_terms and salient_features:
-                    break
-                cat = cat.parent_id
+            rec.payment_terms_tab = values["payment_terms_tab"]
+            rec.warranty_terms_tab = values["warranty_terms_tab"]
+            rec.salient_features_tab = values["salient_features_tab"]
 
-        if payment_terms:
-            self.payment_terms_tab = payment_terms
-        if warranty_terms:
-            self.warranty_terms_tab = warranty_terms
-        if salient_features:
-            self.salient_features_tab = salient_features
+    # @api.depends("line_ids.product_category_id", "line_ids.product_id")
+    # def _compute_category_terms(self):
+    #     for rec in self:
+    #         payment_terms = False
+    #         warranty_terms = False
+    #         salient_features = False
+    #         # reason_for_project=False
+    #
+    #         for line in rec.line_ids:
+    #             cat = line.product_category_id or (
+    #                 line.product_id.categ_id if line.product_id else False
+    #             )
+    #             while cat:
+    #                 if cat.payment_terms_content and not payment_terms:
+    #                     payment_terms = cat.payment_terms_content
+    #                 if cat.warranty_terms_content and not warranty_terms:
+    #                     warranty_terms = cat.warranty_terms_content
+    #                 if cat.salient_features_content and not salient_features:
+    #                     salient_features = cat.salient_features_content
+    #                 if payment_terms and warranty_terms and salient_features:
+    #                     break
+    #                 cat = cat.parent_id
+    #
+    #         if payment_terms:
+    #             rec.payment_terms_tab = payment_terms
+    #         elif not rec.payment_terms_tab:
+    #             rec.payment_terms_tab = False
+    #
+    #         if warranty_terms:
+    #             rec.warranty_terms_tab = warranty_terms
+    #         elif not rec.warranty_terms_tab:
+    #             rec.warranty_terms_tab = False
+    #
+    #         if salient_features:
+    #             rec.salient_features_tab = salient_features
+    #         elif not rec.salient_features_tab:
+    #             rec.salient_features_tab = False
+    #
+    #         # if reason_for_project:
+    #         #     rec.reason_for_loss_project_tab = reason_for_project
+    #         # elif not rec.reason_for_loss_project_tab:
+    #         #     rec.reason_for_loss_project_tab = False
+    #
+    # @api.onchange("line_ids")
+    # def _onchange_line_ids_product_category(self):
+    #     """Populate payment terms, warranty terms, and salient features strictly when product category or product is selected in grid lines."""
+    #     payment_terms = False
+    #     warranty_terms = False
+    #     salient_features = False
+    #
+    #     for line in self.line_ids:
+    #         cat = line.product_category_id or (
+    #             line.product_id.categ_id if line.product_id else False
+    #         )
+    #         while cat:
+    #             if cat.payment_terms_content and not payment_terms:
+    #                 payment_terms = cat.payment_terms_content
+    #             if cat.warranty_terms_content and not warranty_terms:
+    #                 warranty_terms = cat.warranty_terms_content
+    #             if cat.salient_features_content and not salient_features:
+    #                 salient_features = cat.salient_features_content
+    #             if payment_terms and warranty_terms and salient_features:
+    #                 break
+    #             cat = cat.parent_id
+    #
+    #     if payment_terms:
+    #         self.payment_terms_tab = payment_terms
+    #     if warranty_terms:
+    #         self.warranty_terms_tab = warranty_terms
+    #     if salient_features:
+    #         self.salient_features_tab = salient_features
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -1141,9 +1259,9 @@ class CrmCommercialQuotation(models.Model):
                         "product_group_id": (
                             line.product_group_id.id if line.product_group_id else False
                         ),
-                        "product_category_id": (
-                            line.product_category_id.id
-                            if line.product_category_id
+                        "product_category_ids": (
+                            line.product_category_ids.id
+                            if line.product_category_ids
                             else False
                         ),
                         "sale_type_id": (
@@ -1374,9 +1492,9 @@ class CrmCommercialQuotation(models.Model):
                         "product_group_id": (
                             line.product_group_id.id if line.product_group_id else False
                         ),
-                        "product_category_id": (
-                            line.product_category_id.id
-                            if line.product_category_id
+                        "product_category_ids": (
+                            line.product_category_ids.id
+                            if line.product_category_ids
                             else False
                         ),
                         "product_id": line.product_id.id,
@@ -1424,6 +1542,15 @@ class CrmCommercialQuotation(models.Model):
                 ) == "yes"
         ),
     )
+
+    def action_close_quotation(self):
+        for rec in self:
+            if rec.state != 'confirmed':
+                continue
+
+            rec.write({
+                'state': 'closed',
+            })
     # show_product_category = fields.Boolean(
     #     string="Show Product Category",
     #     compute="_compute_show_product_category",
@@ -1526,7 +1653,12 @@ class CrmCommercialQuotationLine(models.Model):
         "product.category",
         string="Product Group",
     )
-    capacity = fields.Char(string="Capacity", related="quotation_id.capacity",store=True)
+    header_products_category_ids = fields.Many2many(
+        "product.category",
+        related="quotation_id.product_category_ids",
+        string="Header Product Categories",
+    )
+    capacity = fields.Char(string="Capacity", related="quotation_id.capacity", store=True)
     sale_type_id = fields.Many2one("crm.commercial.sale.type", string="Sale Type")
     product_id = fields.Many2one(
         "product.product",
@@ -1574,16 +1706,16 @@ class CrmCommercialQuotationLine(models.Model):
 
             # Other fields retain their individual permissions.
             line.is_description_readonly = (
-                    is_existing and not (allow_edit or allow_edit_desc)
+                    is_existing and not (allow_edit_desc)
             )
             line.is_terms_readonly = (
                     is_existing and not (allow_edit or allow_edit_terms)
             )
             line.is_default_discount_readonly = (
-                    is_existing and not (allow_edit or allow_edit_discount)
+                    is_existing and not (allow_edit_discount)
             )
             line.is_sales_price_readonly = (
-                    is_existing and not (allow_edit or allow_edit_sales_price)
+                    is_existing and not (allow_edit_sales_price)
             )
 
     qty = fields.Float(string="Qty", default=1.0)
@@ -1668,130 +1800,209 @@ class CrmCommercialQuotationLine(models.Model):
 
     @api.onchange("product_id")
     def _onchange_product_id(self):
-        if self.product_id:
-            self.name = self.product_id.name
-            self.unit_cost = self.product_id.standard_price
-            self.sale_price = self.product_id.lst_price
+        if not self.product_id:
+            return
 
-            prod_cat = (
-                    getattr(self.product_id, "product_group_id", False)
-                    or getattr(self.product_id, "product_category_id", False)
-                    or self.product_id.categ_id
-            )
+        self.name = self.product_id.name
+        self.unit_cost = self.product_id.standard_price
+        self.sale_price = self.product_id.lst_price
 
-            category_rec = False
-            group_rec = False
-            if prod_cat:
-                cat = prod_cat
-                while cat:
-                    if cat.use_for_crm_commercial:
-                        if cat.parent_id and not category_rec:
-                            category_rec = cat
-                        if not cat.parent_id and not group_rec:
-                            group_rec = cat
-                    cat = cat.parent_id
+        prod_cat = (
+                getattr(self.product_id, "product_group_id", False)
+                or getattr(self.product_id, "product_category_ids", False)
+                or self.product_id.categ_id
+        )
 
-            if not category_rec and prod_cat and prod_cat.use_for_crm_commercial:
-                category_rec = prod_cat
+        category_rec = False
+        group_rec = False
 
-            if not group_rec and category_rec and category_rec.parent_id:
-                c = category_rec
-                while c.parent_id:
-                    c = c.parent_id
-                group_rec = c
-
-            if category_rec:
-                self.product_category_id = category_rec.id
-                if category_rec.default_discount_percent:
-                    self.discount_percent = category_rec.default_discount_percent
-
-            if group_rec:
-                self.product_group_id = group_rec.id
-
-            cat = self.product_category_id or prod_cat
+        if prod_cat:
+            cat = prod_cat
             while cat:
-                if self.quotation_id:
-                    if (
-                            cat.payment_terms_content
-                            and not self.quotation_id.payment_terms_tab
-                    ):
-                        self.quotation_id.payment_terms_tab = cat.payment_terms_content
-                    if (
-                            cat.warranty_terms_content
-                            and not self.quotation_id.warranty_terms_tab
-                    ):
-                        self.quotation_id.warranty_terms_tab = (
-                            cat.warranty_terms_content
-                        )
-                    if (
-                            cat.salient_features_content
-                            and not self.quotation_id.salient_features_tab
-                    ):
-                        self.quotation_id.salient_features_tab = (
-                            cat.salient_features_content
-                        )
+                if cat.use_for_crm_commercial:
+                    if cat.parent_id and not category_rec:
+                        category_rec = cat
+                    if not cat.parent_id and not group_rec:
+                        group_rec = cat
                 cat = cat.parent_id
 
-            # Auto-add linked product if active
-            if self.quotation_id and not self.env.context.get(
-                    "skip_linked_product_addition"
-            ):
-                linked_prod = self._get_linked_product_for(self.product_id)
-                if linked_prod:
-                    already_exists = self.quotation_id.line_ids.filtered(
-                        lambda l: l.product_id.id == linked_prod.id
-                    )
-                    if not already_exists:
-                        l_prod_cat = (
-                                getattr(linked_prod, "product_group_id", False)
-                                or getattr(linked_prod, "product_category_id", False)
-                                or linked_prod.categ_id
-                        )
-                        l_cat_rec = False
-                        l_grp_rec = False
-                        if l_prod_cat:
-                            c = l_prod_cat
-                            while c:
-                                if c.use_for_crm_commercial:
-                                    if c.parent_id and not l_cat_rec:
-                                        l_cat_rec = c
-                                    if not c.parent_id and not l_grp_rec:
-                                        l_grp_rec = c
-                                c = c.parent_id
-                        if (
-                                not l_cat_rec
-                                and l_prod_cat
-                                and l_prod_cat.use_for_crm_commercial
-                        ):
-                            l_cat_rec = l_prod_cat
-                        if not l_grp_rec and l_cat_rec and l_cat_rec.parent_id:
-                            c = l_cat_rec
-                            while c.parent_id:
-                                c = c.parent_id
-                            l_grp_rec = c
-                        l_disc = (
-                            l_cat_rec.default_discount_percent
-                            if l_cat_rec and l_cat_rec.default_discount_percent
-                            else 0.0
-                        )
+        if (
+                not category_rec
+                and prod_cat
+                and prod_cat.use_for_crm_commercial
+        ):
+            category_rec = prod_cat
 
-                        line_vals = {
-                            "quotation_id": self.quotation_id._origin.id
-                                            or self.quotation_id.id,
-                            "product_group_id": l_grp_rec.id if l_grp_rec else False,
-                            "product_category_id": l_cat_rec.id if l_cat_rec else False,
-                            "product_id": linked_prod.id,
-                            "qty": self.qty or 1.0,
-                            "unit_cost": linked_prod.standard_price,
-                            "sale_price": linked_prod.lst_price,
-                            "discount_percent": l_disc,
-                        }
-                        if self.quotation_id._origin.id:
-                            self.env["crm.commercial.quotation.line"].with_context(
-                                skip_linked_product_addition=True
-                            ).create(line_vals)
-                        else:
-                            self.quotation_id.line_ids = [(0, 0, line_vals)]
+        if not group_rec and category_rec and category_rec.parent_id:
+            c = category_rec
+            while c.parent_id:
+                c = c.parent_id
+            group_rec = c
+
+        if category_rec:
+            self.product_category_id = category_rec.id
+
+            if category_rec.default_discount_percent:
+                self.discount_percent = (
+                    category_rec.default_discount_percent
+                )
+
+        if group_rec:
+            self.product_group_id = group_rec.id
+
+        # Update quotation terms using all current product lines.
+        if self.quotation_id:
+            self._update_quotation_category_terms()
+
+        # Auto-add linked product if active.
+        if (
+                self.quotation_id
+                and not self.env.context.get("skip_linked_product_addition")
+        ):
+            linked_prod = self._get_linked_product_for(self.product_id)
+
+            if linked_prod:
+                already_exists = self.quotation_id.line_ids.filtered(
+                    lambda l: l.product_id.id == linked_prod.id
+                )
+
+                if not already_exists:
+                    l_prod_cat = (
+                            getattr(linked_prod, "product_group_id", False)
+                            or getattr(linked_prod, "product_category_id", False)
+                            or linked_prod.categ_id
+                    )
+
+                    l_cat_rec = False
+                    l_grp_rec = False
+
+                    if l_prod_cat:
+                        c = l_prod_cat
+                        while c:
+                            if c.use_for_crm_commercial:
+                                if c.parent_id and not l_cat_rec:
+                                    l_cat_rec = c
+                                if not c.parent_id and not l_grp_rec:
+                                    l_grp_rec = c
+                            c = c.parent_id
+
+                    if (
+                            not l_cat_rec
+                            and l_prod_cat
+                            and l_prod_cat.use_for_crm_commercial
+                    ):
+                        l_cat_rec = l_prod_cat
+
+                    if (
+                            not l_grp_rec
+                            and l_cat_rec
+                            and l_cat_rec.parent_id
+                    ):
+                        c = l_cat_rec
+                        while c.parent_id:
+                            c = c.parent_id
+                        l_grp_rec = c
+
+                    l_disc = (
+                        l_cat_rec.default_discount_percent
+                        if l_cat_rec
+                           and l_cat_rec.default_discount_percent
+                        else 0.0
+                    )
+
+                    line_vals = {
+                        "quotation_id": (
+                                self.quotation_id._origin.id
+                                or self.quotation_id.id
+                        ),
+                        "product_group_id": (
+                            l_grp_rec.id if l_grp_rec else False
+                        ),
+                        "product_category_ids": (
+                            l_cat_rec.id if l_cat_rec else False
+                        ),
+                        "product_id": linked_prod.id,
+                        "qty": self.qty or 1.0,
+                        "unit_cost": linked_prod.standard_price,
+                        "sale_price": linked_prod.lst_price,
+                        "discount_percent": l_disc,
+                    }
+
+                    if self.quotation_id._origin.id:
+                        self.env[
+                            "crm.commercial.quotation.line"
+                        ].with_context(
+                            skip_linked_product_addition=True
+                        ).create(line_vals)
+                    else:
+                        self.quotation_id.line_ids = [
+                            (0, 0, line_vals)
+                        ]
+
+                    # Recompute terms after adding the linked product.
+                    self._update_quotation_category_terms()
+
+    def _update_quotation_category_terms(self):
+        """Combine terms from all quotation lines, including the current onchange line."""
+
+        for line in self:
+            quotation = line.quotation_id
+            if not quotation:
+                continue
+
+            # Include all existing lines plus the current unsaved line.
+            quotation_lines = quotation.line_ids | line
+
+            categories = self.env["product.category"]
+
+            for quotation_line in quotation_lines:
+                product = quotation_line.product_id
+
+                category = (
+                        quotation_line.product_category_id
+                        or quotation_line.product_group_id
+                        or (
+                            getattr(product, "product_group_id", False)
+                            if product else False
+                        )
+                        or (
+                            getattr(product, "product_category_id", False)
+                            if product else False
+                        )
+                        or (product.categ_id if product else False)
+                )
+
+                while category:
+                    if category not in categories:
+                        categories |= category
+                    category = category.parent_id
+
+            payment_terms = []
+            warranty_terms = []
+            salient_features = []
+
+            for category in categories:
+                if (
+                        category.payment_terms_content
+                        and category.payment_terms_content not in payment_terms
+                ):
+                    payment_terms.append(category.payment_terms_content)
+
+                if (
+                        category.warranty_terms_content
+                        and category.warranty_terms_content not in warranty_terms
+                ):
+                    warranty_terms.append(category.warranty_terms_content)
+
+                if (
+                        category.salient_features_content
+                        and category.salient_features_content not in salient_features
+                ):
+                    salient_features.append(category.salient_features_content)
+
+            quotation.payment_terms_tab = "\n".join(payment_terms)
+            quotation.warranty_terms_tab = "\n".join(warranty_terms)
+            quotation.salient_features_tab = "\n".join(salient_features)
 
     @api.onchange("product_category_id")
     def _onchange_product_category_id_terms(self):
