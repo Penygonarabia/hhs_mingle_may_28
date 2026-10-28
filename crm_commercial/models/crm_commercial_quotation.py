@@ -66,13 +66,23 @@ class CrmCommercialQuotation(models.Model):
                     is_existing and not (allow_edit or allow_edit_terms)
             )
 
-    @api.depends('state', 'name')
+    @api.depends("state", "name")
+    @api.depends_context("uid")
     def _compute_is_warehouse_readonly(self):
+        allow_edit = self.env.user.allow_edit_quotation
+
         for record in self:
-            record.is_warehouse_readonly = (
-                    record.state in ('approved', 'confirmed')
-                    or record.name != 'New'
-            )
+            if record.state == "closed":
+                record.is_warehouse_readonly = True
+            elif record.state == "draft" and allow_edit:
+                record.is_warehouse_readonly = False
+            else:
+                record.is_warehouse_readonly = (
+                                                       record.state in ("approved", "confirmed")
+                                                       or record.name != "New"
+                                               ) and not (
+                        record.state == "draft" and allow_edit
+                )
 
     @api.depends("state", "name")
     @api.depends_context("uid")
@@ -496,7 +506,7 @@ class CrmCommercialQuotation(models.Model):
     to_name = fields.Char(string="To", required=True)
     email = fields.Char(string="Email", required=True)
     phone = fields.Char(string="Mobile number", required=True)
-    company_name=fields.Char(string="Company Name")
+    company_name = fields.Char(string="Company Name")
     phone_number = fields.Char(string="Phone Number")
 
     def _default_country_id(self):
@@ -1061,6 +1071,23 @@ class CrmCommercialQuotation(models.Model):
             if rec.assigned_id and rec.assigned_id.quotation_auto_approval:
                 rec.state = "approved"
         return records
+
+    def _update_partner_company_details(self):
+        for rec in self:
+            if not rec.partner_id:
+                continue
+
+            partner_vals = {
+                "is_company": True,
+            }
+
+            if rec.company_name:
+                partner_vals["company_name"] = rec.company_name
+
+            if rec.phone_number:
+                partner_vals["phone"] = rec.phone_number
+
+            rec.partner_id.write(partner_vals)
 
     def write(self, vals):
         if "state" in vals:
@@ -1700,10 +1727,16 @@ class CrmCommercialQuotationLine(models.Model):
                     quotation.state in ("approved", "confirmed")
                     or quotation.name != "New"
             )
-
-            # Warehouse is always readonly for existing quotations.
-            line.is_warehouse_readonly = is_existing
-
+            line.is_warehouse_readonly = (
+                    quotation.state == "closed"
+                    or (
+                            is_existing
+                            and not (
+                            quotation.state == "draft"
+                            and allow_edit
+                    )
+                    )
+            )
             # Other fields retain their individual permissions.
             line.is_description_readonly = (
                     is_existing and not (allow_edit_desc)

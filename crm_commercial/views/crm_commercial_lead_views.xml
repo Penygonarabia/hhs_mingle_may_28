@@ -14,7 +14,7 @@
                 <field name="customer_partner_name" string="Customer / Lead Name"/>
                 <field name="name"/>
                 <field name="probability"/>
-                <field name="product_category_id"/>
+                <field name="product_category_ids"/>
                 <field name="capacity"/>
                 <field name="lead_value"/>
                 <field name="state" widget="badge" decoration-info="state == 'draft'"
@@ -60,19 +60,20 @@
                             <field name="warehouse_id" domain="[('id','in',warehouse_ids)]"
                                    options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"
                                    readonly="state in ['converted', 'approved']"/>
-                            <field name="warehouse_ids" widget="many2many_tags" invisible="1"
+                            <field name="warehouse_ids" widget="many2many_tags" invisible="0"
                                    readonly="state in ['converted', 'approved']"/>
                             <field name="project_category_id" readonly="state in ['converted', 'approved']"/>
-                            <field name="crm_product_category_ids" widget="many2many_tags" invisible="1"
+                            <field name="crm_product_category_ids" widget="many2many_tags" invisible="0"
                                    readonly="state in ['converted', 'approved']"/>
                             <!-- # added by vengatesh sep 21  crm_product_category_ids-->
                             <field name="show_product_group" invisible="1"
                                    readonly="state in ['converted', 'approved']"/>
                             <field name="product_group_id" string="Product Category" context="{'show_code_only': True}"
                                    invisible="not show_product_group" readonly="state in ['converted', 'approved']"/>
-                            <field name="product_category_id" string="Product Group"
+                            <field name="product_category_ids" string="Product Group" widget="many2many_tags"
                                    domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id), ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]"
                                    readonly="state in ['converted', 'approved']"/>
+                            <!--                            <field name="product_category_id"/>-->
                             <field name="capacity" readonly="state in ['converted', 'approved']"/>
                             <field name="lead_value" readonly="state in ['converted', 'approved']"/>
                             <field name="description" nolabel="0" colspan="2"
@@ -86,6 +87,8 @@
                                    readonly="state in ['converted', 'approved']"/>
                             <field name="custom_partner" invisible="is_customer_type"
                                    readonly="state in ['converted', 'approved']"/>
+                            <field name="company_name"/>
+                            <field name="phone_number"/>
                             <field name="position" readonly="state in ['converted', 'approved']"/>
                             <field name="phone" readonly="state in ['converted', 'approved']"/>
                             <field name="email" readonly="state in ['converted', 'approved']"/>

@@ -25,9 +25,7 @@ class CrmCommercialLead(models.Model):
         required=True,
         readonly=True,
     )
-    project_category_id = fields.Many2one(
-        "crm.commercial.project.category", string="Project Category", index=True, required=True,
-    )
+
     warehouse_id = fields.Many2one(
         "stock.warehouse",
         string="Warehouse",
@@ -68,10 +66,10 @@ class CrmCommercialLead(models.Model):
     partner_id = fields.Many2one(
         "res.partner",
         string="Customer/Lead",
-        required=True,
+        # required=True,
     )
 
-    custom_partner = fields.Char(string="Customer/Lead", required=True)
+    custom_partner = fields.Char(string="Customer/Lead")
 
     customer_partner_name = fields.Char(
         string="Customer / Lead Name",
@@ -287,16 +285,45 @@ class CrmCommercialLead(models.Model):
         string="CRM Product Category",
         compute="_compute_crm_product_category_ids",
     )
-    product_category_id = fields.Many2one(
+    # product_category_id = fields.Many2one(
+    #     "product.category",
+    #     string="Product Group",
+    #     domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id), ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]",
+    #     index=True,
+    #     required=True,
+    # )
+    product_category_ids = fields.Many2many(
         "product.category",
-        string="Product Category",
+        string="Product Groups",
         domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id), ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]",
         index=True,
         required=True,
     )
+    project_category_id = fields.Many2one(
+        "crm.commercial.project.category", string="Project Category", index=True, required=True,
+    )
+
     show_product_group = fields.Boolean(
         compute="_compute_show_product_group",
     )
+    company_name = fields.Char(string="Company Name")
+    phone_number = fields.Char(string="Phone Number")
+
+    @api.constrains("customer_type_id", "company_name", "custom_partner")
+    def _check_lead_company_or_name(self):
+        for rec in self:
+            if (
+                    rec.customer_type_id
+                    and rec.customer_type_id.name == "Lead"
+                    and not (rec.company_name or "").strip()
+                    and not (rec.custom_partner or "").strip()
+            ):
+                raise ValidationError(
+                    _(
+                        "Please enter either "
+                        "Company Name or Customer/Lead Name."
+                    )
+                )
 
     @api.depends("product_group_id")
     def _compute_show_product_group(self):
@@ -368,7 +395,7 @@ class CrmCommercialLead(models.Model):
         return mda_category.id if mda_category else False
 
     # added by vengatesh sep 21
-    @api.depends("creation_date", "product_category_id")
+    @api.depends("creation_date", "product_category_ids")
     def _compute_crm_product_category_ids(self):
         ICP = self.env["ir.config_parameter"].sudo()
 
@@ -421,9 +448,9 @@ class CrmCommercialLead(models.Model):
     @api.onchange("product_group_id")
     def _onchange_product_group_id(self):
         if not self.product_group_id:
-            self.product_category_id = False
-        elif self.product_category_id:
-            cat = self.product_category_id
+            self.product_category_ids = False
+        elif self.product_category_ids:
+            cat = self.product_category_ids
             is_child = False
             while cat:
                 if cat.id == self.product_group_id.id:
@@ -431,7 +458,7 @@ class CrmCommercialLead(models.Model):
                     break
                 cat = cat.parent_id
             if not is_child:
-                self.product_category_id = False
+                self.product_category_ids = False
 
     capacity = fields.Char(string="Capacity")
     email = fields.Char(string="Email", required=True, index=True)
@@ -540,47 +567,140 @@ class CrmCommercialLead(models.Model):
         index=True,
     )
 
+    @api.onchange("customer_type_id", "company_name")
+    def _onchange_company_name_is_company(self):
+        if self.customer_type_id and self.customer_type_id.name == "Lead":
+            partner = self.partner_id or self.existing_partner_id
+            if partner:
+                partner.is_company = bool(
+                    (self.company_name or "").strip()
+                )
+
+    def _update_partner_company_details(self):
+        for rec in self:
+            partner = rec.partner_id or rec.existing_partner_id
+            if not partner:
+                continue
+            is_lead = (
+                    rec.customer_type_id
+                    and rec.customer_type_id.name == "Lead"
+            )
+            partner_vals = {}
+            if is_lead:
+                partner_vals["is_company"] = bool(
+                    (rec.company_name or "").strip()
+                )
+            if rec.company_name:
+                partner_vals["company_name"] = rec.company_name
+            if rec.phone_number:
+                partner_vals["phone"] = rec.phone_number
+            if partner_vals:
+                partner.write(partner_vals)
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
             if vals.get("lead_no", _("New")) == _("New"):
-                vals["lead_no"] = self.env["ir.sequence"].next_by_code(
-                    "crm.commercial.lead"
-                ) or _("New")
+                vals["lead_no"] = (
+                        self.env["ir.sequence"].next_by_code(
+                            "crm.commercial.lead"
+                        ) or _("New")
+                )
+
         records = super(CrmCommercialLead, self).create(vals_list)
 
-        # added in vengatesh sep 22 2026
-        if vals.get("customer_type_id"):
-            customer_type_search = self.env["crm.commercial.customer.type"].search(
-                [("id", "=", vals.get("customer_type_id"))], limit=1
-            )
-            if customer_type_search.name == "Lead":
-                vals = {
-                    "name": vals.get("custom_partner"),
-                    "customer_city_id": self.env["res.city"]
-                    .search([("id", "=", vals.get("city_id"))], limit=1)
-                    .id,
-                    "street": vals.get("street"),
-                    "street2": vals.get("street2"),
-                    "district_id": vals.get("district"),
-                    "state_id": vals.get("state_id"),
-                    "zip": vals.get("zip"),
-                    "region_id": vals.get("region_id"),
-                    "mobile": vals.get("phone"),
-                    "email": vals.get("email"),
-                    "partner_type_hhs": "customer",
-                    "sub_partner_type": "crm_lead",
-                    "country_id": self.env["res.country"]
-                    .search([("id", "=", vals.get("country_id"))], limit=1)
-                    .id,
-                }
-                partner = self.env["res.partner"].create(vals)
+        Partner = self.env["res.partner"]
 
         for rec in records:
+            partner = rec.partner_id or rec.existing_partner_id
+
+            # For Lead type, create a partner if one is not already linked.
+            if not partner and rec.customer_type_id.name == "Lead":
+                partner = Partner.create({
+                    "name": rec.custom_partner or rec.name,
+                    "company_name": rec.company_name or False,
+                    "phone": rec.phone_number or False,
+                    "is_company": True,
+                    "customer_city_id": rec.city_id.id or False,
+                    "street": rec.street or False,
+                    "street2": rec.street2 or False,
+                    "district_id": rec.district.id or False,
+                    "state_id": rec.state_id.id or False,
+                    "zip": rec.zip or False,
+                    "region_id": rec.region_id.id or False,
+                    "mobile": rec.phone or False,
+                    "email": rec.email or False,
+                    "partner_type_hhs": "customer",
+                    "sub_partner_type": "crm_lead",
+                    "country_id": rec.country_id.id or False,
+                })
+
+                rec.existing_partner_id = partner
+
+            # Update company details for an existing or newly created partner.
+            rec._update_partner_company_details()
+
             if rec.assigned_id and rec.assigned_id.lead_auto_approval:
                 rec.state = "approved"
 
         return records
+
+    def write(self, vals):
+        res = super(CrmCommercialLead, self).write(vals)
+        if any(
+                field in vals
+                for field in (
+                        "company_name",
+                        "phone_number",
+                        "partner_id",
+                        "existing_partner_id",
+                )
+        ):
+            self._update_partner_company_details()
+        return res
+
+    # @api.model_create_multi
+    # def create(self, vals_list):
+    #     for vals in vals_list:
+    #         if vals.get("lead_no", _("New")) == _("New"):
+    #             vals["lead_no"] = self.env["ir.sequence"].next_by_code(
+    #                 "crm.commercial.lead"
+    #             ) or _("New")
+    #     records = super(CrmCommercialLead, self).create(vals_list)
+    #
+    #     # added in vengatesh sep 22 2026
+    #     if vals.get("customer_type_id"):
+    #         customer_type_search = self.env["crm.commercial.customer.type"].search(
+    #             [("id", "=", vals.get("customer_type_id"))], limit=1
+    #         )
+    #         if customer_type_search.name == "Lead":
+    #             vals = {
+    #                 "name": vals.get("custom_partner"),
+    #                 "customer_city_id": self.env["res.city"]
+    #                 .search([("id", "=", vals.get("city_id"))], limit=1)
+    #                 .id,
+    #                 "street": vals.get("street"),
+    #                 "street2": vals.get("street2"),
+    #                 "district_id": vals.get("district"),
+    #                 "state_id": vals.get("state_id"),
+    #                 "zip": vals.get("zip"),
+    #                 "region_id": vals.get("region_id"),
+    #                 "mobile": vals.get("phone"),
+    #                 "email": vals.get("email"),
+    #                 "partner_type_hhs": "customer",
+    #                 "sub_partner_type": "crm_lead",
+    #                 "country_id": self.env["res.country"]
+    #                 .search([("id", "=", vals.get("country_id"))], limit=1)
+    #                 .id,
+    #             }
+    #             partner = self.env["res.partner"].create(vals)
+    #
+    #
+    #     for rec in records:
+    #         if rec.assigned_id and rec.assigned_id.lead_auto_approval:
+    #             rec.state = "approved"
+    #
+    #     return records
 
     @api.constrains("phone")
     def _check_phone_format(self):
@@ -716,8 +836,10 @@ class CrmCommercialLead(models.Model):
                     "warehouse_id": self.warehouse_id.id,
                     "assigned_id": self.assigned_id.id,
                     "capacity": self.capacity if self.capacity else False,
-                    "product_category_id": self.product_category_id.id if self.product_category_id else False,
+                    "product_category_ids": self.product_category_ids if self.product_category_ids else False,
                     "project_category_id": self.project_category_id.id if self.project_category_id else False,
+                    "company_name": self.company_name if self.company_name else False,
+                    "phone_number": self.phone_number if self.phone_number else False,
                     # "project_category_id": (
                     #     self.project_category_id.id
                     #     if self.project_category_id
