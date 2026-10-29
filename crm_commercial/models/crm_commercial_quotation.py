@@ -1745,10 +1745,10 @@ class CrmCommercialQuotationLine(models.Model):
                     is_existing and not (allow_edit or allow_edit_terms)
             )
             line.is_default_discount_readonly = (
-                    is_existing and not (allow_edit_discount)
+                    is_existing and not (allow_edit or allow_edit_discount)
             )
             line.is_sales_price_readonly = (
-                    is_existing and not (allow_edit_sales_price)
+                    is_existing and not (allow_edit or allow_edit_sales_price)
             )
 
     qty = fields.Float(string="Qty", default=1.0)
