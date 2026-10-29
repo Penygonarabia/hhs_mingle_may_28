@@ -60,7 +60,7 @@
                             <field name="warehouse_id" domain="[('id','in',warehouse_ids)]"
                                    options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"
                                    readonly="state in ['converted', 'approved']"/>
-                            <field name="warehouse_ids" widget="many2many_tags" invisible="0"
+                            <field name="warehouse_ids" widget="many2many_tags" invisible="1"
                                    readonly="state in ['converted', 'approved']"/>
                             <field name="project_category_id" readonly="state in ['converted', 'approved']"/>
                             <field name="crm_product_category_ids" widget="many2many_tags" invisible="1"
