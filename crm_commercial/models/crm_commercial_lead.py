@@ -268,14 +268,6 @@ class CrmCommercialLead(models.Model):
     probability = fields.Float(string="Probability (%)", default=10.0)
     position = fields.Char(string="Position")
 
-    product_group_id = fields.Many2one(
-        "product.category",
-        string="Product Group",
-        index=True,
-        domain="[('id', 'in', crm_product_category_ids)]",
-        default=lambda self: self._default_product_group_id(),
-    )
-
     crm_product_category_ids = fields.Many2many(
         # added by vengatesh sep 21
         "product.category",
@@ -285,13 +277,7 @@ class CrmCommercialLead(models.Model):
         string="CRM Product Category",
         compute="_compute_crm_product_category_ids",
     )
-    # product_category_id = fields.Many2one(
-    #     "product.category",
-    #     string="Product Group",
-    #     domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id), ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]",
-    #     index=True,
-    #     required=True,
-    # )
+
     product_category_ids = fields.Many2many(
         "product.category",
         string="Product Groups",
@@ -299,13 +285,7 @@ class CrmCommercialLead(models.Model):
         index=True,
         required=True,
     )
-    project_category_id = fields.Many2one(
-        "crm.commercial.project.category", string="Project Category", index=True, required=True,
-    )
 
-    show_product_group = fields.Boolean(
-        compute="_compute_show_product_group",
-    )
     company_name = fields.Char(string="Company Name")
     phone_number = fields.Char(string="Phone Number")
 
@@ -325,6 +305,35 @@ class CrmCommercialLead(models.Model):
                     )
                 )
 
+    show_product_group = fields.Boolean(
+        default=lambda self: (
+                self.env["ir.config_parameter"].sudo().get_param(
+                    "crm_commercial.show_crm_commerical_product_category",
+                    default="no",
+                ) == "yes"
+        ),
+    )
+
+    project_category_id = fields.Many2one(
+        "crm.commercial.project.category", string="Project Category", index=True, required=True,
+    )
+    product_group_id = fields.Many2one(
+        "product.category",
+        string="Product Group",
+        index=True,
+        default=lambda self: self._default_category_id(),
+    )
+
+    @api.model
+    def _default_category_id(self):
+        ICP = self.env["ir.config_parameter"].sudo()
+
+        category_id = ICP.get_param(
+            "crm_commercial.crm_product_category_id",
+            default=False,
+        )
+        return int(category_id) if category_id else False
+
     @api.depends("product_group_id")
     def _compute_show_product_group(self):
         for rec in self:
@@ -332,67 +341,38 @@ class CrmCommercialLead(models.Model):
                 rec.product_group_id.code != "MDA" if rec.product_group_id else False
             )
 
+    # @api.model
     # def _default_product_group_id(self):
     #     ICP = self.env["ir.config_parameter"].sudo()
-
+    #
     #     show_product_category = ICP.get_param(
     #         "crm_commercial.show_crm_commerical_product_category",
-    #         default="",
+    #         default="False",
     #     )
-
     #     configured_category_id = ICP.get_param(
     #         "crm_commercial.crm_product_category_id",
     #         default="",
     #     )
-
-    #     if show_product_category == "True" and configured_category_id:
+    #     if str(show_product_category).strip().lower() in ("true", "1", "yes"):
     #         try:
-    #             configured_category_id = int(configured_category_id)
+    #             category_id = int(configured_category_id)
     #         except (ValueError, TypeError):
-    #             return False
-
-    #         category = (
-    #             self.env["product.category"].browse(configured_category_id).exists()
-    #         )
-
-    #         return category.id if category else False
-
-    #     return False
-    def _default_product_group_id(self):
-        ICP = self.env["ir.config_parameter"].sudo()
-
-        show_product_category = ICP.get_param(
-            "crm_commercial.show_crm_commerical_product_category",
-            default="",
-        )
-
-        configured_category_id = ICP.get_param(
-            "crm_commercial.crm_product_category_id",
-            default="",
-        )
-
-        # Configured category as default
-        if show_product_category == "True" and configured_category_id:
-            try:
-                configured_category_id = int(configured_category_id)
-            except (ValueError, TypeError):
-                configured_category_id = False
-
-            if configured_category_id:
-                category = (
-                    self.env["product.category"].browse(configured_category_id).exists()
-                )
-
-                if category:
-                    return category.id
-
-        # Fallback default: MDA
-        mda_category = self.env["product.category"].search(
-            [("code", "=", "MDA")],
-            limit=1,
-        )
-
-        return mda_category.id if mda_category else False
+    #             category_id = False
+    #
+    #         if category_id:
+    #             category = self.env["product.category"].browse(
+    #                 category_id
+    #             ).exists()
+    #
+    #             if category:
+    #                 return category.id
+    #
+    #     mda_category = self.env["product.category"].search(
+    #         [("code", "=", "MDA")],
+    #         limit=1,
+    #     )
+    #
+    #     return mda_category.id if mda_category else False
 
     # added by vengatesh sep 21
     @api.depends("creation_date", "product_category_ids")
@@ -850,13 +830,6 @@ class CrmCommercialLead(models.Model):
                 }
             )
         )
-        # project_category_id = self.env["crm.commercial.lead"].search(
-        #     [("product_category_id", "=", self.project_category_id.id)],
-        #     limit=1,
-        # )
-        # project_category_id.update({"product_category_id":project_category_id})
-        # print("==============================", self.product_category_id)
-        # print("==============================", self.project_category_id)
         quotation_type_id = self.env['crm.commercial.quotation.type'].search([('code', '=', '01')], limit=1)
         quotation.update({"quotation_type_id": quotation_type_id, })
         self.state = "converted"
