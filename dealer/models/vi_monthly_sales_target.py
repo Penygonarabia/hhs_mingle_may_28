@@ -72,7 +72,46 @@ sales_data AS (
         SUM(qty) AS sales_qty,
         MAX(current_latitude)  AS dealer_latitude,
         MAX(current_longitude) AS dealer_longitude
-    FROM dsales_showroom_sales
+    FROM (
+        -- Legacy Header Sales
+        SELECT 
+            dealer_id,
+            dealer_showroom_id,
+            user_id,
+            group_id,
+            subgroup_id,
+            product_category_id,
+            region_id,
+            city_id,
+            year::int AS year,
+            month::int AS month,
+            qty,
+            current_latitude,
+            current_longitude
+        FROM dsales_showroom_sales
+        WHERE qty IS NOT NULL AND qty != 0 AND state = 'approved'
+
+        UNION ALL
+
+        -- New Line Sales
+        SELECT 
+            h.dealer_id,
+            h.dealer_showroom_id,
+            h.user_id,
+            l.product_group_id AS group_id,
+            l.product_subgroup_id AS subgroup_id,
+            l.product_category_id,
+            h.region_id,
+            h.city_id,
+            h.year::int AS year,
+            h.month::int AS month,
+            l.qty,
+            h.current_latitude,
+            h.current_longitude
+        FROM dsales_showroom_sales_line l
+        JOIN dsales_showroom_sales h ON l.sales_id = h.id
+        WHERE l.qty IS NOT NULL AND l.qty != 0 AND h.state = 'approved'
+    ) combined_sales
     GROUP BY dealer_id, dealer_showroom_id, user_id,
              group_id, subgroup_id, product_category_id,
              region_id, city_id,
@@ -94,7 +133,7 @@ SELECT
     g.name  AS group_name,
     sg.name AS subgroup_name,
 
-    COALESCE(r.name, t.region) AS region_name,
+    COALESCE(r.name, t.region::text) AS region_name,
     COALESCE(c.name->>'en_US', t.city->>'en_US') AS city_name,
 
     COALESCE(t.year, s.year)   AS year,

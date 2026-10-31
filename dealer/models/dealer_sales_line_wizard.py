@@ -7,41 +7,29 @@ class DealerSalesLineWizard(models.TransientModel):
 
     sales_id = fields.Many2one('dsales.showroom.sales')
     line_id = fields.Many2one('dsales.showroom.sales.line')
-    state = fields.Selection(related='sales_id.state', string='Status')
 
     product_category_id = fields.Many2one(
         'product.category',
         string='Product Category',
-        required=True,
-        domain="[('allowed_group_is_promoter','=',True), ('parent_id','=',False)]"
+        domain="[('parent_id','=', False), ('name', '!=', 'All')]"
     )
 
     product_group_id = fields.Many2one(
         'product.category',
         string='Product Group',
-        required=True,
-        domain="[('parent_id', '!=', False), ('parent_id', '=', product_category_id), '|', ('parent_id.name', '!=', 'Midea'), ('allowed_group_is_promoter', '=', True)]"
+        domain="[('parent_id', '=', product_category_id)]"
     )
 
     product_subgroup_id = fields.Many2one(
         'product.category',
         string='Product Sub Group',
-        required=True,
-        domain="[('parent_id', '!=', False), ('parent_id', '=', product_group_id)]"
+        domain="[('parent_id', '=', product_group_id)]"
     )
 
     product_id = fields.Many2one(
         'product.product',
-        string='Model',
-        required=True
+        string='Model'
     )
-
-    target_category_id = fields.Many2one('product.category', compute='_compute_target_category_id')
-
-    @api.depends('product_category_id', 'product_group_id', 'product_subgroup_id')
-    def _compute_target_category_id(self):
-        for rec in self:
-            rec.target_category_id = rec.product_subgroup_id or rec.product_group_id or rec.product_category_id
 
     product_name = fields.Char(
         related='product_id.name',
@@ -57,7 +45,7 @@ class DealerSalesLineWizard(models.TransientModel):
 
     qty = fields.Integer(string='Qty', default=1, required=True)
 
-    loyalty_points = fields.Integer(
+    loyalty_points = fields.Float(
         string='Loyalty Points',
         compute='_compute_loyalty_points',
         readonly=True
@@ -74,11 +62,7 @@ class DealerSalesLineWizard(models.TransientModel):
         
         domain = []
         if self.product_category_id:
-            domain = [('parent_id', '!=', False), ('parent_id', '=', self.product_category_id.id)]
-            if self.product_category_id.name == 'Midea':
-                domain.append(('allowed_group_is_promoter', '=', True))
-        else:
-            domain = [('id', '=', False)]
+            domain = [('parent_id', '=', self.product_category_id.id)]
         # Also narrow product domain to category level
         product_domain = [('show_in_dealer_app', '=', True)]
         if self.product_category_id:
@@ -95,9 +79,7 @@ class DealerSalesLineWizard(models.TransientModel):
             
         domain = []
         if self.product_group_id:
-            domain = [('parent_id', '!=', False), ('parent_id', '=', self.product_group_id.id)]
-        else:
-            domain = [('id', '=', False)]
+            domain = [('parent_id', '=', self.product_group_id.id)]
         # Also narrow product domain to group level
         product_domain = [('show_in_dealer_app', '=', True)]
         if self.product_group_id:
@@ -145,21 +127,6 @@ class DealerSalesLineWizard(models.TransientModel):
 
     def action_add(self):
         self.ensure_one()
-        
-        # Check if product already exists in this sale
-        existing_line = self.env['dsales.showroom.sales.line'].search([
-            ('sales_id', '=', self.sales_id.id),
-            ('product_id', '=', self.product_id.id),
-        ] + ([('id', '!=', self.line_id.id)] if self.line_id else []), limit=1)
-        
-        if existing_line:
-            # If it exists, just update the quantity and close
-            existing_line.qty += self.qty
-            if self.line_id:
-                # We changed an existing line's product to one that already exists, so we drop the old line
-                self.line_id.unlink()
-            return {'type': 'ir.actions.act_window_close'}
-
         vals = {
             'sales_id': self.sales_id.id,
             'product_id': self.product_id.id,

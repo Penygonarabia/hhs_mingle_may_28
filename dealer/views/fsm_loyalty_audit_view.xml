@@ -63,6 +63,7 @@
         <field name="res_model">fsm.loyalty.audit</field>
         <field name="view_mode">tree</field>
         <field name="view_id" ref="view_fsm_loyalty_audit_tree"/>
+        <field name="domain">[]</field>
     </record>
 
     <!-- Menu Items -->

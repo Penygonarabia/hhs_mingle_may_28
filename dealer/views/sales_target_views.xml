@@ -22,8 +22,8 @@
                 <sheet>
                     <group>
                         <field name="franchise_id"  domain="[('parent_id','=',False),('name', '!=', 'All')]"/>
-                        <field name="group_id"  domain="[('parent_id', '!=', False), ('parent_id','=',franchise_id)]"/>
-                        <field name="subgroup_id"  domain="[('parent_id', '!=', False), ('parent_id','=',group_id)]"/>
+                        <field name="group_id"  domain="[('parent_id','=',franchise_id)]"/>
+                        <field name="subgroup_id"  domain="[('parent_id','=',group_id)]"/>
                         <field name="product_id"
                                domain="[('categ_id','child_of',
                                          (subgroup_id if subgroup_id else (group_id if group_id else franchise_id)))]"/>

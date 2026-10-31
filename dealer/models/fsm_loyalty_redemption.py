@@ -34,8 +34,9 @@ class FSMLoyaltyRedemption(models.Model):
 
     transaction_reference = fields.Char(
         string="Transaction Reference",
-        default=lambda self: self.env['ir.sequence'].next_by_code('fsm.loyalty.redemption'),
+        default="New",
         readonly=True,
+        copy=False,
     )
 
     date_time = fields.Datetime(default=fields.Datetime.now)
@@ -136,9 +137,32 @@ class FSMLoyaltyRedemption(models.Model):
 
         return self.env.ref('dealer.action_fsm_loyalty_redemption_report').report_action(self)
 
+    @api.model
+    def default_get(self, fields_list):
+        res = super(FSMLoyaltyRedemption, self).default_get(fields_list)
+        if 'transaction_reference' in fields_list:
+            res['transaction_reference'] = 'New'
+        return res
+
 
     @api.model
     def create(self, values):
+        ref = values.get('transaction_reference', 'New')
+        if ref == 'New' or (not self.env.context.get('import_file') and str(ref).startswith('RED')):
+            # Use regex to find only exact 'RED' + digits, cast to integer to find the true mathematical max.
+            # This prevents string sorting bugs (where 'RED99' > 'RED100').
+            self.env.cr.execute("""
+                SELECT MAX(CAST(SUBSTRING(transaction_reference FROM 4) AS INTEGER))
+                FROM fsm_loyalty_redemption 
+                WHERE transaction_reference ~ '^RED[0-9]+$'
+            """)
+            max_num = self.env.cr.fetchone()[0]
+            
+            if max_num is not None:
+                values['transaction_reference'] = f"RED{max_num + 1:05d}"
+            else:
+                values['transaction_reference'] = "RED00001"
+            
         """ Prevent creation when state is 'processed' """
         if values.get('state') == 'processed':
             raise AccessError(_("You cannot create records with the 'processed' state."))

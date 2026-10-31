@@ -69,13 +69,11 @@ class DealerSalesTarget(models.Model):
     )
     group_id = fields.Many2one(
         'product.category',
-        string='Product Group',
-        domain="[('parent_id', '!=', False)]"
+        string='Product Group'
     )
     subgroup_id = fields.Many2one(
         'product.category',
-        string='Product Sub Group',
-        domain="[('parent_id', '!=', False)]"
+        string='Product Sub Group'
     )
     product_id = fields.Many2one(
         'product.product',

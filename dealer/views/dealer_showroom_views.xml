@@ -173,10 +173,11 @@
         <field name="res_model">res.partner</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('dealersalesman_required', '=', True)]</field>
+        <field name="context">{'hide_loyalty_tabs': True}</field>
     </record> 
 
     <!-- Root Menu: dealer -->
-    <menuitem id="menu_dealer_root" name="Floor Salesman" sequence="10"/>
+    <menuitem id="menu_dealer_root" name="Floor Salesman" sequence="10" groups="dealer.group_dealer_module_user"/>
 
     <!-- Submenu: Configuration under dealer -->
     <menuitem id="menu_dealer_configuration" name="Configuration"

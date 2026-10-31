@@ -10,31 +10,9 @@ class ResUsers(models.Model):
     )
 
     floor_sales_approval_auth = fields.Boolean(
-        string="Floor Sales Invoice Approval Authority",
+        string="Floor Sales Approval Auth",
+        default=False
     )
-    default_authority = fields.Boolean(
-        string="Default Authority",
-    )
-    default_authority_id = fields.Many2one(
-        'res.users',
-        string="Default Authority ID",
-    )
-
-    dealer_city_id = fields.Many2one(
-        'res.city',
-        string="Working City"
-    )
-
-    dealer_showroom_id=fields.Many2one(
-        'dsales.showroom',
-        string='Dealer Showroom'
-    )
-    
-    @api.onchange('dealer_salesman')
-    def _onchange_dealer_salesman(self):
-        if not self.dealer_salesman:
-            self.dealer_city_id = False
-
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -58,6 +36,10 @@ class ResUsers(models.Model):
                         group.sudo().write({'users': [(3, user.id)]})
         return res
 
+    default_authority = fields.Boolean(string="Default Authority", default=False)
+    
+    # Legacy field kept to prevent parse errors during module upgrade
+    default_authority_id = fields.Many2one('res.users', string="Legacy Authority (Do Not Use)")
 
     @api.constrains('default_authority')
     def _check_single_default_authority(self):
@@ -66,7 +48,17 @@ class ResUsers(models.Model):
                 if self.search_count([('default_authority', '=', True)]) > 1:
                     raise UserError(_("Only one Default Authority user is allowed for the whole project."))
 
-  
+
+    dealer_city_id = fields.Many2one(
+        'res.city',
+        string="Working City"
+    )
+
+    dealer_showroom_id=fields.Many2one(
+        'dsales.showroom',
+        string='Dealer Showroom'
+    )
+    
     @api.onchange('dealer_salesman')
     def _onchange_dealer_salesman(self):
         if not self.dealer_salesman:

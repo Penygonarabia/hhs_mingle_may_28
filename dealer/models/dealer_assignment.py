@@ -18,7 +18,7 @@ class dealerAssignment(models.Model):
         'res.partner', string='Dealer', domain=[('dealersalesman_required', '=', True)], required=True, tracking=True
     )
     dealer_showroom_id = fields.Many2one('dsales.showroom', string='Dealer Showroom', required=True)
-    sale_dealer_id = fields.Many2one('res.users', string='Floor Salesman', required=True)
+    sale_dealer_id = fields.Many2one('res.users', string='Salesman', required=True)
 
     available_sale_dealer_ids = fields.Many2many(
         'res.users',
@@ -29,7 +29,7 @@ class dealerAssignment(models.Model):
     category_id = fields.Many2one(
         'product.category',
         string="Category",
-        domain="[('allowed_group_is_promoter','=',True), ('parent_id','=',False)]",
+        domain="[('parent_id','=',False),('name', '!=', 'All')]",
         required=True
     )
 

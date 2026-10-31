@@ -68,17 +68,17 @@ class dealerShowroomSales(models.Model):
         required=True
     )
 
-    # product_category_id = fields.Many2one('dsales.t.groupsdesc', string='Category',required=True)
-    # group_id = fields.Many2one('dsales.t.productsdesc', string='Group',required=True) 
-    # subgroup_id = fields.Many2one('dsales.vi.product.subgroup', string='Sub Group', required=True)
+    # product_category_id = fields.Many2one('t.groupsdesc', string='Category',required=True)
+    # group_id = fields.Many2one('t.productsdesc', string='Group',required=True) 
+    # subgroup_id = fields.Many2one('vi.product.subgroup', string='Sub Group', required=True)
     # group_code = fields.Char(related='group_id.p_grp', store=True)
-    # product_id = fields.Many2one('dsales.vi.product.catalog', string='Product', required=True)
+    # product_id = fields.Many2one('vi.product.catalog', string='Product', required=True)
     # product_code = fields.Char(related='subgroup_id.psubgroup_code', store=True)
 
     product_category_id = fields.Many2one(
         'product.category',
         string="Product Category",
-        domain="[('allowed_group_is_promoter','=',True), ('parent_id','=',False)]"
+        domain="[('parent_id','=',False),('name', '!=', 'All')]"
     )
 
 
@@ -123,13 +123,11 @@ class dealerShowroomSales(models.Model):
 
 
 
-    group_id = fields.Many2one('product.category', string="Product Group",
-                               domain="[('parent_id', '!=', False)]",
-                               context=lambda self: {'show_only_name': True})
+    group_id = fields.Many2one('product.category',string="Product Group" , 
+                                     context=lambda self: {'show_only_name': True})
 
-    subgroup_id = fields.Many2one('product.category', string="Product Sub Group",
-                                  domain="[('parent_id', '!=', False)]",
-                                  context=lambda self: {'show_only_name': True})
+    subgroup_id = fields.Many2one('product.category',string="Product Sub Group",
+                                        context=lambda self: {'show_only_name': True})
                                         
     product_id = fields.Many2one('product.product', string="Model",required=False)
     
@@ -192,125 +190,6 @@ class dealerShowroomSales(models.Model):
             if rec.invoice_no:
                 if self.search_count([('invoice_no', '=', rec.invoice_no)]) > 1:
                     raise ValidationError(_("Invoice Number must be unique! Duplicate found: %s") % rec.invoice_no)
-
-    
-    # OCR Scan Fields
-    scan_attachment_ids = fields.Many2many('ir.attachment', string='Upload document/image scanner')
-    scan_file_type = fields.Selection([('pdf', 'PDF'), ('image', 'Image')], string='File Type', default='pdf')
-    
-    def action_populate_from_scan(self):
-        for rec in self:
-            if not rec.attachment_ids:
-                raise UserError("No file detected!\n\n1. Make sure you wait for the file to finish uploading (its name will appear under the Attachments button).\n2. If this is a new record, please Save it first (click the cloud icon at the top) before clicking Auto-Extract.")
-            
-            # Simple logic to call Ollama for OCR
-            import requests
-            import json
-            import base64
-            
-            # Loop through attachments to build the payload
-            # === Google Gemini API Integration ===
-            API_KEY = self.env['ir.config_parameter'].sudo().get_param('dealer.gemini_api_key', '').strip()
-            url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent"
-            
-            parts = [
-                {"text": "Extract the line items from these invoice images. The invoices might be in Arabic or English. Look for the product model codes (which are usually a mix of uppercase English letters and numbers like MSTMX24CRNAGI, MSTE30CRN, etc) and the quantity. Return ONLY a JSON array of objects with keys 'model' (product code/model) and 'qty' (quantity). Combine items from all images into one single array. DO NOT return the example data. If no items are found across all images, return []. Example format: [{\"model\": \"EXAMPLE-MODEL-123\", \"qty\": 1}]"}
-            ]
-            
-            for attachment in rec.attachment_ids:
-                mime_type = attachment.mimetype if attachment.mimetype else "image/jpeg"
-                parts.append({
-                    "inline_data": {
-                        "mime_type": mime_type,
-                        "data": attachment.datas.decode('utf-8')
-                    }
-                })
-                
-            payload = {
-                "contents": [{"parts": parts}],
-                "generationConfig": {"temperature": 0.1}
-            }
-            
-            headers = {'Content-Type': 'application/json', 'x-goog-api-key': API_KEY}
-            lines_data = []
-            
-            try:
-                response = requests.post(url, json=payload, headers=headers, timeout=60)
-                if response.status_code == 200:
-                    res_json = response.json()
-                    response_text = res_json.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
-                    import re
-                    json_match = re.search(r'\[.*\]', response_text, re.DOTALL)
-                    if json_match:
-                        lines_data = json.loads(json_match.group(0))
-                    else:
-                        raise UserError(f"Gemini responded, but couldn't find line items. Gemini said:\n{response_text}")
-                else:
-                    if response.status_code == 404:
-                        models_url = "https://generativelanguage.googleapis.com/v1beta/models"
-                        models_resp = requests.get(models_url, headers={'x-goog-api-key': API_KEY})
-                        if models_resp.status_code == 200:
-                            avail_models = [m['name'] for m in models_resp.json().get('models', []) if 'generateContent' in m.get('supportedGenerationMethods', [])]
-                            raise UserError(f"Gemini API Model Not Found. The model gemini-1.5-flash-latest is not available for your API key.\n\nAvailable models for your key are:\n" + "\n".join(avail_models))
-                        else:
-                            raise UserError(f"Gemini API Error (HTTP 404): Model not found, and failed to fetch model list.")
-                    else:
-                        raise UserError(f"Gemini API Error (HTTP {response.status_code}): {response.text}")
-            except Exception as e:
-                if isinstance(e, UserError):
-                    raise e
-                raise UserError(f"OCR Processing Error: {str(e)}")
-            
-            if not lines_data:
-                raise UserError("OCR failed to extract any readable line items.")
-            
-            # Populate lines
-            new_lines = []
-            product_qty_map = {}
-            for item in lines_data:
-                model_str = item.get('model')
-                qty_val = int(item.get('qty', 1))
-                if model_str:
-                    # Clean model_str to ignore dot suffix (e.g. MSTMX24CRNAGI.C -> MSTMX24CRNAGI)
-                    clean_model_str = model_str.split('.')[0].strip()
-                    
-                    # search for product by name or default_code ignoring the dot suffix
-                    product = self.env['product.product'].search([
-                        ('show_in_dealer_app', '=', True),
-                        '|', 
-                        ('default_code', '=ilike', f"{clean_model_str}%"), 
-                        ('name', 'ilike', clean_model_str)
-                    ], limit=1)
-                    
-                    if product:
-                        if product.id in product_qty_map:
-                            product_qty_map[product.id]['qty'] += qty_val
-                        else:
-                            line_vals = {'qty': qty_val, 'product_id': product.id}
-                            if product.categ_id:
-                                categ = product.categ_id
-                                line_vals['product_subgroup_id'] = categ.id
-                                if categ.parent_id:
-                                    line_vals['product_group_id'] = categ.parent_id.id
-                                    if categ.parent_id.parent_id:
-                                        line_vals['product_category_id'] = categ.parent_id.parent_id.id
-                                    else:
-                                        line_vals['product_category_id'] = False
-                                else:
-                                    line_vals['product_group_id'] = False
-                                    line_vals['product_category_id'] = False
-                            product_qty_map[product.id] = line_vals
-
-            for vals in product_qty_map.values():
-                # Also check if product is ALREADY in the existing lines to prevent constraint error
-                existing_line = rec.line_ids.filtered(lambda l: l.product_id.id == vals['product_id'])
-                if existing_line:
-                    existing_line[0].qty += vals['qty']
-                else:
-                    new_lines.append((0, 0, vals))
-            
-            if new_lines:
-                rec.write({'line_ids': new_lines})
 
     state = fields.Selection([
         ('draft', 'Draft'),
@@ -561,8 +440,6 @@ class dealerShowroomSales(models.Model):
         }
 
     def action_approve(self):
-        if not self.env.user.has_group('dealer.group_floor_sales_approval'):
-            raise AccessError(_("You do not have the authority to approve sales records."))
         for rec in self:
             rec.write({
                 'state': 'approved',
@@ -571,8 +448,6 @@ class dealerShowroomSales(models.Model):
             })
 
     def action_open_reject_wizard(self):
-        if not self.env.user.has_group('dealer.group_floor_sales_approval'):
-            raise AccessError(_("You do not have the authority to reject sales records."))
         return {
             'name': 'Reject Sales',
             'type': 'ir.actions.act_window',
@@ -583,8 +458,6 @@ class dealerShowroomSales(models.Model):
         }
 
     def action_reject(self):
-        if not self.env.user.has_group('dealer.group_floor_sales_approval'):
-            raise AccessError(_("You do not have the authority to reject sales records."))
         for rec in self:
             rec.write({
                 'state': 'rejected',
@@ -674,7 +547,7 @@ class dealerShowroomSales(models.Model):
     current_latitude = fields.Float(string="Current Latitude")
     current_longitude = fields.Float(string="Current Longitude")
 
-    fsm_loyalty_points = fields.Integer("Loyalty Points", compute='_compute_fsm_loyalty_points', store=True)
+    fsm_loyalty_points = fields.Float("Loyalty Points", compute='_compute_fsm_loyalty_points', store=True)
 
     applied_multiplier = fields.Float(
         string="Applied Multiplier",
@@ -959,7 +832,7 @@ class dealerShowroomSales(models.Model):
                         'date_time': record.date_time or fields.Datetime.now(),
                         'dealer_id': record.dealer_id.id,
                         'salesman_id': salesman_id,
-                        'location_id': False,
+                        'location_id': record.dealer_showroom_id.id if record.dealer_showroom_id else False,
                         'type': trans_type,
                         'qty': actual_qty,
                         'loyalty_points': loyalty_points,
@@ -1101,7 +974,7 @@ class dealerShowroomSales(models.Model):
                                 'date_time': record.date_time or fields.Datetime.now(),
                                 'dealer_id': record.dealer_id.id,
                                 'salesman_id': salesman_id,
-                                'location_id': False,
+                                'location_id': record.dealer_showroom_id.id if record.dealer_showroom_id else False,
                                 'type': trans_type,
                                 'qty': actual_qty,
                                 'loyalty_points': loyalty_points,
@@ -1290,16 +1163,6 @@ class dealerShowroomSales(models.Model):
             rec.group_id = False
             rec.subgroup_id = False
             rec.product_id = False
-            if rec.product_category_id:
-                domain = [
-                    ('parent_id', '!=', False),
-                    ('parent_id', '=', rec.product_category_id.id),
-                ]
-                if rec.product_category_id.name == 'Midea':
-                    domain.append(('allowed_group_is_promoter', '=', True))
-            else:
-                domain = [('id', '=', False)]
-            return {'domain': {'group_id': domain}}
 
     @api.onchange('group_id')
     def _onchange_group_id(self):
@@ -1307,14 +1170,6 @@ class dealerShowroomSales(models.Model):
             # Clear dependent fields
             rec.subgroup_id = False
             rec.product_id = False
-            if rec.group_id:
-                domain = [
-                    ('parent_id', '!=', False),
-                    ('parent_id', '=', rec.group_id.id),
-                ]
-            else:
-                domain = [('id', '=', False)]
-            return {'domain': {'subgroup_id': domain}}
 
     @api.onchange('subgroup_id')
     def _onchange_subgroup_id(self):
@@ -1414,24 +1269,32 @@ class dealerShowroomSales(models.Model):
     def search_fetch(self, domain, field_names, offset=0, limit=None, order=None):
         user = self.env.user
 
-        # Dealer backoffice user (Prioritize Back Office rights if user has both)
-        if user.has_group('dealer.group_dealer_backoffice_user') or user.has_group('dealer.group_floor_sales_approval'):
-            # Back office and Approval users should see ALL records unconditionally.
-            pass
-            
         # Full access: dealer_user
-        elif user.has_group('dealer.group_dealer_user'):
-            assignments = self.env['dsales.assignment'].search([('sale_dealer_id', '=', user.id), ('active', '=', True)])
-            if assignments:
-                dealer_ids = assignments.mapped('dealer_id').ids
-                dealer_showroom_ids = assignments.mapped('dealer_showroom_id').ids
-                domain += [
-                    ('dealer_id', 'in', dealer_ids),
-                    ('dealer_showroom_id', 'in', dealer_showroom_ids),
-                    ('user_id', '=', user.id)
-                ]
-            else:
-                domain += [('id', '=', 0)]
+        if user.has_group('dealer.group_dealer_user'):
+            dealer_id = user.dealer_id.id if user.dealer_id else False
+            dealer_showroom_id = user.dealer_showroom_id.id if user.dealer_showroom_id else False
+
+            # Only pass IDs, not recordsets
+            domain += [
+                ('dealer_id', '=', dealer_id),
+                ('dealer_showroom_id', '=', dealer_showroom_id)
+            ]
+        #code added on DEC 2  by Vijaya Bhaskar    
+        # Dealer backoffice user
+        elif user.has_group('dealer.group_dealer_backoffice_user'):
+            dealer_id = user.dealer_id.id if user.dealer_id else False
+            dealer_showroom_id = user.dealer_showroom_id.id if user.dealer_showroom_id else False            
+        
+            # work_center_ids = user.default_work_center_id.ids if user.default_work_center_id else self.env['work.center.location'].search([]).ids
+          
+            # domain += [('work_center_location_id','=',work_center_ids)]
+            # domain += [
+            #     ('dealer_id', '=', dealer_id),
+            #     ('dealer_showroom_id', '=', dealer_showroom_id),
+            #     ('work_center_location_id', 'in', work_center_ids)
+            # ]  
+
+            domain += []
             
         # Readonly: hide all records
         elif user.has_group('dealer.group_dealer_sales_donotshow'):
@@ -1453,60 +1316,15 @@ class DealerShowroomSalesLine(models.Model):
     invoice_attachment = fields.Binary(related='sales_id.invoice_attachment', string="Invoice Attachment")
     invoice_attachment_name = fields.Char(related='sales_id.invoice_attachment_name')
 
-    product_category_id = fields.Many2one('product.category', string="Product Category", required=True, domain="[('allowed_group_is_promoter','=',True), ('parent_id','=',False)]")
-    product_group_id = fields.Many2one('product.category', string="Product Group", required=True,
-                                      domain="[('parent_id', '!=', False)]",
-                                      context={'show_only_name': True})
-    product_subgroup_id = fields.Many2one('product.category', string="Product Sub Group", required=True,
-                                         domain="[('parent_id', '!=', False)]",
-                                         context={'show_only_name': True})
-    product_id = fields.Many2one('product.product', string="Model", required=True)
-    target_category_id = fields.Many2one('product.category', compute='_compute_target_category_id')
-
-    @api.depends('product_category_id', 'product_group_id', 'product_subgroup_id')
-    def _compute_target_category_id(self):
-        for rec in self:
-            rec.target_category_id = rec.product_subgroup_id or rec.product_group_id or rec.product_category_id
+    product_category_id = fields.Many2one('product.category', string="Product Category", domain="[('parent_id','=',False),('name', '!=', 'All')]")
+    product_group_id = fields.Many2one('product.category', string="Product Group", context={'show_only_name': True})
+    product_subgroup_id = fields.Many2one('product.category', string="Product Sub Group", context={'show_only_name': True})
+    product_id = fields.Many2one('product.product', string="Model")
 
     product_name = fields.Char(related='product_id.name', string='Name', readonly=True)
     capacity = fields.Char(string='Capacity', compute="_compute_capacity", store=True)
-    fsm_loyalty_points = fields.Integer("Loyalty Points", compute='_compute_fsm_loyalty_points', store=True)
+    fsm_loyalty_points = fields.Float("Loyalty Points", compute='_compute_fsm_loyalty_points', store=True)
     qty = fields.Integer(string='Qty', required=True, default=1)
-
-    @api.constrains('product_id', 'sales_id')
-    def _check_unique_product(self):
-        for rec in self:
-            if rec.product_id and rec.sales_id:
-                duplicate = self.search([
-                    ('sales_id', '=', rec.sales_id.id),
-                    ('product_id', '=', rec.product_id.id),
-                    ('id', '!=', rec.id)
-                ], limit=1)
-                if duplicate:
-                    raise ValidationError(f"The product '{rec.product_id.display_name}' has already been added to this sale. Please update the quantity instead of adding the same item again.")
-
-    @api.constrains('qty', 'product_id', 'sales_id')
-    def _check_date_restriction(self):
-        today = fields.Datetime.now().date()
-        if self.env.user.has_group("dealer.group_dealer_user"):
-            for rec in self:
-                if rec.sales_id:
-                    record_date = rec.sales_id.date_time.date() if rec.sales_id.date_time else None
-                    if record_date and record_date != today:
-                        raise ValidationError(
-                            f"Hi {self.env.user.name}, you can only update today's sales entries ({today})."
-                        )
-                    
-                    # Check hr.attendance for checkout
-                    if rec.sales_id.dealer_assignment_id and rec.sales_id.dealer_assignment_id.dealer_id:
-                        attendance = self.env['hr.attendance'].search([
-                            ('employee_id', '=', rec.sales_id.dealer_assignment_id.dealer_id.id),
-                            ('check_in', '<=', record_date),
-                        ], order='check_in desc', limit=1)
-                        if attendance and attendance.check_out and record_date > attendance.check_out.date():
-                            raise ValidationError(
-                                _("You cannot update sales after checkout (%s).") % attendance.check_out
-                            )
     
     limit_qty = fields.Float(related='sales_id.limit_qty', store=True, string="Limit Quantity")
     exceeded_qty = fields.Float(related='sales_id.exceeded_qty', store=True, string="Exceeded Quantity")
@@ -1567,11 +1385,7 @@ class DealerShowroomSalesLine(models.Model):
             rec.product_id = False
             domain = []
             if rec.product_category_id:
-                domain = [('parent_id', '!=', False), ('parent_id', '=', rec.product_category_id.id)]
-                if rec.product_category_id.name == 'Midea':
-                    domain.append(('allowed_group_is_promoter', '=', True))
-            else:
-                domain = [('id', '=', False)]
+                domain = [('parent_id', '=', rec.product_category_id.id)]
             return {'domain': {'product_group_id': domain}}
 
     @api.onchange('product_group_id')
@@ -1581,9 +1395,7 @@ class DealerShowroomSalesLine(models.Model):
             rec.product_id = False
             domain = []
             if rec.product_group_id:
-                domain = [('parent_id', '!=', False), ('parent_id', '=', rec.product_group_id.id)]
-            else:
-                domain = [('id', '=', False)]
+                domain = [('parent_id', '=', rec.product_group_id.id)]
             return {'domain': {'product_subgroup_id': domain}}
 
     @api.onchange('product_subgroup_id')

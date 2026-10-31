@@ -8,4 +8,4 @@ const userMenuRegistry = registry.category("user_menuitems");
 userMenuRegistry.remove("shortcuts");
 
 // Remove My Profile
-//userMenuRegistry.remove("profile");
+userMenuRegistry.remove("profile");
