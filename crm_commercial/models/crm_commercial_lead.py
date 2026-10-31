@@ -815,7 +815,7 @@ class CrmCommercialLead(models.Model):
                     "zip": self.zip,
                     "warehouse_id": self.warehouse_id.id,
                     "assigned_id": self.assigned_id.id,
-                    "capacity": self.capacity if self.capacity else False,
+                    # "capacity": self.capacity if self.capacity else False,
                     "product_category_ids": self.product_category_ids if self.product_category_ids else False,
                     "project_category_id": self.project_category_id.id if self.project_category_id else False,
                     "company_name": self.company_name if self.company_name else False,

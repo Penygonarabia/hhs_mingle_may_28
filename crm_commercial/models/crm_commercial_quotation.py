@@ -686,7 +686,7 @@ class CrmCommercialQuotation(models.Model):
 
     # Additional Info Section
     supplier_support_recording = fields.Float(
-        string="Special Price Support", default=0.0
+        string="Total Special Price Support", default=0.0
     )
     dsi_type = fields.Selection(
         [
@@ -722,7 +722,7 @@ class CrmCommercialQuotation(models.Model):
         string="Total Cost (B)", compute="_compute_costing_summary", store=True
     )
     total_supplier_support = fields.Float(
-        string="Special Price Support (S)",
+        string="Total Special Price Support (S)",
         compute="_compute_costing_summary",
         store=True,
     )
@@ -1137,15 +1137,89 @@ class CrmCommercialQuotation(models.Model):
                     + "\n- ".join(below_cost_items)
                 )
 
+    @api.onchange("line_ids")
+    def _onchange_line_ids_smc(self):
+        self._onchange_salesman_commission_percent()
+    #20261029 Gokul
+    #(totsl_dsi/total_selling_price)*(qty*sale_price)
+    @api.onchange("salesman_commission_percent")
+    def _onchange_salesman_commission_percent(self):
+        for rec in self:
+            for line in rec.line_ids.filtered(lambda l: not l.display_type):
+                line.smc = (
+                        line.qty
+                        * line.sale_price
+                        * rec.salesman_commission_percent
+                        / 100.0
+                )
+
+    @api.onchange("line_ids")
+    def _onchange_line_ids_support(self):
+        self._distribute_supplier_support()
+    #20261029 Gokul
+    #(total_dsi/total_selling_prici)*(qty*sale_price)
+    @api.onchange("supplier_support_recording")
+    def _onchange_supplier_support_recording(self):
+        self._distribute_supplier_support()
+
+    def _distribute_supplier_support(self):
+        for rec in self:
+            lines = rec.line_ids.filtered(lambda l: not l.display_type)
+            if not lines:
+                continue
+            total_amount = sum(l.qty * l.sale_price for l in lines)
+            if not total_amount:
+                for l in lines:
+                    l.special_support = 0.0
+                continue
+            allocated = 0.0
+            for l in lines[:-1]:
+                value = round(
+                    rec.supplier_support_recording * (l.qty * l.sale_price) / total_amount, 2
+                )
+                l.special_support = value
+                allocated += value
+            lines[-1].special_support = round(
+                rec.supplier_support_recording - allocated, 2
+            )
+    # #20261029 Gokul
+    # #(supplier_support_recording / total_selling_price) * (qty * sale_price)
+    # @api.onchange("supplier_support_recording")
+    # def _onchange_supplier_support_recording(self):
+    #     self._distribute_supplier_support()
+    #
+    # def _distribute_supplier_support(self):
+    #     for rec in self:
+    #         lines = rec.line_ids.filtered(lambda l: not l.display_type)
+    #         total_amount = sum(
+    #             line.sale_price * line.qty
+    #             for line in lines
+    #         )
+    #         if not total_amount:
+    #             lines.update({"special_support": 0.0})
+    #             continue
+    #         for line in lines:
+    #             line_amount = line.sale_price * line.qty
+    #             line.special_support = (
+    #                     rec.supplier_support_recording
+    #                     * line_amount
+    #                     / total_amount
+    #             )
+
     @api.depends(
         "line_ids",
         "line_ids.amount",
+        "line_ids.qty",
+        "line_ids.sale_price",
         "line_ids.unit_cost",
+        "line_ids.vat_amount",
+        "line_ids.dsi",
+        "line_ids.display_type",
         "supplier_support_recording",
+        "dsi_type",
         "dsi_percent",
         "salesman_commission_percent",
         "promotion_percent",
-        "line_ids.display_type",
     )
     def _compute_costing_summary(self):
         for rec in self:
@@ -1153,10 +1227,11 @@ class CrmCommercialQuotation(models.Model):
             a = sum(line.qty * line.sale_price for line in product_lines)
             b = sum(line.qty * line.unit_cost for line in product_lines)
             s = rec.supplier_support_recording
-            c = a * (rec.dsi_percent / 100.0) if rec.dsi_type != "zero" else 0.0
-            d = a * (rec.salesman_commission_percent / 100.0)
+            c = sum(line.dsi for line in product_lines)
+            d = a * (rec.salesman_commission_percent / 100.0)  # old logic
             e = a * (rec.promotion_percent / 100.0)
-            x = a + e - c - d
+            #20261030 As Per Mr.Raju sir instruction S - special price support (special price support - net price)
+            x = a + e - c - d - s
             gm = x - (b - s)
             gm_pct = (gm / x * 100.0) if x else 0.0
             vat = sum(line.vat_amount for line in product_lines)
@@ -1174,6 +1249,54 @@ class CrmCommercialQuotation(models.Model):
             rec.total_vat = vat
             rec.total_amount = tot
             rec.total_project_value = tot
+
+    # @api.depends(
+    #     "line_ids",
+    #     "line_ids.amount",
+    #     "line_ids.unit_cost",
+    #     "supplier_support_recording",
+    #     "dsi_percent",
+    #     "salesman_commission_percent",
+    #     "promotion_percent",
+    #     "line_ids.display_type",
+    # )
+    # def _compute_costing_summary(self):
+    #     for rec in self:
+    #         product_lines = rec.line_ids.filtered(lambda l: not l.display_type)
+    #         a = sum(line.qty * line.sale_price for line in product_lines)
+    #         b = sum(line.qty * line.unit_cost for line in product_lines)
+    #         s = rec.supplier_support_recording
+    #         c = a * (rec.dsi_percent / 100.0) if rec.dsi_type != "zero" else 0.0
+    #         d = a * (rec.salesman_commission_percent / 100.0)
+    #         e = a * (rec.promotion_percent / 100.0)
+    #         x = a + e - c - d
+    #         gm = x - (b - s)
+    #         gm_pct = (gm / x * 100.0) if x else 0.0
+    #         vat = sum(line.vat_amount for line in product_lines)
+    #         tot = sum(line.amount for line in product_lines)
+    #
+    #         rec.total_selling_price = a
+    #         rec.total_cost = b
+    #         rec.total_supplier_support = s
+    #         rec.total_dsi = c
+    #         rec.total_smc = d
+    #         rec.total_promo = e
+    #         rec.net_price = x
+    #         rec.gross_margin = gm
+    #         rec.gross_margin_percent = gm_pct
+    #         rec.total_vat = vat
+    #         rec.total_amount = tot
+    #         rec.total_project_value = tot
+    #         # print("+++11111111111111111",self.total_amount,self.supplier_support_recording)
+    #         # if (rec.supplier_support_recording):
+    #         #     total = line.sale_price
+    #         #     self.total_amount = (self.supplier_support_recording / total) * self.qty
+    #         #     print("++++++++++++++++++++++++",total)
+    #         #     print("!!!!!!!!!!!!!!!!!!",self.total_amount)
+    #         # vat=self.total_vat
+    #         # self.total_vat = (self.supplier_support_recording * vat) / 100
+    #         # total_selling=self.total_selling_price
+    #         # self.total_selling_price = (self.supplier_support_recording * total_selling) / 100
 
     @api.depends("total_project_value", "delivered_value")
     def _compute_balance_value(self):
@@ -1519,9 +1642,9 @@ class CrmCommercialQuotation(models.Model):
                         "product_group_id": (
                             line.product_group_id.id if line.product_group_id else False
                         ),
-                        "product_category_ids": (
-                            line.product_category_ids.id
-                            if line.product_category_ids
+                        "product_category_id": (
+                            line.product_category_id.id
+                            if line.product_category_id
                             else False
                         ),
                         "product_id": line.product_id.id,
@@ -1761,10 +1884,49 @@ class CrmCommercialQuotationLine(models.Model):
     discount_percent = fields.Float(string="Discount %", default=0.0)
     special_support = fields.Float(string="Spl Spt", default=0.0)
 
-    dsi = fields.Float(string="DSI", related="quotation_id.dsi_percent", readonly=True)
-    smc = fields.Float(
-        string="SMC", related="quotation_id.salesman_commission_percent", readonly=True
+    # dsi = fields.Float(string="DSI", related="quotation_id.dsi_percent", readonly=True)
+    dsi = fields.Float(string="DSI", compute="_compute_dsi", store=True)
+
+    @api.depends(
+        "qty",
+        "sale_price",
+        "display_type",
+        "quotation_id.dsi_percent",
+        "quotation_id.dsi_type",
     )
+    def _compute_dsi(self):
+        for line in self:
+            quotation = line.quotation_id
+            if line.display_type or not quotation or quotation.dsi_type == "zero":
+                line.dsi = 0.0
+            else:
+                line.dsi = (
+                        line.qty * line.sale_price * quotation.dsi_percent / 100.0
+                )
+
+    # smc = fields.Float(
+    #     string="SMC", related="quotation_id.salesman_commission_percent", readonly=True
+    # )
+    smc = fields.Float(string="SMC", compute="_compute_smc", store=True)
+
+    @api.depends(
+        "qty",
+        "sale_price",
+        "display_type",
+        "quotation_id.salesman_commission_percent",
+    )
+    def _compute_smc(self):
+        for line in self:
+            quotation = line.quotation_id
+            if line.display_type or not quotation:
+                line.smc = 0.0
+            else:
+                line.smc = (
+                        line.qty
+                        * line.sale_price
+                        * quotation.salesman_commission_percent
+                        / 100.0
+                )
 
     vat_percent = fields.Float(string="VAT %", default=15.0)
     vat_amount = fields.Float(string="VAT", compute="_compute_pricing", store=True)
