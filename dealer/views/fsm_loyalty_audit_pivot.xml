@@ -49,12 +49,12 @@
 
 
     <!-- Menu -->
-    <!-- <menuitem id="menu_fsm_loyalty_analysis"
+    <menuitem id="menu_fsm_loyalty_analysis"
               name="Loyalty Point Analysis"
               parent="menu_dealer_root"
               action="action_fsmlap"
               groups="dealer.group_dealer_backoffice_user"
-              sequence="50"/> -->
+              sequence="50"/>
 
 <record id="fsm_loyalty_audit_dealer_rule_only_own" model="ir.rule">
     <field name="name">FSM Loyalty Audit - Dealer Own Records Only</field>
