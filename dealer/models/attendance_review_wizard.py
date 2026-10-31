@@ -78,11 +78,17 @@ class AttendanceReviewWizard(models.TransientModel):
             domain.append(('employee_id.user_id', '=', self.promoter_id.id))
             domain.append(('employee_id.is_promoter', '=', True))
             '''Code added on Dec 02-2025 by Vijaya Bhaskar client ask default work center of the user'''
-            domain.append(('city_id.def_work_center_id','in',self.env.user.default_work_center_id.ids if self.env.user.default_work_center_id else self.env['work.center.location'].search([]).ids))
+            if self.env.user.default_work_center_id:
+                domain.append(('city_id.def_work_center_id', 'in', self.env.user.default_work_center_id.ids))
+            else:
+                domain.append(('city_id.def_work_center_id', '!=', False))
         if not self.promoter_id:
             domain.append(('employee_id.is_promoter', '=', True))
             '''Code added on Dec 02-2025 by Vijaya Bhaskar client ask default work center of the user'''
-            domain.append(('city_id.def_work_center_id','in',self.env.user.default_work_center_id.ids if self.env.user.default_work_center_id else self.env['work.center.location'].search([]).ids))
+            if self.env.user.default_work_center_id:
+                domain.append(('city_id.def_work_center_id', 'in', self.env.user.default_work_center_id.ids))
+            else:
+                domain.append(('city_id.def_work_center_id', '!=', False))
         if self.from_date and self.to_date:
             if self.from_date == self.to_date:
                 # Single-day: include all times

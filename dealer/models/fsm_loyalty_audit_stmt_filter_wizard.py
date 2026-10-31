@@ -31,7 +31,7 @@ class FsmLoyaltyAuditFilterWizard(models.TransientModel):
     def apply_filter(self):
         action = self.env.ref('dealer.action_fsm_loyalty_mob').read()[0]
 
-        domain = [('sales_id.state', '=', 'approved')]
+        domain = []
 
         if self.start_date:
             domain.append(('date_time', '>=', self.start_date))
