@@ -25,21 +25,16 @@
 
 
     <!-- Pivot View -->
-    <record id="view_fsm_loyalty_audit_pivot_mob" model="ir.ui.view">
-        <field name="name">fsm.loyalty.audit.pivot</field>
-        <field name="model">fsm.loyalty.audit</field>
-        <field name="arch" type="xml">
-            <pivot string="Loyalty Analysis">
-                <!-- Measures -->
-                <field name="loyalty_points" type="measure"/>
-                <!-- <field name="amount_paid" type="measure"/> -->
-
-                <!-- Rows -->
-                <field name="type" type="row"/>              
-                <field name="type_order" type="sort"  invisible="1"/>
-            </pivot>
-        </field>
-    </record>
+<record id="view_fsm_loyalty_audit_pivot_mob" model="ir.ui.view">
+    <field name="name">fsm.loyalty.audit.pivot.mob</field>
+    <field name="model">fsm.loyalty.audit</field>
+    <field name="arch" type="xml">
+        <pivot string="Loyalty Analysis">
+            <field name="loyalty_points" type="measure"/>
+            <field name="type" type="row"/>
+        </pivot>
+    </field>
+</record>
 
 
     <!-- Action -->
