@@ -82,20 +82,18 @@ class dealerShowroom(models.Model):
     @api.onchange('address')
     def _onchange_address(self):
         """Update latitude and longitude when address changes."""
-        geolocator = Nominatim(user_agent="odoo_geocoder")
+        geolocator = Nominatim(user_agent=f"hhs-odoo/{self.env.company.name or 'unknown'}")
         for record in self:
             if record.address:
                 try:
                     # Geocode the address
-                    location = geolocator.geocode(record.address)
-                    print("location", location)
+                    location = geolocator.geocode(record.address, timeout=3)
                     if location:
                         record.latitude = str(location.latitude)
                         record.longitude = str(location.longitude)
                     else:
                         record.latitude = False
                         record.longitude = False
-                        print("Raj")
                 except (GeocoderTimedOut, GeocoderServiceError) as e:
                     # Handle errors silently or notify user
                     record.latitude = False

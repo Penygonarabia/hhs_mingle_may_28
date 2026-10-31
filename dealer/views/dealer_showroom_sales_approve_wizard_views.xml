@@ -27,7 +27,7 @@
                     </group>
                     <notebook invisible="not invoice_id">
                         <page string="Item Details" name="item_details">
-                            <field name="line_ids" readonly="1">
+                            <field name="line_ids" readonly="1" class="mobile-scroll-tree">
                                 <tree>
                                     <field name="product_category_id" width="150px"/>
                                     <field name="product_group_id" width="150px"/>

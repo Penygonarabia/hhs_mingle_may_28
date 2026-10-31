@@ -1,6 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
+    <!-- Custom Kanban view to display ONLY the Default Code (Model Number) in Many2one dropdowns -->
+    <record id="view_kanban_product_product_code_only" model="ir.ui.view">
+        <field name="name">product.product.kanban.code.only</field>
+        <field name="model">product.product</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="id"/>
+                <field name="image_128"/>
+                <field name="default_code"/>
+                <field name="name"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="o_kanban_image">
+                                <img t-att-src="kanban_image('product.product', 'image_128', record.id.raw_value)" alt="Product" class="o_image_64_contain"/>
+                            </div>
+                            <div class="oe_kanban_details">
+                                <strong class="o_kanban_record_title">
+                                    <t t-if="record.default_code.value">
+                                        <field name="default_code"/>
+                                    </t>
+                                    <t t-else="">
+                                        <field name="name"/>
+                                    </t>
+                                </strong>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
     <record id="view_form_dealer_showroom_sales" model="ir.ui.view">
         <field name="name">dsales.showroom.sales.form</field>
         <field name="model">dsales.showroom.sales</field>
@@ -9,7 +41,7 @@
             <form >
                 <header>
                     <field name="requires_approval" invisible="1"/>
-                    <button name="action_submit" string="Submit" type="object" class="oe_highlight" invisible="state != 'draft'" />
+                    <button name="action_submit" string="Submit" type="object" class="oe_highlight deskvw" invisible="state != 'draft' or dealer_mobile_user_bool" />
                     <field name="state" widget="statusbar" statusbar_visible="draft,submitted"/>
                 </header>
                 <sheet>
@@ -29,7 +61,7 @@
                         <field name="attachment_ids" widget="many2many_binary" readonly="state != 'draft'" options="{'accepted_file_extensions': 'image/*,application/pdf'}"/>
                         
                         <div class="o_row" style="margin-top: 5px;">
-                            <button name="action_populate_from_scan" string="Auto-Extract AI OCR" type="object" class="btn-info" invisible="state != 'draft'" icon="fa-magic" help="Extract line items from the uploaded attachments above."/>
+                            <button name="action_populate_from_scan" string="Auto-Extract AI OCR" type="object" class="btn-info" invisible="1" icon="fa-magic" help="Extract line items from the uploaded attachments above."/>
                         </div>
 
                         <field name="user_id" invisible="1" force_save="1"/>
@@ -61,36 +93,53 @@
 
                     <notebook>
                         <page string="Item Details">
+                            <style>
+                                .o_form_view .mobile-scroll-tree .o_field_widget,
+                                .o_form_view .mobile-scroll-tree .o_field_one2many,
+                                .o_form_view .mobile-scroll-tree .o_list_view,
+                                .o_form_view .mobile-scroll-tree .o_list_renderer,
+                                .o_form_view .mobile-scroll-tree .table-responsive,
+                                .o_form_view .mobile-scroll-tree table {
+                                    height: auto !important;
+                                    min-height: 0 !important;
+                                    max-height: none !important;
+                                    flex: 0 0 auto !important;
+                                    margin-bottom: 0 !important;
+                                    padding-bottom: 0 !important;
+                                }
+                            </style>
                             <div style="text-align: center; width: 100%; padding-bottom: 10px;">
                                 <button name="action_open_add_item_wizard" string="Add Item" type="object" class="mobile-full-btn mobvw" icon="fa-plus" invisible="state != 'draft'"/>
                             </div>
                             <!-- Mobile View -->
-                            <field name="line_ids" readonly="state != 'draft'" invisible="not dealer_mobile_user_bool" options="{'no_create': True}" class="mobile-no-create-tree">
-                                <tree create="false" edit="false" delete="true">
-                                    <field name="product_category_id" width="150px" domain="[('parent_id','=', False), ('name', '!=', 'All')]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
-                                    <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
-                                    <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
-                                    <field name="product_id" width="150px" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" domain="[
+                            <field name="line_ids" readonly="state != 'draft'" invisible="not dealer_mobile_user_bool" options="{'no_create': True}" class="mobile-no-create-tree mobile-scroll-tree mobile-item-tree" style="width: 100%; display: block; height: auto !important; min-height: 0 !important; max-height: max-content !important; flex: none !important;">
+                                <tree create="0" edit="0" delete="1">
+                                    <field name="product_category_id" domain="[('allowed_group_is_promoter','=',True), ('parent_id','=',False)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
+                                    <field name="product_group_id" domain="[('parent_id', '!=', False), ('parent_id','=',product_category_id), '|', ('parent_id.name', '!=', 'Midea'), ('allowed_group_is_promoter', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
+                                    <field name="product_subgroup_id" domain="[('parent_id', '!=', False), ('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
+                                    <field name="target_category_id" column_invisible="True"/>
+                                    <field name="product_id" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" domain="[
                                         ('show_in_dealer_app', '=', True),
-                                        ('product_tmpl_id.categ_id', 'child_of', product_subgroup_id if product_subgroup_id else (product_group_id if product_group_id else (product_category_id if product_category_id else 0)))
+                                        ('product_tmpl_id.categ_id', 'child_of', target_category_id)
                                     ]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
-                                    <field name="qty" width="80px"/>
-                                    <field name="fsm_loyalty_points" width="100px" readonly="1" widget="integer"/>
-                                    <field name="product_name" width="200px"/>
+                                    <field name="qty"/>
+                                    <field name="fsm_loyalty_points" readonly="1" widget="integer"/>
+                                    <field name="product_name"/>
                                     <field name="capacity" width="80px" column_invisible="True"/>
                                     <button name="action_edit_wizard" type="object" icon="fa-pencil" title="Edit Item"/>
                                 </tree>
                             </field>
                             
                             <!-- Back Office View -->
-                            <field name="line_ids" readonly="state not in ['draft', 'submitted']" invisible="dealer_mobile_user_bool">
+                            <field name="line_ids" readonly="state not in ['draft', 'submitted']" invisible="dealer_mobile_user_bool" class="mobile-no-create-tree mobile-scroll-tree" style="width: 100%; display: block; height: auto !important; min-height: 0 !important; max-height: max-content !important; flex: none !important;">
                                 <tree editable="bottom">
-                                    <field name="product_category_id" width="150px" domain="[('parent_id','=', False), ('name', '!=', 'All')]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
-                                    <field name="product_group_id" width="150px" domain="[('parent_id','=',product_category_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
-                                    <field name="product_subgroup_id" width="150px" domain="[('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
+                                    <field name="product_category_id" width="150px" domain="[('allowed_group_is_promoter','=',True), ('parent_id','=',False)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
+                                    <field name="product_group_id" width="150px" domain="[('parent_id', '!=', False), ('parent_id','=',product_category_id), '|', ('parent_id.name', '!=', 'Midea'), ('allowed_group_is_promoter', '=', True)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
+                                    <field name="product_subgroup_id" width="150px" domain="[('parent_id', '!=', False), ('parent_id','=',product_group_id)]" options="{'no_create_edit':True,'no_open':True,'no_create':True}" column_invisible="False"/>
+                                    <field name="target_category_id" column_invisible="True"/>
                                     <field name="product_id" width="150px" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" domain="[
                                         ('show_in_dealer_app', '=', True),
-                                        ('product_tmpl_id.categ_id', 'child_of', product_subgroup_id if product_subgroup_id else (product_group_id if product_group_id else (product_category_id if product_category_id else 0)))
+                                        ('product_tmpl_id.categ_id', 'child_of', target_category_id)
                                     ]" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
                                     <field name="qty" width="80px"/>
                                     <field name="fsm_loyalty_points" width="100px" readonly="1" widget="integer"/>
@@ -117,6 +166,9 @@
                             </group>
                         </page>
                     </notebook>
+                    <div class="mobvw" style="text-align: center; width: 100%; padding: 10px 0;" invisible="not dealer_mobile_user_bool or state != 'draft'">
+                        <button name="action_submit" string="Submit" type="object" class="mobile-full-btn" invisible="state != 'draft'"/>
+                    </div>
                 </sheet>
                 <div class="oe_chatter">
                     <field name="message_follower_ids" widget="mail_followers"/>
@@ -317,9 +369,9 @@
         <field name="arch" type="xml">
             <form string="Approve Shop Sales">
                 <header>
-                    <button name="action_approve" string="Approve" type="object" class="btn-success" invisible="state != 'submitted'"/>
-                    <button name="action_open_reject_wizard" string="Reject" type="object" class="btn-danger" invisible="state != 'submitted'"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,approved,rejected"/>
+                    <button name="action_approve" string="Approve" type="object" class="btn-success" invisible="state != 'submitted'" groups="dealer.group_floor_sales_approval"/>
+                    <button name="action_open_reject_wizard" string="Reject" type="object" class="btn-danger" invisible="state != 'submitted'" groups="dealer.group_floor_sales_approval"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,rejected"/>
                 </header>
                 <sheet>
                     <group>
@@ -329,18 +381,15 @@
                             <field name="user_id" string="Salesman" readonly="1"/>
                             <field name="invoice_no" readonly="1"/>
                             <field name="date_time" readonly="1"/>
-                            <field name="reject_reason" readonly="1"/>
+                            <field name="reject_reason" readonly="1" invisible="not reject_reason"/>
                         </group>
                         <group></group>
                     </group>
                     
-                    <div class="row mt-4">
-                        <div class="col-3">
-                            <div style="background-color: #ff987c; color: white; padding: 5px 15px; border-radius: 5px 5px 0 0; font-weight: bold; display: inline-block;">
-                                Item Details
-                            </div>
-                            <field name="line_ids" readonly="1" nolabel="1" style="width: 100%;">
-                                <tree>
+                    <notebook>
+                        <page string="Item Details" name="item_details">
+                            <field name="line_ids" readonly="1" nolabel="1">
+                                <tree limit="100">
                                     <field name="product_category_id" string="Category" column_invisible="False"/>
                                     <field name="product_group_id" string="Group" column_invisible="False"/>
                                     <field name="product_subgroup_id" string="Sub Group" column_invisible="False"/>
@@ -351,29 +400,26 @@
                                     <field name="capacity" column_invisible="True"/>
                                 </tree>
                             </field>
-                        </div>
-                        <div class="col-9">
-                            <div style="font-weight: bold; padding: 5px 0;">Invoice Scan Copy</div>
+                        </page>
+                        <page string="Invoice Scan Copy" name="invoice_scan_copy">
+                            <group>
+                                <field name="attachment_ids" widget="many2many_binary" readonly="1" string="Attached Files" invisible="not attachment_ids"/>
+                                <field name="invoice_attachment" filename="invoice_attachment_name" widget="binary" readonly="1" string="Attached File" invisible="attachment_ids or not invoice_attachment"/>
+                            </group>
                             <field name="is_invoice_pdf" invisible="1"/>
                             <field name="invoice_attachment_name" invisible="1"/>
                             <field name="invoice_attachments_html" readonly="1" nolabel="1" class="w-100"/>
-                        </div>
-                    </div>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
     </record>
 
-    <!-- Approve Shop Sales Action -->
     <record id="action_approve_shop_sales" model="ir.actions.act_window">
         <field name="name">Approve Shop Sales</field>
         <field name="res_model">dsales.showroom.sales</field>
         <field name="view_mode">tree,form</field>
-        <field name="domain">[('state', '!=', 'draft')]</field>
-        <field name="context">{'create': False, 'edit': False}</field>
-        <field name="view_ids" eval="[(5, 0, 0),
-            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_tree_dealer_showroom_sales_approval')}),
-            (0, 0, {'view_mode': 'form', 'view_id': ref('view_form_dealer_showroom_sales_approval')})]"/>
     </record>
 
     <record id="action_mass_approve_sales" model="ir.actions.server">
@@ -400,11 +446,11 @@
         </field>
     </record>
 
-    <menuitem id="menu_dealer_approve_shop_sales"
+    <menuitem id="menu_dealer_approve_shop_sales_New"
               name="Approve Shop Sales"
               parent="menu_dealer_root"
               action="action_approve_shop_sales"
-              groups="dealer.group_dealer_backoffice_user"
+              groups="dealer.group_floor_sales_approval"
               sequence="3"/>
 
     <record id="view_form_dsales_showroom_sales_line" model="ir.ui.view">
@@ -413,12 +459,13 @@
         <field name="arch" type="xml">
             <form string="Edit Item">
                 <group>
-                    <field name="product_category_id" options="{'no_create_edit': True, 'no_open': True, 'no_create': True}"/>
-                    <field name="product_group_id" options="{'no_create_edit': True, 'no_open': True, 'no_create': True}" domain="[('parent_id', '=', product_category_id)]"/>
-                    <field name="product_subgroup_id" options="{'no_create_edit': True, 'no_open': True, 'no_create': True}" domain="[('parent_id', '=', product_group_id)]"/>
+                    <field name="product_category_id" domain="[('allowed_group_is_promoter','=',True), ('parent_id','=',False)]" options="{'no_create_edit': True, 'no_open': True, 'no_create': True}"/>
+                    <field name="product_group_id" options="{'no_create_edit': True, 'no_open': True, 'no_create': True}" domain="[('parent_id', '!=', False), ('parent_id', '=', product_category_id), '|', ('parent_id.name', '!=', 'Midea'), ('allowed_group_is_promoter', '=', True)]"/>
+                    <field name="product_subgroup_id" options="{'no_create_edit': True, 'no_open': True, 'no_create': True}" domain="[('parent_id', '!=', False), ('parent_id', '=', product_group_id)]"/>
+                    <field name="target_category_id" invisible="1"/>
                     <field name="product_id" domain="[
                         ('show_in_dealer_app', '=', True),
-                        ('product_tmpl_id.categ_id', 'child_of', product_subgroup_id if product_subgroup_id else (product_group_id if product_group_id else (product_category_id if product_category_id else 0)))
+                        ('product_tmpl_id.categ_id', 'child_of', target_category_id)
                     ]" context="{'show_only_default_code': True, 'kanban_view_ref': 'dealer.view_kanban_product_product_code_only'}" options="{'no_create_edit':True,'no_open':True,'no_create':True}"/>
                     <field name="product_name" readonly="1"/>
                     <field name="capacity" invisible="1"/>
@@ -428,5 +475,20 @@
             </form>
         </field>
     </record>
+
+
+    <record id="action_approve_shop_sales_tree_view" model="ir.actions.act_window.view">
+    <field name="sequence" eval="1"/>
+    <field name="view_mode">tree</field>
+    <field name="view_id" ref="view_tree_dealer_showroom_sales_approval"/>
+    <field name="act_window_id" ref="action_approve_shop_sales"/>
+</record>
+
+<record id="action_approve_shop_sales_form_view" model="ir.actions.act_window.view">
+    <field name="sequence" eval="2"/>
+    <field name="view_mode">form</field>
+    <field name="view_id" ref="view_form_dealer_showroom_sales_approval"/>
+    <field name="act_window_id" ref="action_approve_shop_sales"/>
+</record>
 
 </odoo>

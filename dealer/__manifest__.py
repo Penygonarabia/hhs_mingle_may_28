@@ -23,12 +23,14 @@ This module allows you to:
         'partner_whatsapp',
         'hr',
         'hr_attendance',
+        'base_territory',
         'promoter',
     ],
     'data': [
     # Security Groups & Categories (safe to load early)   
     'security/dealer_groups.xml',
     'security/ir.model.access.csv',
+    'security/dealer_security_rules.xml',
     'views/dealer_showroom_views.xml',
     # Action for the filter wizard    
     'views/fsm_loyalty_audit_stmt_filter_wizard_views.xml',
@@ -63,10 +65,13 @@ This module allows you to:
     'assets': {
         'web.assets_backend': [
             # 'dealer/static/src/js/dealer_confirm.js',
+            # 'dealer/static/src/css/custom.css',
+            # 'dealer/static/src/css/pivot_fix.css',   
+            #'dealer/static/src/js/hide_user_menu.js',  
             'dealer/static/src/css/custom.css',
             'dealer/static/src/css/pivot_fix.css',   
             'dealer/static/src/js/hide_user_menu.js',
-            'dealer/static/src/js/pivot_patch.js',
+            'dealer/static/src/js/pivot_patch.js',                                 
         ],
         'web.assets_frontend': [
             'dealer/static/src/css/custom.css',                  

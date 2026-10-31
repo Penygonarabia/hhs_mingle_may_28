@@ -12,7 +12,7 @@
       <field name="name">Dealer Backoffice: Read All Attachments</field>
       <field name="model_id" ref="base.model_ir_attachment"/>
       <field name="domain_force">[(1, '=', 1)]</field>
-      <field name="groups" eval="[(4, ref('dealer.group_dealer_backoffice_user'))]"/>
+      <field name="groups" eval="[(4, ref('dealer.group_dealer_backoffice_user')), (4, ref('dealer.group_floor_sales_approval'))]"/>
       <field name="perm_read" eval="True"/>
       <field name="perm_write" eval="False"/>
       <field name="perm_create" eval="False"/>
