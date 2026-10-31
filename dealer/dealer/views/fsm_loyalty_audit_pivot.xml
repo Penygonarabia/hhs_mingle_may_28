@@ -35,7 +35,8 @@
                 <!-- <field name="amount_paid" type="measure"/> -->
 
                 <!-- Rows -->
-                <field name="type" type="row"/>
+                <field name="type" type="row"/>              
+                <field name="type_order" type="sort"  invisible="1"/>
             </pivot>
         </field>
     </record>
@@ -46,22 +47,8 @@
         <field name="name">Loyalty Point Analysis</field>
         <field name="res_model">fsm.loyalty.audit</field>
         <field name="view_mode">pivot,tree</field>
-        <field name="domain">['|', ('sales_id', '=', False), ('sales_id.state', '=', 'approved')]</field>
-    </record>
-
-    <!-- Explicit view bindings for Loyalty Point Analysis action -->
-    <record id="action_fsm_loyalty_audit_pivot_view_pivot" model="ir.actions.act_window.view">
-        <field name="sequence" eval="1"/>
-        <field name="view_mode">pivot</field>
         <field name="view_id" ref="view_fsm_loyalty_audit_pivot"/>
-        <field name="act_window_id" ref="action_fsm_loyalty_audit_pivot"/>
-    </record>
-
-    <record id="action_fsm_loyalty_audit_pivot_view_tree" model="ir.actions.act_window.view">
-        <field name="sequence" eval="2"/>
-        <field name="view_mode">tree</field>
-        <field name="view_id" ref="view_fsm_loyalty_audit_tree"/>
-        <field name="act_window_id" ref="action_fsm_loyalty_audit_pivot"/>
+        <field name="domain">[]</field>
     </record>
 
 
@@ -80,32 +67,11 @@
     <field name="domain_force">[('salesman_id', '=', user.id)]</field>
 </record>
 
-<record id="fsm_loyalty_audit_backoffice_rule_all" model="ir.rule">
-    <field name="name">FSM Loyalty Audit - Backoffice All Records</field>
-    <field name="model_id" ref="model_fsm_loyalty_audit"/>
-    <field name="groups" eval="[(4, ref('dealer.group_dealer_backoffice_user'))]"/>
-    <field name="domain_force">[(1, '=', 1)]</field>
-</record>
-
 <record id="action_fsm_loyalty_audit_pivot_mob" model="ir.actions.act_window">
     <field name="name">Loyalty Points Summary</field>
     <field name="res_model">fsm.loyalty.audit</field>
     <field name="view_mode">pivot,tree</field>
     <field name="view_id" ref="view_fsm_loyalty_audit_pivot_mob"/>
-</record>
-
-<record id="action_fsm_loyalty_audit_pivot_mob_view_pivot" model="ir.actions.act_window.view">
-    <field name="sequence" eval="1"/>
-    <field name="view_mode">pivot</field>
-    <field name="view_id" ref="view_fsm_loyalty_audit_pivot_mob"/>
-    <field name="act_window_id" ref="action_fsm_loyalty_audit_pivot_mob"/>
-</record>
-
-<record id="action_fsm_loyalty_audit_pivot_mob_view_tree" model="ir.actions.act_window.view">
-    <field name="sequence" eval="2"/>
-    <field name="view_mode">tree</field>
-    <field name="view_id" ref="view_fsm_loyalty_audit_tree_mob"/>
-    <field name="act_window_id" ref="action_fsm_loyalty_audit_pivot_mob"/>
 </record>
 
 </odoo>
