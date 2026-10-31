@@ -476,19 +476,4 @@
         </field>
     </record>
 
-
-    <record id="action_approve_shop_sales_tree_view" model="ir.actions.act_window.view">
-    <field name="sequence" eval="1"/>
-    <field name="view_mode">tree</field>
-    <field name="view_id" ref="view_tree_dealer_showroom_sales_approval"/>
-    <field name="act_window_id" ref="action_approve_shop_sales"/>
-</record>
-
-<record id="action_approve_shop_sales_form_view" model="ir.actions.act_window.view">
-    <field name="sequence" eval="2"/>
-    <field name="view_mode">form</field>
-    <field name="view_id" ref="view_form_dealer_showroom_sales_approval"/>
-    <field name="act_window_id" ref="action_approve_shop_sales"/>
-</record>
-
 </odoo>
