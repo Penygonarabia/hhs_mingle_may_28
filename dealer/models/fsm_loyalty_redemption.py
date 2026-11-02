@@ -169,6 +169,15 @@ class FSMLoyaltyRedemption(models.Model):
             raise AccessError(_("You cannot modify records with the 'processed' state."))
         return super().write(values)
 
+    def unlink(self):
+        """Prevent deletion of processed redemption records."""
+        for rec in self:
+            if rec.state == 'processed':
+                raise AccessError(
+                    _("You cannot delete processed loyalty redemption records.")
+                )
+        return super().unlink()
+
     # -------------------------------------------------
     # SQL Constraint
     # -------------------------------------------------
