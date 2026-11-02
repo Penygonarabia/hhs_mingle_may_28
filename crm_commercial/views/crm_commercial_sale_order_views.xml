@@ -108,7 +108,7 @@
                                     <field name="product_category_id" string="Group" readonly="1"/>
                                     <field name="product_id" string="Part No / Product" readonly="1"/>
                                     <field name="name" string="Description" optional="show" readonly="1"/>
-                                    <field name="qty" string="Qty" readonly="1"/>
+                                    <field name="qty" string="Ordered Qty" readonly="1"/>
                                     <button name="action_open_deliver_wizard" type="object"
                                             icon="fa-truck" title="Schedule Delivery"/>
                                     <field name="delivered_qty" string="Delivered Qty" readonly="1"/>

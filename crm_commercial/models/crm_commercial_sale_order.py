@@ -67,7 +67,7 @@ class CrmCommercialSaleOrder(models.Model):
     # Costing summary & totals from quotation
     total_selling_price = fields.Float(string='Total Selling Price (A)', readonly=True)
     total_cost = fields.Float(string='Total Cost (B)', readonly=True)
-    total_supplier_support = fields.Float(string='Total Supplier Support (S)', readonly=True)
+    total_supplier_support = fields.Float(string='Total Special Price Support (S)', readonly=True)
     total_dsi = fields.Float(string='Total DSI (C)', readonly=True)
     total_smc = fields.Float(string='Total SMC (D)', readonly=True)
     total_promo = fields.Float(string='Total Promo (E)', readonly=True)
@@ -187,7 +187,7 @@ class CrmCommercialSaleOrderLine(models.Model):
         readonly=True
     )
     product_id = fields.Many2one('product.product', string='Product', required=True, index=True, readonly=True)
-    qty = fields.Float(string='Qty', default=1.0, required=True, readonly=True)
+    qty = fields.Float(string='Ordered Qty', default=1.0, required=True, readonly=True)
 
     delivered_qty = fields.Float(string='Delivered Qty', compute='_compute_delivered_qty', store=True)
     pending_qty = fields.Float(string='Pending Qty', compute='_compute_pending_qty', store=True)
