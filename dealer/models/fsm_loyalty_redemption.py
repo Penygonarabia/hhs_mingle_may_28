@@ -32,10 +32,16 @@ class FSMLoyaltyRedemption(models.Model):
     )
     salesman_id = fields.Many2one('res.users',domain="[('dealer_id', '=', dealer_id), ('dealer_showroom_id', '=', dealer_showroom_id)]", required=True)
 
+    # transaction_reference = fields.Char(
+    #     string="Transaction Reference",
+    #     default=lambda self: self.env['ir.sequence'].next_by_code('fsm.loyalty.redemption'),
+    #     readonly=True, copy=False,
+    # )
+
     transaction_reference = fields.Char(
         string="Transaction Reference",
-        default=lambda self: self.env['ir.sequence'].next_by_code('fsm.loyalty.redemption'),
         readonly=True,
+        copy=False,
     )
 
     date_time = fields.Datetime(default=fields.Datetime.now)
@@ -137,12 +143,25 @@ class FSMLoyaltyRedemption(models.Model):
         return self.env.ref('dealer.action_fsm_loyalty_redemption_report').report_action(self)
 
 
-    @api.model
-    def create(self, values):
-        """ Prevent creation when state is 'processed' """
-        if values.get('state') == 'processed':
-            raise AccessError(_("You cannot create records with the 'processed' state."))
-        return super().create(values)
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Generate redemption reference during actual record creation."""
+
+        for vals in vals_list:
+
+            if vals.get('state') == 'processed':
+                raise AccessError(
+                    _("You cannot create records with the 'processed' state.")
+                )
+
+            if not vals.get('transaction_reference'):
+                vals['transaction_reference'] = (
+                    self.env['ir.sequence'].next_by_code(
+                        'fsm.loyalty.redemption'
+                    )
+                )
+
+        return super().create(vals_list)
 
     def write(self, values):
         """ Prevent modifications when state is 'processed' """

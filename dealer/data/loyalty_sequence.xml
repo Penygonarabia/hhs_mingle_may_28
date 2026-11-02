@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="seq_fsm_loyalty_redemption" model="ir.sequence">
+            <field name="name">Loyalty Redemption Sequence</field>
+            <field name="code">fsm.loyalty.redemption</field>
+            <field name="prefix">RED</field>
+            <field name="padding">5</field>
+            <field name="number_increment">1</field>
+            <field name="implementation">no_gap</field>
+            <field name="company_id" eval="False"/>
+            <field name="active">True</field>
+        </record>
+    </data>
+</odoo>

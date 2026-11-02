@@ -51,6 +51,7 @@ This module allows you to:
     'wizard/dsales_reject_wizard_views.xml',
     'views/fsm_loyalty_audit_view.xml',
     'views/fsm_loyalty_audit_pivot.xml',
+    'data/loyalty_sequence.xml',
     'views/fsm_loyalty_redemption_view.xml',  
     'views/product_view.xml',
     # 'views/confirm_dealer_override_views.xml',
