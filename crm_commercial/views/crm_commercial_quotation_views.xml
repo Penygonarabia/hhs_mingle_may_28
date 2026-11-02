@@ -293,7 +293,7 @@
                                     <!--                                           domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id),-->
                                     <!--                                           ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]"/>-->
                                     <field name="product_id" string="Part No / Product" readonly="is_warehouse_readonly"
-                                           domain="[('categ_id', 'child_of', product_category_id)] if product_category_id else []"/>
+                                         context="{'crm_commercial_code': True}"  domain="[('categ_id', 'child_of', product_category_id)] if product_category_id else []"/>
                                     <field name="name" widget="section_and_note_text" string="Description / Section"
                                            optional="show" readonly="is_description_readonly"/>
                                     <field name="capacity" string="Capacity" readonly="is_warehouse_readonly"/>

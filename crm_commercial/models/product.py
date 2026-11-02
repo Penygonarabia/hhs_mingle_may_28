@@ -64,3 +64,14 @@ class ProductProduct(models.Model):
 
     def action_open_import_non_stock(self):
         return self.product_tmpl_id.action_open_import_non_stock()
+
+    def name_get(self):
+        if self.env.context.get('crm_commercial_code'):
+            return [(rec.id, rec.default_code) for rec in self]
+        return super().name_get()
+
+    def _compute_display_name(self):
+        super()._compute_display_name()
+        if self.env.context.get('crm_commercial_code'):
+            for rec in self:
+                rec.display_name = rec.default_code
