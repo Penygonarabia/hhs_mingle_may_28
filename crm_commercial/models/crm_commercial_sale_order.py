@@ -233,6 +233,14 @@ class CrmCommercialSaleOrderLine(models.Model):
     schedule_balance = fields.Float(string='Balance to Schedule', compute='_compute_scheduled_total')
     over_scheduled = fields.Boolean(compute='_compute_scheduled_total')
 
+    @api.depends('qty', 'delivered_entry_ids.qty')
+    def _compute_scheduled_total(self):
+        for line in self:
+            total = sum(line.delivered_entry_ids.mapped('qty'))
+            line.scheduled_total = total
+            line.schedule_balance = line.qty - total
+            line.over_scheduled = total > line.qty
+
 
 class CrmCommercialDeliverySchedule(models.Model):
     _name = 'crm.commercial.delivery.schedule'
