@@ -103,15 +103,14 @@
                         <page string="Order Items" name="items_tab">
                             <field name="line_ids" readonly="1">
                                 <tree create="false" edit="false" delete="false">
-                                    <field name="product_group_id" string="Group" readonly="1"
-                                           context="{'show_code_only': True}"/>
-                                    <field name="product_category_id" string="Category" readonly="1"/>
+                                    <field name="product_group_id" string="Category" readonly="1"
+                                           context="{'show_code_only': True}" column_invisible="1"/>
+                                    <field name="product_category_id" string="Group" readonly="1"/>
                                     <field name="product_id" string="Part No / Product" readonly="1"/>
                                     <field name="name" string="Description" optional="show" readonly="1"/>
-                                    <field name="qty" string="Ordered Qty" readonly="1"/>
+                                    <field name="qty" string="Qty" readonly="1"/>
                                     <button name="action_open_deliver_wizard" type="object"
                                             icon="fa-truck" title="Schedule Delivery"/>
-                                    <field name="delivered_qty" string="Delivered Qty" readonly="1"/>
                                     <field name="delivered_qty" string="Delivered Qty" readonly="1"/>
                                     <field name="pending_qty" string="Pending Qty" readonly="1"/>
                                     <field name="unit_cost" string="Unit Cost" optional="hide" readonly="1"/>

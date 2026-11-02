@@ -178,16 +178,16 @@ class CrmCommercialSaleOrderLine(models.Model):
 
     product_group_id = fields.Many2one(
         'product.category',
-        string='Product Group',
+        string='Product Category',
         readonly=True
     )
     product_category_id = fields.Many2one(
         'product.category',
-        string='Product Category',
+        string='Product Group',
         readonly=True
     )
     product_id = fields.Many2one('product.product', string='Product', required=True, index=True, readonly=True)
-    qty = fields.Float(string='Ordered Qty', default=1.0, required=True, readonly=True)
+    qty = fields.Float(string='Qty', default=1.0, required=True, readonly=True)
 
     delivered_qty = fields.Float(string='Delivered Qty', compute='_compute_delivered_qty', store=True)
     pending_qty = fields.Float(string='Pending Qty', compute='_compute_pending_qty', store=True)
