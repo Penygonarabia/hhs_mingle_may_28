@@ -2,6 +2,7 @@
 from odoo import fields, models, api, _
 from odoo.exceptions import ValidationError
 
+
 class CrmCommercialSaleOrder(models.Model):
     _name = 'crm.commercial.sale.order'
     _description = 'CRM Commercial Sale Order'
@@ -38,13 +39,15 @@ class CrmCommercialSaleOrder(models.Model):
 
     warehouse_id = fields.Many2one('stock.warehouse', string='Warehouse', required=True, index=True, readonly=True)
     assigned_id = fields.Many2one('res.users', string='Salesman', required=True, index=True, readonly=True)
-    project_category_id = fields.Many2one('crm.commercial.project.category', string='Project Category', index=True, readonly=True)
+    project_category_id = fields.Many2one('crm.commercial.project.category', string='Project Category', index=True,
+                                          readonly=True)
     project_name = fields.Char(string='Project Name', index=True, readonly=True)
 
     consultant_id = fields.Many2one('crm.commercial.consultant', string='Consultant', readonly=True)
     developer = fields.Char(string='Developer', readonly=True)
     project_status_id = fields.Many2one('crm.commercial.project.status', string='Project Status', readonly=True)
-    project_detail_status_id = fields.Many2one('crm.commercial.project.detail.status', string='Project Detail Status', readonly=True)
+    project_detail_status_id = fields.Many2one('crm.commercial.project.detail.status', string='Project Detail Status',
+                                               readonly=True)
     tag_ids = fields.Many2many('crm.tag', string='Tags', readonly=True)
 
     date_order = fields.Date(string='Order Date', default=fields.Date.context_today, required=True, readonly=True)
@@ -58,7 +61,8 @@ class CrmCommercialSaleOrder(models.Model):
     ], string='Status', default='confirmed', tracking=True, index=True)
 
     expected_gross_margin = fields.Float(string='Expected Gross Margin %', readonly=True)
-    actual_gross_margin = fields.Float(string='Actual Gross Margin %', compute='_compute_actual_gross_margin', store=True)
+    actual_gross_margin = fields.Float(string='Actual Gross Margin %', compute='_compute_actual_gross_margin',
+                                       store=True)
 
     # Costing summary & totals from quotation
     total_selling_price = fields.Float(string='Total Selling Price (A)', readonly=True)
@@ -77,7 +81,8 @@ class CrmCommercialSaleOrder(models.Model):
     salient_features_tab = fields.Html(string='Salient Features', readonly=True)
     settings_tab = fields.Html(string='Settings', readonly=True)
 
-    line_ids = fields.One2many('crm.commercial.sale.order.line', 'order_id', string='Order Lines', readonly=True, copy=True)
+    line_ids = fields.One2many('crm.commercial.sale.order.line', 'order_id', string='Order Lines', readonly=True,
+                               copy=True)
     delivery_schedule_ids = fields.One2many('crm.commercial.delivery.schedule', 'order_id', string='Delivery Schedules')
     audit_ids = fields.One2many('crm.commercial.sale.order.audit', 'order_id', string='Audit Log', readonly=True)
 
@@ -116,7 +121,9 @@ class CrmCommercialSaleOrder(models.Model):
             if not schedules:
                 target_state = 'confirmed'
             else:
-                all_delivered = all(s.status == 'delivered' or (s.qty_to_deliver > 0 and s.delivered_qty >= s.qty_to_deliver) for s in schedules)
+                all_delivered = all(
+                    s.status == 'delivered' or (s.qty_to_deliver > 0 and s.delivered_qty >= s.qty_to_deliver) for s in
+                    schedules)
                 any_delivered = any(s.status == 'delivered' or s.delivered_qty > 0 for s in schedules)
                 if all_delivered:
                     target_state = 'delivered'
@@ -206,6 +213,26 @@ class CrmCommercialSaleOrderLine(models.Model):
         for line in self:
             line.pending_qty = line.qty - line.delivered_qty
 
+    delivered_entry_ids = fields.One2many(
+        'crm.commercial.delivered.qty', 'order_line_id', string='Delivery Schedule Entries')
+
+    def action_open_deliver_wizard(self):
+        self.ensure_one()
+        view = self.env.ref('crm_commercial.view_crm_commercial_sale_order_line_delivery_form')
+        return {
+            'name': _('Schedule Delivery'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'crm.commercial.sale.order.line',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'views': [(view.id, 'form')],
+            'target': 'new',
+        }
+
+    scheduled_total = fields.Float(string='Scheduled Qty', compute='_compute_scheduled_total')
+    schedule_balance = fields.Float(string='Balance to Schedule', compute='_compute_scheduled_total')
+    over_scheduled = fields.Boolean(compute='_compute_scheduled_total')
+
 
 class CrmCommercialDeliverySchedule(models.Model):
     _name = 'crm.commercial.delivery.schedule'
@@ -213,25 +240,39 @@ class CrmCommercialDeliverySchedule(models.Model):
     _order = 'scheduled_date, id'
 
     order_id = fields.Many2one('crm.commercial.sale.order', string='Order', ondelete='cascade', index=True)
-    order_line_id = fields.Many2one('crm.commercial.sale.order.line', string='Order Item', ondelete='cascade', required=True, index=True, readonly=True)
-    product_id = fields.Many2one('product.product', related='order_line_id.product_id', string='Product', readonly=True, store=True)
+    order_line_id = fields.Many2one('crm.commercial.sale.order.line', string='Order Item', ondelete='cascade',
+                                    required=True, index=True, readonly=True)
+    product_id = fields.Many2one('product.product', related='order_line_id.product_id', string='Product', readonly=True,
+                                 store=True)
 
     # Reporting & Analysis Dimensions (related to Order, Order Line, and Quotation)
-    partner_id = fields.Many2one('res.partner', related='order_id.partner_id', string='Customer Name', readonly=True, store=True, index=True)
-    customer_no = fields.Char(related='order_id.partner_id.ref', string='Customer No', readonly=True, store=True, index=True)
-    quotation_id = fields.Many2one('crm.commercial.quotation', related='order_id.quotation_id', string='Quotation', readonly=True, store=True, index=True)
-    quotation_type_id = fields.Many2one('crm.commercial.quotation.type', related='order_id.quotation_type_id', string='Quotation Type', readonly=True, store=True, index=True)
-    assigned_id = fields.Many2one('res.users', related='order_id.assigned_id', string='Salesman', readonly=True, store=True, index=True)
-    warehouse_id = fields.Many2one('stock.warehouse', related='order_id.warehouse_id', string='Warehouse', readonly=True, store=True, index=True)
-    region_id = fields.Many2one('res.country.state', related='order_id.region_id', string='Region', readonly=True, store=True, index=True)
-    city_id = fields.Many2one('res.city', related='order_id.city_id', string='City', readonly=True, store=True, index=True)
+    partner_id = fields.Many2one('res.partner', related='order_id.partner_id', string='Customer Name', readonly=True,
+                                 store=True, index=True)
+    customer_no = fields.Char(related='order_id.partner_id.ref', string='Customer No', readonly=True, store=True,
+                              index=True)
+    quotation_id = fields.Many2one('crm.commercial.quotation', related='order_id.quotation_id', string='Quotation',
+                                   readonly=True, store=True, index=True)
+    quotation_type_id = fields.Many2one('crm.commercial.quotation.type', related='order_id.quotation_type_id',
+                                        string='Quotation Type', readonly=True, store=True, index=True)
+    assigned_id = fields.Many2one('res.users', related='order_id.assigned_id', string='Salesman', readonly=True,
+                                  store=True, index=True)
+    warehouse_id = fields.Many2one('stock.warehouse', related='order_id.warehouse_id', string='Warehouse',
+                                   readonly=True, store=True, index=True)
+    region_id = fields.Many2one('res.country.state', related='order_id.region_id', string='Region', readonly=True,
+                                store=True, index=True)
+    city_id = fields.Many2one('res.city', related='order_id.city_id', string='City', readonly=True, store=True,
+                              index=True)
     city_name = fields.Char(related='order_id.city', string='City Name', readonly=True, store=True)
 
-    product_group_id = fields.Many2one('product.category', related='order_line_id.product_group_id', string='Group', readonly=True, store=True, index=True)
-    product_category_id = fields.Many2one('product.category', related='order_line_id.product_category_id', string='Category', readonly=True, store=True, index=True)
+    product_group_id = fields.Many2one('product.category', related='order_line_id.product_group_id', string='Group',
+                                       readonly=True, store=True, index=True)
+    product_category_id = fields.Many2one('product.category', related='order_line_id.product_category_id',
+                                          string='Category', readonly=True, store=True, index=True)
 
-    quotation_state = fields.Selection(related='order_id.quotation_id.state', string='Quotation Status', readonly=True, store=True, index=True)
-    sale_order_state = fields.Selection(related='order_id.state', string='Sales Order Status', readonly=True, store=True, index=True)
+    quotation_state = fields.Selection(related='order_id.quotation_id.state', string='Quotation Status', readonly=True,
+                                       store=True, index=True)
+    sale_order_state = fields.Selection(related='order_id.state', string='Sales Order Status', readonly=True,
+                                        store=True, index=True)
 
     scheduled_date = fields.Date(string='Scheduled Date', required=True, index=True)
     qty_to_deliver = fields.Float(string='Qty to Deliver', required=True)
@@ -266,7 +307,8 @@ class CrmCommercialDeliverySchedule(models.Model):
         records = super(CrmCommercialDeliverySchedule, self).create(vals_list)
         for rec in records:
             if rec.order_id:
-                prod_name = rec.product_id.display_name or (rec.order_line_id and rec.order_line_id.product_id.display_name) or 'Item'
+                prod_name = rec.product_id.display_name or (
+                            rec.order_line_id and rec.order_line_id.product_id.display_name) or 'Item'
                 status_label = dict(rec._fields['status'].selection).get(rec.status, rec.status)
                 rec.order_id._log_audit(
                     title='Delivery Schedule Added',
@@ -283,7 +325,8 @@ class CrmCommercialDeliverySchedule(models.Model):
         if len(self) == 1 and 'delivered_qty' not in vals:
             if vals.get('status') == 'delivered' and self.delivered_qty < self.qty_to_deliver:
                 vals['delivered_qty'] = self.qty_to_deliver
-            elif vals.get('status') == 'yet_to_deliver' and self.delivered_qty >= self.qty_to_deliver and self.qty_to_deliver > 0:
+            elif vals.get(
+                    'status') == 'yet_to_deliver' and self.delivered_qty >= self.qty_to_deliver and self.qty_to_deliver > 0:
                 vals['delivered_qty'] = 0.0
 
         for rec in self:
@@ -300,7 +343,8 @@ class CrmCommercialDeliverySchedule(models.Model):
                 changes.append(f"- Status: {old_status} -> {new_status}")
 
             if changes and rec.order_id:
-                prod_name = rec.product_id.display_name or (rec.order_line_id and rec.order_line_id.product_id.display_name) or 'Item'
+                prod_name = rec.product_id.display_name or (
+                            rec.order_line_id and rec.order_line_id.product_id.display_name) or 'Item'
                 rec.order_id._log_audit(
                     title='Delivery Schedule Updated',
                     notes=f"Item: {prod_name}\n" + "\n".join(changes)
@@ -313,7 +357,8 @@ class CrmCommercialDeliverySchedule(models.Model):
         orders = self.mapped('order_id')
         for rec in self:
             if rec.order_id:
-                prod_name = rec.product_id.display_name or (rec.order_line_id and rec.order_line_id.product_id.display_name) or 'Item'
+                prod_name = rec.product_id.display_name or (
+                            rec.order_line_id and rec.order_line_id.product_id.display_name) or 'Item'
                 rec.order_id._log_audit(
                     title='Delivery Schedule Removed',
                     notes=f"Removed delivery schedule for item: {prod_name} (Scheduled: {rec.scheduled_date}, Qty: {rec.qty_to_deliver})"
@@ -333,4 +378,3 @@ class CrmCommercialSaleOrderAudit(models.Model):
     title = fields.Char(string='Title', readonly=True)
     notes = fields.Text(string='Notes / Reason', readonly=True)
     state = fields.Char(string='Status', readonly=True)
-

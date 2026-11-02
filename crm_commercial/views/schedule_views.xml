@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_crm_commercial_sale_order_line_delivery_form" model="ir.ui.view">
+        <field name="name">crm.commercial.sale.order.line.delivery.form</field>
+        <field name="model">crm.commercial.sale.order.line</field>
+        <field name="arch" type="xml">
+            <form create="false" delete="false">
+                <div class="alert alert-danger" role="alert" invisible="not over_scheduled">
+                    Scheduled quantity is more than the ordered quantity. Reduce the delivery quantities before saving.
+                </div>
+                <group>
+                    <field name="product_id" readonly="1"/>
+                    <field name="qty" string="Ordered Qty" readonly="1"/>
+<!--                    <field name="scheduled_total" readonly="1"/>-->
+<!--                    <field name="schedule_balance" readonly="1" decoration-danger="schedule_balance &lt; 0"/>-->
+                    <field name="over_scheduled" invisible="1"/>
+                </group>
+                <field name="delivered_entry_ids">
+                    <tree editable="bottom">
+                        <field name="delivery_date"/>
+                        <field name="qty"/>
+                    </tree>
+                </field>
+                <footer>
+                    <button string="Save" special="save" class="btn-primary"/>
+                    <button string="Discard" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
