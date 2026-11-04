@@ -420,7 +420,10 @@
         <field name="name">Approve Shop Sales</field>
         <field name="res_model">dsales.showroom.sales</field>
         <field name="view_mode">tree,form</field>
-        <field name="view_ids" eval="[(6, 0, [ref('view_tree_dealer_showroom_sales_approval'), ref('view_form_dealer_showroom_sales_approval')])]"/>
+        <field name="context">{
+        'tree_view_ref': 'dealer.view_tree_dealer_showroom_sales_approval',
+        'form_view_ref': 'dealer.view_form_dealer_showroom_sales_approval'
+    }</field>
     </record>
 
     <record id="action_mass_approve_sales" model="ir.actions.server">
