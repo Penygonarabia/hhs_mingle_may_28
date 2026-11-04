@@ -65,7 +65,7 @@ class DealerSalesTarget(models.Model):
    
     franchise_id = fields.Many2one(
         'product.category',
-        string='Franchise'
+        string='Product Category'
     )
     group_id = fields.Many2one(
         'product.category',

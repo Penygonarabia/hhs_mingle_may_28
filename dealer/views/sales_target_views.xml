@@ -21,8 +21,10 @@
             <form string="Sales Target">
                 <sheet>
                     <group>
-                        <field name="franchise_id"  domain="[('parent_id','=',False),('name', '!=', 'All')]"/>
-                        <field name="group_id"  domain="[('parent_id', '!=', False), ('parent_id','=',franchise_id)]"/>
+                        <!-- <field name="franchise_id"  domain="[('parent_id','=',False),('name', '!=', 'All')]"/>
+                        <field name="group_id"  domain="[('parent_id', '!=', False), ('parent_id','=',franchise_id)]"/> -->
+                        <field name="franchise_id"  domain="[('allowed_group_is_promoter','=',True), ('parent_id','=',False),('name', '!=', 'All')]" />
+                        <field name="group_id"  domain="[('parent_id', '!=', False), ('parent_id', '=', franchise_id), '|', ('parent_id.name', '!=', 'Midea'), ('allowed_group_is_promoter', '=', True)]"/>
                         <field name="subgroup_id"  domain="[('parent_id', '!=', False), ('parent_id','=',group_id)]"/>
                         <field name="product_id"
                                domain="[('categ_id','child_of',
