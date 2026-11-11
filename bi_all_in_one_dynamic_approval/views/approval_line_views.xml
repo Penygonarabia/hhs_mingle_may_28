@@ -12,10 +12,44 @@
                             <field name="level"/>
                         </group>
                     </group>
+                    <!-- Group-based: plain Many2many -->
+                    <field name="group_ids" invisible="group_approve != 'group'"/>
+
+                    <!-- User-based: ordered list with drag-handle sequence -->
+                    <field name="user_sequence_ids"
+                           invisible="group_approve != 'user'"
+                           string="Users (Approval Order)">
+                        <tree editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="user_id" required="1" options = "{'no_create':True,'no_open':True,'no_edit':True}"/>
+                            <field name="sequence" string="Seq" optional="show"/>
+                        </tree>
+                    </field>
+                    <field name="user_ids" invisible="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>
+
+<!-- <?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <record id="approval_line_form" model="ir.ui.view">
+        <field name="name">approval.approval.line.form</field>
+        <field name="model">approval.approval.line</field>
+        <field name="arch" type="xml">
+            <form string="Approval Line">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="group_approve"/>
+                            <field name="level"/>
+                        </group>
+                    </group>
                     <field name="group_ids" invisible="group_approve != 'group'"/>
                     <field name="user_ids" invisible="group_approve != 'user'"/>
                 </sheet>
             </form>
         </field>
     </record>
-</odoo>
+</odoo> -->
