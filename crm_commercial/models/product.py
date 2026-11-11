@@ -35,6 +35,18 @@ class ProductTemplate(models.Model):
         ('approved', 'Approved'),
         ('rejected', 'Rejected')
     ], string='Item Approval Status', default='approved', index=True)
+    dsi_amount = fields.Float('DSI Amount')
+
+    def write(self, vals):
+        if self.env.context.get('skip_sync_dsi'):
+            return super(ProductTemplate, self).write(vals)
+        res = super(ProductTemplate, self).write(vals)
+        if 'dsi_amount' in vals:
+            for rec in self:
+                variants = rec.product_variant_ids.filtered(lambda p: p.dsi_amount != vals['dsi_amount'])
+                if variants:
+                    variants.with_context(skip_sync_dsi=True).write({'dsi_amount': vals['dsi_amount']})
+        return res
 
     def action_approve_item(self):
         self.write({'approval_state': 'approved'})
@@ -55,6 +67,33 @@ class ProductTemplate(models.Model):
 
 class ProductProduct(models.Model):
     _inherit = 'product.product'
+
+    dsi_amount = fields.Float(
+        string='DSI Amount',
+        related='product_tmpl_id.dsi_amount',
+        store=True,
+        readonly=False,
+    )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super(ProductProduct, self).create(vals_list)
+        if not self.env.context.get('skip_sync_dsi'):
+            for rec, vals in zip(records, vals_list):
+                if 'dsi_amount' in vals and rec.product_tmpl_id and rec.product_tmpl_id.dsi_amount != vals['dsi_amount']:
+                    rec.product_tmpl_id.with_context(skip_sync_dsi=True).write({'dsi_amount': vals['dsi_amount']})
+        return records
+
+    def write(self, vals):
+        if self.env.context.get('skip_sync_dsi'):
+            return super(ProductProduct, self).write(vals)
+        res = super(ProductProduct, self).write(vals)
+        if 'dsi_amount' in vals:
+            for rec in self:
+                if rec.product_tmpl_id and rec.product_tmpl_id.dsi_amount != vals['dsi_amount']:
+                    rec.product_tmpl_id.with_context(skip_sync_dsi=True).write({'dsi_amount': vals['dsi_amount']})
+        return res
+
 
     def action_approve_item(self):
         self.product_tmpl_id.action_approve_item()

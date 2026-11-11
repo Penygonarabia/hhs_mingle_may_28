@@ -7,9 +7,12 @@
         <field name="arch" type="xml">
             <xpath expr="//div[hasclass('oe_button_box')]" position="before">
                 <div class="mb-2">
-                    <button name="action_open_import_non_stock" string="Import Non-Stock" type="object" class="btn-primary" groups="crm_commercial.group_crm_commercial_user"/>
-                    <button name="action_approve_item" string="Approve Item" type="object" class="btn-success" invisible="approval_state != 'draft'" groups="crm_commercial.group_crm_commercial_manager"/>
-                    <button name="action_reject_item" string="Reject Item" type="object" class="btn-danger" invisible="approval_state != 'draft'" groups="crm_commercial.group_crm_commercial_manager"/>
+                    <button name="action_open_import_non_stock" string="Import Non-Stock" type="object"
+                            class="btn-primary" groups="crm_commercial.group_crm_commercial_user"/>
+                    <button name="action_approve_item" string="Approve Item" type="object" class="btn-success"
+                            invisible="approval_state != 'draft'" groups="crm_commercial.group_crm_commercial_manager"/>
+                    <button name="action_reject_item" string="Reject Item" type="object" class="btn-danger"
+                            invisible="approval_state != 'draft'" groups="crm_commercial.group_crm_commercial_manager"/>
                 </div>
             </xpath>
             <xpath expr="//field[@name='name']" position="before">
@@ -50,6 +53,27 @@
             </xpath>
             <xpath expr="//field[@name='uom_id']" position="attributes">
                 <attribute name="column_invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_form_view_inherit_crm_commercial_dsi" model="ir.ui.view">
+        <field name="name">product.template.form.view.inherit.crm.commercial.dsi</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="machine_repair_management.product_template_inherit_form_view_machine"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='service_product_price_edit_bool']" position="after">
+                <field name="dsi_amount"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="product_normal_form_view_inherit_crm_commercial_dsi" model="ir.ui.view">
+        <field name="name">product.product.form.view.inherit.crm.commercial.dsi</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="machine_repair_management.product_normal_form_view_inherit_is_machine"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='service_product_price_edit_bool']" position="after">
+                <field name="dsi_amount"/>
             </xpath>
         </field>
     </record>

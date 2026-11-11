@@ -3,6 +3,10 @@ from odoo import fields, models, api, _
 from odoo.exceptions import ValidationError
 import re
 import logging
+from odoo.exceptions import UserError, ValidationError
+
+APPROVAL_SUMMARY = 'Quotation approval required'
+
 
 
 class CrmCommercialQuotation(models.Model):
@@ -116,13 +120,29 @@ class CrmCommercialQuotation(models.Model):
         string="Warehouse",
         required=True,
         index=True,
-        default=lambda self: self.env.user.crm_commercial_default_warehouse_id,
-        # default=lambda self: self._default_warehouse_id(),
+        default=lambda self: self._default_warehouse_id(),
     )
 
-    # @api.model
-    # def _default_warehouse_id(self):
-    #     return self.env.user.crm_commercial_default_warehouse_id.id or False
+    @api.model
+    def _default_warehouse_id(self):
+        user = self.env.user
+        if user.crm_commercial_default_warehouse_id:
+            return user.crm_commercial_default_warehouse_id.id
+        if user.available_warehouse_ids:
+            return user.available_warehouse_ids[0].id
+        default_wh = self.env['stock.warehouse'].search([
+            ('company_id', '=', self.env.company.id)
+        ], limit=1)
+        return default_wh.id or False
+
+    @api.model
+    def default_get(self, fields_list):
+        res = super(CrmCommercialQuotation, self).default_get(fields_list)
+        if "warehouse_id" in fields_list and not res.get("warehouse_id"):
+            default_wh = self._default_warehouse_id()
+            if default_wh:
+                res["warehouse_id"] = default_wh
+        return res
     capacity = fields.Char(string="Capacity")
     allow_cost_rights = fields.Boolean(
         string="Allow Cost Rights",
@@ -222,7 +242,12 @@ class CrmCommercialQuotation(models.Model):
 
     @api.depends_context("uid")
     def _compute_warehouse_id(self):
-        user_warehouses = self.env.user.available_warehouse_ids
+        user = self.env.user
+        user_warehouses = user.available_warehouse_ids
+        if not user_warehouses:
+            user_warehouses = self.env['stock.warehouse'].search([('company_id', '=', self.env.company.id)])
+            if not user_warehouses:
+                user_warehouses = self.env['stock.warehouse'].search([])
         for record in self:
             record.warehouse_ids = user_warehouses
 
@@ -320,27 +345,44 @@ class CrmCommercialQuotation(models.Model):
         partner = self.env["res.partner"].search(domain, limit=1)
 
         if partner:
-            self.partner_id = partner
-            self.to_name = partner.name
+            if self.partner_id != partner:
+                self.partner_id = partner
+            if self.to_name != partner.name:
+                self.to_name = partner.name
 
             # Contact details
-            self.email = partner.email or ""
-            self.phone = partner.phone or partner.mobile or ""
+            new_email = partner.email or ""
+            if self.email != new_email:
+                self.email = new_email
+            new_phone = partner.phone or partner.mobile or ""
+            if self.phone != new_phone:
+                self.phone = new_phone
 
             # Address
-            self.street = partner.street or ""
-            self.street2 = partner.street2 or ""
-            self.zip = partner.zip or ""
+            new_street = partner.street or ""
+            if self.street != new_street:
+                self.street = new_street
+            new_street2 = partner.street2 or ""
+            if self.street2 != new_street2:
+                self.street2 = new_street2
+            new_zip = partner.zip or ""
+            if self.zip != new_zip:
+                self.zip = new_zip
 
             # Location
-            self.city_id = partner.customer_city_id or False
-            self.city = (
-                partner.customer_city_id.name if partner.customer_city_id else ""
-            )
-            self.district = partner.district_id or False
-            self.region_id = partner.region_id or False
-            self.state_id = partner.state_id or False
-            self.country_id = partner.country_id or False
+            if self.city_id != (partner.customer_city_id or False):
+                self.city_id = partner.customer_city_id or False
+            new_city = partner.customer_city_id.name if partner.customer_city_id else ""
+            if self.city != new_city:
+                self.city = new_city
+            if self.district != (partner.district_id or False):
+                self.district = partner.district_id or False
+            if self.region_id != (partner.region_id or False):
+                self.region_id = partner.region_id or False
+            if self.state_id != (partner.state_id or False):
+                self.state_id = partner.state_id or False
+            if self.country_id != (partner.country_id or False):
+                self.country_id = partner.country_id or False
             return {
                 "warning": {
                     "title": _("Existing Customer Found"),
@@ -396,7 +438,8 @@ class CrmCommercialQuotation(models.Model):
             self.region_id = lead.region_id
             self.country_id = lead.country_id
             self.zip = lead.zip
-            self.warehouse_id = lead.warehouse_id
+            if lead.warehouse_id:
+                self.warehouse_id = lead.warehouse_id
             self.assigned_id = lead.assigned_id
             self.project_category_id = lead.project_category_id
             self.project_name = lead.name
@@ -417,7 +460,8 @@ class CrmCommercialQuotation(models.Model):
             self.region_id = False
             self.country_id = False
             self.zip = False
-            self.warehouse_id = False
+            if not self.warehouse_id:
+                self.warehouse_id = self._default_warehouse_id()
             self.assigned_id = False
             self.project_category_id = False
             self.project_name = False
@@ -428,26 +472,45 @@ class CrmCommercialQuotation(models.Model):
         if self.partner_id:
             partner = self.partner_id
 
-            self.to_name = partner.name
-            self.email = partner.email
-            self.phone = partner.phone or partner.mobile
-            self.street = partner.street
-            self.street2 = partner.street2
-            self.city = partner.city
-            self.state_id = partner.state_id
-            self.zip = partner.zip
-            self.country_id = partner.country_id
+            if self.to_name != partner.name:
+                self.to_name = partner.name
+            if self.email != (partner.email or False):
+                self.email = partner.email or False
+            new_phone = partner.phone or partner.mobile or False
+            if self.phone != new_phone:
+                self.phone = new_phone
+            if self.street != (partner.street or False):
+                self.street = partner.street or False
+            if self.street2 != (partner.street2 or False):
+                self.street2 = partner.street2 or False
+            if self.city != (partner.city or False):
+                self.city = partner.city or False
+            if self.state_id != (partner.state_id or False):
+                self.state_id = partner.state_id or False
+            if self.zip != (partner.zip or False):
+                self.zip = partner.zip or False
+            if self.country_id != (partner.country_id or False):
+                self.country_id = partner.country_id or False
 
         else:
-            self.to_name = False
-            self.email = False
-            self.phone = False
-            self.street = False
-            self.street2 = False
-            self.city = False
-            self.state_id = False
-            self.zip = False
-            self.country_id = False
+            if self.to_name:
+                self.to_name = False
+            if self.email:
+                self.email = False
+            if self.phone:
+                self.phone = False
+            if self.street:
+                self.street = False
+            if self.street2:
+                self.street2 = False
+            if self.city:
+                self.city = False
+            if self.state_id:
+                self.state_id = False
+            if self.zip:
+                self.zip = False
+            if self.country_id:
+                self.country_id = False
 
     # @api.onchange("quotation_type_id")
     # def _onchange_quotation_type_id(self):
@@ -495,7 +558,9 @@ class CrmCommercialQuotation(models.Model):
         self.region_id = False
         self.country_id = False
 
-        # Do NOT clear warehouse_id; keep what the user selected.
+        # Do NOT clear warehouse_id; keep what the user selected or fallback to default.
+        if not self.warehouse_id:
+            self.warehouse_id = self._default_warehouse_id()
         # Reset assigned salesman to default instead of empty:
         self.assigned_id = False
         self.project_category_id = False
@@ -567,6 +632,7 @@ class CrmCommercialQuotation(models.Model):
     state = fields.Selection(
         [
             ("draft", "Draft"),
+            ('waiting', 'Waiting For Approval'),
             ("approved", "Approved"),
             ("rejected", "Rejected"),
             ("confirmed", "Confirmed"),
@@ -581,6 +647,360 @@ class CrmCommercialQuotation(models.Model):
         tracking=True,
         index=True,
     )
+    #Approval Flow 20261102 GOkul
+    company_id = fields.Many2one(
+        "res.company",
+        string="Company",
+        default=lambda self: self.env.company,
+        index=True,
+    )
+    is_approval = fields.Boolean(compute="_compute_is_approval")
+    suggested_ids = fields.Many2many(
+        "approval.approval",
+        string="Suggested Approval",
+        compute="_compute_suggested_ids",
+    )
+    quotation_approval_id = fields.Many2one(
+        'approval.approval', string='Approval Level', copy=False,
+        compute='_compute_quotation_approval_id', store=True, readonly=False)
+    approval_required = fields.Boolean(compute='_compute_approval_required')
+
+    user_ids = fields.Many2many('res.users', 'crm_quot_waiting_user_rel', 'quotation_id', 'user_id',
+                                string='Waiting Users', copy=False)
+    group_ids = fields.Many2many('res.groups', 'crm_quot_waiting_group_rel', 'quotation_id', 'group_id',
+                                 string='Waiting Groups', copy=False)
+    approved_user_ids = fields.Many2many('res.users', 'crm_quot_approved_user_rel', 'quotation_id',
+                                         'user_id', string='Approved Users', copy=False)
+    next_approval_level = fields.Char(copy=False)
+    current_waiting_approval_line_id = fields.Many2one('crm.commercial.quotation.approved', copy=False)
+    approved_line_ids = fields.One2many('crm.commercial.quotation.approved', 'quotation_id',
+                                        string='Approval Details', copy=False)
+    is_approval_reject_button = fields.Boolean(compute='_compute_is_approval_reject_button')
+
+    is_rejected = fields.Boolean(copy=False)
+    reject_date = fields.Datetime(copy=False)
+    rejected_user_id = fields.Many2one('res.users', string='Rejected By', copy=False)
+    reject_reason = fields.Text(copy=False)
+
+    def _get_approval_company(self):
+        self.ensure_one()
+        for comp in [self.company_id, self.warehouse_id.company_id, self.env.company]:
+            if comp and comp.dynamic_approval:
+                return comp
+        return self.company_id or self.warehouse_id.company_id or self.env.company
+
+    def _get_approval_amount(self):
+        self.ensure_one()
+        product_lines = self.line_ids.filtered(lambda l: not l.display_type)
+        if product_lines:
+            subtotal = sum(
+                (l.qty or 0.0) * (l.sale_price or 0.0) * (1.0 - (l.discount_percent or 0.0) / 100.0)
+                for l in product_lines
+            )
+            vat = sum(
+                ((l.qty or 0.0) * (l.sale_price or 0.0) * (1.0 - (l.discount_percent or 0.0) / 100.0)) * ((l.vat_percent or 15.0) / 100.0)
+                for l in product_lines
+            )
+            company = self._get_approval_company()
+            if company.approval_type == 'before_tax_amount':
+                return subtotal
+            return subtotal + vat
+        tot = self.total_amount
+        vat = self.total_vat
+        if self._get_approval_company().approval_type == 'before_tax_amount':
+            return tot - vat
+        return tot
+
+    def _get_quotation_approvals(self):
+        ModelApproval = self.env['model.approval'].sudo().with_context(active_test=False)
+        ir_model = self.env['ir.model'].sudo().search([('model', '=', 'crm.commercial.quotation')], limit=1)
+        domain = [
+            '|', '|', '|',
+            ('model_id', '=', 'crm.commercial.quotation'),
+            ('model_id.model', '=', 'crm.commercial.quotation'),
+            ('model_id', '=', ir_model.id if ir_model else 0),
+            ('model_id.name', '=', 'CRM Commercial Quotation'),
+        ]
+        records = ModelApproval.search(domain)
+        if not records and ir_model:
+            records = ModelApproval.search([('model_id', '=', ir_model.id)])
+        approvals = records.mapped('approval_ids')
+        if not approvals:
+            all_configs = ModelApproval.search([])
+            for conf in all_configs:
+                if conf.model_id and (conf.model_id.model == 'crm.commercial.quotation' or conf.model_id.name == 'CRM Commercial Quotation'):
+                    approvals |= conf.approval_ids
+        return approvals
+
+    @api.depends('company_id', 'warehouse_id')
+    @api.depends_context('company')
+    def _compute_is_approval(self):
+        for rec in self:
+            rec.is_approval = bool(rec._get_approval_company().dynamic_approval)
+
+    @api.depends('company_id', 'warehouse_id')
+    @api.depends_context('company')
+    def _compute_suggested_ids(self):
+        approvals = self._get_quotation_approvals()
+        for rec in self:
+            rec.suggested_ids = approvals if rec.is_approval else False
+
+    @api.depends('total_amount', 'total_vat', 'company_id', 'warehouse_id', 'line_ids.sale_price', 'line_ids.qty', 'line_ids.discount_percent', 'line_ids.vat_percent')
+    def _compute_quotation_approval_id(self):
+        for rec in self:
+            company = rec._get_approval_company()
+            if not company.dynamic_approval:
+                rec.quotation_approval_id = False
+                continue
+            amount = rec._get_approval_amount()
+            approvals = rec.suggested_ids or self._get_quotation_approvals()
+            levels = approvals.filtered(lambda a: a.minimum_amount <= amount)
+            rec.quotation_approval_id = levels.sorted('minimum_amount', reverse=True)[:1] or False
+
+    def _is_quotation_approval_required(self):
+        self.ensure_one()
+        company = self._get_approval_company()
+        if not company.dynamic_approval:
+            return False
+        if self.assigned_id and self.assigned_id.quotation_auto_approval:
+            return False
+        amount = self._get_approval_amount()
+        approvals = self._get_quotation_approvals()
+        matching_levels = approvals.filtered(lambda a: a.minimum_amount <= amount)
+        return bool(matching_levels)
+
+    @api.depends('quotation_approval_id', 'is_approval', 'assigned_id.quotation_auto_approval', 'total_amount', 'total_vat', 'line_ids.sale_price', 'line_ids.qty', 'line_ids.discount_percent', 'line_ids.vat_percent')
+    def _compute_approval_required(self):
+        for rec in self:
+            rec.approval_required = rec._is_quotation_approval_required()
+
+    @api.depends('user_ids', 'group_ids', 'state')
+    @api.depends_context('uid')
+    def _compute_is_approval_reject_button(self):
+        user = self.env.user
+        for rec in self:
+            allowed = False
+            if rec.state == 'waiting':
+                if rec.user_ids and user in rec.user_ids:
+                    allowed = True
+                elif rec.group_ids and bool(set(rec.group_ids.ids) & set(user.groups_id.ids)):
+                    allowed = True
+            rec.is_approval_reject_button = allowed
+
+    @api.onchange('quotation_approval_id')
+    def _onchange_quotation_approval_id(self):
+        if self.quotation_approval_id and self.quotation_approval_id.minimum_amount > self._get_approval_amount():
+            return {'warning': {'title': _('Warning'),
+                                'message': _('Selected approval is not proper as per your quotation!')}}
+
+    def _clear_approval_activities(self):
+        for rec in self:
+            try:
+                rec.activity_ids.filtered(lambda a: a.summary == APPROVAL_SUMMARY).sudo().unlink()
+            except Exception:
+                pass
+
+    def _notify_approvers(self):
+        self.ensure_one()
+        self._clear_approval_activities()
+        users = self.user_ids
+        if not users and self.group_ids:
+            group_ids_set = set(self.group_ids.ids)
+            users = self.group_ids[0].users.filtered(
+                lambda u: u.active and bool(group_ids_set & set(u.groups_id.ids)))
+        for user in users:
+            try:
+                self.activity_schedule(
+                    'mail.mail_activity_data_todo', user_id=user.id, summary=APPROVAL_SUMMARY,
+                    note=_('Quotation %s needs your approval (level %s).') % (self.name, self.next_approval_level))
+            except Exception:
+                pass
+
+    def _notify_salesman(self, body):
+        self.ensure_one()
+        if self.assigned_id:
+            self.message_post(body=body, partner_ids=self.assigned_id.partner_id.ids,
+                              subtype_xmlid='mail.mt_comment')
+
+    def action_submit_for_approval(self):
+        for rec in self:
+            if rec.state != 'draft':
+                raise UserError(_('Only draft quotations can be sent for approval.'))
+            if not rec.line_ids.filtered(lambda l: not l.display_type):
+                raise ValidationError(_('Please add at least one product line.'))
+            if not rec._is_quotation_approval_required():
+                raise UserError(_('This quotation does not need approval.'))
+            approval = rec.quotation_approval_id
+            if not approval:
+                approvals = rec._get_quotation_approvals()
+                amount = rec._get_approval_amount()
+                levels = approvals.filtered(lambda a: a.minimum_amount <= amount)
+                approval = levels.sorted('minimum_amount', reverse=True)[:1]
+            if not approval or not approval.approval_line_ids:
+                raise ValidationError(_('No approval level found!'))
+            rec.approved_line_ids.unlink()
+
+            approval_lines_vals = []
+            for line in approval.approval_line_ids.sorted('level'):
+                if line.group_approve == 'user':
+                    if line.user_sequence_ids:
+                        for s_idx, s in enumerate(line.user_sequence_ids.sorted('sequence'), start=1):
+                            approval_lines_vals.append((0, 0, {
+                                'approval_level': line.level,
+                                'sequence': s_idx,
+                                'user_ids': [(6, 0, [s.user_id.id])],
+                                'group_ids': [(5, 0, 0)],
+                            }))
+                    elif line.user_ids:
+                        for seq_idx, u in enumerate(line.user_ids, start=1):
+                            approval_lines_vals.append((0, 0, {
+                                'approval_level': line.level,
+                                'sequence': seq_idx,
+                                'user_ids': [(6, 0, [u.id])],
+                                'group_ids': [(5, 0, 0)],
+                            }))
+                    else:
+                        approval_lines_vals.append((0, 0, {
+                            'approval_level': line.level,
+                            'sequence': 1,
+                            'user_ids': [(5, 0, 0)],
+                            'group_ids': [(5, 0, 0)],
+                        }))
+                elif line.group_approve == 'group':
+                    approval_lines_vals.append((0, 0, {
+                        'approval_level': line.level,
+                        'sequence': 1,
+                        'user_ids': [(5, 0, 0)],
+                        'group_ids': [(6, 0, line.group_ids.ids)],
+                    }))
+                else:
+                    if line.user_sequence_ids:
+                        for s_idx, s in enumerate(line.user_sequence_ids.sorted('sequence'), start=1):
+                            approval_lines_vals.append((0, 0, {
+                                'approval_level': line.level,
+                                'sequence': s_idx,
+                                'user_ids': [(6, 0, [s.user_id.id])],
+                                'group_ids': [(5, 0, 0)],
+                            }))
+                    elif line.user_ids:
+                        for seq_idx, u in enumerate(line.user_ids, start=1):
+                            approval_lines_vals.append((0, 0, {
+                                'approval_level': line.level,
+                                'sequence': seq_idx,
+                                'user_ids': [(6, 0, [u.id])],
+                                'group_ids': [(5, 0, 0)],
+                            }))
+                    elif line.group_ids:
+                        approval_lines_vals.append((0, 0, {
+                            'approval_level': line.level,
+                            'sequence': 1,
+                            'user_ids': [(5, 0, 0)],
+                            'group_ids': [(6, 0, line.group_ids.ids)],
+                        }))
+                    else:
+                        approval_lines_vals.append((0, 0, {
+                            'approval_level': line.level,
+                            'sequence': 1,
+                            'user_ids': [(5, 0, 0)],
+                            'group_ids': [(5, 0, 0)],
+                        }))
+
+            rec.with_context(approval_flow=True).write({
+                'quotation_approval_id': approval.id,
+                'approved_line_ids': approval_lines_vals,
+                'approved_user_ids': [(5, 0, 0)],
+                'is_rejected': False,
+            })
+            rec._log_audit('Sent for Approval', _('Approval level: %s') % approval.display_name)
+            rec._goto_next_approval_level()
+        return True
+
+    def _goto_next_approval_level(self):
+        self.ensure_one()
+        rec = self.with_context(approval_flow=True)
+        pending = rec.approved_line_ids.filtered(lambda l: not l.state).sorted(
+            lambda l: (l.approval_level, l.sequence, l.id)
+        )
+        if not pending:
+            rec.write({'state': 'approved', 'user_ids': [(5, 0, 0)], 'group_ids': [(5, 0, 0)],
+                       'current_waiting_approval_line_id': False, 'next_approval_level': False})
+            self._clear_approval_activities()
+            self._log_audit('Quotation Approved', _('All approval levels completed.'))
+            self._notify_salesman(_('Quotation %s has been fully approved.') % self.name)
+            return
+
+        active_line = pending[0]
+        rec.write({
+            'state': 'waiting',
+            'current_waiting_approval_line_id': active_line.id,
+            'next_approval_level': str(active_line.approval_level),
+            'user_ids': [(6, 0, active_line.user_ids.ids)],
+            'group_ids': [(6, 0, active_line.group_ids.ids)],
+        })
+        self._notify_approvers()
+
+    def action_approval_approve(self):
+        for rec in self:
+            if rec.state != 'waiting' or not rec.is_approval_reject_button:
+                raise UserError(_('You are not allowed to approve this quotation.'))
+
+            pending = rec.approved_line_ids.filtered(lambda l: not l.state).sorted(
+                lambda l: (l.approval_level, l.sequence, l.id)
+            )
+            if not pending:
+                rec._goto_next_approval_level()
+                continue
+
+            active_line = pending[0]
+            current_level = active_line.approval_level
+
+            current_user = self.env.user
+            user_group_ids = set(current_user.groups_id.ids)
+
+            allowed = False
+            if active_line.user_ids and current_user in active_line.user_ids:
+                allowed = True
+            elif active_line.group_ids and bool(set(active_line.group_ids.ids) & user_group_ids):
+                allowed = True
+
+            if not allowed:
+                raise UserError(_('You are not the designated approver for the current step (Level %s).') % current_level)
+
+            active_line.write({
+                'state': True,
+                'approved_date': fields.Datetime.now(),
+                'approved_id': current_user.id,
+            })
+            rec.approved_user_ids = [(4, current_user.id)]
+            rec._log_audit('Approval Level Approved',
+                           _('Level %s step approved by %s.') % (current_level, current_user.name))
+            rec._goto_next_approval_level()
+        return True
+
+    def action_approval_reject(self):
+        self.ensure_one()
+        if self.state != 'waiting' or not self.is_approval_reject_button:
+            raise UserError(_('You are not allowed to reject this quotation.'))
+        return {
+            'name': _('Reject Quotation'),
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'res_model': 'crm.commercial.quotation.reject',
+            'target': 'new',
+            'context': {'default_quotation_id': self.id},
+        }
+
+    def action_reset_approval(self):
+        for rec in self:
+            if rec.state != 'rejected':
+                continue
+            rec.approved_line_ids.unlink()
+            rec.with_context(approval_flow=True).write({
+                'state': 'draft', 'user_ids': [(5, 0, 0)], 'group_ids': [(5, 0, 0)],
+                'current_waiting_approval_line_id': False, 'next_approval_level': False})
+        return True
+
+
 
     assigned_id = fields.Many2one(
         "res.users",
@@ -672,7 +1092,7 @@ class CrmCommercialQuotation(models.Model):
     consultant_id = fields.Many2one(
         "crm.commercial.consultant",
         string="Consultant",
-        # required=True
+        required=True
     )
     tag_ids = fields.Many2many("crm.tag", string="Tags")
     ignore_for_reporting = fields.Boolean(
@@ -927,10 +1347,12 @@ class CrmCommercialQuotation(models.Model):
         """Refresh all terms when quotation lines change in the form."""
         for rec in self:
             values = rec._get_combined_category_terms()
-
-            rec.payment_terms_tab = values["payment_terms_tab"]
-            rec.warranty_terms_tab = values["warranty_terms_tab"]
-            rec.salient_features_tab = values["salient_features_tab"]
+            if rec.payment_terms_tab != values["payment_terms_tab"]:
+                rec.payment_terms_tab = values["payment_terms_tab"]
+            if rec.warranty_terms_tab != values["warranty_terms_tab"]:
+                rec.warranty_terms_tab = values["warranty_terms_tab"]
+            if rec.salient_features_tab != values["salient_features_tab"]:
+                rec.salient_features_tab = values["salient_features_tab"]
 
     # @api.depends("line_ids.product_category_id", "line_ids.product_id")
     # def _compute_category_terms(self):
@@ -1070,6 +1492,14 @@ class CrmCommercialQuotation(models.Model):
             )
             if rec.assigned_id and rec.assigned_id.quotation_auto_approval:
                 rec.state = "approved"
+            elif (
+                rec.state == "draft"
+                and rec._is_quotation_approval_required()
+                and rec.line_ids.filtered(lambda l: not l.display_type)
+                and not self.env.context.get("skip_auto_submit")
+                and not self.env.context.get("approval_flow")
+            ):
+                rec.with_context(approval_flow=True).action_submit_for_approval()
         return records
 
     def _update_partner_company_details(self):
@@ -1096,8 +1526,28 @@ class CrmCommercialQuotation(models.Model):
                     "Status Changed",
                     f'Status updated from {rec.state} to {vals.get("state")}.',
                 )
+        if vals.get("state") == "approved" and not self.env.context.get("approval_flow"):
+            for rec in self:
+                if rec.state != "approved" and rec.approval_required:
+                    raise UserError(_('Quotation %s needs approval. Use "Send for Approval".') % rec.name)
+
         res = super(CrmCommercialQuotation, self).write(vals)
+
+        if not self.env.context.get("approval_flow") and not self.env.context.get("skip_auto_submit"):
+            for rec in self:
+                if rec.state == "draft":
+                    if (
+                        rec._is_quotation_approval_required()
+                        and rec.line_ids.filtered(lambda l: not l.display_type)
+                    ):
+                        if rec.assigned_id and rec.assigned_id.quotation_auto_approval:
+                            rec.state = "approved"
+                        else:
+                            rec.with_context(approval_flow=True).action_submit_for_approval()
+
         return res
+
+
 
     def _log_audit(self, title, notes):
         for rec in self:
@@ -1146,12 +1596,15 @@ class CrmCommercialQuotation(models.Model):
     def _onchange_salesman_commission_percent(self):
         for rec in self:
             for line in rec.line_ids.filtered(lambda l: not l.display_type):
-                line.smc = (
-                        line.qty
-                        * line.sale_price
-                        * rec.salesman_commission_percent
-                        / 100.0
+                new_smc = round(
+                    line.qty
+                    * line.sale_price
+                    * rec.salesman_commission_percent
+                    / 100.0,
+                    2
                 )
+                if round(line.smc, 2) != new_smc:
+                    line.smc = new_smc
 
     @api.onchange("line_ids")
     def _onchange_line_ids_support(self):
@@ -1170,18 +1623,20 @@ class CrmCommercialQuotation(models.Model):
             total_amount = sum(l.qty * l.sale_price for l in lines)
             if not total_amount:
                 for l in lines:
-                    l.special_support = 0.0
+                    if l.special_support:
+                        l.special_support = 0.0
                 continue
             allocated = 0.0
             for l in lines[:-1]:
                 value = round(
                     rec.supplier_support_recording * (l.qty * l.sale_price) / total_amount, 2
                 )
-                l.special_support = value
+                if round(l.special_support, 2) != value:
+                    l.special_support = value
                 allocated += value
-            lines[-1].special_support = round(
-                rec.supplier_support_recording - allocated, 2
-            )
+            last_val = round(rec.supplier_support_recording - allocated, 2)
+            if round(lines[-1].special_support, 2) != last_val:
+                lines[-1].special_support = last_val
     # #20261029 Gokul
     # #(supplier_support_recording / total_selling_price) * (qty * sale_price)
     # @api.onchange("supplier_support_recording")
@@ -1234,8 +1689,20 @@ class CrmCommercialQuotation(models.Model):
             x = a + e - c - d - s
             gm = x - (b - s)
             gm_pct = (gm / x * 100.0) if x else 0.0
-            vat = sum(line.vat_amount for line in product_lines)
-            tot = sum(line.amount for line in product_lines)
+
+            vat = 0.0
+            tot = 0.0
+            for line in product_lines:
+                if line.amount or line.vat_amount:
+                    vat += line.vat_amount
+                    tot += line.amount
+                else:
+                    disc = (line.discount_percent or 0.0) / 100.0
+                    vat_pct = (line.vat_percent or 15.0) / 100.0
+                    subtotal = (line.qty or 0.0) * (line.sale_price or 0.0) * (1.0 - disc)
+                    line_vat = subtotal * vat_pct
+                    vat += line_vat
+                    tot += subtotal + line_vat
 
             rec.total_selling_price = a
             rec.total_cost = b
@@ -1308,6 +1775,14 @@ class CrmCommercialQuotation(models.Model):
             for line in rec.line_ids:
                 line._compute_pricing()
             rec._compute_costing_summary()
+            if (
+                rec.state == "draft"
+                and rec._is_quotation_approval_required()
+                and rec.line_ids.filtered(lambda l: not l.display_type)
+                and not self.env.context.get("skip_auto_submit")
+                and not self.env.context.get("approval_flow")
+            ):
+                rec.with_context(approval_flow=True).action_submit_for_approval()
 
     def action_refresh_cost(self):
         for rec in self:
@@ -1480,7 +1955,7 @@ class CrmCommercialQuotation(models.Model):
                 "default_salient_features_tab": self.salient_features_tab,
                 "default_settings_tab": self.settings_tab,
                 "default_line_ids": line_commands,
-                "default_warehouse_id": False,
+                "default_warehouse_id": self.warehouse_id.id if self.warehouse_id else self._default_warehouse_id(),
                 "default_partner_id": False,
                 "default_to_name": False,
                 "default_email": False,
@@ -1513,7 +1988,7 @@ class CrmCommercialQuotation(models.Model):
             "Quotation Revised",
             f"Quotation cancelled due to new revision #{self.revision_number + 1}.",
         )
-        revised = self.copy(
+        revised = self.with_context(skip_auto_submit=True).copy(
             {
                 "name": f"{self.name.split('-R')[0]}-R{self.revision_number + 1}",
                 "revision_number": self.revision_number + 1,
@@ -1533,6 +2008,13 @@ class CrmCommercialQuotation(models.Model):
 
     def action_confirm(self):
         last_so = False
+        for rec in self:
+            if rec.state in ("draft", "waiting", "rejected") and rec.approval_required:
+                raise UserError(
+                    _("Quotation %s must be approved before it can be confirmed.") % rec.name
+                )
+            if not rec.partner_id:
+                raise ValidationError(_("Customer No is mandatory to confirm quotation."))
         for rec in self:
             if not rec.partner_id:
                 raise ValidationError(

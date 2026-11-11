@@ -36,7 +36,7 @@
                             string="Confirm Order"
                             type="object"
                             class="btn-primary"
-                            invisible="state not in ('draft', 'approved') or state == 'closed'"/>
+                            invisible="not (state == 'approved' or (state == 'draft' and not approval_required)) or state == 'closed'"/>
 
                     <button name="action_copy_quotation"
                             string="Copy Quotation"
@@ -62,10 +62,22 @@
                             class="btn-secondary"
                             invisible="state != 'confirmed'"
                             confirm="Are you sure you want to close this quotation?"/>
+                    <field name="approval_required" invisible="1"/>
+                    <field name="is_approval" invisible="1"/>
+                    <field name="is_approval_reject_button" invisible="1"/>
+                    <field name="suggested_ids" invisible="1" widget="many2many_tags"/>
+                    <button name="action_submit_for_approval" string="Send for Approval" type="object"
+                            class="btn-primary" invisible="state != 'draft' or not approval_required"/>
+                    <button name="action_approval_approve" string="Approve" type="object" class="btn-success"
+                            invisible="state != 'waiting' or not is_approval_reject_button"/>
+                    <button name="action_approval_reject" string="Reject" type="object" class="btn-danger"
+                            invisible="state != 'waiting' or not is_approval_reject_button"/>
+                    <button name="action_reset_approval" string="Reset to Draft" type="object"
+                            invisible="state != 'rejected'"/>
+                    <field name="is_rejected" invisible="1"/>
 
-                    <field name="state"
-                           widget="statusbar"
-                           statusbar_visible="draft,approved,confirmed,delivered"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,waiting,approved,confirmed,delivered"/>
                     <!--                    <button name="action_confirm" string="Confirm Order" type="object" class="btn-primary"-->
                     <!--                            invisible="state not in ('draft', 'approved')"/>-->
                     <!--                    <button name="action_copy_quotation" string="Copy Quotation" invisible="1" type="object"-->
@@ -182,7 +194,8 @@
                             <field name="project_expected_closure_date" readonly="is_warehouse_readonly"/>
                             <field name="developer" readonly="is_warehouse_readonly"/>
                             <field name="possibility_percent" readonly="is_warehouse_readonly"/>
-                            <field name="project_status_id" readonly="is_warehouse_readonly" options="{'no_create':True,'no_edit':True,'no_open':True}"/>
+                            <field name="project_status_id" readonly="is_warehouse_readonly"
+                                   options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <field name="project_detail_status_id" readonly="is_warehouse_readonly"
                                    options="{'no_create':True,'no_edit':True,'no_open':True}"/>
                             <field name="consultant_id" options="{'no_create':True,'no_edit':True,'no_open':True}"
@@ -242,7 +255,7 @@
                                 overflow-x: auto !important;
                                 }
                             </style>
-                            <div class="mb-2">
+                            <div class="mb-2" invisible="state == 'closed'">
                                 <button name="action_refresh_cost" string="Refresh Cost" type="object"
                                         class="btn-info mr-2"/>
                                 <button name="action_open_import_material_list" string="Import Material List"
@@ -293,7 +306,8 @@
                                     <!--                                           domain="[('use_for_crm_commercial', '=', True), ('exclude_category', '=', False), ('parent_id', 'child_of', product_group_id),-->
                                     <!--                                           ('id', '!=', product_group_id)] if product_group_id else [('id', '=', False)]"/>-->
                                     <field name="product_id" string="Part No / Product" readonly="is_warehouse_readonly"
-                                         context="{'crm_commercial_code': True}"  domain="[('categ_id', 'child_of', product_category_id)] if product_category_id else []"/>
+                                           context="{'crm_commercial_code': True}"
+                                           domain="[('categ_id', 'child_of', product_category_id)] if product_category_id else []"/>
                                     <field name="name" widget="section_and_note_text" string="Description / Section"
                                            optional="show" readonly="is_description_readonly"/>
                                     <field name="capacity" string="Capacity" readonly="is_warehouse_readonly"/>
@@ -391,6 +405,33 @@
                                 </tree>
                             </field>
                         </page>
+                        <page string="Approval" name="dynamic_approval" invisible="not is_approval">
+                            <group>
+                                <group>
+                                    <field name="quotation_approval_id" readonly="state != 'draft'"
+                                           domain="[('id', 'in', suggested_ids)]" options="{'no_create': True}"/>
+                                    <field name="next_approval_level"/>
+                                    <field name="user_ids" widget="many2many_tags"/>
+                                    <field name="group_ids" widget="many2many_tags"/>
+                                </group>
+                                <group invisible="not is_rejected">
+                                    <field name="rejected_user_id"/>
+                                    <field name="reject_date"/>
+                                    <field name="reject_reason"/>
+                                </group>
+                            </group>
+                            <field name="approved_line_ids" readonly="1">
+                                <tree>
+                                    <field name="approval_level"/>
+                                    <field name="sequence" string="Seq" optional="show"/>
+                                    <field name="user_ids" widget="many2many_tags" string="Approver"/>
+                                    <field name="group_ids" widget="many2many_tags"/>
+                                    <field name="state"/>
+                                    <field name="approved_id"/>
+                                    <field name="approved_date"/>
+                                </tree>
+                            </field>
+                        </page>
                     </notebook>
                 </sheet>
                 <div class="oe_chatter">
@@ -398,6 +439,23 @@
                     <field name="activity_ids"/>
                     <field name="message_ids"/>
                 </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_crm_commercial_quotation_reject_form" model="ir.ui.view">
+        <field name="name">crm.commercial.quotation.reject.form</field>
+        <field name="model">crm.commercial.quotation.reject</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="quotation_id" invisible="1"/>
+                    <field name="reason"/>
+                </group>
+                <footer>
+                    <button string="Reject" name="action_reject" type="object" class="btn-primary"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary"/>
+                </footer>
             </form>
         </field>
     </record>
