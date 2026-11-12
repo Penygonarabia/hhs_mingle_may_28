@@ -2006,21 +2006,11 @@ class CrmCommercialQuotation(models.Model):
             "target": "current",
         }
 
-    def action_confirm(self):
-        last_so = False
+    @api.constrains("project_status_id", "project_detail_status_id", "consultant_id")
+    def _check_required_project_fields(self):
         for rec in self:
-            if rec.state in ("draft", "waiting", "rejected") and rec.approval_required:
-                raise UserError(
-                    _("Quotation %s must be approved before it can be confirmed.") % rec.name
-                )
-            if not rec.partner_id:
-                raise ValidationError(_("Customer No is mandatory to confirm quotation."))
-        for rec in self:
-            if not rec.partner_id:
-                raise ValidationError(
-                    _("Customer No is mandatory to confirm quotation.")
-                )
-            # Check required fields at confirm time only
+            if rec.state in ("cancelled", "closed"):
+                continue
             missing_fields = []
             if not rec.project_status_id:
                 missing_fields.append(_("Project Status"))
@@ -2032,10 +2022,20 @@ class CrmCommercialQuotation(models.Model):
             if missing_fields:
                 raise ValidationError(
                     _(
-                        "The following fields are mandatory to confirm the quotation:\n- %s"
+                        "The following fields are mandatory:\n- %s"
                     )
                     % "\n- ".join(missing_fields)
                 )
+
+    def action_confirm(self):
+        last_so = False
+        for rec in self:
+            if rec.state in ("draft", "waiting", "rejected") and rec.approval_required:
+                raise UserError(
+                    _("Quotation %s must be approved before it can be confirmed.") % rec.name
+                )
+            if not rec.partner_id:
+                raise ValidationError(_("Customer No is mandatory to confirm quotation."))
 
             rec.expected_gross_margin = rec.gross_margin_percent
             rec.state = "confirmed"
