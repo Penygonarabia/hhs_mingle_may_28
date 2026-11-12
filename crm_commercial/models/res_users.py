@@ -13,11 +13,57 @@ class ResUsers(models.Model):
         help="Enables CRM Commercial menus and access for this user.",
     )
     crm_commercial_region_id = fields.Many2one(
-        "res.country.state", string="Region", help="Default region assigned to user."
+        "res.region", string="Region", help="Default region assigned to user."
     )
-    crm_commercial_city_id = fields.Char(
-        string="City", help="Default city assigned to user."
+    crm_commercial_city_id = fields.Many2one(
+        "res.city", string="City", help="Default city assigned to user."
     )
+
+    def _auto_init(self):
+        # Ensure column types and constraints are compatible before ORM initializes fields
+        self.env.cr.execute("""
+               DO $$
+               BEGIN
+                   IF EXISTS (
+                       SELECT 1 FROM information_schema.columns 
+                       WHERE table_name = 'res_users' 
+                         AND column_name = 'crm_commercial_city_id' 
+                         AND data_type = 'character varying'
+                   ) THEN
+                       ALTER TABLE res_users ALTER COLUMN crm_commercial_city_id TYPE integer USING NULL;
+                   END IF;
+                   IF EXISTS (
+                       SELECT 1 FROM pg_constraint 
+                       WHERE conname = 'res_users_crm_commercial_region_id_fkey'
+                   ) THEN
+                       ALTER TABLE res_users DROP CONSTRAINT res_users_crm_commercial_region_id_fkey;
+                   END IF;
+               END $$;
+           """)
+        return super(ResUsers, self)._auto_init()
+
+    @api.onchange("crm_commercial_region_id")
+    def _onchange_crm_commercial_region_id(self):
+        if self.crm_commercial_region_id:
+            if (
+                    self.crm_commercial_city_id
+                    and self.crm_commercial_city_id.region_id
+                    and self.crm_commercial_city_id.region_id != self.crm_commercial_region_id
+            ):
+                self.crm_commercial_city_id = False
+            return {
+                "domain": {
+                    "crm_commercial_city_id": [
+                        ("region_id", "=", self.crm_commercial_region_id.id)
+                    ]
+                }
+            }
+        return {"domain": {"crm_commercial_city_id": []}}
+
+    @api.onchange("crm_commercial_city_id")
+    def _onchange_crm_commercial_city_id(self):
+        if self.crm_commercial_city_id and self.crm_commercial_city_id.region_id:
+            self.crm_commercial_region_id = self.crm_commercial_city_id.region_id
     crm_commercial_default_warehouse_id = fields.Many2one(
         "stock.warehouse",
         string="Default Warehouse",

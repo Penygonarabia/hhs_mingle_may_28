@@ -18,8 +18,8 @@
                     <group string="Basic Configuration">
                         <group>
                             <field name="is_crm_commercial_user"/>
-                            <field name="crm_commercial_region_id"/>
-                            <field name="crm_commercial_city_id"/>
+                            <field name="crm_commercial_region_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="crm_commercial_city_id" options="{'no_create': True, 'no_open': True}"/>
                         </group>
                         <group>
                             <field name="crm_commercial_default_warehouse_id"/>

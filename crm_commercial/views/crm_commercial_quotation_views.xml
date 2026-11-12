@@ -189,7 +189,7 @@
                         </group>
                         <group>
                             <field name="date" readonly="is_warehouse_readonly"/>
-                            <field name="expiry_date" readonly="is_warehouse_readonly"/>
+                            <field name="expiry_date" readonly="state in ('confirmed', 'closed')"/>
                             <field name="expected_confirmation_date" readonly="is_warehouse_readonly"/>
                             <field name="project_expected_closure_date" readonly="is_warehouse_readonly"/>
                             <field name="developer" readonly="is_warehouse_readonly"/>

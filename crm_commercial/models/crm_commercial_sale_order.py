@@ -52,6 +52,7 @@ class CrmCommercialSaleOrder(models.Model):
 
     date_order = fields.Date(string='Order Date', default=fields.Date.context_today, required=True, readonly=True)
     expiry_date = fields.Date(string='Expiry Date', required=True, index=True)
+
     state = fields.Selection([
         ('draft', 'Draft'),
         ('confirmed', 'Confirmed'),

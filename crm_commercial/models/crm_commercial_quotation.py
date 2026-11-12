@@ -2036,6 +2036,8 @@ class CrmCommercialQuotation(models.Model):
                 )
             if not rec.partner_id:
                 raise ValidationError(_("Customer No is mandatory to confirm quotation."))
+            if not rec.expiry_date:
+                raise ValidationError(_("Expiry Date is mandatory to confirm quotation."))
 
             rec.expected_gross_margin = rec.gross_margin_percent
             rec.state = "confirmed"
