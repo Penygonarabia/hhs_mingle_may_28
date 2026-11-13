@@ -321,6 +321,8 @@
                                     <field name="sale_price" string="Sale Price" readonly="is_sales_price_readonly"/>
                                     <field name="discount_percent" string="Discount %"
                                            readonly="is_default_discount_readonly"/>
+                                    <field name="dsi_amount" string="DSI Amount" optional="hide" readonly="1"
+                                           column_invisible="not parent.allow_cost_rights"/>
                                     <field name="dsi" string="DSI" readonly="1"
                                            column_invisible="not parent.allow_cost_rights"/>
                                     <field name="smc" string="SMC" readonly="1"
@@ -342,7 +344,7 @@
                                 <group>
                                     <field name="supplier_support_recording" readonly="state == 'closed'"/>
                                     <field name="dsi_type" readonly="state == 'closed'"/>
-                                    <field name="dsi_percent" readonly="state == 'closed'"/>
+                                    <field name="dsi_percent" readonly="state == 'closed' or dsi_type in ('zero', 'original')"/>
                                 </group>
                                 <group>
                                     <field name="salesman_commission_percent" readonly="state == 'closed'"/>

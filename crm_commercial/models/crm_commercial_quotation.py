@@ -1455,7 +1455,7 @@ class CrmCommercialQuotation(models.Model):
         combined_settings = (header or "") + (paragraph or "") + (footer or "")
 
         for vals in vals_list:
-            if vals.get("dsi_type") == "zero":
+            if vals.get("dsi_type") in ("zero", "original"):
                 vals["dsi_percent"] = 0.0
 
             if vals.get("name", _("New")) == _("New"):
@@ -1543,8 +1543,13 @@ class CrmCommercialQuotation(models.Model):
             rec.partner_id.write(partner_vals)
 
     def write(self, vals):
-        if vals.get("dsi_type") == "zero":
+        if vals.get("dsi_type") in ("zero", "original"):
             vals["dsi_percent"] = 0.0
+        elif "dsi_percent" in vals and "dsi_type" not in vals:
+            for rec in self:
+                if rec.dsi_type in ("zero", "original"):
+                    vals["dsi_percent"] = 0.0
+                    break
 
         if "state" in vals:
             for rec in self:
@@ -1647,7 +1652,7 @@ class CrmCommercialQuotation(models.Model):
     @api.onchange("dsi_type", "dsi_percent")
     def _onchange_dsi_mode_and_percent(self):
         for rec in self:
-            if rec.dsi_type == "zero":
+            if rec.dsi_type in ("zero", "original"):
                 rec.dsi_percent = 0.0
             rec._distribute_dsi()
 
@@ -1663,14 +1668,10 @@ class CrmCommercialQuotation(models.Model):
                 rec.dsi_percent = 0.0
                 total_dsi = 0.0
             elif rec.dsi_type == "original":
+                rec.dsi_percent = 0.0
                 total_dsi = sum(
                     ((l.product_id.dsi_amount or 0.0) if l.product_id else 0.0) * (l.qty or 0.0)
                     for l in product_lines
-                )
-                rec.dsi_percent = (
-                    round((total_dsi / total_selling) * 100.0, 2)
-                    if total_selling
-                    else 0.0
                 )
             else:
                 total_dsi = total_selling * ((rec.dsi_percent or 0.0) / 100.0)
@@ -1843,7 +1844,7 @@ class CrmCommercialQuotation(models.Model):
 
     def action_recalculate(self):
         for rec in self:
-            if rec.dsi_type == "zero":
+            if rec.dsi_type in ("zero", "original"):
                 rec.dsi_percent = 0.0
             for line in rec.line_ids:
                 line._compute_pricing()

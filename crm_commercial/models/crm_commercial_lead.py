@@ -11,6 +11,15 @@ class CrmCommercialLead(models.Model):
     _order = "id desc"
     _rec_name = "lead_no"
 
+    @api.model
+    def _register_hook(self):
+        super()._register_hook()
+        try:
+            if 'hhs.project.leads.wizard' in self.env:
+                self.env['hhs.project.leads.wizard']._ensure_action_and_menu()
+        except Exception:
+            pass
+
     lead_no = fields.Char(
         string="Lead No",
         required=True,
