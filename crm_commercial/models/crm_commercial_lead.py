@@ -820,6 +820,7 @@ class CrmCommercialLead(models.Model):
                     "project_category_id": self.project_category_id.id if self.project_category_id else False,
                     "company_name": self.company_name if self.company_name else False,
                     "phone_number": self.phone_number if self.phone_number else False,
+                    "expected_confirmation_date": self.expected_confirmation_date,
                     # "project_category_id": (
                     #     self.project_category_id.id
                     #     if self.project_category_id

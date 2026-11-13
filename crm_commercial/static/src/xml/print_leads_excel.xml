@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="crm_commercial.PrintLeadsExcel">
+        <DropdownItem class="'o_print_leads_excel_menu'" onSelected.bind="onPrintLeads">
+            <i class="fa fa-fw fa-file-excel-o me-1"/>Print Leads - Excel
+        </DropdownItem>
+    </t>
+</templates>

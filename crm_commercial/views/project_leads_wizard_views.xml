@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_project_leads_wizard_form" model="ir.ui.view">
+        <field name="name">hhs.project.leads.wizard.form</field>
+        <field name="model">hhs.project.leads.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Project Lead Report">
+                <group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                        <field name="region_id" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="project_category_id" options="{'no_create': True}"/>
+                        <field name="partner_id" options="{'no_create': True}"/>
+                        <field name="state"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_export_excel" string="Export to Excel" type="object" class="btn-primary"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_project_leads_wizard" model="ir.actions.act_window">
+        <field name="name">Project Lead Report</field>
+        <field name="res_model">hhs.project.leads.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="crm_commercial.model_crm_commercial_lead"/>
+        <field name="binding_view_types">list,form</field>
+    </record>
+
+    <!-- Under Reports menu -->
+    <menuitem id="menu_project_leads_report"
+              name="Project Lead Report"
+              parent="menu_crm_commercial_reports"
+              action="action_project_leads_wizard"
+              sequence="5"/>
+
+    <!-- Also under Transactions menu so it is directly visible -->
+    <menuitem id="menu_project_leads_report_trans"
+              name="Project Lead Report"
+              parent="menu_crm_commercial_transactions"
+              action="action_project_leads_wizard"
+              sequence="15"/>
+</odoo>

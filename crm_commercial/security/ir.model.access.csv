@@ -40,3 +40,6 @@ access_crm_commercial_delivered_qty_manager,crm.commercial.delivered.qty manager
 access_crm_commercial_quotation_approved,crm.commercial.quotation.approved,model_crm_commercial_quotation_approved,crm_commercial.group_crm_commercial_user,1,1,1,1
 access_crm_commercial_quotation_reject_user,crm.commercial.quotation.reject user,model_crm_commercial_quotation_reject,base.group_user,1,1,1,1
 access_sale_order_deliver_schedule_user,sale.order.deliver.schedule user,model_sale_order_deliver_schedule,base.group_user,1,1,1,1
+access_hhs_project_leads_wizard_user,hhs.project.leads.wizard user,model_hhs_project_leads_wizard,crm_commercial.group_crm_commercial_user,1,1,1,1
+access_hhs_project_leads_wizard_manager,hhs.project.leads.wizard manager,model_hhs_project_leads_wizard,crm_commercial.group_crm_commercial_manager,1,1,1,1
+access_hhs_project_leads_wizard_base,hhs.project.leads.wizard base,model_hhs_project_leads_wizard,base.group_user,1,1,1,1

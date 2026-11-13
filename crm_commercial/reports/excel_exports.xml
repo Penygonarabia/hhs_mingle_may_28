@@ -12,14 +12,14 @@
         <field name="groups_id" eval="[(4, ref('crm_commercial.group_allow_export_quotation'))]"/>
     </record>
 
-    <!-- Pipeline Project Excel Report Action -->
-    <!-- <record id="action_report_pipeline_xlsx" model="ir.actions.report">
-        <field name="name">Export Pipeline (Excel)</field>
-        <field name="model">crm.commercial.quotation</field>
+    <!-- Leads list: Print Leads - Excel -->
+    <record id="action_report_lead_list_xlsx" model="ir.actions.report">
+        <field name="name">Print Leads - Excel</field>
+        <field name="model">crm.commercial.lead</field>
         <field name="report_type">xlsx</field>
-        <field name="report_name">crm_commercial.pipeline_xlsx</field>
-        <field name="report_file">crm_commercial.pipeline_xlsx</field>
-        <field name="binding_model_id" ref="crm_commercial.model_crm_commercial_quotation"/>
+        <field name="report_name">crm_commercial.lead_list_xlsx</field>
+        <field name="report_file">crm_commercial.lead_list_xlsx</field>
+        <field name="binding_model_id" ref="crm_commercial.model_crm_commercial_lead"/>
         <field name="binding_type">report</field>
-    </record> -->
+    </record>
 </odoo>

@@ -4,4 +4,6 @@ from . import import_material_list_wizard
 from . import expiry_extension_wizard
 from . import confirmed_orders_report_wizard
 from . import deliver_wizard
+from . import project_leads_wizard
+
 

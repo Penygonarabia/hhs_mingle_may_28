@@ -66,12 +66,15 @@
         "reports/excel_exports.xml",
         "wizard/confirmed_orders_report_views.xml",
         "views/schedule_views.xml",
+        "views/project_leads_wizard_views.xml",
 
     ],
     "assets": {
         "web.assets_backend": [
             "crm_commercial/static/src/css/rtl_support.css",
             "crm_commercial/static/src/js/rtl_support.js",
+            "crm_commercial/static/src/js/print_leads_excel.js",
+            "crm_commercial/static/src/xml/print_leads_excel.xml",
         ],
     },
     "installable": True,

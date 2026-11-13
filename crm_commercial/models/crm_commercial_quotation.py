@@ -136,12 +136,23 @@ class CrmCommercialQuotation(models.Model):
         return default_wh.id or False
 
     @api.model
+    def _default_assigned_id(self):
+        user = self.env.user
+        if user.is_salesman:
+            return user.id
+        return False
+
+    @api.model
     def default_get(self, fields_list):
         res = super(CrmCommercialQuotation, self).default_get(fields_list)
         if "warehouse_id" in fields_list and not res.get("warehouse_id"):
             default_wh = self._default_warehouse_id()
             if default_wh:
                 res["warehouse_id"] = default_wh
+        if "assigned_id" in fields_list and not res.get("assigned_id"):
+            default_salesman = self._default_assigned_id()
+            if default_salesman:
+                res["assigned_id"] = default_salesman
         return res
     capacity = fields.Char(string="Capacity")
     allow_cost_rights = fields.Boolean(
@@ -305,6 +316,7 @@ class CrmCommercialQuotation(models.Model):
             self.region_id.id if getattr(self, "region_id", False) else False
         )
 
+
         partner_vals = {
             "name": to_name,
             "email": email or False,
@@ -345,44 +357,27 @@ class CrmCommercialQuotation(models.Model):
         partner = self.env["res.partner"].search(domain, limit=1)
 
         if partner:
-            if self.partner_id != partner:
-                self.partner_id = partner
-            if self.to_name != partner.name:
-                self.to_name = partner.name
+            self.partner_id = partner
+            self.to_name = partner.name
 
             # Contact details
-            new_email = partner.email or ""
-            if self.email != new_email:
-                self.email = new_email
-            new_phone = partner.phone or partner.mobile or ""
-            if self.phone != new_phone:
-                self.phone = new_phone
+            self.email = partner.email or ""
+            self.phone = partner.phone or partner.mobile or ""
 
             # Address
-            new_street = partner.street or ""
-            if self.street != new_street:
-                self.street = new_street
-            new_street2 = partner.street2 or ""
-            if self.street2 != new_street2:
-                self.street2 = new_street2
-            new_zip = partner.zip or ""
-            if self.zip != new_zip:
-                self.zip = new_zip
+            self.street = partner.street or ""
+            self.street2 = partner.street2 or ""
+            self.zip = partner.zip or ""
 
             # Location
-            if self.city_id != (partner.customer_city_id or False):
-                self.city_id = partner.customer_city_id or False
-            new_city = partner.customer_city_id.name if partner.customer_city_id else ""
-            if self.city != new_city:
-                self.city = new_city
-            if self.district != (partner.district_id or False):
-                self.district = partner.district_id or False
-            if self.region_id != (partner.region_id or False):
-                self.region_id = partner.region_id or False
-            if self.state_id != (partner.state_id or False):
-                self.state_id = partner.state_id or False
-            if self.country_id != (partner.country_id or False):
-                self.country_id = partner.country_id or False
+            self.city_id = partner.customer_city_id or False
+            self.city = (
+                partner.customer_city_id.name if partner.customer_city_id else ""
+            )
+            self.district = partner.district_id or False
+            self.region_id = partner.region_id or False
+            self.state_id = partner.state_id or False
+            self.country_id = partner.country_id or False
             return {
                 "warning": {
                     "title": _("Existing Customer Found"),
@@ -444,6 +439,7 @@ class CrmCommercialQuotation(models.Model):
             self.project_category_id = lead.project_category_id
             self.project_name = lead.name
             self.tag_ids = lead.tag_ids
+            self.expected_confirmation_date = lead.expected_confirmation_date
 
         else:
             self.lead_no = False
@@ -462,9 +458,10 @@ class CrmCommercialQuotation(models.Model):
             self.zip = False
             if not self.warehouse_id:
                 self.warehouse_id = self._default_warehouse_id()
-            self.assigned_id = False
+            self.assigned_id = self._default_assigned_id()
             self.project_category_id = False
             self.project_name = False
+            self.expected_confirmation_date = False
             self.tag_ids = [(5, 0, 0)]
 
     @api.onchange("partner_id")
@@ -562,9 +559,10 @@ class CrmCommercialQuotation(models.Model):
         if not self.warehouse_id:
             self.warehouse_id = self._default_warehouse_id()
         # Reset assigned salesman to default instead of empty:
-        self.assigned_id = False
+        self.assigned_id = self._default_assigned_id()
         self.project_category_id = False
         self.project_name = False
+        self.expected_confirmation_date = False
         self.tag_ids = [(5, 0, 0)]
 
     partner_id = fields.Many2one("res.partner", string="Customer No", index=True)
@@ -1006,7 +1004,7 @@ class CrmCommercialQuotation(models.Model):
         "res.users",
         string="Assigned Salesman",
         domain="[('is_salesman', '=', True)]",
-        default=lambda self: self.env.user,
+        default=lambda self: self._default_assigned_id(),
         index=True,
     )
     project_category_id = fields.Many2one(
@@ -1092,8 +1090,28 @@ class CrmCommercialQuotation(models.Model):
     consultant_id = fields.Many2one(
         "crm.commercial.consultant",
         string="Consultant",
-        required=True
     )
+
+    @api.constrains("project_status_id", "project_detail_status_id", "consultant_id")
+    def _check_required_project_fields(self):
+        for rec in self:
+            if rec.state in ("cancelled", "closed"):
+                continue
+            missing_fields = []
+            if not rec.project_status_id:
+                missing_fields.append(_("Project Status"))
+            if not rec.project_detail_status_id:
+                missing_fields.append(_("Project Detail Status"))
+            if not rec.consultant_id:
+                missing_fields.append(_("Consultant"))
+
+            if missing_fields:
+                raise ValidationError(
+                    _(
+                        "The following fields are mandatory:\n- %s"
+                    )
+                    % "\n- ".join(missing_fields)
+                )
     tag_ids = fields.Many2many("crm.tag", string="Tags")
     ignore_for_reporting = fields.Boolean(
         string="Ignore this quotation for Reporting", default=False
@@ -1437,6 +1455,9 @@ class CrmCommercialQuotation(models.Model):
         combined_settings = (header or "") + (paragraph or "") + (footer or "")
 
         for vals in vals_list:
+            if vals.get("dsi_type") == "zero":
+                vals["dsi_percent"] = 0.0
+
             if vals.get("name", _("New")) == _("New"):
                 vals["name"] = self.env["ir.sequence"].next_by_code(
                     "crm.commercial.quotation"
@@ -1486,6 +1507,8 @@ class CrmCommercialQuotation(models.Model):
 
         records = super(CrmCommercialQuotation, self).create(vals_list)
         for rec in records:
+            rec._distribute_dsi()
+            rec._distribute_supplier_support()
             rec._log_audit(
                 "Quotation Created",
                 f"Created initial quotation record with status {rec.state}.",
@@ -1520,6 +1543,9 @@ class CrmCommercialQuotation(models.Model):
             rec.partner_id.write(partner_vals)
 
     def write(self, vals):
+        if vals.get("dsi_type") == "zero":
+            vals["dsi_percent"] = 0.0
+
         if "state" in vals:
             for rec in self:
                 rec._log_audit(
@@ -1532,6 +1558,15 @@ class CrmCommercialQuotation(models.Model):
                     raise UserError(_('Quotation %s needs approval. Use "Send for Approval".') % rec.name)
 
         res = super(CrmCommercialQuotation, self).write(vals)
+
+        if not self.env.context.get("skip_distribute_dsi"):
+            if any(k in vals for k in ("line_ids", "dsi_type", "dsi_percent")):
+                self.with_context(skip_distribute_dsi=True)._distribute_dsi()
+            if any(k in vals for k in ("line_ids", "supplier_support_recording")):
+                self._distribute_supplier_support()
+
+        if not self.env.context.get("approval_flow") and not self.env.context.get("skip_validation"):
+            self._check_required_project_fields()
 
         if not self.env.context.get("approval_flow") and not self.env.context.get("skip_auto_submit"):
             for rec in self:
@@ -1590,27 +1625,76 @@ class CrmCommercialQuotation(models.Model):
     @api.onchange("line_ids")
     def _onchange_line_ids_smc(self):
         self._onchange_salesman_commission_percent()
-    #20261029 Gokul
-    #(totsl_dsi/total_selling_price)*(qty*sale_price)
+
     @api.onchange("salesman_commission_percent")
     def _onchange_salesman_commission_percent(self):
         for rec in self:
             for line in rec.line_ids.filtered(lambda l: not l.display_type):
                 new_smc = round(
-                    line.qty
-                    * line.sale_price
-                    * rec.salesman_commission_percent
+                    (line.qty or 0.0)
+                    * (line.sale_price or 0.0)
+                    * (rec.salesman_commission_percent or 0.0)
                     / 100.0,
-                    2
+                    2,
                 )
-                if round(line.smc, 2) != new_smc:
+                if round(line.smc or 0.0, 2) != new_smc:
                     line.smc = new_smc
+
+    @api.onchange("line_ids")
+    def _onchange_line_ids_dsi(self):
+        self._distribute_dsi()
+
+    @api.onchange("dsi_type", "dsi_percent")
+    def _onchange_dsi_mode_and_percent(self):
+        for rec in self:
+            if rec.dsi_type == "zero":
+                rec.dsi_percent = 0.0
+            rec._distribute_dsi()
+
+    def _distribute_dsi(self):
+        for rec in self:
+            product_lines = rec.line_ids.filtered(lambda l: not l.display_type)
+            if not product_lines:
+                continue
+
+            total_selling = sum((l.qty or 0.0) * (l.sale_price or 0.0) for l in product_lines)
+
+            if rec.dsi_type == "zero":
+                rec.dsi_percent = 0.0
+                total_dsi = 0.0
+            elif rec.dsi_type == "original":
+                total_dsi = sum(
+                    ((l.product_id.dsi_amount or 0.0) if l.product_id else 0.0) * (l.qty or 0.0)
+                    for l in product_lines
+                )
+                rec.dsi_percent = (
+                    round((total_dsi / total_selling) * 100.0, 2)
+                    if total_selling
+                    else 0.0
+                )
+            else:
+                total_dsi = total_selling * ((rec.dsi_percent or 0.0) / 100.0)
+
+            if not total_selling or not total_dsi:
+                for line in product_lines:
+                    if line.dsi != 0.0:
+                        line.dsi = 0.0
+            else:
+                allocated = 0.0
+                for line in product_lines[:-1]:
+                    line_selling = (line.qty or 0.0) * (line.sale_price or 0.0)
+                    new_dsi = round((total_dsi / total_selling) * line_selling, 2)
+                    if round(line.dsi or 0.0, 2) != new_dsi:
+                        line.dsi = new_dsi
+                    allocated += new_dsi
+                last_dsi = round(total_dsi - allocated, 2)
+                if round(product_lines[-1].dsi or 0.0, 2) != last_dsi:
+                    product_lines[-1].dsi = last_dsi
 
     @api.onchange("line_ids")
     def _onchange_line_ids_support(self):
         self._distribute_supplier_support()
-    #20261029 Gokul
-    #(total_dsi/total_selling_prici)*(qty*sale_price)
+
     @api.onchange("supplier_support_recording")
     def _onchange_supplier_support_recording(self):
         self._distribute_supplier_support()
@@ -1620,7 +1704,7 @@ class CrmCommercialQuotation(models.Model):
             lines = rec.line_ids.filtered(lambda l: not l.display_type)
             if not lines:
                 continue
-            total_amount = sum(l.qty * l.sale_price for l in lines)
+            total_amount = sum((l.qty or 0.0) * (l.sale_price or 0.0) for l in lines)
             if not total_amount:
                 for l in lines:
                     if l.special_support:
@@ -1628,38 +1712,16 @@ class CrmCommercialQuotation(models.Model):
                 continue
             allocated = 0.0
             for l in lines[:-1]:
+                line_amount = (l.qty or 0.0) * (l.sale_price or 0.0)
                 value = round(
-                    rec.supplier_support_recording * (l.qty * l.sale_price) / total_amount, 2
+                    (rec.supplier_support_recording or 0.0) * line_amount / total_amount, 2
                 )
-                if round(l.special_support, 2) != value:
+                if round(l.special_support or 0.0, 2) != value:
                     l.special_support = value
                 allocated += value
-            last_val = round(rec.supplier_support_recording - allocated, 2)
-            if round(lines[-1].special_support, 2) != last_val:
+            last_val = round((rec.supplier_support_recording or 0.0) - allocated, 2)
+            if round(lines[-1].special_support or 0.0, 2) != last_val:
                 lines[-1].special_support = last_val
-    # #20261029 Gokul
-    # #(supplier_support_recording / total_selling_price) * (qty * sale_price)
-    # @api.onchange("supplier_support_recording")
-    # def _onchange_supplier_support_recording(self):
-    #     self._distribute_supplier_support()
-    #
-    # def _distribute_supplier_support(self):
-    #     for rec in self:
-    #         lines = rec.line_ids.filtered(lambda l: not l.display_type)
-    #         total_amount = sum(
-    #             line.sale_price * line.qty
-    #             for line in lines
-    #         )
-    #         if not total_amount:
-    #             lines.update({"special_support": 0.0})
-    #             continue
-    #         for line in lines:
-    #             line_amount = line.sale_price * line.qty
-    #             line.special_support = (
-    #                     rec.supplier_support_recording
-    #                     * line_amount
-    #                     / total_amount
-    #             )
 
     @api.depends(
         "line_ids",
@@ -1668,8 +1730,9 @@ class CrmCommercialQuotation(models.Model):
         "line_ids.sale_price",
         "line_ids.unit_cost",
         "line_ids.vat_amount",
-        "line_ids.dsi",
         "line_ids.display_type",
+        "line_ids.product_id",
+        "line_ids.product_id.dsi_amount",
         "supplier_support_recording",
         "dsi_type",
         "dsi_percent",
@@ -1679,12 +1742,20 @@ class CrmCommercialQuotation(models.Model):
     def _compute_costing_summary(self):
         for rec in self:
             product_lines = rec.line_ids.filtered(lambda l: not l.display_type)
-            a = sum(line.qty * line.sale_price for line in product_lines)
-            b = sum(line.qty * line.unit_cost for line in product_lines)
-            s = rec.supplier_support_recording
-            c = sum(line.dsi for line in product_lines)
-            d = a * (rec.salesman_commission_percent / 100.0)  # old logic
-            e = a * (rec.promotion_percent / 100.0)
+            a = sum((line.qty or 0.0) * (line.sale_price or 0.0) for line in product_lines)
+            b = sum((line.qty or 0.0) * (line.unit_cost or 0.0) for line in product_lines)
+            s = rec.supplier_support_recording or 0.0
+            if rec.dsi_type == "zero":
+                c = 0.0
+            elif rec.dsi_type == "original":
+                c = sum(
+                    ((line.product_id.dsi_amount or 0.0) if line.product_id else 0.0) * (line.qty or 0.0)
+                    for line in product_lines
+                )
+            else:
+                c = a * ((rec.dsi_percent or 0.0) / 100.0)
+            d = a * ((rec.salesman_commission_percent or 0.0) / 100.0)  # old logic
+            e = a * ((rec.promotion_percent or 0.0) / 100.0)
             #20261030 As Per Mr.Raju sir instruction S - special price support (special price support - net price)
             x = a + e - c - d - s
             gm = x - (b - s)
@@ -1694,8 +1765,8 @@ class CrmCommercialQuotation(models.Model):
             tot = 0.0
             for line in product_lines:
                 if line.amount or line.vat_amount:
-                    vat += line.vat_amount
-                    tot += line.amount
+                    vat += line.vat_amount or 0.0
+                    tot += line.amount or 0.0
                 else:
                     disc = (line.discount_percent or 0.0) / 100.0
                     vat_pct = (line.vat_percent or 15.0) / 100.0
@@ -1772,8 +1843,14 @@ class CrmCommercialQuotation(models.Model):
 
     def action_recalculate(self):
         for rec in self:
+            if rec.dsi_type == "zero":
+                rec.dsi_percent = 0.0
             for line in rec.line_ids:
                 line._compute_pricing()
+                line._compute_smc()
+            rec._distribute_supplier_support()
+            rec._onchange_salesman_commission_percent()
+            rec._distribute_dsi()
             rec._compute_costing_summary()
             if (
                 rec.state == "draft"
@@ -2005,27 +2082,6 @@ class CrmCommercialQuotation(models.Model):
             "view_mode": "form",
             "target": "current",
         }
-
-    @api.constrains("project_status_id", "project_detail_status_id", "consultant_id")
-    def _check_required_project_fields(self):
-        for rec in self:
-            if rec.state in ("cancelled", "closed"):
-                continue
-            missing_fields = []
-            if not rec.project_status_id:
-                missing_fields.append(_("Project Status"))
-            if not rec.project_detail_status_id:
-                missing_fields.append(_("Project Detail Status"))
-            if not rec.consultant_id:
-                missing_fields.append(_("Consultant"))
-
-            if missing_fields:
-                raise ValidationError(
-                    _(
-                        "The following fields are mandatory:\n- %s"
-                    )
-                    % "\n- ".join(missing_fields)
-                )
 
     def action_confirm(self):
         last_so = False
@@ -2368,25 +2424,19 @@ class CrmCommercialQuotationLine(models.Model):
     discount_percent = fields.Float(string="Discount %", default=0.0)
     special_support = fields.Float(string="Spl Spt", default=0.0)
 
-    # dsi = fields.Float(string="DSI", related="quotation_id.dsi_percent", readonly=True)
-    dsi = fields.Float(string="DSI", compute="_compute_dsi", store=True)
-
-    @api.depends(
-        "qty",
-        "sale_price",
-        "display_type",
-        "quotation_id.dsi_percent",
-        "quotation_id.dsi_type",
+    dsi_amount = fields.Float(
+        string="DSI Amount",
+        related="product_id.dsi_amount",
+        readonly=True,
     )
-    def _compute_dsi(self):
+    # dsi = fields.Float(string="DSI", related="quotation_id.dsi_percent", readonly=True)
+    dsi = fields.Float(string="DSI", default=0.0)
+
+    @api.onchange("qty", "product_id", "sale_price", "unit_cost")
+    def _onchange_dsi_line_values(self):
         for line in self:
-            quotation = line.quotation_id
-            if line.display_type or not quotation or quotation.dsi_type == "zero":
-                line.dsi = 0.0
-            else:
-                line.dsi = (
-                        line.qty * line.sale_price * quotation.dsi_percent / 100.0
-                )
+            if line.quotation_id:
+                line.quotation_id._distribute_dsi()
 
     # smc = fields.Float(
     #     string="SMC", related="quotation_id.salesman_commission_percent", readonly=True
@@ -2405,11 +2455,12 @@ class CrmCommercialQuotationLine(models.Model):
             if line.display_type or not quotation:
                 line.smc = 0.0
             else:
-                line.smc = (
-                        line.qty
-                        * line.sale_price
-                        * quotation.salesman_commission_percent
-                        / 100.0
+                line.smc = round(
+                    (line.qty or 0.0)
+                    * (line.sale_price or 0.0)
+                    * (quotation.salesman_commission_percent or 0.0)
+                    / 100.0,
+                    2,
                 )
 
     vat_percent = fields.Float(string="VAT %", default=15.0)
@@ -2485,6 +2536,7 @@ class CrmCommercialQuotationLine(models.Model):
         self.name = self.product_id.name
         self.unit_cost = self.product_id.standard_price
         self.sale_price = self.product_id.lst_price
+        self._onchange_dsi_line_values()
 
         prod_cat = (
                 getattr(self.product_id, "product_group_id", False)
@@ -2854,6 +2906,22 @@ class CrmCommercialQuotationLine(models.Model):
         if not self.env.context.get("skip_linked_product_addition"):
             records._add_linked_product_line()
         return records
+
+    def write(self, vals):
+        res = super(CrmCommercialQuotationLine, self).write(vals)
+        if not self.env.context.get("skip_distribute_dsi"):
+            if any(k in vals for k in ("qty", "sale_price", "product_id", "display_type")):
+                for quotation in self.mapped("quotation_id"):
+                    quotation.with_context(skip_distribute_dsi=True)._distribute_dsi()
+        return res
+
+    def unlink(self):
+        quotations = self.mapped("quotation_id")
+        res = super(CrmCommercialQuotationLine, self).unlink()
+        if not self.env.context.get("skip_distribute_dsi"):
+            for quotation in quotations:
+                quotation.with_context(skip_distribute_dsi=True)._distribute_dsi()
+        return res
 
 
 class CrmCommercialQuotationAudit(models.Model):
