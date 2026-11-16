@@ -20,6 +20,10 @@ class CrmCommercialLead(models.Model):
         except Exception:
             pass
 
+    def action_print_leads_xlsx(self):
+        """Return the Excel report action for these leads (all rows, with headings)."""
+        return self.env.ref('crm_commercial.action_report_lead_list_xlsx').report_action(self)
+
     lead_no = fields.Char(
         string="Lead No",
         required=True,
