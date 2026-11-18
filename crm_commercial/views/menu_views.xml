@@ -79,12 +79,6 @@
                   action="action_crm_commercial_linked_product"
                   sequence="80"/>
 
-        <menuitem id="menu_crm_commercial_import_non_stock"
-                  name="Import Non-Stock"
-                  parent="menu_crm_commercial_config"
-                  action="action_crm_commercial_import_non_stock_wizard"
-                  sequence="75"/>
-
         <menuitem id="menu_crm_commercial_item_approval"
                   name="Item Approvals"
                   parent="menu_crm_commercial_config"
@@ -147,4 +141,10 @@
                   parent="menu_crm_commercial_reports"
                   action="action_crm_commercial_balance_report"
                   sequence="20"/>
+
+         <menuitem id="menu_crm_commercial_import_non_stock"
+                  name="Import Non-Stock"
+                  parent="menu_crm_commercial_config"
+                  action="action_crm_commercial_import_non_stock_wizard"
+                  sequence="75"/>
 </odoo>
