@@ -79,6 +79,12 @@
                   action="action_crm_commercial_linked_product"
                   sequence="80"/>
 
+        <menuitem id="menu_crm_commercial_import_non_stock"
+                  name="Import Non-Stock"
+                  parent="menu_crm_commercial_config"
+                  action="action_crm_commercial_import_non_stock_wizard"
+                  sequence="75"/>
+
         <menuitem id="menu_crm_commercial_item_approval"
                   name="Item Approvals"
                   parent="menu_crm_commercial_config"
@@ -105,6 +111,12 @@
                   action="action_crm_commercial_lead"
                   sequence="10"/>
 
+        <menuitem id="menu_project_leads_report_trans"
+                  name="Project Lead Report"
+                  parent="menu_crm_commercial_transactions"
+                  action="action_project_leads_wizard"
+                  sequence="15"/>
+
         <menuitem id="menu_crm_commercial_quotation"
                   name="Quotations"
                   parent="menu_crm_commercial_transactions"
@@ -118,6 +130,12 @@
                   sequence="30"/>
 
         <!-- Reports Submenu -->
+        <menuitem id="menu_project_leads_report"
+                  name="Project Lead Report"
+                  parent="menu_crm_commercial_reports"
+                  action="action_project_leads_wizard"
+                  sequence="5"/>
+
         <menuitem id="menu_crm_commercial_sales_analysis"
                   name="Sales Order Analysis"
                   parent="menu_crm_commercial_reports"

@@ -36,6 +36,8 @@ class ProductTemplate(models.Model):
         ('rejected', 'Rejected')
     ], string='Item Approval Status', default='approved', index=True)
     dsi_amount = fields.Float('DSI Amount')
+    capacity = fields.Char(string='Capacity')
+    accessories = fields.Char(string='Accessories')
 
     def write(self, vals):
         if self.env.context.get('skip_sync_dsi'):
@@ -71,6 +73,18 @@ class ProductProduct(models.Model):
     dsi_amount = fields.Float(
         string='DSI Amount',
         related='product_tmpl_id.dsi_amount',
+        store=True,
+        readonly=False,
+    )
+    capacity = fields.Char(
+        string='Capacity',
+        related='product_tmpl_id.capacity',
+        store=True,
+        readonly=False,
+    )
+    accessories = fields.Char(
+        string='Accessories',
+        related='product_tmpl_id.accessories',
         store=True,
         readonly=False,
     )

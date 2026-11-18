@@ -1,28 +1,131 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-        <record id="view_crm_commercial_item_approval_tree" model="ir.ui.view">
-            <field name="name">crm.commercial.item.approval.tree</field>
-            <field name="model">product.product</field>
-            <field name="arch" type="xml">
-                <tree string="Non-Stock Item Approvals" create="false" delete="false">
-                    <field name="default_code"/>
-                    <field name="name"/>
-                    <field name="categ_id"/>
-                    <field name="standard_price" string="Cost"/>
-                    <field name="lst_price" string="Sales Price"/>
-                    <field name="non_stock_item"/>
-                    <field name="approval_state" widget="badge" decoration-warning="approval_state == 'draft'" decoration-success="approval_state == 'approved'" decoration-danger="approval_state == 'rejected'"/>
-                    <button name="action_approve_item" string="Approve" type="object" icon="fa-check" class="btn-success" invisible="approval_state != 'draft'"/>
-                    <button name="action_reject_item" string="Reject" type="object" icon="fa-times" class="btn-danger" invisible="approval_state != 'draft'"/>
-                </tree>
-            </field>
-        </record>
+    <!-- Tree View -->
+    <record id="view_crm_commercial_item_approval_tree" model="ir.ui.view">
+        <field name="name">crm.commercial.item.approval.tree</field>
+        <field name="model">crm.commercial.item.approval</field>
+        <field name="arch" type="xml">
+            <tree string="Non-Stock Item Approvals" decoration-warning="state == 'draft'" decoration-success="state == 'approved'" decoration-danger="state == 'rejected'">
+                <field name="part_no"/>
+                <field name="name"/>
+                <field name="main_grp_id" string="Main Group"/>
+                <field name="product_category_id" string="Product Category"/>
+                <field name="product_group_id" string="Product Group"/>
+                <field name="capacity"/>
+                <field name="sale_price" string="Selling Price"/>
+                <field name="cost_price" string="Cost Price"/>
+                <field name="uom_id" string="Unit of Measure"/>
+                <field name="accessories"/>
+                <field name="state" widget="badge" decoration-warning="state == 'draft'" decoration-success="state == 'approved'" decoration-danger="state == 'rejected'"/>
+                <field name="product_id" optional="hide"/>
+                <button name="action_approve" string="Approve" type="object" icon="fa-check" class="btn-success" invisible="state != 'draft'"/>
+                <button name="action_reject" string="Reject" type="object" icon="fa-times" class="btn-danger" invisible="state != 'draft'"/>
+            </tree>
+        </field>
+    </record>
 
-        <record id="action_crm_commercial_item_approval" model="ir.actions.act_window">
-            <field name="name">Non-Stock Item Approvals</field>
-            <field name="res_model">product.product</field>
-            <field name="view_mode">tree,form</field>
-            <field name="domain">[('non_stock_item', '=', True)]</field>
-            <field name="view_id" ref="view_crm_commercial_item_approval_tree"/>
-        </record>
+    <!-- Form View -->
+    <record id="view_crm_commercial_item_approval_form" model="ir.ui.view">
+        <field name="name">crm.commercial.item.approval.form</field>
+        <field name="model">crm.commercial.item.approval</field>
+        <field name="arch" type="xml">
+            <form string="Non-Stock Item Approval">
+                <header>
+                    <button name="action_approve" string="Approve &amp; Insert into Catalog" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_reject" string="Reject" type="object" class="btn-secondary" invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,approved,rejected"/>
+                </header>
+                <sheet>
+                    <field name="product_id" invisible="1"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_product" type="object" class="oe_stat_button" icon="fa-cubes" invisible="state != 'approved'">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">View Product</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only" string="Item Name"/>
+                        <h1><field name="name" placeholder="e.g. Sample ACWTSplit Product"/></h1>
+                        <label for="part_no" class="oe_edit_only" string="Part No"/>
+                        <h3><field name="part_no" placeholder="e.g. PART-001"/></h3>
+                    </div>
+                    <group>
+                        <group string="Categorization &amp; Specifications">
+                            <field name="main_grp_id"/>
+                            <field name="product_category_id"/>
+                            <field name="product_group_id"/>
+                            <field name="capacity"/>
+                            <field name="uom_id"/>
+                            <field name="accessories"/>
+                        </group>
+                        <group string="Costing &amp; Pricing">
+                            <field name="sale_price"/>
+                            <field name="cost_price"/>
+                            <field name="product_id" readonly="1" invisible="state != 'approved'"/>
+                            <field name="approved_by_id" invisible="not approved_by_id"/>
+                            <field name="approved_date" invisible="not approved_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Long Description">
+                            <field name="long_description" placeholder="Detailed product description..."/>
+                        </page>
+                        <page string="Audit &amp; Raw Data">
+                            <group>
+                                <field name="category_name" readonly="1"/>
+                                <field name="main_group_name" readonly="1"/>
+                                <field name="unit_name" readonly="1"/>
+                                <field name="category_id" readonly="1"/>
+                                <field name="rejection_reason" invisible="not rejection_reason"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_crm_commercial_item_approval_search" model="ir.ui.view">
+        <field name="name">crm.commercial.item.approval.search</field>
+        <field name="model">crm.commercial.item.approval</field>
+        <field name="arch" type="xml">
+            <search string="Search Non-Stock Items">
+                <field name="part_no"/>
+                <field name="name"/>
+                <field name="product_category_id"/>
+                <field name="product_group_id"/>
+                <field name="main_grp_id"/>
+                <separator/>
+                <filter string="Pending Approval" name="filter_pending" domain="[('state', '=', 'draft')]"/>
+                <filter string="Approved" name="filter_approved" domain="[('state', '=', 'approved')]"/>
+                <filter string="Rejected" name="filter_rejected" domain="[('state', '=', 'rejected')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Product Category" name="group_by_category" context="{'group_by': 'product_category_id'}"/>
+                    <filter string="Product Group" name="group_by_group" context="{'group_by': 'product_group_id'}"/>
+                    <filter string="Main Group" name="group_by_main_grp" context="{'group_by': 'main_grp_id'}"/>
+                    <filter string="Status" name="group_by_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Window Action -->
+    <record id="action_crm_commercial_item_approval" model="ir.actions.act_window">
+        <field name="name">Item Approvals</field>
+        <field name="res_model">crm.commercial.item.approval</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_crm_commercial_item_approval_search"/>
+        <field name="context">{'search_default_filter_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No non-stock items pending approval!
+            </p>
+            <p>
+                Import non-stock items via the <b>Import Non-Stock</b> wizard in Configuration.
+                Uploaded items will appear here for review and one-click approval into the product catalog.
+            </p>
+        </field>
+    </record>
 </odoo>

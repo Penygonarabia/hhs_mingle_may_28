@@ -11,4 +11,6 @@ from . import crm_commercial_sale_order
 from . import cron_jobs
 from . import stock_delivery_costing
 from . import schedule
+from . import item_approval
+
 
