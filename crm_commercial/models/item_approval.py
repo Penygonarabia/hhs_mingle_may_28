@@ -80,45 +80,103 @@ class CrmCommercialItemApproval(models.Model):
                 })
 
         # 2. Ensure Import Non-Stock wizard action exists
-        wiz_act = self.env['ir.actions.act_window'].sudo().search([
-            ('res_model', '=', 'crm.commercial.import.non.stock.wizard')
-        ], limit=1)
+        wiz_act = self.env.ref('crm_commercial.action_crm_commercial_import_non_stock_wizard', raise_if_not_found=False)
         if not wiz_act:
-            wiz_act_ref = self.env.ref('crm_commercial.action_crm_commercial_import_non_stock_wizard', raise_if_not_found=False)
-            if wiz_act_ref:
-                wiz_act = wiz_act_ref
-            else:
-                wiz_act = self.env['ir.actions.act_window'].sudo().create({
-                    'name': 'Import Non-Stock Items',
-                    'res_model': 'crm.commercial.import.non.stock.wizard',
-                    'view_mode': 'form',
-                    'target': 'new',
-                })
+            wiz_act = self.env['ir.actions.act_window'].sudo().search([
+                ('res_model', '=', 'crm.commercial.import.non.stock.wizard')
+            ], limit=1)
+        if not wiz_act:
+            form_view = self.env.ref('crm_commercial.view_crm_commercial_import_non_stock_wizard_form', raise_if_not_found=False)
+            wiz_act = self.env['ir.actions.act_window'].sudo().create({
+                'name': 'Import Non-Stock Items',
+                'res_model': 'crm.commercial.import.non.stock.wizard',
+                'view_mode': 'form',
+                'view_id': form_view.id if form_view else False,
+                'target': 'new',
+            })
 
         # 3. Ensure menu items exist
         config_menu = self.env.ref('crm_commercial.menu_crm_commercial_config', raise_if_not_found=False)
         if not config_menu:
-            config_menu = self.env['ir.ui.menu'].sudo().search([
-                ('name', '=', 'Configuration'),
-                ('parent_id.name', '=', 'CRM Commercial')
-            ], limit=1)
+            root_menu = self.env.ref('crm_commercial.menu_crm_commercial_root', raise_if_not_found=False)
+            if root_menu:
+                config_menu = self.env['ir.ui.menu'].sudo().search([
+                    ('parent_id', '=', root_menu.id),
+                    ('name', '=', 'Configuration')
+                ], limit=1)
 
         if config_menu and wiz_act:
-            import_menu = self.env['ir.ui.menu'].sudo().search([
-                ('parent_id', '=', config_menu.id),
-                ('name', '=', 'Import Non-Stock')
-            ], limit=1)
+            action_ref = f'ir.actions.act_window,{wiz_act.id}'
+            import_menu = self.env.ref('crm_commercial.menu_crm_commercial_import_non_stock', raise_if_not_found=False)
             if not import_menu:
-                self.env['ir.ui.menu'].sudo().create({
+                import_menu = self.env['ir.ui.menu'].sudo().search([
+                    ('parent_id', '=', config_menu.id),
+                    ('name', '=', 'Import Non-Stock')
+                ], limit=1)
+
+            if not import_menu:
+                import_menu = self.env['ir.ui.menu'].sudo().create({
                     'name': 'Import Non-Stock',
                     'parent_id': config_menu.id,
-                    'action': f'ir.actions.act_window,{wiz_act.id}',
+                    'action': action_ref,
+                    'sequence': 75,
+                    'active': True,
+                })
+            else:
+                import_menu.sudo().write({
+                    'action': action_ref,
+                    'active': True,
                     'sequence': 75,
                 })
+
+            imd = self.env['ir.model.data'].sudo().search([
+                ('module', '=', 'crm_commercial'),
+                ('name', '=', 'menu_crm_commercial_import_non_stock')
+            ], limit=1)
+            if not imd:
+                self.env['ir.model.data'].sudo().create({
+                    'module': 'crm_commercial',
+                    'name': 'menu_crm_commercial_import_non_stock',
+                    'model': 'ir.ui.menu',
+                    'res_id': import_menu.id,
+                    'noupdate': True,
+                })
+            elif imd.res_id != import_menu.id:
+                imd.write({'res_id': import_menu.id})
+
+        # 4. Ensure model access rights exist in DB for wizards and staging models
+        try:
+            Access = self.env['ir.model.access'].sudo()
+            group_user = self.env.ref('base.group_user', raise_if_not_found=False)
+            group_comm_user = self.env.ref('crm_commercial.group_crm_commercial_user', raise_if_not_found=False)
+            group_comm_mgr = self.env.ref('crm_commercial.group_crm_commercial_manager', raise_if_not_found=False)
+
+            target_models = ['crm.commercial.import.non.stock.wizard', 'crm.commercial.item.approval']
+            for m_name in target_models:
+                m_rec = self.env['ir.model'].sudo().search([('model', '=', m_name)], limit=1)
+                if not m_rec:
+                    continue
+                for g in [group_user, group_comm_user, group_comm_mgr]:
+                    if not g:
+                        continue
+                    existing = Access.search([('model_id', '=', m_rec.id), ('group_id', '=', g.id)], limit=1)
+                    if not existing:
+                        Access.create({
+                            'name': f'{m_name} access for {g.name}',
+                            'model_id': m_rec.id,
+                            'group_id': g.id,
+                            'perm_read': True,
+                            'perm_write': True,
+                            'perm_create': True,
+                            'perm_unlink': True,
+                        })
+        except Exception:
+            pass
 
         try:
             self.env.cr.commit()
             self.env.registry.clear_cache()
+            self.env['ir.ui.menu'].clear_caches()
         except Exception:
             pass
 
