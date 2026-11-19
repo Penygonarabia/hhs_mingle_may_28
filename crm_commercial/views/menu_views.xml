@@ -142,14 +142,14 @@
                   action="action_crm_commercial_balance_report"
                   sequence="20"/>
 
-<!--         <menuitem id="menu_crm_commercial_import_non_stock"-->
-<!--                  name="Import Non-Stock"-->
-<!--                  parent="menu_crm_commercial_config"-->
-<!--                  action="action_crm_commercial_import_non_stock_wizard"-->
-<!--                  sequence="75"/>-->
-        <menuitem id="menu_crm_commercial_item_approval"
+       <menuitem id="menu_crm_commercial_import_non_stock"
+                 name="Import Non-Stock"
+                 parent="menu_crm_commercial_config"
+                 action="action_crm_commercial_import_non_stock_wizard"
+                 sequence="75"/>
+        <!-- <menuitem id="menu_crm_commercial_item_approval"
                   name="Item Approvals Non-Stock"
                   parent="menu_crm_commercial_config"
                   action="action_crm_commercial_import_non_stock_wizard"
-                  sequence="85"/>
+                  sequence="85"/> -->
 </odoo>
