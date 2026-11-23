@@ -70,6 +70,7 @@ class CrmCommercialQuotation(models.Model):
             )
 
         # 20261121 Gokul Region
+
     @api.model
     def _search(self, domain, offset=0, limit=None, order=None):
         user = self.env.user
@@ -728,7 +729,7 @@ class CrmCommercialQuotation(models.Model):
             )
             vat = sum(
                 ((l.qty or 0.0) * (l.sale_price or 0.0) * (1.0 - (l.discount_percent or 0.0) / 100.0)) * (
-                            (l.vat_percent or 15.0) / 100.0)
+                        (l.vat_percent or 15.0) / 100.0)
                 for l in product_lines
             )
             company = self._get_approval_company()
@@ -2185,7 +2186,7 @@ class CrmCommercialQuotation(models.Model):
                     "street2": rec.street2,
                     "city_id": rec.city_id.id if rec.city_id else False,
                     "city": rec.city,
-                    "district": rec.district,
+                    "district": rec.district.id if rec.district else False,
                     "region_id": (
                         rec.region_id.id
                         if (rec.region_id and getattr(rec.region_id, '_name', '') == 'res.region')
@@ -2195,7 +2196,8 @@ class CrmCommercialQuotation(models.Model):
                                 rec.city_id.region_id, '_name', '') == 'res.region')
                             else False
                         )
-                    ),                    "state_id": rec.state_id.id if rec.state_id else False,
+                    ),
+                    "state_id": rec.state_id.id if rec.state_id else False,
                     "country_id": rec.country_id.id if rec.country_id else False,
                     "zip": rec.zip,
                     # Header & commercial details
