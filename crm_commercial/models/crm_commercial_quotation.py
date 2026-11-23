@@ -8,7 +8,6 @@ from odoo.exceptions import UserError, ValidationError
 APPROVAL_SUMMARY = 'Quotation approval required'
 
 
-
 class CrmCommercialQuotation(models.Model):
     _name = "crm.commercial.quotation"
     _description = "CRM Commercial Quotation"
@@ -69,6 +68,32 @@ class CrmCommercialQuotation(models.Model):
             rec.is_terms_readonly = (
                     is_existing and not (allow_edit or allow_edit_terms)
             )
+
+        # 20261121 Gokul Region
+    @api.model
+    def _search(self, domain, offset=0, limit=None, order=None):
+        user = self.env.user
+        if (
+                user.crm_commercial_region_id
+                and not self.env.su
+                and not self.env.context.get("ignore_region_filter")
+        ):
+            domain = [("region_id", "=", user.crm_commercial_region_id.id)] + list(domain)
+        return super()._search(domain, offset=offset, limit=limit, order=order)
+
+    # 20261121 Gokul Region
+    @api.model
+    def _read_group(self, domain, groupby=(), aggregates=(), having=(), offset=0, limit=None, order=None):
+        user = self.env.user
+        if (
+                user.crm_commercial_region_id
+                and not self.env.su
+                and not self.env.context.get("ignore_region_filter")
+        ):
+            domain = [("region_id", "=", user.crm_commercial_region_id.id)] + list(domain)
+        return super()._read_group(
+            domain, groupby=groupby, aggregates=aggregates, having=having, offset=offset, limit=limit, order=order
+        )
 
     @api.depends("state", "name")
     @api.depends_context("uid")
@@ -154,6 +179,7 @@ class CrmCommercialQuotation(models.Model):
             if default_salesman:
                 res["assigned_id"] = default_salesman
         return res
+
     capacity = fields.Char(string="Capacity")
     allow_cost_rights = fields.Boolean(
         string="Allow Cost Rights",
@@ -315,7 +341,6 @@ class CrmCommercialQuotation(models.Model):
         region_id = vals.get("region_id") or (
             self.region_id.id if getattr(self, "region_id", False) else False
         )
-
 
         partner_vals = {
             "name": to_name,
@@ -602,9 +627,15 @@ class CrmCommercialQuotation(models.Model):
         domain="[('city_id', '=', city_id)]",
         required=True,
     )
-    region_id = fields.Many2one("res.region", string="Region", required=True)
-    country_id = fields.Many2one(
-        "res.country", string="Country", default=_default_country_id
+    # region_id = fields.Many2one("res.region", string="Region", required=True)
+    # country_id = fields.Many2one(
+    #     "res.country", string="Country", default=_default_country_id
+    # )
+    region_id = fields.Many2one(
+        "res.region",
+        string="Region",
+        required=True,
+        default=lambda self: self.env.user.crm_commercial_region_id.id or False,
     )
     zip = fields.Char(string="Zip Code")
 
@@ -645,7 +676,7 @@ class CrmCommercialQuotation(models.Model):
         tracking=True,
         index=True,
     )
-    #Approval Flow 20261102 GOkul
+    # Approval Flow 20261102 GOkul
     company_id = fields.Many2one(
         "res.company",
         string="Company",
@@ -696,7 +727,8 @@ class CrmCommercialQuotation(models.Model):
                 for l in product_lines
             )
             vat = sum(
-                ((l.qty or 0.0) * (l.sale_price or 0.0) * (1.0 - (l.discount_percent or 0.0) / 100.0)) * ((l.vat_percent or 15.0) / 100.0)
+                ((l.qty or 0.0) * (l.sale_price or 0.0) * (1.0 - (l.discount_percent or 0.0) / 100.0)) * (
+                            (l.vat_percent or 15.0) / 100.0)
                 for l in product_lines
             )
             company = self._get_approval_company()
@@ -726,7 +758,8 @@ class CrmCommercialQuotation(models.Model):
         if not approvals:
             all_configs = ModelApproval.search([])
             for conf in all_configs:
-                if conf.model_id and (conf.model_id.model == 'crm.commercial.quotation' or conf.model_id.name == 'CRM Commercial Quotation'):
+                if conf.model_id and (
+                        conf.model_id.model == 'crm.commercial.quotation' or conf.model_id.name == 'CRM Commercial Quotation'):
                     approvals |= conf.approval_ids
         return approvals
 
@@ -743,7 +776,8 @@ class CrmCommercialQuotation(models.Model):
         for rec in self:
             rec.suggested_ids = approvals if rec.is_approval else False
 
-    @api.depends('total_amount', 'total_vat', 'company_id', 'warehouse_id', 'line_ids.sale_price', 'line_ids.qty', 'line_ids.discount_percent', 'line_ids.vat_percent')
+    @api.depends('total_amount', 'total_vat', 'company_id', 'warehouse_id', 'line_ids.sale_price', 'line_ids.qty',
+                 'line_ids.discount_percent', 'line_ids.vat_percent')
     def _compute_quotation_approval_id(self):
         for rec in self:
             company = rec._get_approval_company()
@@ -767,7 +801,9 @@ class CrmCommercialQuotation(models.Model):
         matching_levels = approvals.filtered(lambda a: a.minimum_amount <= amount)
         return bool(matching_levels)
 
-    @api.depends('quotation_approval_id', 'is_approval', 'assigned_id.quotation_auto_approval', 'total_amount', 'total_vat', 'line_ids.sale_price', 'line_ids.qty', 'line_ids.discount_percent', 'line_ids.vat_percent')
+    @api.depends('quotation_approval_id', 'is_approval', 'assigned_id.quotation_auto_approval', 'total_amount',
+                 'total_vat', 'line_ids.sale_price', 'line_ids.qty', 'line_ids.discount_percent',
+                 'line_ids.vat_percent')
     def _compute_approval_required(self):
         for rec in self:
             rec.approval_required = rec._is_quotation_approval_required()
@@ -962,7 +998,8 @@ class CrmCommercialQuotation(models.Model):
                 allowed = True
 
             if not allowed:
-                raise UserError(_('You are not the designated approver for the current step (Level %s).') % current_level)
+                raise UserError(
+                    _('You are not the designated approver for the current step (Level %s).') % current_level)
 
             active_line.write({
                 'state': True,
@@ -997,8 +1034,6 @@ class CrmCommercialQuotation(models.Model):
                 'state': 'draft', 'user_ids': [(5, 0, 0)], 'group_ids': [(5, 0, 0)],
                 'current_waiting_approval_line_id': False, 'next_approval_level': False})
         return True
-
-
 
     assigned_id = fields.Many2one(
         "res.users",
@@ -1112,6 +1147,7 @@ class CrmCommercialQuotation(models.Model):
                     )
                     % "\n- ".join(missing_fields)
                 )
+
     tag_ids = fields.Many2many("crm.tag", string="Tags")
     ignore_for_reporting = fields.Boolean(
         string="Ignore this quotation for Reporting", default=False
@@ -1516,11 +1552,11 @@ class CrmCommercialQuotation(models.Model):
             if rec.assigned_id and rec.assigned_id.quotation_auto_approval:
                 rec.state = "approved"
             elif (
-                rec.state == "draft"
-                and rec._is_quotation_approval_required()
-                and rec.line_ids.filtered(lambda l: not l.display_type)
-                and not self.env.context.get("skip_auto_submit")
-                and not self.env.context.get("approval_flow")
+                    rec.state == "draft"
+                    and rec._is_quotation_approval_required()
+                    and rec.line_ids.filtered(lambda l: not l.display_type)
+                    and not self.env.context.get("skip_auto_submit")
+                    and not self.env.context.get("approval_flow")
             ):
                 rec.with_context(approval_flow=True).action_submit_for_approval()
         return records
@@ -1577,8 +1613,8 @@ class CrmCommercialQuotation(models.Model):
             for rec in self:
                 if rec.state == "draft":
                     if (
-                        rec._is_quotation_approval_required()
-                        and rec.line_ids.filtered(lambda l: not l.display_type)
+                            rec._is_quotation_approval_required()
+                            and rec.line_ids.filtered(lambda l: not l.display_type)
                     ):
                         if rec.assigned_id and rec.assigned_id.quotation_auto_approval:
                             rec.state = "approved"
@@ -1586,8 +1622,6 @@ class CrmCommercialQuotation(models.Model):
                             rec.with_context(approval_flow=True).action_submit_for_approval()
 
         return res
-
-
 
     def _log_audit(self, title, notes):
         for rec in self:
@@ -1757,7 +1791,7 @@ class CrmCommercialQuotation(models.Model):
                 c = a * ((rec.dsi_percent or 0.0) / 100.0)
             d = a * ((rec.salesman_commission_percent or 0.0) / 100.0)  # old logic
             e = a * ((rec.promotion_percent or 0.0) / 100.0)
-            #20261030 As Per Mr.Raju sir instruction S - special price support (special price support - net price)
+            # 20261030 As Per Mr.Raju sir instruction S - special price support (special price support - net price)
             x = a + e - c - d - s
             gm = x - (b - s)
             gm_pct = (gm / x * 100.0) if x else 0.0
@@ -1854,11 +1888,11 @@ class CrmCommercialQuotation(models.Model):
             rec._distribute_dsi()
             rec._compute_costing_summary()
             if (
-                rec.state == "draft"
-                and rec._is_quotation_approval_required()
-                and rec.line_ids.filtered(lambda l: not l.display_type)
-                and not self.env.context.get("skip_auto_submit")
-                and not self.env.context.get("approval_flow")
+                    rec.state == "draft"
+                    and rec._is_quotation_approval_required()
+                    and rec.line_ids.filtered(lambda l: not l.display_type)
+                    and not self.env.context.get("skip_auto_submit")
+                    and not self.env.context.get("approval_flow")
             ):
                 rec.with_context(approval_flow=True).action_submit_for_approval()
 
@@ -2590,16 +2624,16 @@ class CrmCommercialQuotationLine(models.Model):
                             cat.payment_terms_content
                             and not self.quotation_id.payment_terms_tab and
 
-                        cat.enable_payment_terms_pdf
-                        and cat.payment_terms_content
-                        and not self.quotation_id.payment_terms_tab
+                            cat.enable_payment_terms_pdf
+                            and cat.payment_terms_content
+                            and not self.quotation_id.payment_terms_tab
                     ):
                         self.quotation_id.payment_terms_tab = cat.payment_terms_content
                     if (
-                        cat.enable_warranty_terms_pdf
-                        and cat.warranty_terms_content
-                        and not self.quotation_id.warranty_terms_tab and cat.payment_terms_content
-                        and not self.quotation_id.payment_terms_tab
+                            cat.enable_warranty_terms_pdf
+                            and cat.warranty_terms_content
+                            and not self.quotation_id.warranty_terms_tab and cat.payment_terms_content
+                            and not self.quotation_id.payment_terms_tab
                     ):
                         self.quotation_id.payment_terms_tab = cat.payment_terms_content
                     if (
@@ -2614,9 +2648,9 @@ class CrmCommercialQuotationLine(models.Model):
                             cat.salient_features_content
                             and not self.quotation_id.salient_features_tab and
 
-                        cat.enable_salient_features_pdf
-                        and cat.salient_features_content
-                        and not self.quotation_id.salient_features_tab and
+                            cat.enable_salient_features_pdf
+                            and cat.salient_features_content
+                            and not self.quotation_id.salient_features_tab and
                             cat.salient_features_content
                             and not self.quotation_id.salient_features_tab
 
@@ -3006,4 +3040,3 @@ class CrmCommercialQuotationAudit(models.Model):
     title = fields.Char(string="Title", readonly=True)
     notes = fields.Text(string="Notes / Reason", readonly=True)
     state = fields.Char(string="Status", readonly=True)
-

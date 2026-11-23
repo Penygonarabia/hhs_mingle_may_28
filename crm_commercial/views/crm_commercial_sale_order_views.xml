@@ -5,6 +5,7 @@
         <field name="model">crm.commercial.sale.order</field>
         <field name="arch" type="xml">
             <tree string="Commercial Sale Orders" create="false">
+                <field name="region_id"/>
                 <field name="name"/>
                 <field name="quotation_no"/>
                 <field name="partner_id"/>
@@ -43,7 +44,7 @@
                     </div>
                     <group string="Order Header">
                         <group>
-                            <field name="quotation_id" readonly="1"/>
+                            <field name="quotation_id" readonly="1" invisible="1"/>
                             <field name="quotation_no" readonly="1"/>
                             <field name="quotation_type_id" readonly="1"/>
                             <field name="partner_id" readonly="1"/>

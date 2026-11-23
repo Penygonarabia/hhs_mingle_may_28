@@ -114,6 +114,32 @@ class CrmCommercialSaleOrder(models.Model):
                 'state': rec.state,
             })
 
+        # 20261121 Gokul Region
+    @api.model
+    def _search(self, domain, offset=0, limit=None, order=None):
+        user = self.env.user
+        if (
+                user.crm_commercial_region_id
+                and not self.env.su
+                and not self.env.context.get("ignore_region_filter")
+        ):
+            domain = [("region_id", "=", user.crm_commercial_region_id.id)] + list(domain)
+        return super()._search(domain, offset=offset, limit=limit, order=order)
+
+    # 20261121 Gokul Region
+    @api.model
+    def _read_group(self, domain, groupby=(), aggregates=(), having=(), offset=0, limit=None, order=None):
+        user = self.env.user
+        if (
+                user.crm_commercial_region_id
+                and not self.env.su
+                and not self.env.context.get("ignore_region_filter")
+        ):
+            domain = [("region_id", "=", user.crm_commercial_region_id.id)] + list(domain)
+        return super()._read_group(
+            domain, groupby=groupby, aggregates=aggregates, having=having, offset=offset, limit=limit, order=order
+        )
+
     def _update_delivery_state(self):
         for order in self:
             if order.state == 'cancelled':
@@ -267,7 +293,9 @@ class CrmCommercialDeliverySchedule(models.Model):
                                   store=True, index=True)
     warehouse_id = fields.Many2one('stock.warehouse', related='order_id.warehouse_id', string='Warehouse',
                                    readonly=True, store=True, index=True)
-    region_id = fields.Many2one('res.country.state', related='order_id.region_id', string='Region', readonly=True,
+    # region_id = fields.Many2one('res.country.state', related='order_id.region_id', string='Region', readonly=True,
+    #                             store=True, index=True)
+    region_id = fields.Many2one('res.region', related='order_id.region_id', string='Region', readonly=True,
                                 store=True, index=True)
     city_id = fields.Many2one('res.city', related='order_id.city_id', string='City', readonly=True, store=True,
                               index=True)

@@ -502,10 +502,42 @@ class CrmCommercialLead(models.Model):
         domain="[('city_id', '=', city_id)]",
         required=True,
     )
-    region_id = fields.Many2one("res.region", string="Region", required=True)
+    # region_id = fields.Many2one("res.region", string="Region", required=True)
     country_id = fields.Many2one(
         "res.country", string="Country", default=_default_country_id
     )
+    #20261121 GOkul Region
+    region_id = fields.Many2one(
+        "res.region",
+        string="Region",
+        required=True,
+        default=lambda self: self.env.user.crm_commercial_region_id.id or False,
+    )
+    # 20261121 Gokul Region
+    @api.model
+    def _search(self, domain, offset=0, limit=None, order=None):
+        user = self.env.user
+        if (
+                user.crm_commercial_region_id
+                and not self.env.su
+                and not self.env.context.get("ignore_region_filter")
+        ):
+            domain = [("region_id", "=", user.crm_commercial_region_id.id)] + list(domain)
+        return super()._search(domain, offset=offset, limit=limit, order=order)
+
+    # 20261121 Gokul Region
+    @api.model
+    def _read_group(self, domain, groupby=(), aggregates=(), having=(), offset=0, limit=None, order=None):
+        user = self.env.user
+        if (
+                user.crm_commercial_region_id
+                and not self.env.su
+                and not self.env.context.get("ignore_region_filter")
+        ):
+            domain = [("region_id", "=", user.crm_commercial_region_id.id)] + list(domain)
+        return super()._read_group(
+            domain, groupby=groupby, aggregates=aggregates, having=having, offset=offset, limit=limit, order=order
+        )
     zip = fields.Char(string="Zip Code")
 
     # added in vengatesh sep 22 2026
