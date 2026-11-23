@@ -145,59 +145,26 @@ class CrmCommercialItemApproval(models.Model):
         except Exception:
             pass
 
-        # 5. Ensure global region record rules exist in DB
+        # 5. Clean up any obsolete global region record rules from DB to prevent safe_eval syntax errors
         try:
-            RuleModel = self.env['ir.rule'].sudo()
-            rule_defs = [
-                (
-                    'rule_crm_commercial_lead_region_global',
-                    'CRM Commercial Lead: User Assigned Region Restriction',
-                    'crm.commercial.lead',
-                ),
-                (
-                    'rule_crm_commercial_quotation_region_global',
-                    'CRM Commercial Quotation: User Assigned Region Restriction',
-                    'crm.commercial.quotation',
-                ),
-                (
-                    'rule_crm_commercial_sale_order_region_global',
-                    'CRM Commercial Sale Order: User Assigned Region Restriction',
-                    'crm.commercial.sale.order',
-                ),
+            rule_names = [
+                'rule_crm_commercial_lead_region_global',
+                'rule_crm_commercial_quotation_region_global',
+                'rule_crm_commercial_sale_order_region_global',
             ]
-            rule_domain = "[('region_id', '=', user.crm_commercial_region_id.id)] if user.crm_commercial_region_id else [(1, '=', 1)]"
-            for xml_id_name, rule_name, m_name in rule_defs:
-                m_rec = self.env['ir.model'].sudo().search([('model', '=', m_name)], limit=1)
-                if not m_rec:
-                    continue
-                rule_record = self.env.ref(f'crm_commercial.{xml_id_name}', raise_if_not_found=False)
-                if not rule_record:
-                    rule_record = RuleModel.search([
-                        ('name', '=', rule_name),
-                        ('model_id', '=', m_rec.id),
-                    ], limit=1)
-                if not rule_record:
-                    rule_record = RuleModel.create({
-                        'name': rule_name,
-                        'model_id': m_rec.id,
-                        'global': True,
-                        'domain_force': rule_domain,
-                        'active': True,
-                    })
-                    # Register xml id
-                    self.env['ir.model.data'].sudo().create({
-                        'module': 'crm_commercial',
-                        'name': xml_id_name,
-                        'model': 'ir.rule',
-                        'res_id': rule_record.id,
-                        'noupdate': True,
-                    })
-                else:
-                    rule_record.write({
-                        'global': True,
-                        'domain_force': rule_domain,
-                        'active': True,
-                    })
+            for r_xml in rule_names:
+                r_rec = self.env.ref(f'crm_commercial.{r_xml}', raise_if_not_found=False)
+                if r_rec:
+                    r_rec.sudo().unlink()
+            old_rules = self.env['ir.rule'].sudo().search([
+                ('name', 'in', [
+                    'CRM Commercial Lead: User Assigned Region Restriction',
+                    'CRM Commercial Quotation: User Assigned Region Restriction',
+                    'CRM Commercial Sale Order: User Assigned Region Restriction',
+                ])
+            ])
+            if old_rules:
+                old_rules.unlink()
         except Exception:
             pass
 

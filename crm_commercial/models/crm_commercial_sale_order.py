@@ -295,8 +295,43 @@ class CrmCommercialDeliverySchedule(models.Model):
                                    readonly=True, store=True, index=True)
     # region_id = fields.Many2one('res.country.state', related='order_id.region_id', string='Region', readonly=True,
     #                             store=True, index=True)
-    region_id = fields.Many2one('res.region', related='order_id.region_id', string='Region', readonly=True,
-                                store=True, index=True)
+    region_id = fields.Many2one(
+        'res.region',
+        string='Region',
+        compute='_compute_region_id',
+        store=True,
+        readonly=True,
+        index=True,
+    )
+
+    @api.depends('order_id', 'order_id.region_id', 'order_id.city_id', 'order_id.quotation_id')
+    def _compute_region_id(self):
+        for rec in self:
+            reg = False
+            order = rec.order_id
+            if order:
+                order_reg = order.region_id
+                if order_reg:
+                    if getattr(order_reg, '_name', '') == 'res.region':
+                        reg = order_reg
+                    elif getattr(order_reg, '_name', '') == 'res.country.state':
+                        city_reg = getattr(order.city_id, 'region_id', False) if order.city_id else False
+                        quo_reg = getattr(order.quotation_id, 'region_id', False) if order.quotation_id else False
+                        if city_reg and getattr(city_reg, '_name', '') == 'res.region':
+                            reg = city_reg
+                        elif quo_reg and getattr(quo_reg, '_name', '') == 'res.region':
+                            reg = quo_reg
+                        else:
+                            reg = self.env['res.region'].search([('name', '=ilike', order_reg.name)], limit=1)
+                if not reg and order.city_id and getattr(order.city_id, 'region_id', False):
+                    city_reg = order.city_id.region_id
+                    if getattr(city_reg, '_name', '') == 'res.region':
+                        reg = city_reg
+                if not reg and order.quotation_id and getattr(order.quotation_id, 'region_id', False):
+                    quo_reg = order.quotation_id.region_id
+                    if getattr(quo_reg, '_name', '') == 'res.region':
+                        reg = quo_reg
+            rec.region_id = reg
     city_id = fields.Many2one('res.city', related='order_id.city_id', string='City', readonly=True, store=True,
                               index=True)
     city_name = fields.Char(related='order_id.city', string='City Name', readonly=True, store=True)
