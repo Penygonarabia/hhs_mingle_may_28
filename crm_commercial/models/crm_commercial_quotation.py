@@ -2186,8 +2186,16 @@ class CrmCommercialQuotation(models.Model):
                     "city_id": rec.city_id.id if rec.city_id else False,
                     "city": rec.city,
                     "district": rec.district,
-                    "region_id": rec.region_id.id if rec.region_id else False,
-                    "state_id": rec.state_id.id if rec.state_id else False,
+                    "region_id": (
+                        rec.region_id.id
+                        if (rec.region_id and getattr(rec.region_id, '_name', '') == 'res.region')
+                        else (
+                            rec.city_id.region_id.id
+                            if (rec.city_id and getattr(rec.city_id, 'region_id', False) and getattr(
+                                rec.city_id.region_id, '_name', '') == 'res.region')
+                            else False
+                        )
+                    ),                    "state_id": rec.state_id.id if rec.state_id else False,
                     "country_id": rec.country_id.id if rec.country_id else False,
                     "zip": rec.zip,
                     # Header & commercial details
