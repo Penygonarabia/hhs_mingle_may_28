@@ -184,6 +184,100 @@ class QuotationXlsx(models.AbstractModel):
                         (quotation.gross_margin_percent / 100.0) if quotation.gross_margin_percent else 0.0, pct_fmt)
 
 
+class QuotationListXlsx(models.AbstractModel):
+    _name = 'report.crm_commercial.quotation_list_xlsx'
+    _inherit = 'report.report_xlsx.abstract'
+    _description = 'Commercial Quotations List Excel Export'
+
+    # (field name, heading, kind) - list view columns first, then the
+    # "Costing & Margin Analysis" section of the Additional Info & Costing Summary tab.
+    _COLUMNS = [
+        ('region_id', 'Region', 'text'), ('city_id', 'City', 'text'),
+        ('assigned_id', 'Salesman', 'text'), ('project_name', 'Project Name', 'text'),
+        ('name', 'Quotation No', 'text'), ('date', 'Date', 'text'),
+        ('revision_number', 'Revision', 'text'), ('partner_id', 'Customer', 'text'),
+        ('total_amount', 'Total Amount', 'sum'), ('delivered_value', 'Delivered Value', 'sum'),
+        ('state', 'Status', 'text'), ('warehouse_id', 'Warehouse', 'text'),
+        # Costing & Margin Analysis
+        ('total_selling_price', 'Total Selling Price (A)', 'sum'),
+        ('total_cost', 'Total Cost (B)', 'sum'),
+        ('total_supplier_support', 'Total Special Price Support (S)', 'sum'),
+        ('total_dsi', 'Total DSI (C)', 'sum'),
+        ('total_smc', 'Total SMC (D)', 'sum'),
+        ('total_promo', 'Total Promo (E)', 'sum'),
+        ('net_price', 'Net Price (X)', 'sum'),
+        ('gross_margin', 'Gross Margin', 'sum'),
+        ('gross_margin_percent', 'Gross Margin (%)', 'pct'),
+    ]
+
+    @staticmethod
+    def _cell(rec, fname):
+        field = rec._fields[fname]
+        val = rec[fname]
+        if field.type == 'many2one':
+            return val.display_name or ''
+        if field.type == 'selection':
+            return dict(field._description_selection(rec.env)).get(val, '') if val else ''
+        if field.type in ('date', 'datetime'):
+            return str(val) if val else ''
+        if val is False or val is None:
+            return ''
+        return val
+
+    def generate_xlsx_report(self, workbook, data, quotations):
+        if not self.env.user.allow_export_quotation and not self.env.user.has_group(
+                'crm_commercial.group_crm_commercial_manager'):
+            raise UserError(_("You are not authorized to export quotation data to Excel."))
+
+        sheet = workbook.add_worksheet('Quotations')
+        head = workbook.add_format({'bold': True, 'bg_color': '#002060', 'font_color': 'white',
+                                    'border': 1, 'align': 'center', 'valign': 'vcenter', 'text_wrap': True})
+        text = workbook.add_format({'border': 1})
+        num = workbook.add_format({'border': 1, 'num_format': '#,##0.00'})
+        pct = workbook.add_format({'border': 1, 'num_format': '0.00%'})
+        total_lbl = workbook.add_format({'bold': True, 'border': 1, 'bg_color': '#f0f0f0'})
+        total_num = workbook.add_format({'bold': True, 'border': 1, 'bg_color': '#f0f0f0',
+                                         'num_format': '#,##0.00'})
+        total_pct = workbook.add_format({'bold': True, 'border': 1, 'bg_color': '#f0f0f0',
+                                         'num_format': '0.00%'})
+
+        cols = [c for c in self._COLUMNS if c[0] in quotations._fields]
+        sheet.set_row(0, 32)
+        for c, (fname, heading, _kind) in enumerate(cols):
+            sheet.write(0, c, heading, head)
+            sheet.set_column(c, c, max(14, min(len(heading) + 4, 30)))
+        sheet.freeze_panes(1, 0)
+
+        totals = {fname: 0.0 for fname, _h, kind in cols if kind == 'sum'}
+        row = 1
+        for q in quotations:
+            for c, (fname, _h, kind) in enumerate(cols):
+                val = self._cell(q, fname)
+                if kind == 'pct':
+                    sheet.write_number(row, c, (val or 0.0) / 100.0, pct)
+                elif kind == 'sum':
+                    sheet.write_number(row, c, val or 0.0, num)
+                    totals[fname] += val or 0.0
+                elif isinstance(val, (int, float)) and not isinstance(val, bool):
+                    sheet.write_number(row, c, val, text)
+                else:
+                    sheet.write(row, c, val, text)
+            row += 1
+
+        # Totals row. Gross Margin (%) is recomputed from the totals per the
+        # formula sheet: (X - B - S) / X
+        for c, (fname, _h, kind) in enumerate(cols):
+            if kind == 'sum':
+                sheet.write_number(row, c, totals[fname], total_num)
+            elif kind == 'pct':
+                x = totals.get('net_price', 0.0)
+                b = totals.get('total_cost', 0.0)
+                s_ = totals.get('total_supplier_support', 0.0)
+                sheet.write_number(row, c, ((x - b - s_) / x) if x else 0.0, total_pct)
+            else:
+                sheet.write(row, c, 'Total' if c == 0 else '', total_lbl)
+
+
 class PipelineProjectXlsx(models.AbstractModel):
     _name = 'report.crm_commercial.pipeline_xlsx'
     _inherit = 'report.report_xlsx.abstract'
