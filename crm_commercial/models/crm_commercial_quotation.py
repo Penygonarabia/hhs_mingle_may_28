@@ -629,9 +629,9 @@ class CrmCommercialQuotation(models.Model):
         required=True,
     )
     # region_id = fields.Many2one("res.region", string="Region", required=True)
-    # country_id = fields.Many2one(
-    #     "res.country", string="Country", default=_default_country_id
-    # )
+    country_id = fields.Many2one(
+        "res.country", string="Country", default=_default_country_id
+    )
     region_id = fields.Many2one(
         "res.region",
         string="Region",
@@ -1795,7 +1795,8 @@ class CrmCommercialQuotation(models.Model):
             # 20261030 As Per Mr.Raju sir instruction S - special price support (special price support - net price)
             x = a + e - c - d - s
             gm = x - (b - s)
-            gm_pct = (gm / x * 100.0) if x else 0.0
+            # Per formula sheet: Gross Margin (%) = ((X - B - S)) / X
+            gm_pct = ((x - b - s) / x * 100.0) if x else 0.0
 
             vat = 0.0
             tot = 0.0

@@ -63,7 +63,7 @@ class QuotationXlsx(models.AbstractModel):
             sheet.write('H5', str(quotation.date) if quotation.date else '')
             sheet.write('G6', 'Open Till:', bold)
             sheet.write('H6', str(quotation.expiry_date) if quotation.expiry_date else '')
-            sheet.write('G7', 'proposal_profile_agent:', bold)
+            sheet.write('G7', 'Salesman:', bold)
             sheet.write('H7', quotation.assigned_id.name if quotation.assigned_id else '')
 
             sheet.merge_range('A8:N8', '')
@@ -91,16 +91,27 @@ class QuotationXlsx(models.AbstractModel):
                 discounted_rate = (line.sale_price or 0.0) * (1.0 - ((line.discount_percent or 0.0) / 100.0))
                 net_amount = (line.qty or 0.0) * discounted_rate
                 cost_price = (line.qty or 0.0) * (line.unit_cost or 0.0)
+                # C (DSI) per line: same rules as the quotation header total
+                line_sell = (line.qty or 0.0) * (line.sale_price or 0.0)
                 if quotation.dsi_type == 'zero':
                     dsi_amount = 0.0
                 elif quotation.dsi_type == 'original':
-                    dsi_amount = line.dsi or 0.0
-                    if not dsi_amount and quotation.total_selling_price and quotation.total_dsi:
-                        dsi_amount = round((quotation.total_dsi / quotation.total_selling_price) * ((line.qty or 0.0) * (line.sale_price or 0.0)), 2)
+                    dsi_amount = ((line.product_id.dsi_amount or 0.0) if line.product_id else 0.0) * (line.qty or 0.0)
                 else:
-                    dsi_amount = line.dsi if line.dsi else (net_amount * ((quotation.dsi_percent or 0.0) / 100.0))
-                profit = net_amount - cost_price - dsi_amount
-                profit_pct = (profit / net_amount) if net_amount else 0.0
+                    dsi_amount = line_sell * ((quotation.dsi_percent or 0.0) / 100.0)
+                # Line-level profit follows the costing formula sheet so that the
+                # lines add up to the quotation totals:
+                #   X  = A + E - C - D - S
+                #   GM = X - (B - S)
+                #   GM% = (X - B - S) / X
+                line_a = (line.qty or 0.0) * (line.sale_price or 0.0)
+                line_e = line_a * ((quotation.promotion_percent or 0.0) / 100.0)
+                line_c = dsi_amount
+                line_d = line_a * ((quotation.salesman_commission_percent or 0.0) / 100.0)
+                line_s = line.special_support or 0.0
+                line_x = line_a + line_e - line_c - line_d - line_s
+                profit = line_x - (cost_price - line_s)
+                profit_pct = ((line_x - cost_price - line_s) / line_x) if line_x else 0.0
 
                 sheet.write(row_idx, 0, line_num, border_center)
                 sheet.write(row_idx, 1, line.product_id.default_code if line.product_id else '', border)
@@ -132,7 +143,7 @@ class QuotationXlsx(models.AbstractModel):
             sheet.write(row_idx, 13, sub_total, curr_fmt)
             row_idx += 1
 
-            sheet.merge_range(row_idx, 0, row_idx, 12, 'STANDARD DOMESTIC PURCHASES', bold_border_right)
+            sheet.merge_range(row_idx, 0, row_idx, 12, 'Tax Amount', bold_border_right)
             sheet.write(row_idx, 13, quotation.total_vat, curr_fmt)
             row_idx += 1
 
@@ -144,8 +155,24 @@ class QuotationXlsx(models.AbstractModel):
             sheet.write(row_idx, 13, quotation.total_cost, num_fmt)
             row_idx += 1
 
-            sheet.merge_range(row_idx, 0, row_idx, 12, 'Total DSI Amount', bold_border_right)
+            sheet.merge_range(row_idx, 0, row_idx, 12, 'Total DSI Amount (C)', bold_border_right)
             sheet.write(row_idx, 13, quotation.total_dsi, num_fmt)
+            row_idx += 1
+
+            sheet.merge_range(row_idx, 0, row_idx, 12, 'Total SMC (D)', bold_border_right)
+            sheet.write(row_idx, 13, quotation.total_smc, num_fmt)
+            row_idx += 1
+
+            sheet.merge_range(row_idx, 0, row_idx, 12, 'Total Promo (E)', bold_border_right)
+            sheet.write(row_idx, 13, quotation.total_promo, num_fmt)
+            row_idx += 1
+
+            sheet.merge_range(row_idx, 0, row_idx, 12, 'Total Special Price Support (S)', bold_border_right)
+            sheet.write(row_idx, 13, quotation.total_supplier_support, num_fmt)
+            row_idx += 1
+
+            sheet.merge_range(row_idx, 0, row_idx, 12, 'Net Price (X)', bold_border_right)
+            sheet.write(row_idx, 13, quotation.net_price, num_fmt)
             row_idx += 1
 
             sheet.merge_range(row_idx, 0, row_idx, 12, 'Profit Margin', bold_border_right)
@@ -308,7 +335,7 @@ class LeadListXlsx(models.AbstractModel):
 #             sheet.write('H5', str(quotation.date) if quotation.date else '')
 #             sheet.write('G6', 'Open Till:', bold)
 #             sheet.write('H6', str(quotation.expiry_date) if quotation.expiry_date else '')
-#             sheet.write('G7', 'proposal_profile_agent:', bold)
+#             sheet.write('G7', 'Salesman:', bold)
 #             sheet.write('H7', quotation.assigned_id.name if quotation.assigned_id else '')
 #
 #             sheet.merge_range('A8:N8', '')
