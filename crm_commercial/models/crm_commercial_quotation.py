@@ -1075,7 +1075,7 @@ class CrmCommercialQuotation(models.Model):
     expiry_date = fields.Date(string="Expiry Date")
     project_expected_closure_date = fields.Date(string="Project Expected Closure Date")
     developer = fields.Char(string="Developer")
-    possibility_percent = fields.Float(string="Possibility (%)", default=50.0)
+    possibility_percent = fields.Float(string="Possibility (%)")
     project_status_id = fields.Many2one(
         "crm.commercial.project.status",
         string="Project Status",
@@ -2022,12 +2022,15 @@ class CrmCommercialQuotation(models.Model):
                     0,
                     0,
                     {
+                        "sequence": line.sequence,
+                        "display_type": line.display_type,
+                        "name": line.name,
                         "product_group_id": (
                             line.product_group_id.id if line.product_group_id else False
                         ),
-                        "product_category_ids": (
-                            line.product_category_ids.id
-                            if line.product_category_ids
+                        "product_category_id": (
+                            line.product_category_id.id
+                            if line.product_category_id
                             else False
                         ),
                         "sale_type_id": (
@@ -2459,33 +2462,49 @@ class CrmCommercialQuotationLine(models.Model):
         for line in self:
             quotation = line.quotation_id
 
-            is_existing = (
-                    quotation.state in ("approved", "confirmed")
-                    or quotation.name != "New"
-            )
-            line.is_warehouse_readonly = (
-                    quotation.state == "closed"
-                    or (
-                            is_existing
-                            and not (
-                            quotation.state == "draft"
-                            and allow_edit
-                    )
-                    )
-            )
-            # Other fields retain their individual permissions.
-            line.is_description_readonly = (
-                    is_existing and not (allow_edit_desc)
-            )
-            line.is_terms_readonly = (
-                    is_existing and not (allow_edit or allow_edit_terms)
-            )
-            line.is_default_discount_readonly = (
-                    is_existing and not (allow_edit or allow_edit_discount)
-            )
-            line.is_sales_price_readonly = (
-                    is_existing and not (allow_edit or allow_edit_sales_price)
-            )
+            if quotation.state in ("confirmed", "closed"):
+                line.is_warehouse_readonly = True
+                line.is_description_readonly = True
+                line.is_terms_readonly = True
+                line.is_default_discount_readonly = True
+                line.is_sales_price_readonly = True
+            elif line.display_type:
+                # For Section and Note lines:
+                # In draft state, sections and notes should always be editable so the user can enter section/note text and reorder them.
+                is_draft = not quotation or quotation.state == "draft" or quotation.name == "New"
+                line.is_warehouse_readonly = not is_draft
+                line.is_description_readonly = not is_draft
+                line.is_terms_readonly = True
+                line.is_default_discount_readonly = True
+                line.is_sales_price_readonly = True
+            else:
+                is_existing = (
+                        quotation.state in ("approved", "confirmed")
+                        or quotation.name != "New"
+                )
+                line.is_warehouse_readonly = (
+                        quotation.state == "closed"
+                        or (
+                                is_existing
+                                and not (
+                                quotation.state == "draft"
+                                and allow_edit
+                        )
+                        )
+                )
+                # Other fields retain their individual permissions.
+                line.is_description_readonly = (
+                        is_existing and not (allow_edit or allow_edit_desc)
+                )
+                line.is_terms_readonly = (
+                        is_existing and not (allow_edit or allow_edit_terms)
+                )
+                line.is_default_discount_readonly = (
+                        is_existing and not (allow_edit or allow_edit_discount)
+                )
+                line.is_sales_price_readonly = (
+                        is_existing and not (allow_edit or allow_edit_sales_price)
+                )
 
     qty = fields.Float(string="Qty", default=1.0)
     stock_qty = fields.Float(
@@ -2802,6 +2821,8 @@ class CrmCommercialQuotationLine(models.Model):
             categories = self.env["product.category"]
 
             for quotation_line in quotation_lines:
+                if quotation_line.display_type:
+                    continue
                 product = quotation_line.product_id
 
                 category = (

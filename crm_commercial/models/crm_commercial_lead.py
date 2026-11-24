@@ -278,7 +278,7 @@ class CrmCommercialLead(models.Model):
             self.district = partner.district_id
 
     name = fields.Char(string="Lead / Project Name", required=True, index=True)
-    probability = fields.Float(string="Probability (%)", default=10.0)
+    probability = fields.Float(string="Probability (%)")
     position = fields.Char(string="Position")
 
     crm_product_category_ids = fields.Many2many(
@@ -457,7 +457,7 @@ class CrmCommercialLead(models.Model):
     email = fields.Char(string="Email", required=True, index=True)
     lead_value = fields.Float(string="Lead Value")
     expected_confirmation_date = fields.Date(string="Expected Confirmation Date")
-    phone = fields.Char(string="Phone", required=True, index=True)
+    phone = fields.Char(string="Mobile Number", required=True, index=True)
     description = fields.Text(string="Description")
 
     @api.constrains("expected_confirmation_date")
