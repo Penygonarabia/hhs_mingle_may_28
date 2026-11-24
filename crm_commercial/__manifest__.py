@@ -75,6 +75,8 @@
             "crm_commercial/static/src/js/rtl_support.js",
             "crm_commercial/static/src/js/print_leads_excel.js",
             "crm_commercial/static/src/xml/print_leads_excel.xml",
+            "crm_commercial/static/src/js/print_quotations_excel.js",
+            "crm_commercial/static/src/xml/print_quotations_excel.xml",
         ],
     },
     "installable": True,
