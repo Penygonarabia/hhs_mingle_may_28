@@ -15,8 +15,14 @@ class ResUsers(models.Model):
     crm_commercial_region_id = fields.Many2one(
         "res.region", string="Region", help="Default region assigned to user."
     )
+    # crm_commercial_city_id = fields.Many2one(
+    #     "res.city", string="City", help="Default city assigned to user."
+    # )
     crm_commercial_city_id = fields.Many2one(
-        "res.city", string="City", help="Default city assigned to user."
+        "res.city",
+        string="City",
+        domain="[('region_id', '=?', crm_commercial_region_id)]",
+        help="Default city assigned to user.",
     )
 
     def _auto_init(self):

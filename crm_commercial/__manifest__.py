@@ -29,6 +29,7 @@
         "report_xlsx",
         "hhs_loyalty_management",
         "machine_repair_management",
+        "base_address_extended",
     ],
     "data": [
         # Security - groups first, record rules last (after models)
