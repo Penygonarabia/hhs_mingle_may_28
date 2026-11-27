@@ -164,9 +164,27 @@ class MenuAccessRights(models.Model):
             # the install hook creates ~100k, so a per-row write would make
             # both unusable.
             if commands:
-                user.with_context(mar_skip_hide_sync=True).write(
-                    {self._MAR_HIDE_FIELD: commands}
+                self._mar_write_user_keeping_tz(
+                    user.with_context(mar_skip_hide_sync=True),
+                    {self._MAR_HIDE_FIELD: commands},
                 )
+
+    @api.model
+    def _mar_write_user_keeping_tz(self, user, vals):
+        """Write ``vals`` on one user without changing their timezone.
+
+        Another module may override res.users.write and force its own
+        timezone onto any write, which made Copy Rights From… and the matrix
+        toggles reset every affected user's timezone. Restoring it goes
+        through res.partner (where tz is stored): writing it on res.users
+        would run that same override again.
+        """
+        # exists(): a user whose partner row is gone has no timezone to keep.
+        partner = user.sudo().partner_id.exists()
+        original_tz = partner.tz
+        user.write(vals)
+        if partner and partner.tz != original_tz:
+            partner.write({"tz": original_tz})
 
     # ------------------------------------------------------------------
     # Helpers used by enforcement, the matrix wizard, and the install hook.

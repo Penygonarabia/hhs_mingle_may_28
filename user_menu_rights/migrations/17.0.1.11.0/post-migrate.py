@@ -18,7 +18,7 @@ def migrate(cr, version):
             # Clear allowed menus from hidden list
             allowed_menus = rights.filtered(lambda r: r.has_access).mapped("menu_id")
             if allowed_menus:
-                user.write({"hide_menu_ids": [fields.Command.unlink(m.id) for m in allowed_menus]})
+                Rights._mar_write_user_keeping_tz(user, {"hide_menu_ids": [fields.Command.unlink(m.id) for m in allowed_menus]})
                 if hasattr(allowed_menus, "restrict_user_ids"):
                     for menu in allowed_menus:
                         if user.id in menu.restrict_user_ids.ids:
@@ -27,7 +27,7 @@ def migrate(cr, version):
             # Link forbidden menus to hidden list
             forbidden_menus = rights.filtered(lambda r: not r.has_access).mapped("menu_id")
             if forbidden_menus:
-                user.write({"hide_menu_ids": [fields.Command.link(m.id) for m in forbidden_menus]})
+                Rights._mar_write_user_keeping_tz(user, {"hide_menu_ids": [fields.Command.link(m.id) for m in forbidden_menus]})
                 if hasattr(forbidden_menus, "restrict_user_ids"):
                     for menu in forbidden_menus:
                         if user.id not in menu.restrict_user_ids.ids:
