@@ -100,12 +100,27 @@ export class SqlMsHistoryController extends ListController {
 
     _renderHistTabs() {
         const root = this.rootRef.el;
-        const container = root && root.querySelector(".o_control_panel_main_buttons");
+        // Into the actions box, which is the one that holds the search view
+        // -- the two of them together are the toolbar strip above the list
+        // (see the bar rules in database_studio.css). The obvious container,
+        // .o_control_panel_main_buttons, is a child of the breadcrumbs box,
+        // which put the tabs in front of the page heading and squeezed the
+        // title to an ellipsis; they do not belong on the heading row.
+        const container = root && root.querySelector(".o_control_panel_actions");
         if (!container || container.querySelector(".sqlms-hist-tabs")) {
             return;
         }
+        // A segmented control rather than two buttons: the two are mutually
+        // exclusive views of the same list, and a pair of Bootstrap buttons
+        // reads as "two things to press" instead of "which one am I looking
+        // at". Deliberately NOT .btn -- the backend theme paints those, and
+        // the segments want their own, flatter treatment (see the tab strip
+        // rules in database_studio.css). role=tablist/tab + aria-selected so
+        // the thing is a tab set to a screen reader too, not just visually.
         const wrap = document.createElement("div");
         wrap.className = "sqlms-hist-tabs";
+        wrap.setAttribute("role", "tablist");
+        wrap.setAttribute("aria-label", "Query history view");
         const savedBtn = document.createElement("button");
         savedBtn.type = "button";
         savedBtn.textContent = "Saved queries";
@@ -113,17 +128,35 @@ export class SqlMsHistoryController extends ListController {
         onflyBtn.type = "button";
         onflyBtn.textContent = "On the fly queries";
         const sync = () => {
-            savedBtn.className = "btn btn-sm " +
-                (this.histState.tab === "saved" ? "btn-primary" : "btn-secondary");
-            onflyBtn.className = "btn btn-sm " +
-                (this.histState.tab === "onfly" ? "btn-primary" : "btn-secondary");
+            for (const [btn, tab] of [[savedBtn, "saved"], [onflyBtn, "onfly"]]) {
+                const active = this.histState.tab === tab;
+                btn.className = "sqlms-histtab" + (active ? " sqlms-histtab-active" : "");
+                btn.setAttribute("role", "tab");
+                btn.setAttribute("aria-selected", active ? "true" : "false");
+                // Only the selected tab is a tab stop; the arrow keys move
+                // between them, which is how a tab set is expected to behave.
+                btn.tabIndex = active ? 0 : -1;
+            }
         };
+        const onKeydown = (ev) => {
+            if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") {
+                return;
+            }
+            ev.preventDefault();
+            const next = this.histState.tab === "saved" ? "onfly" : "saved";
+            this.setHistoryTab(next, sync);
+            (next === "saved" ? savedBtn : onflyBtn).focus();
+        };
+        savedBtn.addEventListener("keydown", onKeydown);
+        onflyBtn.addEventListener("keydown", onKeydown);
         savedBtn.addEventListener("click", () => this.setHistoryTab("saved", sync));
         onflyBtn.addEventListener("click", () => this.setHistoryTab("onfly", sync));
         sync();
         wrap.appendChild(savedBtn);
         wrap.appendChild(onflyBtn);
-        container.appendChild(wrap);
+        // Ahead of the search view: tabs choose what the list shows, the
+        // search box then narrows it, so that is the order to read them in.
+        container.insertBefore(wrap, container.firstChild);
     }
 
     setHistoryTab(tab, sync) {

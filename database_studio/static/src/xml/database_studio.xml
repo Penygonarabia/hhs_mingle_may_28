@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="database_studio.SaveDialog">
-        <Dialog title="'Save query'" size="'md'">
+        <Dialog title="'Save query'" size="'md'" contentClass="'sqlms-dialog'">
             <div class="mb-2">
                 <label class="form-label fw-bold">Name</label>
                 <input type="text" class="form-control" t-ref="input"
@@ -20,49 +20,32 @@
         </Dialog>
     </t>
 
-    <t t-name="database_studio.TxnDialog">
-        <!-- Title-only header (no close button), and the buttons kept out of
-             the footer slot: see SqlMsForcedDialog for why. -->
-        <Dialog size="'lg'" footer="false">
-            <t t-set-slot="header">
-                <h4 class="modal-title text-break">Commit the changes?</h4>
-            </t>
-            <div class="sqlms-txn">
+    <t t-name="database_studio.ConfirmDialog">
+        <!-- Buttons kept out of the footer slot: see SqlMsConfirmDialog. -->
+        <Dialog title="'Are you sure?'" size="'lg'" footer="false" contentClass="'sqlms-dialog'">
+            <div class="sqlms-confirm">
                 <p class="mb-2">
-                    <i class="fa fa-info-circle text-info me-1"/>
-                    This run changed data, and it ran inside a transaction
-                    (<code>begin</code>) that is still open:
-                    <b>nothing is saved until you commit.</b>
+                    <i class="fa fa-exclamation-triangle text-warning me-1"/>
+                    Are you sure you want to run this? It changes data and is
+                    saved immediately.
                 </p>
-                <ul class="sqlms-txn-list">
+                <ul class="sqlms-confirm-list">
                     <li t-foreach="props.writes" t-as="w" t-key="w.index">
-                        <span class="sqlms-txn-idx" t-esc="w.index"/>
-                        <code class="sqlms-txn-sql" t-esc="w.sql"/>
-                        <span class="sqlms-txn-msg" t-esc="w.message"/>
+                        <span class="sqlms-confirm-idx" t-esc="w.index"/>
+                        <code class="sqlms-confirm-sql" t-esc="w.sql"/>
                     </li>
                 </ul>
-                <p class="text-muted small mb-0">
-                    The result panels show the data as it is inside the
-                    transaction. Other sessions cannot write to the changed
-                    rows until you decide. With no answer, the changes are
-                    rolled back in <b t-esc="countdown"/>.
-                </p>
-                <div class="sqlms-txn-actions">
-                    <button class="btn btn-primary" t-on-click="() => this.decide(true)"
-                            t-att-disabled="state.busy">
-                        <i class="fa fa-check me-1"/>Commit
-                    </button>
-                    <button class="btn btn-danger" t-on-click="() => this.decide(false)"
-                            t-att-disabled="state.busy">
-                        <i class="fa fa-undo me-1"/>Rollback
-                    </button>
+                <div class="sqlms-confirm-actions">
+                    <button class="btn btn-primary" t-on-click="() => this.yes()">Yes</button>
+                    <button class="btn btn-secondary" t-ref="no"
+                            t-on-click="() => this.props.close()">No</button>
                 </div>
             </div>
         </Dialog>
     </t>
 
     <t t-name="database_studio.CloseTabDialog">
-        <Dialog title="'Close query tab'" size="'md'">
+        <Dialog title="'Close query tab'" size="'md'" contentClass="'sqlms-dialog'">
             <div class="mb-2">
                 <p>Save <b t-esc="props.tabName"/> before closing? Unsaved query text
                    will be lost.</p>
@@ -87,7 +70,7 @@
     </t>
 
     <t t-name="database_studio.ConvertTypeDialog">
-        <Dialog title="isQuery ? 'Read these result columns as numbers' : 'Change field type to number'" size="'lg'">
+        <Dialog title="isQuery ? 'Read these result columns as numbers' : 'Change field type to number'" size="'lg'" contentClass="'sqlms-dialog'">
             <div t-if="isQuery" class="sqlms-hint mt-0">
                 These columns come from the query, not from a table, so there is nothing to
                 alter. The query is rewritten to cast them instead — your data is untouched.

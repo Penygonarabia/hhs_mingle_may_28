@@ -21,7 +21,7 @@ Restricted to database administrators.
 """,
     'author': 'Penygon Arabia',
     'category': 'Technical',
-    'version': '17.0.2.7.0',
+    'version': '17.0.2.15.0',
     'depends': ['web'],
     'data': [
         'security/security.xml',

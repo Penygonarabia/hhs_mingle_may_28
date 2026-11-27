@@ -1,8 +1,346 @@
+/* =====================================================================
+   Colour tokens
+   ---------------------------------------------------------------------
+   Every colour in this file comes from one of these, so the whole tool
+   re-themes from a single block. The light values below are the literals
+   this file used before the tokens existed, unchanged -- light mode is
+   exactly what it was.
+
+   Dark mode follows the operating system (or the browser), which is how
+   the other custom screens in this repo do it -- see user_menu_rights.
+   Odoo 17 Community has no dark theme of its own to hang off: its
+   color_scheme cookie swaps in a web.assets_web_dark bundle that is
+   identical to the light one, so there is nothing on the page to match.
+
+   The names are declared on :root, not on .sqlms-root, because the
+   dialogs (Save query, Are you sure?, Convert type) render into Odoo's modal
+   portal, outside the tool's own subtree, and need the same palette.
+   ===================================================================== */
+:root {
+    /* text */
+    --sqlms-text: #212529;
+    --sqlms-text-2: #495057;
+    --sqlms-text-strong: #343a40;
+    --sqlms-text-dim: #6c757d;
+    --sqlms-text-muted: #868e96;
+    --sqlms-text-faint: #adb5bd;
+    --sqlms-on-accent: #fff;
+    /* surfaces */
+    --sqlms-surface: #ffffff;
+    --sqlms-surface-2: #f8f9fa;
+    --sqlms-surface-3: #f1f3f5;
+    --sqlms-header: #eceff1;
+    --sqlms-ground-1: #eef1f5;
+    --sqlms-ground-2: #f7f9fb;
+    --sqlms-editor-bg: #fdfdfd;
+    /* lines */
+    --sqlms-border: #dee2e6;
+    --sqlms-border-soft: #e9ecef;
+    --sqlms-border-strong: #ced4da;
+    --sqlms-divider: #f1f3f5;
+    --sqlms-chip-bg: #dee2e6;
+    --sqlms-chip-bg-2: #e9ecef;
+    --sqlms-icon-disabled: #ced4da;
+    --sqlms-grip: #ced4da;
+    /* accent (blue) */
+    --sqlms-accent: #1971c2;
+    --sqlms-accent-strong: #1864ab;
+    --sqlms-accent-soft: #d0ebff;
+    --sqlms-accent-faint: #e7f5ff;
+    --sqlms-accent-border: #a5d8ff;
+    --sqlms-accent-border-2: #74c0fc;
+    --sqlms-accent-edge: #86b7fe;
+    --sqlms-qtab-bg: #e7f1ff;
+    --sqlms-accent-solid: #3d6591;
+    --sqlms-accent-wash: #dceaf7;
+    --sqlms-accent-wash-text: #dceaf7;
+    --sqlms-link: #1a73e8;
+    --sqlms-hover: #eef4fb;
+    --sqlms-hover-2: #dde3e8;
+    --sqlms-active: #d7e9fb;
+    --sqlms-active-edge: #5b899e;
+    --sqlms-focus-border: #74a9d8;
+    --sqlms-focus-ring: rgba(116, 169, 216, 0.22);
+    --sqlms-row-hover-tint: rgba(116, 169, 216, 0.10);
+    --sqlms-colresize: rgba(25, 113, 194, 0.45);
+    --sqlms-match-underline: rgba(25, 113, 194, 0.4);
+    --sqlms-selbar-1: #f0f8ff;
+    --sqlms-selbar-2: #dbeeff;
+    --sqlms-selbar-edge: #d0ebff;
+    /* teal (brand) */
+    --sqlms-teal: #3f9ea2;
+    --sqlms-teal-2: #6cc6b6;
+    --sqlms-teal-deep: #14555a;
+    --sqlms-teal-tint: rgba(63, 158, 162, 0.10);
+    --sqlms-tab-edge: #cdd8dc;
+    --sqlms-tab-face-1: #ffffff;
+    --sqlms-tab-face-2: #f6f9fa;
+    --sqlms-tabstrip-1: #ffffff;
+    --sqlms-tabstrip-2: #eef1f5;
+    --sqlms-tab-text: #6b7885;
+    /* status */
+    --sqlms-danger: #c92a2a;
+    --sqlms-danger-soft: #ffe3e3;
+    --sqlms-danger-edge: #f1aeb5;
+    --sqlms-danger-deep: #842029;
+    --sqlms-success: #2b8a3e;
+    --sqlms-success-soft: #d3f9d8;
+    --sqlms-warn: #e67700;
+    --sqlms-warn-soft: #fff3bf;
+    --sqlms-note-bg: #fff9db;
+    --sqlms-note-border: #ffe066;
+    --sqlms-note-text: #856404;
+    --sqlms-hint-edge: #f0c33c;
+    --sqlms-hint-text: #6b5900;
+    --sqlms-star: #f7b731;
+    --sqlms-trigger: #f08c00;
+    /* violet / magenta */
+    --sqlms-violet: #7048e8;
+    --sqlms-violet-deep: #5f3dc4;
+    --sqlms-violet-edge: #b197fc;
+    --sqlms-violet-soft: #f3f0ff;
+    --sqlms-magenta: #9c36b5;
+    --sqlms-magenta-soft: #eebefa;
+    /* SQL syntax */
+    --sqlms-syn-kw: #1971c2;
+    --sqlms-syn-str: #2f9e44;
+    --sqlms-syn-ident: #9c36b5;
+    --sqlms-syn-num: #e8590c;
+    --sqlms-syn-comment: #868e96;
+    /* autocomplete */
+    --sqlms-ac-border: #d0d7de;
+    --sqlms-ac-head-bg: #f6f8fa;
+    --sqlms-ac-head-bd: #e1e4e8;
+    --sqlms-ac-head-tx: #57606a;
+    --sqlms-ac-title: #1c2128;
+    --sqlms-ac-count: #8c959f;
+    --sqlms-ac-hover: #ebf5ff;
+    --sqlms-ac-thumb: #d0d7de;
+    --sqlms-ac-thumb-hover: #adb5bd;
+    --sqlms-badge-fn-bg: #f3f0ff;
+    --sqlms-badge-fn-tx: #7950f2;
+    --sqlms-badge-fn-bd: #d0bfff;
+    --sqlms-badge-tb-bg: #e6fcf5;
+    --sqlms-badge-tb-tx: #0ca678;
+    --sqlms-badge-tb-bd: #96f2d7;
+    --sqlms-badge-vw-bg: #fff9db;
+    --sqlms-badge-vw-tx: #f59f00;
+    --sqlms-badge-vw-bd: #ffec99;
+    --sqlms-badge-fd-bg: #ebfbee;
+    --sqlms-badge-fd-tx: #2b8a3e;
+    --sqlms-badge-fd-bd: #b2f2bb;
+    --sqlms-badge-al-bg: #fff4e6;
+    --sqlms-badge-al-tx: #e8590c;
+    --sqlms-badge-al-bd: #ffd8a8;
+    /* panel furniture */
+    --sqlms-badge-solid-bg: #495057;
+    --sqlms-badge-solid-tx: #fff;
+    --sqlms-scroll-thumb: #c3ccd5;
+    --sqlms-scroll-thumb-h: #9fadbb;
+    --sqlms-gutter-1: #e9edf1;
+    --sqlms-gutter-2: #f4f6f8;
+    --sqlms-search-1: #ffffff;
+    --sqlms-search-2: #f4f6f8;
+    --sqlms-gridhead-1: #f3f5f7;
+    --sqlms-gridhead-2: #dfe4e8;
+    --sqlms-resultbar-1: #ffffff;
+    --sqlms-resultbar-2: #eef1f4;
+    --sqlms-resultbar-h1: #f1f9ff;
+    --sqlms-resultbar-h2: #dbeeff;
+    /* relief: shadows, bevels */
+    --sqlms-sh-06: rgba(16, 24, 40, 0.06);
+    --sqlms-sh-08: rgba(16, 24, 40, 0.08);
+    --sqlms-sh-09: rgba(16, 24, 40, 0.09);
+    --sqlms-sh-10: rgba(16, 24, 40, 0.10);
+    --sqlms-sh-12: rgba(16, 24, 40, 0.12);
+    --sqlms-sh-16: rgba(16, 24, 40, 0.16);
+    --sqlms-sh-18: rgba(16, 24, 40, 0.18);
+    --sqlms-sh-22: rgba(16, 24, 40, 0.22);
+    --sqlms-sh-28: rgba(16, 24, 40, 0.28);
+    --sqlms-sh-ac-1: rgba(0, 0, 0, 0.16);
+    --sqlms-sh-ac-2: rgba(0, 0, 0, 0.08);
+    --sqlms-bevel-top: #fff;
+    --sqlms-bevel-85: rgba(255, 255, 255, 0.85);
+    --sqlms-bevel-75: rgba(255, 255, 255, 0.75);
+    --sqlms-bevel-70: rgba(255, 255, 255, 0.7);
+    --sqlms-bevel-60: rgba(255, 255, 255, 0.6);
+    --sqlms-bevel-40: rgba(255, 255, 255, 0.4);
+    --sqlms-bevel-35: rgba(255, 255, 255, 0.35);
+    --sqlms-bevel-22: rgba(255, 255, 255, 0.22);
+    --sqlms-bevel-15: rgba(255, 255, 255, 0.15);
+    --sqlms-shade-07: rgba(0, 0, 0, 0.07);
+    --sqlms-shade-06: rgba(0, 0, 0, 0.06);
+    --sqlms-shade-05: rgba(0, 0, 0, 0.05);
+    --sqlms-shade-04: rgba(0, 0, 0, 0.04);
+    --sqlms-shade-0: rgba(0, 0, 0, 0);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* text */
+        --sqlms-text: #e4e8ee;
+        --sqlms-text-2: #b4bcc8;
+        --sqlms-text-strong: #d0d7e0;
+        --sqlms-text-dim: #99a2af;
+        --sqlms-text-muted: #8f98a5;
+        --sqlms-text-faint: #7e8899;
+        --sqlms-on-accent: #f2f6fb;
+        /* surfaces */
+        --sqlms-surface: #1c212a;
+        --sqlms-surface-2: #20252f;
+        --sqlms-surface-3: #242a34;
+        --sqlms-header: #2a313c;
+        --sqlms-ground-1: #14171d;
+        --sqlms-ground-2: #1a1e25;
+        --sqlms-editor-bg: #1a1f27;
+        /* lines */
+        --sqlms-border: #343c48;
+        --sqlms-border-soft: #2c333d;
+        --sqlms-border-strong: #434b59;
+        --sqlms-divider: #272e38;
+        --sqlms-chip-bg: #39414e;
+        --sqlms-chip-bg-2: #343c48;
+        --sqlms-icon-disabled: #4e5765;
+        --sqlms-grip: #4a525f;
+        /* accent (blue) */
+        --sqlms-accent: #74aeea;
+        --sqlms-accent-strong: #9cc8f2;
+        --sqlms-accent-soft: rgba(116, 174, 234, 0.22);
+        --sqlms-accent-faint: rgba(116, 174, 234, 0.13);
+        --sqlms-accent-border: rgba(116, 174, 234, 0.42);
+        --sqlms-accent-border-2: rgba(116, 174, 234, 0.55);
+        --sqlms-accent-edge: rgba(116, 174, 234, 0.50);
+        --sqlms-qtab-bg: rgba(116, 174, 234, 0.16);
+        --sqlms-accent-solid: #3f6ea8;
+        --sqlms-accent-wash: rgba(116, 174, 234, 0.26);
+        --sqlms-accent-wash-text: #d4e6f8;
+        --sqlms-link: #83b7f2;
+        --sqlms-hover: rgba(255, 255, 255, 0.055);
+        --sqlms-hover-2: #2f3742;
+        --sqlms-active: rgba(116, 174, 234, 0.20);
+        --sqlms-active-edge: #5fa8b0;
+        --sqlms-focus-border: #6fa3d8;
+        --sqlms-focus-ring: rgba(116, 174, 234, 0.30);
+        --sqlms-row-hover-tint: rgba(116, 174, 234, 0.10);
+        --sqlms-colresize: rgba(116, 174, 234, 0.50);
+        --sqlms-match-underline: rgba(116, 174, 234, 0.5);
+        --sqlms-selbar-1: rgba(116, 174, 234, 0.10);
+        --sqlms-selbar-2: rgba(116, 174, 234, 0.18);
+        --sqlms-selbar-edge: rgba(116, 174, 234, 0.26);
+        /* teal (brand) */
+        --sqlms-teal: #4fb3b7;
+        --sqlms-teal-2: #6cc6b6;
+        --sqlms-teal-deep: #9fdfe1;
+        --sqlms-teal-tint: rgba(79, 179, 183, 0.16);
+        --sqlms-tab-edge: #3b4552;
+        --sqlms-tab-face-1: #272e39;
+        --sqlms-tab-face-2: #222835;
+        --sqlms-tabstrip-1: #232a34;
+        --sqlms-tabstrip-2: #191d24;
+        --sqlms-tab-text: #98a2b0;
+        /* status */
+        --sqlms-danger: #ff9b9b;
+        --sqlms-danger-soft: rgba(255, 155, 155, 0.16);
+        --sqlms-danger-edge: rgba(255, 155, 155, 0.30);
+        --sqlms-danger-deep: #ffc9c9;
+        --sqlms-success: #7ae08f;
+        --sqlms-success-soft: rgba(122, 224, 143, 0.16);
+        --sqlms-warn: #ffc078;
+        --sqlms-warn-soft: rgba(255, 192, 120, 0.16);
+        --sqlms-note-bg: rgba(240, 195, 60, 0.12);
+        --sqlms-note-border: rgba(240, 195, 60, 0.34);
+        --sqlms-note-text: #ecd79b;
+        --sqlms-hint-edge: rgba(240, 195, 60, 0.55);
+        --sqlms-hint-text: #e8d59a;
+        --sqlms-star: #ffd43b;
+        --sqlms-trigger: #ffa94d;
+        /* violet / magenta */
+        --sqlms-violet: #b197fc;
+        --sqlms-violet-deep: #c0a9ff;
+        --sqlms-violet-edge: rgba(177, 151, 252, 0.45);
+        --sqlms-violet-soft: rgba(177, 151, 252, 0.16);
+        --sqlms-magenta: #dba6f0;
+        --sqlms-magenta-soft: rgba(219, 166, 240, 0.18);
+        /* SQL syntax */
+        --sqlms-syn-kw: #74aeea;
+        --sqlms-syn-str: #8ce99a;
+        --sqlms-syn-ident: #dba6f0;
+        --sqlms-syn-num: #ffa94d;
+        --sqlms-syn-comment: #7d8894;
+        /* autocomplete */
+        --sqlms-ac-border: #3a4250;
+        --sqlms-ac-head-bg: #1e232c;
+        --sqlms-ac-head-bd: #333b47;
+        --sqlms-ac-head-tx: #9aa3b0;
+        --sqlms-ac-title: #e4e8ee;
+        --sqlms-ac-count: #848d9b;
+        --sqlms-ac-hover: rgba(116, 174, 234, 0.14);
+        --sqlms-ac-thumb: #454e5c;
+        --sqlms-ac-thumb-hover: #5c6673;
+        --sqlms-badge-fn-bg: rgba(177, 151, 252, 0.16);
+        --sqlms-badge-fn-tx: #b7a2ff;
+        --sqlms-badge-fn-bd: rgba(177, 151, 252, 0.40);
+        --sqlms-badge-tb-bg: rgba(99, 230, 190, 0.14);
+        --sqlms-badge-tb-tx: #63e6be;
+        --sqlms-badge-tb-bd: rgba(99, 230, 190, 0.38);
+        --sqlms-badge-vw-bg: rgba(255, 212, 59, 0.14);
+        --sqlms-badge-vw-tx: #ffd43b;
+        --sqlms-badge-vw-bd: rgba(255, 212, 59, 0.38);
+        --sqlms-badge-fd-bg: rgba(122, 224, 143, 0.14);
+        --sqlms-badge-fd-tx: #7ae08f;
+        --sqlms-badge-fd-bd: rgba(122, 224, 143, 0.38);
+        --sqlms-badge-al-bg: rgba(255, 169, 77, 0.14);
+        --sqlms-badge-al-tx: #ffa94d;
+        --sqlms-badge-al-bd: rgba(255, 169, 77, 0.38);
+        /* panel furniture */
+        --sqlms-badge-solid-bg: #49525f;
+        --sqlms-badge-solid-tx: #e4e8ee;
+        --sqlms-scroll-thumb: #454e5c;
+        --sqlms-scroll-thumb-h: #5c6673;
+        --sqlms-gutter-1: #1e242c;
+        --sqlms-gutter-2: #262d37;
+        --sqlms-search-1: #232a34;
+        --sqlms-search-2: #1c212a;
+        --sqlms-gridhead-1: #2b323d;
+        --sqlms-gridhead-2: #232a34;
+        --sqlms-resultbar-1: #262d38;
+        --sqlms-resultbar-2: #1f242d;
+        --sqlms-resultbar-h1: rgba(116, 174, 234, 0.14);
+        --sqlms-resultbar-h2: rgba(116, 174, 234, 0.20);
+        /* relief: shadows, bevels */
+        --sqlms-sh-06: rgba(0, 0, 0, 0.38);
+        --sqlms-sh-08: rgba(0, 0, 0, 0.42);
+        --sqlms-sh-09: rgba(0, 0, 0, 0.45);
+        --sqlms-sh-10: rgba(0, 0, 0, 0.46);
+        --sqlms-sh-12: rgba(0, 0, 0, 0.50);
+        --sqlms-sh-16: rgba(0, 0, 0, 0.55);
+        --sqlms-sh-18: rgba(0, 0, 0, 0.60);
+        --sqlms-sh-22: rgba(0, 0, 0, 0.65);
+        --sqlms-sh-28: rgba(0, 0, 0, 0.70);
+        --sqlms-sh-ac-1: rgba(0, 0, 0, 0.60);
+        --sqlms-sh-ac-2: rgba(0, 0, 0, 0.45);
+        --sqlms-bevel-top: rgba(255, 255, 255, 0.06);
+        --sqlms-bevel-85: rgba(255, 255, 255, 0.07);
+        --sqlms-bevel-75: rgba(255, 255, 255, 0.06);
+        --sqlms-bevel-70: rgba(255, 255, 255, 0.06);
+        --sqlms-bevel-60: rgba(255, 255, 255, 0.05);
+        --sqlms-bevel-40: rgba(255, 255, 255, 0.05);
+        --sqlms-bevel-35: rgba(255, 255, 255, 0.045);
+        --sqlms-bevel-22: rgba(255, 255, 255, 0.04);
+        --sqlms-bevel-15: rgba(255, 255, 255, 0.06);
+        --sqlms-shade-07: rgba(0, 0, 0, 0.26);
+        --sqlms-shade-06: rgba(0, 0, 0, 0.24);
+        --sqlms-shade-05: rgba(0, 0, 0, 0.22);
+        --sqlms-shade-04: rgba(0, 0, 0, 0.20);
+        --sqlms-shade-0: rgba(0, 0, 0, 0);
+    }
+}
+
 .sqlms-root {
     display: flex;
     height: 100%;
     width: 100%;
-    background: #f8f9fa;
+    background: var(--sqlms-surface-2);
     font-size: 13px;
     overflow: hidden;
     /* A horizontal scroll (results grid, sidebar list, editor) that hits its
@@ -33,7 +371,7 @@
     max-width: 70vw;
     display: flex;
     flex-direction: column;
-    background: #ffffff;
+    background: var(--sqlms-surface);
     /* Table/view names are often long and truncated at this default width;
        the bar along its right edge widens it (see .sqlms-resizer-x). Its own
        children (search, list) scroll independently, so hidden here only
@@ -45,39 +383,39 @@
     align-items: center;
     gap: 6px;
     padding: 8px 10px;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--sqlms-border-soft);
 }
-.sqlms-search i { color: #868e96; }
+.sqlms-search i { color: var(--sqlms-text-muted); }
 .sqlms-search .sqlms-searchbox { flex: 1; }
 .sqlms-search .sqlms-searchbox input { width: auto; flex: 1; }
 .sqlms-hist-btn {
-    border: 1px solid #ced4da;
-    background: #fff;
+    border: 1px solid var(--sqlms-border-strong);
+    background: var(--sqlms-surface);
     border-radius: 4px;
-    color: #495057;
+    color: var(--sqlms-text-2);
     padding: 3px 8px;
     cursor: pointer;
 }
-.sqlms-hist-btn:hover { background: #eef4fb; color: #1a73e8; }
+.sqlms-hist-btn:hover { background: var(--sqlms-hover); color: var(--sqlms-link); }
 .sqlms-selbar {
     display: flex;
     align-items: center;
     gap: 6px;
     padding: 6px 10px;
-    background: #e7f5ff;
-    border-bottom: 1px solid #d0ebff;
+    background: var(--sqlms-accent-faint);
+    border-bottom: 1px solid var(--sqlms-selbar-edge);
 }
 .sqlms-check { cursor: pointer; margin: 0; flex: 0 0 auto; }
 .sqlms-searchmode {
     padding: 0 10px 8px;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid var(--sqlms-border-soft);
 }
 .sqlms-searchmode select {
     width: 100%;
-    border: 1px solid #ced4da;
+    border: 1px solid var(--sqlms-border-strong);
     border-radius: 4px;
     padding: 3px 6px;
-    background: #fff;
+    background: var(--sqlms-surface);
     outline: none;
 }
 .sqlms-objects { overflow-y: auto; flex: 1; overscroll-behavior: contain; }
@@ -92,7 +430,7 @@
    inside it -- so the card grows to its table's width instead of scrolling
    its own contents. */
 .sqlms-fieldgroup {
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--sqlms-border);
     border-radius: 6px;
     margin-bottom: 10px;
     min-width: min-content;
@@ -109,12 +447,12 @@
     height: 34px;
     box-sizing: border-box;
     padding: 0 10px;
-    background: #eceff1;
+    background: var(--sqlms-header);
     border-radius: 6px 6px 0 0;
     cursor: pointer;
     user-select: none;
     font-family: monospace;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--sqlms-border);
 }
 .sqlms-group-title2 .sqlms-count { margin-left: auto; }
 .sqlms-grouptablewrap { overflow: visible; }
@@ -128,7 +466,7 @@
 .sqlms-group-title {
     position: sticky;
     top: 0;
-    background: #f1f3f5;
+    background: var(--sqlms-surface-3);
     padding: 6px 10px;
     cursor: pointer;
     user-select: none;
@@ -136,13 +474,13 @@
     text-transform: uppercase;
     font-size: 11px;
     letter-spacing: .04em;
-    color: #495057;
-    border-bottom: 1px solid #e9ecef;
+    color: var(--sqlms-text-2);
+    border-bottom: 1px solid var(--sqlms-border-soft);
     z-index: 1;
 }
 .sqlms-count {
     float: right;
-    background: #dee2e6;
+    background: var(--sqlms-chip-bg);
     border-radius: 10px;
     padding: 0 7px;
     font-weight: 600;
@@ -154,10 +492,10 @@
     gap: 8px;
     padding: 5px 10px;
     cursor: pointer;
-    border-bottom: 1px solid #f1f3f5;
+    border-bottom: 1px solid var(--sqlms-divider);
 }
-.sqlms-list li:hover { background: #eef4fb; }
-.sqlms-list li.sqlms-active { background: #d7e9fb; font-weight: 600; }
+.sqlms-list li:hover { background: var(--sqlms-hover); }
+.sqlms-list li.sqlms-active { background: var(--sqlms-active); font-weight: 600; }
 .sqlms-name {
     flex: 1;
     overflow: hidden;
@@ -168,28 +506,28 @@
 .sqlms-insert {
     border: none;
     background: transparent;
-    color: #868e96;
+    color: var(--sqlms-text-muted);
     opacity: 0;
     cursor: pointer;
 }
 .sqlms-list li:hover .sqlms-insert { opacity: 1; }
-.sqlms-insert:hover { color: #1a73e8; }
+.sqlms-insert:hover { color: var(--sqlms-link); }
 
-.sqlms-script:hover { color: #7048e8; }
+.sqlms-script:hover { color: var(--sqlms-violet); }
 
 .sqlms-fav {
     border: none;
     background: transparent;
-    color: #adb5bd;
+    color: var(--sqlms-text-faint);
     opacity: 0;
     cursor: pointer;
     flex: 0 0 auto;
 }
 .sqlms-list li:hover .sqlms-fav { opacity: 1; }
-.sqlms-fav.sqlms-fav-on { opacity: 1; color: #f7b731; }
-.sqlms-fav:hover { color: #f7b731; }
+.sqlms-fav.sqlms-fav-on { opacity: 1; color: var(--sqlms-star); }
+.sqlms-fav:hover { color: var(--sqlms-star); }
 .sqlms-favhint {
-    color: #adb5bd;
+    color: var(--sqlms-text-faint);
     font-style: italic;
     cursor: default;
     justify-content: flex-start;
@@ -203,8 +541,8 @@
     align-items: center;
     gap: 2px;
     padding: 8px 10px 0;
-    border-bottom: 1px solid #dee2e6;
-    background: #ffffff;
+    border-bottom: 1px solid var(--sqlms-border);
+    background: var(--sqlms-surface);
 }
 .sqlms-tabs button {
     border: 1px solid transparent;
@@ -213,17 +551,17 @@
     padding: 6px 16px;
     cursor: pointer;
     border-radius: 4px 4px 0 0;
-    color: #495057;
+    color: var(--sqlms-text-2);
 }
 .sqlms-tabs button.sqlms-tab-active {
-    background: #f8f9fa;
-    border-color: #dee2e6;
+    background: var(--sqlms-surface-2);
+    border-color: var(--sqlms-border);
     font-weight: 600;
-    color: #212529;
+    color: var(--sqlms-text);
 }
 .sqlms-selected {
     margin-left: auto;
-    color: #868e96;
+    color: var(--sqlms-text-muted);
     font-family: monospace;
     display: flex;
     align-items: center;
@@ -232,17 +570,17 @@
 /* "Script" next to the selected view's name: the same entry point as the
    list row's hover button, for when the row has scrolled out of sight. */
 .sqlms-script-btn {
-    border: 1px solid #ced4da;
+    border: 1px solid var(--sqlms-border-strong);
     border-radius: 3px;
-    background: #fff;
-    color: #5f3dc4;
+    background: var(--sqlms-surface);
+    color: var(--sqlms-violet-deep);
     font-family: inherit;
     font-size: 12px;
     padding: 1px 8px;
     cursor: pointer;
 }
-.sqlms-script-btn:hover { background: #f3f0ff; border-color: #b197fc; }
-.sqlms-qtab-icon { color: #7048e8; font-size: 11px; }
+.sqlms-script-btn:hover { background: var(--sqlms-violet-soft); border-color: var(--sqlms-violet-edge); }
+.sqlms-qtab-icon { color: var(--sqlms-violet); font-size: 11px; }
 
 .sqlms-content { flex: 1; min-height: 0; overflow: hidden; display: flex; }
 .sqlms-pane {
@@ -253,7 +591,7 @@
     padding: 10px;
     overflow: hidden;
 }
-.sqlms-empty { color: #868e96; padding: 30px; text-align: center; }
+.sqlms-empty { color: var(--sqlms-text-muted); padding: 30px; text-align: center; }
 
 .sqlms-toolbar {
     display: flex;
@@ -262,19 +600,19 @@
     margin-bottom: 8px;
     flex-wrap: wrap;
 }
-.sqlms-info { color: #868e96; }
+.sqlms-info { color: var(--sqlms-text-muted); }
 
 .sqlms-running-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 8px 12px;
-    background: #e7f5ff;
-    border: 1px solid #74c0fc;
+    background: var(--sqlms-accent-faint);
+    border: 1px solid var(--sqlms-accent-border-2);
     border-radius: 4px;
     margin-top: 8px;
     margin-bottom: 8px;
-    color: #1864ab;
+    color: var(--sqlms-accent-strong);
     font-size: 13px;
 }
 .sqlms-running-status {
@@ -289,9 +627,9 @@
     flex: 1;
     min-height: 0;
     overflow: auto;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--sqlms-border);
     border-radius: 4px;
-    background: #fff;
+    background: var(--sqlms-surface);
     /* Wide result grids/field tables scroll horizontally; without this a
        trackpad swipe that runs out of room at either edge continues as the
        browser's back/forward gesture instead of just stopping. */
@@ -301,7 +639,7 @@
    table being stretched to 100% (which pushed short columns far apart). */
 .sqlms-grid { border-collapse: collapse; width: auto; font-family: monospace; }
 .sqlms-grid th, .sqlms-grid td {
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--sqlms-border-soft);
     padding: 4px 8px;
     text-align: left;
     white-space: nowrap;
@@ -312,21 +650,21 @@
 .sqlms-grid thead th {
     position: sticky;
     top: 0;
-    background: #eceff1;
+    background: var(--sqlms-header);
     z-index: 1;
     font-weight: 600;
 }
-.sqlms-grid tbody tr:nth-child(even) { background: #f8f9fa; }
-.sqlms-grid tbody tr:hover { background: #eef4fb; }
+.sqlms-grid tbody tr:nth-child(even) { background: var(--sqlms-surface-2); }
+.sqlms-grid tbody tr:hover { background: var(--sqlms-hover); }
 .sqlms-colhead { cursor: pointer; user-select: none; }
-.sqlms-colhead:hover { background: #dde3e8; }
-.sqlms-grid .sqlms-col-selected { background: #d0ebff !important; }
-.sqlms-grid thead th.sqlms-col-selected { color: #1971c2; }
+.sqlms-colhead:hover { background: var(--sqlms-hover-2); }
+.sqlms-grid .sqlms-col-selected { background: var(--sqlms-accent-soft) !important; }
+.sqlms-grid thead th.sqlms-col-selected { color: var(--sqlms-accent); }
 .sqlms-grid tfoot td {
     position: sticky;
     bottom: 0;
-    background: #eceff1;
-    border-top: 2px solid #ced4da;
+    background: var(--sqlms-header);
+    border-top: 2px solid var(--sqlms-border-strong);
     font-weight: 600;
     text-align: right;
     z-index: 1;
@@ -336,23 +674,23 @@
     align-items: center;
     gap: 4px;
     margin: 0;
-    color: #495057;
+    color: var(--sqlms-text-2);
 }
 .sqlms-aggselect {
-    border: 1px solid #ced4da;
+    border: 1px solid var(--sqlms-border-strong);
     border-radius: 4px;
     padding: 2px 4px;
-    background: #fff;
-    color: #212529;
+    background: var(--sqlms-surface);
+    color: var(--sqlms-text);
 }
 .sqlms-rownum {
-    color: #adb5bd;
+    color: var(--sqlms-text-faint);
     text-align: right;
-    background: #f1f3f5;
+    background: var(--sqlms-surface-3);
     width: 1%;
     white-space: nowrap;
 }
-.sqlms-arrow { color: #adb5bd; text-align: center; }
+.sqlms-arrow { color: var(--sqlms-text-faint); text-align: center; }
 .sqlms-via {
     display: inline-block;
     padding: 0 6px;
@@ -361,21 +699,21 @@
     font-weight: 600;
     text-transform: uppercase;
 }
-.sqlms-via-FK { background: #d0ebff; color: #1971c2; }
-.sqlms-via-custom { background: #eebefa; color: #9c36b5; }
-.sqlms-via-name { background: #e9ecef; color: #495057; }
+.sqlms-via-FK { background: var(--sqlms-accent-soft); color: var(--sqlms-accent); }
+.sqlms-via-custom { background: var(--sqlms-magenta-soft); color: var(--sqlms-magenta); }
+.sqlms-via-name { background: var(--sqlms-chip-bg-2); color: var(--sqlms-text-2); }
 .sqlms-unrelated {
     margin-top: 10px;
     padding: 10px;
-    border: 1px solid #ffe066;
-    background: #fff9db;
+    border: 1px solid var(--sqlms-note-border);
+    background: var(--sqlms-note-bg);
     border-radius: 4px;
 }
-.sqlms-unrelated-head { color: #856404; margin-bottom: 6px; }
+.sqlms-unrelated-head { color: var(--sqlms-note-text); margin-bottom: 6px; }
 .sqlms-unrelated-head .fa { margin-right: 6px; }
 .sqlms-unrelated-item { font-family: monospace; padding: 2px 0; }
-.sqlms-cand { color: #1971c2; }
-.sqlms-null { color: #c92a2a; font-style: italic; }
+.sqlms-cand { color: var(--sqlms-accent); }
+.sqlms-null { color: var(--sqlms-danger); font-style: italic; }
 
 /* executed-query banner above the query result */
 /* The part of the script the last Execute actually ran. A textarea draws no
@@ -389,7 +727,7 @@
        background, so the text underneath stays where it was and this layer
        still lines up with the textarea on top of it. Horizontal padding (or a
        border) WOULD shift the text and must not be added here. */
-    background: #d0ebff;
+    background: var(--sqlms-accent-soft);
     padding: 2.5px 0;
     -webkit-box-decoration-break: clone;
     box-decoration-break: clone;
@@ -415,18 +753,18 @@
     align-items: center;
     gap: 8px;
     padding: 4px 8px 4px 12px;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--sqlms-border);
     border-radius: 4px;
-    background: #ffffff;
+    background: var(--sqlms-surface);
     cursor: pointer;
-    color: #495057;
+    color: var(--sqlms-text-2);
     font-size: 13px;
     user-select: none;
 }
 .sqlms-qtab-active {
-    background: #e7f1ff;
-    border-color: #86b7fe;
-    color: #212529;
+    background: var(--sqlms-qtab-bg);
+    border-color: var(--sqlms-accent-edge);
+    color: var(--sqlms-text);
     font-weight: 600;
 }
 .sqlms-qtab-close {
@@ -436,21 +774,21 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    color: #868e96;
+    color: var(--sqlms-text-muted);
     font-size: 14px;
     line-height: 1;
 }
-.sqlms-qtab-close:hover { background: #f1aeb5; color: #842029; }
+.sqlms-qtab-close:hover { background: var(--sqlms-danger-edge); color: var(--sqlms-danger-deep); }
 .sqlms-qtab-add {
-    border: 1px dashed #ced4da;
+    border: 1px dashed var(--sqlms-border-strong);
     background: transparent;
     border-radius: 4px;
     width: 28px;
     height: 28px;
     cursor: pointer;
-    color: #495057;
+    color: var(--sqlms-text-2);
 }
-.sqlms-qtab-add:hover { background: #f8f9fa; color: #212529; }
+.sqlms-qtab-add:hover { background: var(--sqlms-surface-2); color: var(--sqlms-text); }
 .sqlms-editor {
     position: relative;
     /* One editor now holds the whole script, so it starts taller; the bar
@@ -458,10 +796,10 @@
     height: 300px;
     min-height: 140px;
     max-height: 70vh;
-    border: 1px solid #ced4da;
+    border: 1px solid var(--sqlms-border-strong);
     border-radius: 4px;
     overflow: hidden;
-    background: #fdfdfd;
+    background: var(--sqlms-editor-bg);
     flex: 0 0 auto;
     /* Height is dragged by the bar underneath it (.sqlms-resizer-y). */
 }
@@ -477,8 +815,8 @@
        variable, so the two can never drift apart. */
     width: var(--sqlms-gutter-w, 46px);
     overflow: hidden;
-    background: #f1f3f5;
-    border-right: 1px solid #e9ecef;
+    background: var(--sqlms-surface-3);
+    border-right: 1px solid var(--sqlms-border-soft);
     z-index: 2;
 }
 .sqlms-gutter-inner { position: relative; height: 100%; }
@@ -494,7 +832,7 @@
     text-align: right;
     font-family: monospace;
     font-size: 12px;
-    color: #adb5bd;
+    color: var(--sqlms-text-faint);
     user-select: none;
     pointer-events: none;
 }
@@ -506,10 +844,10 @@
     line-height: 20px;
     text-align: center;
     font-size: 13px;
-    color: #adb5bd;
+    color: var(--sqlms-text-faint);
     cursor: pointer;
 }
-.sqlms-fold:hover { color: #1971c2; }
+.sqlms-fold:hover { color: var(--sqlms-accent); }
 .sqlms-highlight, .sqlms-textarea {
     box-sizing: border-box !important;
     margin: 0 !important;
@@ -542,7 +880,7 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    color: #212529;
+    color: var(--sqlms-text);
     z-index: 0;
 }
 .sqlms-textarea {
@@ -550,7 +888,7 @@
     inset: 0;
     background: transparent;
     color: transparent;
-    caret-color: #212529;
+    caret-color: var(--sqlms-text);
     resize: none;
     outline: none;
     z-index: 1;
@@ -590,27 +928,27 @@
     .sqlms-root .sqlms-highlight { scrollbar-color: transparent transparent; }
 }
 
-.sqlms-kw { color: #1971c2; font-weight: 600; }
-.sqlms-str { color: #2f9e44; }
-.sqlms-ident { color: #9c36b5; }
-.sqlms-num { color: #e8590c; }
-.sqlms-comment { color: #868e96; font-style: italic; }
+.sqlms-kw { color: var(--sqlms-syn-kw); font-weight: 600; }
+.sqlms-str { color: var(--sqlms-syn-str); }
+.sqlms-ident { color: var(--sqlms-syn-ident); }
+.sqlms-num { color: var(--sqlms-syn-num); }
+.sqlms-comment { color: var(--sqlms-syn-comment); font-style: italic; }
 
 /* ---- field picking (Fields tab) ---- */
 .sqlms-hint {
     margin: -4px 0 8px;
     padding: 5px 8px;
-    background: #fff9db;
-    border-left: 3px solid #f0c33c;
+    background: var(--sqlms-note-bg);
+    border-left: 3px solid var(--sqlms-hint-edge);
     border-radius: 3px;
-    color: #6b5900;
+    color: var(--sqlms-hint-text);
 }
 .sqlms-pickcol { text-align: center; width: 1%; white-space: nowrap; }
-.sqlms-grid tbody tr.sqlms-row-picked { background: #e7f5ff; }
+.sqlms-grid tbody tr.sqlms-row-picked { background: var(--sqlms-accent-faint); }
 .sqlms-allfields {
     margin: 0 0 0 10px;
     font-weight: 400;
-    color: #868e96;
+    color: var(--sqlms-text-muted);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -621,22 +959,22 @@
     background: transparent;
     border-radius: 3px;
     padding: 0 6px;
-    color: #adb5bd;
+    color: var(--sqlms-text-faint);
     cursor: pointer;
 }
-.sqlms-pickbtn:hover { color: #1971c2; border-color: #ced4da; }
-.sqlms-pickbtn-on { color: #1971c2; background: #d0ebff; border-color: #a5d8ff; }
+.sqlms-pickbtn:hover { color: var(--sqlms-accent); border-color: var(--sqlms-border-strong); }
+.sqlms-pickbtn-on { color: var(--sqlms-accent); background: var(--sqlms-accent-soft); border-color: var(--sqlms-accent-border); }
 
 .sqlms-searchbox {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 2px 8px;
-    border: 1px solid #ced4da;
+    border: 1px solid var(--sqlms-border-strong);
     border-radius: 5px;
-    background: #fff;
+    background: var(--sqlms-surface);
 }
-.sqlms-searchbox i { color: #868e96; }
+.sqlms-searchbox i { color: var(--sqlms-text-muted); }
 .sqlms-searchbox input {
     border: 0;
     outline: none;
@@ -648,13 +986,13 @@
 .sqlms-searchbox-x {
     border: 0;
     background: transparent;
-    color: #868e96;
+    color: var(--sqlms-text-muted);
     cursor: pointer;
     font-size: 15px;
     line-height: 1;
     padding: 0 2px;
 }
-.sqlms-searchbox-x:hover { color: #c92a2a; }
+.sqlms-searchbox-x:hover { color: var(--sqlms-danger); }
 
 /* =====================================================================
    Depth pass
@@ -667,26 +1005,26 @@
    numbers, so a stray pixel there misaligns the whole editor.
    ===================================================================== */
 .sqlms-root {
-    background: linear-gradient(180deg, #eef1f5 0%, #f7f9fb 55%, #eef1f5 100%);
+    background: linear-gradient(180deg, var(--sqlms-ground-1) 0%, var(--sqlms-ground-2) 55%, var(--sqlms-ground-1) 100%);
 }
 .sqlms-root .sqlms-sidebar {
-    box-shadow: 2px 0 8px rgba(16, 24, 40, 0.06);
+    box-shadow: 2px 0 8px var(--sqlms-sh-06);
     z-index: 2;
 }
 .sqlms-root .sqlms-search,
 .sqlms-root .sqlms-searchmode {
-    background: linear-gradient(180deg, #ffffff, #f4f6f8);
+    background: linear-gradient(180deg, var(--sqlms-search-1), var(--sqlms-search-2));
 }
 .sqlms-root .sqlms-search input,
 .sqlms-root .sqlms-searchmode select,
 .sqlms-root .sqlms-searchbox,
 .sqlms-root .sqlms-aggselect {
-    box-shadow: inset 0 1px 2px rgba(16, 24, 40, 0.09);
+    box-shadow: inset 0 1px 2px var(--sqlms-sh-09);
 }
 .sqlms-root .sqlms-search input:focus,
 .sqlms-root .sqlms-searchbox:focus-within {
-    border-color: #74a9d8;
-    box-shadow: inset 0 1px 2px rgba(16, 24, 40, 0.09), 0 0 0 3px rgba(116, 169, 216, 0.22);
+    border-color: var(--sqlms-focus-border);
+    box-shadow: inset 0 1px 2px var(--sqlms-sh-09), 0 0 0 3px var(--sqlms-focus-ring);
 }
 
 /* raised cards */
@@ -695,13 +1033,13 @@
 .sqlms-root .sqlms-fieldgroup,
 .sqlms-root .sqlms-hint {
     border-radius: 6px;
-    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 12px rgba(16, 24, 40, 0.08);
+    box-shadow: 0 1px 2px var(--sqlms-sh-06), 0 4px 12px var(--sqlms-sh-08);
 }
-.sqlms-root .sqlms-editor { background: #fff; }
+.sqlms-root .sqlms-editor { background: var(--sqlms-surface); }
 .sqlms-root .sqlms-group-title2,
 .sqlms-root .sqlms-group-title {
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(0, 0, 0, 0.05));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    background-image: linear-gradient(180deg, var(--sqlms-bevel-85), var(--sqlms-shade-05));
+    box-shadow: inset 0 1px 0 var(--sqlms-bevel-70);
 }
 
 /* View tabs (Query / Fields / Field Mapping). The selected one is a raised
@@ -709,27 +1047,27 @@
    by painting over the strip's bottom rule -- so it reads as the front sheet
    of the stack rather than just a differently shaded button. */
 .sqlms-root .sqlms-tabs {
-    background: linear-gradient(180deg, #ffffff, #eef1f5);
+    background: linear-gradient(180deg, var(--sqlms-tabstrip-1), var(--sqlms-tabstrip-2));
     gap: 4px;
 }
 .sqlms-root .sqlms-tabs button {
     position: relative;
     padding: 8px 20px 7px;
     border-radius: 8px 8px 0 0;
-    color: #6b7885;
+    color: var(--sqlms-tab-text);
     font-weight: 500;
     transition: background 0.12s ease, box-shadow 0.12s ease, color 0.12s ease;
 }
 .sqlms-root .sqlms-tabs button:hover:not(.sqlms-tab-active) {
-    background: rgba(255, 255, 255, 0.75);
-    color: #3f9ea2;
+    background: var(--sqlms-bevel-75);
+    color: var(--sqlms-teal);
 }
 .sqlms-root .sqlms-tabs button.sqlms-tab-active {
-    background: linear-gradient(180deg, #ffffff 0%, #f6f9fa 100%);
-    border-color: #cdd8dc;
-    color: #14555a;
+    background: linear-gradient(180deg, var(--sqlms-tab-face-1) 0%, var(--sqlms-tab-face-2) 100%);
+    border-color: var(--sqlms-tab-edge);
+    color: var(--sqlms-teal-deep);
     font-weight: 700;
-    box-shadow: 0 -4px 12px rgba(16, 24, 40, 0.10), inset 0 1px 0 #fff;
+    box-shadow: 0 -4px 12px var(--sqlms-sh-10), inset 0 1px 0 var(--sqlms-bevel-top);
 }
 .sqlms-root .sqlms-tabs button.sqlms-tab-active::before {
     content: "";
@@ -739,7 +1077,7 @@
     right: 0;
     height: 3px;
     border-radius: 8px 8px 0 0;
-    background: linear-gradient(90deg, #3f9ea2, #6cc6b6);
+    background: linear-gradient(90deg, var(--sqlms-teal), var(--sqlms-teal-2));
 }
 /* covers the 1px rule under the tab strip, joining tab to pane */
 .sqlms-root .sqlms-tabs button.sqlms-tab-active::after {
@@ -749,16 +1087,16 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: #f6f9fa;
+    background: var(--sqlms-tab-face-2);
 }
 
 /* query sub-tabs */
 .sqlms-root .sqlms-qtab {
-    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(0, 0, 0, 0.04));
+    box-shadow: 0 1px 2px var(--sqlms-sh-08);
+    background-image: linear-gradient(180deg, var(--sqlms-bevel-70), var(--sqlms-shade-04));
 }
 .sqlms-root .sqlms-qtab-active {
-    box-shadow: 0 2px 6px rgba(16, 24, 40, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    box-shadow: 0 2px 6px var(--sqlms-sh-16), inset 0 1px 0 var(--sqlms-bevel-85);
 }
 
 /* buttons: a bevel over whatever colour Bootstrap gave them, and a real
@@ -767,9 +1105,9 @@
 .sqlms-root .sqlms-hist-btn,
 .sqlms-root .sqlms-pickbtn,
 .sqlms-root .sqlms-qtab-add {
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(0, 0, 0, 0.07));
-    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.12), 0 2px 4px rgba(16, 24, 40, 0.08),
-                inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    background-image: linear-gradient(180deg, var(--sqlms-bevel-22), var(--sqlms-shade-07));
+    box-shadow: 0 1px 2px var(--sqlms-sh-12), 0 2px 4px var(--sqlms-sh-08),
+                inset 0 1px 0 var(--sqlms-bevel-35);
     border-radius: 5px;
     transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.12s ease;
 }
@@ -778,15 +1116,15 @@
 .sqlms-root .sqlms-pickbtn:hover,
 .sqlms-root .sqlms-qtab-add:hover {
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(16, 24, 40, 0.16), 0 6px 12px rgba(16, 24, 40, 0.12),
-                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    box-shadow: 0 2px 4px var(--sqlms-sh-16), 0 6px 12px var(--sqlms-sh-12),
+                inset 0 1px 0 var(--sqlms-bevel-40);
 }
 .sqlms-root .btn:active,
 .sqlms-root .sqlms-hist-btn:active,
 .sqlms-root .sqlms-pickbtn:active,
 .sqlms-root .sqlms-qtab-add:active {
     transform: translateY(1px);
-    box-shadow: inset 0 2px 4px rgba(16, 24, 40, 0.22);
+    box-shadow: inset 0 2px 4px var(--sqlms-sh-22);
 }
 .sqlms-root .btn:disabled,
 .sqlms-root .btn[disabled] {
@@ -809,50 +1147,50 @@
 
 /* result / field grids */
 .sqlms-root .sqlms-grid thead th {
-    background-image: linear-gradient(180deg, #f3f5f7, #dfe4e8);
-    box-shadow: inset 0 1px 0 #fff, 0 2px 4px rgba(16, 24, 40, 0.10);
+    background-image: linear-gradient(180deg, var(--sqlms-gridhead-1), var(--sqlms-gridhead-2));
+    box-shadow: inset 0 1px 0 var(--sqlms-bevel-top), 0 2px 4px var(--sqlms-sh-10);
 }
 .sqlms-root .sqlms-grid tfoot td {
-    background-image: linear-gradient(180deg, #f3f5f7, #dfe4e8);
-    box-shadow: inset 0 1px 0 #fff, 0 -2px 4px rgba(16, 24, 40, 0.10);
+    background-image: linear-gradient(180deg, var(--sqlms-gridhead-1), var(--sqlms-gridhead-2));
+    box-shadow: inset 0 1px 0 var(--sqlms-bevel-top), 0 -2px 4px var(--sqlms-sh-10);
 }
 .sqlms-root .sqlms-grid tbody tr:hover {
-    box-shadow: inset 0 0 0 9999px rgba(116, 169, 216, 0.10);
+    box-shadow: inset 0 0 0 9999px var(--sqlms-row-hover-tint);
 }
 .sqlms-root .sqlms-rownum {
-    background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0));
+    background-image: linear-gradient(90deg, var(--sqlms-shade-05), var(--sqlms-shade-0));
 }
 
 /* sidebar list */
 .sqlms-root .sqlms-list li { transition: background 0.1s ease, box-shadow 0.1s ease; }
 .sqlms-root .sqlms-list li.sqlms-active {
-    box-shadow: inset 3px 0 0 #5b899e, 0 1px 2px rgba(16, 24, 40, 0.08);
+    box-shadow: inset 3px 0 0 var(--sqlms-active-edge), 0 1px 2px var(--sqlms-sh-08);
 }
 .sqlms-root .sqlms-count {
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(0, 0, 0, 0.06));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 1px rgba(16, 24, 40, 0.10);
+    background-image: linear-gradient(180deg, var(--sqlms-bevel-60), var(--sqlms-shade-06));
+    box-shadow: inset 0 1px 0 var(--sqlms-bevel-60), 0 1px 1px var(--sqlms-sh-10);
 }
 .sqlms-root .sqlms-selbar {
-    background-image: linear-gradient(180deg, #f0f8ff, #dbeeff);
-    box-shadow: inset 0 -1px 0 rgba(16, 24, 40, 0.06);
+    background-image: linear-gradient(180deg, var(--sqlms-selbar-1), var(--sqlms-selbar-2));
+    box-shadow: inset 0 -1px 0 var(--sqlms-sh-06);
 }
 
 /* the fold gutter reads as a groove cut into the editor */
 .sqlms-root .sqlms-gutter {
-    background-image: linear-gradient(90deg, #e9edf1, #f4f6f8);
-    box-shadow: inset -2px 0 3px -2px rgba(16, 24, 40, 0.28);
+    background-image: linear-gradient(90deg, var(--sqlms-gutter-1), var(--sqlms-gutter-2));
+    box-shadow: inset -2px 0 3px -2px var(--sqlms-sh-28);
 }
 
 /* slimmer, rounded scrollbars so the panels read as floating surfaces */
 .sqlms-root ::-webkit-scrollbar { width: 11px; height: 11px; }
 .sqlms-root ::-webkit-scrollbar-track { background: transparent; }
 .sqlms-root ::-webkit-scrollbar-thumb {
-    background: #c3ccd5;
+    background: var(--sqlms-scroll-thumb);
     border: 3px solid transparent;
     background-clip: padding-box;
     border-radius: 8px;
 }
-.sqlms-root ::-webkit-scrollbar-thumb:hover { background-clip: padding-box; background-color: #9fadbb; }
+.sqlms-root ::-webkit-scrollbar-thumb:hover { background-clip: padding-box; background-color: var(--sqlms-scroll-thumb-h); }
 
 /* ---- the close-tabs menu ---- */
 .sqlms-tabmenu-wrap { position: relative; display: inline-flex; }
@@ -863,7 +1201,7 @@
     align-items: center;
     gap: 4px;
 }
-.sqlms-qtab-closeall:hover { color: #c92a2a; }
+.sqlms-qtab-closeall:hover { color: var(--sqlms-danger); }
 /* Catches the next click anywhere else, so the menu closes the way a menu
    should without a document-level listener to install and tear down. */
 .sqlms-tabmenu-backdrop {
@@ -878,14 +1216,14 @@
     z-index: 21;
     min-width: 232px;
     padding: 4px;
-    background: #fff;
-    border: 1px solid #dee2e6;
+    background: var(--sqlms-surface);
+    border: 1px solid var(--sqlms-border);
     border-radius: 7px;
-    box-shadow: 0 6px 20px rgba(16, 24, 40, 0.18), 0 1px 3px rgba(16, 24, 40, 0.10);
+    box-shadow: 0 6px 20px var(--sqlms-sh-18), 0 1px 3px var(--sqlms-sh-10);
 }
 .sqlms-tabmenu-head {
     padding: 4px 10px 6px;
-    color: #868e96;
+    color: var(--sqlms-text-muted);
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
@@ -900,24 +1238,24 @@
     border: 0;
     border-radius: 5px;
     background: transparent;
-    color: #212529;
+    color: var(--sqlms-text);
     text-align: left;
     cursor: pointer;
 }
-.sqlms-tabmenu button:hover:not(:disabled) { background: #e7f5ff; color: #14555a; }
-.sqlms-tabmenu button:disabled { color: #adb5bd; cursor: default; }
+.sqlms-tabmenu button:hover:not(:disabled) { background: var(--sqlms-accent-faint); color: var(--sqlms-teal-deep); }
+.sqlms-tabmenu button:disabled { color: var(--sqlms-text-faint); cursor: default; }
 .sqlms-tabmenu-n {
     margin-left: auto;
     min-width: 20px;
     padding: 0 6px;
     border-radius: 9px;
-    background: #eceff1;
-    color: #495057;
+    background: var(--sqlms-header);
+    color: var(--sqlms-text-2);
     font-size: 11px;
     font-weight: 600;
     text-align: center;
 }
-.sqlms-tabmenu button:disabled .sqlms-tabmenu-n { color: #adb5bd; }
+.sqlms-tabmenu button:disabled .sqlms-tabmenu-n { color: var(--sqlms-text-faint); }
 
 /* ---- drag-to-resize bars ----
    A full-length edge is a far bigger target than the browser's own corner
@@ -945,7 +1283,7 @@
     width: 7px;
     align-self: stretch;
     cursor: col-resize;
-    border-left: 1px solid #dee2e6;
+    border-left: 1px solid var(--sqlms-border);
 }
 .sqlms-resizer-y {
     height: 9px;
@@ -955,33 +1293,33 @@
 .sqlms-resizer-grip {
     display: block;
     border-radius: 3px;
-    background: #ced4da;
+    background: var(--sqlms-grip);
     transition: background 0.12s ease, transform 0.12s ease;
 }
 .sqlms-resizer-x .sqlms-resizer-grip { width: 3px; height: 34px; }
 .sqlms-resizer-y .sqlms-resizer-grip { width: 46px; height: 3px; }
 .sqlms-resizer:hover .sqlms-resizer-grip,
 .sqlms-resizer-active .sqlms-resizer-grip {
-    background: #3f9ea2;
+    background: var(--sqlms-teal);
 }
 .sqlms-resizer-x:hover .sqlms-resizer-grip,
 .sqlms-resizer-x.sqlms-resizer-active .sqlms-resizer-grip { transform: scaleX(1.6); }
 .sqlms-resizer-y:hover .sqlms-resizer-grip,
 .sqlms-resizer-y.sqlms-resizer-active .sqlms-resizer-grip { transform: scaleY(1.6); }
-.sqlms-resizer-x:hover, .sqlms-resizer-x.sqlms-resizer-active { background: rgba(63, 158, 162, 0.10); }
-.sqlms-resizer-y:hover, .sqlms-resizer-y.sqlms-resizer-active { background: rgba(63, 158, 162, 0.10); }
+.sqlms-resizer-x:hover, .sqlms-resizer-x.sqlms-resizer-active { background: var(--sqlms-teal-tint); }
+.sqlms-resizer-y:hover, .sqlms-resizer-y.sqlms-resizer-active { background: var(--sqlms-teal-tint); }
 
 /* Text -> number conversion dialog */
 .sqlms-converttable { width: 100%; font-size: 13px; }
 .sqlms-converttable td, .sqlms-converttable th { white-space: normal; }
-.sqlms-converttable tbody tr.sqlms-convert-skip { color: #868e96; }
+.sqlms-converttable tbody tr.sqlms-convert-skip { color: var(--sqlms-text-muted); }
 .sqlms-convert-bad {
     display: inline-block;
     margin-right: 6px;
     padding: 0 6px;
     border-radius: 8px;
-    background: #ffe3e3;
-    color: #c92a2a;
+    background: var(--sqlms-danger-soft);
+    color: var(--sqlms-danger);
     font-weight: 600;
 }
 .sqlms-convertsql {
@@ -989,8 +1327,8 @@
     padding: 8px 10px;
     max-height: 220px;
     overflow: auto;
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
+    background: var(--sqlms-surface-2);
+    border: 1px solid var(--sqlms-border-soft);
     border-radius: 4px;
     font-family: monospace;
     font-size: 12px;
@@ -1000,8 +1338,8 @@
     margin-left: 6px;
     padding: 0 6px;
     border-radius: 8px;
-    background: #e7f5ff;
-    color: #1971c2;
+    background: var(--sqlms-accent-faint);
+    color: var(--sqlms-accent);
     font-size: 11px;
     font-weight: 600;
 }
@@ -1026,10 +1364,10 @@
     min-width: 320px;
     max-width: 480px;
     max-height: 280px;
-    background: #ffffff;
-    border: 1px solid #d0d7de;
+    background: var(--sqlms-surface);
+    border: 1px solid var(--sqlms-ac-border);
     border-radius: 8px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16), 0 2px 6px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 30px var(--sqlms-sh-ac-1), 0 2px 6px var(--sqlms-sh-ac-2);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -1044,11 +1382,11 @@
     align-items: center;
     justify-content: space-between;
     padding: 6px 12px;
-    background: #f6f8fa;
-    border-bottom: 1px solid #e1e4e8;
+    background: var(--sqlms-ac-head-bg);
+    border-bottom: 1px solid var(--sqlms-ac-head-bd);
     font-size: 11px;
     font-weight: 600;
-    color: #57606a;
+    color: var(--sqlms-ac-head-tx);
     letter-spacing: 0.3px;
     user-select: none;
 }
@@ -1057,12 +1395,12 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    color: #1c2128;
+    color: var(--sqlms-ac-title);
 }
 
 .sqlms-ac-count {
     font-size: 11px;
-    color: #8c959f;
+    color: var(--sqlms-ac-count);
     font-weight: 500;
 }
 
@@ -1080,11 +1418,11 @@
     background: transparent;
 }
 .sqlms-ac-list::-webkit-scrollbar-thumb {
-    background: #d0d7de;
+    background: var(--sqlms-ac-thumb);
     border-radius: 4px;
 }
 .sqlms-ac-list::-webkit-scrollbar-thumb:hover {
-    background: #adb5bd;
+    background: var(--sqlms-ac-thumb-hover);
 }
 
 .sqlms-ac-item {
@@ -1100,8 +1438,8 @@
 
 .sqlms-ac-item:hover,
 .sqlms-ac-item.sqlms-ac-active {
-    background: #ebf5ff;
-    border-left-color: #1971c2;
+    background: var(--sqlms-ac-hover);
+    border-left-color: var(--sqlms-accent);
 }
 
 .sqlms-ac-badge {
@@ -1120,46 +1458,46 @@
 }
 
 .sqlms-ac-badge-keyword {
-    background: #e7f5ff;
-    color: #1971c2;
-    border: 1px solid #a5d8ff;
+    background: var(--sqlms-accent-faint);
+    color: var(--sqlms-accent);
+    border: 1px solid var(--sqlms-accent-border);
 }
 
 .sqlms-ac-badge-function {
-    background: #f3f0ff;
-    color: #7950f2;
-    border: 1px solid #d0bfff;
+    background: var(--sqlms-badge-fn-bg);
+    color: var(--sqlms-badge-fn-tx);
+    border: 1px solid var(--sqlms-badge-fn-bd);
 }
 
 .sqlms-ac-badge-table {
-    background: #e6fcf5;
-    color: #0ca678;
-    border: 1px solid #96f2d7;
+    background: var(--sqlms-badge-tb-bg);
+    color: var(--sqlms-badge-tb-tx);
+    border: 1px solid var(--sqlms-badge-tb-bd);
 }
 
 .sqlms-ac-badge-view {
-    background: #fff9db;
-    color: #f59f00;
-    border: 1px solid #ffec99;
+    background: var(--sqlms-badge-vw-bg);
+    color: var(--sqlms-badge-vw-tx);
+    border: 1px solid var(--sqlms-badge-vw-bd);
 }
 
 .sqlms-ac-badge-field {
-    background: #ebfbee;
-    color: #2b8a3e;
-    border: 1px solid #b2f2bb;
+    background: var(--sqlms-badge-fd-bg);
+    color: var(--sqlms-badge-fd-tx);
+    border: 1px solid var(--sqlms-badge-fd-bd);
 }
 
 .sqlms-ac-badge-alias {
-    background: #fff4e6;
-    color: #e8590c;
-    border: 1px solid #ffd8a8;
+    background: var(--sqlms-badge-al-bg);
+    color: var(--sqlms-badge-al-tx);
+    border: 1px solid var(--sqlms-badge-al-bd);
 }
 
 .sqlms-ac-label {
     font-family: monospace;
     font-size: 12.5px;
     font-weight: 500;
-    color: #212529;
+    color: var(--sqlms-text);
     flex: 1 1 auto;
     white-space: nowrap;
     overflow: hidden;
@@ -1167,16 +1505,16 @@
 }
 
 .sqlms-ac-part-match {
-    color: #1971c2;
+    color: var(--sqlms-accent);
     font-weight: 700;
     text-decoration: underline;
-    text-decoration-color: rgba(25, 113, 194, 0.4);
+    text-decoration-color: var(--sqlms-match-underline);
     text-underline-offset: 2px;
 }
 
 .sqlms-ac-detail {
     font-size: 11px;
-    color: #868e96;
+    color: var(--sqlms-text-muted);
     font-family: monospace;
     flex-shrink: 0;
     margin-left: auto;
@@ -1184,9 +1522,9 @@
 
 .sqlms-ac-dtype {
     font-size: 10px;
-    color: #495057;
-    background: #f1f3f5;
-    border: 1px solid #dee2e6;
+    color: var(--sqlms-text-2);
+    background: var(--sqlms-surface-3);
+    border: 1px solid var(--sqlms-border);
     padding: 1px 5px;
     border-radius: 3px;
     font-family: monospace;
@@ -1198,20 +1536,20 @@
     align-items: center;
     justify-content: space-between;
     padding: 4px 10px;
-    background: #f8f9fa;
-    border-top: 1px solid #e9ecef;
+    background: var(--sqlms-surface-2);
+    border-top: 1px solid var(--sqlms-border-soft);
     font-size: 10.5px;
-    color: #868e96;
+    color: var(--sqlms-text-muted);
     user-select: none;
 }
 
 .sqlms-ac-footer kbd {
-    background: #e9ecef;
-    border: 1px solid #ced4da;
+    background: var(--sqlms-chip-bg-2);
+    border: 1px solid var(--sqlms-border-strong);
     border-radius: 3px;
     padding: 0 4px;
     font-size: 9.5px;
-    color: #495057;
+    color: var(--sqlms-text-2);
     font-family: monospace;
     margin: 0 1px;
 }
@@ -1249,9 +1587,9 @@
    bare grid it has always been. */
 .sqlms-resultset-multi {
     flex: 0 0 auto;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--sqlms-border);
     border-radius: 6px;
-    background: #f8f9fa;
+    background: var(--sqlms-surface-2);
     overflow: hidden;
 }
 .sqlms-resultset-multi .sqlms-resultbody {
@@ -1262,7 +1600,7 @@
     flex: none;
     max-height: 320px;
 }
-.sqlms-resultset-active { border-color: #74c0fc; }
+.sqlms-resultset-active { border-color: var(--sqlms-accent-border-2); }
 
 .sqlms-resultbar {
     display: flex;
@@ -1272,12 +1610,12 @@
     cursor: pointer;
     user-select: none;
     font-size: 12px;
-    background-image: linear-gradient(180deg, #ffffff, #eef1f4);
-    border-bottom: 1px solid #dee2e6;
+    background-image: linear-gradient(180deg, var(--sqlms-resultbar-1), var(--sqlms-resultbar-2));
+    border-bottom: 1px solid var(--sqlms-border);
 }
-.sqlms-resultbar:hover { background-image: linear-gradient(180deg, #f1f9ff, #dbeeff); }
+.sqlms-resultbar:hover { background-image: linear-gradient(180deg, var(--sqlms-resultbar-h1), var(--sqlms-resultbar-h2)); }
 .sqlms-resultset-collapsed .sqlms-resultbar { border-bottom: none; }
-.sqlms-resultbar-caret { width: 10px; color: #495057; }
+.sqlms-resultbar-caret { width: 10px; color: var(--sqlms-text-2); }
 .sqlms-resultbar-idx {
     min-width: 20px;
     height: 18px;
@@ -1286,8 +1624,8 @@
     align-items: center;
     justify-content: center;
     border-radius: 10px;
-    background: #495057;
-    color: #fff;
+    background: var(--sqlms-badge-solid-bg);
+    color: var(--sqlms-badge-solid-tx);
     font-size: 11px;
     font-weight: 600;
 }
@@ -1298,7 +1636,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     font-family: monospace;
-    color: #343a40;
+    color: var(--sqlms-text-strong);
 }
 .sqlms-resultbar-status {
     padding: 1px 8px;
@@ -1306,13 +1644,13 @@
     font-weight: 600;
     white-space: nowrap;
 }
-.sqlms-rstat-ok { background: #d3f9d8; color: #2b8a3e; }
-.sqlms-rstat-error { background: #ffe3e3; color: #c92a2a; }
-.sqlms-rstat-skipped { background: #fff3bf; color: #e67700; }
+.sqlms-rstat-ok { background: var(--sqlms-success-soft); color: var(--sqlms-success); }
+.sqlms-rstat-error { background: var(--sqlms-danger-soft); color: var(--sqlms-danger); }
+.sqlms-rstat-skipped { background: var(--sqlms-warn-soft); color: var(--sqlms-warn); }
 .sqlms-resultbar-hint {
     width: 34px;
     text-align: right;
-    color: #868e96;
+    color: var(--sqlms-text-muted);
 }
 
 /* The strip above the stack: how many statements ran, and one control for
@@ -1329,27 +1667,27 @@
     gap: 6px;
     font-size: 12px;
     font-weight: 600;
-    color: #495057;
+    color: var(--sqlms-text-2);
     margin-right: auto;
 }
 /* A bar with nothing behind it doesn't pretend to be a control. */
 .sqlms-resultbar-static { cursor: default; }
-.sqlms-resultbar-static:hover { background-image: linear-gradient(180deg, #ffffff, #eef1f4); }
+.sqlms-resultbar-static:hover { background-image: linear-gradient(180deg, var(--sqlms-resultbar-1), var(--sqlms-resultbar-2)); }
 
 /* ---- column selection, resizing and fitting (every grid) ---- */
 /* A picked column reads like pgAdmin's: a solid blue header over
    light-blue cells. */
 .sqlms-root .sqlms-grid thead th.sqlms-col-selected {
-    background: #3d6591 !important;
-    color: #fff;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 2px 4px rgba(16, 24, 40, 0.10);
+    background: var(--sqlms-accent-solid) !important;
+    color: var(--sqlms-on-accent);
+    box-shadow: inset 0 1px 0 var(--sqlms-bevel-15), 0 2px 4px var(--sqlms-sh-10);
 }
-.sqlms-grid td.sqlms-col-selected { background: #dceaf7 !important; }
-.sqlms-grid td.sqlms-null.sqlms-col-selected { color: #c92a2a; }
+.sqlms-grid td.sqlms-col-selected { background: var(--sqlms-accent-wash) !important; }
+.sqlms-grid td.sqlms-null.sqlms-col-selected { color: var(--sqlms-danger); }
 /* The "#" corner header selects every column. */
 .sqlms-grid thead th.sqlms-corner { cursor: pointer; user-select: none; }
-.sqlms-grid thead th.sqlms-corner:hover:not(.sqlms-col-selected) { background: #dde3e8; }
-.sqlms-root .sqlms-grid thead th.sqlms-corner.sqlms-col-selected { color: #dceaf7; }
+.sqlms-grid thead th.sqlms-corner:hover:not(.sqlms-col-selected) { background: var(--sqlms-hover-2); }
+.sqlms-root .sqlms-grid thead th.sqlms-corner.sqlms-col-selected { color: var(--sqlms-accent-wash-text); }
 /* Header: the column name, with its type (when the result carries one)
    underneath. */
 .sqlms-colhead-label { display: inline-block; vertical-align: top; }
@@ -1359,8 +1697,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.sqlms-colhead-type { font-weight: 400; font-size: 0.9em; color: #6c757d; }
-.sqlms-grid thead th.sqlms-col-selected .sqlms-colhead-type { color: #dceaf7; }
+.sqlms-colhead-type { font-weight: 400; font-size: 0.9em; color: var(--sqlms-text-dim); }
+.sqlms-grid thead th.sqlms-col-selected .sqlms-colhead-type { color: var(--sqlms-accent-wash-text); }
 /* Resize grip on each header's right edge. thead th is already sticky,
    which positions the grip against it. */
 .sqlms-grid thead th.sqlms-colhead { padding-right: 12px; }
@@ -1374,7 +1712,7 @@
     z-index: 3;
 }
 .sqlms-colresize:hover,
-.sqlms-colresize.sqlms-colresize-active { background: rgba(25, 113, 194, 0.45); }
+.sqlms-colresize.sqlms-colresize-active { background: var(--sqlms-colresize); }
 body.sqlms-col-resizing,
 body.sqlms-col-resizing * { cursor: col-resize !important; user-select: none !important; }
 /* Once a grid's widths are pinned (table-layout: fixed, set by _fitGrids)
@@ -1384,59 +1722,58 @@ body.sqlms-col-resizing * { cursor: col-resize !important; user-select: none !im
 .sqlms-grid[data-sized] td { max-width: none; }
 .sqlms-grid[data-sized] .sqlms-colhead-label { display: block; }
 
-/* ---- commit / rollback prompt after an INSERT/UPDATE/DELETE/MERGE run ---- */
-.sqlms-txn-list {
+/* ---- "Are you sure?" before an INSERT/UPDATE/DELETE/MERGE run ---- */
+.sqlms-confirm-list {
     list-style: none;
     margin: 0 0 10px;
     padding: 0;
     max-height: 240px;
     overflow: auto;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--sqlms-border);
     border-radius: 4px;
 }
-.sqlms-txn-list li {
+.sqlms-confirm-list li {
     display: flex;
     align-items: baseline;
     gap: 8px;
     padding: 5px 8px;
-    border-bottom: 1px solid #f1f3f5;
+    border-bottom: 1px solid var(--sqlms-divider);
 }
-.sqlms-txn-list li:last-child { border-bottom: none; }
-.sqlms-txn-idx { color: #adb5bd; min-width: 1.5em; text-align: right; }
-.sqlms-txn-sql {
+.sqlms-confirm-list li:last-child { border-bottom: none; }
+.sqlms-confirm-idx { color: var(--sqlms-text-faint); min-width: 1.5em; text-align: right; }
+.sqlms-confirm-sql {
     flex: 1;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: #212529;
+    color: var(--sqlms-text);
 }
-.sqlms-txn-msg { white-space: nowrap; font-weight: 600; }
 /* The prompt's buttons sit in the body, not .modal-footer (see
-   SqlMsForcedDialog), laid out as a footer would be. */
-.sqlms-txn-actions {
+   SqlMsConfirmDialog), laid out as a footer would be. */
+.sqlms-confirm-actions {
     display: flex;
     gap: 6px;
     margin: 14px -16px -16px;
     padding: 12px 16px;
-    border-top: 1px solid #dee2e6;
+    border-top: 1px solid var(--sqlms-border);
 }
 
 /* ---- triggers in the list on the left ---- */
-.sqlms-trg-icon { color: #f08c00; flex: 0 0 auto; width: 13px; text-align: center; }
-.sqlms-trg-table { color: #868e96; font-weight: 400; margin-left: 4px; }
-.sqlms-list li.sqlms-trg-disabled .sqlms-name { color: #adb5bd; text-decoration: line-through; }
-.sqlms-list li.sqlms-trg-disabled .sqlms-trg-icon { color: #ced4da; }
+.sqlms-trg-icon { color: var(--sqlms-trigger); flex: 0 0 auto; width: 13px; text-align: center; }
+.sqlms-trg-table { color: var(--sqlms-text-muted); font-weight: 400; margin-left: 4px; }
+.sqlms-list li.sqlms-trg-disabled .sqlms-name { color: var(--sqlms-text-faint); text-decoration: line-through; }
+.sqlms-list li.sqlms-trg-disabled .sqlms-trg-icon { color: var(--sqlms-icon-disabled); }
 .sqlms-trg-off {
     flex: 0 0 auto;
     font-size: 10px;
     text-transform: uppercase;
-    color: #868e96;
-    border: 1px solid #dee2e6;
+    color: var(--sqlms-text-muted);
+    border: 1px solid var(--sqlms-border);
     border-radius: 8px;
     padding: 0 5px;
 }
-.sqlms-list li.sqlms-trg-none { color: #adb5bd; cursor: default; font-style: italic; }
+.sqlms-list li.sqlms-trg-none { color: var(--sqlms-text-faint); cursor: default; font-style: italic; }
 .sqlms-list li.sqlms-trg-none:hover { background: none; }
 
 /* Nothing under the editor (no results, or "Hide results"): it takes the
@@ -1446,4 +1783,668 @@ body.sqlms-col-resizing * { cursor: col-resize !important; user-select: none !im
     flex: 1 1 auto;
     height: auto !important;
     max-height: none;
+}
+
+/* =====================================================================
+   Dark mode: the parts that aren't ours
+   ---------------------------------------------------------------------
+   The tokens above re-theme everything this file draws itself. What is
+   left is the Bootstrap/Odoo furniture the templates borrow -- buttons,
+   alerts, form controls, the dialog shell, and the whole Odoo list view
+   behind History -- which Odoo 17 Community only ships in light. Without
+   this section the tool would be a dark panel full of white buttons.
+
+   Three roots, and nothing here applies outside them:
+     .sqlms-root                            the Analyser
+     .sqlms-dialog                          its dialogs (contentClass, set
+                                            on each Dialog in the XML --
+                                            they render into Odoo's modal
+                                            portal, outside .sqlms-root)
+     .o_database_studio_history_list_view   the History list view, the
+                                            class the js_class puts on the
+                                            view controller root. The
+                                            control panel sits INSIDE that
+                                            root, so breadcrumb, search bar
+                                            and pager are in scope too.
+
+   `:not(#_)` appears throughout. It matches nothing and changes which
+   elements are selected not at all; it is there to lift these rules an
+   id's worth of specificity, because Bootstrap and the Clarity backend
+   theme paint several of these !important from long, body-rooted
+   selectors of their own, and among !important declarations specificity
+   still decides. It beats them without this module ever having to name
+   the theme's markup, and still wins on a server without that theme.
+   ===================================================================== */
+@media (prefers-color-scheme: dark) {
+    /* Tells the browser to draw the native parts dark too: the textarea's
+       own selection and caret, <select> drop-downs, checkboxes, and the
+       default scrollbars on anything we haven't styled by hand. */
+    .sqlms-root,
+    .sqlms-dialog,
+    .o_database_studio_history_list_view {
+        color-scheme: dark;
+    }
+    /* These inherit Odoo's body colour, which stays light-mode dark grey.
+       The same value it already resolves to, so this only bites here. */
+    .sqlms-root,
+    .o_database_studio_history_list_view {
+        color: var(--sqlms-text-2);
+    }
+
+    /* The editor's highlight layer is a <pre>, and Bootstrap gives every
+       <pre> a near-white background. It is stretched over the whole editor
+       (inset: 0), so in dark mode that one inherited rule paints a white
+       sheet across the editor and the query all but disappears -- only the
+       saturated keyword and number colours still read. It is an overlay and
+       should match the editor underneath it. */
+    .sqlms-root .sqlms-highlight {
+        background-color: var(--sqlms-surface);
+    }
+
+    /* ---- buttons ---- */
+    .sqlms-root:not(#_) .btn-light,
+    .sqlms-root:not(#_) .btn-secondary,
+    .sqlms-dialog:not(#_) .btn-light,
+    .sqlms-dialog:not(#_) .btn-secondary,
+    .o_database_studio_history_list_view:not(#_) .btn-light,
+    .o_database_studio_history_list_view:not(#_) .btn-secondary,
+    .o_database_studio_history_list_view:not(#_) .btn-outline-secondary {
+        background-color: var(--sqlms-surface-3) !important;
+        border-color: var(--sqlms-border-strong) !important;
+        color: var(--sqlms-text) !important;
+    }
+    .sqlms-root:not(#_) .btn-light:hover,
+    .sqlms-root:not(#_) .btn-secondary:hover,
+    .sqlms-dialog:not(#_) .btn-light:hover,
+    .sqlms-dialog:not(#_) .btn-secondary:hover,
+    .o_database_studio_history_list_view:not(#_) .btn-light:hover,
+    .o_database_studio_history_list_view:not(#_) .btn-secondary:hover,
+    .o_database_studio_history_list_view:not(#_) .btn-outline-secondary:hover {
+        background-color: var(--sqlms-hover-2) !important;
+        border-color: var(--sqlms-border-strong) !important;
+        color: var(--sqlms-text) !important;
+    }
+    /* The theme draws primary and danger as a pale pill with coloured text
+       and a matching rule, rather than as a filled button. Keep that shape
+       -- only the pill turns dark -- so the toolbar still reads the way it
+       does in light mode. */
+    .sqlms-root:not(#_) .btn-primary,
+    .sqlms-dialog:not(#_) .btn-primary,
+    .o_database_studio_history_list_view:not(#_) .btn-primary {
+        background-color: var(--sqlms-surface-3) !important;
+        border-color: var(--sqlms-teal) !important;
+        color: var(--sqlms-teal) !important;
+    }
+    .sqlms-root:not(#_) .btn-primary:hover,
+    .sqlms-dialog:not(#_) .btn-primary:hover,
+    .o_database_studio_history_list_view:not(#_) .btn-primary:hover {
+        background-color: var(--sqlms-teal-tint) !important;
+        color: var(--sqlms-teal) !important;
+    }
+    .sqlms-root:not(#_) .btn-danger,
+    .sqlms-dialog:not(#_) .btn-danger,
+    .o_database_studio_history_list_view:not(#_) .btn-danger {
+        background-color: var(--sqlms-surface-3) !important;
+        border-color: var(--sqlms-danger-edge) !important;
+        color: var(--sqlms-danger) !important;
+    }
+    .sqlms-root:not(#_) .btn-danger:hover,
+    .sqlms-dialog:not(#_) .btn-danger:hover,
+    .o_database_studio_history_list_view:not(#_) .btn-danger:hover {
+        background-color: var(--sqlms-danger-soft) !important;
+        color: var(--sqlms-danger) !important;
+    }
+    .sqlms-root:not(#_) .btn-link,
+    .sqlms-dialog:not(#_) .btn-link,
+    .o_database_studio_history_list_view:not(#_) .btn-link {
+        background-color: transparent !important;
+        color: var(--sqlms-accent) !important;
+    }
+    .sqlms-root:not(#_) .btn-link:hover,
+    .sqlms-dialog:not(#_) .btn-link:hover,
+    .o_database_studio_history_list_view:not(#_) .btn-link:hover {
+        color: var(--sqlms-link) !important;
+    }
+    /* Bootstrap draws the disabled state by dropping opacity, which on a
+       dark panel just makes the label vanish. */
+    .sqlms-root:not(#_) .btn:disabled,
+    .sqlms-root:not(#_) .btn[disabled],
+    .sqlms-dialog:not(#_) .btn:disabled,
+    .sqlms-dialog:not(#_) .btn[disabled],
+    .o_database_studio_history_list_view:not(#_) .btn:disabled,
+    .o_database_studio_history_list_view:not(#_) .btn[disabled] {
+        opacity: 1;
+        background-color: var(--sqlms-surface-2) !important;
+        border-color: var(--sqlms-border) !important;
+        color: var(--sqlms-text-faint) !important;
+    }
+
+    /* ---- alerts ---- */
+    .sqlms-root:not(#_) .alert-danger,
+    .sqlms-dialog:not(#_) .alert-danger {
+        background-color: var(--sqlms-danger-soft) !important;
+        border-color: var(--sqlms-danger-edge) !important;
+        color: var(--sqlms-danger) !important;
+    }
+    .sqlms-root:not(#_) .alert-warning,
+    .sqlms-dialog:not(#_) .alert-warning {
+        background-color: var(--sqlms-note-bg) !important;
+        border-color: var(--sqlms-note-border) !important;
+        color: var(--sqlms-note-text) !important;
+    }
+
+    /* ---- form controls ---- */
+    .sqlms-root:not(#_) .form-control,
+    .sqlms-root:not(#_) .form-select,
+    .sqlms-dialog:not(#_) .form-control,
+    .sqlms-dialog:not(#_) .form-select,
+    .o_database_studio_history_list_view:not(#_) .form-control {
+        background-color: var(--sqlms-surface) !important;
+        border-color: var(--sqlms-border-strong) !important;
+        color: var(--sqlms-text) !important;
+    }
+    .sqlms-root:not(#_) .form-control:focus,
+    .sqlms-root:not(#_) .form-select:focus,
+    .sqlms-dialog:not(#_) .form-control:focus,
+    .sqlms-dialog:not(#_) .form-select:focus {
+        background-color: var(--sqlms-surface) !important;
+        border-color: var(--sqlms-focus-border) !important;
+        box-shadow: 0 0 0 3px var(--sqlms-focus-ring);
+        color: var(--sqlms-text) !important;
+    }
+    .sqlms-root ::placeholder,
+    .sqlms-dialog ::placeholder,
+    .o_database_studio_history_list_view ::placeholder {
+        color: var(--sqlms-text-faint);
+        opacity: 1;
+    }
+    /* Utility colours Bootstrap hands out at light-mode contrast. */
+    .sqlms-root:not(#_) .text-muted,
+    .sqlms-dialog:not(#_) .text-muted,
+    .o_database_studio_history_list_view:not(#_) .text-muted {
+        color: var(--sqlms-text-muted) !important;
+    }
+    .sqlms-root:not(#_) .text-primary,
+    .sqlms-dialog:not(#_) .text-primary,
+    .sqlms-root:not(#_) .text-info,
+    .sqlms-dialog:not(#_) .text-info {
+        color: var(--sqlms-accent) !important;
+    }
+    .sqlms-root:not(#_) .text-danger,
+    .sqlms-dialog:not(#_) .text-danger,
+    .o_database_studio_history_list_view:not(#_) .text-danger {
+        color: var(--sqlms-danger) !important;
+    }
+
+    /* ---- the dialog shell ----
+       Save query / Close tab / Are you sure? / Convert type. */
+    .sqlms-dialog:not(#_) {
+        background-color: var(--sqlms-surface) !important;
+        border-color: var(--sqlms-border) !important;
+        color: var(--sqlms-text-2);
+        box-shadow: 0 12px 40px var(--sqlms-sh-ac-1);
+    }
+    .sqlms-dialog:not(#_) .modal-header,
+    .sqlms-dialog:not(#_) .modal-footer {
+        background-color: var(--sqlms-surface-2) !important;
+        border-color: var(--sqlms-border) !important;
+        color: var(--sqlms-text);
+    }
+    .sqlms-dialog:not(#_) .modal-title { color: var(--sqlms-text); }
+    /* The close glyph is a black SVG baked into a background-image. */
+    .sqlms-dialog:not(#_) .btn-close { filter: invert(1) grayscale(100%) brightness(1.6); }
+    .sqlms-dialog:not(#_) code { color: var(--sqlms-magenta); }
+
+    /* =================================================================
+       History: Odoo's own list view
+       -----------------------------------------------------------------
+       Everything below is Odoo's list view and control panel, reached
+       only through this view's own root class, so no other list view in
+       the database is touched. The control panel is a child of that root
+       here, which is what makes the whole page themable rather than just
+       the table.
+       ================================================================= */
+    .o_database_studio_history_list_view:not(#_) {
+        background-color: var(--sqlms-ground-1) !important;
+    }
+    /* The theme leaves a band of page background below the view -- white,
+       under a dark page. Painting the wrapper that holds the view closes
+       it. :has() keeps this to the moments the History view is actually
+       open, so the wrapper is never touched for any other action. */
+    *:has(> .o_database_studio_history_list_view) {
+        background-color: var(--sqlms-ground-1) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .o_content,
+    .o_database_studio_history_list_view:not(#_) .o_list_renderer {
+        background-color: var(--sqlms-surface) !important;
+    }
+
+    /* ---- control panel: breadcrumb, search, pager ---- */
+    .o_database_studio_history_list_view:not(#_) .o_control_panel {
+        background-color: var(--sqlms-surface-2) !important;
+        border-bottom: 1px solid var(--sqlms-border);
+        color: var(--sqlms-text-2);
+    }
+    /* Not .o_breadcrumb a: the trail link is styled as a link further
+       down, and painting it plain text here is what turned "Analyser"
+       into a dead grey word sitting above the page title. */
+    .o_database_studio_history_list_view:not(#_) .o_breadcrumb,
+    .o_database_studio_history_list_view:not(#_) .o_last_breadcrumb_item {
+        color: var(--sqlms-text) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .o_searchview {
+        background-color: var(--sqlms-surface) !important;
+        border-color: var(--sqlms-border-strong) !important;
+        color: var(--sqlms-text) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .o_searchview:focus-within {
+        border-color: var(--sqlms-focus-border) !important;
+        box-shadow: 0 0 0 3px var(--sqlms-focus-ring);
+    }
+    .o_database_studio_history_list_view:not(#_) .o_searchview_input {
+        background-color: transparent !important;
+        color: var(--sqlms-text) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .o_searchview_icon,
+    .o_database_studio_history_list_view:not(#_) .o_searchview_dropdown_toggler {
+        color: var(--sqlms-text-muted) !important;
+    }
+    /* A facet is a two-tone pill: coloured label, then the value. */
+    .o_database_studio_history_list_view:not(#_) .o_searchview_facet {
+        background-color: var(--sqlms-accent-faint) !important;
+        border-color: var(--sqlms-accent-border) !important;
+        color: var(--sqlms-text) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .o_searchview_facet .o_facet_values,
+    .o_database_studio_history_list_view:not(#_) .o_searchview_facet .o_facet_value {
+        color: var(--sqlms-text) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .o_cp_pager,
+    .o_database_studio_history_list_view:not(#_) .o_pager,
+    .o_database_studio_history_list_view:not(#_) .o_pager_counter,
+    .o_database_studio_history_list_view:not(#_) .o_pager_value,
+    .o_database_studio_history_list_view:not(#_) .o_pager_limit {
+        color: var(--sqlms-text-2) !important;
+    }
+    /* The theme fills the record counter with a bright brand green, which
+       on a dark bar swallows its own text. The pager reads as plain text
+       between the two arrows, the way it does in light mode. */
+    .o_database_studio_history_list_view:not(#_) .o_pager_counter,
+    .o_database_studio_history_list_view:not(#_) .o_pager_value {
+        background-color: transparent !important;
+        background-image: none !important;
+    }
+
+    /* ---- the table ----
+       Bootstrap drives .table from its own custom properties; setting the
+       colours alone leaves --bs-table-bg and the striping/hover accents
+       painting light over the top, so those go too. */
+    .o_database_studio_history_list_view:not(#_) .o_list_table {
+        --bs-table-bg: transparent;
+        --bs-table-color: var(--sqlms-text-2);
+        --bs-table-striped-bg: var(--sqlms-surface-2);
+        --bs-table-striped-color: var(--sqlms-text-2);
+        --bs-table-hover-bg: var(--sqlms-hover);
+        --bs-table-hover-color: var(--sqlms-text);
+        --bs-table-border-color: var(--sqlms-border-soft);
+        --table-bg: transparent;
+        color: var(--sqlms-text-2) !important;
+        border-color: var(--sqlms-border-soft) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .o_list_table thead th,
+    .o_database_studio_history_list_view:not(#_) .o_list_table .o_list_actions_header {
+        background-color: var(--sqlms-header) !important;
+        border-color: var(--sqlms-border) !important;
+        color: var(--sqlms-text) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .o_list_table thead th.o_column_sortable:hover {
+        background-color: var(--sqlms-hover-2) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .o_list_table tbody tr,
+    .o_database_studio_history_list_view:not(#_) .o_list_table tbody td {
+        border-color: var(--sqlms-border-soft) !important;
+        color: var(--sqlms-text-2) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .o_list_table tbody tr:hover > td {
+        background-color: var(--sqlms-hover) !important;
+        color: var(--sqlms-text) !important;
+    }
+    /* Bootstrap paints row striping and the .table-info selection tint as a
+       9999px inset box-shadow on each cell -- which lands ON TOP of the
+       cell's own text. Light-on-light it merely tints; over a dark row it
+       turned every selected striped row into a pale band with the text
+       painted out. Nothing here needs an inset cell shadow, and the
+       background-color below does the tinting. */
+    .o_database_studio_history_list_view:not(#_) .o_list_table tbody td {
+        box-shadow: none !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .o_data_row.table-info > td,
+    .o_database_studio_history_list_view:not(#_) .o_data_row.o_data_row_selected > td,
+    .o_database_studio_history_list_view:not(#_) .o_data_row.o_row_selected > td {
+        background-color: var(--sqlms-active) !important;
+        color: var(--sqlms-text) !important;
+    }
+    /* The "N selected" chip above the list is a .list-group-item.active,
+       which Bootstrap fills pale blue with near-black text. */
+    .o_database_studio_history_list_view:not(#_) .o_list_selection_box .list-group-item,
+    .o_database_studio_history_list_view:not(#_) .o_list_selection_box .list-group-item.active {
+        background-color: var(--sqlms-accent-faint) !important;
+        border-color: var(--sqlms-accent-border) !important;
+        color: var(--sqlms-text) !important;
+    }
+
+    .o_database_studio_history_list_view:not(#_) .o_list_footer,
+    .o_database_studio_history_list_view:not(#_) .o_list_table tfoot td {
+        background-color: var(--sqlms-header) !important;
+        border-color: var(--sqlms-border) !important;
+        color: var(--sqlms-text) !important;
+    }
+    /* The column-resize grips and the optional-columns toggle sit on the
+       header, so they follow its text colour rather than the body's. */
+    .o_database_studio_history_list_view:not(#_) .o_optional_columns_dropdown_toggle,
+    .o_database_studio_history_list_view:not(#_) .o_list_table thead th .o_button_icon {
+        color: var(--sqlms-text-muted) !important;
+    }
+    /* The cog beside the breadcrumb keeps Odoo's own body grey, which is a
+       light-mode value and disappears against the dark control panel. */
+    .o_database_studio_history_list_view:not(#_) .o_control_panel .fa,
+    .o_database_studio_history_list_view:not(#_) .o_cp_action_menus .fa,
+    .o_database_studio_history_list_view:not(#_) .o_control_panel_breadcrumbs .fa {
+        color: var(--sqlms-text-muted) !important;
+    }
+    /* The favourite star keeps its own colour; the empty one needs lifting
+       off the dark row. */
+    .o_database_studio_history_list_view:not(#_) .o_field_boolean_favorite .fa-star-o {
+        color: var(--sqlms-text-faint) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .o_field_boolean_favorite .fa-star {
+        color: var(--sqlms-star) !important;
+    }
+    /* ---- the search / columns drop-downs ----
+       Odoo renders these inline inside the control panel here rather than
+       in the shared overlay container, so they are inside this view's own
+       root and can be themed without reaching any other view. */
+    .o_database_studio_history_list_view:not(#_) .dropdown-menu {
+        background-color: var(--sqlms-surface) !important;
+        border-color: var(--sqlms-border) !important;
+        color: var(--sqlms-text-2) !important;
+        box-shadow: 0 10px 30px var(--sqlms-sh-ac-1), 0 2px 6px var(--sqlms-sh-ac-2);
+    }
+    .o_database_studio_history_list_view:not(#_) .dropdown-menu .o_dropdown_title {
+        color: var(--sqlms-text) !important;
+    }
+    /* The glyphs beside Filters / Group By / Favorites carry Odoo's
+       .text-action, a near-black that vanishes on the dark menu. */
+    .o_database_studio_history_list_view:not(#_) .dropdown-menu .text-action,
+    .o_database_studio_history_list_view:not(#_) .dropdown-menu .o_dropdown_title .fa {
+        color: var(--sqlms-text-muted) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .dropdown-item,
+    .o_database_studio_history_list_view:not(#_) .o_menu_item,
+    .o_database_studio_history_list_view:not(#_) .o_accordion_toggle,
+    .o_database_studio_history_list_view:not(#_) .o_add_custom_filter,
+    .o_database_studio_history_list_view:not(#_) .o_add_favorite {
+        color: var(--sqlms-text-2) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .dropdown-item:hover,
+    .o_database_studio_history_list_view:not(#_) .dropdown-item:focus,
+    .o_database_studio_history_list_view:not(#_) .o_menu_item:hover,
+    .o_database_studio_history_list_view:not(#_) .o_accordion_toggle:hover {
+        background-color: var(--sqlms-hover) !important;
+        color: var(--sqlms-text) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .dropdown-item.selected,
+    .o_database_studio_history_list_view:not(#_) .o_menu_item.selected {
+        background-color: var(--sqlms-accent-faint) !important;
+        color: var(--sqlms-accent) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .dropdown-divider {
+        border-color: var(--sqlms-border) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .dropdown-menu select,
+    .o_database_studio_history_list_view:not(#_) .dropdown-menu input {
+        background-color: var(--sqlms-surface-2) !important;
+        border-color: var(--sqlms-border-strong) !important;
+        color: var(--sqlms-text) !important;
+    }
+
+    /* The "No queries yet" helper. */
+    .o_database_studio_history_list_view:not(#_) .o_view_nocontent,
+    .o_database_studio_history_list_view:not(#_) .o_view_nocontent .o_nocontent_help {
+        color: var(--sqlms-text-muted) !important;
+    }
+    .o_database_studio_history_list_view:not(#_) .o_view_nocontent .o_view_nocontent_smiling_face {
+        color: var(--sqlms-text) !important;
+    }
+}
+
+/* =====================================================================
+   History: the toolbar above the list
+   ---------------------------------------------------------------------
+   Saved / On-the-fly as the same raised tabs the Analyser uses for Query
+   / Fields / Field Mapping, on their own strip directly above the list,
+   with the search box riding along on the right. The page heading keeps
+   the row above to itself.
+
+   Two things make this work, and both are about WHERE the pieces sit:
+
+     * The tabs are injected into .o_control_panel_actions, the box that
+       already holds the search view, so the two share one row. Putting
+       them in the obvious .o_control_panel_main_buttons instead placed
+       them ahead of the page heading and, because .o_breadcrumb carries
+       Bootstrap's .text-truncate and is free to shrink, squeezed "Query
+       History" down to an ellipsis.
+     * That row is then sent full-width and last, so it lands flush on
+       top of the list while the heading and pager keep the row above.
+
+   The construction mirrors the Analyser's strip exactly -- a teal cap
+   across the top of the selected tab, and an ::after that paints over
+   the strip's own bottom rule so the tab merges into what it opens. The
+   one adaptation is the tab face: the Analyser's tabs sit on its pane,
+   these sit on the list, so the face and the ::after take the list's own
+   surface colour. Same tokens throughout, so one set of rules serves
+   light and dark.
+   ===================================================================== */
+
+/* ---- the heading row: title on the left, pager on the right ----
+   The order values carry !important because Odoo puts Bootstrap's
+   .order-* utilities straight on these elements and those are
+   !important; without it the pager landed on a row of its own BELOW the
+   strip instead of beside the heading. */
+/* !important on the two flex utilities: Bootstrap ships .gap-3/.gap-lg-1
+   and .flex-lg-nowrap as !important utility classes, and Odoo puts them
+   straight on these elements. Without it the strip never got a line of
+   its own -- it stayed on the heading row at 100% width and pushed the
+   pager off the right edge of the page. */
+.o_database_studio_history_list_view:not(#_) .o_control_panel {
+    gap: 0 !important;
+    /* The strip is the last thing in the control panel and the list is the
+       first thing in the content box; the padding between the two left a
+       21px gap, so the selected tab appeared to float above the list it
+       opens instead of joining it. Closing both halves of that gap is what
+       makes the ::after seam below actually land on the list's edge. */
+    padding-bottom: 0 !important;
+}
+.o_database_studio_history_list_view:not(#_) .o_content {
+    padding-top: 0 !important;
+}
+.o_database_studio_history_list_view .o_control_panel_main {
+    flex-wrap: wrap !important;
+    align-items: center;
+    row-gap: 8px;
+}
+.o_database_studio_history_list_view .o_control_panel_breadcrumbs {
+    order: 0 !important;
+    flex: 0 1 auto;
+}
+/* ---- the trail above the title: "Analyser" over "Query History" ----
+   Odoo marks the trail <ol> .small and gives the current title .fs-4, so
+   the page you are on is the loud one and where you came from is a quiet
+   link above it. Two things undid that here. The backend theme restyles
+   .breadcrumb-item a to 18-20px, which left the parent larger than the
+   title; and Odoo only puts .fs-4 on the last item when there is NO
+   trail, so arriving from the Analyser shrank "Query History" from 20px
+   to 14px at the same moment "Analyser" grew. The two ended up the same
+   washed-out colour at inverted sizes, which is the stacked mess this
+   fixes. Odoo's hierarchy is put back, and the link gets the theme's own
+   teal so it reads as something you can click.
+
+   Typography and colour both come from tokens, so this serves light and
+   dark alike and is scoped to this view -- drill-downs everywhere else
+   in the database keep the theme's own breadcrumb styling. */
+/* Something still ships the Bootstrap-4-era `.breadcrumb { background:
+   white }`, so the trail's <ol> is a white plate. On a white control
+   panel nobody ever saw it; over the dark one it is the pale box that
+   was sitting behind "Analyser". Transparent is what it already looks
+   like in light mode, so this costs nothing there. */
+.o_database_studio_history_list_view:not(#_) .o_breadcrumb .breadcrumb {
+    background: transparent !important;
+    margin-bottom: 0;
+    padding: 0;
+}
+.o_database_studio_history_list_view:not(#_) .o_breadcrumb .breadcrumb-item a {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    line-height: 1.4;
+    color: var(--sqlms-teal) !important;
+    text-decoration: none;
+    opacity: 1;
+}
+.o_database_studio_history_list_view:not(#_) .o_breadcrumb .breadcrumb-item a:hover,
+.o_database_studio_history_list_view:not(#_) .o_breadcrumb .breadcrumb-item a:focus-visible {
+    color: var(--sqlms-teal-deep) !important;
+    text-decoration: underline;
+}
+/* The page title stays the prominent one whether or not there is a trail
+   above it, instead of shrinking the moment one appears. */
+.o_database_studio_history_list_view:not(#_) .o_breadcrumb .o_last_breadcrumb_item,
+.o_database_studio_history_list_view:not(#_) .o_breadcrumb .o_last_breadcrumb_item > .text-truncate {
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    line-height: 1.25;
+}
+
+/* The heading is never the thing that gives way. */
+.o_database_studio_history_list_view .o_control_panel_breadcrumbs > .o_breadcrumb {
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: none;
+    overflow: visible;
+}
+.o_database_studio_history_list_view .o_breadcrumb .o_last_breadcrumb_item {
+    max-width: none;
+    overflow: visible;
+    white-space: nowrap;
+}
+.o_database_studio_history_list_view .o_control_panel_navigation {
+    order: 1 !important;
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+/* ---- the strip itself ---- */
+.o_database_studio_history_list_view .o_control_panel_actions {
+    order: 2 !important;
+    flex: 1 0 100%;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    /* No negative pull-out to the panel's padding: flex-basis 100% is the
+       content box, so negative margins on top of it make the row wider
+       than the page and the whole view scrolls sideways. The strip spans
+       the panel's content width, which is the width the list uses too. */
+    margin: 4px 0 0;
+    padding: 6px 0 0;
+    min-width: 0;
+    background: linear-gradient(180deg, var(--sqlms-tabstrip-1), var(--sqlms-tabstrip-2));
+    border-bottom: 1px solid var(--sqlms-border);
+}
+
+.o_database_studio_history_list_view .sqlms-hist-tabs {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    /* The strip is the frame; the tabs sit on it. */
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+}
+.o_database_studio_history_list_view .sqlms-histtab {
+    position: relative;
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    padding: 8px 20px 7px;
+    background: transparent;
+    color: var(--sqlms-tab-text);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.12s ease, box-shadow 0.12s ease, color 0.12s ease;
+}
+.o_database_studio_history_list_view .sqlms-histtab:hover:not(.sqlms-histtab-active) {
+    background: var(--sqlms-bevel-75);
+    color: var(--sqlms-teal);
+}
+.o_database_studio_history_list_view .sqlms-histtab-active {
+    background: var(--sqlms-surface);
+    border-color: var(--sqlms-tab-edge);
+    color: var(--sqlms-teal-deep);
+    font-weight: 700;
+    box-shadow: 0 -4px 12px var(--sqlms-sh-10), inset 0 1px 0 var(--sqlms-bevel-top);
+}
+/* The theme's teal, capping the selected tab. */
+.o_database_studio_history_list_view .sqlms-histtab-active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 8px 8px 0 0;
+    background: linear-gradient(90deg, var(--sqlms-teal), var(--sqlms-teal-2));
+}
+/* Covers the 1px rule under the strip, joining the tab to the list. */
+.o_database_studio_history_list_view .sqlms-histtab-active::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--sqlms-surface);
+}
+.o_database_studio_history_list_view .sqlms-histtab:focus-visible {
+    outline: 2px solid var(--sqlms-focus-border);
+    outline-offset: -3px;
+}
+
+/* ---- the right of the strip: the search box, or the selection toolbar ----
+   Odoo takes the search view out of the DOM entirely while rows are
+   selected and renders the selection toolbar ("6 selected", Actions) in
+   its place. The two are not the same height, so with nothing holding
+   the strip open it lost 8px the moment you ticked select-all: the tabs
+   slid down, the strip shrank and the whole table jumped up under it.
+
+   A floor keeps the strip one size whichever of the two is in it. It is
+   min-height, not height, so a taller widget can still grow it, and the
+   tabs stay welded to the bottom edge (align-items: flex-end on the
+   strip) while whatever is on the right is centred in that space. */
+.o_database_studio_history_list_view .o_control_panel_actions {
+    min-height: 48px;
+}
+.o_database_studio_history_list_view .o_control_panel_actions > *:not(.sqlms-hist-tabs) {
+    margin-left: auto;
+    align-self: center;
+}
+.o_database_studio_history_list_view .o_control_panel_actions .o_cp_searchview {
+    flex: 0 1 360px;
+    min-width: 180px;
 }

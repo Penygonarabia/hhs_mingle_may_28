@@ -143,54 +143,27 @@ SqlMsSaveDialog.props = {
     defaultName: { type: String, optional: true },
 };
 
-// Odoo's Dialog, with every way out except its own buttons taken away: no
-// close button in the header (the TxnDialog template gives it a title-only
-// header), and Escape -- or the fullscreen back arrow on a small screen --
-// does nothing. The TxnDialog also keeps its buttons out of .modal-footer,
-// because Dialog's Ctrl+Enter hotkey clicks the first footer button, which
-// would be Commit.
-class SqlMsForcedDialog extends Dialog {
-    onEscape() {}
-    async dismiss() {}
-}
-
-// Asked at the end of a run that changed data with INSERT/UPDATE/DELETE/MERGE: the run
-// was executed inside a transaction the server is still holding open, and
-// nothing is saved until Commit. The dialog cannot be closed without
-// answering (see SqlMsForcedDialog); what is left -- the countdown running
-// out, leaving the page anyway, the server restarting -- rolls back.
-export class SqlMsTxnDialog extends Component {
+// Asked before a run that changes data with INSERT/UPDATE/DELETE/MERGE:
+// nothing has been executed yet. Yes runs it; No, Escape and the X all leave
+// the database alone. The buttons stay out of .modal-footer, because
+// Dialog's Ctrl+Enter hotkey clicks the first footer button, which would be
+// Yes -- and No takes the focus, so a stray Enter changes nothing.
+export class SqlMsConfirmDialog extends Component {
     setup() {
-        this.state = useState({ remaining: this.props.ttl, busy: false });
-        this._timer = setInterval(() => {
-            this.state.remaining = Math.max(0, this.state.remaining - 1);
-            if (!this.state.remaining) {
-                this.decide(false);
-            }
-        }, 1000);
-        onWillUnmount(() => clearInterval(this._timer));
+        this.noRef = useRef("no");
+        onMounted(() => this.noRef.el.focus());
     }
-    get countdown() {
-        const r = this.state.remaining;
-        return Math.floor(r / 60) + ":" + String(r % 60).padStart(2, "0");
-    }
-    async decide(commit) {
-        if (this.state.busy) {
-            return;
-        }
-        this.state.busy = true;
-        clearInterval(this._timer);
-        await this.props.onDecide(commit);
+    yes() {
+        this.props.onYes();
         this.props.close();
     }
 }
-SqlMsTxnDialog.template = "database_studio.TxnDialog";
-SqlMsTxnDialog.components = { Dialog: SqlMsForcedDialog };
-SqlMsTxnDialog.props = {
+SqlMsConfirmDialog.template = "database_studio.ConfirmDialog";
+SqlMsConfirmDialog.components = { Dialog };
+SqlMsConfirmDialog.props = {
     close: Function,
-    onDecide: Function,
+    onYes: Function,
     writes: Array,
-    ttl: Number,
 };
 
 // Shown when closing a query tab that still holds unsaved text: lets the user
@@ -2000,28 +1973,6 @@ export class SqlMsAnalyser extends Component {
         // above. This covers every exit, the "Query history" button included
         // (which is why openHistory no longer snapshots for itself).
         onWillUnmount(() => this._snapshotSession());
-
-        // While an INSERT/UPDATE/DELETE/MERGE transaction waits for its
-        // answer, reloading or closing the page first asks the browser's
-        // "Leave site?"; leaving anyway (or leaving the analyser) rolls it
-        // back. The rollback goes on pagehide, not beforeunload, so choosing
-        // to stay does not throw the transaction away.
-        this._onBeforeUnload = (ev) => {
-            if (this._openTxnId) {
-                ev.preventDefault();
-                ev.returnValue = "";
-            }
-        };
-        this._onPageHide = () => this._rollbackOpenTxnBeacon();
-        onMounted(() => {
-            window.addEventListener("beforeunload", this._onBeforeUnload);
-            window.addEventListener("pagehide", this._onPageHide);
-        });
-        onWillUnmount(() => {
-            window.removeEventListener("beforeunload", this._onBeforeUnload);
-            window.removeEventListener("pagehide", this._onPageHide);
-            this._rollbackOpenTxnBeacon();
-        });
     }
 
     // -- workspace snapshot / restore ----------------------------------
@@ -3793,13 +3744,13 @@ export class SqlMsAnalyser extends Component {
             const rs = this.activeSet;
             return rs ? this.runSetPage(rs, page) : undefined;
         }
-        if (this._openTxnId) {
-            this.notification.add(
-                "Commit or roll back the open transaction before running anything else.",
-                { type: "warning" }
-            );
+        if (this._confirming) {
             return;
         }
+        const previousRun = {
+            execQuery: this.state.execQuery,
+            execRange: this.state.execRange,
+        };
         const active = this._activeQuery();
         this.state.execQuery = active.query;
         this.state.execRange = active.range;
@@ -3830,13 +3781,30 @@ export class SqlMsAnalyser extends Component {
         this.state.executing = true;
         this.state.cancelling = false;
         let pairs;
-        let txn = null;
+        let notSaved = false;
         try {
-            const out = await this.orm.call(
-                "database.studio.analyser", "run_queries", [statements, 100, executionId]
+            const run = (confirmed) => this.orm.call(
+                "database.studio.analyser", "run_queries",
+                [statements, 100, executionId, confirmed]
             );
+            let out = await run(false);
+            if (out && out.confirm) {
+                // Nothing has run yet: the statements change data.
+                this.state.executing = false;
+                if (!(await this._askConfirm(statements, out.confirm))) {
+                    if (qtabId === this.state.activeQtabId) {
+                        Object.assign(this.state, previousRun);
+                        this._syncEditor();
+                    }
+                    this.state.activeTab = "query";
+                    this.taRef.el?.focus();
+                    return;
+                }
+                this.state.executing = true;
+                out = await run(true);
+            }
             const results = Array.isArray(out) ? out : (out && out.results) || [];
-            txn = (out && out.txn) || null;
+            notSaved = Boolean(out && out.not_saved);
             pairs = statements.map((sql, i) => [
                 sql,
                 (results || [])[i] || this._errorResult("No result returned"),
@@ -3867,9 +3835,9 @@ export class SqlMsAnalyser extends Component {
         if (sets.some((rs) => rs.result.cancelled)) {
             this.notification.add("SQL execution was cancelled.", { type: "info" });
         }
-        if (txn && txn.state === "rolled_back") {
+        if (notSaved) {
             this.notification.add(
-                "The run stopped before the end, so its data changes were rolled back.",
+                "The run stopped before the end, so its data changes were not saved.",
                 { type: "warning" }
             );
         }
@@ -3917,9 +3885,6 @@ export class SqlMsAnalyser extends Component {
                     [whole, (t && t.fullName) || false]).catch(() => {});
             }
         }
-        if (txn && txn.state === "open") {
-            this._askCommit(txn, sets);
-        }
         // A run that can add, drop or rename a table or view (CREATE, DROP,
         // ALTER, SELECT ... INTO) re-reads the object list, so the new table
         // shows up on the left without leaving the page.
@@ -3930,104 +3895,27 @@ export class SqlMsAnalyser extends Component {
         }
     }
 
-    // -- UPDATE / DELETE transactions -----------------------------------
-    // A run holding INSERT/UPDATE/DELETE/MERGE comes back with its transaction still open
-    // on the server. Ask whether to keep the changes; the answer is sent
-    // exactly once, whichever way the dialog is left.
-    _askCommit(txn, sets) {
-        this._openTxnId = txn.id;
-        const writes = (txn.writes || [])
-            .filter((i) => sets[i])
-            .map((i) => ({
-                index: i + 1,
-                sql: sets[i].label,
-                message: sets[i].result.message || "",
-            }));
-        let answered = false;
-        const decide = async (commit) => {
-            if (answered) {
-                return;
-            }
-            answered = true;
-            await this._endTransaction(txn.id, commit, sets, txn.writes || []);
-        };
-        this.dialog.add(SqlMsTxnDialog, {
-            writes,
-            // A few seconds short of the server's own timeout, so running
-            // out answers "Rollback" itself instead of finding the
-            // transaction already gone.
-            ttl: Math.max(10, (txn.ttl || 120) - 5),
-            onDecide: decide,
-        }, {
-            // Closed with the X or Escape: that is a rollback, not a "later".
-            onClose: () => decide(false),
-        });
-    }
-    async _endTransaction(txnId, commit, sets, writeIdx) {
-        let res;
-        try {
-            res = await this.orm.call(
-                "database.studio.analyser", "end_transaction",
-                [txnId, commit, sets.map((rs) => rs.sql).filter(Boolean)]
-            );
-        } catch (err) {
-            res = { success: false, state: "unknown",
-                    message: (err && err.data && err.data.message) || (err && err.message) || String(err) };
-        } finally {
-            if (this._openTxnId === txnId) {
-                this._openTxnId = null;
-            }
-        }
-        const outcome = res.success
-            ? (res.state === "committed" ? "committed" : "rolled back")
-            : (res.state === "unknown" ? "" : "rolled back");
-        // Stamp the outcome on the statements that changed data, so the
-        // result panels no longer read as if the changes simply happened.
-        // (Looked up again through state: `sets` are the plain objects the
-        // run built, and writing to those would not re-render anything.)
-        if (outcome) {
-            const live = [
-                ...this.state.resultSets,
-                ...this.state.qtabs.flatMap((t) => t.resultSets || []),
-            ];
-            for (const i of writeIdx) {
-                const rs = sets[i] && live.find((r) => r.id === sets[i].id);
-                if (rs && rs.result && rs.result.message) {
-                    rs.result.message += " \u2014 " + outcome;
-                }
-            }
-        }
-        if (res.success) {
-            this.notification.add(
-                res.state === "committed" ? "Changes committed." : "Changes rolled back.",
-                { type: res.state === "committed" ? "success" : "info" }
-            );
-        } else {
-            this.notification.add(res.message || "Could not end the transaction.", {
-                type: "warning", sticky: true,
+    // -- data-changing runs ---------------------------------------------
+    // Resolves true only for Yes; however else the dialog goes away is No.
+    _askConfirm(statements, writeIdx) {
+        this._confirming = true;
+        let yes = false;
+        return new Promise((resolve) => {
+            this.dialog.add(SqlMsConfirmDialog, {
+                writes: writeIdx.map((i) => ({
+                    index: i + 1,
+                    sql: this._statementLabel(statements[i]),
+                })),
+                onYes: () => {
+                    yes = true;
+                },
+            }, {
+                onClose: () => {
+                    this._confirming = false;
+                    resolve(yes);
+                },
             });
-        }
-    }
-    // Leaving the page with a transaction still open rolls it back rather
-    // than leaving its row locks behind until the server's timeout. The
-    // beacon survives the page going away, where an awaited RPC would not.
-    _rollbackOpenTxnBeacon() {
-        const id = this._openTxnId;
-        if (!id || !navigator.sendBeacon) {
-            return;
-        }
-        this._openTxnId = null;
-        const body = JSON.stringify({
-            jsonrpc: "2.0", method: "call", id: Date.now(),
-            params: {
-                model: "database.studio.analyser", method: "end_transaction",
-                args: [id, false], kwargs: {},
-            },
         });
-        navigator.sendBeacon(
-            "/web/dataset/call_kw/database.studio.analyser/end_transaction",
-            new Blob([body], { type: "application/json" })
-        );
     }
 
     // Paging one panel re-runs that panel's statement alone for the page

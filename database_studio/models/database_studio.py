@@ -1,8 +1,6 @@
 import datetime
 import logging
 import re
-import threading
-import uuid
 from decimal import Decimal
 
 from odoo import api, fields, models, _
@@ -31,65 +29,9 @@ _FIRST_WORD_RE = re.compile(r"\s*\(*\s*([a-z_]+)")
 # follows the last CTE's ")".
 _WITH_DML_RE = re.compile(r"[()]\s*(update|delete|insert|merge)\b")
 _EXPLAIN_ANALYZE_RE = re.compile(r"^\s*explain\b.*?\banaly[sz]e\b.*?\b(update|delete|insert|merge)\b", re.S)
-_TXN_CONTROL = frozenset({
-    "begin", "start", "commit", "end", "rollback", "abort",
-    "savepoint", "release", "prepare",
-})
-# Statements run inside an explicit transaction the user commits or rolls
-# back once the run is over.
-_TXN_VERBS = frozenset({"update", "delete", "insert", "merge"})
 # Statements that must never be re-executed behind the user's back (paging a
 # RETURNING result, exporting it): running them again changes data again.
 _WRITE_VERBS = frozenset({"update", "delete", "insert", "merge"})
-
-# -- open transactions ---------------------------------------------------
-# A run holding INSERT/UPDATE/DELETE/MERGE keeps its own connection open, un-committed,
-# until the user answers the Commit / Rollback prompt. Kept in this process's
-# memory, which is sound because the server runs threaded (one process); an
-# answer that reaches a process not holding the transaction finds nothing and
-# is told so -- and a lost connection is rolled back by PostgreSQL itself.
-# Nobody answering is rolled back after _TXN_TTL seconds, so row locks never
-# outlive the prompt by long.
-_TXN_TTL = 120
-_OPEN_TXNS = {}
-_TXN_LOCK = threading.Lock()
-
-
-def _close_txn(txn_id, commit):
-    """Commit or roll back an open transaction and release its connection.
-    Returns (found, error)."""
-    with _TXN_LOCK:
-        entry = _OPEN_TXNS.pop(txn_id, None)
-    if not entry:
-        return False, None
-    entry["timer"].cancel()
-    cr = entry["cr"]
-    error = None
-    try:
-        if commit:
-            cr.commit()
-        else:
-            cr.rollback()
-    except Exception as e:  # a failed COMMIT has already rolled back
-        error = str(e)
-        try:
-            cr.rollback()
-        except Exception:
-            pass
-    finally:
-        try:
-            cr.close()
-        except Exception:
-            pass
-    return True, error
-
-
-def _expire_txn(txn_id):
-    found, error = _close_txn(txn_id, commit=False)
-    if found:
-        _logger.info("Database Studio: transaction %s rolled back after %ss without an answer%s",
-                     txn_id, _TXN_TTL, (": %s" % error) if error else "")
-
 
 # Foreign-key relationships from the pg_constraint catalog. Much faster than
 # information_schema.constraint_column_usage on a database with many tables.
@@ -659,7 +601,7 @@ class SqlMsAnalyser(models.AbstractModel):
             execution_id = kwargs.get("execution_id")
         if self._statement_verbs(query)[1]:
             # Paging re-executes the statement; for one that changes data
-            # that would change it again -- and commit, with no prompt.
+            # that would change it again -- with no confirmation.
             return dict(
                 self._empty_result(limit),
                 error=_("Paging would run this data-changing statement again. "
@@ -668,7 +610,7 @@ class SqlMsAnalyser(models.AbstractModel):
         return self._run_statement(query, page, limit, execution_id)
 
     @api.model
-    def run_queries(self, queries, limit=100, execution_id=None):
+    def run_queries(self, queries, limit=100, execution_id=None, confirmed=False):
         """Execute several statements in order and return one result each.
 
         Running a whole script through :meth:`run_query` left only the last
@@ -676,6 +618,12 @@ class SqlMsAnalyser(models.AbstractModel):
         blind. Each statement is run on its own here and reported on its own,
         which is what the client needs to give every one of them its own
         (collapsible) result panel.
+
+        A run holding INSERT/UPDATE/DELETE/MERGE executes nothing until it
+        is called with `confirmed`: the first call only answers which
+        statements change data, for the client's "Are you sure?" question.
+        A confirmed run uses the request's own transaction, which Odoo
+        commits as the request ends.
 
         The first failure stops the run, and so does a cancellation: Postgres
         aborts the transaction on error, so whatever the earlier statements
@@ -685,110 +633,33 @@ class SqlMsAnalyser(models.AbstractModel):
         """
         self._check_access()
         queries = list(queries or [])
-        kinds = [self._statement_verbs(q) for q in queries]
-        # A run that holds INSERT/UPDATE/DELETE/MERGE is wrapped in a transaction of its
-        # own and left open for the user to commit or roll back -- unless the
-        # script manages transactions itself (its own BEGIN/COMMIT/...).
-        txn_mode = (any(verbs & _TXN_VERBS for _first, verbs in kinds)
-                    and not any(first in _TXN_CONTROL for first, _verbs in kinds))
-        cr = self.env.registry.cursor() if txn_mode else None
+        writes = [i for i, q in enumerate(queries) if self._statement_verbs(q)[1]]
+        if writes and not confirmed:
+            return {"results": [], "confirm": writes}
         results = []
         stopped = False
-        try:
-            for query in queries:
-                if stopped:
-                    results.append(dict(
-                        self._empty_result(limit),
-                        skipped=True,
-                        message=_("Not executed \u2014 the run stopped before this statement."),
-                    ))
-                    continue
-                result = self._run_statement(query, 1, limit, execution_id, cr=cr)
-                results.append(result)
-                if result.get("error") or result.get("cancelled"):
-                    stopped = True
-        except BaseException:
-            if cr is not None:
-                cr.rollback()
-                cr.close()
-            raise
-        if not txn_mode:
-            return {"results": results, "txn": None}
-        if stopped:
-            # The failed/cancelled statement already rolled the transaction
-            # back; nothing is left to decide.
-            cr.rollback()
-            cr.close()
-            return {"results": results, "txn": {"state": "rolled_back"}}
-        txn_id = uuid.uuid4().hex
-        timer = threading.Timer(_TXN_TTL, _expire_txn, args=(txn_id,))
-        timer.daemon = True
-        with _TXN_LOCK:
-            _OPEN_TXNS[txn_id] = {"cr": cr, "uid": self.env.uid, "timer": timer}
-        timer.start()
-        return {
-            "results": results,
-            "txn": {
-                "state": "open",
-                "id": txn_id,
-                "ttl": _TXN_TTL,
-                # Which statements changed data, for the prompt to list.
-                "writes": [i for i, (_f, verbs) in enumerate(kinds) if verbs],
-            },
-        }
-
-    @api.model
-    def end_transaction(self, txn_id, commit=False, statements=None):
-        """Commit (or roll back) the transaction a run left open."""
-        self._check_access()
-        with _TXN_LOCK:
-            entry = _OPEN_TXNS.get(txn_id)
-        if entry and entry["uid"] != self.env.uid:
-            raise AccessError(_("This transaction belongs to another user."))
-        found, error = _close_txn(txn_id, commit=bool(commit))
-        if not found and commit and statements:
-            # The held transaction lives in the memory of the worker that ran
-            # the statements. Under a multi-process server (workers > 0) the
-            # answer usually reaches a different worker, which holds nothing.
-            # The user did answer Commit, so apply the same statements again
-            # in one fresh transaction: all of them, or none.
-            return self._replay_and_commit(statements)
-        if not found:
-            return {
-                "success": False,
-                "state": "gone",
-                "message": _("The transaction is no longer open: it was rolled back "
-                             "(no answer within %s seconds, or the server restarted).") % _TXN_TTL,
-            }
-        if error:
-            return {"success": False, "state": "rolled_back",
-                    "message": _("Commit failed, so the changes were rolled back: %s") % error}
-        return {"success": True, "state": "committed" if commit else "rolled_back"}
-
-    def _replay_and_commit(self, statements):
-        cr = self.env.registry.cursor()
-        try:
-            for sql in statements:
-                if sql and sql.strip():
-                    cr.execute(sql)
-            cr.commit()
-        except Exception as e:
-            cr.rollback()
-            return {"success": False, "state": "rolled_back",
-                    "message": _("Commit failed, so the changes were rolled back: %s") % e}
-        finally:
-            cr.close()
-        return {"success": True, "state": "committed"}
+        for query in queries:
+            if stopped:
+                results.append(dict(
+                    self._empty_result(limit),
+                    skipped=True,
+                    message=_("Not executed \u2014 the run stopped before this statement."),
+                ))
+                continue
+            result = self._run_statement(query, 1, limit, execution_id)
+            results.append(result)
+            if result.get("error") or result.get("cancelled"):
+                stopped = True
+        return {"results": results, "not_saved": bool(writes) and stopped}
 
     def _empty_result(self, limit):
         return {"columns": [], "column_types": [], "rows": [], "total": 0,
                 "page": 1, "pages": 1, "limit": limit, "message": "",
                 "aggregates": []}
 
-    def _run_statement(self, query, page=1, limit=100, execution_id=None, cr=None):
-        """Run one statement on `cr` -- the request's own cursor unless a
-        held transaction's is given."""
-        cr = cr if cr is not None else self.env.cr
+    def _run_statement(self, query, page=1, limit=100, execution_id=None):
+        """Run one statement on the request's cursor."""
+        cr = self.env.cr
         empty = self._empty_result(limit)
         if not query or not query.strip():
             return empty
